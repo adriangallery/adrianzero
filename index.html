@@ -25,7 +25,7 @@
         /* Rotating AdrianZERO Animation */
         .rotating-adrian {
             position: fixed;
-            top: 20%;
+            top: 35%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 200px;
@@ -34,6 +34,24 @@
             pointer-events: none;
             opacity: 0.9;
             transition: opacity 0.3s ease;
+        }
+
+        /* Modal background for animation */
+        .animation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 35%, transparent 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.7) 100%);
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .animation-modal.hidden {
+            opacity: 0.2;
         }
 
         .rotating-adrian img {
@@ -686,6 +704,9 @@
     </style>
 </head>
 <body>
+    <!-- Modal background for animation -->
+    <div class="animation-modal" id="animationModal"></div>
+
     <!-- Rotating AdrianZERO Animation -->
     <div class="rotating-adrian" id="rotatingAdrian">
         <img src="components/animated/A.svg" alt="Rotating AdrianZERO" id="rotatingImage">
@@ -1259,6 +1280,7 @@
         let currentImageIndex = 0;
         const rotatingImage = document.getElementById('rotatingImage');
         const rotatingAdrian = document.getElementById('rotatingAdrian');
+        const animationModal = document.getElementById('animationModal');
 
         function updateRotatingImage(scrollPercent) {
             // Calculate which image to show based on scroll percentage
@@ -1273,8 +1295,10 @@
             // Keep animation visible throughout most of the scroll, just reduce opacity when near the end
             if (scrollPercent > 0.8) {
                 rotatingAdrian.classList.add('hidden');
+                animationModal.classList.add('hidden');
             } else {
                 rotatingAdrian.classList.remove('hidden');
+                animationModal.classList.remove('hidden');
             }
         }
 
