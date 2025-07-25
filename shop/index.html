@@ -109,7 +109,8 @@
         }
 
         .wallet-address {
-            background: #f8f9fa;
+            background: #2a2a2a;
+            color: #ffffff;
             padding: 10px 15px;
             border-radius: 10px;
             font-family: monospace;
@@ -124,7 +125,8 @@
         }
 
         .balance-item {
-            background: #e8f5e8;
+            background: #2a2a2a;
+            color: #ffffff;
             padding: 8px 12px;
             border-radius: 8px;
             font-family: 'VT323', monospace;
@@ -622,12 +624,12 @@
         <div id="cart-section" class="cart-section">
             <div class="cart-header">
                 <h3>🛒 Shopping Cart</h3>
-                <button id="clearCartBtn" class="action-btn remove">Clear Cart</button>
             </div>
             <div id="cart-items" class="cart-items"></div>
             <div id="cart-total" class="cart-total"></div>
             <div class="cart-actions">
                 <button id="checkoutBtn" class="action-btn" style="flex: 1;">Checkout</button>
+                <button id="clearCartBtn" class="action-btn remove" style="flex: 1;">Clear Cart</button>
             </div>
         </div>
 
@@ -1507,18 +1509,18 @@
                 const adrianContract = new ethers.Contract(ADRIAN_TOKEN_CONTRACT, ERC20_ABI, signer);
                 const shopContract = new ethers.Contract(ADRIAN_SHOP_CONTRACT, SHOP_ABI, signer);
                 
-                // Step 1: Check if approval is needed and handle it
-                if (totalCostEther > 0 && totalCostEther > approvedAmount) {
-                    showInfo("Approval needed. Processing approval transaction...");
-                    
-                    // Add delay before approval transaction
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    showInfo("Approving ADRIAN tokens for cart total...");
-                    
-                    // Use the pre-calculated BigNumber (no conversion needed)
-                    const tx = await adrianContract.approve(ADRIAN_SHOP_CONTRACT, totalCostWei);
-                    showInfo('Approval transaction sent: ' + tx.hash);
+                        // Step 1: Check if approval is needed and handle it
+        if (totalCostEther > 0 && totalCostEther > approvedAmount) {
+            showInfo("Approval needed. Processing approval transaction...");
+            
+            // Add delay before approval transaction
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            showInfo(`Approving ${totalCostEther} ADRIAN tokens for cart total...`);
+            
+            // Use the pre-calculated BigNumber (no conversion needed)
+            const tx = await adrianContract.approve(ADRIAN_SHOP_CONTRACT, totalCostWei);
+            showInfo('Approval transaction sent: ' + tx.hash);
                     
                     await tx.wait();
                     showSuccess("ADRIAN tokens approved successfully!");
