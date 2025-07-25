@@ -1092,8 +1092,15 @@
                 button.classList.add('btn-loading');
                 
                 // Calculate total cost using BigNumber for better performance
-                const totalCostWei = adrianZeroPrice.mul(quantities.adrianZero);
-                const totalCostEther = parseFloat(ethers.utils.formatEther(totalCostWei));
+                let totalCostWei = ethers.BigNumber.from(0);
+                let totalCostEther = 0;
+                
+                // Calculate in ether for display and balance validation
+                const priceEther = parseFloat(ethers.utils.formatEther(adrianZeroPrice));
+                totalCostEther = priceEther * quantities.adrianZero;
+                
+                // Calculate in wei using BigNumber for approval
+                totalCostWei = adrianZeroPrice.mul(quantities.adrianZero);
                 
                 // Check balance
                 const balance = await adrianToken.balanceOf(userAddress);
@@ -1159,8 +1166,15 @@
                 button.classList.add('btn-loading');
                 
                 // Calculate total cost using BigNumber for better performance
-                const totalCostWei = STARTER_FLOPPY_PRICE.mul(quantities.starterFloppy);
-                const totalCostEther = parseFloat(ethers.utils.formatEther(totalCostWei));
+                let totalCostWei = ethers.BigNumber.from(0);
+                let totalCostEther = 0;
+                
+                // Calculate in ether for display and balance validation
+                const priceEther = parseFloat(ethers.utils.formatEther(STARTER_FLOPPY_PRICE));
+                totalCostEther = priceEther * quantities.starterFloppy;
+                
+                // Calculate in wei using BigNumber for approval
+                totalCostWei = STARTER_FLOPPY_PRICE.mul(quantities.starterFloppy);
                 
                 // Check balance
                 const balance = await adrianToken.balanceOf(userAddress);
