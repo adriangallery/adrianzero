@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AdrianSHOP - Traits Store</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         * {
@@ -15,9 +16,9 @@
 
         body {
             font-family: 'VT323', monospace;
-            background: #808080;
+            background: #1a1a1a;
             min-height: 100vh;
-            color: #333;
+            color: #fff;
         }
 
         .container {
@@ -48,7 +49,7 @@
 
         .header .subtitle {
             font-size: 1.45rem;
-            color: white;
+            color: #cccccc;
             margin-bottom: 20px;
             font-family: 'VT323', monospace;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
@@ -57,15 +58,17 @@
         .header p {
             font-size: 1.3rem;
             opacity: 0.9;
+            color: #aaaaaa;
         }
 
         .connect-section {
             text-align: center;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             margin-bottom: 30px;
+            border: 1px solid #333;
         }
 
         .connect-btn {
@@ -88,11 +91,12 @@
 
         .account-section {
             display: none;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             margin-bottom: 30px;
+            border: 1px solid #333;
         }
 
         .wallet-info {
@@ -143,16 +147,17 @@
         }
 
         .shop-section {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #333;
         }
 
         .section-title {
             font-size: 1.8rem;
             margin-bottom: 20px;
-            color: #333;
+            color: #fff;
             text-align: center;
             font-family: 'VT323', monospace;
         }
@@ -248,13 +253,13 @@
         }
 
         .item-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
             cursor: pointer;
-            border: 3px solid transparent;
+            border: 1px solid #333;
             position: relative;
         }
 
@@ -272,7 +277,7 @@
             width: 100%;
             height: 200px;
             object-fit: contain;
-            background: #f8f9fa;
+            background: #2a2a2a;
         }
 
         .item-info {
@@ -282,7 +287,7 @@
         .item-name {
             font-weight: bold;
             margin-bottom: 8px;
-            color: #333;
+            color: #fff;
             font-family: 'VT323', monospace;
             font-size: 1.2rem;
         }
@@ -296,7 +301,7 @@
         }
 
         .item-availability {
-            color: #666;
+            color: #cccccc;
             font-size: 0.9rem;
             margin-bottom: 5px;
             font-family: 'VT323', monospace;
@@ -331,7 +336,7 @@
 
         .item-description {
             font-size: 0.8rem;
-            color: #555;
+            color: #aaaaaa;
             margin-bottom: 8px;
             font-style: italic;
             line-height: 1.2;
@@ -339,7 +344,7 @@
 
         .item-other-attrs {
             font-size: 0.8rem;
-            color: #666;
+            color: #cccccc;
             margin-bottom: 5px;
             font-family: 'VT323', monospace;
         }
@@ -362,8 +367,8 @@
 
         .action-btn {
             flex: 1;
-            background: #667eea;
-            color: white;
+            background: #00ff00;
+            color: black;
             border: none;
             padding: 8px 12px;
             border-radius: 6px;
@@ -376,6 +381,7 @@
 
         .action-btn:hover {
             transform: translateY(-1px);
+            background: #00cc00;
         }
 
         .action-btn:disabled {
@@ -511,9 +517,72 @@
                 text-align: center;
             }
         }
+
+        /* Menu styles - AdrianSHOP Theme */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        #menu-container .navbar {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff00;
+            font-family: 'VT323', monospace;
+        }
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #00ff00 !important;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        #menu-container .token-symbol {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.4rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        #menu-container .navbar-toggler {
+            border-color: #00ff00;
+        }
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Adjust first section to account for fixed menu */
+        .container {
+            padding-top: 60px;
+        }
+
+        /* Menu always collapsed - no responsive adjustments needed */
+        #menu-container .navbar-nav .nav-link {
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    <script>
+      // Load the menu
+      fetch('../components/menu.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = '../components/menu.js';
+          document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    </script>
+
     <div class="container">
         <div class="header">
             <h1><span class="adrian">Adrian</span><span class="shop">SHOP</span></h1>
@@ -1569,6 +1638,13 @@
             error.style.display = "none";
             success.style.display = "none";
             info.style.display = "none";
+        }
+
+        // Load Bootstrap scripts
+        if (window.ethereum) {
+            const bootstrapScript = document.createElement('script');
+            bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+            document.head.appendChild(bootstrapScript);
         }
     </script>
 </body>
