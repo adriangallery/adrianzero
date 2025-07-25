@@ -616,13 +616,7 @@
             </div>
         </div>
 
-        <!-- Approval Section -->
-        <div id="approve-section" class="approve-section">
-            <h3>Approve ADRIAN Tokens</h3>
-            <p>You need to approve ADRIAN tokens before making purchases</p>
-            <button id="approveBtn" class="approve-btn">Approve ADRIAN</button>
-            <div id="approve-status" style="margin-top: 10px;"></div>
-        </div>
+
 
         <!-- Cart Section -->
         <div id="cart-section" class="cart-section">
@@ -720,7 +714,7 @@
         var connectSection = document.getElementById('connect-section');
         var accountSection = document.getElementById('account-section');
         var shopSection = document.getElementById('shop-section');
-        var approveSection = document.getElementById('approve-section');
+
         var cartSection = document.getElementById('cart-section');
         var connectBtn = document.getElementById('connectBtn');
         var disconnectBtn = document.getElementById('disconnectBtn');
@@ -740,7 +734,7 @@
         var cartTotalEl = document.getElementById('cart-total');
         var clearCartBtn = document.getElementById('clearCartBtn');
         var checkoutBtn = document.getElementById('checkoutBtn');
-        var approveBtn = document.getElementById('approveBtn');
+
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -750,7 +744,7 @@
             disconnectBtn.addEventListener('click', disconnectWallet);
             clearCartBtn.addEventListener('click', clearCart);
             checkoutBtn.addEventListener('click', checkout);
-            approveBtn.addEventListener('click', approveTokens);
+
             
             // Check if wallet is already connected
             checkConnection();
@@ -844,7 +838,6 @@
             connectSection.style.display = "block";
             accountSection.style.display = "none";
             shopSection.style.display = "none";
-            approveSection.style.display = "none";
             cartSection.style.display = "none";
             
             itemsGrid.innerHTML = "";
@@ -1368,7 +1361,6 @@
             if (!item.canQuickBuy) {
                 if (item.price > approvedAmount) {
                     showError("Please approve ADRIAN tokens first for quick buy");
-                    approveSection.style.display = "block";
                 } else if (item.price > adrianBalance) {
                     showError("Insufficient ADRIAN balance");
                 } else {
@@ -1447,12 +1439,7 @@
             // Update checkout button state - only disable if insufficient balance
             checkoutBtn.disabled = totalCost > adrianBalance;
             
-            // Show approval section if needed, but don't disable checkout
-            if (totalCost > 0 && totalCost > approvedAmount) {
-                approveSection.style.display = "block";
-            } else {
-                approveSection.style.display = "none";
-            }
+
         }
 
         // Purchase single item with retry logic
@@ -1521,8 +1508,11 @@
                     
                     showInfo("Approving ADRIAN tokens for cart total...");
                     
+                    // Convert totalCost from ether to wei for approval
+                    const totalCostWei = ethers.utils.parseEther(totalCost.toString());
+                    
                     // Approve the exact amount needed for the cart
-                    const tx = await adrianContract.approve(ADRIAN_SHOP_CONTRACT, totalCost);
+                    const tx = await adrianContract.approve(ADRIAN_SHOP_CONTRACT, totalCostWei);
                     showInfo('Approval transaction sent: ' + tx.hash);
                     
                     await tx.wait();
