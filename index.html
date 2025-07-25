@@ -25,14 +25,14 @@
         /* Rotating AdrianZERO Animation */
         .rotating-adrian {
             position: fixed;
-            top: 50%;
+            top: 20%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
+            width: 200px;
+            height: 200px;
             z-index: 10;
             pointer-events: none;
-            opacity: 0.8;
+            opacity: 0.9;
             transition: opacity 0.3s ease;
         }
 
@@ -41,10 +41,11 @@
             height: 100%;
             object-fit: contain;
             filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
+            transition: opacity 0.1s ease;
         }
 
         .rotating-adrian.hidden {
-            opacity: 0;
+            opacity: 0.3;
         }
 
         /* Hero Section */
@@ -1261,6 +1262,7 @@
 
         function updateRotatingImage(scrollPercent) {
             // Calculate which image to show based on scroll percentage
+            // Use all 8 images throughout the entire scroll with smoother transitions
             const imageIndex = Math.floor(scrollPercent * (rotatingImages.length - 1));
             
             if (imageIndex !== currentImageIndex && imageIndex >= 0 && imageIndex < rotatingImages.length) {
@@ -1268,8 +1270,8 @@
                 rotatingImage.src = rotatingImages[currentImageIndex];
             }
 
-            // Hide the animation when scrolled down significantly
-            if (scrollPercent > 0.3) {
+            // Keep animation visible throughout most of the scroll, just reduce opacity when near the end
+            if (scrollPercent > 0.8) {
                 rotatingAdrian.classList.add('hidden');
             } else {
                 rotatingAdrian.classList.remove('hidden');
@@ -1284,7 +1286,11 @@
             // Calculate scroll percentage (0 to 1)
             const scrollPercent = Math.min(scrollTop / (documentHeight - windowHeight), 1);
             
-            updateRotatingImage(scrollPercent);
+            // Use a smoother mapping for the animation
+            // This ensures all 8 images are used throughout the scroll
+            const animationProgress = Math.min(scrollPercent * 1.2, 1); // Slightly extend the range
+            
+            updateRotatingImage(animationProgress);
         }
 
         // Add scroll event listener
