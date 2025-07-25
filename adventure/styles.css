@@ -520,16 +520,16 @@ body {
 }
 
 .commands-section {
-    flex: 0 0 auto;
-    min-width: 70px;
-    max-width: 70px;
+    flex: 1;
+    min-width: 0;
+    max-width: calc(33.33% - 2px);
 }
 
 .inventory-section-left,
 .inventory-section-right {
     flex: 1;
     min-width: 0;
-    max-width: calc(50% - 2px);
+    max-width: calc(33.33% - 2px);
 }
 
 .section-header {

@@ -7,9 +7,10 @@ const baseSceneStyles = `
 .commands-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
+    gap: 2px;
     flex: 1;
     min-height: 0;
+    padding: 1px;
 }
 
 /* Command button styling */
@@ -17,13 +18,14 @@ const baseSceneStyles = `
     background: rgba(0, 255, 0, 0.1);
     border: 1px solid #00ff00;
     color: #00ff00;
-    padding: 6px 8px;
-    border-radius: 4px;
+    padding: 4px 6px;
+    border-radius: 3px;
     cursor: pointer;
     font-family: 'VT323', monospace;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     transition: all 0.3s ease;
     text-align: center;
+    min-height: 35px;
 }
 
 .command-btn:hover {
@@ -286,12 +288,14 @@ const baseSceneStyles = `
     }
     
     .commands-grid {
-        gap: 2px;
+        gap: 1px;
+        padding: 1px;
     }
     
     .command-btn {
-        padding: 4px 6px;
+        padding: 3px 4px;
         font-size: 0.5rem;
+        min-height: 30px;
     }
     
     .inventory-grid {
