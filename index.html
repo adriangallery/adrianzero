@@ -1095,12 +1095,13 @@
                 let totalCostWei = ethers.BigNumber.from(0);
                 let totalCostEther = 0;
                 
-                // Calculate in ether for display and balance validation
+                // Get price in ether for calculations
                 const priceEther = parseFloat(ethers.utils.formatEther(adrianZeroPrice));
                 totalCostEther = priceEther * quantities.adrianZero;
                 
-                // Calculate in wei using BigNumber for approval
-                totalCostWei = adrianZeroPrice.mul(quantities.adrianZero);
+                // Calculate in wei using BigNumber for approval (same as shop/)
+                const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
+                totalCostWei = itemPriceWei.mul(quantities.adrianZero);
                 
                 // Check balance
                 const balance = await adrianToken.balanceOf(userAddress);
@@ -1169,12 +1170,13 @@
                 let totalCostWei = ethers.BigNumber.from(0);
                 let totalCostEther = 0;
                 
-                // Calculate in ether for display and balance validation
+                // Get price in ether for calculations
                 const priceEther = parseFloat(ethers.utils.formatEther(STARTER_FLOPPY_PRICE));
                 totalCostEther = priceEther * quantities.starterFloppy;
                 
-                // Calculate in wei using BigNumber for approval
-                totalCostWei = STARTER_FLOPPY_PRICE.mul(quantities.starterFloppy);
+                // Calculate in wei using BigNumber for approval (same as shop/)
+                const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
+                totalCostWei = itemPriceWei.mul(quantities.starterFloppy);
                 
                 // Check balance
                 const balance = await adrianToken.balanceOf(userAddress);
