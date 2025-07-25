@@ -495,6 +495,47 @@ body {
     margin: 0 auto;
 }
 
+/* Footer sections layout - FORCED MOBILE */
+.footer-sections {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    height: 100%;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+.footer-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 4px;
+}
+
+.commands-section {
+    flex: 0 0 auto;
+    min-width: 80px;
+}
+
+.inventory-section-left,
+.inventory-section-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.section-header {
+    color: #00ff00;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-bottom: 4px;
+    text-align: center;
+    font-family: 'VT323', monospace;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+    padding-bottom: 2px;
+}
+
 .footer-header {
     display: flex;
     justify-content: space-between;
