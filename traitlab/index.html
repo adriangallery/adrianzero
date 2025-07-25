@@ -714,7 +714,7 @@
                     <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="activate-token-section" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="activateTokenBtn" class="apply-traits-btn">Activate Token</button>
+                    <button id="activateTokenBtn" class="apply-traits-btn">Assign SKIN</button>
                     <div id="activate-token-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="open-floppy-section" style="display: none; margin-top: 10px; text-align: center;">
@@ -2013,9 +2013,9 @@
                             );
                             if (hasActivationAttribute) {
                                 // Update button text to indicate it might already be activated
-                                activateTokenBtn.textContent = 'Activate Token (May already be activated)';
-                            } else {
-                                activateTokenBtn.textContent = 'Activate Token';
+                                                activateTokenBtn.textContent = 'Assign SKIN (May already be assigned)';
+            } else {
+                activateTokenBtn.textContent = 'Assign SKIN';
                             }
                         }
                     } else {
@@ -2749,7 +2749,7 @@
                     } catch (error) {
                         console.error('Error in transaction:', error);
                         
-                        let errorMessage = 'Failed to activate token.';
+                        let errorMessage = 'Failed to assign SKIN.';
                         
                         // Handle specific error cases
                         if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
