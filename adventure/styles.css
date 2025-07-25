@@ -499,11 +499,12 @@ body {
 .footer-sections {
     display: flex;
     flex-direction: row;
-    gap: 8px;
+    gap: 4px;
     height: 100%;
     width: 100%;
     max-width: 360px;
     margin: 0 auto;
+    align-items: stretch;
 }
 
 .footer-section {
@@ -511,18 +512,24 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    padding: 4px;
+    padding: 3px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #00ff00;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .commands-section {
     flex: 0 0 auto;
-    min-width: 80px;
+    min-width: 70px;
+    max-width: 70px;
 }
 
 .inventory-section-left,
 .inventory-section-right {
     flex: 1;
     min-width: 0;
+    max-width: calc(50% - 2px);
 }
 
 .section-header {
