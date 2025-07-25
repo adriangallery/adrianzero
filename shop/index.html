@@ -633,8 +633,7 @@
             <div id="cart-items" class="cart-items"></div>
             <div id="cart-total" class="cart-total"></div>
             <div class="cart-actions">
-                <button id="checkoutBtn" class="action-btn" style="flex: 2;">Checkout</button>
-                <button id="approveForCartBtn" class="action-btn" style="background: #00cc00; color: #ffffff;">Approve Tokens</button>
+                <button id="checkoutBtn" class="action-btn" style="flex: 1;">Checkout</button>
             </div>
         </div>
 
@@ -742,7 +741,6 @@
         var clearCartBtn = document.getElementById('clearCartBtn');
         var checkoutBtn = document.getElementById('checkoutBtn');
         var approveBtn = document.getElementById('approveBtn');
-        var approveForCartBtn = document.getElementById('approveForCartBtn');
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -753,7 +751,6 @@
             clearCartBtn.addEventListener('click', clearCart);
             checkoutBtn.addEventListener('click', checkout);
             approveBtn.addEventListener('click', approveTokens);
-            approveForCartBtn.addEventListener('click', approveTokensForCart);
             
             // Check if wallet is already connected
             checkConnection();
@@ -1491,7 +1488,7 @@
             }
         }
 
-        // Checkout (batch purchase)
+        // Checkout (batch purchase with automatic approval)
         async function checkout() {
             if (cart.length === 0) return;
             
@@ -1503,13 +1500,6 @@
                 }
             }
             
-            // Check if approval is needed before proceeding
-            if (totalCost > 0 && totalCost > approvedAmount) {
-                showError("Please approve ADRIAN tokens before checkout");
-                approveSection.style.display = "block";
-                return;
-            }
-            
             // Check balance
             if (totalCost > adrianBalance) {
                 showError("Insufficient ADRIAN balance for checkout");
@@ -1517,13 +1507,38 @@
             }
             
             try {
-                showInfo("Preparing batch purchase...");
-                
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
+                const adrianContract = new ethers.Contract(ADRIAN_TOKEN_CONTRACT, ERC20_ABI, signer);
                 const shopContract = new ethers.Contract(ADRIAN_SHOP_CONTRACT, SHOP_ABI, signer);
                 
-                // Add delay before transaction
+                // Step 1: Check if approval is needed and handle it
+                if (totalCost > 0 && totalCost > approvedAmount) {
+                    showInfo("Approval needed. Processing approval transaction...");
+                    
+                    // Add delay before approval transaction
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    showInfo("Approving ADRIAN tokens for cart total...");
+                    
+                    // Approve the exact amount needed for the cart
+                    const tx = await adrianContract.approve(ADRIAN_SHOP_CONTRACT, totalCost);
+                    showInfo('Approval transaction sent: ' + tx.hash);
+                    
+                    await tx.wait();
+                    showSuccess("ADRIAN tokens approved successfully!");
+                    
+                    // Refresh approval amount
+                    await loadBalances();
+                    
+                    // Add delay before proceeding to purchase
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Process the batch purchase
+                showInfo("Preparing batch purchase...");
+                
+                // Add delay before purchase transaction
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
                 showInfo("Processing batch purchase...");
@@ -1538,10 +1553,10 @@
                 });
                 
                 const tx = await shopContract.batchPurchase(requests);
-                showInfo('Batch transaction sent: ' + tx.hash);
+                showInfo('Batch purchase transaction sent: ' + tx.hash);
                 
                 await tx.wait();
-                showSuccess("Batch purchase completed successfully!");
+                showSuccess("Checkout completed successfully!");
                 
                 // Add delay before refreshing data
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1594,10 +1609,7 @@
             }
         }
 
-        // Approve tokens for cart
-        function approveTokensForCart() {
-            approveTokens();
-        }
+
 
         // UI Helper functions
         function showLoading() {
