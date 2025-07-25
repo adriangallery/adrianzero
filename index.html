@@ -25,11 +25,11 @@
         /* Rotating AdrianZERO Animation */
         .rotating-adrian {
             position: fixed;
-            top: 35%;
-            left: 5%;
-            transform: translateY(-50%);
-            width: 200px;
-            height: 200px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
             z-index: 10;
             pointer-events: none;
             opacity: 0.9;
@@ -43,7 +43,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 5% 35%, transparent 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.7) 100%);
+            background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.7) 100%);
             z-index: 5;
             pointer-events: none;
             opacity: 0.8;
@@ -1294,8 +1294,10 @@
 
         function updateRotatingImage(scrollPercent) {
             // Calculate which image to show based on scroll percentage
-            // Use all 8 images throughout the entire scroll with smoother transitions
-            const imageIndex = Math.floor(scrollPercent * (rotatingImages.length - 1));
+            // Use all 8 images multiple times throughout the entire scroll for multiple rotations
+            const totalRotations = 3; // Number of complete rotations during full scroll
+            const adjustedScrollPercent = scrollPercent * totalRotations;
+            const imageIndex = Math.floor(adjustedScrollPercent * rotatingImages.length) % rotatingImages.length;
             
             if (imageIndex !== currentImageIndex && imageIndex >= 0 && imageIndex < rotatingImages.length) {
                 currentImageIndex = imageIndex;
@@ -1303,7 +1305,7 @@
             }
 
             // Keep animation visible throughout most of the scroll, just reduce opacity when near the end
-            if (scrollPercent > 0.8) {
+            if (scrollPercent > 0.9) {
                 rotatingAdrian.classList.add('hidden');
                 animationModal.classList.add('hidden');
             } else {
@@ -1320,11 +1322,8 @@
             // Calculate scroll percentage (0 to 1)
             const scrollPercent = Math.min(scrollTop / (documentHeight - windowHeight), 1);
             
-            // Use a smoother mapping for the animation
-            // This ensures all 8 images are used throughout the scroll
-            const animationProgress = Math.min(scrollPercent * 1.2, 1); // Slightly extend the range
-            
-            updateRotatingImage(animationProgress);
+            // Use the scroll percentage directly for smoother multiple rotations
+            updateRotatingImage(scrollPercent);
         }
 
         // Add scroll event listener
