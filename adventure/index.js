@@ -608,7 +608,7 @@ function loadScript(src) {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('DOM loaded, initializing indextest.js...');
+    console.log('DOM loaded, initializing adventure game...');
     
     // Initialize DOM elements
     initializeDOMElements();
