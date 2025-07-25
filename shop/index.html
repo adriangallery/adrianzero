@@ -1479,16 +1479,24 @@
         async function checkout() {
             if (cart.length === 0) return;
             
-            // Calculate total cost for validation
-            var totalCost = 0;
+            // Calculate total cost using BigNumber for better performance
+            let totalCostWei = ethers.BigNumber.from(0);
+            let totalCostEther = 0;
+            
             for (var i = 0; i < cart.length; i++) {
                 if (!cart[i].useFree) {
-                    totalCost += cart[i].price * cart[i].quantity;
+                    // Convert price to wei using BigNumber
+                    const itemPriceWei = ethers.utils.parseEther(cart[i].price.toString());
+                    const itemTotalWei = itemPriceWei.mul(cart[i].quantity);
+                    totalCostWei = totalCostWei.add(itemTotalWei);
+                    
+                    // Also calculate in ether for balance validation
+                    totalCostEther += cart[i].price * cart[i].quantity;
                 }
             }
             
             // Check balance
-            if (totalCost > adrianBalance) {
+            if (totalCostEther > adrianBalance) {
                 showError("Insufficient ADRIAN balance for checkout");
                 return;
             }
@@ -1500,7 +1508,7 @@
                 const shopContract = new ethers.Contract(ADRIAN_SHOP_CONTRACT, SHOP_ABI, signer);
                 
                 // Step 1: Check if approval is needed and handle it
-                if (totalCost > 0 && totalCost > approvedAmount) {
+                if (totalCostEther > 0 && totalCostEther > approvedAmount) {
                     showInfo("Approval needed. Processing approval transaction...");
                     
                     // Add delay before approval transaction
@@ -1508,10 +1516,7 @@
                     
                     showInfo("Approving ADRIAN tokens for cart total...");
                     
-                    // Convert totalCost from ether to wei for approval
-                    const totalCostWei = ethers.utils.parseEther(totalCost.toString());
-                    
-                    // Approve the exact amount needed for the cart
+                    // Use the pre-calculated BigNumber (no conversion needed)
                     const tx = await adrianContract.approve(ADRIAN_SHOP_CONTRACT, totalCostWei);
                     showInfo('Approval transaction sent: ' + tx.hash);
                     
