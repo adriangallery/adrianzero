@@ -425,8 +425,8 @@
     font-size: 1rem;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Responsive Design - FORCED MOBILE */
+@media (min-width: 0px) {
     .game-top-bar {
         height: 50px;
         padding: 0 10px;
@@ -482,7 +482,7 @@
     }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 0px) {
     .game-top-bar {
         flex-direction: column;
         height: 80px;
