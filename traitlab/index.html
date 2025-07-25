@@ -1014,7 +1014,13 @@
                 
                 // Event listeners for account/chain changes
                 window.ethereum.on('accountsChanged', (accounts) => {
-                    window.location.reload();
+                    if (accounts.length === 0) {
+                        disconnectWallet();
+                    } else {
+                        currentAccount = accounts[0];
+                        updateUIForConnectedWallet();
+                        loadTokens(currentAccount, currentContract);
+                    }
                 });
                 
                 window.ethereum.on('chainChanged', () => {
