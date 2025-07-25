@@ -1103,6 +1103,9 @@
                 const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
                 totalCostWei = itemPriceWei.mul(quantities.adrianZero);
                 
+                // For user display, use the direct calculation
+                const userDisplayAmount = priceEther * quantities.adrianZero;
+                
                 // Check balance
                 const balance = await adrianToken.balanceOf(userAddress);
                 const balanceEther = parseFloat(ethers.utils.formatEther(balance));
@@ -1122,7 +1125,7 @@
                     // Add delay before approval transaction
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    showStatus('adrianZero', `Approving ${totalCostEther} ADRIAN tokens for mint...`, 'loading');
+                    showStatus('adrianZero', `Approving ${userDisplayAmount} ADRIAN tokens for mint...`, 'loading');
                     
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(ADRIAN_ZERO_MINT, totalCostWei);
@@ -1178,6 +1181,9 @@
                 const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
                 totalCostWei = itemPriceWei.mul(quantities.starterFloppy);
                 
+                // For user display, use the direct calculation
+                const userDisplayAmount = priceEther * quantities.starterFloppy;
+                
                 // Check balance
                 const balance = await adrianToken.balanceOf(userAddress);
                 const balanceEther = parseFloat(ethers.utils.formatEther(balance));
@@ -1197,7 +1203,7 @@
                     // Add delay before approval transaction
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    showStatus('starterFloppy', `Approving ${totalCostEther} ADRIAN tokens for mint...`, 'loading');
+                    showStatus('starterFloppy', `Approving ${userDisplayAmount} ADRIAN tokens for mint...`, 'loading');
                     
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
