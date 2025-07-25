@@ -26,8 +26,8 @@
         .rotating-adrian {
             position: fixed;
             top: 35%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            left: 5%;
+            transform: translateY(-50%);
             width: 200px;
             height: 200px;
             z-index: 10;
@@ -43,7 +43,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 50% 35%, transparent 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.7) 100%);
+            background: radial-gradient(circle at 5% 35%, transparent 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.7) 100%);
             z-index: 5;
             pointer-events: none;
             opacity: 0.8;
@@ -64,6 +64,16 @@
 
         .rotating-adrian.hidden {
             opacity: 0.3;
+        }
+
+        .rotating-adrian.auto-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .animation-modal.auto-hidden {
+            opacity: 0;
+            pointer-events: none;
         }
 
         /* Hero Section */
@@ -1322,6 +1332,12 @@
         
         // Initialize with first image
         updateRotatingImage(0);
+
+        // Auto-hide animation after 8 seconds
+        setTimeout(() => {
+            rotatingAdrian.classList.add('auto-hidden');
+            animationModal.classList.add('auto-hidden');
+        }, 8000);
     </script>
 </body>
 </html>
