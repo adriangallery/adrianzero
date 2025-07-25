@@ -52,13 +52,15 @@ const baseSceneStyles = `
 .inventory-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 2px;
+    gap: 1px;
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    padding: 2px;
+    padding: 1px;
     align-items: start;
     max-width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 2px;
 }
 
 /* Force remove any borders from inventory items */
@@ -206,10 +208,10 @@ const baseSceneStyles = `
 
 /* Inventory item styling */
 .inventory-item {
-    background: rgba(255, 255, 255, 0.1);
-    border: none !important;
-    border-radius: 4px;
-    padding: 3px 2px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.3) !important;
+    border-radius: 3px;
+    padding: 2px 1px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -217,10 +219,11 @@ const baseSceneStyles = `
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    height: 45px;
+    height: 40px;
     box-sizing: border-box;
     overflow: hidden;
     min-width: 0;
+    margin: 1px;
 }
 
 .inventory-item:hover {
@@ -233,20 +236,20 @@ const baseSceneStyles = `
 }
 
 .inventory-item img {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     object-fit: contain;
-    margin-bottom: 2px;
-    border-radius: 2px;
+    margin-bottom: 1px;
+    border-radius: 1px;
     flex-shrink: 0;
 }
 
 .inventory-item .item-name {
     color: #00ff00;
-    font-size: 0.5rem;
+    font-size: 0.4rem;
     font-weight: bold;
-    line-height: 1.1;
-    margin-bottom: 2px;
+    line-height: 1;
+    margin-bottom: 1px;
     font-family: 'VT323', monospace;
     flex-shrink: 0;
     overflow: hidden;
@@ -258,7 +261,7 @@ const baseSceneStyles = `
 
 .inventory-item .item-id {
     color: #888;
-    font-size: 0.4rem;
+    font-size: 0.3rem;
     line-height: 1;
     font-family: 'VT323', monospace;
     flex-shrink: 0;
@@ -292,30 +295,31 @@ const baseSceneStyles = `
     }
     
     .inventory-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2px;
-        padding: 2px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1px;
+        padding: 1px;
     }
     
     .inventory-item {
-        height: 40px;
-        padding: 3px 2px;
+        height: 35px;
+        padding: 2px 1px;
+        margin: 1px;
     }
     
     .inventory-item img {
-        width: 20px;
-        height: 20px;
-        margin-bottom: 2px;
+        width: 14px;
+        height: 14px;
+        margin-bottom: 1px;
     }
     
     .inventory-item .item-name {
-        font-size: 0.3rem;
+        font-size: 0.25rem;
         margin-bottom: 1px;
         line-height: 1;
     }
     
     .inventory-item .item-id {
-        font-size: 0.2rem;
+        font-size: 0.15rem;
         line-height: 1;
     }
     
