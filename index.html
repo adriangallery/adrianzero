@@ -803,9 +803,6 @@
                         <button class="quantity-btn" onclick="changeQuantity('adrianZero', 1)">+</button>
                     </div>
                     <div class="total-cost">Total: <span class="cost-amount" id="adrianZeroTotal">0</span> $ADRIAN</div>
-                    <button class="action-btn btn-approve" id="approveAdrianZero" onclick="approveTokens('adrianZero')">
-                        Approve $ADRIAN
-                    </button>
                     <button class="action-btn btn-mint" id="mintAdrianZero" onclick="mintAdrianZero()">
                         Mint AdrianZERO
                     </button>
@@ -835,9 +832,6 @@
                         <button class="quantity-btn" onclick="changeQuantity('starterFloppy', 1)">+</button>
                     </div>
                     <div class="total-cost">Total: <span class="cost-amount" id="starterFloppyTotal">7,500</span> $ADRIAN</div>
-                    <button class="action-btn btn-approve" id="approveStarterFloppy" onclick="approveTokens('starterFloppy')">
-                        Approve $ADRIAN
-                    </button>
                     <button class="action-btn btn-mint" id="mintStarterFloppy" onclick="mintStarterFloppy()">
                         Mint STARTER Floppy
                     </button>
@@ -1084,47 +1078,7 @@
             updateTotal('starterFloppy');
         }
 
-        async function approveTokens(type) {
-            if (!userAddress) {
-                showStatus(type, 'Connect wallet first!', 'error');
-                return;
-            }
-            
-            try {
-                const button = document.getElementById('approve' + capitalizeFirst(type));
-                button.disabled = true;
-                button.classList.add('btn-loading');
-                
-                let price, spender;
-                switch(type) {
-                    case 'adrianZero':
-                        price = adrianZeroPrice;
-                        spender = ADRIAN_ZERO_MINT;
-                        break;
-                    case 'starterFloppy':
-                        price = STARTER_FLOPPY_PRICE;
-                        spender = PACK_MINTER;
-                        break;
-                }
-                
-                const totalCost = price.mul(quantities[type]);
-                
-                showStatus(type, 'Approving $ADRIAN tokens...', 'loading');
-                
-                const tx = await adrianToken.approve(spender, totalCost);
-                await tx.wait();
-                
-                showStatus(type, '✅ $ADRIAN approved successfully!', 'success');
-                
-            } catch (error) {
-                console.error('Approval error:', error);
-                showStatus(type, 'Approval failed: ' + parseError(error), 'error');
-            } finally {
-                const button = document.getElementById('approve' + capitalizeFirst(type));
-                button.disabled = false;
-                button.classList.remove('btn-loading');
-            }
-        }
+
 
         async function mintAdrianZero() {
             if (!userAddress) {
@@ -1137,7 +1091,46 @@
                 button.disabled = true;
                 button.classList.add('btn-loading');
                 
+                // Calculate total cost using BigNumber for better performance
+                const totalCostWei = adrianZeroPrice.mul(quantities.adrianZero);
+                const totalCostEther = parseFloat(ethers.utils.formatEther(totalCostWei));
+                
+                // Check balance
+                const balance = await adrianToken.balanceOf(userAddress);
+                const balanceEther = parseFloat(ethers.utils.formatEther(balance));
+                
+                if (totalCostEther > balanceEther) {
+                    showStatus('adrianZero', 'Insufficient ADRIAN balance for mint', 'error');
+                    return;
+                }
+                
+                // Check current allowance
+                const currentAllowance = await adrianToken.allowance(userAddress, ADRIAN_ZERO_MINT);
+                
+                // Step 1: Check if approval is needed and handle it
+                if (totalCostWei.gt(currentAllowance)) {
+                    showStatus('adrianZero', 'Approval needed. Processing approval transaction...', 'loading');
+                    
+                    // Add delay before approval transaction
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    showStatus('adrianZero', `Approving ${totalCostEther} ADRIAN tokens for mint...`, 'loading');
+                    
+                    // Use the pre-calculated BigNumber (no conversion needed)
+                    const approveTx = await adrianToken.approve(ADRIAN_ZERO_MINT, totalCostWei);
+                    await approveTx.wait();
+                    
+                    showStatus('adrianZero', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Add delay before proceeding to mint
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Process the mint
                 showStatus('adrianZero', `Minting ${quantities.adrianZero} AdrianZERO NFT(s)...`, 'loading');
+                
+                // Add delay before mint transaction
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 const tx = await adrianZeroContract.mintMultiplePublic(quantities.adrianZero);
                 await tx.wait();
@@ -1165,7 +1158,46 @@
                 button.disabled = true;
                 button.classList.add('btn-loading');
                 
+                // Calculate total cost using BigNumber for better performance
+                const totalCostWei = STARTER_FLOPPY_PRICE.mul(quantities.starterFloppy);
+                const totalCostEther = parseFloat(ethers.utils.formatEther(totalCostWei));
+                
+                // Check balance
+                const balance = await adrianToken.balanceOf(userAddress);
+                const balanceEther = parseFloat(ethers.utils.formatEther(balance));
+                
+                if (totalCostEther > balanceEther) {
+                    showStatus('starterFloppy', 'Insufficient ADRIAN balance for mint', 'error');
+                    return;
+                }
+                
+                // Check current allowance
+                const currentAllowance = await adrianToken.allowance(userAddress, PACK_MINTER);
+                
+                // Step 1: Check if approval is needed and handle it
+                if (totalCostWei.gt(currentAllowance)) {
+                    showStatus('starterFloppy', 'Approval needed. Processing approval transaction...', 'loading');
+                    
+                    // Add delay before approval transaction
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    showStatus('starterFloppy', `Approving ${totalCostEther} ADRIAN tokens for mint...`, 'loading');
+                    
+                    // Use the pre-calculated BigNumber (no conversion needed)
+                    const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
+                    await approveTx.wait();
+                    
+                    showStatus('starterFloppy', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Add delay before proceeding to mint
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Process the mint
                 showStatus('starterFloppy', `Minting ${quantities.starterFloppy} STARTER Floppy...`, 'loading');
+                
+                // Add delay before mint transaction
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 const tx = await packMinterContract.purchasePack(STARTER_FLOPPY_PACK_ID, quantities.starterFloppy, false);
                 await tx.wait();
