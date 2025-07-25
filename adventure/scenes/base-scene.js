@@ -51,13 +51,14 @@ const baseSceneStyles = `
 /* Inventory grid layout - Responsive */
 .inventory-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    padding: 4px;
+    padding: 2px;
     align-items: start;
+    max-width: 100%;
 }
 
 /* Force remove any borders from inventory items */
@@ -207,8 +208,8 @@ const baseSceneStyles = `
 .inventory-item {
     background: rgba(255, 255, 255, 0.1);
     border: none !important;
-    border-radius: 6px;
-    padding: 6px 4px;
+    border-radius: 4px;
+    padding: 3px 2px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -216,9 +217,10 @@ const baseSceneStyles = `
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    height: 65px;
+    height: 45px;
     box-sizing: border-box;
     overflow: hidden;
+    min-width: 0;
 }
 
 .inventory-item:hover {
@@ -231,10 +233,10 @@ const baseSceneStyles = `
 }
 
 .inventory-item img {
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
     border-radius: 2px;
     flex-shrink: 0;
 }
@@ -307,17 +309,20 @@ const baseSceneStyles = `
     }
     
     .inventory-item .item-name {
-        font-size: 0.35rem;
+        font-size: 0.3rem;
         margin-bottom: 1px;
+        line-height: 1;
     }
     
     .inventory-item .item-id {
-        font-size: 0.25rem;
+        font-size: 0.2rem;
+        line-height: 1;
     }
     
     .no-items {
-        font-size: 0.5rem;
-        padding: 5px;
+        font-size: 0.4rem;
+        padding: 3px;
+        line-height: 1.2;
     }
 }
 
