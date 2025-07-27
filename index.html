@@ -131,7 +131,34 @@
             max-width: 600px;
         }
 
+
+        /* Hero Image Styles */
+        .hero-image {
+            margin-bottom: 30px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .header-image {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .header-image:hover {
+        }
+
         .hero .description {
+            font-size: 1.4rem;
+            color: #888888;
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
+        }
             font-size: 1.4rem;
             color: #888888;
             margin-bottom: 40px;
@@ -598,7 +625,34 @@
                 font-size: 1.4rem;
             }
 
-            .hero .description {
+
+        /* Hero Image Styles */
+        .hero-image {
+            margin-bottom: 30px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .header-image {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .header-image:hover {
+        }
+
+        .hero .description {
+            font-size: 1.4rem;
+            color: #888888;
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
+        }
                 font-size: 1.2rem;
             }
 
@@ -737,6 +791,17 @@
         .catch(error => console.error('Error loading menu:', error));
     </script>
 
+    <!-- Hero Section with Header Image -->
+    <section class="hero">
+        <div class="hero-image">
+            <img src="components/images/adrianzero.png" alt="AdrianZERO Header" class="header-image">
+        </div>
+        <h1>AdrianLAB</h1>
+        <div class="subtitle">Get Started with Digital Evolution</div>
+        <div class="description">
+            Welcome to the future of digital collectibles. Mint, customize, and evolve your AdrianZERO NFTs with unique traits and experiences.
+        </div>
+    </section>
     <!-- Network Warning -->
     <div id="networkWarning" class="network-warning">
         <span>⚠️ Please switch to Base Network</span>
