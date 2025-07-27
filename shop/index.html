@@ -227,10 +227,91 @@
 
         .cart-item {
             display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-bottom: 1px solid #555;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .cart-item-header {
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px 0;
-            border-bottom: 1px solid #555;
+            margin-bottom: 8px;
+        }
+
+        .cart-item-header .item-name {
+            font-weight: bold;
+            color: #fff;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+        }
+
+        .remove-item-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .remove-item-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .cart-item-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quantity-btn {
+            background: #00cc00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #009900;
+            transform: scale(1.1);
+        }
+
+        .quantity-display {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+            font-family: 'VT323', monospace;
+        }
+
+        .item-price {
+            color: #00ff00;
+            font-size: 1rem;
+            font-family: 'VT323', monospace;
         }
 
         .cart-total {
@@ -1397,7 +1478,7 @@
             displayItems();
         }
 
-        // Update cart display
+        // Update cart display with quantity controls and individual item removal
         function updateCartDisplay() {
             if (cart.length === 0) {
                 cartSection.style.display = 'none';
@@ -1423,11 +1504,36 @@
                     totalFree += item.quantity;
                 }
                 
-                cartItem.innerHTML =
-                    '<span>' + item.name + '</span>' +
-                    '<span>' + item.quantity + ' x ' + 
-                    (item.useFree ? 'FREE' : item.price.toLocaleString() + ' $ADRIAN') +
-                    ' = ' + (item.useFree ? 'FREE' : itemCost.toLocaleString() + ' $ADRIAN') + '</span>';
+                // Create quantity controls
+                var quantityControls = '';
+                if (item.quantity > 1) {
+                    quantityControls = `
+                        <button class="quantity-btn" onclick="changeQuantity(${i}, -1)" title="Reducir cantidad">-</button>
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button class="quantity-btn" onclick="changeQuantity(${i}, 1)" title="Aumentar cantidad">+</button>
+                    `;
+                } else {
+                    quantityControls = `
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button class="quantity-btn" onclick="changeQuantity(${i}, 1)" title="Aumentar cantidad">+</button>
+                    `;
+                }
+                
+                cartItem.innerHTML = `
+                    <div class="cart-item-header">
+                        <span class="item-name">${item.name}</span>
+                        <button class="remove-item-btn" onclick="removeFromCart(${i})" title="Eliminar item">🗑️</button>
+                    </div>
+                    <div class="cart-item-details">
+                        <div class="quantity-controls">
+                            ${quantityControls}
+                        </div>
+                        <div class="item-price">
+                            ${item.useFree ? 'FREE' : item.price.toLocaleString() + ' $ADRIAN'} x ${item.quantity} = 
+                            <strong>${item.useFree ? 'FREE' : itemCost.toLocaleString() + ' $ADRIAN'}</strong>
+                        </div>
+                    </div>
+                `;
                 
                 cartItemsEl.appendChild(cartItem);
             }
@@ -1440,8 +1546,58 @@
             
             // Update checkout button state - only disable if insufficient balance
             checkoutBtn.disabled = totalCost > adrianBalance;
-            
+        }
 
+        // Change quantity of an item in cart
+        function changeQuantity(cartIndex, change) {
+            if (cartIndex < 0 || cartIndex >= cart.length) return;
+            
+            var item = cart[cartIndex];
+            var newQuantity = item.quantity + change;
+            
+            // Validate quantity limits
+            if (newQuantity <= 0) {
+                // Remove item if quantity becomes 0
+                removeFromCart(cartIndex);
+                return;
+            }
+            
+            // Check if we're trying to increase quantity
+            if (change > 0) {
+                // Find the original item in allItems to check maxPerWallet
+                var originalItem = allItems.find(function(shopItem) {
+                    return shopItem.assetId === item.assetId;
+                });
+                
+                if (originalItem) {
+                    // Check if we would exceed the wallet limit
+                    var currentTotalInCart = cart.reduce(function(total, cartItem) {
+                        if (cartItem.assetId === item.assetId) {
+                            return total + cartItem.quantity;
+                        }
+                        return total;
+                    }, 0);
+                    
+                    var wouldExceed = (currentTotalInCart + change) > originalItem.maxPerWallet;
+                    
+                    if (wouldExceed) {
+                        showError(`❌ No puedes añadir más de ${originalItem.maxPerWallet} unidades de este item por wallet.`);
+                        return;
+                    }
+                }
+            }
+            
+            // Update quantity
+            item.quantity = newQuantity;
+            updateCartDisplay();
+        }
+
+        // Remove specific item from cart
+        function removeFromCart(cartIndex) {
+            if (cartIndex < 0 || cartIndex >= cart.length) return;
+            
+            cart.splice(cartIndex, 1);
+            updateCartDisplay();
         }
 
         // Purchase single item with retry logic
@@ -1607,6 +1763,46 @@
         }
 
 
+
+        // Parse blockchain errors for user-friendly messages
+        function parseBlockchainError(err) {
+            console.error("Full error:", err);
+            
+            // Check for specific error messages
+            if (err.message && err.message.includes("Exceeds wallet limit")) {
+                return "❌ Error: Has excedido el límite de compra por wallet para este item. Reduce la cantidad o elimina algunos items del carrito.";
+            }
+            
+            if (err.message && err.message.includes("Insufficient balance")) {
+                return "❌ Error: Saldo insuficiente de ADRIAN tokens. Verifica tu balance.";
+            }
+            
+            if (err.message && err.message.includes("execution reverted")) {
+                // Extract the actual error message from the revert
+                const revertMatch = err.message.match(/execution reverted: (.+)/);
+                if (revertMatch) {
+                    const revertMessage = revertMatch[1];
+                    if (revertMessage.includes("Exceeds wallet limit")) {
+                        return "❌ Error: Has excedido el límite de compra por wallet para este item. Reduce la cantidad o elimina algunos items del carrito.";
+                    }
+                    if (revertMessage.includes("Insufficient")) {
+                        return "❌ Error: Saldo insuficiente. Verifica tu balance de ADRIAN tokens.";
+                    }
+                    return "❌ Error de contrato: " + revertMessage;
+                }
+            }
+            
+            if (err.code === "UNPREDICTABLE_GAS_LIMIT") {
+                return "❌ Error: La transacción falló. Verifica que tienes suficiente ETH para gas y que no excedes los límites de compra.";
+            }
+            
+            if (err.code === "ACTION_REJECTED") {
+                return "❌ Transacción cancelada por el usuario.";
+            }
+            
+            // Default error message
+            return "❌ Error en la transacción. Verifica tu conexión y balance.";
+        }
 
         // UI Helper functions
         function showLoading() {
