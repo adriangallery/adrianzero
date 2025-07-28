@@ -131,28 +131,19 @@
             max-width: 600px;
         }
 
+        .hero .description {
+            font-size: 1.4rem;
+            color: #888888;
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
 
-        /* Hero Image Styles */
-        .hero-image {
+        /* Wallet Connection */
+        .wallet-section {
             margin-bottom: 30px;
-            max-width: 400px;
-            width: 100%;
+            text-align: center;
         }
 
-        .header-image {
-            width: 100%;
-            height: auto;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .header-image:hover {
-        }
-
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
-        }
         .connect-btn {
             background: linear-gradient(45deg, #00ff00, #00cc00);
             color: #000;
@@ -607,28 +598,7 @@
                 font-size: 1.4rem;
             }
 
-
-        /* Hero Image Styles */
-        .hero-image {
-            margin-bottom: 30px;
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .header-image {
-            width: 100%;
-            height: auto;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .header-image:hover {
-        }
-
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
-        }
+            .hero .description {
                 font-size: 1.2rem;
             }
 
@@ -767,14 +737,6 @@
         .catch(error => console.error('Error loading menu:', error));
     </script>
 
-    <!-- Hero Section with Header Image -->
-    <section class="hero">
-        <div class="hero-image">
-            <img src="components/images/adrianzero.png" alt="AdrianZERO Header" class="header-image">
-        </div>
-        <h1>How to Get Started</h1>
-        <div class="subtitle">Follow these simple steps to join the AdrianLAB ecosystem</div>
-    </section>
     <!-- Network Warning -->
     <div id="networkWarning" class="network-warning">
         <span>⚠️ Please switch to Base Network</span>
@@ -783,6 +745,8 @@
 
     <!-- Steps Section -->
     <section class="steps-section" id="get-started">
+        <h2 class="section-title fade-in">How to Get Started</h2>
+        <p class="section-subtitle fade-in">Follow these simple steps to join the AdrianLAB ecosystem</p>
         
         <!-- Wallet Connection -->
         <div class="wallet-section">
@@ -910,7 +874,7 @@
     <script>
         // Contract addresses and configurations
         const ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
-        const ADRIAN_ZERO_MINT = "0x39be2ea60f78c55559309ed61acaf5a9174e57b6";
+        const ADRIAN_ZERO_MINT = "0xF278a1060900005aD5b9077602b09A513541f5d2";
         const PACK_MINTER = "0x673bE1968A12470F93BE374AAB529a89d5D607d5";
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
