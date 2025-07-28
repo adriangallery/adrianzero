@@ -24,13 +24,13 @@
 
         /* Hero Section */
         .hero {
-            min-height: 100vh;
+            min-height: auto;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 20px;
+            padding: 80px 20px 40px 20px;
             position: relative;
             background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
         }
@@ -86,7 +86,7 @@
 
         /* Wallet Connection */
         .wallet-section {
-            margin-bottom: 30px;
+            margin-bottom: 0;
             text-align: center;
         }
 
@@ -253,7 +253,8 @@
             border: 2px solid #00ff00;
             border-radius: 25px;
             padding: 40px;
-            min-width: 350px;
+            width: 100%;
+            max-width: 800px;
             box-shadow: 0 20px 40px rgba(0, 255, 0, 0.2);
         }
 
@@ -498,6 +499,37 @@
             background: rgba(255, 136, 0, 0.3);
         }
 
+        /* USB Image Section */
+        .usb-section {
+            padding: 20px 20px 60px 20px;
+            text-align: center;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+
+        .usb-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 255, 0, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.1);
+        }
+
+        .usb-image {
+            width: 100%;
+            height: auto;
+            max-width: 300px;
+            border-radius: 10px;
+            filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        .usb-image:hover {
+            filter: drop-shadow(0 0 25px rgba(0, 255, 0, 0.5));
+            transform: scale(1.05);
+        }
+
         /* Contract Info */
         .contract-info {
             background: rgba(0, 0, 0, 0.6);
@@ -538,19 +570,35 @@
             }
 
             .purchase-interface {
-                min-width: auto;
                 max-width: 500px;
                 margin: 0 auto;
             }
         }
 
         @media (max-width: 768px) {
+            .hero {
+                padding: 60px 20px 30px 20px;
+            }
+
             .hero h1 {
                 font-size: 2.5rem;
             }
 
             .section-title {
                 font-size: 2.5rem;
+            }
+
+            .usb-section {
+                padding: 20px 15px 40px 15px;
+            }
+
+            .usb-container {
+                padding: 20px;
+                max-width: 300px;
+            }
+
+            .usb-image {
+                max-width: 250px;
             }
 
             .kit-contents {
@@ -613,6 +661,13 @@
         <span>⚠️ Please switch to Base Network</span>
         <button onclick="switchToBase()">Switch Network</button>
     </div>
+
+    <!-- USB Image Section -->
+    <section class="usb-section">
+        <div class="usb-container">
+            <img src="components/images/ADRIAN-USB.gif" alt="Adrian USB" class="usb-image">
+        </div>
+    </section>
 
     <!-- Kit Sale Section -->
     <section class="kit-section">
@@ -729,17 +784,18 @@
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
 
-        // Contract ABI - Simplified for the actual contract
+        // Contract ABI - Correct functions from the actual contract
         const KIT_SALE_ABI = [
             "function buyKit() payable",
             "function buyMultipleKits(uint256 quantity) payable",
+            "function getKitConfig() view returns (tuple(uint256 priceInETH, uint256 adrianTokenAmount, uint256 floppyTokenId, uint256 erc721Amount, bool active))",
             "function getKitPrice() view returns (uint256)",
-            "function getAdrianTokenAmount() view returns (uint256)",
-            "function getFloppyTokenId() view returns (uint256)",
-            "function getTotalCost(uint256 quantity) view returns (uint256)",
-            "function canBuyKit(address user, uint256 quantity) view returns (bool canPurchase, string error, uint256 totalCost)",
-            "function paused() view returns (bool)",
-            "function maxKitsPerTransaction() view returns (uint256)"
+            "function getKitTotalCost(uint256 quantity) view returns (uint256)",
+            "function canBuyKit(address user, uint256 quantity) view returns (tuple(bool canPurchase, string error, uint256 totalCost, uint256 contractAdrianBalance, uint256 maxKitsAvailable))",
+            "function kitSalePaused() view returns (bool)",
+            "function maxKitsPerTransaction() view returns (uint256)",
+            "function getAdrianTokenBalance() view returns (uint256)",
+            "function getSystemStats() view returns (tuple(uint256 totalKitsSold, uint256 totalETHReceived, uint256 adrianTokenBalance, bool systemPaused, bool kitActive, address treasuryWallet))"
         ];
 
         // Global state
@@ -861,9 +917,10 @@
 
         async function loadContractData() {
             try {
-                // Load kit configuration
-                kitPrice = await kitSaleContract.getKitPrice();
-                adrianTokenAmount = await kitSaleContract.getAdrianTokenAmount();
+                // Load kit configuration using getKitConfig
+                const kitConfig = await kitSaleContract.getKitConfig();
+                kitPrice = kitConfig.priceInETH;
+                adrianTokenAmount = kitConfig.adrianTokenAmount;
                 maxKitsPerTransaction = await kitSaleContract.maxKitsPerTransaction();
                 
                 // Update UI with kit info
@@ -876,15 +933,19 @@
                 
                 updateTotalCost();
                 
-                // Check if contract is paused
-                const isPaused = await kitSaleContract.paused();
+                // Check if contract is paused and kit is active
+                const isPaused = await kitSaleContract.kitSalePaused();
                 
-                // Enable purchase button if contract is not paused
-                if (!isPaused) {
+                // Enable purchase button if contract is not paused and kit is active
+                if (!isPaused && kitConfig.active) {
                     document.getElementById('purchaseBtn').disabled = false;
                 } else {
                     document.getElementById('purchaseBtn').disabled = true;
-                    showStatus('Kit sales are currently paused', 'error');
+                    if (isPaused) {
+                        showStatus('Kit sales are currently paused', 'error');
+                    } else if (!kitConfig.active) {
+                        showStatus('Kit sales are not active', 'error');
+                    }
                 }
                 
                 // Load additional info
@@ -898,12 +959,13 @@
 
         async function loadContractInfo() {
             try {
-                const isPaused = await kitSaleContract.paused();
+                const isPaused = await kitSaleContract.kitSalePaused();
+                const kitConfig = await kitSaleContract.getKitConfig();
                 
                 document.getElementById('kitPriceInfo').textContent = 
                     `${parseFloat(ethers.utils.formatEther(kitPrice)).toFixed(4)} ETH`;
                 document.getElementById('kitStatusInfo').textContent = 
-                    !isPaused ? 'Active' : 'Paused';
+                    (!isPaused && kitConfig.active) ? 'Active' : 'Inactive';
                 
                 document.getElementById('contractInfo').style.display = 'block';
                 
@@ -951,7 +1013,7 @@
                 }
                 
                 // Calculate total cost
-                const totalCost = await kitSaleContract.getTotalCost(currentQuantity);
+                const totalCost = await kitSaleContract.getKitTotalCost(currentQuantity);
                 
                 // Check user balance
                 const balance = await provider.getBalance(userAddress);
