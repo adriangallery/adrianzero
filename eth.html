@@ -395,6 +395,29 @@
             font-size: 1rem;
         }
 
+        /* Bootstrap collapse functionality */
+        #menu-container .navbar-collapse {
+            display: none;
+        }
+
+        #menu-container .navbar-collapse.show {
+            display: block;
+        }
+
+        /* Mobile menu styles */
+        @media (max-width: 991.98px) {
+            #menu-container .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid #00ff00;
+                padding: 1rem;
+            }
+        }
+
         /* Purchase Interface */
         .purchase-interface {
             background: rgba(255, 255, 255, 0.05);
@@ -749,14 +772,21 @@
     <!-- Include the menu -->
     <div id="menu-container"></div>
     <script>
-      // Load the menu
+      // Load the menu with inline script to avoid conflicts
       fetch('components/menu.html')
         .then(response => response.text())
         .then(html => {
           document.getElementById('menu-container').innerHTML = html;
-          const script = document.createElement('script');
-          script.src = 'components/menu.js';
-          document.head.appendChild(script);
+          
+          // Add Bootstrap functionality for menu toggle
+          const navbarToggler = document.querySelector('.navbar-toggler');
+          const navbarCollapse = document.querySelector('.navbar-collapse');
+          
+          if (navbarToggler && navbarCollapse) {
+            navbarToggler.addEventListener('click', function() {
+              navbarCollapse.classList.toggle('show');
+            });
+          }
         })
         .catch(error => console.error('Error loading menu:', error));
     </script>
