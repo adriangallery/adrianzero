@@ -890,10 +890,7 @@
                     Buy Starter Kit
                 </button>
                 
-                <!-- Debug button for mobile testing -->
-                <button class="debug-btn" onclick="debugContractData()" style="margin-top: 10px; padding: 10px; background: #333; color: #00ff00; border: 1px solid #00ff00; border-radius: 5px; cursor: pointer;">
-                    Debug Contract Data
-                </button>
+
 
                 <div class="status-message" id="statusMessage"></div>
 
@@ -1231,34 +1228,7 @@
             }
         }
 
-        // Debug function to show current contract data
-        function debugContractData() {
-            console.log('🔍 === DEBUG CONTRACT DATA ===');
-            console.log('📱 Device:', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
-            console.log('🌐 User Agent:', navigator.userAgent);
-            console.log('🔗 Provider:', provider ? 'Connected' : 'Not connected');
-            console.log('✍️ Signer:', signer ? 'Connected' : 'Not connected');
-            console.log('📄 Contract:', kitSaleContract ? 'Initialized' : 'Not initialized');
-            console.log('💰 Kit Price (wei):', kitPrice ? kitPrice.toString() : 'Not loaded');
-            console.log('💰 Kit Price (ETH):', kitPrice ? ethers.utils.formatEther(kitPrice) : 'Not loaded');
-            console.log('🪙 Adrian Amount (wei):', adrianTokenAmount ? adrianTokenAmount.toString() : 'Not loaded');
-            console.log('🪙 Adrian Amount (tokens):', adrianTokenAmount ? ethers.utils.formatEther(adrianTokenAmount) : 'Not loaded');
-            console.log('💱 ETH Price USD:', ethPriceUSD);
-            console.log('📦 Max Kits:', maxKitsPerTransaction);
-            console.log('👤 User Address:', userAddress);
-            console.log('🔍 === END DEBUG ===');
-            
-            // Show in status message for mobile
-            const debugInfo = `
-Device: ${/Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'}
-Kit Price: ${kitPrice ? ethers.utils.formatEther(kitPrice) + ' ETH' : 'Not loaded'}
-Adrian Amount: ${adrianTokenAmount ? ethers.utils.formatEther(adrianTokenAmount) + ' tokens' : 'Not loaded'}
-ETH Price: $${ethPriceUSD}
-Contract: ${kitSaleContract ? 'OK' : 'Not initialized'}
-            `.trim();
-            
-            showStatus(debugInfo, 'success');
-        }
+
 
         async function buyKit() {
             if (!userAddress || !kitSaleContract) {
