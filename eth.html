@@ -205,36 +205,19 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
-            animation: kitItemFloat 3s ease-in-out infinite;
+
         }
 
-        .kit-item:nth-child(1) {
-            animation-delay: 0s;
-        }
 
-        .kit-item:nth-child(2) {
-            animation-delay: 0.5s;
-        }
-
-        .kit-item:nth-child(3) {
-            animation-delay: 1s;
-        }
 
         .kit-item:hover {
             border-color: #00ff00;
             transform: translateY(-8px) scale(1.02);
             box-shadow: 0 20px 40px rgba(0, 255, 0, 0.3);
-            animation-play-state: paused;
+
         }
 
-        @keyframes kitItemFloat {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-5px);
-            }
-        }
+
 
         .kit-item-image {
             width: 180px;
@@ -245,7 +228,7 @@
             overflow: hidden;
             box-shadow: 0 8px 20px rgba(0, 255, 0, 0.2);
             transition: all 0.3s ease;
-            animation: imageGlow 2s ease-in-out infinite alternate;
+
         }
 
         .kit-item-image img {
@@ -258,40 +241,21 @@
         .kit-item:hover .kit-item-image {
             transform: scale(1.1);
             box-shadow: 0 12px 30px rgba(0, 255, 0, 0.4);
-            animation: imageGlowHover 0.5s ease-in-out;
+
         }
 
         .kit-item:hover .kit-item-image img {
             transform: scale(1.05);
         }
 
-        @keyframes imageGlow {
-            from {
-                box-shadow: 0 8px 20px rgba(0, 255, 0, 0.2);
-            }
-            to {
-                box-shadow: 0 8px 25px rgba(0, 255, 0, 0.3);
-            }
-        }
 
-        @keyframes imageGlowHover {
-            0% {
-                box-shadow: 0 8px 20px rgba(0, 255, 0, 0.2);
-            }
-            50% {
-                box-shadow: 0 15px 35px rgba(0, 255, 0, 0.5);
-            }
-            100% {
-                box-shadow: 0 12px 30px rgba(0, 255, 0, 0.4);
-            }
-        }
 
         .kit-item-title {
             font-size: 1.5rem;
             color: #ffffff;
             margin-bottom: 8px;
             transition: all 0.3s ease;
-            animation: titleGlow 2.5s ease-in-out infinite alternate;
+
         }
 
         .kit-item-desc {
@@ -306,7 +270,7 @@
             color: #00ff88;
             font-weight: bold;
             transition: all 0.3s ease;
-            animation: amountPulse 2s ease-in-out infinite;
+
         }
 
         .kit-item:hover .kit-item-title {
@@ -325,23 +289,7 @@
             transform: scale(1.1);
         }
 
-        @keyframes titleGlow {
-            from {
-                text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-            }
-            to {
-                text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-            }
-        }
 
-        @keyframes amountPulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.8;
-            }
-        }
 
         /* Menu Styles */
         #menu-container {
