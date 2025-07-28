@@ -86,7 +86,7 @@
 
         /* Wallet Connection */
         .wallet-section {
-            margin-bottom: 0;
+            margin-bottom: 25px;
             text-align: center;
         }
 
@@ -103,7 +103,7 @@
             box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
             text-decoration: none;
             display: inline-block;
-            margin: 10px;
+            margin: 0;
             font-weight: bold;
         }
 
@@ -607,13 +607,7 @@
             Pay with ETH and receive everything instantly!
         </p>
         
-        <!-- Wallet Connection -->
-        <div class="wallet-section">
-            <button id="connectBtn" class="connect-btn">Connect Wallet</button>
-            <div id="walletInfo" class="wallet-info">
-                <div class="wallet-address" id="walletAddress"></div>
-            </div>
-        </div>
+
     </section>
 
     <!-- Network Warning -->
@@ -682,6 +676,14 @@
                     <div class="cost-row">
                         <span class="cost-label">Total Cost:</span>
                         <span class="cost-value total-cost" id="totalCost">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Wallet Connection -->
+                <div class="wallet-section">
+                    <button id="connectBtn" class="connect-btn">Connect Wallet</button>
+                    <div id="walletInfo" class="wallet-info">
+                        <div class="wallet-address" id="walletAddress"></div>
                     </div>
                 </div>
 
