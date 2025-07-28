@@ -520,6 +520,13 @@
             color: #00ff88 !important;
         }
 
+        .usd-price {
+            color: #888888;
+            font-size: 0.9rem;
+            margin-left: 8px;
+            font-style: italic;
+        }
+
         .purchase-btn {
             width: 100%;
             padding: 18px;
@@ -858,6 +865,7 @@
                     <div class="cost-row">
                         <span class="cost-label">Price per kit:</span>
                         <span class="cost-value" id="pricePerKit">Loading...</span>
+                        <span class="usd-price" id="usdPrice">(Loading USD)</span>
                     </div>
                     <div class="cost-row">
                         <span class="cost-label">Quantity:</span>
@@ -866,6 +874,7 @@
                     <div class="cost-row">
                         <span class="cost-label">Total Cost:</span>
                         <span class="cost-value total-cost" id="totalCost">Loading...</span>
+                        <span class="usd-price" id="totalUsdPrice">(Loading USD)</span>
                     </div>
                 </div>
 
@@ -954,12 +963,14 @@
         let kitPrice = ethers.utils.parseEther("0");
         let adrianTokenAmount = ethers.utils.parseEther("0");
         let maxKitsPerTransaction = 10;
+        let ethPriceUSD = 0;
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             checkConnection();
             document.getElementById('connectBtn').addEventListener('click', connectWallet);
             setupFadeInAnimations();
+            fetchETHPrice(); // Get ETH price on page load
         });
 
         async function checkConnection() {
@@ -1136,7 +1147,55 @@
             
             const totalWei = kitPrice.mul(currentQuantity);
             const totalEth = ethers.utils.formatEther(totalWei);
+            
             document.getElementById('totalCost').textContent = `${parseFloat(totalEth).toFixed(4)} ETH`;
+            
+            // Update USD prices if available
+            updateUSDPrices();
+        }
+
+        // Fetch ETH price from CoinGecko API
+        async function fetchETHPrice() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+                const data = await response.json();
+                
+                if (data.ethereum && data.ethereum.usd) {
+                    ethPriceUSD = data.ethereum.usd;
+                    updateUSDPrices();
+                }
+            } catch (error) {
+                console.error('Error fetching ETH price:', error);
+                // Fallback to Binance API
+                try {
+                    const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+                    const data = await response.json();
+                    
+                    if (data.price) {
+                        ethPriceUSD = parseFloat(data.price);
+                        updateUSDPrices();
+                    }
+                } catch (fallbackError) {
+                    console.error('Error fetching ETH price from fallback:', fallbackError);
+                }
+            }
+        }
+
+        // Update USD prices display
+        function updateUSDPrices() {
+            if (ethPriceUSD > 0 && kitPrice) {
+                // Calculate kit price in USD
+                const kitPriceEth = parseFloat(ethers.utils.formatEther(kitPrice));
+                const kitPriceUSD = kitPriceEth * ethPriceUSD;
+                
+                // Calculate total price in USD
+                const totalPriceEth = parseFloat(ethers.utils.formatEther(kitPrice.mul(currentQuantity)));
+                const totalPriceUSD = totalPriceEth * ethPriceUSD;
+                
+                // Update displays
+                document.getElementById('usdPrice').textContent = `($${kitPriceUSD.toFixed(2)} USD)`;
+                document.getElementById('totalUsdPrice').textContent = `($${totalPriceUSD.toFixed(2)} USD)`;
+            }
         }
 
         async function buyKit() {
