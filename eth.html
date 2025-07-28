@@ -180,25 +180,27 @@
 
         /* Kit Container */
         .kit-container {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 40px;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             max-width: 1200px;
             margin-bottom: 60px;
+            gap: 40px;
         }
 
         .kit-contents {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 30px;
+            max-width: 800px;
+            width: 100%;
         }
 
         .kit-item {
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid #333;
             border-radius: 20px;
-            padding: 30px;
+            padding: 25px 20px;
             text-align: center;
             transition: all 0.3s ease;
             position: relative;
@@ -212,8 +214,8 @@
         }
 
         .kit-item-image {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             margin: 0 auto 15px;
             border: 2px solid #00ff00;
             border-radius: 12px;
@@ -529,18 +531,13 @@
 
         /* Responsive */
         @media (max-width: 992px) {
-            .kit-container {
-                grid-template-columns: 1fr;
-                gap: 30px;
-                text-align: center;
-            }
-
             .kit-contents {
-                order: 1;
+                grid-template-columns: 1fr;
+                gap: 20px;
+                max-width: 500px;
             }
 
             .purchase-interface {
-                order: 2;
                 min-width: auto;
                 max-width: 500px;
                 margin: 0 auto;
@@ -562,6 +559,11 @@
 
             .kit-item {
                 padding: 20px;
+            }
+
+            .kit-item-image {
+                width: 120px;
+                height: 120px;
             }
 
             .purchase-interface {
