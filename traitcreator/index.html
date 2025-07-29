@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraitCreator DApp - Custom T-Shirt NFT Minting</title>
+    <meta name="description" content="Create and mint custom T-shirt designs as NFTs on Ethereum using $ADRIAN tokens">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .loading {
+            font-size: 18px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .container {
+            max-width: 600px;
+            padding: 20px;
+        }
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .subtitle {
+            font-size: 14px;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+        .status {
+            font-size: 12px;
+            margin-top: 20px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">TraitCreator DApp</div>
+        <div class="subtitle">Custom T-Shirt NFT Minting Platform</div>
+        <div class="loading">LOADING APPLICATION...</div>
+        <div class="status">Powered by Next.js & Ethereum</div>
+    </div>
+    
+    <script>
+        // Redirect to the Next.js app
+        window.location.href = '/';
+    </script>
+</body>
+</html> 
