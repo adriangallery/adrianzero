@@ -405,6 +405,25 @@ class MenuManager {
         console.log('Left grid found:', !!leftGrid);
         console.log('Right grid found:', !!rightGrid);
         
+        // Debug: Verificar todos los grids con estos IDs
+        const allLeftGrids = document.querySelectorAll('#inventory-grid-left');
+        const allRightGrids = document.querySelectorAll('#inventory-grid-right');
+        console.log('Total left grids found:', allLeftGrids.length);
+        console.log('Total right grids found:', allRightGrids.length);
+        
+        // Debug: Mostrar información de cada grid
+        allLeftGrids.forEach((grid, index) => {
+            console.log(`Left grid ${index}:`, grid);
+            console.log(`Left grid ${index} parent:`, grid.parentElement);
+            console.log(`Left grid ${index} visible:`, grid.offsetParent !== null);
+        });
+        
+        allRightGrids.forEach((grid, index) => {
+            console.log(`Right grid ${index}:`, grid);
+            console.log(`Right grid ${index} parent:`, grid.parentElement);
+            console.log(`Right grid ${index} visible:`, grid.offsetParent !== null);
+        });
+        
         if (leftGrid) {
             leftGrid.innerHTML = '';
             
