@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdrianLAB - Get Started with Digital Evolution</title>
+    <title>AdrianLAB Kit Sale - Get Everything in One Purchase</title>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -22,69 +22,15 @@
             overflow-x: hidden;
         }
 
-        /* Rotating AdrianZERO Animation */
-        .rotating-adrian {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            z-index: 10;
-            pointer-events: none;
-            opacity: 0.9;
-            transition: opacity 0.3s ease;
-        }
-
-        /* Modal background for animation */
-        .animation-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.7) 100%);
-            z-index: 5;
-            pointer-events: none;
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
-        }
-
-        .animation-modal.hidden {
-            opacity: 0.2;
-        }
-
-        .rotating-adrian img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
-            transition: opacity 0.1s ease;
-        }
-
-        .rotating-adrian.hidden {
-            opacity: 0.3;
-        }
-
-        .rotating-adrian.auto-hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .animation-modal.auto-hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
         /* Hero Section */
         .hero {
-            min-height: 100vh;
+            min-height: auto;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 20px;
+            padding: 80px 20px 20px 20px;
             position: relative;
             background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
         }
@@ -134,13 +80,13 @@
         .hero .description {
             font-size: 1.4rem;
             color: #888888;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             max-width: 800px;
         }
 
         /* Wallet Connection */
         .wallet-section {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             text-align: center;
         }
 
@@ -157,7 +103,7 @@
             box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
             text-decoration: none;
             display: inline-block;
-            margin: 10px;
+            margin: 0;
             font-weight: bold;
         }
 
@@ -184,22 +130,22 @@
             margin-bottom: 10px;
         }
 
-        /* Steps Section */
-        .steps-section {
-            min-height: 100vh;
+        /* Kit Sale Section */
+        .kit-section {
+            min-height: auto;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 20px;
+            padding: 20px 20px 20px;
             position: relative;
             background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
-        .steps-section::before {
+        .kit-section::before {
             content: '';
             position: absolute;
             top: 0;
@@ -232,433 +178,118 @@
             margin-right: auto;
         }
 
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 40px;
-            margin-bottom: 60px;
+        /* Kit Container */
+        .kit-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             max-width: 1200px;
+            margin-bottom: 20px;
+            gap: 40px;
         }
 
-        .step-card {
+        .kit-contents {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .kit-item {
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid #333;
             border-radius: 20px;
-            padding: 40px 30px;
+            padding: 25px 20px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
+
         }
 
-        .step-card:hover {
+
+
+        .kit-item:hover {
             border-color: #00ff00;
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 255, 0, 0.2);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 255, 0, 0.3);
+
         }
 
-        .step-number {
-            display: inline-block;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #00ff00, #00cc00);
-            color: #000;
-            border-radius: 50%;
-            line-height: 60px;
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
 
-        .step-title {
-            font-size: 2rem;
-            color: #ffffff;
-            margin-bottom: 15px;
-        }
 
-        .step-description {
-            font-size: 1.3rem;
-            color: #cccccc;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-
-        /* NFT Preview Images */
-        .nft-preview {
-            width: 200px;
-            height: 200px;
-            margin: 0 auto 20px;
-            border: 3px solid #00ff00;
-            border-radius: 15px;
+        .kit-item-image {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 15px;
+            border: 2px solid #00ff00;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 255, 0, 0.2);
+            transition: all 0.3s ease;
+
         }
 
-        .nft-preview img {
+        .kit-item-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: all 0.3s ease;
         }
 
-        /* Mint Interface */
-        .mint-interface {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 20px;
+        .kit-item:hover .kit-item-image {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(0, 255, 0, 0.4);
+
         }
 
-        .quantity-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
+        .kit-item:hover .kit-item-image img {
+            transform: scale(1.05);
         }
 
-        .quantity-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid rgba(0, 255, 136, 0.3);
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
+
+
+        .kit-item-title {
             font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
+            color: #ffffff;
+            margin-bottom: 8px;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'VT323', monospace;
+
         }
 
-        .quantity-btn:hover {
-            background: rgba(0, 255, 136, 0.2);
-            border-color: rgba(0, 255, 136, 0.5);
-        }
-
-        .quantity-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .quantity-display {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #00ff88;
-            min-width: 40px;
-            text-align: center;
-        }
-
-        .total-cost {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            color: #888;
-        }
-
-        .cost-amount {
-            color: #00aaff;
-            font-weight: bold;
-            font-size: 1.4rem;
-        }
-
-        .action-btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'VT323', monospace;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .btn-approve {
-            background: linear-gradient(45deg, #ff8800, #ffaa00);
-            color: #000;
-        }
-
-        .btn-approve:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 136, 0, 0.3);
-        }
-
-        .btn-mint {
-            background: linear-gradient(45deg, #00ff88, #00aaff);
-            color: #000;
-        }
-
-        .btn-mint:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
-        }
-
-        .btn-uniswap {
-            background: linear-gradient(45deg, #ff0088, #ff4400);
-            color: #fff;
-        }
-
-        .btn-uniswap:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 0, 136, 0.3);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn-loading {
-            color: transparent !important;
-        }
-
-        .btn-loading::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            top: 50%;
-            left: 50%;
-            margin-left: -10px;
-            margin-top: -10px;
-            border: 2px solid transparent;
-            border-top: 2px solid currentColor;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Status messages */
-        .status-message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
+        .kit-item-desc {
             font-size: 1.1rem;
-            text-align: center;
-            display: none;
-        }
-
-        .status-message.loading {
-            background: rgba(255, 255, 0, 0.1);
-            border: 1px solid rgba(255, 255, 0, 0.3);
-            color: #ffff00;
-        }
-
-        .status-message.success {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid rgba(0, 255, 0, 0.3);
-            color: #00ff00;
-        }
-
-        .status-message.error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            color: #ff4444;
-        }
-
-        /* Price indicators */
-        .price-tag {
-            background: rgba(0, 255, 0, 0.2);
-            border: 1px solid #00ff00;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-size: 1.1rem;
-            color: #00ff00;
-            display: inline-block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        /* Final CTA Section */
-        .final-cta {
-            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(0, 0, 0, 0.9));
-            padding: 80px 20px;
-            text-align: center;
-            border-top: 2px solid #00ff00;
-        }
-
-        .final-cta h2 {
-            font-size: 3rem;
-            color: #00ff00;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.5));
-        }
-
-        .final-cta p {
-            font-size: 1.5rem;
             color: #cccccc;
-            margin-bottom: 40px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .final-cta-button {
-            background: linear-gradient(45deg, #00ff00, #00aaff);
-            color: #000;
-            border: none;
-            padding: 25px 50px;
-            font-size: 1.8rem;
-            border-radius: 15px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            transition: all 0.3s ease;
-            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.4);
-            text-decoration: none;
-            display: inline-block;
-            font-weight: bold;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .final-cta-button:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 20px 50px rgba(0, 255, 0, 0.6);
-        }
-
-        /* Feature highlights */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 60px;
-            padding: 0 20px;
-        }
-
-        .feature {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .feature-title {
-            font-size: 1.5rem;
-            color: #00ff00;
             margin-bottom: 10px;
+            transition: all 0.3s ease;
         }
 
-        .feature-text {
-            color: #cccccc;
-            font-size: 1.2rem;
+        .kit-item-amount {
+            font-size: 1.3rem;
+            color: #00ff88;
+            font-weight: bold;
+            transition: all 0.3s ease;
+
         }
 
-        /* Network warning */
-        .network-warning {
-            background: rgba(255, 136, 0, 0.1);
-            border: 1px solid rgba(255, 136, 0, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            color: #ff8800;
-            text-align: center;
-            display: none;
+        .kit-item:hover .kit-item-title {
+            color: #00ff00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            transform: scale(1.05);
         }
 
-        .network-warning button {
-            background: rgba(255, 136, 0, 0.2);
-            border: 1px solid rgba(255, 136, 0, 0.5);
-            color: #ff8800;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-left: 10px;
-            font-weight: 600;
-            font-family: 'VT323', monospace;
+        .kit-item:hover .kit-item-desc {
+            color: #ffffff;
         }
 
-        .network-warning button:hover {
-            background: rgba(255, 136, 0, 0.3);
+        .kit-item:hover .kit-item-amount {
+            color: #00ffaa;
+            text-shadow: 0 0 15px rgba(0, 255, 170, 0.6);
+            transform: scale(1.1);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
 
-            .hero .subtitle {
-                font-size: 1.4rem;
-            }
-
-            .hero .description {
-                font-size: 1.2rem;
-            }
-
-            .section-title {
-                font-size: 2.5rem;
-            }
-
-            .step-title {
-                font-size: 1.8rem;
-            }
-
-            .step-description {
-                font-size: 1.2rem;
-            }
-
-            .steps-grid {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
-
-            .final-cta h2 {
-                font-size: 2.5rem;
-            }
-
-            .final-cta-button {
-                padding: 20px 40px;
-                font-size: 1.5rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero {
-                padding: 15px;
-            }
-
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .step-card {
-                padding: 30px 20px;
-            }
-
-            .connect-btn {
-                padding: 15px 30px;
-                font-size: 1.3rem;
-            }
-        }
-
-        /* Fade in animations */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.6s ease;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
 
         /* Menu Styles */
         #menu-container {
@@ -703,39 +334,429 @@
         }
 
         /* Adjust first section to account for fixed menu */
-        .steps-section {
-            padding-top: 60px;
+        .hero {
+            padding-top: 80px;
         }
 
         /* Menu always collapsed - no responsive adjustments needed */
         #menu-container .navbar-nav .nav-link {
             font-size: 1rem;
         }
+
+        /* Bootstrap collapse functionality */
+        #menu-container .navbar-collapse {
+            display: none;
+        }
+
+        #menu-container .navbar-collapse.show {
+            display: block;
+        }
+
+        /* Mobile menu styles */
+        @media (max-width: 991.98px) {
+            #menu-container .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid #00ff00;
+                padding: 1rem;
+            }
+        }
+
+        /* Purchase Interface */
+        .purchase-interface {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #00ff00;
+            border-radius: 25px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 20px 40px rgba(0, 255, 0, 0.2);
+        }
+
+        .purchase-title {
+            font-size: 2.2rem;
+            color: #00ff00;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .quantity-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .quantity-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'VT323', monospace;
+        }
+
+        .quantity-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.5);
+            transform: scale(1.1);
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quantity-display {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #00ff88;
+            min-width: 60px;
+            text-align: center;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .cost-breakdown {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .cost-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .cost-label {
+            color: #cccccc;
+        }
+
+        .cost-value {
+            color: #00aaff;
+            font-weight: bold;
+        }
+
+        .total-cost {
+            color: #00ff88 !important;
+        }
+
+        .usd-price {
+            color: #888888;
+            font-size: 1.5rem;
+            margin-left: 8px;
+            font-style: italic;
+        }
+
+        .purchase-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            margin-bottom: 15px;
+            position: relative;
+            background: linear-gradient(45deg, #00ff88, #00aaff);
+            color: #000;
+        }
+
+        .purchase-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 255, 136, 0.4);
+        }
+
+        .purchase-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-loading {
+            color: transparent !important;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            top: 50%;
+            left: 50%;
+            margin-left: -12px;
+            margin-top: -12px;
+            border: 3px solid transparent;
+            border-top: 3px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Status messages */
+        .status-message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.loading {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid rgba(255, 255, 0, 0.3);
+            color: #ffff00;
+        }
+
+        .status-message.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .status-message.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff4444;
+        }
+
+        /* Kit Preview */
+        .kit-preview {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .preview-title {
+            font-size: 1.8rem;
+            color: #00ff00;
+            margin-bottom: 15px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .preview-item {
+            text-align: center;
+        }
+
+        .preview-image {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            margin: 0 auto 10px;
+            overflow: hidden;
+        }
+
+        .preview-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-label {
+            font-size: 1rem;
+            color: #cccccc;
+        }
+
+        /* Network warning */
+        .network-warning {
+            background: rgba(255, 136, 0, 0.1);
+            border: 1px solid rgba(255, 136, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #ff8800;
+            text-align: center;
+            display: none;
+        }
+
+        .network-warning button {
+            background: rgba(255, 136, 0, 0.2);
+            border: 1px solid rgba(255, 136, 0, 0.5);
+            color: #ff8800;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: 600;
+            font-family: 'VT323', monospace;
+        }
+
+        .network-warning button:hover {
+            background: rgba(255, 136, 0, 0.3);
+        }
+
+
+
+        /* Contract Info */
+        .contract-info {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .contract-info h4 {
+            color: #00ff00;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .contract-detail {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .contract-detail strong {
+            color: #00aaff;
+        }
+
+        .contract-address {
+            font-family: monospace;
+            color: #cccccc;
+            word-break: break-all;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .kit-contents {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                max-width: 500px;
+            }
+
+            .purchase-interface {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 20px 30px 20px;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+
+
+            .kit-contents {
+                gap: 20px;
+            }
+
+            .kit-item {
+                padding: 20px;
+            }
+
+            .kit-item-image {
+                width: 160px;
+                height: 160px;
+            }
+
+            .purchase-interface {
+                padding: 25px;
+            }
+
+            .preview-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        /* Fade in animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
-    <!-- Modal background for animation -->
-    <div class="animation-modal" id="animationModal"></div>
-
-    <!-- Rotating AdrianZERO Animation -->
-    <div class="rotating-adrian" id="rotatingAdrian">
-        <img src="components/animated/A.svg" alt="Rotating AdrianZERO" id="rotatingImage">
-    </div>
-
     <!-- Include the menu -->
     <div id="menu-container"></div>
     <script>
-      // Load the menu
+      // Load the menu with inline script to avoid conflicts
       fetch('components/menu.html')
         .then(response => response.text())
         .then(html => {
           document.getElementById('menu-container').innerHTML = html;
-          const script = document.createElement('script');
-          script.src = 'components/menu.js';
-          document.head.appendChild(script);
+          
+          // Add Bootstrap functionality for menu toggle
+          const navbarToggler = document.querySelector('.navbar-toggler');
+          const navbarCollapse = document.querySelector('.navbar-collapse');
+          
+          if (navbarToggler && navbarCollapse) {
+            navbarToggler.addEventListener('click', function() {
+              navbarCollapse.classList.toggle('show');
+            });
+          }
         })
         .catch(error => console.error('Error loading menu:', error));
     </script>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>AdrianLAB Starter Kit</h1>
+        <p class="subtitle">Everything you need to begin your digital evolution</p>
+        <p class="description">
+            Get your AdrianZERO NFT, Floppy Disc with traits, and $ADRIAN tokens all in one purchase. 
+            Pay with ETH and receive everything instantly!
+        </p>
+        
+
+    </section>
 
     <!-- Network Warning -->
     <div id="networkWarning" class="network-warning">
@@ -743,185 +764,163 @@
         <button onclick="switchToBase()">Switch Network</button>
     </div>
 
-    <!-- Steps Section -->
-    <section class="steps-section" id="get-started">
-        <h2 class="section-title fade-in">How to Get Started</h2>
-        <p class="section-subtitle fade-in">Follow these simple steps to join the AdrianLAB ecosystem</p>
-        
-        <!-- Wallet Connection -->
-        <div class="wallet-section">
-            <button id="connectBtn" class="connect-btn">Connect Wallet</button>
-            <div id="walletInfo" class="wallet-info">
-                <div class="wallet-address" id="walletAddress"></div>
-            </div>
-        </div>
-        
-        <div class="steps-grid">
-            <!-- Step 1: Get $ADRIAN -->
-            <div class="step-card fade-in">
-                <div class="step-number">1</div>
-                <h3 class="step-title">Get $ADRIAN Tokens</h3>
-                
-                <div class="nft-preview">
-                    <img src="https://adrianlab.vercel.app/api/render/148" alt="$ADRIAN Token Preview">
+
+
+    <!-- Kit Sale Section -->
+    <section class="kit-section">
+        <div class="kit-container">
+            <!-- Kit Contents -->
+            <div class="kit-contents">
+                <div class="kit-item fade-in">
+                    <div class="kit-item-image">
+                        <img src="https://adrianlab.vercel.app/api/render/1" alt="AdrianZERO NFT">
+                    </div>
+                    <h3 class="kit-item-title">AdrianZERO NFT</h3>
+                    <p class="kit-item-desc">Base character NFT</p>
+                    <p class="kit-item-amount">1 NFT</p>
                 </div>
-                
-                <p class="step-description">
-                    Start by swapping ETH for $ADRIAN tokens on Uniswap. 
-                    You'll need these tokens to mint NFTs and apply traits.
-                </p>
-                <div class="price-tag">Base Network • Low Fees</div>
-                
-                <div class="mint-interface">
-                    <a href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" 
-                       target="_blank" 
-                       class="action-btn btn-uniswap">
-                        Swap on Uniswap
-                    </a>
+
+                <div class="kit-item fade-in">
+                    <div class="kit-item-image">
+                        <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif" alt="STARTER Floppy Disc">
+                    </div>
+                    <h3 class="kit-item-title">STARTER Floppy Disc</h3>
+                    <p class="kit-item-desc">Contains rare traits to customize</p>
+                    <p class="kit-item-amount">1 Disc</p>
+                </div>
+
+                <div class="kit-item fade-in">
+                    <div class="kit-item-image">
+                        <img src="components/images/ADRIAN_Coin_Back.gif" alt="$ADRIAN Tokens">
+                    </div>
+                    <h3 class="kit-item-title">$ADRIAN Tokens</h3>
+                    <p class="kit-item-desc">Ecosystem currency</p>
+                    <p class="kit-item-amount" id="adrianTokenAmount">Loading...</p>
                 </div>
             </div>
 
-            <!-- Step 2: Mint AdrianZERO -->
-            <div class="step-card fade-in">
-                <div class="step-number">2</div>
-                <h3 class="step-title">Mint AdrianZERO NFT</h3>
+            <!-- Purchase Interface -->
+            <div class="purchase-interface fade-in">
+                <h3 class="purchase-title">Buy Kit</h3>
                 
-                <div class="nft-preview">
-                    <img src="https://adrianlab.vercel.app/api/render/1" alt="AdrianZERO NFT Preview">
+                <div class="quantity-controls">
+                    <button class="quantity-btn" onclick="changeQuantity(-1)" id="decreaseBtn">-</button>
+                    <div class="quantity-display" id="quantity">1</div>
+                    <button class="quantity-btn" onclick="changeQuantity(1)" id="increaseBtn">+</button>
                 </div>
-                
-                <p class="step-description">
-                    Mint your base AdrianZERO NFT - the foundation of your collection. 
-                    This is your canvas for trait customization.
-                </p>
-                <div class="price-tag">Price: <span id="adrianZeroPrice">Loading...</span> $ADRIAN</div>
-                
-                <div class="mint-interface" style="display: none;" id="adrianZeroMint">
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="changeQuantity('adrianZero', -1)">-</button>
-                        <div class="quantity-display" id="adrianZeroQuantity">1</div>
-                        <button class="quantity-btn" onclick="changeQuantity('adrianZero', 1)">+</button>
-                    </div>
-                    <div class="total-cost">Total: <span class="cost-amount" id="adrianZeroTotal">0</span> $ADRIAN</div>
-                    <button class="action-btn btn-mint" id="mintAdrianZero" onclick="mintAdrianZero()">
-                        Mint AdrianZERO
-                    </button>
-                    <div class="status-message" id="adrianZeroStatus"></div>
-                </div>
-            </div>
 
-            <!-- Step 3: Mint STARTER Floppy -->
-            <div class="step-card fade-in">
-                <div class="step-number">3</div>
-                <h3 class="step-title">STARTER Floppy (Green)</h3>
-                
-                <div class="nft-preview">
-                    <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif?v=1751800464450" alt="STARTER Floppy Green Preview">
-                </div>
-                
-                <p class="step-description">
-                    Mint STARTER Floppy Discs containing rare traits. 
-                    Open them to discover unique traits for your collection.
-                </p>
-                <div class="price-tag">Price: 7,500 $ADRIAN each</div>
-                
-                <div class="mint-interface" style="display: none;" id="starterFloppyMint">
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="changeQuantity('starterFloppy', -1)">-</button>
-                        <div class="quantity-display" id="starterFloppyQuantity">1</div>
-                        <button class="quantity-btn" onclick="changeQuantity('starterFloppy', 1)">+</button>
+                <div class="cost-breakdown">
+                    <div class="cost-row">
+                        <span class="cost-label">Price per kit:</span>
+                        <span class="cost-value" id="pricePerKit">Loading...</span>
+                        <span class="usd-price" id="usdPrice">(Loading USD)</span>
                     </div>
-                    <div class="total-cost">Total: <span class="cost-amount" id="starterFloppyTotal">7,500</span> $ADRIAN</div>
-                    <button class="action-btn btn-mint" id="mintStarterFloppy" onclick="mintStarterFloppy()">
-                        Mint STARTER Floppy
-                    </button>
-                    <div class="status-message" id="starterFloppyStatus"></div>
+                    <div class="cost-row">
+                        <span class="cost-label">Quantity:</span>
+                        <span class="cost-value" id="quantityDisplay">1</span>
+                    </div>
+                    <div class="cost-row">
+                        <span class="cost-label">Total Cost:</span>
+                        <span class="cost-value total-cost" id="totalCost">Loading...</span>
+                        <span class="usd-price" id="totalUsdPrice">(Loading USD)</span>
+                    </div>
+                </div>
+
+                <!-- Wallet Connection -->
+                <div class="wallet-section">
+                    <button id="connectBtn" class="connect-btn">Connect Wallet</button>
+                    <div id="walletInfo" class="wallet-info">
+                        <div class="wallet-address" id="walletAddress"></div>
+                    </div>
+                </div>
+
+                <button class="purchase-btn" id="purchaseBtn" onclick="buyKit()" disabled>
+                    Buy Starter Kit
+                </button>
+                
+
+
+                <div class="status-message" id="statusMessage"></div>
+
+                <!-- Contract Info -->
+                <div class="contract-info" style="display: none;" id="contractInfo">
+                    <h4>Contract Information</h4>
+                    <div class="contract-detail">
+                        <strong>Kit Price:</strong> <span id="kitPriceInfo">Loading...</span>
+                    </div>
+                    <div class="contract-detail">
+                        <strong>Status:</strong> <span id="kitStatusInfo">Loading...</span>
+                    </div>
+                    <div class="contract-detail">
+                        <strong>Contract:</strong> <span id="contractAddress" class="contract-address">0xF278a1060900005aD5b9077602b09A513541f5d2</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- Final CTA -->
-    <section class="final-cta">
-        <h2>Ready to Evolve?</h2>
-        <p>
-            Now that you have your NFTs and traits, it's time to enter the TraitLAB 
-            and start customizing your collection like never before.
-        </p>
-        <a href="adrianzero.com/traitlab" class="final-cta-button">
-            Enter TraitLAB →
-        </a>
-        
-        <div class="features" style="margin-top: 40px;">
-            <div class="feature">
-                <span class="feature-icon">🎨</span>
-                <div class="feature-title">Visual Trait Preview</div>
-                <div class="feature-text">See how traits look before applying</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">🔧</span>
-                <div class="feature-title">Easy Application</div>
-                <div class="feature-text">Apply multiple traits with one transaction</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">📱</span>
-                <div class="feature-title">Mobile Friendly</div>
-                <div class="feature-text">Works perfectly on all devices</div>
+        <!-- Kit Preview -->
+        <div class="kit-preview fade-in">
+            <h3 class="preview-title">What you'll receive:</h3>
+            <div class="preview-grid">
+                <div class="preview-item">
+                    <div class="preview-image">
+                        <img src="https://adrianlab.vercel.app/api/render/1" alt="NFT">
+                    </div>
+                    <div class="preview-label">1 AdrianZERO</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-image">
+                        <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif" alt="Disc">
+                    </div>
+                    <div class="preview-label">1 STARTER Floppy</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-image">
+                        <img src="https://adrianlab.vercel.app/api/render/148" alt="Tokens">
+                    </div>
+                    <div class="preview-label" id="tokenPreviewLabel">Loading...</div>
+                </div>
             </div>
         </div>
     </section>
 
     <script>
-        // Contract addresses and configurations
-        const ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
-        const ADRIAN_ZERO_MINT = "0xF278a1060900005aD5b9077602b09A513541f5d2";
-        const PACK_MINTER = "0x673bE1968A12470F93BE374AAB529a89d5D607d5";
+        // Contract configuration
+        const KIT_SALE_CONTRACT = "0xF278a1060900005aD5b9077602b09A513541f5d2";
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
 
-        // Pack configurations
-        const STARTER_FLOPPY_PACK_ID = 10002;
-        const STARTER_FLOPPY_PRICE = ethers.utils.parseEther("7500");
-
-        // ABIs
-        const ERC20_ABI = [
-            "function approve(address spender, uint256 amount) returns (bool)",
-            "function allowance(address owner, address spender) view returns (uint256)",
-            "function balanceOf(address account) view returns (uint256)"
-        ];
-
-        const ADRIAN_ZERO_ABI = [
-            "function mintMultiplePublic(uint256 quantity)",
-            "function getCurrentBatchInfo() view returns (uint256 batchId, string name, uint256 price, uint256 minted, uint256 maxSupply, bool active, uint256 startTime, uint256 endTime, bool useMerkleWhitelist)"
-        ];
-
-        const PACK_MINTER_ABI = [
-            "function purchasePack(uint256 packId, uint256 quantity, bool useAllowlist) external"
+        // Contract ABI - Correct functions from the actual contract
+        const KIT_SALE_ABI = [
+            "function buyKit() payable",
+            "function buyMultipleKits(uint256 quantity) payable",
+            "function getKitConfig() view returns (tuple(uint256 priceInETH, uint256 adrianTokenAmount, uint256 floppyTokenId, uint256 erc721Amount, bool active))",
+            "function getKitPrice() view returns (uint256)",
+            "function getKitTotalCost(uint256 quantity) view returns (uint256)",
+            "function canBuyKit(address user, uint256 quantity) view returns (tuple(bool canPurchase, string error, uint256 totalCost, uint256 contractAdrianBalance, uint256 maxKitsAvailable))",
+            "function kitSalePaused() view returns (bool)",
+            "function maxKitsPerTransaction() view returns (uint256)",
+            "function getAdrianTokenBalance() view returns (uint256)",
+            "function getSystemStats() view returns (tuple(uint256 totalKitsSold, uint256 totalETHReceived, uint256 adrianTokenBalance, bool systemPaused, bool kitActive, address treasuryWallet))"
         ];
 
         // Global state
         let provider;
         let signer;
         let userAddress;
-        let adrianToken;
-        let adrianZeroContract;
-        let packMinterContract;
-        let quantities = {
-            adrianZero: 1,
-            starterFloppy: 1
-        };
-        let adrianZeroPrice = ethers.utils.parseEther("0");
+        let kitSaleContract;
+        let currentQuantity = 1;
+        let kitPrice = ethers.utils.parseEther("0");
+        let adrianTokenAmount = ethers.utils.parseEther("0");
+        let maxKitsPerTransaction = 10;
+        let ethPriceUSD = 0;
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if wallet is already connected
             checkConnection();
-            
-            // Set up event listeners
             document.getElementById('connectBtn').addEventListener('click', connectWallet);
-            
-            // Fade in animations
             setupFadeInAnimations();
+            fetchETHPrice(); // Get ETH price on page load
         });
 
         async function checkConnection() {
@@ -939,24 +938,32 @@
 
         async function connectWallet() {
             try {
+                console.log('🔗 Connecting wallet...');
+                console.log('📱 Device:', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
+                
                 if (!window.ethereum) {
-                    showStatus('all', 'Please install MetaMask!', 'error');
+                    showStatus('Please install MetaMask!', 'error');
                     return;
                 }
 
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 userAddress = accounts[0];
+                console.log('👤 User address:', userAddress);
                 
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
                 
+                console.log('🔗 Provider created');
+                console.log('✍️ Signer created');
+                
                 // Check network
                 await ensureCorrectNetwork();
                 
-                // Initialize contracts
-                adrianToken = new ethers.Contract(ADRIAN_TOKEN, ERC20_ABI, signer);
-                adrianZeroContract = new ethers.Contract(ADRIAN_ZERO_MINT, ADRIAN_ZERO_ABI, signer);
-                packMinterContract = new ethers.Contract(PACK_MINTER, PACK_MINTER_ABI, signer);
+                // Initialize contract
+                console.log('📄 Contract address:', KIT_SALE_CONTRACT);
+                console.log('📋 Contract ABI length:', KIT_SALE_ABI.length);
+                kitSaleContract = new ethers.Contract(KIT_SALE_CONTRACT, KIT_SALE_ABI, signer);
+                console.log('✅ Contract initialized');
                 
                 // Update UI
                 document.getElementById('connectBtn').style.display = 'none';
@@ -964,19 +971,14 @@
                 document.getElementById('walletAddress').textContent = 
                     `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
                 
-                // Show mint interfaces
-                document.getElementById('adrianZeroMint').style.display = 'block';
-                document.getElementById('starterFloppyMint').style.display = 'block';
+                // Load contract data
+                await loadContractData();
                 
-                // Load prices and data
-                await loadAdrianZeroPrice();
-                updateAllTotals();
-                
-                showStatus('all', 'Wallet connected successfully!', 'success');
+                showStatus('Wallet connected successfully!', 'success');
                 
             } catch (error) {
                 console.error('Connection error:', error);
-                showStatus('all', 'Failed to connect wallet', 'error');
+                showStatus('Failed to connect wallet', 'error');
             }
         }
 
@@ -1031,240 +1033,216 @@
             }
         }
 
-        async function loadAdrianZeroPrice() {
+        async function loadContractData() {
             try {
-                const batchInfo = await adrianZeroContract.getCurrentBatchInfo();
-                adrianZeroPrice = batchInfo.price;
+                console.log('🔄 Loading contract data...');
+                console.log('📱 Device:', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
+                console.log('🌐 Network:', navigator.connection ? navigator.connection.effectiveType : 'Unknown');
                 
-                const priceFormatted = ethers.utils.formatEther(adrianZeroPrice);
-                document.getElementById('adrianZeroPrice').textContent = 
-                    parseFloat(priceFormatted).toLocaleString();
+                // Load kit configuration using getKitConfig
+                console.log('📋 Fetching kit config...');
+                const kitConfig = await kitSaleContract.getKitConfig();
+                console.log('📊 Kit config received:', kitConfig);
                 
-                updateAllTotals();
+                kitPrice = kitConfig.priceInETH;
+                adrianTokenAmount = kitConfig.adrianTokenAmount;
+                maxKitsPerTransaction = await kitSaleContract.maxKitsPerTransaction();
+                
+                console.log('💰 Kit price (wei):', kitPrice.toString());
+                console.log('💰 Kit price (ETH):', ethers.utils.formatEther(kitPrice));
+                console.log('🪙 Adrian amount (wei):', adrianTokenAmount.toString());
+                console.log('🪙 Adrian amount (tokens):', ethers.utils.formatEther(adrianTokenAmount));
+                console.log('📦 Max kits per transaction:', maxKitsPerTransaction.toString());
+                
+                // Update UI with kit info
+                const priceEth = ethers.utils.formatEther(kitPrice);
+                const adrianAmount = ethers.utils.formatEther(adrianTokenAmount);
+                
+                document.getElementById('pricePerKit').textContent = `${parseFloat(priceEth).toFixed(4)} ETH`;
+                document.getElementById('adrianTokenAmount').textContent = `${parseInt(adrianAmount).toLocaleString()} $ADRIAN`;
+                document.getElementById('tokenPreviewLabel').textContent = `${parseInt(adrianAmount).toLocaleString()} $ADRIAN`;
+                
+                updateTotalCost();
+                
+                // Check if contract is paused and kit is active
+                const isPaused = await kitSaleContract.kitSalePaused();
+                
+                // Enable purchase button if contract is not paused and kit is active
+                if (!isPaused && kitConfig.active) {
+                    document.getElementById('purchaseBtn').disabled = false;
+                } else {
+                    document.getElementById('purchaseBtn').disabled = true;
+                    if (isPaused) {
+                        showStatus('Kit sales are currently paused', 'error');
+                    } else if (!kitConfig.active) {
+                        showStatus('Kit sales are not active', 'error');
+                    }
+                }
+                
+                // Load additional info
+                await loadContractInfo();
+                
             } catch (error) {
-                console.error('Error loading AdrianZero price:', error);
-                document.getElementById('adrianZeroPrice').textContent = 'Error loading';
+                console.error('Error loading contract data:', error);
+                showStatus('Error loading contract data: ' + error.message, 'error');
             }
         }
 
-        function changeQuantity(type, delta) {
-            const newQuantity = quantities[type] + delta;
-            if (newQuantity >= 1 && newQuantity <= 10) {
-                quantities[type] = newQuantity;
-                document.getElementById(type + 'Quantity').textContent = newQuantity;
-                updateTotal(type);
+        async function loadContractInfo() {
+            try {
+                const isPaused = await kitSaleContract.kitSalePaused();
+                const kitConfig = await kitSaleContract.getKitConfig();
+                
+                document.getElementById('kitPriceInfo').textContent = 
+                    `${parseFloat(ethers.utils.formatEther(kitPrice)).toFixed(4)} ETH`;
+                document.getElementById('kitStatusInfo').textContent = 
+                    (!isPaused && kitConfig.active) ? 'Active' : 'Inactive';
+                
+                document.getElementById('contractInfo').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading contract info:', error);
             }
         }
 
-        function updateTotal(type) {
-            let price;
-            switch(type) {
-                case 'adrianZero':
-                    price = adrianZeroPrice;
-                    break;
-                case 'starterFloppy':
-                    price = STARTER_FLOPPY_PRICE;
-                    break;
+        function changeQuantity(delta) {
+            const newQuantity = currentQuantity + delta;
+            if (newQuantity >= 1 && newQuantity <= maxKitsPerTransaction) {
+                currentQuantity = newQuantity;
+                document.getElementById('quantity').textContent = currentQuantity;
+                document.getElementById('quantityDisplay').textContent = currentQuantity;
+                updateTotalCost();
             }
+        }
+
+        function updateTotalCost() {
+            if (!kitPrice) return;
             
-            const total = price.mul(quantities[type]);
-            const formatted = ethers.utils.formatEther(total);
-            document.getElementById(type + 'Total').textContent = 
-                parseFloat(formatted).toLocaleString();
+            const totalWei = kitPrice.mul(currentQuantity);
+            const totalEth = ethers.utils.formatEther(totalWei);
+            
+            document.getElementById('totalCost').textContent = `${parseFloat(totalEth).toFixed(4)} ETH`;
+            
+            // Update USD prices if available
+            updateUSDPrices();
         }
 
-        function updateAllTotals() {
-            updateTotal('adrianZero');
-            updateTotal('starterFloppy');
+        // Fetch ETH price from CoinGecko API
+        async function fetchETHPrice() {
+            try {
+                console.log('💱 Fetching ETH price from CoinGecko...');
+                console.log('📱 Device:', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
+                
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+                const data = await response.json();
+                console.log('💱 CoinGecko response:', data);
+                
+                if (data.ethereum && data.ethereum.usd) {
+                    ethPriceUSD = data.ethereum.usd;
+                    console.log('💱 ETH price set to:', ethPriceUSD);
+                    updateUSDPrices();
+                }
+            } catch (error) {
+                console.error('Error fetching ETH price:', error);
+                // Fallback to Binance API
+                try {
+                    const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
+                    const data = await response.json();
+                    
+                    if (data.price) {
+                        ethPriceUSD = parseFloat(data.price);
+                        updateUSDPrices();
+                    }
+                } catch (fallbackError) {
+                    console.error('Error fetching ETH price from fallback:', fallbackError);
+                }
+            }
+        }
+
+        // Update USD prices display
+        function updateUSDPrices() {
+            if (ethPriceUSD > 0 && kitPrice) {
+                // Calculate kit price in USD
+                const kitPriceEth = parseFloat(ethers.utils.formatEther(kitPrice));
+                const kitPriceUSD = kitPriceEth * ethPriceUSD;
+                
+                // Calculate total price in USD
+                const totalPriceEth = parseFloat(ethers.utils.formatEther(kitPrice.mul(currentQuantity)));
+                const totalPriceUSD = totalPriceEth * ethPriceUSD;
+                
+                // Update displays
+                document.getElementById('usdPrice').textContent = `($${kitPriceUSD.toFixed(2)} USD)`;
+                document.getElementById('totalUsdPrice').textContent = `($${totalPriceUSD.toFixed(2)} USD)`;
+            }
         }
 
 
 
-        async function mintAdrianZero() {
-            if (!userAddress) {
-                showStatus('adrianZero', 'Connect wallet first!', 'error');
+        async function buyKit() {
+            if (!userAddress || !kitSaleContract) {
+                showStatus('Connect wallet first!', 'error');
                 return;
             }
             
             try {
-                const button = document.getElementById('mintAdrianZero');
+                const button = document.getElementById('purchaseBtn');
                 button.disabled = true;
                 button.classList.add('btn-loading');
                 
-                // Calculate total cost using BigNumber for better performance
-                let totalCostWei = ethers.BigNumber.from(0);
-                let totalCostEther = 0;
+                // Validate purchase
+                showStatus('Validating purchase...', 'loading');
+                const validation = await kitSaleContract.canBuyKit(userAddress, currentQuantity);
                 
-                // Get price in ether for calculations
-                const priceEther = parseFloat(ethers.utils.formatEther(adrianZeroPrice));
-                totalCostEther = priceEther * quantities.adrianZero;
-                
-                // Calculate in wei using BigNumber for approval (same as shop/)
-                const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
-                totalCostWei = itemPriceWei.mul(quantities.adrianZero);
-                
-                // For user display, use the direct calculation
-                const userDisplayAmount = priceEther * quantities.adrianZero;
-                
-                // Check balance
-                const balance = await adrianToken.balanceOf(userAddress);
-                const balanceEther = parseFloat(ethers.utils.formatEther(balance));
-                
-                if (totalCostEther > balanceEther) {
-                    showStatus('adrianZero', 'Insufficient ADRIAN balance for mint', 'error');
+                if (!validation.canPurchase) {
+                    showStatus(`Cannot purchase: ${validation.error}`, 'error');
                     return;
                 }
                 
-                // Check current allowance
-                const currentAllowance = await adrianToken.allowance(userAddress, ADRIAN_ZERO_MINT);
+                // Calculate total cost
+                const totalCost = await kitSaleContract.getKitTotalCost(currentQuantity);
                 
-                // Step 1: Check if approval is needed and handle it
-                if (totalCostWei.gt(currentAllowance)) {
-                    showStatus('adrianZero', 'Approval needed. Processing approval transaction...', 'loading');
-                    
-                    // Add delay before approval transaction
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    showStatus('adrianZero', `Approving ${userDisplayAmount} ADRIAN tokens for mint...`, 'loading');
-                    
-                    // Use the pre-calculated BigNumber (no conversion needed)
-                    const approveTx = await adrianToken.approve(ADRIAN_ZERO_MINT, totalCostWei);
-                    await approveTx.wait();
-                    
-                    showStatus('adrianZero', 'ADRIAN tokens approved successfully!', 'success');
-                    
-                    // Add delay before proceeding to mint
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                // Check user balance
+                const balance = await provider.getBalance(userAddress);
+                if (balance.lt(totalCost)) {
+                    showStatus('Insufficient ETH balance', 'error');
+                    return;
                 }
                 
-                // Step 2: Process the mint
-                showStatus('adrianZero', `Minting ${quantities.adrianZero} AdrianZERO NFT(s)...`, 'loading');
+                // Execute purchase
+                showStatus(`Purchasing ${currentQuantity} kit(s)...`, 'loading');
                 
-                // Add delay before mint transaction
-                await new Promise(resolve => setTimeout(resolve, 500));
+                let tx;
+                if (currentQuantity === 1) {
+                    tx = await kitSaleContract.buyKit({ value: totalCost });
+                } else {
+                    tx = await kitSaleContract.buyMultipleKits(currentQuantity, { value: totalCost });
+                }
                 
-                const tx = await adrianZeroContract.mintMultiplePublic(quantities.adrianZero);
+                showStatus('Transaction submitted. Waiting for confirmation...', 'loading');
                 await tx.wait();
                 
-                showStatus('adrianZero', `🎉 Successfully minted ${quantities.adrianZero} AdrianZERO NFT(s)!`, 'success');
+                showStatus(`🎉 Successfully purchased ${currentQuantity} kit(s)! Check your wallet for your new assets.`, 'success');
                 
             } catch (error) {
-                console.error('Mint error:', error);
-                showStatus('adrianZero', 'Mint failed: ' + parseError(error), 'error');
+                console.error('Purchase error:', error);
+                showStatus('Purchase failed: ' + parseError(error), 'error');
             } finally {
-                const button = document.getElementById('mintAdrianZero');
+                const button = document.getElementById('purchaseBtn');
                 button.disabled = false;
                 button.classList.remove('btn-loading');
             }
         }
 
-        async function mintStarterFloppy() {
-            if (!userAddress) {
-                showStatus('starterFloppy', 'Connect wallet first!', 'error');
-                return;
-            }
+        function showStatus(message, statusType) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.className = `status-message ${statusType}`;
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
             
-            try {
-                const button = document.getElementById('mintStarterFloppy');
-                button.disabled = true;
-                button.classList.add('btn-loading');
-                
-                // Calculate total cost using BigNumber for better performance
-                let totalCostWei = ethers.BigNumber.from(0);
-                let totalCostEther = 0;
-                
-                // Get price in ether for calculations
-                const priceEther = parseFloat(ethers.utils.formatEther(STARTER_FLOPPY_PRICE));
-                totalCostEther = priceEther * quantities.starterFloppy;
-                
-                // Calculate in wei using BigNumber for approval (same as shop/)
-                const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
-                totalCostWei = itemPriceWei.mul(quantities.starterFloppy);
-                
-                // For user display, use the direct calculation
-                const userDisplayAmount = priceEther * quantities.starterFloppy;
-                
-                // Check balance
-                const balance = await adrianToken.balanceOf(userAddress);
-                const balanceEther = parseFloat(ethers.utils.formatEther(balance));
-                
-                if (totalCostEther > balanceEther) {
-                    showStatus('starterFloppy', 'Insufficient ADRIAN balance for mint', 'error');
-                    return;
-                }
-                
-                // Check current allowance
-                const currentAllowance = await adrianToken.allowance(userAddress, PACK_MINTER);
-                
-                // Step 1: Check if approval is needed and handle it
-                if (totalCostWei.gt(currentAllowance)) {
-                    showStatus('starterFloppy', 'Approval needed. Processing approval transaction...', 'loading');
-                    
-                    // Add delay before approval transaction
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    showStatus('starterFloppy', `Approving ${userDisplayAmount} ADRIAN tokens for mint...`, 'loading');
-                    
-                    // Use the pre-calculated BigNumber (no conversion needed)
-                    const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
-                    await approveTx.wait();
-                    
-                    showStatus('starterFloppy', 'ADRIAN tokens approved successfully!', 'success');
-                    
-                    // Add delay before proceeding to mint
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-                
-                // Step 2: Process the mint
-                showStatus('starterFloppy', `Minting ${quantities.starterFloppy} STARTER Floppy...`, 'loading');
-                
-                // Add delay before mint transaction
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                const tx = await packMinterContract.purchasePack(STARTER_FLOPPY_PACK_ID, quantities.starterFloppy, false);
-                await tx.wait();
-                
-                showStatus('starterFloppy', `🎉 Successfully minted ${quantities.starterFloppy} STARTER Floppy!`, 'success');
-                
-            } catch (error) {
-                console.error('Mint error:', error);
-                showStatus('starterFloppy', 'Mint failed: ' + parseError(error), 'error');
-            } finally {
-                const button = document.getElementById('mintStarterFloppy');
-                button.disabled = false;
-                button.classList.remove('btn-loading');
-            }
-        }
-
-        function showStatus(type, message, statusType) {
-            if (type === 'all') {
-                ['adrianZero', 'starterFloppy'].forEach(t => {
-                    const statusEl = document.getElementById(t + 'Status');
-                    if (statusEl) {
-                        statusEl.className = `status-message ${statusType}`;
-                        statusEl.textContent = message;
-                        statusEl.style.display = 'block';
-                        
-                        if (statusType === 'success') {
-                            setTimeout(() => {
-                                statusEl.style.display = 'none';
-                            }, 5000);
-                        }
-                    }
-                });
-            } else {
-                const statusEl = document.getElementById(type + 'Status');
-                if (statusEl) {
-                    statusEl.className = `status-message ${statusType}`;
-                    statusEl.textContent = message;
-                    statusEl.style.display = 'block';
-                    
-                    if (statusType === 'success') {
-                        setTimeout(() => {
-                            statusEl.style.display = 'none';
-                        }, 5000);
-                    }
-                }
+            if (statusType === 'success') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 10000);
             }
         }
 
@@ -1273,15 +1251,11 @@
                 return 'Transaction rejected by user';
             } else if (error.message && error.message.includes('insufficient funds')) {
                 return 'Insufficient funds';
-            } else if (error.message && error.message.includes('allowance')) {
-                return 'Need to approve tokens first';
+            } else if (error.message && error.message.includes('user rejected')) {
+                return 'Transaction rejected';
             } else {
                 return error.message || 'Unknown error occurred';
             }
-        }
-
-        function capitalizeFirst(str) {
-            return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
         function setupFadeInAnimations() {
@@ -1302,11 +1276,6 @@
             fadeElements.forEach(function(el) {
                 observer.observe(el);
             });
-
-            const stepCards = document.querySelectorAll('.step-card');
-            stepCards.forEach(function(card, index) {
-                card.style.transitionDelay = (index * 0.2) + 's';
-            });
         }
 
         // Listen for account changes
@@ -1323,74 +1292,27 @@
                 window.location.reload();
             });
         }
-
-        // Load Bootstrap scripts
-        const bootstrapScript = document.createElement('script');
-        bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
-        document.head.appendChild(bootstrapScript);
-
-        // Rotating AdrianZERO Animation
-        const rotatingImages = [
-            'components/animated/A.svg',
-            'components/animated/A1.svg',
-            'components/animated/A3.svg',
-            'components/animated/A4.svg',
-            'components/animated/A5.svg',
-            'components/animated/A6.svg',
-            'components/animated/A7.svg',
-            'components/animated/A8.svg'
-        ];
-
-        let currentImageIndex = 0;
-        const rotatingImage = document.getElementById('rotatingImage');
-        const rotatingAdrian = document.getElementById('rotatingAdrian');
-        const animationModal = document.getElementById('animationModal');
-
-        function updateRotatingImage(scrollPercent) {
-            // Calculate which image to show based on scroll percentage
-            // Use all 8 images multiple times throughout the entire scroll for multiple rotations
-            const totalRotations = 3; // Number of complete rotations during full scroll
-            const adjustedScrollPercent = scrollPercent * totalRotations;
-            const imageIndex = Math.floor(adjustedScrollPercent * rotatingImages.length) % rotatingImages.length;
-            
-            if (imageIndex !== currentImageIndex && imageIndex >= 0 && imageIndex < rotatingImages.length) {
-                currentImageIndex = imageIndex;
-                rotatingImage.src = rotatingImages[currentImageIndex];
-            }
-
-            // Keep animation visible throughout most of the scroll, just reduce opacity when near the end
-            if (scrollPercent > 0.9) {
-                rotatingAdrian.classList.add('hidden');
-                animationModal.classList.add('hidden');
-            } else {
-                rotatingAdrian.classList.remove('hidden');
-                animationModal.classList.remove('hidden');
-            }
-        }
-
-        function handleScroll() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const windowHeight = window.innerHeight;
-            const documentHeight = document.documentElement.scrollHeight;
-            
-            // Calculate scroll percentage (0 to 1)
-            const scrollPercent = Math.min(scrollTop / (documentHeight - windowHeight), 1);
-            
-            // Use the scroll percentage directly for smoother multiple rotations
-            updateRotatingImage(scrollPercent);
-        }
-
-        // Add scroll event listener
-        window.addEventListener('scroll', handleScroll);
-        
-        // Initialize with first image
-        updateRotatingImage(0);
-
-        // Auto-hide animation after 8 seconds
-        setTimeout(() => {
-            rotatingAdrian.classList.add('auto-hidden');
-            animationModal.classList.add('auto-hidden');
-        }, 8000);
     </script>
+
+    <!-- Mint with ADRIAN Button -->
+    <div style="text-align: center; padding: 40px 20px; background: rgba(0, 255, 0, 0.1); margin-top: 40px;">
+        <h2 style="color: #00ff00; margin-bottom: 20px; font-size: 2.5rem;">Ready to Mint with $ADRIAN?</h2>
+        <p style="color: #cccccc; margin-bottom: 30px; font-size: 1.2rem;">Use your $ADRIAN tokens to mint exclusive NFTs</p>
+        <a href="mintwithadrian.html" style="
+            display: inline-block;
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
+        " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(0, 255, 0, 0.4)'" 
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(0, 255, 0, 0.3)'">
+            🪙 Mint with $ADRIAN
+        </a>
+    </div>
 </body>
 </html>
