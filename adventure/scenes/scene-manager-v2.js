@@ -48,6 +48,7 @@ class SceneManagerV2 {
             await this.loadScript('scenes/lobby.js');
             await this.loadScript('scenes/basement.js');
             await this.loadScript('scenes/upstairs.js');
+            await this.loadScript('scenes/mountain.js');
             
             // Crear instancias de las escenas
             this.createSceneInstances();
@@ -109,13 +110,13 @@ class SceneManagerV2 {
             console.warn('UpstairsScene class not available');
         }
         
-        // Crear instancia de upstairs
-        if (typeof UpstairsScene !== 'undefined') {
-            const upstairsScene = new UpstairsScene();
-            this.scenes.set('upstairs', upstairsScene);
-            console.log('Upstairs scene instance created');
+        // Crear instancia de mountain
+        if (typeof MountainScene !== 'undefined') {
+            const mountainScene = new MountainScene();
+            this.scenes.set('mountain', mountainScene);
+            console.log('Mountain scene instance created');
         } else {
-            console.warn('UpstairsScene class not available');
+            console.warn('MountainScene class not available');
         }
         
         console.log('Available scenes:', Array.from(this.scenes.keys()));
