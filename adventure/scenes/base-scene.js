@@ -222,9 +222,9 @@ const baseSceneStyles = `
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    height: 40px;
+    height: 80px;
     box-sizing: border-box;
     overflow: hidden;
     min-width: 0;
@@ -241,36 +241,20 @@ const baseSceneStyles = `
 }
 
 .inventory-item img {
-    width: 16px;
-    height: 16px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
-    margin-bottom: 1px;
+    margin-bottom: 0;
     border-radius: 1px;
     flex-shrink: 0;
 }
 
 .inventory-item .item-name {
-    color: #00ff00;
-    font-size: 0.4rem;
-    font-weight: bold;
-    line-height: 1;
-    margin-bottom: 1px;
-    font-family: 'VT323', monospace;
-    flex-shrink: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-    width: 100%;
+    display: none;
 }
 
 .inventory-item .item-id {
-    color: #888;
-    font-size: 0.3rem;
-    line-height: 1;
-    font-family: 'VT323', monospace;
-    flex-shrink: 0;
-    width: 100%;
+    display: none;
 }
 
 .no-items {
@@ -310,26 +294,23 @@ const baseSceneStyles = `
     }
     
     .inventory-item {
-        height: 35px;
+        height: 70px;
         padding: 2px 1px;
         margin: 1px;
     }
     
     .inventory-item img {
-        width: 14px;
-        height: 14px;
-        margin-bottom: 1px;
+        width: 28px;
+        height: 28px;
+        margin-bottom: 0;
     }
     
     .inventory-item .item-name {
-        font-size: 0.25rem;
-        margin-bottom: 1px;
-        line-height: 1;
+        display: none;
     }
     
     .inventory-item .item-id {
-        font-size: 0.15rem;
-        line-height: 1;
+        display: none;
     }
     
     .no-items {
@@ -366,12 +347,11 @@ const baseSceneStyles = `
     }
     
     .inventory-item .item-name {
-        font-size: 0.55rem;
-        margin-bottom: 3px;
+        display: none;
     }
     
     .inventory-item .item-id {
-        font-size: 0.45rem;
+        display: none;
     }
 }
 
