@@ -1,16 +1,16 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { useAppStore, CANVAS_CONFIG } from '@/lib/store'
+import { useAppStore, CANVAS_CONFIG } from '@/lib/store-blockchain'
 
 export function TShirtPreview() {
-  const { pixels } = useAppStore()
+  const { design: { pixels } } = useAppStore()
   const [svgContent, setSvgContent] = useState('')
   const [tshirtSvg, setTshirtSvg] = useState('')
 
   useEffect(() => {
     // Load the base T-shirt SVG
-    fetch('/tshirt.svg')
+    fetch('/T-Shirt-148x148.svg')
       .then(response => response.text())
       .then(svg => setTshirtSvg(svg))
       .catch(error => console.error('Error loading T-shirt SVG:', error))
