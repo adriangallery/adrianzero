@@ -216,25 +216,25 @@ class MenuManager {
                 console.log(`Loading page ${pageCount}...`);
                 
                 // Construir URL con paginación
-                let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${this.currentAccount}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=50&tokenType=${tokenType}`;
+            let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${this.currentAccount}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=50&tokenType=${tokenType}`;
                 
                 if (pageKey) {
                     alchemyUrl += `&pageKey=${pageKey}`;
                 }
-                
-                console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
-                
-                const alchemyResponse = await fetch(alchemyUrl);
-                
-                if (!alchemyResponse.ok) {
-                    throw new Error(`Error getting NFTs from Alchemy API: ${alchemyResponse.status}`);
-                }
-                
-                const nftsData = await alchemyResponse.json();
+            
+            console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
+            
+            const alchemyResponse = await fetch(alchemyUrl);
+            
+            if (!alchemyResponse.ok) {
+                throw new Error(`Error getting NFTs from Alchemy API: ${alchemyResponse.status}`);
+            }
+            
+            const nftsData = await alchemyResponse.json();
                 console.log(`Page ${pageCount} data received:`, nftsData);
-                
+            
                 // Agregar NFTs de esta página al array total
-                if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
+            if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
                     allNfts = allNfts.concat(nftsData.ownedNfts);
                 }
                 
@@ -394,6 +394,49 @@ class MenuManager {
 
     // ✅ SOLUCIÓN: Buscar los grids globalmente, no dentro de la escena activa
     displayInventory() {
+        // DEBUG: Función temporal para debugging
+        window.debugInventoryGrids = () => {
+            console.log('=== DEBUG INVENTORY GRIDS ===');
+            const allLeftGrids = document.querySelectorAll('#inventory-grid-left');
+            const allRightGrids = document.querySelectorAll('#inventory-grid-right');
+            
+            allLeftGrids.forEach((grid, index) => {
+                const styles = window.getComputedStyle(grid);
+                console.log(`Left Grid ${index}:`, {
+                    element: grid,
+                    visible: grid.offsetParent !== null,
+                    height: styles.height,
+                    maxHeight: styles.maxHeight,
+                    overflowY: styles.overflowY,
+                    display: styles.display,
+                    flex: styles.flex,
+                    offsetHeight: grid.offsetHeight,
+                    scrollHeight: grid.scrollHeight,
+                    clientHeight: grid.clientHeight,
+                    parent: grid.parentElement
+                });
+            });
+            
+            allRightGrids.forEach((grid, index) => {
+                const styles = window.getComputedStyle(grid);
+                console.log(`Right Grid ${index}:`, {
+                    element: grid,
+                    visible: grid.offsetParent !== null,
+                    height: styles.height,
+                    maxHeight: styles.maxHeight,
+                    overflowY: styles.overflowY,
+                    display: styles.display,
+                    flex: styles.flex,
+                    offsetHeight: grid.offsetHeight,
+                    scrollHeight: grid.scrollHeight,
+                    clientHeight: grid.clientHeight,
+                    parent: grid.parentElement
+                });
+            });
+        };
+        
+        // Ejecutar debug automáticamente
+        window.debugInventoryGrids();
         console.log('=== displayInventory() called ===');
         console.log('this.inventoryItems:', this.inventoryItems);
         console.log('this.inventoryItems.length:', this.inventoryItems ? this.inventoryItems.length : 'undefined');
@@ -409,6 +452,54 @@ class MenuManager {
         console.log('Right grid found:', !!rightGrid);
         console.log('Total left grids found:', allLeftGrids.length);
         console.log('Total right grids found:', allRightGrids.length);
+        
+        // DEBUG: Inspeccionar estilos computados de los grids
+        if (leftGrid) {
+            const leftStyles = window.getComputedStyle(leftGrid);
+            console.log('=== LEFT GRID STYLES ===');
+            console.log('height:', leftStyles.height);
+            console.log('max-height:', leftStyles.maxHeight);
+            console.log('overflow-y:', leftStyles.overflowY);
+            console.log('display:', leftStyles.display);
+            console.log('grid-template-columns:', leftStyles.gridTemplateColumns);
+            console.log('flex:', leftStyles.flex);
+            console.log('min-height:', leftStyles.minHeight);
+            console.log('offsetHeight:', leftGrid.offsetHeight);
+            console.log('scrollHeight:', leftGrid.scrollHeight);
+            console.log('clientHeight:', leftGrid.clientHeight);
+            
+            // DEBUG: Verificar si los estilos CSS están siendo aplicados
+            console.log('=== CSS STYLE SOURCES ===');
+            console.log('CSS max-height applied:', leftStyles.maxHeight !== 'none');
+            console.log('CSS overflow-y applied:', leftStyles.overflowY !== 'visible');
+            console.log('CSS flex applied:', leftStyles.flex !== '0 1 auto');
+            
+            // DEBUG: Verificar el contenedor padre
+            const parent = leftGrid.parentElement;
+            if (parent) {
+                const parentStyles = window.getComputedStyle(parent);
+                console.log('=== PARENT CONTAINER STYLES ===');
+                console.log('parent display:', parentStyles.display);
+                console.log('parent flex:', parentStyles.flex);
+                console.log('parent height:', parentStyles.height);
+                console.log('parent overflow:', parentStyles.overflow);
+            }
+        }
+        
+        if (rightGrid) {
+            const rightStyles = window.getComputedStyle(rightGrid);
+            console.log('=== RIGHT GRID STYLES ===');
+            console.log('height:', rightStyles.height);
+            console.log('max-height:', rightStyles.maxHeight);
+            console.log('overflow-y:', rightStyles.overflowY);
+            console.log('display:', rightStyles.display);
+            console.log('grid-template-columns:', rightStyles.gridTemplateColumns);
+            console.log('flex:', rightStyles.flex);
+            console.log('min-height:', rightStyles.minHeight);
+            console.log('offsetHeight:', rightGrid.offsetHeight);
+            console.log('scrollHeight:', rightGrid.scrollHeight);
+            console.log('clientHeight:', rightGrid.clientHeight);
+        }
         allLeftGrids.forEach((grid, index) => {
             console.log(`Left grid ${index}:`, grid);
             console.log(`Left grid ${index} parent:`, grid.parentElement);
