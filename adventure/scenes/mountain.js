@@ -1,92 +1,92 @@
-// Mountain Scene - Escena de montaña
+// Mountain Scene - Escena de montaña (Patient Zero Rehabilitation Clinic)
 class MountainScene extends BaseScene {
     constructor() {
-        super('mountain', 'Mountain');
+        super('mountain', 'Patient Zero Rehabilitation Clinic');
         this.imagePath = 'scenes/images/mountain.png';
         this.overlayText = {
-            title: 'Mountain Peak',
-            subtitle: 'The highest point of your journey...'
+            title: 'Patient Zero Rehabilitation Clinic',
+            subtitle: 'Where wallets go to recover from memecoin season...'
         };
         console.log('MountainScene constructor called with overlayText:', this.overlayText);
     }
 
     setupHotspots() {
         console.log('MountainScene setupHotspots called');
-        // Hotspots para la escena de montaña con temática web3
+        // Hotspots para la clínica de rehabilitación con temática web3
         this.hotspots = [
-            // Peak - cima de la montaña
+            // Clinic Sign - letrero de la clínica
             {
-                name: 'Mountain Peak',
-                x: [45.0, 55.0],
-                y: [15.0, 25.0],
-                action: 'explore_peak',
+                name: 'Clinic Sign',
+                x: [13.1, 43.1],
+                y: [77.1, 77.7],
+                action: 'read_sign',
                 messages: {
-                    explore: "🏔️ You've reached the peak! The view is absolutely breathtaking... and so is the gas fee!",
-                    use: "🔭 You use the peak as a vantage point. You can see all the way to the next blockchain!",
-                    take: "💎 You try to take the peak. It's too heavy, but you find a rare mountain NFT!",
-                    inspect: "🔍 The peak is covered in ancient runes that spell out 'HODL' in binary.",
-                    open: "🚪 You can't open a mountain peak, but you can open your mind to new possibilities!",
-                    close: "🔒 The peak is always open. It's a public good!"
+                    explore: "🏥 You see the ominous sign: 'Patient Zero Rehabilitation Clinic'. Where they send wallets that went too deep into memecoin season.",
+                    use: "📖 You read the sign carefully. The fine print mentions 'No refunds, no regrets, only recovery'.",
+                    take: "🚫 You can't take the sign, but you can take a screenshot for your portfolio losses.",
+                    inspect: "🔍 The sign has a QR code that leads to a support group for rekt traders.",
+                    open: "📋 The sign doesn't open, but it opens your eyes to the reality of crypto addiction.",
+                    close: "🚪 You can't close the sign, but you can close your trading app."
                 }
             },
-            // Rocks - rocas
+            // Winding Path - sendero serpenteante
             {
-                name: 'Rocks',
-                x: [25.0, 35.0],
-                y: [40.0, 50.0],
-                action: 'explore_rocks',
+                name: 'Winding Path',
+                x: [69.2, 82.7],
+                y: [58.8, 96.2],
+                action: 'follow_path',
                 messages: {
-                    explore: "🪨 Solid rocks, as reliable as a well-audited smart contract!",
-                    use: "🛠️ You use the rocks to build a small shelter. Very decentralized!",
-                    take: "💎 You pick up a rock. It's a rare geological NFT!",
-                    inspect: "🔍 The rocks have fossilized memes embedded in them.",
-                    open: "🪨 Rocks don't open, but they do contain hidden treasures!",
-                    close: "🔒 Rocks are always closed. They're immutable!"
+                    explore: "🛤️ A long winding path leads to the clinic. A long journey ahead. Hope you've got stamina... and a decent gas allowance.",
+                    use: "🚶 You use the path to approach the clinic. Each step feels like another failed trade.",
+                    take: "🛤️ You can't take the path, but you can follow it to recovery... or more losses.",
+                    inspect: "🔍 The path is paved with broken dreams and empty wallets. Some say you can still hear the sound of liquidations.",
+                    open: "🚪 The path is always open. It's a one-way road to financial therapy.",
+                    close: "🔒 You can't close the path, but you can close your positions."
                 }
             },
-            // Path - sendero
+            // Clinic Lights - luces de la clínica
             {
-                name: 'Mountain Path',
-                x: [60.0, 70.0],
-                y: [60.0, 70.0],
-                action: 'explore_path',
+                name: 'Clinic Lights',
+                x: [84.1, 84.1],
+                y: [40.3, 40.3],
+                action: 'observe_lights',
                 messages: {
-                    explore: "🛤️ A winding path leads down the mountain. The journey is the destination!",
-                    use: "🚶 You use the path to descend. Each step is a new block in the chain!",
-                    take: "🛤️ You can't take the path, but you can follow it to new adventures!",
-                    inspect: "🔍 The path is paved with good intentions and some lost private keys.",
-                    open: "🚪 The path is always open. It's permissionless!",
-                    close: "🔒 You can't close a mountain path. It's decentralized!"
+                    explore: "💡 The lights are on in the clinic. But are they expecting you? Or just logging every approach?",
+                    use: "🔦 You use the lights to signal for help. Maybe they'll give you a discount on therapy.",
+                    take: "💡 You can't take the lights, but you can take their advice on risk management.",
+                    inspect: "🔍 The lights flicker like unstable protocols. Reality here is barely forked.",
+                    open: "💡 The lights don't open, but they do illuminate your poor trading decisions.",
+                    close: "🔒 You can't close the lights, but you can close your leverage positions."
                 }
             },
-            // Sky - cielo
+            // Tree Line - línea de árboles
             {
-                name: 'Sky',
-                x: [10.0, 20.0],
-                y: [10.0, 20.0],
-                action: 'explore_sky',
+                name: 'Tree Line',
+                x: [60.0, 60.0],
+                y: [71.4, 71.4],
+                action: 'observe_trees',
                 messages: {
-                    explore: "🌌 The sky is clear and full of stars. Each one could be a different token!",
-                    use: "🚀 You use the sky to navigate. The stars form a constellation of crypto symbols!",
-                    take: "⭐ You try to grab a star. It turns into a staking reward!",
-                    inspect: "🔭 You spot a shooting star. It's actually a flash loan!",
-                    open: "✨ The sky is always open. It's the ultimate open source!",
-                    close: "☁️ The sky can't be closed. It's censorship-resistant!"
+                    explore: "🌲 Something's moving in the shadows of the trees... could be a dev debugging or just your paranoia.",
+                    use: "🌳 You use the trees for cover. Maybe the clinic staff won't see you coming.",
+                    take: "🍃 You can't take the trees, but you can take shelter under them while you reconsider your life choices.",
+                    inspect: "🔍 The trees whisper forgotten secrets about the patients who never returned from the clinic.",
+                    open: "🌲 The trees don't open, but they do provide a natural barrier from the outside world.",
+                    close: "🔒 You can't close the trees, but you can close your eyes and pretend this is all a bad dream."
                 }
             },
-            // Trees - árboles
+            // Mountain Sky - cielo de la montaña
             {
-                name: 'Trees',
-                x: [75.0, 85.0],
-                y: [30.0, 40.0],
-                action: 'explore_trees',
+                name: 'Mountain Sky',
+                x: [18.8, 64.2],
+                y: [25.6, 32.7],
+                action: 'observe_sky',
                 messages: {
-                    explore: "🌲 Ancient trees stand tall. They've seen more market cycles than you!",
-                    use: "🌳 You use the trees for shade. They provide natural cooling, like a good DeFi protocol!",
-                    take: "🍃 You can't take the trees, but you can plant new ones and earn carbon credits!",
-                    inspect: "🔍 The trees have QR codes carved into their bark. Each leads to a different dApp!",
-                    open: "🌲 Trees don't open, but they do provide oxygen for your brain to process crypto!",
-                    close: "🔒 Trees are always growing. They're unstoppable!"
+                    explore: "🌌 Clouds shift like unstable protocols in the mountain sky. Reality here is barely forked.",
+                    use: "☁️ You use the sky to navigate. The clouds form patterns that look suspiciously like candlestick charts.",
+                    take: "⭐ You try to grab a cloud. It turns into a vaporware token.",
+                    inspect: "🔭 You spot a shooting star. It's actually a flash loan gone wrong.",
+                    open: "✨ The sky is always open. It's the ultimate open source, unlike some closed protocols.",
+                    close: "☁️ The sky can't be closed. It's censorship-resistant, unlike some centralized exchanges."
                 }
             }
         ];
