@@ -250,12 +250,18 @@ class MenuManager {
                             return null;
                         }
                         
+                        // Log para debuggear qué tokens tiene el usuario
+                        console.log(`Processing token ${tokenIdInt} (${title})`);
+                        
                         // Filtrar para tokens 10000, 10001, 10002, 10003, 10004, 10005, y 262144
                         if (tokenIdInt !== 10000 && tokenIdInt !== 10001 && tokenIdInt !== 10002 && 
                             tokenIdInt !== 10003 && tokenIdInt !== 10004 && tokenIdInt !== 10005 && 
                             tokenIdInt !== 262144) {
+                            console.log(`Excluding token ${tokenIdInt} - not in allowed list`);
                             return null;
                         }
+                        
+                        console.log(`Including token ${tokenIdInt} - in allowed list`);
                         
                         // Extraer título/nombre
                         let title = `Token #${tokenIdInt}`;
