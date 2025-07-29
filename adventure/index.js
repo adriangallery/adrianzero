@@ -206,23 +206,50 @@ class MenuManager {
             
             console.log(`Loading ${tokenType} tokens from contract: ${contractAddress}`);
             
-            // Usar Alchemy REST API directamente
-            let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${this.currentAccount}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=50&tokenType=${tokenType}`;
+            // Cargar todas las páginas de NFTs
+            let allNfts = [];
+            let pageKey = null;
+            let pageCount = 0;
             
-            console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
+            do {
+                pageCount++;
+                console.log(`Loading page ${pageCount}...`);
+                
+                // Construir URL con paginación
+                let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${this.currentAccount}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=50&tokenType=${tokenType}`;
+                
+                if (pageKey) {
+                    alchemyUrl += `&pageKey=${pageKey}`;
+                }
+                
+                console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
+                
+                const alchemyResponse = await fetch(alchemyUrl);
+                
+                if (!alchemyResponse.ok) {
+                    throw new Error(`Error getting NFTs from Alchemy API: ${alchemyResponse.status}`);
+                }
+                
+                const nftsData = await alchemyResponse.json();
+                console.log(`Page ${pageCount} data received:`, nftsData);
+                
+                // Agregar NFTs de esta página al array total
+                if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
+                    allNfts = allNfts.concat(nftsData.ownedNfts);
+                }
+                
+                // Obtener pageKey para la siguiente página
+                pageKey = nftsData.pageKey;
+                
+                console.log(`Page ${pageCount}: ${nftsData.ownedNfts ? nftsData.ownedNfts.length : 0} NFTs, total so far: ${allNfts.length}, has next page: ${!!pageKey}`);
+                
+            } while (pageKey && pageCount < 10); // Límite de seguridad para evitar bucles infinitos
             
-            const alchemyResponse = await fetch(alchemyUrl);
+            console.log(`Total NFTs loaded: ${allNfts.length} from ${pageCount} pages`);
             
-            if (!alchemyResponse.ok) {
-                throw new Error(`Error getting NFTs from Alchemy API: ${alchemyResponse.status}`);
-            }
-            
-            const nftsData = await alchemyResponse.json();
-            console.log(`NFT data received:`, nftsData);
-            
-            // Procesar NFTs y filtrar para tokens 10000, 10001, y 10002
-            if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
-                const tokens = nftsData.ownedNfts.map(nft => {
+            // Procesar todos los NFTs y filtrar para tokens 10000, 10001, 10002, 10003, 10004, 10005, y 262144
+            if (allNfts.length > 0) {
+                const tokens = allNfts.map(nft => {
                     try {
                         // Extraer tokenId
                         let tokenId;
@@ -250,6 +277,19 @@ class MenuManager {
                             return null;
                         }
                         
+                        // Extraer título/nombre primero para el log
+                        let title = `Token #${tokenIdInt}`;
+                        
+                        if (nft.title) {
+                            title = nft.title;
+                        } else if (nft.name) {
+                            title = nft.name;
+                        } else if (nft.metadata && nft.metadata.name) {
+                            title = nft.metadata.name;
+                        } else if (nft.contract && nft.contract.name) {
+                            title = `${nft.contract.name} #${tokenIdInt}`;
+                        }
+                        
                         // Log para debuggear qué tokens tiene el usuario
                         console.log(`Processing token ${tokenIdInt} (${title})`);
                         
@@ -262,19 +302,6 @@ class MenuManager {
                         }
                         
                         console.log(`Including token ${tokenIdInt} - in allowed list`);
-                        
-                        // Extraer título/nombre
-                        let title = `Token #${tokenIdInt}`;
-                        
-                        if (nft.title) {
-                            title = nft.title;
-                        } else if (nft.name) {
-                            title = nft.name;
-                        } else if (nft.metadata && nft.metadata.name) {
-                            title = nft.metadata.name;
-                        } else if (nft.contract && nft.contract.name) {
-                            title = `${nft.contract.name} #${tokenIdInt}`;
-                        }
                         
                         // Extraer URL de imagen
                         let mediaUrl = "";
