@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'VT323', monospace;
+  }
+  
+  body {
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    color: #00ff00;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  .retro-button {
+    @apply bg-retro-dark border-2 border-retro-primary text-retro-primary 
+           px-4 py-2 font-pixel text-lg cursor-pointer transition-all duration-200
+           hover:bg-retro-primary hover:text-retro-dark hover:shadow-lg hover:shadow-retro-primary/50
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-retro-primary/50;
+  }
+  
+  .retro-button-secondary {
+    @apply bg-retro-dark border-2 border-retro-secondary text-retro-secondary 
+           px-4 py-2 font-pixel text-lg cursor-pointer transition-all duration-200
+           hover:bg-retro-secondary hover:text-retro-dark hover:shadow-lg hover:shadow-retro-secondary/50
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-retro-secondary/50;
+  }
+  
+  .retro-input {
+    @apply bg-retro-dark border-2 border-retro-primary text-retro-primary 
+           px-3 py-2 font-pixel text-base focus:outline-none focus:ring-2 focus:ring-retro-primary/50
+           placeholder-retro-gray;
+  }
+  
+  .retro-card {
+    @apply bg-retro-dark border-2 border-retro-primary p-4 shadow-lg shadow-retro-primary/20;
+  }
+  
+  .retro-panel {
+    @apply bg-retro-dark border-2 border-retro-primary p-4;
+  }
+  
+  .pixel-border {
+    @apply border-2 border-retro-primary;
+    image-rendering: pixelated;
+  }
+  
+  .neon-glow {
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+  }
+  
+  .scan-line {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .scan-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00ff00, transparent);
+    animation: scan 3s linear infinite;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 2px 2px 0px #000000;
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 4px 4px 0px #000000;
+  }
+  
+  .pixel-perfect {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00cc00;
+}
+
+/* Selection */
+::selection {
+  background: #00ff00;
+  color: #000000;
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid #00ff00;
+  outline-offset: 2px;
+} 
