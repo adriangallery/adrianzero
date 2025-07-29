@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ],
+  "functions": {
+    "app/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_CONTRACT_ADDRESS": "0x8e439e92f3a884716b39294248b0a47f645f0854",
+    "NEXT_PUBLIC_TOKEN_ADDRESS": "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea"
+  }
+} 
