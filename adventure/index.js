@@ -109,8 +109,28 @@ class MenuManager {
         // Actualizar comando actual
         this.currentCommand = command;
         
+        // Actualizar display del comando en la escena actual si hay un item seleccionado
+        const activeScene = document.querySelector('.screen.active');
+        if (activeScene) {
+            const sceneId = activeScene.id;
+            let scene = null;
+            
+            // Buscar en sceneManagerV2 primero
+            if (window.sceneManagerV2 && window.sceneManagerV2.scenes) {
+                scene = window.sceneManagerV2.scenes.get(sceneId);
+            }
+            
+            // Fallback a sceneManager
+            if (!scene && window.sceneManager && window.sceneManager.scenes) {
+                scene = window.sceneManager.scenes.get(sceneId);
+            }
+            
+            if (scene && scene.updateCommandDisplay) {
+                scene.updateCommandDisplay();
+            }
+        }
+        
         // Removed OPEN command logic - now handled by USE + Computer in upstairs scene
-
     }
 
     // Obtener comando actual
@@ -566,6 +586,7 @@ class MenuManager {
     createInventoryItemElement(item) {
         const itemElement = document.createElement('div');
         itemElement.className = 'inventory-item';
+        itemElement.setAttribute('data-token-id', item.tokenId);
         
         const imageUrl = item.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjIwIiB5PSIyMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
         
@@ -577,7 +598,13 @@ class MenuManager {
         
         // Agregar evento click para selección de item
         itemElement.addEventListener('click', () => {
-            this.selectInventoryItem(item);
+            // Usar la nueva función global para manejar clicks en items
+            if (window.handleInventoryItemClick) {
+                window.handleInventoryItemClick(item);
+            } else {
+                // Fallback al método local si la función global no está disponible
+                this.selectInventoryItem(item);
+            }
         });
         
         return itemElement;

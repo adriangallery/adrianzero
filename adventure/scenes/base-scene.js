@@ -224,11 +224,11 @@ const baseSceneStyles = `
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 80px;
+    height: 60px;
     box-sizing: border-box;
     overflow: hidden;
     min-width: 0;
-    margin: 1px;
+    margin: 0px;
 }
 
 .inventory-item:hover {
@@ -238,6 +238,9 @@ const baseSceneStyles = `
 
 .inventory-item.selected {
     border: 2px solid #ffff00;
+    background: rgba(255, 255, 0, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
 }
 
 .inventory-item img {
@@ -294,9 +297,9 @@ const baseSceneStyles = `
     }
     
     .inventory-item {
-        height: 70px;
+        height: 50px;
         padding: 2px 1px;
-        margin: 1px;
+        margin: 0px;
     }
     
     .inventory-item img {
@@ -431,6 +434,55 @@ class BaseScene {
             title: '',
             subtitle: ''
         };
+        this.selectedItem = null; // Item seleccionado del inventario
+        this.itemInteractions = {
+            // Definir interacciones específicas: comando + item + hotspot = mensaje/acción
+            'use': {
+                'og floppy': {
+                    'door': 'You can use the OG Floppy disc with the door. It might contain important data.',
+                    'computer': 'You insert the OG Floppy disc into the computer. The screen flickers to life.',
+                    'default': 'You examine the OG Floppy disc. It contains mysterious data.'
+                },
+                'green floppy': {
+                    'door': 'You can use the Green Floppy disc with the door. It might contain important data.',
+                    'computer': 'You insert the Green Floppy disc into the computer. The screen flickers to life.',
+                    'default': 'You examine the Green Floppy disc. It contains mysterious data.'
+                },
+                'glitched floppy': {
+                    'door': 'You can use the Glitched Floppy disc with the door. It might contain important data.',
+                    'computer': 'You insert the Glitched Floppy disc into the computer. The screen flickers to life.',
+                    'default': 'You examine the Glitched Floppy disc. It contains mysterious data.'
+                },
+                'floppy': {
+                    'door': 'You can use the floppy disc with the door. It might contain important data.',
+                    'computer': 'You insert the floppy disc into the computer. The screen flickers to life.',
+                    'default': 'You examine the floppy disc. It contains mysterious data.'
+                },
+                'serum': {
+                    'door': 'The serum won\'t work on the door. You need to find the right target.',
+                    'computer': 'You can\'t use the serum on the computer.',
+                    'default': 'You hold the serum carefully. It looks valuable.'
+                },
+                'key': {
+                    'door': 'You use the key on the door. It clicks open!',
+                    'computer': 'The key doesn\'t fit the computer.',
+                    'default': 'You examine the key. It looks like it could open something.'
+                },
+                'default': {
+                    'default': 'You can\'t use that here.'
+                }
+            },
+            'take': {
+                'default': {
+                    'default': 'You can\'t take that.'
+                }
+            },
+            'open': {
+                'default': {
+                    'default': 'You can\'t open that.'
+                }
+            }
+        };
     }
 
     // Inicializar la escena
@@ -448,6 +500,77 @@ class BaseScene {
     // Configurar event listeners (debe ser implementado por cada escena)
     setupEventListeners() {
         throw new Error('setupEventListeners must be implemented by subclass');
+    }
+
+    // Seleccionar item del inventario
+    selectItem(item) {
+        console.log('BaseScene.selectItem called with:', item);
+        this.selectedItem = item;
+        this.updateCommandDisplay();
+        console.log(`Item selected: ${item ? item.name : 'none'}`);
+    }
+
+    // Actualizar display del comando con item seleccionado
+    updateCommandDisplay() {
+        const command = getCurrentCommand();
+        const commandBtn = document.querySelector(`.command-btn.active`);
+        
+        console.log('updateCommandDisplay called:', {
+            command: command,
+            selectedItem: this.selectedItem,
+            commandBtn: commandBtn
+        });
+        
+        if (commandBtn) {
+            if (this.selectedItem) {
+                // Usar title en lugar de name, ya que los items del inventario tienen title
+                const itemName = this.selectedItem.title || this.selectedItem.name || 'ITEM';
+                const newText = `${command.toUpperCase()} "${itemName.toUpperCase()}" WITH...`;
+                commandBtn.textContent = newText;
+                commandBtn.style.background = 'rgba(255, 255, 0, 0.3)';
+                commandBtn.style.borderColor = '#ffff00';
+                commandBtn.style.color = '#ffff00';
+                console.log('Updated command button text to:', newText);
+            } else {
+                commandBtn.textContent = command.toUpperCase();
+                commandBtn.style.background = 'rgba(0, 255, 0, 0.3)';
+                commandBtn.style.borderColor = '#ffff00';
+                commandBtn.style.color = '#ffff00';
+                console.log('Reset command button text to:', command.toUpperCase());
+            }
+        } else {
+            console.log('No active command button found');
+        }
+    }
+
+    // Actualizar selección visual del inventario
+    updateInventorySelection() {
+        // Remover selección previa
+        document.querySelectorAll('.inventory-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Añadir selección al item actual
+        if (this.selectedItem) {
+            const itemElement = document.querySelector(`[data-token-id="${this.selectedItem.tokenId}"]`);
+            if (itemElement) {
+                itemElement.classList.add('selected');
+            }
+        }
+    }
+
+    // Obtener mensaje de interacción según comando, item y hotspot
+    getInteractionMessage(command, item, hotspot) {
+        const interactions = this.itemInteractions[command];
+        if (!interactions) return 'You can\'t do that.';
+
+        // Usar title en lugar de name, ya que los items del inventario tienen title
+        const itemName = item ? (item.title || item.name || 'default') : 'default';
+        const itemInteractions = interactions[itemName.toLowerCase()];
+        if (!itemInteractions) return 'You can\'t use that item.';
+
+        const message = itemInteractions[hotspot ? hotspot.name.toLowerCase() : 'default'];
+        return message || itemInteractions['default'] || 'You can\'t use that here.';
     }
 
     // Asegurar que el popup de mint existe
@@ -614,6 +737,12 @@ class BaseScene {
         
         const command = getCurrentCommand();
         
+        // Si hay un item seleccionado, usar lógica de interacción con item
+        if (this.selectedItem) {
+            this.handleItemInteraction(hotspot, x, y);
+            return;
+        }
+        
         switch (command) {
             case 'explore':
                 this.handleExploreCommand(hotspot, x, y);
@@ -632,9 +761,36 @@ class BaseScene {
         }
     }
 
+    // Manejar interacción con item seleccionado
+    handleItemInteraction(hotspot, x, y) {
+        const command = getCurrentCommand();
+        const message = this.getInteractionMessage(command, this.selectedItem, hotspot);
+        
+        showFloatingText(message, x, y);
+        
+        // Deseleccionar item después de usarlo
+        this.selectedItem = null;
+        this.updateCommandDisplay();
+        
+        // Actualizar visual del inventario
+        this.updateInventorySelection();
+    }
+
     // Manejar click general (fuera de hotspots)
     handleGeneralClick(x, y) {
         const command = getCurrentCommand();
+        
+        // Si hay un item seleccionado, mostrar mensaje contextual
+        if (this.selectedItem) {
+            const message = this.getInteractionMessage(command, this.selectedItem, null);
+            showFloatingText(message, x, y);
+            
+            // Deseleccionar item después de usarlo
+            this.selectedItem = null;
+            this.updateCommandDisplay();
+            this.updateInventorySelection();
+            return;
+        }
         
         // if (command === 'explore') {
             // showNotification(`You clicked at ${x.toFixed(1)}%, ${y.toFixed(1)}%`);
@@ -1036,4 +1192,105 @@ function closeTraitLabPopup() {
 
 // Make new functions globally available
 window.openTraitLabPopup = openTraitLabPopup;
-window.closeTraitLabPopup = closeTraitLabPopup; 
+window.closeTraitLabPopup = closeTraitLabPopup;
+
+// Función global para manejar clicks en items del inventario
+function handleInventoryItemClick(item) {
+    console.log('Inventory item clicked:', item);
+    
+    // Obtener la escena actual
+    const activeScene = document.querySelector('.screen.active');
+    if (!activeScene) {
+        console.log('No active scene found');
+        return;
+    }
+    
+    const sceneId = activeScene.id;
+    console.log('Active scene ID:', sceneId);
+    
+    // Buscar la instancia de la escena en el sceneManagerV2
+    let scene = null;
+    
+    if (window.sceneManagerV2 && window.sceneManagerV2.scenes) {
+        scene = window.sceneManagerV2.scenes.get(sceneId);
+        console.log('Found scene in sceneManagerV2:', scene);
+    }
+    
+    if (!scene) {
+        console.log('Scene not found in sceneManagerV2, trying alternative methods...');
+        // Intentar con sceneManager como fallback
+        if (window.sceneManager && window.sceneManager.scenes) {
+            scene = window.sceneManager.scenes.get(sceneId);
+            console.log('Found scene in sceneManager:', scene);
+        }
+    }
+    
+    if (scene) {
+        // Verificar si el item ya está seleccionado para deseleccionarlo
+        if (scene.selectedItem && scene.selectedItem.tokenId === item.tokenId) {
+            console.log('Deselecting item:', item.title);
+            scene.selectedItem = null;
+            scene.updateCommandDisplay();
+            scene.updateInventorySelection();
+            
+            // Actualizar también el MenuManager
+            if (window.menuManager) {
+                window.menuManager.selectedInventoryItem = null;
+            }
+            
+            showNotification(`Deselected: ${item.title}`, 'info');
+            return;
+        }
+        
+        // Seleccionar el nuevo item
+        scene.selectItem(item);
+        scene.updateInventorySelection();
+        
+        // Actualizar también el MenuManager
+        if (window.menuManager) {
+            window.menuManager.selectedInventoryItem = item;
+        }
+        
+        showNotification(`Selected: ${item.title} (ID: ${item.tokenId})`, 'success');
+    } else {
+        console.error('Scene not found for ID:', sceneId);
+        console.log('Available scene managers:', {
+            sceneManagerV2: !!window.sceneManagerV2,
+            sceneManager: !!window.sceneManager,
+            gameManager: !!window.gameManager
+        });
+    }
+}
+
+// Make function globally available
+window.handleInventoryItemClick = handleInventoryItemClick;
+
+// Función de debug para probar el sistema
+function debugInventorySystem() {
+    console.log('=== DEBUG INVENTORY SYSTEM ===');
+    console.log('Active scene:', document.querySelector('.screen.active')?.id);
+    console.log('SceneManagerV2 available:', !!window.sceneManagerV2);
+    console.log('SceneManager available:', !!window.sceneManager);
+    console.log('MenuManager available:', !!window.menuManager);
+    console.log('Current command:', getCurrentCommand());
+    
+    if (window.sceneManagerV2) {
+        console.log('SceneManagerV2 scenes:', Array.from(window.sceneManagerV2.scenes.keys()));
+    }
+    
+    const activeScene = document.querySelector('.screen.active');
+    if (activeScene && window.sceneManagerV2) {
+        const scene = window.sceneManagerV2.scenes.get(activeScene.id);
+        console.log('Current scene instance:', scene);
+        if (scene) {
+            console.log('Scene selectedItem:', scene.selectedItem);
+        }
+    }
+    
+    console.log('Active command button:', document.querySelector('.command-btn.active'));
+    console.log('Inventory items:', document.querySelectorAll('.inventory-item').length);
+    console.log('=== END DEBUG ===');
+}
+
+// Make debug function globally available
+window.debugInventorySystem = debugInventorySystem; 
