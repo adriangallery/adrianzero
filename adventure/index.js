@@ -356,22 +356,14 @@ class MenuManager {
         return activeScene;
     }
 
-    // ✅ SOLUCIÓN: Buscar dentro de la escena activa, no globalmente
+    // ✅ SOLUCIÓN: Buscar los grids globalmente, no dentro de la escena activa
     displayInventory() {
         console.log('Displaying inventory items:', this.inventoryItems);
         
-        // ✅ SOLUCIÓN: Buscar dentro de la escena activa, no globalmente
-        const activeScene = this.getActiveScene();
-        if (!activeScene) {
-            console.warn('No active scene found for inventory display');
-            return;
-        }
-
-        // Buscar grids de inventario dentro de la escena activa específicamente
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
-        const rightGrid = activeScene.querySelector('#inventory-grid-right');
+        // Buscar grids de inventario globalmente en el documento
+        const leftGrid = document.querySelector('#inventory-grid-left');
+        const rightGrid = document.querySelector('#inventory-grid-right');
         
-        console.log('Active scene:', activeScene.id || 'unknown');
         console.log('Left grid found:', !!leftGrid);
         console.log('Right grid found:', !!rightGrid);
         
@@ -398,7 +390,7 @@ class MenuManager {
                 }
             }
         } else {
-            console.warn('Left grid not found in active scene');
+            console.warn('Left grid not found in document');
         }
         
         if (rightGrid) {
@@ -419,6 +411,8 @@ class MenuManager {
                     console.log('Added item to right grid:', item.title);
                 });
             }
+        } else {
+            console.warn('Right grid not found in document');
         }
     }
 
