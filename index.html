@@ -635,28 +635,28 @@
             padding: 20px;
             margin-top: 30px;
             text-align: left;
-        }
+            }
 
         .contract-info h4 {
             color: #00ff00;
             margin-bottom: 15px;
             font-size: 1.3rem;
-        }
+            }
 
         .contract-detail {
             margin-bottom: 10px;
             font-size: 1.1rem;
-        }
+            }
 
         .contract-detail strong {
             color: #00aaff;
-        }
+            }
 
         .contract-address {
             font-family: monospace;
             color: #cccccc;
             word-break: break-all;
-        }
+            }
 
         /* Responsive */
         @media (max-width: 992px) {
@@ -689,25 +689,25 @@
 
             .kit-contents {
                 gap: 20px;
-            }
+        }
 
             .kit-item {
                 padding: 20px;
-            }
+        }
 
             .kit-item-image {
                 width: 160px;
                 height: 160px;
-            }
+        }
 
             .purchase-interface {
                 padding: 25px;
-            }
+        }
 
             .preview-grid {
                 grid-template-columns: 1fr;
                 gap: 15px;
-            }
+        }
         }
 
         /* Fade in animations */
@@ -774,12 +774,12 @@
                 <div class="kit-item fade-in">
                     <div class="kit-item-image">
                         <img src="https://adrianlab.vercel.app/api/render/1" alt="AdrianZERO NFT">
-                    </div>
+            </div>
                     <h3 class="kit-item-title">AdrianZERO NFT</h3>
                     <p class="kit-item-desc">Base character NFT</p>
                     <p class="kit-item-amount">1 NFT</p>
-                </div>
-
+        </div>
+        
                 <div class="kit-item fade-in">
                     <div class="kit-item-image">
                         <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif" alt="STARTER Floppy Disc">
@@ -788,26 +788,26 @@
                     <p class="kit-item-desc">Contains rare traits to customize</p>
                     <p class="kit-item-amount">1 Disc</p>
                 </div>
-
+                
                 <div class="kit-item fade-in">
                     <div class="kit-item-image">
                         <img src="components/images/ADRIAN_Coin_Back.gif" alt="$ADRIAN Tokens">
-                    </div>
+                </div>
                     <h3 class="kit-item-title">$ADRIAN Tokens</h3>
                     <p class="kit-item-desc">Ecosystem currency</p>
                     <p class="kit-item-amount" id="adrianTokenAmount">Loading...</p>
-                </div>
             </div>
-
+                </div>
+                
             <!-- Purchase Interface -->
             <div class="purchase-interface fade-in">
                 <h3 class="purchase-title">Buy Kit</h3>
                 
-                <div class="quantity-controls">
+                    <div class="quantity-controls">
                     <button class="quantity-btn" onclick="changeQuantity(-1)" id="decreaseBtn">-</button>
                     <div class="quantity-display" id="quantity">1</div>
                     <button class="quantity-btn" onclick="changeQuantity(1)" id="increaseBtn">+</button>
-                </div>
+                    </div>
 
                 <div class="cost-breakdown">
                     <div class="cost-row">
@@ -823,8 +823,8 @@
                         <span class="cost-label">Total Cost:</span>
                         <span class="cost-value total-cost" id="totalCost">Loading...</span>
                         <span class="usd-price" id="totalUsdPrice">(Loading USD)</span>
-                    </div>
                 </div>
+            </div>
 
                 <!-- Wallet Connection -->
                 <div class="wallet-section">
@@ -833,7 +833,7 @@
                         <div class="wallet-address" id="walletAddress"></div>
                     </div>
                 </div>
-
+                
                 <button class="purchase-btn" id="purchaseBtn" onclick="buyKit()" disabled>
                     Buy Starter Kit
                 </button>
@@ -850,11 +850,11 @@
                     </div>
                     <div class="contract-detail">
                         <strong>Status:</strong> <span id="kitStatusInfo">Loading...</span>
-                    </div>
+                </div>
                     <div class="contract-detail">
                         <strong>Contract:</strong> <span id="contractAddress" class="contract-address">0xF278a1060900005aD5b9077602b09A513541f5d2</span>
-                    </div>
-                </div>
+            </div>
+        </div>
             </div>
         </div>
 
@@ -865,9 +865,9 @@
                 <div class="preview-item">
                     <div class="preview-image">
                         <img src="https://adrianlab.vercel.app/api/render/1" alt="NFT">
-                    </div>
+            </div>
                     <div class="preview-label">1 AdrianZERO</div>
-                </div>
+            </div>
                 <div class="preview-item">
                     <div class="preview-image">
                         <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif" alt="Disc">
@@ -1076,7 +1076,7 @@
                         showStatus('Kit sales are currently paused', 'error');
                     } else if (!kitConfig.active) {
                         showStatus('Kit sales are not active', 'error');
-                    }
+        }
                 }
                 
                 // Load additional info
@@ -1125,8 +1125,8 @@
             
             // Update USD prices if available
             updateUSDPrices();
-        }
-
+                }
+                
         // Fetch ETH price from CoinGecko API
         async function fetchETHPrice() {
             try {
@@ -1157,8 +1157,8 @@
                     console.error('Error fetching ETH price from fallback:', fallbackError);
                 }
             }
-        }
-
+                }
+                
         // Update USD prices display
         function updateUSDPrices() {
             if (ethPriceUSD > 0 && kitPrice) {
@@ -1235,13 +1235,13 @@
 
         function showStatus(message, statusType) {
             const statusEl = document.getElementById('statusMessage');
-            statusEl.className = `status-message ${statusType}`;
-            statusEl.textContent = message;
-            statusEl.style.display = 'block';
-            
-            if (statusType === 'success') {
-                setTimeout(() => {
-                    statusEl.style.display = 'none';
+                        statusEl.className = `status-message ${statusType}`;
+                        statusEl.textContent = message;
+                        statusEl.style.display = 'block';
+                        
+                        if (statusType === 'success') {
+                            setTimeout(() => {
+                                statusEl.style.display = 'none';
                 }, 10000);
             }
         }

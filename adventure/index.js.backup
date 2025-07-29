@@ -23,6 +23,7 @@ let musicInitialized = false;
 let ethersLoaded = false;
 let progressInterval;
 let isMobile = false;
+let sceneManager; // Scene manager instance
 
 // Command system variables
 let currentCommand = 'explore'; // Default command
@@ -33,7 +34,7 @@ let currentAccount = null;
 let inventoryItems = [];
 let selectedInventoryItem = null;
 let gameState = {
-    currentLocation: 'basement',
+            currentLocation: 'outside',
     discoveredItems: [],
     interactions: []
 };
@@ -46,6 +47,8 @@ let progressFill, progressText;
 // Variables para orientación del dispositivo
 let landscapeModeEnabled = false;
 let rotateDeviceMessage = null;
+
+
 
 // Menu Manager - Sistema modular para manejar menús en todas las escenas
 class MenuManager {
@@ -105,11 +108,29 @@ class MenuManager {
         
         // Actualizar comando actual
         this.currentCommand = command;
+        
+        // Removed OPEN command logic - now handled by USE + Computer in upstairs scene
+
     }
 
     // Obtener comando actual
     getCurrentCommand() {
         return this.currentCommand;
+    }
+
+    // Verificar si hay un floppy disc o AdrianGF seleccionado
+    hasFloppySelected() {
+        if (!this.selectedInventoryItem) return false;
+        const tokenId = parseInt(this.selectedInventoryItem.tokenId);
+        return (tokenId >= 10000 && tokenId <= 10005); // Solo floppy discs, no AdrianGF
+    }
+
+    // Obtener el floppy seleccionado
+    getSelectedFloppy() {
+        if (this.hasFloppySelected()) {
+            return this.selectedInventoryItem;
+        }
+        return null;
     }
 
     // Actualizar estado de wallet
@@ -185,23 +206,50 @@ class MenuManager {
             
             console.log(`Loading ${tokenType} tokens from contract: ${contractAddress}`);
             
-            // Usar Alchemy REST API directamente
-            let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${this.currentAccount}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=50&tokenType=${tokenType}`;
+            // Cargar todas las páginas de NFTs
+            let allNfts = [];
+            let pageKey = null;
+            let pageCount = 0;
             
-            console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
+            do {
+                pageCount++;
+                console.log(`Loading page ${pageCount}...`);
+                
+                // Construir URL con paginación
+                let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${this.currentAccount}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=50&tokenType=${tokenType}`;
+                
+                if (pageKey) {
+                    alchemyUrl += `&pageKey=${pageKey}`;
+                }
+                
+                console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
+                
+                const alchemyResponse = await fetch(alchemyUrl);
+                
+                if (!alchemyResponse.ok) {
+                    throw new Error(`Error getting NFTs from Alchemy API: ${alchemyResponse.status}`);
+                }
+                
+                const nftsData = await alchemyResponse.json();
+                console.log(`Page ${pageCount} data received:`, nftsData);
+                
+                // Agregar NFTs de esta página al array total
+                if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
+                    allNfts = allNfts.concat(nftsData.ownedNfts);
+                }
+                
+                // Obtener pageKey para la siguiente página
+                pageKey = nftsData.pageKey;
+                
+                console.log(`Page ${pageCount}: ${nftsData.ownedNfts ? nftsData.ownedNfts.length : 0} NFTs, total so far: ${allNfts.length}, has next page: ${!!pageKey}`);
+                
+            } while (pageKey && pageCount < 10); // Límite de seguridad para evitar bucles infinitos
             
-            const alchemyResponse = await fetch(alchemyUrl);
+            console.log(`Total NFTs loaded: ${allNfts.length} from ${pageCount} pages`);
             
-            if (!alchemyResponse.ok) {
-                throw new Error(`Error getting NFTs from Alchemy API: ${alchemyResponse.status}`);
-            }
-            
-            const nftsData = await alchemyResponse.json();
-            console.log(`NFT data received:`, nftsData);
-            
-            // Procesar NFTs y filtrar para tokens 10000, 10001, y 10002
-            if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
-                const tokens = nftsData.ownedNfts.map(nft => {
+            // Procesar todos los NFTs y filtrar para tokens 10000, 10001, 10002, 10003, 10004, 10005, y 262144
+            if (allNfts.length > 0) {
+                const tokens = allNfts.map(nft => {
                     try {
                         // Extraer tokenId
                         let tokenId;
@@ -229,14 +277,7 @@ class MenuManager {
                             return null;
                         }
                         
-                        // Filtrar para tokens 10000, 10001, 10002, 10003, 10004, 10005, y 262144
-                        if (tokenIdInt !== 10000 && tokenIdInt !== 10001 && tokenIdInt !== 10002 && 
-                            tokenIdInt !== 10003 && tokenIdInt !== 10004 && tokenIdInt !== 10005 && 
-                            tokenIdInt !== 262144) {
-                            return null;
-                        }
-                        
-                        // Extraer título/nombre
+                        // Extraer título/nombre primero para el log
                         let title = `Token #${tokenIdInt}`;
                         
                         if (nft.title) {
@@ -248,6 +289,19 @@ class MenuManager {
                         } else if (nft.contract && nft.contract.name) {
                             title = `${nft.contract.name} #${tokenIdInt}`;
                         }
+                        
+                        // Log para debuggear qué tokens tiene el usuario
+                        console.log(`Processing token ${tokenIdInt} (${title})`);
+                        
+                        // Filtrar para tokens 10000, 10001, 10002, 10003, 10004, 10005, y 262144
+                        if (tokenIdInt !== 10000 && tokenIdInt !== 10001 && tokenIdInt !== 10002 && 
+                            tokenIdInt !== 10003 && tokenIdInt !== 10004 && tokenIdInt !== 10005 && 
+                            tokenIdInt !== 262144) {
+                            console.log(`Excluding token ${tokenIdInt} - not in allowed list`);
+                            return null;
+                        }
+                        
+                        console.log(`Including token ${tokenIdInt} - in allowed list`);
                         
                         // Extraer URL de imagen
                         let mediaUrl = "";
@@ -294,8 +348,11 @@ class MenuManager {
                 }).filter(token => token !== null);
                 
                 console.log(`Filtered tokens:`, tokens);
+                console.log(`Setting inventoryItems to:`, tokens);
                 this.inventoryItems = tokens;
+                console.log(`Calling displayInventory()...`);
                 this.displayInventory();
+                console.log(`displayInventory() completed`);
                 
             } else {
                 this.showNoItems();
@@ -335,24 +392,37 @@ class MenuManager {
         return activeScene;
     }
 
-    // ✅ SOLUCIÓN: Buscar dentro de la escena activa, no globalmente
+    // ✅ SOLUCIÓN: Buscar los grids globalmente, no dentro de la escena activa
     displayInventory() {
-        console.log('Displaying inventory items:', this.inventoryItems);
+        console.log('=== displayInventory() called ===');
+        console.log('this.inventoryItems:', this.inventoryItems);
+        console.log('this.inventoryItems.length:', this.inventoryItems ? this.inventoryItems.length : 'undefined');
         
-        // ✅ SOLUCIÓN: Buscar dentro de la escena activa, no globalmente
-        const activeScene = this.getActiveScene();
-        if (!activeScene) {
-            console.warn('No active scene found for inventory display');
-            return;
-        }
-
-        // Buscar grids de inventario dentro de la escena activa específicamente
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
-        const rightGrid = activeScene.querySelector('#inventory-grid-right');
+        // Buscar grids de inventario globalmente en el documento
+        const leftGrid = document.querySelector('#inventory-grid-left');
+        const rightGrid = document.querySelector('#inventory-grid-right');
         
-        console.log('Active scene:', activeScene.id || 'unknown');
         console.log('Left grid found:', !!leftGrid);
         console.log('Right grid found:', !!rightGrid);
+        
+        // Debug: Verificar todos los grids con estos IDs
+        const allLeftGrids = document.querySelectorAll('#inventory-grid-left');
+        const allRightGrids = document.querySelectorAll('#inventory-grid-right');
+        console.log('Total left grids found:', allLeftGrids.length);
+        console.log('Total right grids found:', allRightGrids.length);
+        
+        // Debug: Mostrar información de cada grid
+        allLeftGrids.forEach((grid, index) => {
+            console.log(`Left grid ${index}:`, grid);
+            console.log(`Left grid ${index} parent:`, grid.parentElement);
+            console.log(`Left grid ${index} visible:`, grid.offsetParent !== null);
+        });
+        
+        allRightGrids.forEach((grid, index) => {
+            console.log(`Right grid ${index}:`, grid);
+            console.log(`Right grid ${index} parent:`, grid.parentElement);
+            console.log(`Right grid ${index} visible:`, grid.offsetParent !== null);
+        });
         
         if (leftGrid) {
             leftGrid.innerHTML = '';
@@ -360,11 +430,14 @@ class MenuManager {
             if (this.inventoryItems.length === 0) {
                 leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
             } else {
-                // Filtrar tokens para el grid izquierdo (floppy discs): 10000, 10001, 10002, 10003, 10004, 10005
-                const floppyTokens = this.inventoryItems.filter(item => 
-                    item.tokenId === 10000 || item.tokenId === 10001 || item.tokenId === 10002 ||
-                    item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005
-                );
+                // Filtrar tokens para el grid izquierdo (solo floppy discs): 10000, 10001, 10002, 10003, 10004, 10005
+                const floppyTokens = this.inventoryItems.filter(item => {
+                    console.log(`Checking item ${item.title} with tokenId: ${item.tokenId} (type: ${typeof item.tokenId})`);
+                    const isFloppy = item.tokenId === 10000 || item.tokenId === 10001 || item.tokenId === 10002 ||
+                        item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005;
+                    console.log(`Is floppy: ${isFloppy}`);
+                    return isFloppy;
+                });
                 
                 if (floppyTokens.length === 0) {
                     leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
@@ -377,15 +450,19 @@ class MenuManager {
                 }
             }
         } else {
-            console.warn('Left grid not found in active scene');
+            console.warn('Left grid not found in document');
         }
         
         if (rightGrid) {
-            // Filtrar tokens para el grid derecho (items): 262144
-            const itemTokens = this.inventoryItems.filter(item => item.tokenId === 262144);
+            rightGrid.innerHTML = '';
+            
+            // Filtrar tokens para el grid derecho (AdrianGF y otros items especiales)
+            const itemTokens = this.inventoryItems.filter(item => 
+                item.tokenId === 262144 // AdrianGF va al grid derecho
+            );
             
             if (itemTokens.length === 0) {
-                rightGrid.innerHTML = '<div class="no-items">No items found.</div>';
+            rightGrid.innerHTML = '<div class="no-items">No items found.</div>';
             } else {
                 itemTokens.forEach(item => {
                     const itemElement = this.createInventoryItemElement(item);
@@ -393,6 +470,8 @@ class MenuManager {
                     console.log('Added item to right grid:', item.title);
                 });
             }
+        } else {
+            console.warn('Right grid not found in document');
         }
     }
 
@@ -419,7 +498,22 @@ class MenuManager {
 
     // Seleccionar item de inventario
     selectInventoryItem(item) {
-        console.log('Selected inventory item:', item);
+        console.log('Selecting inventory item:', item);
+        
+        // Si el item ya está seleccionado, deseleccionarlo
+        if (this.selectedInventoryItem && this.selectedInventoryItem.tokenId === item.tokenId) {
+            console.log('Deselecting inventory item:', item);
+            this.selectedInventoryItem = null;
+            showNotification(`Deselected: ${item.title}`, 'info');
+            
+            // Remover clase selected de todos los items
+            document.querySelectorAll('.inventory-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+            return;
+        }
+        
+        // Seleccionar el nuevo item
         this.selectedInventoryItem = item;
         showNotification(`Selected: ${item.title} (ID: ${item.tokenId})`, 'success');
         
@@ -430,15 +524,15 @@ class MenuManager {
         
         // Resaltar item seleccionado
         event.target.closest('.inventory-item').classList.add('selected');
+        
+        // Removed OPEN command logic - now handled by USE + Computer in upstairs scene
     }
 
-    // ✅ ACTUALIZAR: Función showNoItems también debe usar escena activa
+    // ✅ CORREGIDO: Buscar grids globalmente, no dentro de la escena activa
     showNoItems() {
-        const activeScene = this.getActiveScene();
-        if (!activeScene) return;
-        
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
-        const rightGrid = activeScene.querySelector('#inventory-grid-right');
+        // Buscar grids de inventario globalmente en el documento
+        const leftGrid = document.querySelector('#inventory-grid-left');
+        const rightGrid = document.querySelector('#inventory-grid-right');
         
         if (leftGrid) {
             leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
@@ -448,12 +542,10 @@ class MenuManager {
         }
     }
 
-    // ✅ ACTUALIZAR: Función showInventoryLoading también debe usar escena activa
+    // ✅ CORREGIDO: Buscar grids globalmente, no dentro de la escena activa
     showInventoryLoading() {
-        const activeScene = this.getActiveScene();
-        if (!activeScene) return;
-        
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
+        // Buscar grids de inventario globalmente en el documento
+        const leftGrid = document.querySelector('#inventory-grid-left');
         const loadingHTML = `
             <div class="loading">
                 <div class="spinner"></div>
@@ -514,12 +606,38 @@ async function loadSceneManager() {
         console.log('Loading scene manager...');
         
         // Load scene manager script
-        await loadScript('scenes/scene-manager.js');
+        console.log('Loading scene manager script: scenes/scene-manager-v2.js');
+        try {
+            await loadScript('scenes/scene-manager-v2.js');
+            console.log('Scene manager script loaded successfully');
+        } catch (error) {
+            console.error('Failed to load scene manager script:', error);
+        }
+        
+        // Wait for sceneManager to be available
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        while (typeof sceneManager === 'undefined' && typeof sceneManagerV2 === 'undefined' && attempts < maxAttempts) {
+            console.log(`Waiting for SceneManager... attempt ${attempts + 1}/${maxAttempts}`);
+            console.log('sceneManager available:', typeof sceneManager !== 'undefined');
+            console.log('sceneManagerV2 available:', typeof sceneManagerV2 !== 'undefined');
+            await new Promise(resolve => setTimeout(resolve, 200));
+            attempts++;
+        }
         
         // Load all scenes
+        if (typeof sceneManager !== 'undefined') {
+            console.log('SceneManager found, loading scenes...');
         await sceneManager.loadScenes();
-        
         console.log('Scene manager loaded successfully');
+        } else if (typeof sceneManagerV2 !== 'undefined') {
+            console.log('SceneManagerV2 found, loading scenes...');
+            await sceneManagerV2.loadScenes();
+            console.log('Scene manager loaded successfully');
+        } else {
+            console.error('SceneManager not available after loading script');
+        }
         
     } catch (error) {
         console.error('Error loading scene manager:', error);
@@ -539,7 +657,7 @@ function loadScript(src) {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('DOM loaded, initializing indextest.js...');
+    console.log('DOM loaded, initializing adventure game...');
     
     // Initialize DOM elements
     initializeDOMElements();
@@ -590,85 +708,7 @@ function detectMobile() {
     console.log('Mobile device detected:', isMobile);
 }
 
-// Función para detectar orientación del dispositivo
-function detectOrientation() {
-    return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
-}
-
-// Función para forzar modo panorámico en móviles
-function enableLandscapeMode() {
-    if (!isMobile) return;
-    
-    console.log('Enabling landscape mode for mobile device');
-    landscapeModeEnabled = true;
-    
-    // Agregar clase al body
-    document.body.classList.add('landscape-mode');
-    
-    // Ocultar mensaje de rotación si está visible
-    if (rotateDeviceMessage) {
-        rotateDeviceMessage.classList.remove('show');
-    }
-    
-    // Ajustar viewport para modo panorámico
-    const viewport = document.querySelector('meta[name="viewport"]');
-    if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-    }
-}
-
-// Función para deshabilitar modo panorámico
-function disableLandscapeMode() {
-    if (!isMobile) return;
-    
-    console.log('Disabling landscape mode');
-    landscapeModeEnabled = false;
-    
-    // Remover clase del body
-    document.body.classList.remove('landscape-mode');
-    
-    // Restaurar viewport normal
-    const viewport = document.querySelector('meta[name="viewport"]');
-    if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
-    }
-}
-
-// Función para mostrar mensaje de rotación
-function showRotateMessage() {
-    if (!isMobile || landscapeModeEnabled) return;
-    
-    console.log('Showing rotate device message');
-    if (rotateDeviceMessage) {
-        rotateDeviceMessage.classList.add('show');
-    }
-}
-
-// Función para ocultar mensaje de rotación
-function hideRotateMessage() {
-    if (rotateDeviceMessage) {
-        rotateDeviceMessage.classList.remove('show');
-    }
-}
-
-// Función para manejar cambios de orientación
-function handleOrientationChange() {
-    if (!isMobile) return;
-    
-    const orientation = detectOrientation();
-    console.log(`Orientation changed to: ${orientation}`);
-    
-    if (orientation === 'landscape') {
-        hideRotateMessage();
-        if (landscapeModeEnabled) {
-            enableLandscapeMode();
-        }
-    } else {
-        if (landscapeModeEnabled) {
-            showRotateMessage();
-        }
-    }
-}
+// Orientation logic removed - no longer needed
 
 function initializeApp() {
     // Configure music
@@ -743,8 +783,8 @@ function setupEventListeners() {
     // Wallet
     connectWalletBtn.addEventListener('click', connectWallet);
     
-    // Navigation - Use the original handleBasementClick for basic functionality
-    clickArea.addEventListener('click', handleBasementClick);
+    // Navigation - Scene manager will handle scene-specific event listeners
+    // Removed conflicting click handler that was interfering with scene hotspots
     closePopupBtn.addEventListener('click', closeMintPopup);
     buyFloppyBtn.addEventListener('click', handleBuyFloppy);
     backToMainBtn.addEventListener('click', goToMainScreen);
@@ -758,9 +798,7 @@ function setupEventListeners() {
         window.ethereum.on('chainChanged', handleChainChanged);
     }
     
-    // Orientation change events for mobile
-    window.addEventListener('orientationchange', handleOrientationChange);
-    window.addEventListener('resize', handleOrientationChange);
+    // Orientation events removed - no longer needed
     
     // Scene manager will handle scene-specific event listeners
     console.log('Event listeners setup complete');
@@ -899,34 +937,46 @@ function goToMainScreenFromIntro() {
             console.log('Progress bar hidden on outside transition');
         }
         
-        // Enable landscape mode for mobile devices after intro
-        if (isMobile) {
-            console.log('Enabling landscape mode after intro for mobile device');
-            enableLandscapeMode();
-            
-            // Check current orientation and show message if needed
-            const orientation = detectOrientation();
-            if (orientation === 'portrait') {
-                showRotateMessage();
-            }
-        }
+        // Mobile orientation logic removed - no longer needed
         
         // Load ethers.js when entering outside scene
         if (!ethersLoaded) {
             loadEthersWhenNeeded();
         }
         
-        // Change to outside scene (first scene)
-        if (sceneManager) {
-            sceneManager.changeScene('outside');
+        // Change to outside scene (first scene) - fallback to existing HTML structure
+        console.log('SceneManager status:', typeof sceneManager, sceneManager);
+        console.log('SceneManagerV2 status:', typeof sceneManagerV2, sceneManagerV2);
+        
+        if (sceneManager && typeof sceneManager.changeScene === 'function') {
+            console.log('Attempting to change to outside scene with SceneManager...');
+            const result = sceneManager.changeScene('outside');
+            console.log('Scene change result:', result);
+        } else if (sceneManagerV2 && typeof sceneManagerV2.changeScene === 'function') {
+            console.log('Attempting to change to outside scene with SceneManagerV2...');
+            const result = sceneManagerV2.changeScene('outside');
+            console.log('Scene change result:', result);
         } else {
-            console.error('Scene manager not loaded');
+            console.log('Scene manager not loaded or changeScene not available, using fallback to main-screen as outside');
+            // Show main screen (outside) as fallback for outside
+            mainScreen.style.display = 'block';
+            mainScreen.style.opacity = '0';
+            mainScreen.style.transition = 'opacity 2s ease-in-out';
+            
+            setTimeout(() => {
+                mainScreen.classList.add('active');
+                mainScreen.style.opacity = '1';
+                
+                // Setup event listeners for main screen
+                menuManager.setupSceneEventListeners('main-screen');
+                menuManager.initializeCommandSystem('main-screen');
+            }, 100);
         }
     }, 7000);
 }
 
 function goToMainScreen() {
-    console.log('Going to main screen (basement)');
+                console.log('Going to main screen (outside)');
     
     // Hide floppy screen if it's active
     if (floppyScreen.classList.contains('active')) {
@@ -939,9 +989,11 @@ function goToMainScreen() {
         }, 2000);
     }
     
-    // Change to basement scene (main scene)
+    // Change to outside scene (main scene)
     if (sceneManager) {
-        sceneManager.changeScene('basement');
+        sceneManager.changeScene('outside');
+    } else if (sceneManagerV2) {
+        sceneManagerV2.changeScene('outside');
     } else {
         console.error('Scene manager not loaded');
     }
@@ -999,193 +1051,11 @@ function goToUpstairs() {
     }
 }
 
-function createUpstairsScreen() {
-    console.log('Creating upstairs screen');
-    
-    // Create upstairs screen element
-    const upstairsScreen = document.createElement('div');
-    upstairsScreen.id = 'upstairs-screen';
-    upstairsScreen.className = 'screen';
-    
-    upstairsScreen.innerHTML = `
-        <div class="background-container">
-            <img src="upstairs.png" alt="Upstairs" id="upstairs-bg" style="width: 100%; height: 100%; object-fit: contain;">
-        </div>
-        
-        <!-- Header with wallet -->
-        <header class="retro-header">
-            <div class="logo">AdrianLAB - Upstairs</div>
-            <button id="connect-wallet-upstairs" class="retro-button">Connect Wallet</button>
-            <button id="mute-button-upstairs" class="retro-button small">🔊</button>
-        </header>
 
-        <!-- Main clickable area -->
-        <div id="click-area-upstairs" class="click-area">
-            <div class="pixel-cursor"></div>
-        </div>
 
-        <!-- Overlay text for upstairs -->
-        <div class="upstairs-overlay">
-            <h1 class="retro-title">Upstairs</h1>
-            <p class="retro-subtitle">Welcome to the fiat zone...</p>
-        </div>
 
-        <!-- Footer with Inventory -->
-        <footer class="retro-footer">
-            <div class="footer-sections">
-                <!-- Left section: Commands -->
-                <div class="footer-section commands-section">
-                    <div class="section-header">Commands</div>
-                    <div class="commands-grid">
-                        <button class="command-btn">EXPLORE</button>
-                        <button class="command-btn">INSPECT</button>
-                        <button class="command-btn">USE</button>
-                        <button class="command-btn">TAKE</button>
-                        <button class="command-btn">TALK</button>
-                        <button class="command-btn">MOVE</button>
-                        <button class="command-btn">OPEN</button>
-                        <button class="command-btn">TEST</button>
-                    </div>
-                </div>
-                
-                <!-- Middle section: Inventory Left -->
-                <div class="footer-section inventory-section-left">
-                    <div class="section-header">Inventory</div>
-                    <div id="inventory-grid-left-upstairs" class="inventory-grid">
-                        <div class="no-items">Connect wallet to load inventory.</div>
-                    </div>
-                </div>
-                
-                <!-- Right section: Inventory Right -->
-                <div class="footer-section inventory-section-right">
-                    <div class="section-header">Items</div>
-                    <div id="inventory-grid-right-upstairs" class="inventory-grid">
-                        <div class="no-items">No items found.</div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    `;
-    
-    // Add to app container
-    document.getElementById('app').appendChild(upstairsScreen);
-    
-    // Setup event listeners for upstairs
-    setupUpstairsEventListeners();
-    
-    // Initialize command system for upstairs
-    initializeUpstairsCommandSystem();
-}
 
-function setupUpstairsEventListeners() {
-    console.log('Setting up upstairs event listeners');
-    
-    // Get upstairs elements
-    const upstairsClickArea = document.getElementById('click-area-upstairs');
-    
-    // Setup click area for upstairs
-    if (upstairsClickArea) {
-        upstairsClickArea.addEventListener('click', handleUpstairsClick);
-    }
-    
-    // Setup menu manager for upstairs screen
-    menuManager.setupSceneEventListeners('upstairs-screen');
-    menuManager.initializeCommandSystem('upstairs-screen');
-}
 
-function initializeUpstairsCommandSystem() {
-    // This is now handled by the MenuManager
-    console.log('Upstairs command system initialization handled by MenuManager');
-}
-
-function handleUpstairsClick(event) {
-    console.log('Upstairs clicked');
-    
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    // Convert to percentage
-    const xPercent = (x / rect.width) * 100;
-    const yPercent = (y / rect.height) * 100;
-    
-    console.log(`Upstairs click at: ${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`);
-    
-    // Define upstairs hotspots
-    const upstairsHotspots = [
-        {
-            name: 'Stairs Down',
-            x: [0, 20],
-            y: [70, 100],
-            action: 'go_downstairs',
-            message: "💬 Going back downstairs..."
-        },
-        {
-            name: 'Fiat Zone',
-            x: [40, 80],
-            y: [30, 70],
-            action: 'inspect_fiat',
-            message: "💬 This is where the fiat money lives. It's very quiet here."
-        }
-    ];
-    
-    // Check if click is in any hotspot
-    for (const hotspot of upstairsHotspots) {
-        if (xPercent >= hotspot.x[0] && xPercent <= hotspot.x[1] &&
-            yPercent >= hotspot.y[0] && yPercent <= hotspot.y[1]) {
-            
-            handleUpstairsHotspotClick(hotspot, xPercent, yPercent);
-            return;
-        }
-    }
-    
-    // General area click - only show coordinates if explore command is active
-    const currentCommand = getCurrentCommand();
-    // if (currentCommand === 'explore') {
-        // showNotification(`You clicked at ${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`);
-    if (currentCommand === 'test') {
-        showFloatingText(`🔧 TEST MODE\nCoordinates: ${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%\n\nClick anywhere to see coordinates!`, xPercent, yPercent);
-    }
-}
-
-function handleUpstairsHotspotClick(hotspot, x, y) {
-    console.log(`Upstairs hotspot clicked: ${hotspot.name} with command: ${getCurrentCommand()}`);
-    
-    const command = getCurrentCommand();
-    
-    switch (command) {
-        case 'explore':
-            if (hotspot.message) {
-                showFloatingText(hotspot.message, x, y);
-            }
-            break;
-            
-        case 'use':
-            if (hotspot.name === 'Stairs Down') {
-                showFloatingText('💬 Going back downstairs...', x, y);
-                setTimeout(() => {
-                    goToMainScreen();
-                }, 1000);
-            } else {
-                showFloatingText(`💬 You can't use ${hotspot.name}`, x, y);
-            }
-            break;
-            
-        case 'inspect':
-            const inspectionMessages = {
-                'Stairs Down': '💬 Wooden stairs leading back down to the basement. They look safer going down.',
-                'Fiat Zone': '💬 A clean, well-lit area with expensive furniture. Everything here costs real money.'
-            };
-            const message = inspectionMessages[hotspot.name] || `💬 You carefully examine ${hotspot.name}`;
-            showFloatingText(message, x, y);
-            break;
-            
-        default:
-            if (hotspot.message) {
-                showFloatingText(hotspot.message, x, y);
-            }
-    }
-}
 
 function toggleMute() {
     isMuted = !isMuted;
@@ -1351,46 +1221,7 @@ function notifyIframeWalletDisconnected() {
     }
 }
 
-// Original handleBasementClick function - this is the key fix
-function handleBasementClick(event) {
-    console.log('Basement clicked - checking for point & click or mint popup');
-    
-    const rect = clickArea.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    // Convert to percentage for responsive design
-    const xPercent = (x / rect.width) * 100;
-    const yPercent = (y / rect.height) * 100;
-    
-    console.log(`Clicked at: ${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`);
-    
-    // Check if click is in center area (for mint popup) - only with USE command
-    if (xPercent >= 40 && xPercent <= 60 && yPercent >= 40 && yPercent <= 60) {
-        const currentCommand = getCurrentCommand();
-        
-        if (currentCommand === 'use') {
-            console.log('Center area clicked with USE command - opening mint popup');
-            if (!isWalletConnected) {
-                showNotification('Connect your wallet first', 'warning');
-                return;
-            }
-            
-            mintPopup.classList.add('active');
-            setTimeout(() => {
-                notifyIframeWalletConnected();
-            }, 100);
-            return;
-        } else if (currentCommand === 'explore') {
-            console.log('Center area clicked with EXPLORE command - showing computer message');
-            showFloatingText('💬 This is the computer. Use the USE command to access the mint interface.', xPercent, yPercent);
-            return;
-        }
-    }
-    
-    // If not center area, check for hotspots
-    handlePointAndClick(event);
-}
+    // Original handleOutsideClick function - this is the key fix
 
 function closeMintPopup() {
     mintPopup.classList.remove('active');
@@ -1583,301 +1414,26 @@ document.addEventListener('gestureend', e => e.preventDefault());
 // ===== POINT & CLICK AND INVENTORY SYSTEM =====
 
 // Initialize point & click system
-function initializePointAndClick() {
-    console.log('Initializing point & click system');
-    // The click handling is now done in handleBasementClick
-}
 
 // Handle point & click interactions for hotspots only
-function handlePointAndClick(event) {
-    const rect = clickArea.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    // Convert to percentage for responsive design
-    const xPercent = (x / rect.width) * 100;
-    const yPercent = (y / rect.height) * 100;
-    
-    console.log(`Point & click at: ${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`);
-    
-    // Define clickable areas (hotspots) based on basement.png layout
-    // Expanded margins from 15% to 20% for better clickability
-    const hotspots = [
-        {
-            name: 'Desk Area',
-            x: [35, 60],
-            y: [75, 100],
-            action: 'inspect_desk_area',
-            message: "💬 You feel a sudden urge to write a thread on Twitter."
-        },
-        {
-            name: 'Boxes Area',
-            x: [66, 91],
-            y: [60, 85],
-            action: 'inspect_boxes',
-            message: "💬 Boxes full of failed NFT projects... and one unopened Bored Ape piñata."
-        },
-        {
-            name: 'Armchair Area',
-            x: [75, 100],
-            y: [74, 99],
-            action: 'inspect_armchair',
-            message: "💬 Sits like a throne. Probably where the DAO founder disappeared."
-        },
-        {
-            name: 'Washing Machine Area',
-            x: [58, 83],
-            y: [59, 84],
-            action: 'inspect_washing_machine',
-            message: "💬 Perfect for laundering… socks. Only socks."
-        },
-        {
-            name: 'Stairs Area',
-            x: [0, 20],
-            y: [29, 54],
-            action: 'inspect_stairs',
-            message: "💬 Do you really want to go upstairs? That's where the fiat lives."
-        },
-        {
-            name: 'Computer Area',
-            x: [13, 38],
-            y: [39, 64],
-            action: 'inspect_computer',
-            message: "💬 Someone mined 6 BTC on this in 2010… then rage quit and sold at $12."
-        },
-        {
-            name: 'Light Bulb Area',
-            x: [38, 63],
-            y: [0, 20],
-            action: 'inspect_light_bulb',
-            message: "💬 It's lit... unlike your portfolio."
-        },
-        {
-            name: 'Windows Area',
-            x: [41, 66],
-            y: [27, 52],
-            action: 'inspect_windows',
-            message: "💬 Outside: darkness. Inside: DeFi."
-        }
-    ];
-    
-    // Check if click is in any hotspot
-    for (const hotspot of hotspots) {
-        if (xPercent >= hotspot.x[0] && xPercent <= hotspot.x[1] &&
-            yPercent >= hotspot.y[0] && yPercent <= hotspot.y[1]) {
-            
-            handleHotspotClick(hotspot, xPercent, yPercent);
-            return;
-        }
-    }
-    
-    // General area click - only show coordinates if explore command is active
-    const currentCommand = getCurrentCommand();
-    // if (currentCommand === 'explore') {
-        // showNotification(`You clicked at ${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%`);
-    if (currentCommand === 'test') {
-        showFloatingText(`🔧 TEST MODE\nCoordinates: ${xPercent.toFixed(1)}%, ${yPercent.toFixed(1)}%\n\nClick anywhere to see coordinates!`, xPercent, yPercent);
-    }
-}
 
 // Handle hotspot clicks
-function handleHotspotClick(hotspot, x, y) {
-    console.log(`Hotspot clicked: ${hotspot.name} with command: ${getCurrentCommand()}`);
-    
-    const command = getCurrentCommand();
-    
-    // Handle different commands
-    switch (command) {
-        case 'explore':
-            // Show the specific message for each hotspot as floating text
-            if (hotspot.message) {
-                showFloatingText(hotspot.message, x, y);
-            } else {
-                showFloatingText(`💬 You interact with ${hotspot.name}`, x, y);
-            }
-            break;
-            
-        case 'use':
-            handleUseCommand(hotspot, x, y);
-            break;
-            
-        case 'inspect':
-            handleInspectCommand(hotspot, x, y);
-            break;
-            
-        case 'take':
-            handleTakeCommand(hotspot, x, y);
-            break;
-            
-        case 'talk':
-            handleTalkCommand(hotspot, x, y);
-            break;
-            
-        case 'move':
-            handleMoveCommand(hotspot, x, y);
-            break;
-            
-        case 'open':
-            handleOpenCommand(hotspot, x, y);
-            break;
-            
-        case 'test':
-            handleTestCommand(hotspot, x, y);
-            break;
-            
-        default:
-            // Default to explore behavior
-            if (hotspot.message) {
-                showFloatingText(hotspot.message, x, y);
-            }
-    }
-    
-    // Add to discovered items if not already found
-    if (!gameState.discoveredItems.includes(hotspot.name)) {
-        gameState.discoveredItems.push(hotspot.name);
-    }
-}
 
 // ===== COMMAND HANDLERS =====
 
 // Handle USE command
-function handleUseCommand(hotspot, x, y) {
-    console.log(`USE command on: ${hotspot.name}`);
-    
-    switch (hotspot.name) {
-        case 'Computer Area':
-            // Open mint popup (existing functionality)
-            if (!isWalletConnected) {
-                showNotification('Connect your wallet first', 'warning');
-                return;
-            }
-            
-            mintPopup.classList.add('active');
-            setTimeout(() => {
-                notifyIframeWalletConnected();
-            }, 100);
-            showFloatingText('💬 Opening mint interface...', x, y);
-            break;
-            
-        case 'Stairs Area':
-            // Navigate to upstairs (anywhere in stairs area with USE command)
-            showFloatingText('💬 Going upstairs...', x, y);
-            setTimeout(() => {
-                goToUpstairs();
-            }, 1000);
-            break;
-            
-        default:
-            showFloatingText(`💬 You can't use ${hotspot.name}`, x, y);
-    }
-}
 
 // Handle INSPECT command
-function handleInspectCommand(hotspot, x, y) {
-    console.log(`INSPECT command on: ${hotspot.name}`);
-    
-    // Show detailed inspection message
-    const inspectionMessages = {
-        'Desk Area': '💬 A cluttered desk with papers, coffee stains, and a broken keyboard. The monitor shows a terminal with scrolling text.',
-        'Boxes Area': '💬 Cardboard boxes stacked haphazardly. One is labeled "Failed Projects 2021" and another "Bored Ape Piñata - DO NOT OPEN".',
-        'Armchair Area': '💬 A worn leather armchair with suspicious stains. There\'s a wallet on the seat with $12 in it.',
-        'Washing Machine Area': '💬 An old washing machine with a "Socks Only" sign. The drum is spinning slowly.',
-        'Stairs Area': '💬 Wooden stairs leading up. They creak ominously. The top 5% seems to be the trigger point.',
-        'Computer Area': '💬 An ancient computer with a CRT monitor. The screen shows a terminal with "BTC: $12" and "Status: Rage Quit".',
-        'Light Bulb Area': '💬 A single light bulb hanging from the ceiling. It flickers occasionally.',
-        'Windows Area': '💬 Dirty windows showing the dark outside. You can see your reflection in the glass.'
-    };
-    
-    const message = inspectionMessages[hotspot.name] || `💬 You carefully examine ${hotspot.name}`;
-    showFloatingText(message, x, y);
-}
 
 // Handle TAKE command
-function handleTakeCommand(hotspot, x, y) {
-    console.log(`TAKE command on: ${hotspot.name}`);
-    
-    const takeableItems = {
-        'Desk Area': '💬 You can\'t take the desk, but you find a USB drive with "Important Stuff" written on it.',
-        'Boxes Area': '💬 The boxes are too heavy to carry, but you find a small key in one of them.',
-        'Armchair Area': '💬 You can\'t take the armchair, but you find $12 in the wallet.',
-        'Washing Machine Area': '💬 You can\'t take the washing machine, but you find a sock with a hole in it.',
-        'Stairs Area': '💬 You can\'t take the stairs, but you find a loose nail.',
-        'Computer Area': '💬 You can\'t take the computer, but you find a floppy disk.',
-        'Light Bulb Area': '💬 You can\'t take the light bulb, but you find a dead fly.',
-        'Windows Area': '💬 You can\'t take the windows, but you find a spider web.'
-    };
-    
-    const message = takeableItems[hotspot.name] || `💬 You can\'t take ${hotspot.name}`;
-    showFloatingText(message, x, y);
-}
 
-// Handle TALK command
-function handleTalkCommand(hotspot, x, y) {
-    console.log(`TALK command on: ${hotspot.name}`);
-    
-    const talkResponses = {
-        'Desk Area': '💬 "Hello desk!" - No response. It\'s just a desk.',
-        'Boxes Area': '💬 "Hello boxes!" - You hear a faint rustling sound.',
-        'Armchair Area': '💬 "Hello chair!" - The chair remains silent.',
-        'Washing Machine Area': '💬 "Hello washing machine!" - It continues spinning.',
-        'Stairs Area': '💬 "Hello stairs!" - They creak in response.',
-        'Computer Area': '💬 "Hello computer!" - The terminal beeps.',
-        'Light Bulb Area': '💬 "Hello light bulb!" - It flickers.',
-        'Windows Area': '💬 "Hello windows!" - Your echo bounces back.'
-    };
-    
-    const message = talkResponses[hotspot.name] || `💬 You talk to ${hotspot.name} but get no response`;
-    showFloatingText(message, x, y);
-}
 
-// Handle MOVE command
-function handleMoveCommand(hotspot, x, y) {
-    console.log(`MOVE command on: ${hotspot.name}`);
-    
-    const moveResponses = {
-        'Desk Area': '💬 The desk is too heavy to move.',
-        'Boxes Area': '💬 You try to move the boxes but they\'re stuck.',
-        'Armchair Area': '💬 You move the armchair slightly. It makes a scraping sound.',
-        'Washing Machine Area': '💬 The washing machine is bolted to the floor.',
-        'Stairs Area': '💬 You can\'t move the stairs, but you can climb them.',
-        'Computer Area': '💬 The computer is too heavy to move.',
-        'Light Bulb Area': '💬 You can\'t move the light bulb, it\'s attached to the ceiling.',
-        'Windows Area': '💬 You can\'t move the windows, they\'re part of the wall.'
-    };
-    
-    const message = moveResponses[hotspot.name] || `💬 You can\'t move ${hotspot.name}`;
-    showFloatingText(message, x, y);
-}
 
-// Handle OPEN command
-function handleOpenCommand(hotspot, x, y) {
-    console.log(`OPEN command on: ${hotspot.name}`);
-    
-    const openResponses = {
-        'Desk Area': '💬 You open the desk drawer and find some old receipts.',
-        'Boxes Area': '💬 You open one of the boxes and find failed NFT projects.',
-        'Armchair Area': '💬 You can\'t open the armchair, it\'s not a container.',
-        'Washing Machine Area': '💬 You open the washing machine door. It\'s full of socks.',
-        'Stairs Area': '💬 You can\'t open the stairs, they\'re not a container.',
-        'Computer Area': '💬 You open the computer case and find dust.',
-        'Light Bulb Area': '💬 You can\'t open the light bulb, it\'s not a container.',
-        'Windows Area': '💬 You try to open the windows but they\'re stuck.'
-    };
-    
-    const message = openResponses[hotspot.name] || `💬 You can\'t open ${hotspot.name}`;
-    showFloatingText(message, x, y);
-}
+
 
 // Handle TEST command (for development)
-function handleTestCommand(hotspot, x, y) {
-    console.log(`TEST command on: ${hotspot.name}`);
-    
-    // Show detailed coordinates and hotspot information for development
-    const message = `🔧 TEST MODE\nHotspot: ${hotspot.name}\nCoordinates: ${x.toFixed(1)}%, ${y.toFixed(1)}%\nAction: ${hotspot.action || 'none'}\n\nClick anywhere to see coordinates!`;
-    showFloatingText(message, x, y);
-}
 
-// Show floating text over the image
+// Show floating text over the image - Improved positioning
 function showFloatingText(message, x, y) {
     // Remove any existing floating text
     const existingText = document.querySelector('.floating-text');
@@ -1913,15 +1469,59 @@ function showFloatingText(message, x, y) {
     const xPos = (x / 100) * rect.width;
     const yPos = (y / 100) * rect.height;
     
-    // Position text above the click point, but ensure it stays within bounds
-    let left = xPos - 150; // Center the text
-    let top = yPos - 80;   // Position above the click
+    // Get text dimensions (approximate)
+    const textWidth = 300; // Max width from CSS
+    const textHeight = 80; // Approximate height
     
-    // Ensure text stays within the game area bounds
-    if (left < 10) left = 10;
-    if (left > rect.width - 310) left = rect.width - 310;
-    if (top < 10) top = yPos + 20; // Show below if too close to top
-    if (top > rect.height - 100) top = rect.height - 100;
+    // Smart positioning: centered near predefined coordinate areas
+    let left, top;
+    
+    // Predefined coordinate areas where messages should appear
+    const messageAreas = [
+        { x: 29.8, y: 76.3 }, // Area 1
+        { x: 63.4, y: 65.5 }, // Area 2  
+        { x: 41.3, y: 51.4 }, // Area 3
+        { x: 15.7, y: 28.37 } // Area 4 (converted from 157.0, 283.7 to percentages)
+    ];
+    
+    // Select a random area from the predefined coordinates
+    const selectedArea = messageAreas[Math.floor(Math.random() * messageAreas.length)];
+    
+    // Add small random variation around the selected area (±5% of screen width/height)
+    const randomOffsetX = (Math.random() - 0.5) * (rect.width * 0.1); // ±5% of screen width
+    const randomOffsetY = (Math.random() - 0.5) * (rect.height * 0.1); // ±5% of screen height
+    
+    // Calculate target position based on selected area
+    const targetX = (selectedArea.x / 100) * rect.width + randomOffsetX;
+    const targetY = (selectedArea.y / 100) * rect.height + randomOffsetY;
+    
+    // Horizontal positioning - center on target area
+    if (targetX < textWidth / 2 + 10) {
+        // Near left edge - align to left with small margin
+        left = 10;
+    } else if (targetX > rect.width - textWidth / 2 - 10) {
+        // Near right edge - align to right with small margin
+        left = rect.width - textWidth - 10;
+    } else {
+        // Center on target area
+        left = targetX - textWidth / 2;
+    }
+    
+    // Vertical positioning - prefer above target area
+    if (targetY < textHeight + 20) {
+        // Near top - show below target
+        top = targetY + 10;
+    } else if (targetY > rect.height - textHeight - 20) {
+        // Near bottom - show above target
+        top = targetY - textHeight - 10;
+    } else {
+        // Show above target area (preferred)
+        top = targetY - textHeight - 5;
+    }
+    
+    // Final bounds check to ensure visibility
+    left = Math.max(10, Math.min(left, rect.width - textWidth - 10));
+    top = Math.max(10, Math.min(top, rect.height - textHeight - 10));
     
     floatingText.style.left = left + 'px';
     floatingText.style.top = top + 'px';
@@ -1929,12 +1529,12 @@ function showFloatingText(message, x, y) {
     // Add to game area
     gameArea.appendChild(floatingText);
     
-    // Remove after animation completes (reduced to 2 seconds)
+    // Remove after animation completes
     setTimeout(() => {
         if (floatingText.parentNode) {
             floatingText.remove();
         }
-    }, 2000);
+    }, 4000);
 }
 
 // Handle mouse movement for cursor feedback
@@ -1972,14 +1572,6 @@ function updateWalletForInventory() {
     }
 }
 
+
+
 // Initialize point & click system when main screen is shown
-function initializePointAndClickSystem() {
-    console.log('Initializing point & click system');
-    initializePointAndClick();
-    
-    // Check if wallet is already connected
-    if (window.ethereum && window.ethereum.selectedAddress) {
-        console.log('Wallet already connected, updating inventory');
-        menuManager.updateWalletState(true, window.ethereum.selectedAddress);
-    }
-}
