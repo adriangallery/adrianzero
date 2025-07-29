@@ -58,7 +58,7 @@ const baseSceneStyles = `
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    max-height: 120px;
+    max-height: 80px;
     padding: 1px;
     align-items: start;
     max-width: 100%;
@@ -159,7 +159,7 @@ const baseSceneStyles = `
 @media (min-width: 0px) {
     .inventory-grid {
         grid-template-columns: repeat(2, 1fr);
-        max-height: 120px;
+        max-height: 80px;
         overflow-y: auto;
     }
     
@@ -305,7 +305,7 @@ const baseSceneStyles = `
         grid-template-columns: repeat(2, 1fr);
         gap: 1px;
         padding: 1px;
-        max-height: 120px;
+        max-height: 80px;
         overflow-y: auto;
     }
     
@@ -350,7 +350,7 @@ const baseSceneStyles = `
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 6px;
         padding: 6px;
-        max-height: 120px;
+        max-height: 80px;
         overflow-y: auto;
     }
     
