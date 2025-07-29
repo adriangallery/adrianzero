@@ -122,7 +122,7 @@ class MenuManager {
     hasFloppySelected() {
         if (!this.selectedInventoryItem) return false;
         const tokenId = parseInt(this.selectedInventoryItem.tokenId);
-        return (tokenId >= 10000 && tokenId <= 10005) || tokenId === 262144;
+        return (tokenId >= 10000 && tokenId <= 10005); // Solo floppy discs, no AdrianGF
     }
 
     // Obtener el floppy seleccionado
@@ -406,12 +406,11 @@ class MenuManager {
             if (this.inventoryItems.length === 0) {
                 leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
             } else {
-                // Filtrar tokens para el grid izquierdo (floppy discs y AdrianGF): 10000, 10001, 10002, 10003, 10004, 10005, 262144
+                // Filtrar tokens para el grid izquierdo (solo floppy discs): 10000, 10001, 10002, 10003, 10004, 10005
                 const floppyTokens = this.inventoryItems.filter(item => {
                     console.log(`Checking item ${item.title} with tokenId: ${item.tokenId} (type: ${typeof item.tokenId})`);
                     const isFloppy = item.tokenId === 10000 || item.tokenId === 10001 || item.tokenId === 10002 ||
-                        item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005 ||
-                        item.tokenId === 262144;
+                        item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005;
                     console.log(`Is floppy: ${isFloppy}`);
                     return isFloppy;
                 });
@@ -433,11 +432,9 @@ class MenuManager {
         if (rightGrid) {
             rightGrid.innerHTML = '';
             
-            // Filtrar tokens para el grid derecho (todos los que no sean floppy discs ni AdrianGF)
+            // Filtrar tokens para el grid derecho (AdrianGF y otros items especiales)
             const itemTokens = this.inventoryItems.filter(item => 
-                item.tokenId !== 10000 && item.tokenId !== 10001 && item.tokenId !== 10002 &&
-                item.tokenId !== 10003 && item.tokenId !== 10004 && item.tokenId !== 10005 &&
-                item.tokenId !== 262144
+                item.tokenId === 262144 // AdrianGF va al grid derecho
             );
             
             if (itemTokens.length === 0) {
