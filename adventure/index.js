@@ -469,13 +469,11 @@ class MenuManager {
         // Removed OPEN command logic - now handled by USE + Computer in upstairs scene
     }
 
-    // ✅ ACTUALIZAR: Función showNoItems también debe usar escena activa
+    // ✅ CORREGIDO: Buscar grids globalmente, no dentro de la escena activa
     showNoItems() {
-        const activeScene = this.getActiveScene();
-        if (!activeScene) return;
-        
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
-        const rightGrid = activeScene.querySelector('#inventory-grid-right');
+        // Buscar grids de inventario globalmente en el documento
+        const leftGrid = document.querySelector('#inventory-grid-left');
+        const rightGrid = document.querySelector('#inventory-grid-right');
         
         if (leftGrid) {
             leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
@@ -485,12 +483,10 @@ class MenuManager {
         }
     }
 
-    // ✅ ACTUALIZAR: Función showInventoryLoading también debe usar escena activa
+    // ✅ CORREGIDO: Buscar grids globalmente, no dentro de la escena activa
     showInventoryLoading() {
-        const activeScene = this.getActiveScene();
-        if (!activeScene) return;
-        
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
+        // Buscar grids de inventario globalmente en el documento
+        const leftGrid = document.querySelector('#inventory-grid-left');
         const loadingHTML = `
             <div class="loading">
                 <div class="spinner"></div>
