@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Redirect /traitcreator to traitcreator.html
+RewriteRule ^traitcreator/?$ traitcreator.html [L]
+
+# Redirect /traitcreator/ to traitcreator.html
+RewriteRule ^traitcreator/$ traitcreator.html [L]
+
+# Handle subdirectories under traitcreator
+RewriteRule ^traitcreator/(.*)$ traitcreator.html [L]
+
+# Ensure CNAME works
+RewriteCond %{HTTP_HOST} ^adrianzero\.com$ [NC]
+RewriteRule ^(.*)$ https://adrianzero.com/$1 [R=301,L] 
