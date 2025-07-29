@@ -58,6 +58,7 @@ const baseSceneStyles = `
     flex: 1;
     overflow-y: auto;
     min-height: 0;
+    max-height: 120px;
     padding: 1px;
     align-items: start;
     max-width: 100%;
