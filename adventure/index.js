@@ -348,8 +348,11 @@ class MenuManager {
                 }).filter(token => token !== null);
                 
                 console.log(`Filtered tokens:`, tokens);
+                console.log(`Setting inventoryItems to:`, tokens);
                 this.inventoryItems = tokens;
+                console.log(`Calling displayInventory()...`);
                 this.displayInventory();
+                console.log(`displayInventory() completed`);
                 
             } else {
                 this.showNoItems();
@@ -391,7 +394,9 @@ class MenuManager {
 
     // ✅ SOLUCIÓN: Buscar los grids globalmente, no dentro de la escena activa
     displayInventory() {
-        console.log('Displaying inventory items:', this.inventoryItems);
+        console.log('=== displayInventory() called ===');
+        console.log('this.inventoryItems:', this.inventoryItems);
+        console.log('this.inventoryItems.length:', this.inventoryItems ? this.inventoryItems.length : 'undefined');
         
         // Buscar grids de inventario globalmente en el documento
         const leftGrid = document.querySelector('#inventory-grid-left');
