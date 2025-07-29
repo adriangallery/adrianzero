@@ -374,11 +374,14 @@ class MenuManager {
                 leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
             } else {
                 // Filtrar tokens para el grid izquierdo (floppy discs y AdrianGF): 10000, 10001, 10002, 10003, 10004, 10005, 262144
-                const floppyTokens = this.inventoryItems.filter(item => 
-                    item.tokenId === 10000 || item.tokenId === 10001 || item.tokenId === 10002 ||
-                    item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005 ||
-                    item.tokenId === 262144
-                );
+                const floppyTokens = this.inventoryItems.filter(item => {
+                    console.log(`Checking item ${item.title} with tokenId: ${item.tokenId} (type: ${typeof item.tokenId})`);
+                    const isFloppy = item.tokenId === 10000 || item.tokenId === 10001 || item.tokenId === 10002 ||
+                        item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005 ||
+                        item.tokenId === 262144;
+                    console.log(`Is floppy: ${isFloppy}`);
+                    return isFloppy;
+                });
                 
                 if (floppyTokens.length === 0) {
                     leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
