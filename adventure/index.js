@@ -118,11 +118,11 @@ class MenuManager {
         return this.currentCommand;
     }
 
-    // Verificar si hay un floppy disc seleccionado
+    // Verificar si hay un floppy disc o AdrianGF seleccionado
     hasFloppySelected() {
         if (!this.selectedInventoryItem) return false;
         const tokenId = parseInt(this.selectedInventoryItem.tokenId);
-        return tokenId >= 10000 && tokenId <= 10005;
+        return (tokenId >= 10000 && tokenId <= 10005) || tokenId === 262144;
     }
 
     // Obtener el floppy seleccionado
@@ -373,10 +373,11 @@ class MenuManager {
             if (this.inventoryItems.length === 0) {
                 leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
             } else {
-                // Filtrar tokens para el grid izquierdo (floppy discs): 10000, 10001, 10002, 10003, 10004, 10005
+                // Filtrar tokens para el grid izquierdo (floppy discs y AdrianGF): 10000, 10001, 10002, 10003, 10004, 10005, 262144
                 const floppyTokens = this.inventoryItems.filter(item => 
                     item.tokenId === 10000 || item.tokenId === 10001 || item.tokenId === 10002 ||
-                    item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005
+                    item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005 ||
+                    item.tokenId === 262144
                 );
                 
                 if (floppyTokens.length === 0) {
@@ -396,10 +397,11 @@ class MenuManager {
         if (rightGrid) {
             rightGrid.innerHTML = '';
             
-            // Filtrar tokens para el grid derecho (todos los que no sean floppy discs)
+            // Filtrar tokens para el grid derecho (todos los que no sean floppy discs ni AdrianGF)
             const itemTokens = this.inventoryItems.filter(item => 
                 item.tokenId !== 10000 && item.tokenId !== 10001 && item.tokenId !== 10002 &&
-                item.tokenId !== 10003 && item.tokenId !== 10004 && item.tokenId !== 10005
+                item.tokenId !== 10003 && item.tokenId !== 10004 && item.tokenId !== 10005 &&
+                item.tokenId !== 262144
             );
             
             if (itemTokens.length === 0) {
