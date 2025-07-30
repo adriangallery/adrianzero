@@ -151,12 +151,19 @@
     <div class="title">🧪 Test SVG Save - TraitCreator</div>
     
     <div class="container">
-        <!-- Panel de Test -->
+        <!-- Panel de Configuración -->
         <div class="panel">
-            <h3>🧪 Test SVG Save</h3>
+            <h3>🔧 Configuración</h3>
             
             <div id="tokenStatus" class="status loading">
                 ⏳ Verificando token...
+            </div>
+            
+            <div>
+                <label>GitHub Token:</label>
+                <input type="password" id="tokenInput" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                <button class="button" onclick="setToken()">Set Token</button>
+                <button class="button" onclick="testToken()">Test Token</button>
             </div>
             
             <div>
@@ -165,7 +172,7 @@
             </div>
             
             <div>
-                <button class="button" onclick="runFullTest()" id="testButton">🚀 Ejecutar Test Completo</button>
+                <button class="button" onclick="runFullTest()" id="testButton" disabled>🚀 Ejecutar Test Completo</button>
             </div>
             
             <div id="saveStatus" class="status loading" style="display: none;">
@@ -237,12 +244,29 @@
             return currentSVG;
         }
         
-        // Test token automatically
+        // Set token
+        function setToken() {
+            const token = document.getElementById('tokenInput').value;
+            if (!token) {
+                log('❌ No se proporcionó token', 'error');
+                return;
+            }
+            
+            localStorage.setItem('github_token', token);
+            window.svgSaveHandler.setTokenManually(token);
+            log('✅ Token configurado y guardado en localStorage', 'success');
+            updateTokenStatus();
+            testToken();
+        }
+        
+        // Test token
         async function testToken() {
-            const token = localStorage.getItem('github_token');
+            const token = document.getElementById('tokenInput').value || localStorage.getItem('github_token');
             
             if (!token) {
-                log('❌ No se encontró token en localStorage', 'error');
+                log('❌ No se encontró token', 'error');
+                isTokenValid = false;
+                updateTokenStatus();
                 return false;
             }
             
@@ -260,17 +284,22 @@
                     const user = await response.json();
                     log(`✅ Token válido! Usuario: ${user.login}`, 'success');
                     isTokenValid = true;
+                    document.getElementById('testButton').disabled = false;
                     return true;
                 } else {
                     const errorData = await response.json();
                     log(`❌ Token inválido: ${errorData.message}`, 'error');
                     isTokenValid = false;
+                    document.getElementById('testButton').disabled = true;
                     return false;
                 }
             } catch (error) {
                 log(`❌ Error verificando token: ${error.message}`, 'error');
                 isTokenValid = false;
+                document.getElementById('testButton').disabled = true;
                 return false;
+            } finally {
+                updateTokenStatus();
             }
         }
         
@@ -340,7 +369,7 @@
             const testButton = document.getElementById('testButton');
             
             log('🧪 Iniciando test completo de SVG Save', 'info');
-            log('=' * 50, 'info');
+            log('='.repeat(50), 'info');
             
             testButton.disabled = true;
             testButton.innerHTML = '⏳ Ejecutando...';
@@ -402,9 +431,15 @@
             log('🚀 Página de test cargada', 'info');
             log('🔧 SVG Save Handler inicializado', 'info');
             
+            // Load saved token
+            const savedToken = localStorage.getItem('github_token');
+            if (savedToken) {
+                document.getElementById('tokenInput').value = savedToken;
+                log('✅ Token cargado desde localStorage', 'success');
+            }
+            
             // Auto-test token on load
             await testToken();
-            updateTokenStatus();
             
             log('✅ Inicialización completada', 'success');
         });
