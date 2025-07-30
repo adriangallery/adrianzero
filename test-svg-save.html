@@ -416,17 +416,41 @@
         
         console.log = function(...args) {
             originalLog.apply(console, args);
-            log(args.join(' '), 'info');
+            // Only log to our container, don't call console.log again
+            const message = args.join(' ');
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry log-info';
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
         };
         
         console.error = function(...args) {
             originalError.apply(console, args);
-            log(args.join(' '), 'error');
+            // Only log to our container, don't call console.log again
+            const message = args.join(' ');
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry log-error';
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
         };
         
         console.warn = function(...args) {
             originalWarn.apply(console, args);
-            log(args.join(' '), 'warning');
+            // Only log to our container, don't call console.log again
+            const message = args.join(' ');
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry log-warning';
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
         };
     </script>
 </body>
