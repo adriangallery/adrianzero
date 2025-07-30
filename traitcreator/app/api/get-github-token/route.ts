@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   try {
     // Get token from environment variable
-    const token = process.env.GITHUB_TOKEN_SVG
+    const token = process.env.SVG_SAVE_TOKEN
 
     if (!token) {
       return NextResponse.json(

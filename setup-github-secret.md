@@ -16,7 +16,7 @@
 2. Click en **Settings** (pestaña)
 3. En el menú lateral, click en **Secrets and variables** → **Actions**
 4. Click en **New repository secret**
-5. **Name**: `GITHUB_TOKEN_SVG`
+5. **Name**: `SVG_SAVE_TOKEN`
 6. **Value**: Pega tu token generado
 7. Click **Add secret**
 
@@ -26,7 +26,7 @@ Si usas Vercel, también puedes configurar la variable de entorno:
 
 1. Ve a tu proyecto en [Vercel](https://vercel.com)
 2. **Settings** → **Environment Variables**
-3. **Name**: `GITHUB_TOKEN_SVG`
+3. **Name**: `SVG_SAVE_TOKEN`
 4. **Value**: Tu token
 5. **Environment**: Production, Preview, Development
 6. Click **Add**
