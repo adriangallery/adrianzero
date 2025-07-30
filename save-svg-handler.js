@@ -8,6 +8,7 @@ class SVGSaveHandler {
         this.branch = 'main';
         this.designsPath = 'designs';
         this.init();
+        this.loadTokenFromGitHub();
     }
 
     async init() {
@@ -140,6 +141,29 @@ class SVGSaveHandler {
     setGitHubToken(token) {
         this.githubToken = token;
         console.log('GitHub token set');
+    }
+
+    // Load token from GitHub Secrets via API
+    async loadTokenFromGitHub() {
+        try {
+            // Try to get token from GitHub Secrets via a secure endpoint
+            const response = await fetch('/api/get-github-token', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.token) {
+                    this.githubToken = data.token;
+                    console.log('GitHub token loaded from secrets');
+                }
+            }
+        } catch (error) {
+            console.log('Could not load token from secrets, will use manual setup');
+        }
     }
 }
 
