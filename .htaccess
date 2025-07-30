@@ -1,13 +1,13 @@
 RewriteEngine On
 
-# Redirect /traitcreator to traitcreator/index.html
-RewriteRule ^traitcreator/?$ traitcreator/index.html [L]
+# Redirect /traitcreator to traitcreator.html
+RewriteRule ^traitcreator/?$ traitcreator.html [L]
 
-# Redirect /traitcreator/ to traitcreator/index.html
-RewriteRule ^traitcreator/$ traitcreator/index.html [L]
+# Redirect /traitcreator/ to traitcreator.html
+RewriteRule ^traitcreator/$ traitcreator.html [L]
 
 # Handle subdirectories under traitcreator
-RewriteRule ^traitcreator/(.*)$ traitcreator/index.html [L]
+RewriteRule ^traitcreator/(.*)$ traitcreator.html [L]
 
 # Ensure CNAME works
 RewriteCond %{HTTP_HOST} ^adrianzero\.com$ [NC]
