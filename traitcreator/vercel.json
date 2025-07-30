@@ -25,6 +25,6 @@
     }
   ],
   "env": {
-    "GITHUB_TOKEN_SVG": "@github-token-svg"
+    "SVG_SAVE_TOKEN": "@svg-save-token"
   }
 } 
