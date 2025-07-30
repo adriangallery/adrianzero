@@ -18,32 +18,55 @@
             min-height: 100vh;
             text-align: center;
         }
+        
         .loading {
             font-size: 18px;
             animation: blink 1s infinite;
         }
+        
         @keyframes blink {
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0; }
         }
+        
         .container {
             max-width: 600px;
             padding: 20px;
         }
+        
         .title {
             font-size: 24px;
             margin-bottom: 20px;
             text-transform: uppercase;
         }
+        
         .subtitle {
             font-size: 14px;
             margin-bottom: 30px;
             opacity: 0.8;
         }
+        
         .status {
             font-size: 12px;
             margin-top: 20px;
             opacity: 0.6;
+        }
+        
+        .redirect-btn {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+        }
+        
+        .redirect-btn:hover {
+            background: #00cc00;
         }
     </style>
 </head>
@@ -53,11 +76,18 @@
         <div class="subtitle">Custom T-Shirt NFT Minting Platform</div>
         <div class="loading">LOADING APPLICATION...</div>
         <div class="status">Powered by Next.js & Ethereum</div>
+        <button class="redirect-btn" onclick="redirectToApp()">OPEN DAPP</button>
     </div>
     
     <script>
-        // Redirect to the Next.js app
-        window.location.href = '/';
+        // Auto-redirect after 3 seconds
+        setTimeout(() => {
+            redirectToApp();
+        }, 3000);
+        
+        function redirectToApp() {
+            window.location.href = 'https://traitcreator.vercel.app/';
+        }
     </script>
 </body>
 </html> 
