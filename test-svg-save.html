@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test SVG Save - TraitCreator</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: #111;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #00ff00;
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+        
+        .token-input {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: monospace;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .button:hover {
+            background: #00cc00;
+        }
+        
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .success {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        
+        .warning {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        
+        .info {
+            color: #00ffff;
+        }
+        
+        .log-container {
+            background: #000;
+            border: 1px solid #333;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .log-info { background: #001100; }
+        .log-success { background: #002200; }
+        .log-error { background: #220000; }
+        .log-warning { background: #222200; }
+        
+        .svg-preview {
+            background: #fff;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .test-svg {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .status.ready { background: #002200; }
+        .status.error { background: #220000; }
+        .status.loading { background: #222200; }
+    </style>
+</head>
+<body>
+    <div class="title">🧪 Test SVG Save - TraitCreator</div>
+    
+    <div class="container">
+        <!-- Panel de Configuración -->
+        <div class="panel">
+            <h3>🔧 Configuración</h3>
+            
+            <div>
+                <label>GitHub Token:</label>
+                <input type="password" id="tokenInput" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                <button class="button" onclick="setToken()">Set Token</button>
+                <button class="button" onclick="testToken()">Test Token</button>
+            </div>
+            
+            <div id="tokenStatus" class="status error">
+                ❌ Token no configurado
+            </div>
+            
+            <div>
+                <label>Token ID para test:</label>
+                <input type="text" id="tokenIdInput" class="token-input" value="test123" placeholder="test123">
+            </div>
+            
+            <div>
+                <button class="button" onclick="generateTestSVG()">Generate Test SVG</button>
+                <button class="button" onclick="saveTestSVG()" id="saveButton" disabled>Save SVG</button>
+            </div>
+            
+            <div id="saveStatus" class="status loading" style="display: none;">
+                ⏳ Preparando...
+            </div>
+        </div>
+        
+        <!-- Panel de Logs -->
+        <div class="panel">
+            <h3>📋 Logs de Debug</h3>
+            <button class="button" onclick="clearLogs()">Clear Logs</button>
+            <button class="button" onclick="exportLogs()">Export Logs</button>
+            
+            <div id="logContainer" class="log-container"></div>
+        </div>
+    </div>
+    
+    <!-- Preview del SVG -->
+    <div class="panel" style="grid-column: 1 / -1; margin-top: 20px;">
+        <h3>👁️ SVG Preview</h3>
+        <div id="svgPreview" class="svg-preview">
+            <div class="info">Genera un SVG de test para ver la preview</div>
+        </div>
+    </div>
+    
+    <!-- SVG Save Handler -->
+    <script src="save-svg-handler.js"></script>
+    
+    <script>
+        let currentSVG = '';
+        let isTokenValid = false;
+        
+        // Logger function
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Also log to console
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Set token
+        function setToken() {
+            const token = document.getElementById('tokenInput').value;
+            if (!token) {
+                log('No token provided', 'error');
+                return;
+            }
+            
+            localStorage.setItem('github_token', token);
+            window.svgSaveHandler.setTokenManually(token);
+            log('Token set and saved to localStorage', 'success');
+            updateTokenStatus();
+        }
+        
+        // Test token
+        async function testToken() {
+            const token = document.getElementById('tokenInput').value || localStorage.getItem('github_token');
+            
+            if (!token) {
+                log('No token to test', 'error');
+                return;
+            }
+            
+            log('Testing GitHub token...', 'info');
+            
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    log(`✅ Token válido! Usuario: ${user.login}`, 'success');
+                    isTokenValid = true;
+                    document.getElementById('saveButton').disabled = false;
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Token inválido: ${errorData.message}`, 'error');
+                    isTokenValid = false;
+                    document.getElementById('saveButton').disabled = true;
+                }
+            } catch (error) {
+                log(`❌ Error testing token: ${error.message}`, 'error');
+                isTokenValid = false;
+                document.getElementById('saveButton').disabled = true;
+            }
+            
+            updateTokenStatus();
+        }
+        
+        // Update token status
+        function updateTokenStatus() {
+            const tokenStatus = document.getElementById('tokenStatus');
+            const token = localStorage.getItem('github_token');
+            
+            if (token && isTokenValid) {
+                tokenStatus.className = 'status ready';
+                tokenStatus.innerHTML = '✅ Token configurado y válido';
+            } else if (token) {
+                tokenStatus.className = 'status warning';
+                tokenStatus.innerHTML = '⚠️ Token configurado, pero no validado';
+            } else {
+                tokenStatus.className = 'status error';
+                tokenStatus.innerHTML = '❌ Token no configurado';
+            }
+        }
+        
+        // Generate test SVG
+        function generateTestSVG() {
+            const tokenId = document.getElementById('tokenIdInput').value || 'test123';
+            
+            currentSVG = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#000000"/>
+  <circle cx="50" cy="50" r="30" fill="#00ff00"/>
+  <text x="50" y="55" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="12">${tokenId}</text>
+  <text x="50" y="75" text-anchor="middle" fill="#00ffff" font-family="Arial" font-size="8">TEST</text>
+</svg>`;
+            
+            const preview = document.getElementById('svgPreview');
+            preview.innerHTML = currentSVG;
+            
+            log(`SVG generado para token: ${tokenId}`, 'success');
+            log(`Tamaño SVG: ${currentSVG.length} caracteres`, 'info');
+        }
+        
+        // Save test SVG
+        async function saveTestSVG() {
+            const tokenId = document.getElementById('tokenIdInput').value || 'test123';
+            const saveStatus = document.getElementById('saveStatus');
+            
+            if (!currentSVG) {
+                log('No SVG to save. Generate one first.', 'error');
+                return;
+            }
+            
+            if (!isTokenValid) {
+                log('Token not valid. Test it first.', 'error');
+                return;
+            }
+            
+            saveStatus.style.display = 'block';
+            saveStatus.className = 'status loading';
+            saveStatus.innerHTML = '⏳ Guardando SVG...';
+            
+            log(`Iniciando guardado de SVG para token: ${tokenId}`, 'info');
+            
+            try {
+                // Simulate the postMessage flow
+                const result = await window.svgSaveHandler.saveSVGToGitHub(tokenId, currentSVG);
+                
+                saveStatus.className = 'status ready';
+                saveStatus.innerHTML = '✅ SVG guardado exitosamente!';
+                
+                log(`✅ SVG guardado exitosamente!`, 'success');
+                log(`URL: ${result.url}`, 'info');
+                log(`Download URL: ${result.downloadUrl}`, 'info');
+                log(`SHA: ${result.sha}`, 'info');
+                
+                // Show success message with links
+                const successDiv = document.createElement('div');
+                successDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ SVG Guardado Exitosamente!</h4>
+                        <p><strong>Token ID:</strong> ${tokenId}</p>
+                        <p><strong>URL:</strong> <a href="${result.url}" target="_blank" style="color: #00ffff;">${result.url}</a></p>
+                        <p><strong>Download:</strong> <a href="${result.downloadUrl}" target="_blank" style="color: #00ffff;">${result.downloadUrl}</a></p>
+                    </div>
+                `;
+                document.body.appendChild(successDiv);
+                
+            } catch (error) {
+                saveStatus.className = 'status error';
+                saveStatus.innerHTML = '❌ Error guardando SVG';
+                
+                log(`❌ Error guardando SVG: ${error.message}`, 'error');
+                log(`Stack trace: ${error.stack}`, 'error');
+            }
+        }
+        
+        // Clear logs
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '';
+            log('Logs cleared', 'info');
+        }
+        
+        // Export logs
+        function exportLogs() {
+            const logContainer = document.getElementById('logContainer');
+            const logs = Array.from(logContainer.children).map(entry => entry.textContent).join('\n');
+            
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `svg-save-logs-${new Date().toISOString().slice(0, 19)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            log('Logs exported', 'success');
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            log('Test page loaded', 'info');
+            log('SVG Save Handler initialized', 'info');
+            
+            // Load token from localStorage
+            const savedToken = localStorage.getItem('github_token');
+            if (savedToken) {
+                document.getElementById('tokenInput').value = savedToken;
+                log('Token loaded from localStorage', 'info');
+                testToken();
+            }
+            
+            updateTokenStatus();
+        });
+        
+        // Override console.log to also log to our container
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            log(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            log(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            log(args.join(' '), 'warning');
+        };
+    </script>
+</body>
+</html> 
