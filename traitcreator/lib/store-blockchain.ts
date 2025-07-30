@@ -543,7 +543,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         }
         
         // Prepare the commit data
-        const commitData = {
+        const commitData: any = {
           message: `Add SVG design for token ${tokenId}`,
           content: btoa(svgContent), // Base64 encode the SVG content
           branch: 'main',
