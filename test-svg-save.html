@@ -174,6 +174,7 @@
             
             <div>
                 <button class="button" onclick="runFullTest()" id="testButton" disabled>🚀 Ejecutar Test Completo</button>
+                <button class="button" onclick="testAutoSave()" id="autoTestButton">🎯 Test Guardado Automático</button>
             </div>
             
             <div id="saveStatus" class="status loading" style="display: none;">
@@ -308,51 +309,57 @@
         async function tryAutoToken() {
             log('🔍 Intentando obtener token automáticamente...', 'info');
             
-            // Method 1: Try to get from Vercel API route
+            // Method 1: Try to get from Vercel API route (this is what we need for production)
             try {
-                log('📋 Método 1: Intentando desde Vercel API...', 'info');
+                log('📋 Método 1: Intentando desde Vercel API (SVG_SAVE_TOKEN)...', 'info');
                 const response = await fetch('https://traitcreator.vercel.app/api/get-github-token');
                 
                 if (response.ok) {
                     const data = await response.json();
                     if (data.token) {
                         log(`✅ Token obtenido desde Vercel API: ${data.token.substring(0, 10)}...`, 'success');
+                        log('🎯 ¡ESTE ES EL MÉTODO QUE NECESITAMOS PARA PRODUCCIÓN!', 'success');
                         document.getElementById('tokenInput').value = data.token;
                         localStorage.setItem('github_token', data.token);
                         window.svgSaveHandler.setTokenManually(data.token);
                         updateTokenStatus();
                         testToken();
-                        return;
+                        return true;
                     }
                 }
                 log('❌ No se pudo obtener token desde Vercel API', 'warning');
+                log('💡 Verifica que SVG_SAVE_TOKEN esté configurado en Vercel', 'info');
             } catch (error) {
                 log(`❌ Error obteniendo token desde Vercel API: ${error.message}`, 'warning');
+                log('💡 Esto puede ser normal si no estás en el dominio de Vercel', 'info');
             }
             
-            // Method 2: Check if already in localStorage
+            // Method 2: Check if already in localStorage (fallback)
             const savedToken = localStorage.getItem('github_token');
             if (savedToken) {
                 log(`✅ Token encontrado en localStorage: ${savedToken.substring(0, 10)}...`, 'success');
+                log('💡 Este es un fallback local, no el método de producción', 'warning');
                 document.getElementById('tokenInput').value = savedToken;
                 updateTokenStatus();
                 testToken();
-                return;
+                return true;
             }
             
-            // Method 3: Check if in input field
+            // Method 3: Check if in input field (manual)
             const inputToken = document.getElementById('tokenInput').value;
             if (inputToken) {
                 log(`✅ Token encontrado en input field: ${inputToken.substring(0, 10)}...`, 'success');
+                log('💡 Este es un método manual, no automático', 'warning');
                 localStorage.setItem('github_token', inputToken);
                 window.svgSaveHandler.setTokenManually(inputToken);
                 updateTokenStatus();
                 testToken();
-                return;
+                return true;
             }
             
             log('❌ No se encontró token en ninguna fuente automática', 'error');
-            log('💡 Usa "Set Token" para configurar manualmente', 'info');
+            log('💡 Para producción, configura SVG_SAVE_TOKEN en Vercel', 'info');
+            return false;
         }
         
         // Update token status display
@@ -412,6 +419,48 @@
                 log(`❌ Error guardando SVG: ${error.message}`, 'error');
                 log(`📋 Stack trace: ${error.stack}`, 'error');
                 throw error;
+            }
+        }
+        
+        // Test automatic save (production scenario)
+        async function testAutoSave() {
+            const tokenId = `auto-${Date.now()}`;
+            const autoTestButton = document.getElementById('autoTestButton');
+            
+            log('🎯 Iniciando test de guardado automático (escenario de producción)', 'info');
+            log('='.repeat(60), 'info');
+            
+            autoTestButton.disabled = true;
+            autoTestButton.innerHTML = '⏳ Probando automático...';
+            
+            try {
+                // Step 1: Try to get token automatically
+                log('📋 Paso 1: Obteniendo token automáticamente', 'info');
+                const tokenFound = await tryAutoToken();
+                
+                if (!tokenFound) {
+                    log('❌ No se pudo obtener token automáticamente', 'error');
+                    log('💡 Este es el problema que necesitamos resolver para producción', 'warning');
+                    throw new Error('Token automático no disponible');
+                }
+                
+                // Step 2: Generate SVG
+                log('📋 Paso 2: Generando SVG de prueba', 'info');
+                generateTestSVG(tokenId);
+                
+                // Step 3: Save SVG automatically
+                log('📋 Paso 3: Guardando SVG automáticamente', 'info');
+                await saveSVGToGitHub(tokenId, currentSVG);
+                
+                log('🎉 ¡GUARDADO AUTOMÁTICO EXITOSO!', 'success');
+                log('✅ Este es el comportamiento que necesitamos en producción', 'success');
+                
+            } catch (error) {
+                log(`💥 Error en guardado automático: ${error.message}`, 'error');
+                log('🔧 Necesitamos configurar SVG_SAVE_TOKEN en Vercel', 'warning');
+            } finally {
+                autoTestButton.disabled = false;
+                autoTestButton.innerHTML = '🎯 Test Guardado Automático';
             }
         }
         
