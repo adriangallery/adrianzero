@@ -49,11 +49,12 @@
             background: #00ff00;
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 15px 30px;
             font-family: 'Courier New', monospace;
             border-radius: 5px;
             cursor: pointer;
             margin: 5px;
+            font-size: 16px;
         }
         
         .button:hover {
@@ -117,11 +118,6 @@
             justify-content: center;
         }
         
-        .test-svg {
-            width: 100px;
-            height: 100px;
-        }
-        
         .status {
             padding: 10px;
             border-radius: 5px;
@@ -131,25 +127,36 @@
         .status.ready { background: #002200; }
         .status.error { background: #220000; }
         .status.loading { background: #222200; }
+        
+        .result-links {
+            background: #002200;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .result-links a {
+            color: #00ffff;
+            text-decoration: none;
+            display: block;
+            margin: 5px 0;
+        }
+        
+        .result-links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="title">🧪 Test SVG Save - TraitCreator</div>
     
     <div class="container">
-        <!-- Panel de Configuración -->
+        <!-- Panel de Test -->
         <div class="panel">
-            <h3>🔧 Configuración</h3>
+            <h3>🧪 Test SVG Save</h3>
             
-            <div>
-                <label>GitHub Token:</label>
-                <input type="password" id="tokenInput" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                <button class="button" onclick="setToken()">Set Token</button>
-                <button class="button" onclick="testToken()">Test Token</button>
-            </div>
-            
-            <div id="tokenStatus" class="status error">
-                ❌ Token no configurado
+            <div id="tokenStatus" class="status loading">
+                ⏳ Verificando token...
             </div>
             
             <div>
@@ -158,12 +165,16 @@
             </div>
             
             <div>
-                <button class="button" onclick="generateTestSVG()">Generate Test SVG</button>
-                <button class="button" onclick="saveTestSVG()" id="saveButton" disabled>Save SVG</button>
+                <button class="button" onclick="runFullTest()" id="testButton">🚀 Ejecutar Test Completo</button>
             </div>
             
             <div id="saveStatus" class="status loading" style="display: none;">
                 ⏳ Preparando...
+            </div>
+            
+            <div id="resultLinks" class="result-links" style="display: none;">
+                <h4>✅ SVG Guardado Exitosamente!</h4>
+                <div id="linksContent"></div>
             </div>
         </div>
         
@@ -181,7 +192,7 @@
     <div class="panel" style="grid-column: 1 / -1; margin-top: 20px;">
         <h3>👁️ SVG Preview</h3>
         <div id="svgPreview" class="svg-preview">
-            <div class="info">Genera un SVG de test para ver la preview</div>
+            <div class="info">El SVG se generará automáticamente al ejecutar el test</div>
         </div>
     </div>
     
@@ -206,30 +217,36 @@
             console.log(`[${type.toUpperCase()}] ${message}`);
         }
         
-        // Set token
-        function setToken() {
-            const token = document.getElementById('tokenInput').value;
-            if (!token) {
-                log('No token provided', 'error');
-                return;
-            }
+        // Generate test SVG automatically
+        function generateTestSVG(tokenId) {
+            log(`Generando SVG de prueba para token: ${tokenId}`, 'info');
             
-            localStorage.setItem('github_token', token);
-            window.svgSaveHandler.setTokenManually(token);
-            log('Token set and saved to localStorage', 'success');
-            updateTokenStatus();
+            currentSVG = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#000000"/>
+  <circle cx="50" cy="50" r="30" fill="#00ff00"/>
+  <text x="50" y="55" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="12">${tokenId}</text>
+  <text x="50" y="75" text-anchor="middle" fill="#00ffff" font-family="Arial" font-size="8">TEST</text>
+</svg>`;
+            
+            const preview = document.getElementById('svgPreview');
+            preview.innerHTML = currentSVG;
+            
+            log(`✅ SVG generado exitosamente`, 'success');
+            log(`📏 Tamaño: ${currentSVG.length} caracteres`, 'info');
+            
+            return currentSVG;
         }
         
-        // Test token
+        // Test token automatically
         async function testToken() {
-            const token = document.getElementById('tokenInput').value || localStorage.getItem('github_token');
+            const token = localStorage.getItem('github_token');
             
             if (!token) {
-                log('No token to test', 'error');
-                return;
+                log('❌ No se encontró token en localStorage', 'error');
+                return false;
             }
             
-            log('Testing GitHub token...', 'info');
+            log('🔍 Verificando token de GitHub...', 'info');
             
             try {
                 const response = await fetch('https://api.github.com/user', {
@@ -243,23 +260,21 @@
                     const user = await response.json();
                     log(`✅ Token válido! Usuario: ${user.login}`, 'success');
                     isTokenValid = true;
-                    document.getElementById('saveButton').disabled = false;
+                    return true;
                 } else {
                     const errorData = await response.json();
                     log(`❌ Token inválido: ${errorData.message}`, 'error');
                     isTokenValid = false;
-                    document.getElementById('saveButton').disabled = true;
+                    return false;
                 }
             } catch (error) {
-                log(`❌ Error testing token: ${error.message}`, 'error');
+                log(`❌ Error verificando token: ${error.message}`, 'error');
                 isTokenValid = false;
-                document.getElementById('saveButton').disabled = true;
+                return false;
             }
-            
-            updateTokenStatus();
         }
         
-        // Update token status
+        // Update token status display
         function updateTokenStatus() {
             const tokenStatus = document.getElementById('tokenStatus');
             const token = localStorage.getItem('github_token');
@@ -276,82 +291,92 @@
             }
         }
         
-        // Generate test SVG
-        function generateTestSVG() {
-            const tokenId = document.getElementById('tokenIdInput').value || 'test123';
+        // Save SVG to GitHub
+        async function saveSVGToGitHub(tokenId, svgContent) {
+            log(`🚀 Iniciando guardado de SVG para token: ${tokenId}`, 'info');
             
-            currentSVG = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100" height="100" fill="#000000"/>
-  <circle cx="50" cy="50" r="30" fill="#00ff00"/>
-  <text x="50" y="55" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="12">${tokenId}</text>
-  <text x="50" y="75" text-anchor="middle" fill="#00ffff" font-family="Arial" font-size="8">TEST</text>
-</svg>`;
-            
-            const preview = document.getElementById('svgPreview');
-            preview.innerHTML = currentSVG;
-            
-            log(`SVG generado para token: ${tokenId}`, 'success');
-            log(`Tamaño SVG: ${currentSVG.length} caracteres`, 'info');
-        }
-        
-        // Save test SVG
-        async function saveTestSVG() {
-            const tokenId = document.getElementById('tokenIdInput').value || 'test123';
             const saveStatus = document.getElementById('saveStatus');
-            
-            if (!currentSVG) {
-                log('No SVG to save. Generate one first.', 'error');
-                return;
-            }
-            
-            if (!isTokenValid) {
-                log('Token not valid. Test it first.', 'error');
-                return;
-            }
-            
             saveStatus.style.display = 'block';
             saveStatus.className = 'status loading';
-            saveStatus.innerHTML = '⏳ Guardando SVG...';
-            
-            log(`Iniciando guardado de SVG para token: ${tokenId}`, 'info');
+            saveStatus.innerHTML = '⏳ Guardando SVG en GitHub...';
             
             try {
-                // Simulate the postMessage flow
-                const result = await window.svgSaveHandler.saveSVGToGitHub(tokenId, currentSVG);
+                const result = await window.svgSaveHandler.saveSVGToGitHub(tokenId, svgContent);
                 
                 saveStatus.className = 'status ready';
                 saveStatus.innerHTML = '✅ SVG guardado exitosamente!';
                 
                 log(`✅ SVG guardado exitosamente!`, 'success');
-                log(`URL: ${result.url}`, 'info');
-                log(`Download URL: ${result.downloadUrl}`, 'info');
-                log(`SHA: ${result.sha}`, 'info');
+                log(`🔗 URL: ${result.url}`, 'info');
+                log(`📥 Download: ${result.downloadUrl}`, 'info');
+                log(`🔑 SHA: ${result.sha}`, 'info');
                 
-                // Show success message with links
-                const successDiv = document.createElement('div');
-                successDiv.innerHTML = `
-                    <div class="success">
-                        <h4>✅ SVG Guardado Exitosamente!</h4>
-                        <p><strong>Token ID:</strong> ${tokenId}</p>
-                        <p><strong>URL:</strong> <a href="${result.url}" target="_blank" style="color: #00ffff;">${result.url}</a></p>
-                        <p><strong>Download:</strong> <a href="${result.downloadUrl}" target="_blank" style="color: #00ffff;">${result.downloadUrl}</a></p>
-                    </div>
+                // Show result links
+                const resultLinks = document.getElementById('resultLinks');
+                const linksContent = document.getElementById('linksContent');
+                linksContent.innerHTML = `
+                    <p><strong>Token ID:</strong> ${tokenId}</p>
+                    <p><strong>Ver SVG:</strong> <a href="${result.url}" target="_blank">${result.url}</a></p>
+                    <p><strong>Descargar:</strong> <a href="${result.downloadUrl}" target="_blank">${result.downloadUrl}</a></p>
+                    <p><strong>GitHub:</strong> <a href="https://github.com/adriangallery/adrianzero/blob/main/designs/${tokenId}.svg" target="_blank">Ver en GitHub</a></p>
                 `;
-                document.body.appendChild(successDiv);
+                resultLinks.style.display = 'block';
+                
+                return result;
                 
             } catch (error) {
                 saveStatus.className = 'status error';
                 saveStatus.innerHTML = '❌ Error guardando SVG';
                 
                 log(`❌ Error guardando SVG: ${error.message}`, 'error');
-                log(`Stack trace: ${error.stack}`, 'error');
+                log(`📋 Stack trace: ${error.stack}`, 'error');
+                throw error;
+            }
+        }
+        
+        // Run full test
+        async function runFullTest() {
+            const tokenId = document.getElementById('tokenIdInput').value || 'test123';
+            const testButton = document.getElementById('testButton');
+            
+            log('🧪 Iniciando test completo de SVG Save', 'info');
+            log('=' * 50, 'info');
+            
+            testButton.disabled = true;
+            testButton.innerHTML = '⏳ Ejecutando...';
+            
+            try {
+                // Step 1: Test token
+                log('📋 Paso 1: Verificando token', 'info');
+                const tokenValid = await testToken();
+                updateTokenStatus();
+                
+                if (!tokenValid) {
+                    throw new Error('Token no válido');
+                }
+                
+                // Step 2: Generate SVG
+                log('📋 Paso 2: Generando SVG de prueba', 'info');
+                generateTestSVG(tokenId);
+                
+                // Step 3: Save SVG
+                log('📋 Paso 3: Guardando SVG en GitHub', 'info');
+                await saveSVGToGitHub(tokenId, currentSVG);
+                
+                log('🎉 Test completo ejecutado exitosamente!', 'success');
+                
+            } catch (error) {
+                log(`💥 Error en test: ${error.message}`, 'error');
+            } finally {
+                testButton.disabled = false;
+                testButton.innerHTML = '🚀 Ejecutar Test Completo';
             }
         }
         
         // Clear logs
         function clearLogs() {
             document.getElementById('logContainer').innerHTML = '';
-            log('Logs cleared', 'info');
+            log('📋 Logs limpiados', 'info');
         }
         
         // Export logs
@@ -369,26 +394,22 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            log('Logs exported', 'success');
+            log('📁 Logs exportados', 'success');
         }
         
         // Initialize
-        window.addEventListener('load', () => {
-            log('Test page loaded', 'info');
-            log('SVG Save Handler initialized', 'info');
+        window.addEventListener('load', async () => {
+            log('🚀 Página de test cargada', 'info');
+            log('🔧 SVG Save Handler inicializado', 'info');
             
-            // Load token from localStorage
-            const savedToken = localStorage.getItem('github_token');
-            if (savedToken) {
-                document.getElementById('tokenInput').value = savedToken;
-                log('Token loaded from localStorage', 'info');
-                testToken();
-            }
-            
+            // Auto-test token on load
+            await testToken();
             updateTokenStatus();
+            
+            log('✅ Inicialización completada', 'success');
         });
         
-        // Override console.log to also log to our container
+        // Override console methods to also log to our container
         const originalLog = console.log;
         const originalError = console.error;
         const originalWarn = console.warn;
