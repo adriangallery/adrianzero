@@ -79,9 +79,16 @@
         </div>
     </div>
     
+    <iframe src="https://traitcreator.vercel.app/" title="TraitCreator DApp"></iframe>
+    
     <script>
-        // Redirect directly to Vercel deployment
-        window.location.href = 'https://traitcreator.vercel.app/';
+        // Fallback redirect if iframe fails
+        setTimeout(() => {
+            const iframe = document.querySelector('iframe');
+            if (iframe && iframe.contentWindow.location.href === 'about:blank') {
+                window.location.href = 'https://traitcreator.vercel.app/';
+            }
+        }, 3000);
     </script>
 </body>
 </html> 

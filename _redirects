@@ -1,11 +1,11 @@
-# Redirect /traitcreator to traitcreator/index.html
-/traitcreator /traitcreator/index.html 200
+# Redirect /traitcreator to traitcreator.html
+/traitcreator /traitcreator.html 200
 
-# Redirect /traitcreator/ to traitcreator/index.html
-/traitcreator/ /traitcreator/index.html 200
+# Redirect /traitcreator/ to traitcreator.html
+/traitcreator/ /traitcreator.html 200
 
 # Handle all subdirectories under traitcreator
-/traitcreator/* /traitcreator/index.html 200
+/traitcreator/* /traitcreator.html 200
 
 # Fallback for SPA
 /* /index.html 200 
