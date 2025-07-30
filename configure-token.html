@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure GitHub Token - TraitCreator</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background: #111;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #00ff00;
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #222;
+            border-radius: 5px;
+        }
+        
+        .token-input {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: monospace;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        .button:hover {
+            background: #00cc00;
+        }
+        
+        .success {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        
+        .info {
+            color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🔧 Configure GitHub Token</div>
+        
+        <div class="step">
+            <h3>Paso 1: Generar Token</h3>
+            <p>Ve a <a href="https://github.com/settings/tokens" target="_blank" style="color: #00ffff;">GitHub Settings → Tokens</a></p>
+            <p>Permisos necesarios: <strong>repo</strong> + <strong>workflow</strong></p>
+        </div>
+        
+        <div class="step">
+            <h3>Paso 2: Configurar Token</h3>
+            <p>Pega tu token aquí:</p>
+            <input type="password" id="tokenInput" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            <button class="button" onclick="setToken()">Set Token</button>
+            <button class="button" onclick="testToken()">Test Token</button>
+        </div>
+        
+        <div class="step">
+            <h3>Paso 3: Ir a TraitCreator</h3>
+            <p>Una vez configurado, ve a:</p>
+            <a href="/traitcreator/" class="button" style="text-decoration: none; display: inline-block;">Open TraitCreator</a>
+        </div>
+        
+        <div id="result" class="step" style="display: none;">
+            <div id="resultContent"></div>
+        </div>
+        
+        <div class="info">
+            ⚠️ Este token se guarda solo en esta sesión del navegador.
+        </div>
+    </div>
+    
+    <script>
+        function setToken() {
+            const token = document.getElementById('tokenInput').value;
+            if (!token) {
+                showResult('Por favor ingresa un token', 'error');
+                return;
+            }
+            
+            // Store token in localStorage
+            localStorage.setItem('github_token', token);
+            showResult('Token guardado en localStorage', 'success');
+        }
+        
+        async function testToken() {
+            const token = document.getElementById('tokenInput').value || localStorage.getItem('github_token');
+            
+            if (!token) {
+                showResult('No hay token para probar', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    showResult(`✅ Token válido! Usuario: ${user.login}`, 'success');
+                } else {
+                    showResult('❌ Token inválido', 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = `<span class="${type}">${message}</span>`;
+            resultDiv.style.display = 'block';
+        }
+        
+        // Load token from localStorage on page load
+        window.addEventListener('load', () => {
+            const savedToken = localStorage.getItem('github_token');
+            if (savedToken) {
+                document.getElementById('tokenInput').value = savedToken;
+            }
+        });
+    </script>
+</body>
+</html> 

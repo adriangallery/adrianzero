@@ -93,8 +93,16 @@
             }
         }, 3000);
         
-        // GitHub token will be loaded automatically from environment variables
-        // No need to set it manually anymore
+        // GitHub token configuration
+        // Option 1: Set token manually (for testing)
+        // window.svgSaveHandler.setTokenManually('ghp_your-token-here');
+        
+        // Option 2: Load from environment variables (production)
+        // This will be handled automatically by the API
+        
+        // For now, you can set it manually for testing:
+        // Uncomment the line below and add your token:
+        // window.svgSaveHandler.setTokenManually('ghp_your-token-here');
     </script>
 </body>
 </html> 
