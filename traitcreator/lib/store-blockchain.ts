@@ -484,29 +484,74 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   saveSVGToServer: async (tokenId: string, svgContent: string) => {
-    try {
-      const response = await fetch('/api/save-svg', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tokenId,
-          svgContent,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+    return new Promise((resolve, reject) => {
+      try {
+        // Check if we're in an iframe
+        if (window.parent !== window) {
+          console.log('Sending SVG save request via postMessage');
+          
+          // Send message to parent window
+          window.parent.postMessage({
+            type: 'SAVE_SVG',
+            tokenId,
+            svgContent
+          }, '*');
+          
+          // Listen for response
+          const messageHandler = (event) => {
+            if (event.data.type === 'SVG_SAVED' && event.data.tokenId === tokenId) {
+              window.removeEventListener('message', messageHandler);
+              console.log('SVG saved successfully via postMessage:', event.data);
+              resolve(event.data);
+            } else if (event.data.type === 'SVG_SAVE_ERROR' && event.data.tokenId === tokenId) {
+              window.removeEventListener('message', messageHandler);
+              console.error('SVG save error via postMessage:', event.data.error);
+              reject(new Error(event.data.error));
+            }
+          };
+          
+          window.addEventListener('message', messageHandler);
+          
+          // Timeout after 30 seconds
+          setTimeout(() => {
+            window.removeEventListener('message', messageHandler);
+            reject(new Error('SVG save timeout - no response from parent window'));
+          }, 30000);
+          
+        } else {
+          // Fallback to direct API call if not in iframe
+          console.log('Using direct API call for SVG save');
+          fetch('/api/save-svg', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              tokenId,
+              svgContent,
+            }),
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(result => {
+            console.log('SVG saved successfully via API:', result);
+            resolve(result);
+          })
+          .catch(error => {
+            console.error('Error saving SVG via API:', error);
+            reject(error);
+          });
+        }
+        
+      } catch (error) {
+        console.error('Error in saveSVGToServer:', error);
+        reject(error);
       }
-
-      const result = await response.json()
-      console.log('SVG saved successfully:', result)
-      return result
-    } catch (error) {
-      console.error('Error saving SVG to server:', error)
-      throw error
-    }
+    });
   },
 
   saveDesign: async () => {

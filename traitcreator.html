@@ -81,6 +81,9 @@
     
     <iframe src="https://traitcreator.vercel.app/" title="TraitCreator DApp"></iframe>
     
+    <!-- SVG Save Handler -->
+    <script src="save-svg-handler.js"></script>
+    
     <script>
         // Fallback redirect if iframe fails
         setTimeout(() => {
@@ -89,6 +92,9 @@
                 window.location.href = 'https://traitcreator.vercel.app/';
             }
         }, 3000);
+        
+        // Set GitHub token (you'll need to replace this with your actual token)
+        // window.setGitHubToken('your-github-token-here');
     </script>
 </body>
 </html> 
