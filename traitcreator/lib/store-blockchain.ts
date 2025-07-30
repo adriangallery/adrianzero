@@ -484,68 +484,104 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   saveSVGToServer: async (tokenId: string, svgContent: string) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        // Check if we're in an iframe
-        if (window.parent !== window) {
-          console.log('Sending SVG save request via postMessage');
+        console.log('Starting automatic SVG save process...');
+        
+        // Method 1: Try to get token from Vercel API automatically
+        let token = null;
+        try {
+          console.log('Attempting to get token from Vercel API...');
+          const tokenResponse = await fetch('https://traitcreator.vercel.app/api/get-github-token');
           
-          // Send message to parent window
-          window.parent.postMessage({
-            type: 'SAVE_SVG',
-            tokenId,
-            svgContent
-          }, '*');
-          
-          // Listen for response
-          const messageHandler = (event) => {
-            if (event.data.type === 'SVG_SAVED' && event.data.tokenId === tokenId) {
-              window.removeEventListener('message', messageHandler);
-              console.log('SVG saved successfully via postMessage:', event.data);
-              resolve(event.data);
-            } else if (event.data.type === 'SVG_SAVE_ERROR' && event.data.tokenId === tokenId) {
-              window.removeEventListener('message', messageHandler);
-              console.error('SVG save error via postMessage:', event.data.error);
-              reject(new Error(event.data.error));
+          if (tokenResponse.ok) {
+            const tokenData = await tokenResponse.json();
+            if (tokenData.token) {
+              token = tokenData.token;
+              console.log('Token obtained from Vercel API successfully');
             }
-          };
-          
-          window.addEventListener('message', messageHandler);
-          
-          // Timeout after 30 seconds
-          setTimeout(() => {
-            window.removeEventListener('message', messageHandler);
-            reject(new Error('SVG save timeout - no response from parent window'));
-          }, 30000);
-          
-        } else {
-          // Fallback to direct API call if not in iframe
-          console.log('Using direct API call for SVG save');
-          fetch('/api/save-svg', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              tokenId,
-              svgContent,
-            }),
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(result => {
-            console.log('SVG saved successfully via API:', result);
-            resolve(result);
-          })
-          .catch(error => {
-            console.error('Error saving SVG via API:', error);
-            reject(error);
-          });
+          }
+        } catch (tokenError) {
+          console.log('Could not get token from Vercel API, trying fallback methods...');
         }
+        
+        // Method 2: Fallback to localStorage if available
+        if (!token) {
+          const savedToken = localStorage.getItem('github_token');
+          if (savedToken) {
+            token = savedToken;
+            console.log('Using token from localStorage');
+          }
+        }
+        
+        if (!token) {
+          throw new Error('No GitHub token available for SVG save');
+        }
+        
+        // Now save the SVG using the GitHub API directly
+        console.log('Saving SVG to GitHub via API...');
+        
+        const githubApiUrl = `https://api.github.com/repos/adriangallery/adrianzero/contents/designs/${tokenId}.svg`;
+        
+        // Get current file content to get SHA (required for updates)
+        let currentSha = null;
+        try {
+          const getResponse = await fetch(githubApiUrl, {
+            headers: {
+              'Authorization': `token ${token}`,
+              'Accept': 'application/vnd.github.v3+json',
+            },
+          });
+          
+          if (getResponse.ok) {
+            const fileData = await getResponse.json();
+            currentSha = fileData.sha;
+            console.log('File exists, will update with SHA:', currentSha);
+          }
+        } catch (error) {
+          console.log('File does not exist, will create new file');
+        }
+        
+        // Prepare the commit data
+        const commitData = {
+          message: `Add SVG design for token ${tokenId}`,
+          content: btoa(svgContent), // Base64 encode the SVG content
+          branch: 'main',
+        };
+        
+        // Add SHA if updating existing file
+        if (currentSha) {
+          commitData.sha = currentSha;
+        }
+        
+        // Commit the file
+        const commitResponse = await fetch(githubApiUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(commitData),
+        });
+        
+        if (!commitResponse.ok) {
+          const errorData = await commitResponse.json();
+          throw new Error(`GitHub API error: ${errorData.message}`);
+        }
+        
+        const result = await commitResponse.json();
+        console.log('SVG saved successfully to GitHub:', result);
+        
+        // Return the result with URLs
+        resolve({
+          success: true,
+          tokenId,
+          url: `https://adrianzero.com/designs/${tokenId}.svg`,
+          downloadUrl: `https://raw.githubusercontent.com/adriangallery/adrianzero/main/designs/${tokenId}.svg`,
+          sha: result.content.sha,
+          commit: result.commit.sha,
+        });
         
       } catch (error) {
         console.error('Error in saveSVGToServer:', error);
