@@ -12,32 +12,41 @@
             font-family: 'Courier New', monospace;
             background: #000;
             color: #00ff00;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
+            overflow: hidden;
         }
         
         .loading {
-            font-size: 18px;
-            animation: blink 1s infinite;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            z-index: 1000;
+            animation: fadeOut 2s ease-in-out 1s forwards;
         }
         
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
         }
         
-        .container {
-            max-width: 600px;
-            padding: 20px;
+        .loading-content {
+            text-align: center;
         }
         
         .title {
             font-size: 24px;
             margin-bottom: 20px;
             text-transform: uppercase;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
         }
         
         .subtitle {
@@ -48,46 +57,129 @@
         
         .status {
             font-size: 12px;
-            margin-top: 20px;
             opacity: 0.6;
         }
         
-        .redirect-btn {
-            background: #00ff00;
-            color: #000;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-family: 'Courier New', monospace;
-            text-transform: uppercase;
+        .error {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000;
+            border: 2px solid #ff0000;
+            padding: 20px;
+            text-align: center;
+            z-index: 2000;
+            display: none;
         }
         
-        .redirect-btn:hover {
-            background: #00cc00;
+        iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+            position: fixed;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">TraitCreator DApp</div>
-        <div class="subtitle">Custom T-Shirt NFT Minting Platform</div>
-        <div class="loading">LOADING APPLICATION...</div>
-        <div class="status">Powered by Next.js & Ethereum</div>
-        <button class="redirect-btn" onclick="redirectToApp()">OPEN DAPP</button>
+    <div class="loading">
+        <div class="loading-content">
+            <div class="title">TraitCreator DApp</div>
+            <div class="subtitle">Loading Custom T-Shirt NFT Minting Platform...</div>
+            <div class="status">Powered by Next.js & Ethereum</div>
+        </div>
     </div>
     
+    <div class="error" id="error">
+        <div class="title">Error Loading DApp</div>
+        <div class="subtitle">The DApp could not be loaded</div>
+        <div class="status">Click to try again</div>
+    </div>
+    
+    <iframe 
+        src="https://traitcreator.vercel.app/" 
+        title="TraitCreator DApp"
+        id="dapp-iframe"
+        onload="handleIframeLoad()"
+        onerror="handleIframeError()">
+    </iframe>
+    
+    <!-- SVG Save Handler -->
+    <script src="save-svg-handler.js"></script>
+    
     <script>
-        // Auto-redirect after 3 seconds
-        setTimeout(() => {
-            redirectToApp();
-        }, 3000);
+        console.log('TraitCreator iframe page loaded');
         
-        function redirectToApp() {
-            window.location.href = 'https://traitcreator.vercel.app/';
+        let iframeLoadTimeout;
+        let iframeLoaded = false;
+        
+        function handleIframeLoad() {
+            console.log('Iframe loaded successfully');
+            iframeLoaded = true;
+            clearTimeout(iframeLoadTimeout);
+            
+            // Hide loading after a short delay
+            setTimeout(() => {
+                document.querySelector('.loading').style.display = 'none';
+            }, 500);
         }
+        
+        function handleIframeError() {
+            console.error('Iframe failed to load');
+            showError();
+        }
+        
+        function showError() {
+            document.querySelector('.loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        // Set timeout for iframe loading
+        iframeLoadTimeout = setTimeout(() => {
+            if (!iframeLoaded) {
+                console.error('Iframe loading timeout');
+                showError();
+            }
+        }, 10000);
+        
+        // Error div click handler
+        document.getElementById('error').addEventListener('click', () => {
+            console.log('Retrying iframe load');
+            document.getElementById('error').style.display = 'none';
+            document.querySelector('.loading').style.display = 'flex';
+            iframeLoaded = false;
+            
+            const iframe = document.getElementById('dapp-iframe');
+            iframe.src = iframe.src;
+            
+            iframeLoadTimeout = setTimeout(() => {
+                if (!iframeLoaded) {
+                    showError();
+                }
+            }, 10000);
+        });
+        
+        // Fallback redirect if iframe fails completely
+        setTimeout(() => {
+            const iframe = document.querySelector('iframe');
+            if (iframe && iframe.contentWindow.location.href === 'about:blank') {
+                console.log('Iframe is blank, redirecting to Vercel');
+                window.location.href = 'https://traitcreator.vercel.app/';
+            }
+        }, 5000);
+        
+        // GitHub token configuration
+        // Option 1: Set token manually (for testing)
+        // window.svgSaveHandler.setTokenManually('ghp_your-token-here');
+        
+        // Option 2: Load from environment variables (production)
+        // This will be handled automatically by the API
+        
+        // For now, you can set it manually for testing:
+        // Uncomment the line below and add your token:
+        // window.svgSaveHandler.setTokenManually('ghp_your-token-here');
     </script>
 </body>
 </html> 
