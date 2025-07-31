@@ -98,14 +98,7 @@
         <div class="status">Click to try again</div>
     </div>
     
-    <iframe 
-        src="https://traitcreator.vercel.app/" 
-        title="TraitCreator DApp"
-        id="dapp-iframe"
-        onload="handleIframeLoad()"
-        onerror="handleIframeError()"
-        allow="ethereum; clipboard-write; clipboard-read">
-    </iframe>
+    <iframe src="https://traitcreator-app.vercel.app/" title="TraitCreator DApp"></iframe>
     
     <!-- SVG Save Handler -->
     <script src="save-svg-handler.js"></script>
@@ -162,14 +155,13 @@
             }, 10000);
         });
         
-        // Fallback redirect if iframe fails completely
+        // Fallback redirect if iframe fails
         setTimeout(() => {
             const iframe = document.querySelector('iframe');
             if (iframe && iframe.contentWindow.location.href === 'about:blank') {
-                console.log('Iframe is blank, redirecting to Vercel');
-                window.location.href = 'https://traitcreator.vercel.app/';
+                window.location.href = 'https://traitcreator-app.vercel.app/';
             }
-        }, 5000);
+        }, 3000);
         
         // GitHub token configuration
         // Option 1: Set token manually (for testing)
