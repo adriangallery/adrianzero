@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import { Canvas } from '@/components/design/Canvas'
-import { ToolPanel } from '@/components/design/ToolPanel'
-import { ColorPicker } from '@/components/design/ColorPicker'
-import { WalletConnector } from '@/components/blockchain/WalletConnector'
-import { SaveAndMint } from '@/components/blockchain/SaveAndMint'
-import { Header } from '@/components/ui/Header'
-import { useAppStore } from '@/lib/store-blockchain'
+import { Canvas } from '../components/design/Canvas'
+import { ToolPanel } from '../components/design/ToolPanel'
+import { ColorPicker } from '../components/design/ColorPicker'
+import { WalletConnector } from '../components/blockchain/WalletConnector'
+import { SaveAndMint } from '../components/blockchain/SaveAndMint'
+import { Header } from '../components/ui/Header'
+import { useAppStore } from '../lib/store-blockchain'
 
 export default function Home() {
   return (
