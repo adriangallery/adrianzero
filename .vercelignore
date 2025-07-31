@@ -15,9 +15,8 @@ adrianlab-kit-sale.html
 !test-svg-save.html
 !setup-github-token.html
 
-# Ignore other directories
+# Ignore other directories (but not traitcreator/components)
 adventure/
-components/
 shop/
 traitlab/
 patientzero/
