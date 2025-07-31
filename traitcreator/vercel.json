@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://adrianzero.com"
+          "value": "https://adrianzero.com, https://traitcreator-app.vercel.app"
         },
         {
           "key": "Access-Control-Allow-Methods",

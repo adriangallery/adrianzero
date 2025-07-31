@@ -320,6 +320,13 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     } catch (error) {
       console.error('Error checking allowance:', error)
+      // Set allowance to 0 on error to prevent issues
+      set((state) => ({
+        wallet: {
+          ...state.wallet,
+          allowance: '0'
+        }
+      }))
     }
   },
 
@@ -493,7 +500,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         let token = null;
         try {
           console.log('Attempting to get token from Vercel API...');
-          const tokenResponse = await fetch('https://traitcreator.vercel.app/api/get-github-token');
+          const currentOrigin = window.location.origin;
+          const tokenResponse = await fetch(`${currentOrigin}/api/get-github-token`);
           
           if (tokenResponse.ok) {
             const tokenData = await tokenResponse.json();
@@ -501,9 +509,11 @@ export const useAppStore = create<AppState>((set, get) => ({
               token = tokenData.token;
               console.log('Token obtained from Vercel API successfully');
             }
+          } else {
+            console.log('Token API response not ok:', tokenResponse.status);
           }
         } catch (tokenError) {
-          console.log('Could not get token from Vercel API, trying fallback methods...');
+          console.log('Could not get token from Vercel API, trying fallback methods...', tokenError);
         }
         
         // Method 2: Fallback to localStorage if available
