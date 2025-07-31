@@ -83,4 +83,4 @@ export default function Home() {
       </main>
     </div>
   )
-} 
+} // Vercel deployment test - Thu Jul 31 13:45:19 CEST 2025
