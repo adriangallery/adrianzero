@@ -1,0 +1,34 @@
+# Ignore everything except traitcreator directory
+*
+!traitcreator/
+!traitcreator/**
+!.github/
+!.github/workflows/
+!.github/workflows/pages.yml
+!.github/workflows/svg-deploy.yml
+
+# Ignore specific files in root that might conflict
+adrianlab-kit-sale.html
+*.html
+!traitcreator.html
+!configure-token.html
+!test-svg-save.html
+!setup-github-token.html
+
+# Ignore other directories
+adventure/
+components/
+shop/
+traitlab/
+patientzero/
+abis/
+
+# Ignore media files
+*.mp3
+*.svg
+!traitcreator/T-Shirt-148x148.svg
+
+# Ignore configuration files that might conflict
+.htaccess
+_redirects
+CNAME 
