@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
-import { useAppStore, CANVAS_CONFIG, type Pixel } from '@/lib/store-blockchain'
+import { useAppStore, CANVAS_CONFIG, type Pixel } from '../../lib/store-blockchain'
+import { safeBtoa } from '../../lib/utils'
 
 export function Canvas() {
   const canvasRef = useRef<HTMLDivElement>(null)
@@ -204,7 +205,7 @@ export function Canvas() {
             <div 
               className="absolute inset-0 pointer-events-none"
               style={{ 
-                backgroundImage: `url('data:image/svg+xml;base64,${btoa(tshirtSvg)}')`,
+                backgroundImage: `url('data:image/svg+xml;base64,${safeBtoa(tshirtSvg)}')`,
                 backgroundSize: 'contain',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
