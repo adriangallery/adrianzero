@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { ethers } from 'ethers'
 import { BLOCKCHAIN_CONFIG, formatTokenAmount, parseTokenAmount, shortenAddress } from './blockchain-config'
+import { safeBtoa } from './utils'
 
 export interface Pixel {
   x: number
@@ -374,7 +375,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       <svg width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated; shape-rendering: crispEdges;">
         <defs>
           <pattern id="tshirt-pattern" patternUnits="userSpaceOnUse" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}">
-            <image href="data:image/svg+xml;base64,${btoa('<svg width="148" height="148" xmlns="http://www.w3.org/2000/svg"><rect width="148" height="148" fill="white"/></svg>')}" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}"/>
+            <image href="data:image/svg+xml;base64,${safeBtoa('<svg width="148" height="148" xmlns="http://www.w3.org/2000/svg"><rect width="148" height="148" fill="white"/></svg>')}" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}"/>
           </pattern>
         </defs>
         <rect width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" fill="url(#tshirt-pattern)"/>
@@ -545,7 +546,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         // Prepare the commit data
         const commitData: any = {
           message: `Add SVG design for token ${tokenId}`,
-          content: btoa(svgContent), // Base64 encode the SVG content
+          content: safeBtoa(svgContent), // Base64 encode the SVG content
           branch: 'main',
         };
         
