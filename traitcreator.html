@@ -60,6 +60,19 @@
             opacity: 0.6;
         }
         
+        .error {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000;
+            border: 2px solid #ff0000;
+            padding: 20px;
+            text-align: center;
+            z-index: 2000;
+            display: none;
+        }
+        
         iframe {
             width: 100%;
             height: 100vh;
@@ -79,19 +92,83 @@
         </div>
     </div>
     
-    <iframe src="https://traitcreator.vercel.app/" title="TraitCreator DApp"></iframe>
+    <div class="error" id="error">
+        <div class="title">Error Loading DApp</div>
+        <div class="subtitle">The DApp could not be loaded</div>
+        <div class="status">Click to try again</div>
+    </div>
+    
+    <iframe 
+        src="https://traitcreator.vercel.app/" 
+        title="TraitCreator DApp"
+        id="dapp-iframe"
+        onload="handleIframeLoad()"
+        onerror="handleIframeError()">
+    </iframe>
     
     <!-- SVG Save Handler -->
     <script src="save-svg-handler.js"></script>
     
     <script>
-        // Fallback redirect if iframe fails
+        console.log('TraitCreator iframe page loaded');
+        
+        let iframeLoadTimeout;
+        let iframeLoaded = false;
+        
+        function handleIframeLoad() {
+            console.log('Iframe loaded successfully');
+            iframeLoaded = true;
+            clearTimeout(iframeLoadTimeout);
+            
+            // Hide loading after a short delay
+            setTimeout(() => {
+                document.querySelector('.loading').style.display = 'none';
+            }, 500);
+        }
+        
+        function handleIframeError() {
+            console.error('Iframe failed to load');
+            showError();
+        }
+        
+        function showError() {
+            document.querySelector('.loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        // Set timeout for iframe loading
+        iframeLoadTimeout = setTimeout(() => {
+            if (!iframeLoaded) {
+                console.error('Iframe loading timeout');
+                showError();
+            }
+        }, 10000);
+        
+        // Error div click handler
+        document.getElementById('error').addEventListener('click', () => {
+            console.log('Retrying iframe load');
+            document.getElementById('error').style.display = 'none';
+            document.querySelector('.loading').style.display = 'flex';
+            iframeLoaded = false;
+            
+            const iframe = document.getElementById('dapp-iframe');
+            iframe.src = iframe.src;
+            
+            iframeLoadTimeout = setTimeout(() => {
+                if (!iframeLoaded) {
+                    showError();
+                }
+            }, 10000);
+        });
+        
+        // Fallback redirect if iframe fails completely
         setTimeout(() => {
             const iframe = document.querySelector('iframe');
             if (iframe && iframe.contentWindow.location.href === 'about:blank') {
+                console.log('Iframe is blank, redirecting to Vercel');
                 window.location.href = 'https://traitcreator.vercel.app/';
             }
-        }, 3000);
+        }, 5000);
         
         // GitHub token configuration
         // Option 1: Set token manually (for testing)
