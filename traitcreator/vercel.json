@@ -23,8 +23,5 @@
       "source": "/(.*)",
       "destination": "/"
     }
-  ],
-  "env": {
-    "SVG_SAVE_TOKEN": "@svg-save-token"
-  }
+  ]
 } 
