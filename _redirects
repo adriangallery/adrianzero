@@ -1,8 +1,8 @@
-# Redirect /traitcreator to traitcreator-iframe/index.html
-/traitcreator /traitcreator-iframe/index.html 200
+# Redirect /traitcreator to traitcreator.html
+/traitcreator /traitcreator.html 200
 
-# Redirect /traitcreator/ to traitcreator-iframe/index.html
-/traitcreator/ /traitcreator-iframe/index.html 200
+# Redirect /traitcreator/ to traitcreator.html
+/traitcreator/ /traitcreator.html 200
 
 # Handle all subdirectories under traitcreator
-/traitcreator/* /traitcreator-iframe/index.html 200 
+/traitcreator/* /traitcreator.html 200 
