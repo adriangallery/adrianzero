@@ -76,7 +76,7 @@ const MAX_HISTORY = 20
 export const useAppStore = create<AppState>((set, get) => ({
   design: {
     pixels: [],
-    currentColor: '#0000ff',
+    currentColor: '#0080ff',
     brushSize: 1,
     tool: 'brush',
     zoom: 1,
@@ -635,17 +635,17 @@ export const CANVAS_CONFIG = {
 export const RETRO_COLORS = [
   '#000000', // Black
   '#ffffff', // White
-  '#0000ff', // Blue (primary)
-  '#ff00ff', // Magenta (secondary)
+  '#0080ff', // Blue (primary) - más claro
+  '#ff0080', // Magenta (secondary) - más rojo
   '#00ffff', // Cyan (accent)
   '#ff0000', // Red
+  '#ff4000', // Red-Orange
+  '#ff8000', // Orange
   '#00ff00', // Green
   '#ffff00', // Yellow
   '#8000ff', // Purple
-  '#ff0080', // Pink
-  '#0080ff', // Sky Blue
-  '#80ff00', // Lime
-  '#ff8000', // Orange
+  '#ff0040', // Deep Pink
+  '#40ff00', // Lime
   '#8080ff', // Light Blue
   '#ff80ff', // Light Magenta
   '#80ffff', // Light Cyan

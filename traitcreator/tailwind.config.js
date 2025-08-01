@@ -9,15 +9,15 @@ module.exports = {
     extend: {
       colors: {
         retro: {
-          primary: '#0000ff', // Azul predominante para anaglyph
-          secondary: '#ff00ff', // Magenta para acentos
-          accent: '#00ffff', // Cyan para highlights
+          primary: '#0080ff', // Azul más claro/cyan
+          secondary: '#ff0080', // Magenta más rojo
+          accent: '#00ffff', // Cyan puro
           dark: '#000000',
           light: '#ffffff',
           gray: '#404040',
           neon: {
-            blue: '#0000ff',
-            magenta: '#ff00ff',
+            blue: '#0080ff',
+            magenta: '#ff0080',
             cyan: '#00ffff',
             red: '#ff0000',
             green: '#00ff00',
@@ -36,8 +36,8 @@ module.exports = {
       },
       keyframes: {
         glow: {
-          '0%': { textShadow: '0 0 5px #0000ff, 0 0 10px #0000ff, 0 0 15px #0000ff' },
-          '100%': { textShadow: '0 0 10px #0000ff, 0 0 20px #0000ff, 0 0 30px #0000ff' }
+          '0%': { textShadow: '0 0 5px #0080ff, 0 0 10px #0080ff, 0 0 15px #0080ff, 1px 1px 0px #ff0080' },
+          '100%': { textShadow: '0 0 10px #0080ff, 0 0 20px #0080ff, 0 0 30px #0080ff, 2px 2px 0px #ff0080' }
         },
         blink: {
           '0%, 50%': { opacity: '1' },
