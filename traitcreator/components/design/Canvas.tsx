@@ -107,7 +107,20 @@ export function Canvas() {
       
       if (isPaintable) {
         if (tool === 'eraser') {
-          removePixel(x, y)
+          // Remove pixels for brush size (eraser now respects brush size)
+          for (let dx = 0; dx < brushSize; dx++) {
+            for (let dy = 0; dy < brushSize; dy++) {
+              const px = x + dx
+              const py = y + dy
+              if (px < CANVAS_CONFIG.width && py < CANVAS_CONFIG.height) {
+                // Check if each brush pixel is also paintable
+                const isBrushPixelPaintable = tshirtMask[py] && tshirtMask[py][px]
+                if (isBrushPixelPaintable) {
+                  removePixel(px, py)
+                }
+              }
+            }
+          }
         } else {
           // Add pixels for brush size
           for (let dx = 0; dx < brushSize; dx++) {
@@ -142,7 +155,20 @@ export function Canvas() {
       
       if (isPaintable) {
         if (tool === 'eraser') {
-          removePixel(x, y)
+          // Remove pixels for brush size (eraser now respects brush size)
+          for (let dx = 0; dx < brushSize; dx++) {
+            for (let dy = 0; dy < brushSize; dy++) {
+              const px = x + dx
+              const py = y + dy
+              if (px < CANVAS_CONFIG.width && py < CANVAS_CONFIG.height) {
+                // Check if each brush pixel is also paintable
+                const isBrushPixelPaintable = tshirtMask[py] && tshirtMask[py][px]
+                if (isBrushPixelPaintable) {
+                  removePixel(px, py)
+                }
+              }
+            }
+          }
         } else {
           // Add pixels for brush size
           for (let dx = 0; dx < brushSize; dx++) {
@@ -182,7 +208,7 @@ export function Canvas() {
         </div>
       </div>
       
-      <div className="flex justify-center">
+      <div className="flex justify-center overflow-auto">
         <div
           ref={canvasRef}
           className="relative border-2 border-retro-primary bg-white cursor-crosshair touch-none select-none"
@@ -191,6 +217,8 @@ export function Canvas() {
             height: CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize * zoom,
             maxWidth: '80vw',
             maxHeight: '80vh',
+            minWidth: '300px',
+            minHeight: '300px',
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
