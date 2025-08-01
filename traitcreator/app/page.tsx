@@ -60,7 +60,7 @@ export default function Home() {
         <div className="hidden lg:flex w-full">
           {/* Left Sidebar - Fixed width, scrollable */}
           <div className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <WalletConnector />
               <SaveAndMint />
               <ToolPanel />

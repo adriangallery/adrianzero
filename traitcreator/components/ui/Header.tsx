@@ -15,10 +15,7 @@ export function Header() {
               <img 
                 src="/traitstudio.png" 
                 alt="TraitStudio Logo" 
-                className="h-16 w-auto anaglyph-glow"
-                style={{ 
-                  filter: 'drop-shadow(0 0 8px #0080ff) drop-shadow(0 0 15px #0080ff) drop-shadow(3px 3px 0px #ff0080) drop-shadow(6px 6px 0px #ff0080)' 
-                }}
+                className="h-16 w-auto"
               />
               <div className="text-xl font-pixel text-white">
                 v2.0.0
