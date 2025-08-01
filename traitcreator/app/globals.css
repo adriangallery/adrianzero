@@ -10,7 +10,7 @@
   
   body {
     background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-    color: #00ff00;
+    color: #0000ff;
     overflow-x: hidden;
   }
 }
@@ -65,7 +65,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #00ff00, transparent);
+    background: linear-gradient(90deg, transparent, #0000ff, transparent);
     animation: scan 3s linear infinite;
   }
 }
@@ -96,22 +96,22 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00ff00;
+  background: #0000ff;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00cc00;
+  background: #0000cc;
 }
 
 /* Selection */
 ::selection {
-  background: #00ff00;
-  color: #000000;
+  background: #0000ff;
+  color: #ffffff;
 }
 
 /* Focus styles */
 *:focus {
-  outline: 2px solid #00ff00;
+  outline: 2px solid #0000ff;
   outline-offset: 2px;
 } 

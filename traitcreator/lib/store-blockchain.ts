@@ -76,7 +76,7 @@ const MAX_HISTORY = 20
 export const useAppStore = create<AppState>((set, get) => ({
   design: {
     pixels: [],
-    currentColor: '#00ff00',
+    currentColor: '#0000ff',
     brushSize: 1,
     tool: 'brush',
     zoom: 1,
@@ -631,22 +631,22 @@ export const CANVAS_CONFIG = {
   minZoom: 0.5,
 }
 
-// Retro color palette
+// Anaglyph color palette
 export const RETRO_COLORS = [
   '#000000', // Black
   '#ffffff', // White
+  '#0000ff', // Blue (primary)
+  '#ff00ff', // Magenta (secondary)
+  '#00ffff', // Cyan (accent)
   '#ff0000', // Red
   '#00ff00', // Green
-  '#0000ff', // Blue
   '#ffff00', // Yellow
-  '#ff00ff', // Magenta
-  '#00ffff', // Cyan
-  '#ff8000', // Orange
   '#8000ff', // Purple
   '#ff0080', // Pink
-  '#80ff00', // Lime
   '#0080ff', // Sky Blue
-  '#ff8080', // Light Red
-  '#80ff80', // Light Green
+  '#80ff00', // Lime
+  '#ff8000', // Orange
   '#8080ff', // Light Blue
+  '#ff80ff', // Light Magenta
+  '#80ffff', // Light Cyan
 ]
