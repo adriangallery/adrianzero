@@ -65,7 +65,7 @@ export interface AppState {
   loadContractData: () => Promise<void>
   saveAndMintWithApproval: () => Promise<{ tokenId: string; mintSuccess: boolean } | null>
   saveDesign: () => Promise<string>
-  generateSVGContent: () => string
+  generateSVGContent: () => Promise<string>
   saveSVGToServer: (tokenId: string, svgContent: string) => Promise<any>
 }
 
@@ -373,16 +373,27 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  generateSVGContent: () => {
+  generateSVGContent: async () => {
     const state = get()
     const { pixels } = state.design
+    
+    // Load T-shirt SVG
+    let tshirtSvg = ''
+    try {
+      const response = await fetch('/T-Shirt-148x148.svg')
+      tshirtSvg = await response.text()
+    } catch (error) {
+      console.error('Error loading T-shirt SVG:', error)
+      // Fallback to white background if loading fails
+      tshirtSvg = '<svg width="148" height="148" xmlns="http://www.w3.org/2000/svg"><rect width="148" height="148" fill="white"/></svg>'
+    }
     
     // Create SVG content with T-shirt background and pixelated style
     const svgContent = `
       <svg width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated; shape-rendering: crispEdges;">
         <defs>
           <pattern id="tshirt-pattern" patternUnits="userSpaceOnUse" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}">
-            <image href="data:image/svg+xml;base64,${safeBtoa('<svg width="148" height="148" xmlns="http://www.w3.org/2000/svg"><rect width="148" height="148" fill="white"/></svg>')}" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}"/>
+            <image href="data:image/svg+xml;base64,${safeBtoa(tshirtSvg)}" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}"/>
           </pattern>
         </defs>
         <rect width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" fill="url(#tshirt-pattern)"/>
@@ -468,7 +479,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           
           // Save SVG file with token ID
           try {
-            const svgContent = get().generateSVGContent()
+            const svgContent = await get().generateSVGContent()
             await get().saveSVGToServer(tokenId, svgContent)
             console.log(`SVG saved for token ${tokenId}`)
           } catch (svgError) {
@@ -605,7 +616,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const state = get()
     const { pixels } = state.design
     
-    const svgContent = get().generateSVGContent()
+    const svgContent = await get().generateSVGContent()
     
     // Create blob and download
     const blob = new Blob([svgContent], { type: 'image/svg+xml' })
