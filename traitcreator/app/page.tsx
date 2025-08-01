@@ -54,21 +54,17 @@ export default function Home() {
         
         {/* Desktop Layout */}
         <div className="hidden lg:grid lg:grid-cols-4 gap-6">
-          {/* Left Panel - Tools */}
+          {/* Left Panel - Wallet and Tools */}
           <div className="lg:col-span-1 space-y-4">
+            <WalletConnector />
+            <SaveAndMint />
             <ToolPanel />
             <ColorPicker />
           </div>
           
           {/* Center - Canvas */}
-          <div className="lg:col-span-2 flex justify-center">
+          <div className="lg:col-span-3 flex justify-center">
             <Canvas />
-          </div>
-          
-          {/* Right Panel - Blockchain */}
-          <div className="lg:col-span-1 space-y-4">
-            <WalletConnector />
-            <SaveAndMint />
           </div>
         </div>
       </main>
