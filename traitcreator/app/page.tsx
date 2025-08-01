@@ -11,7 +11,7 @@ import { useAppStore } from '../lib/store-blockchain'
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-black text-retro-primary">
+    <div className="min-h-screen bg-gray-900 text-white">
       <Header />
       
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
@@ -20,7 +20,7 @@ export default function Home() {
           {/* Mobile Header Info */}
           <div className="retro-panel mb-4">
             <h3 className="text-lg font-pixel mb-2 anaglyph-title">TRAIT STUDIO</h3>
-            <div className="text-xs font-pixel text-retro-gray">
+            <div className="text-sm font-pixel text-gray-300">
               <p>• Touch-friendly drawing</p>
               <p>• Mobile optimized</p>
               <p>• Blockchain integration</p>
@@ -58,7 +58,7 @@ export default function Home() {
           <div className="lg:col-span-1 space-y-4">
             <div className="retro-panel">
               <h3 className="text-xl font-pixel mb-4 anaglyph-title">TRAIT STUDIO</h3>
-              <div className="text-sm font-pixel text-retro-gray">
+              <div className="text-base font-pixel text-gray-300">
                 <p>• Blockchain integration</p>
                 <p>• NFT minting</p>
                 <p>• Full drawing tools</p>

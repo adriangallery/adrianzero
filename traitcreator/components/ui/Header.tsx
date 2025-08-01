@@ -7,7 +7,7 @@ export function Header() {
   const { wallet: { isConnected, address }, contract: { isConfigured } } = useAppStore()
 
   return (
-    <header className="border-b-2 border-retro-primary bg-black py-4">
+    <header className="bg-gray-900 py-6 anaglyph-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -17,24 +17,24 @@ export function Header() {
                 alt="TraitStudio Logo" 
                 className="h-12 w-auto anaglyph-glow"
                 style={{ 
-                  filter: 'drop-shadow(0 0 5px #0080ff) drop-shadow(0 0 10px #0080ff) drop-shadow(1px 1px 0px #ff0080)' 
+                  filter: 'drop-shadow(0 0 5px #0080ff) drop-shadow(0 0 10px #0080ff) drop-shadow(2px 2px 0px #ff0080) drop-shadow(4px 4px 0px #ff0080)' 
                 }}
               />
-              <div className="text-sm font-pixel text-retro-gray">
+              <div className="text-lg font-pixel text-white">
                 v2.0.0
               </div>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="text-sm font-pixel text-retro-primary">
-              <span className="animate-blink">●</span> ONLINE
+            <div className="text-lg font-pixel text-white">
+              <span className="animate-blink text-retro-primary">●</span> ONLINE
             </div>
-            <div className="text-sm font-pixel text-retro-gray">
+            <div className="text-lg font-pixel text-white">
               {isConnected ? 'WALLET CONNECTED' : 'CONNECT WALLET'}
             </div>
             {isConnected && (
-              <div className="text-sm font-pixel text-retro-accent">
+              <div className="text-lg font-pixel text-retro-accent">
                 {isConfigured ? 'CONTRACT READY' : 'CONTRACT LOADING'}
               </div>
             )}
