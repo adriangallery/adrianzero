@@ -1,14 +1,14 @@
 RewriteEngine On
 
-# Redirect /traitcreator to Vercel DApp
-RewriteRule ^traitcreator/?$ https://traitcreator-app.vercel.app/ [R=302,L]
+# Redirect /traitcreator to traitcreator.html
+RewriteRule ^traitcreator/?$ traitcreator.html [L]
 
-# Redirect /traitcreator/ to Vercel DApp
-RewriteRule ^traitcreator/$ https://traitcreator-app.vercel.app/ [R=302,L]
+# Redirect /traitcreator/ to traitcreator.html
+RewriteRule ^traitcreator/$ traitcreator.html [L]
 
-# Handle subdirectories under traitcreator
-RewriteRule ^traitcreator/(.*)$ https://traitcreator-app.vercel.app/$1 [R=302,L]
+# Handle all subdirectories under traitcreator
+RewriteRule ^traitcreator/* traitcreator.html [L]
 
 # Ensure CNAME works
 RewriteCond %{HTTP_HOST} ^adrianzero\.com$ [NC]
-RewriteRule ^(.*)$ https://adrianzero.com/$1 [R=301,L] 
+RewriteRule ^(.*)$ https://adrianzero.com/$1 [R=301,L]
