@@ -189,8 +189,8 @@ export function Canvas() {
           style={{
             width: CANVAS_CONFIG.width * CANVAS_CONFIG.pixelSize * zoom,
             height: CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize * zoom,
-            maxWidth: '100vw',
-            maxHeight: '60vh',
+            maxWidth: '80vw',
+            maxHeight: '80vh',
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -206,7 +206,7 @@ export function Canvas() {
               className="absolute inset-0 pointer-events-none"
               style={{ 
                 backgroundImage: `url('data:image/svg+xml;base64,${safeBtoa(tshirtSvg)}')`,
-                backgroundSize: 'contain',
+                backgroundSize: `${CANVAS_CONFIG.width * CANVAS_CONFIG.pixelSize * zoom}px ${CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize * zoom}px`,
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 opacity: 0.4
