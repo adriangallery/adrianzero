@@ -11,11 +11,16 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h1 className="text-3xl font-retro text-retro-primary neon-glow">
-              TRAIT CREATOR
-            </h1>
-            <div className="text-sm font-pixel text-retro-gray">
-              v2.0.0
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/traitstudio.png" 
+                alt="TraitStudio Logo" 
+                className="h-12 w-auto neon-glow"
+                style={{ filter: 'drop-shadow(0 0 5px #0000ff) drop-shadow(0 0 10px #0000ff)' }}
+              />
+              <div className="text-sm font-pixel text-retro-gray">
+                v2.0.0
+              </div>
             </div>
           </div>
 
