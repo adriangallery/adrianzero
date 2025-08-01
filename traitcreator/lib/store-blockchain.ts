@@ -79,7 +79,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     currentColor: '#0080ff',
     brushSize: 1,
     tool: 'brush',
-    zoom: 1,
+    zoom: 2.5, // Valor inicial más grande
     showGrid: true,
     history: [],
     historyIndex: -1,
