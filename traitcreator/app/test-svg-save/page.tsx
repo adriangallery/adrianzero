@@ -56,20 +56,32 @@ export default function TestSVGSave() {
       const apiUrl = `${currentOrigin}/api/get-github-token`
       addLog(`API URL: ${apiUrl}`, 'info')
       
-      const response = await fetch(apiUrl)
+      // Follow redirects automatically
+      const response = await fetch(apiUrl, {
+        redirect: 'follow'
+      })
       addLog(`Response status: ${response.status}`, 'info')
       addLog(`Response ok: ${response.ok}`, 'info')
       
       if (response.ok) {
-        const data = await response.json()
-        addLog(`Response data: ${JSON.stringify(data, null, 2)}`, 'info')
+        const contentType = response.headers.get('content-type')
+        addLog(`Response content-type: ${contentType}`, 'info')
         
-        if (data.token) {
-          addLog('✅ Token obtained successfully from API', 'success')
-          setGithubToken(data.token)
-          return data.token
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json()
+          addLog(`Response data: ${JSON.stringify(data, null, 2)}`, 'info')
+          
+          if (data.token) {
+            addLog('✅ Token obtained successfully from API', 'success')
+            setGithubToken(data.token)
+            return data.token
+          } else {
+            addLog('❌ No token in response data', 'error')
+            return null
+          }
         } else {
-          addLog('❌ No token in response data', 'error')
+          const text = await response.text()
+          addLog(`❌ Response is not JSON: ${text.substring(0, 200)}...`, 'error')
           return null
         }
       } else {
