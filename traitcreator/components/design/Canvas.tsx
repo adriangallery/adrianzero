@@ -21,6 +21,48 @@ export function Canvas() {
       .catch(error => console.error('Error loading T-shirt SVG:', error))
   }, [])
 
+  // Calculate optimal zoom on mount and window resize
+  useEffect(() => {
+    const calculateOptimalZoom = () => {
+      if (!canvasRef.current) return
+      
+      const container = canvasRef.current.parentElement
+      if (!container) return
+      
+      const containerRect = container.getBoundingClientRect()
+      const canvasBaseWidth = CANVAS_CONFIG.width * CANVAS_CONFIG.pixelSize
+      const canvasBaseHeight = CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize
+      
+      // Calculate zoom to fit canvas in container with some padding
+      const padding = 40 // pixels of padding
+      const maxWidth = containerRect.width - padding
+      const maxHeight = containerRect.height - padding
+      
+      const zoomX = maxWidth / canvasBaseWidth
+      const zoomY = maxHeight / canvasBaseHeight
+      
+      // Use the smaller zoom to ensure canvas fits in both dimensions
+      const optimalZoom = Math.min(zoomX, zoomY, CANVAS_CONFIG.maxZoom)
+      
+      // Set zoom if it's significantly different from current zoom
+      const currentZoom = useAppStore.getState().design.zoom
+      if (Math.abs(optimalZoom - currentZoom) > 0.1) {
+        useAppStore.getState().setZoom(optimalZoom)
+      }
+    }
+    
+    // Calculate on mount
+    calculateOptimalZoom()
+    
+    // Recalculate on window resize
+    const handleResize = () => {
+      setTimeout(calculateOptimalZoom, 100) // Small delay to ensure DOM is updated
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // Create a mask from the T-shirt SVG to determine paintable areas
   const createTshirtMask = (svgContent: string) => {
     const parser = new DOMParser()
