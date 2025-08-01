@@ -1,8 +1,0 @@
-# Redirect /traitcreator to traitcreator.html
-/traitcreator /traitcreator.html 200
-
-# Redirect /traitcreator/ to traitcreator.html
-/traitcreator/ /traitcreator.html 200
-
-# Handle all subdirectories under traitcreator
-/traitcreator/* /traitcreator.html 200 
