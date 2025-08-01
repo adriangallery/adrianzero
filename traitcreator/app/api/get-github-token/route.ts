@@ -7,8 +7,11 @@ export async function GET(request: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { error: 'GitHub token not configured' },
-        { status: 404 }
+        { 
+          error: 'GitHub token not configured',
+          message: 'SVG_SAVE_TOKEN environment variable is not set'
+        },
+        { status: 500 }
       )
     }
 
