@@ -63,14 +63,18 @@ export default function Home() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <WalletConnector />
               <SaveAndMint />
-              <ToolPanel />
-              <ColorPicker />
             </div>
           </div>
-          
           {/* Main Canvas Area - Takes remaining space */}
           <div className="flex-1 flex items-center justify-center bg-gray-950 p-4">
             <Canvas />
+          </div>
+          {/* Right Sidebar - Tools and Colors */}
+          <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <ToolPanel />
+              <ColorPicker />
+            </div>
           </div>
         </div>
       </div>
