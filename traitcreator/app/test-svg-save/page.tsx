@@ -56,10 +56,7 @@ export default function TestSVGSave() {
       const apiUrl = `${currentOrigin}/api/get-github-token`
       addLog(`API URL: ${apiUrl}`, 'info')
       
-      // Follow redirects automatically
-      const response = await fetch(apiUrl, {
-        redirect: 'follow'
-      })
+      const response = await fetch(apiUrl)
       addLog(`Response status: ${response.status}`, 'info')
       addLog(`Response ok: ${response.ok}`, 'info')
       
