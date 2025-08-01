@@ -98,7 +98,7 @@
         <div class="status">Click to try again</div>
     </div>
     
-    <iframe src="https://traitcreator-app.vercel.app/" title="TraitCreator DApp"></iframe>
+    <iframe src="https://traitcreator-app.vercel.app/" title="TraitCreator DApp" onload="handleIframeLoad()" onerror="handleIframeError()"></iframe>
     
     <!-- SVG Save Handler -->
     <script src="save-svg-handler.js"></script>
@@ -121,8 +121,8 @@
         }
         
         function handleIframeError() {
-            console.error('Iframe failed to load');
-            showError();
+            console.warn('Iframe load issue detected, but continuing...');
+            // Don't show error immediately, give it more time
         }
         
         function showError() {
@@ -130,13 +130,13 @@
             document.getElementById('error').style.display = 'block';
         }
         
-        // Set timeout for iframe loading
+        // Set timeout for iframe loading (increased to 30 seconds)
         iframeLoadTimeout = setTimeout(() => {
             if (!iframeLoaded) {
-                console.error('Iframe loading timeout');
-                showError();
+                console.warn('Iframe loading taking longer than expected, but continuing...');
+                // Don't show error immediately, just log a warning
             }
-        }, 10000);
+        }, 30000);
         
         // Error div click handler
         document.getElementById('error').addEventListener('click', () => {
@@ -155,13 +155,14 @@
             }, 10000);
         });
         
-        // Fallback redirect if iframe fails
+        // Fallback redirect if iframe fails (only after 45 seconds)
         setTimeout(() => {
             const iframe = document.querySelector('iframe');
             if (iframe && iframe.contentWindow.location.href === 'about:blank') {
+                console.warn('Iframe still blank after 45 seconds, redirecting...');
                 window.location.href = 'https://traitcreator-app.vercel.app/';
             }
-        }, 3000);
+        }, 45000);
         
         // GitHub token configuration
         // Option 1: Set token manually (for testing)
