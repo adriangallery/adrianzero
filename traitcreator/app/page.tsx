@@ -56,15 +56,6 @@ export default function Home() {
         <div className="hidden lg:grid lg:grid-cols-4 gap-6">
           {/* Left Panel - Tools */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="retro-panel">
-              <h3 className="text-xl font-pixel mb-4 anaglyph-title">TRAIT STUDIO</h3>
-              <div className="text-base font-pixel text-gray-300">
-                <p>• Blockchain integration</p>
-                <p>• NFT minting</p>
-                <p>• Full drawing tools</p>
-                <p>• Retro theme active</p>
-              </div>
-            </div>
             <ToolPanel />
             <ColorPicker />
           </div>
