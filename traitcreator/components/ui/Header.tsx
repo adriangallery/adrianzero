@@ -11,16 +11,16 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               <img 
                 src="/traitstudio.png" 
                 alt="TraitStudio Logo" 
-                className="h-12 w-auto anaglyph-glow"
+                className="h-16 w-auto anaglyph-glow"
                 style={{ 
-                  filter: 'drop-shadow(0 0 5px #0080ff) drop-shadow(0 0 10px #0080ff) drop-shadow(2px 2px 0px #ff0080) drop-shadow(4px 4px 0px #ff0080)' 
+                  filter: 'drop-shadow(0 0 8px #0080ff) drop-shadow(0 0 15px #0080ff) drop-shadow(3px 3px 0px #ff0080) drop-shadow(6px 6px 0px #ff0080)' 
                 }}
               />
-              <div className="text-lg font-pixel text-white">
+              <div className="text-xl font-pixel text-white">
                 v2.0.0
               </div>
             </div>

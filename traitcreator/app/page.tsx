@@ -11,63 +11,69 @@ import { useAppStore } from '../lib/store-blockchain'
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="h-screen bg-gray-900 text-white flex flex-col">
+      {/* Header - Always visible */}
       <Header />
       
-      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      {/* Main content area */}
+      <div className="flex-1 flex overflow-hidden">
         {/* Mobile Layout */}
-        <div className="block lg:hidden">
-          {/* Mobile Header Info */}
-          <div className="retro-panel mb-4">
-            <h3 className="text-lg font-pixel mb-2 anaglyph-title">TRAIT STUDIO</h3>
-            <div className="text-sm font-pixel text-gray-300">
-              <p>• Touch-friendly drawing</p>
-              <p>• Mobile optimized</p>
-              <p>• Blockchain integration</p>
+        <div className="block lg:hidden w-full overflow-y-auto">
+          <div className="p-4 space-y-4">
+            {/* Mobile Header Info */}
+            <div className="retro-panel">
+              <h3 className="text-lg font-pixel mb-2 anaglyph-title">TRAIT STUDIO</h3>
+              <div className="text-sm font-pixel text-gray-300">
+                <p>• Touch-friendly drawing</p>
+                <p>• Mobile optimized</p>
+                <p>• Blockchain integration</p>
+              </div>
             </div>
-          </div>
-          
-          {/* Mobile Canvas */}
-          <div className="mb-4">
-            <Canvas />
-          </div>
-          
-          {/* Mobile Tools - Horizontal Scroll */}
-          <div className="mb-4">
-            <ToolPanel />
-          </div>
-          
-          {/* Mobile Colors */}
-          <div className="mb-4">
-            <ColorPicker />
-          </div>
-          
-          {/* Mobile Actions */}
-          <div className="retro-panel">
-            <h3 className="text-lg font-pixel mb-2 neon-glow">BLOCKCHAIN</h3>
-            <div className="space-y-2">
-              <WalletConnector />
-              <SaveAndMint />
+            
+            {/* Mobile Canvas */}
+            <div>
+              <Canvas />
+            </div>
+            
+            {/* Mobile Tools - Horizontal Scroll */}
+            <div>
+              <ToolPanel />
+            </div>
+            
+            {/* Mobile Colors */}
+            <div>
+              <ColorPicker />
+            </div>
+            
+            {/* Mobile Actions */}
+            <div className="retro-panel">
+              <h3 className="text-lg font-pixel mb-2 neon-glow">BLOCKCHAIN</h3>
+              <div className="space-y-2">
+                <WalletConnector />
+                <SaveAndMint />
+              </div>
             </div>
           </div>
         </div>
         
-        {/* Desktop Layout */}
-        <div className="hidden lg:grid lg:grid-cols-4 gap-6">
-          {/* Left Panel - Wallet and Tools */}
-          <div className="lg:col-span-1 space-y-4">
-            <WalletConnector />
-            <SaveAndMint />
-            <ToolPanel />
-            <ColorPicker />
+        {/* Desktop Layout - Professional Drawing App Style */}
+        <div className="hidden lg:flex w-full">
+          {/* Left Sidebar - Fixed width, scrollable */}
+          <div className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <WalletConnector />
+              <SaveAndMint />
+              <ToolPanel />
+              <ColorPicker />
+            </div>
           </div>
           
-          {/* Center - Canvas */}
-          <div className="lg:col-span-3 flex justify-center">
+          {/* Main Canvas Area - Takes remaining space */}
+          <div className="flex-1 flex items-center justify-center bg-gray-950 p-4">
             <Canvas />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 } // Vercel deployment test - Thu Jul 31 13:45:19 CEST 2025

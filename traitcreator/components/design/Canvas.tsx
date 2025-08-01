@@ -208,17 +208,17 @@ export function Canvas() {
         </div>
       </div>
       
-      <div className="flex justify-center overflow-auto">
+      <div className="flex justify-center">
         <div
           ref={canvasRef}
           className="relative border-2 border-retro-primary bg-white cursor-crosshair touch-none select-none"
           style={{
             width: CANVAS_CONFIG.width * CANVAS_CONFIG.pixelSize * zoom,
             height: CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize * zoom,
-            maxWidth: '80vw',
-            maxHeight: '80vh',
-            minWidth: '300px',
-            minHeight: '300px',
+            maxWidth: 'calc(100vw - 400px)',
+            maxHeight: 'calc(100vh - 200px)',
+            minWidth: '400px',
+            minHeight: '400px',
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
