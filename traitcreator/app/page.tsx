@@ -19,7 +19,7 @@ export default function Home() {
         <div className="block lg:hidden">
           {/* Mobile Header Info */}
           <div className="retro-panel mb-4">
-            <h3 className="text-lg font-pixel mb-2 neon-glow">TRAIT STUDIO</h3>
+            <h3 className="text-lg font-pixel mb-2 anaglyph-title">TRAIT STUDIO</h3>
             <div className="text-xs font-pixel text-retro-gray">
               <p>• Touch-friendly drawing</p>
               <p>• Mobile optimized</p>
@@ -57,7 +57,7 @@ export default function Home() {
           {/* Left Panel - Tools */}
           <div className="lg:col-span-1 space-y-4">
             <div className="retro-panel">
-              <h3 className="text-xl font-pixel mb-4 neon-glow">TRAIT STUDIO</h3>
+              <h3 className="text-xl font-pixel mb-4 anaglyph-title">TRAIT STUDIO</h3>
               <div className="text-sm font-pixel text-retro-gray">
                 <p>• Blockchain integration</p>
                 <p>• NFT minting</p>
