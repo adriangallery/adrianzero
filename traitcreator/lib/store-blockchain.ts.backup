@@ -14,6 +14,7 @@ export interface DesignState {
   currentColor: string
   brushSize: number
   tool: 'brush' | 'eraser' | 'fill'
+  zoom: number
   showGrid: boolean
   history: Pixel[][]
   historyIndex: number
@@ -47,6 +48,7 @@ export interface AppState {
   setCurrentColor: (color: string) => void
   setBrushSize: (size: number) => void
   setTool: (tool: 'brush' | 'eraser' | 'fill') => void
+  setZoom: (zoom: number) => void
   toggleGrid: () => void
   addPixel: (pixel: Pixel) => void
   removePixel: (x: number, y: number) => void
@@ -77,7 +79,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     currentColor: '#0080ff',
     brushSize: 1,
     tool: 'brush',
-     // Valor inicial más grande
+    zoom: 2.5, // Valor inicial más grande
     showGrid: true,
     history: [],
     historyIndex: -1,
@@ -118,6 +120,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       design: { ...state.design, tool }
     })),
 
+  setZoom: (zoom) =>
+    set((state) => ({
+      design: { ...state.design, zoom }
+    })),
 
   toggleGrid: () =>
     set((state) => ({
