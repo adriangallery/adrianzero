@@ -45,7 +45,7 @@ export function Canvas() {
       const optimalZoom = Math.min(zoomX, zoomY, CANVAS_CONFIG.maxZoom)
       
       // Set zoom if it's significantly different from current zoom
-      const currentZoom = 2.5
+      const currentZoom = 0.9225225362691793
       if (Math.abs(optimalZoom - currentZoom) > 0.1) {
         
       }
