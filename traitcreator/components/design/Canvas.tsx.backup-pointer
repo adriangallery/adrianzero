@@ -96,8 +96,8 @@ export function Canvas() {
   }
   
   const {
-    design: { pixels, currentColor, brushSize, tool, showGrid, pointerX, pointerY, showPointer },
-    addPixel, addPixels, setPointerPosition, setShowPointer,
+    design: { pixels, currentColor, brushSize, tool, showGrid },
+    addPixel, addPixels,
     removePixel,
   } = useAppStore()
 
@@ -190,34 +190,7 @@ export function Canvas() {
     }
   }
 
-  
-  const handlePointerMove = (e: React.MouseEvent) => {
-    if (!canvasRef.current) return
-
-    const rect = canvasRef.current.getBoundingClientRect()
-    const x = Math.floor((e.clientX - rect.left) / (CANVAS_CONFIG.pixelSize * 1))
-    const y = Math.floor((e.clientY - rect.top) / (CANVAS_CONFIG.pixelSize * 1))
-
-    // Check if coordinates are within canvas bounds
-    if (x >= 0 && x < CANVAS_CONFIG.width && y >= 0 && y < CANVAS_CONFIG.height) {
-      // Check if the pixel is in a paintable area
-      const isPaintable = tshirtMask.length > 0 && tshirtMask[y] && tshirtMask[y][x]
-      if (isPaintable) {
-        setPointerPosition(x, y)
-        setShowPointer(true)
-      } else {
-        setShowPointer(false)
-      }
-    } else {
-      setShowPointer(false)
-    }
-  }
-
-  const handlePointerLeave = () => {
-    setShowPointer(false)
-  }
-
-const handlePixelClick = (e: React.MouseEvent) => {
+  const handlePixelClick = (e: React.MouseEvent) => {
     if (!canvasRef.current) return
 
     const rect = canvasRef.current.getBoundingClientRect()
@@ -304,9 +277,9 @@ const handlePixelClick = (e: React.MouseEvent) => {
             minHeight: '400px',
           }}
           onMouseDown={handleMouseDown}
-          onMouseMove={(e) => { handleMouseMove(e); handlePointerMove(e); }}
+          onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          onMouseLeave={(e) => { handleMouseUp(); handlePointerLeave(); }}
+          onMouseLeave={handleMouseUp}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -321,24 +294,6 @@ const handlePixelClick = (e: React.MouseEvent) => {
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 opacity: 0.4
-              }}
-            />
-          )}
-          
-          
-          {/* Pointer indicator */}
-          {showPointer && (
-            <div
-              className="absolute pointer-events-none z-10"
-              style={{
-                left: pointerX * CANVAS_CONFIG.pixelSize * 1,
-                top: pointerY * CANVAS_CONFIG.pixelSize * 1,
-                width: brushSize * CANVAS_CONFIG.pixelSize * 1,
-                height: brushSize * CANVAS_CONFIG.pixelSize * 1,
-                backgroundColor: `${currentColor}40`,
-                border: `2px solid ${currentColor}`,
-                borderRadius: "2px",
-                boxShadow: `0 0 4px ${currentColor}80`,
               }}
             />
           )}
@@ -395,6 +350,4 @@ const handlePixelClick = (e: React.MouseEvent) => {
              </div>
     </div>
   )
-}
-
- 
+} 
