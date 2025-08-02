@@ -18,9 +18,6 @@ export interface DesignState {
   history: Pixel[][]
   historyIndex: number
   isDrawing: boolean
-  pointerX: number
-  pointerY: number
-  showPointer: boolean
 }
 
 export interface WalletState {
@@ -53,8 +50,6 @@ export interface AppState {
   toggleGrid: () => void
   addPixel: (pixel: Pixel) => void
   addPixels: (pixels: Pixel[]) => void
-  setPointerPosition: (x: number, y: number) => void
-  setShowPointer: (show: boolean) => void
   removePixel: (x: number, y: number) => void
   clearCanvas: () => void
   undo: () => void
@@ -88,9 +83,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     history: [],
     historyIndex: -1,
     isDrawing: false,
-    pointerX: 0,
-    pointerY: 0,
-    showPointer: false,
   },
 
   wallet: {
@@ -185,25 +177,6 @@ export const useAppStore = create<AppState>((set, get) => ({
         pixels: newPixels,
         history: newHistory,
         historyIndex: newHistory.length - 1,
-      }
-    }))
-  },
-
-  setPointerPosition: (x, y) => {
-    set((state) => ({
-      design: {
-        ...state.design,
-        pointerX: x,
-        pointerY: y,
-      }
-    }))
-  },
-
-  setShowPointer: (show) => {
-    set((state) => ({
-      design: {
-        ...state.design,
-        showPointer: show,
       }
     }))
   },
