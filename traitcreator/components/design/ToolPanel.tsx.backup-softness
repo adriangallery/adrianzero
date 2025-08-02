@@ -6,9 +6,9 @@ import { Brush, Eraser, RotateCcw, RotateCw, Grid, Trash2 } from 'lucide-react'
 
 export function ToolPanel() {
   const {
-    design: { tool, brushSize, showGrid, brushSoftness },
+    design: { tool, brushSize, showGrid },
     setTool,
-    setBrushSize, setBrushSoftness,
+    setBrushSize,
     toggleGrid,
     undo,
     redo,
@@ -56,29 +56,6 @@ export function ToolPanel() {
                 {size}x{size}
               </button>
             ))}
-
-        {/* Brush Softness */}
-        <div>
-          <h4 className="text-xs sm:text-sm font-pixel text-retro-primary mb-2">BRUSH SOFTNESS</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-retro-gray">
-              <span>Hard</span>
-              <span>{brushSoftness}%</span>
-              <span>Soft</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={brushSoftness}
-              onChange={(e) => setBrushSoftness(Number(e.target.value))}
-              className="w-full h-2 bg-retro-dark rounded-lg appearance-none cursor-pointer slider"
-              style={{
-                background: `linear-gradient(to right, #ff6b6b 0%, #4ecdc4 ${brushSoftness}%, #2c3e50 ${brushSoftness}%, #2c3e50 100%)`
-              }}
-            />
-          </div>
-        </div>
           </div>
         </div>
 

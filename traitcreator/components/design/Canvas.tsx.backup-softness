@@ -96,7 +96,7 @@ export function Canvas() {
   }
   
   const {
-    design: { pixels, currentColor, brushSize, tool, showGrid, pointerX, pointerY, showPointer, brushSoftness },
+    design: { pixels, currentColor, brushSize, tool, showGrid, pointerX, pointerY, showPointer },
     addPixel, addPixels, setPointerPosition, setShowPointer,
     removePixel,
   } = useAppStore()
@@ -166,7 +166,7 @@ export function Canvas() {
         } else {
           // Add pixels for brush size
           if (brushSize === 1) {
-            addPixel({ x, y, color: applyOpacity(currentColor, brushSoftness) })
+            addPixel({ x, y, color: currentColor })
           } else {
             const pixelsToAdd = []
             for (let dx = 0; dx < brushSize; dx++) {
@@ -176,7 +176,7 @@ export function Canvas() {
                 if (px < CANVAS_CONFIG.width && py < CANVAS_CONFIG.height) {
                   const isBrushPixelPaintable = tshirtMask[py] && tshirtMask[py][px]
                   if (isBrushPixelPaintable) {
-                    pixelsToAdd.push({ x: px, y: py, color: applyOpacity(currentColor, brushSoftness) })
+                    pixelsToAdd.push({ x: px, y: py, color: currentColor })
                   }
                 }
               }
@@ -217,37 +217,6 @@ export function Canvas() {
     setShowPointer(false)
   }
 
-
-  // Función para aplicar opacidad basada en brush softness
-  const applyOpacity = (color: string, softness: number): string => {
-    // Si softness es 100, no aplicar opacidad (color sólido)
-    if (softness >= 100) return color
-    
-    // Convertir softness a opacidad (0-1)
-    const opacity = softness / 100
-    
-    // Si el color ya es RGBA, extraer los componentes
-    if (color.startsWith('rgba')) {
-      const rgba = color.match(/rgba?\(([^)]+)\)/)
-      if (rgba) {
-        const [r, g, b] = rgba[1].split(',').map(n => parseInt(n.trim()))
-        return `rgba(${r}, ${g}, ${b}, ${opacity})`
-      }
-    }
-    
-    // Si es un color hexadecimal, convertirlo a RGBA
-    if (color.startsWith('#')) {
-      const hex = color.replace('#', '')
-      const r = parseInt(hex.substr(0, 2), 16)
-      const g = parseInt(hex.substr(2, 2), 16)
-      const b = parseInt(hex.substr(4, 2), 16)
-      return `rgba(${r}, ${g}, ${b}, ${opacity})`
-    }
-    
-    // Para otros formatos, devolver el color original
-    return color
-  }
-
 const handlePixelClick = (e: React.MouseEvent) => {
     if (!canvasRef.current) return
 
@@ -279,7 +248,7 @@ const handlePixelClick = (e: React.MouseEvent) => {
         } else {
           // Add pixels for brush size
           if (brushSize === 1) {
-            addPixel({ x, y, color: applyOpacity(currentColor, brushSoftness) })
+            addPixel({ x, y, color: currentColor })
           } else {
             const pixelsToAdd = []
             for (let dx = 0; dx < brushSize; dx++) {
@@ -289,7 +258,7 @@ const handlePixelClick = (e: React.MouseEvent) => {
                 if (px < CANVAS_CONFIG.width && py < CANVAS_CONFIG.height) {
                   const isBrushPixelPaintable = tshirtMask[py] && tshirtMask[py][px]
                   if (isBrushPixelPaintable) {
-                    pixelsToAdd.push({ x: px, y: py, color: applyOpacity(currentColor, brushSoftness) })
+                    pixelsToAdd.push({ x: px, y: py, color: currentColor })
                   }
                 }
               }
@@ -366,10 +335,10 @@ const handlePixelClick = (e: React.MouseEvent) => {
                 top: pointerY * CANVAS_CONFIG.pixelSize * 1,
                 width: brushSize * CANVAS_CONFIG.pixelSize * 1,
                 height: brushSize * CANVAS_CONFIG.pixelSize * 1,
-                backgroundColor: applyOpacity(currentColor, brushSoftness),
-                border: `2px solid ${applyOpacity(currentColor, brushSoftness)}`,
+                backgroundColor: `${currentColor}40`,
+                border: `2px solid ${currentColor}`,
                 borderRadius: "2px",
-                boxShadow: `0 0 4px ${applyOpacity(currentColor, brushSoftness)}80`,
+                boxShadow: `0 0 4px ${currentColor}80`,
               }}
             />
           )}
