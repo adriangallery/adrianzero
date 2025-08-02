@@ -45,7 +45,7 @@ export function Canvas() {
       const optimalZoom = Math.min(zoomX, zoomY, CANVAS_CONFIG.maxZoom)
       
       // Set zoom if it's significantly different from current zoom
-      const currentZoom = 0.9225225362691793
+      const currentZoom = 1
       if (Math.abs(optimalZoom - currentZoom) > 0.1) {
         
       }
@@ -139,8 +139,8 @@ export function Canvas() {
 
     const rect = canvasRef.current.getBoundingClientRect()
     const touch = e.touches[0]
-    const x = Math.floor((touch.clientX - rect.left) / (CANVAS_CONFIG.pixelSize * 2.5))
-    const y = Math.floor((touch.clientY - rect.top) / (CANVAS_CONFIG.pixelSize * 2.5))
+    const x = Math.floor((touch.clientX - rect.left) / (CANVAS_CONFIG.pixelSize * 1))
+    const y = Math.floor((touch.clientY - rect.top) / (CANVAS_CONFIG.pixelSize * 1))
 
     // Check if coordinates are within canvas bounds
     if (x >= 0 && x < CANVAS_CONFIG.width && y >= 0 && y < CANVAS_CONFIG.height) {
@@ -187,8 +187,8 @@ export function Canvas() {
     if (!canvasRef.current) return
 
     const rect = canvasRef.current.getBoundingClientRect()
-    const x = Math.floor((e.clientX - rect.left) / (CANVAS_CONFIG.pixelSize * 2.5))
-    const y = Math.floor((e.clientY - rect.top) / (CANVAS_CONFIG.pixelSize * 2.5))
+    const x = Math.floor((e.clientX - rect.left) / (CANVAS_CONFIG.pixelSize * 1))
+    const y = Math.floor((e.clientY - rect.top) / (CANVAS_CONFIG.pixelSize * 1))
 
     // Check if coordinates are within canvas bounds
     if (x >= 0 && x < CANVAS_CONFIG.width && y >= 0 && y < CANVAS_CONFIG.height) {
@@ -246,7 +246,7 @@ export function Canvas() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-pixel neon-glow">T-SHIRT CANVAS</h2>
         <div className="text-sm font-pixel text-retro-gray">
-          {CANVAS_CONFIG.width}x{CANVAS_CONFIG.height} • Zoom: {2.5}x
+          {CANVAS_CONFIG.width}x{CANVAS_CONFIG.height} • Zoom: {1}x
         </div>
       </div>
       
@@ -255,8 +255,8 @@ export function Canvas() {
           ref={canvasRef}
           className="relative border-2 border-retro-primary bg-white cursor-crosshair touch-none select-none"
           style={{
-            width: CANVAS_CONFIG.width * CANVAS_CONFIG.pixelSize * 2.5,
-            height: CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize * 2.5,
+            width: CANVAS_CONFIG.width * CANVAS_CONFIG.pixelSize * 1,
+            height: CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize * 1,
             maxWidth: 'calc(100vw - 400px)',
             maxHeight: 'calc(100vh - 200px)',
             minWidth: '400px',
@@ -276,7 +276,7 @@ export function Canvas() {
               className="absolute inset-0 pointer-events-none"
               style={{ 
                 backgroundImage: `url('data:image/svg+xml;base64,${safeBtoa(tshirtSvg)}')`,
-                backgroundSize: `${CANVAS_CONFIG.width * CANVAS_CONFIG.pixelSize * 2.5}px ${CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize * 2.5}px`,
+                backgroundSize: `${CANVAS_CONFIG.width * CANVAS_CONFIG.pixelSize * 1}px ${CANVAS_CONFIG.height * CANVAS_CONFIG.pixelSize * 1}px`,
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 opacity: 0.4
@@ -293,7 +293,7 @@ export function Canvas() {
                   linear-gradient(to right, rgba(0, 255, 0, 0.1) 1px, transparent 1px),
                   linear-gradient(to bottom, rgba(0, 255, 0, 0.1) 1px, transparent 1px)
                 `,
-                backgroundSize: `${CANVAS_CONFIG.pixelSize * 2.5}px ${CANVAS_CONFIG.pixelSize * 2.5}px`,
+                backgroundSize: `${CANVAS_CONFIG.pixelSize * 1}px ${CANVAS_CONFIG.pixelSize * 1}px`,
               }}
             />
           )}
@@ -313,10 +313,10 @@ export function Canvas() {
                     key={`${x}-${y}`}
                     className="absolute pixel-perfect"
                     style={{
-                      left: x * CANVAS_CONFIG.pixelSize * 2.5,
-                      top: y * CANVAS_CONFIG.pixelSize * 2.5,
-                      width: CANVAS_CONFIG.pixelSize * 2.5,
-                      height: CANVAS_CONFIG.pixelSize * 2.5,
+                      left: x * CANVAS_CONFIG.pixelSize * 1,
+                      top: y * CANVAS_CONFIG.pixelSize * 1,
+                      width: CANVAS_CONFIG.pixelSize * 1,
+                      height: CANVAS_CONFIG.pixelSize * 1,
                       backgroundColor: color,
                       border: showGrid ? '1px solid rgba(0, 255, 0, 0.2)' : 'none',
                     }}
