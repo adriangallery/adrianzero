@@ -21,7 +21,6 @@ export interface DesignState {
   pointerX: number
   pointerY: number
   showPointer: boolean
-  brushSoftness: number
 }
 
 export interface WalletState {
@@ -56,7 +55,6 @@ export interface AppState {
   addPixels: (pixels: Pixel[]) => void
   setPointerPosition: (x: number, y: number) => void
   setShowPointer: (show: boolean) => void
-  setBrushSoftness: (softness: number) => void
   removePixel: (x: number, y: number) => void
   clearCanvas: () => void
   undo: () => void
@@ -93,7 +91,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     pointerX: 0,
     pointerY: 0,
     showPointer: false,
-    brushSoftness: 100,
   },
 
   wallet: {
@@ -207,17 +204,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       design: {
         ...state.design,
         showPointer: show,
-      }
-    }))
-  },
-
-  setBrushSoftness: (softness) => {
-    // Validar rango 0-100
-    const validSoftness = Math.max(0, Math.min(100, softness))
-    set((state) => ({
-      design: {
-        ...state.design,
-        brushSoftness: validSoftness,
       }
     }))
   },
