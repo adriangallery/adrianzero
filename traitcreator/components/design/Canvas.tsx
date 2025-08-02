@@ -97,7 +97,7 @@ export function Canvas() {
   
   const {
     design: { pixels, currentColor, brushSize, tool, showGrid },
-    addPixel,
+    addPixel, addPixels,
     removePixel,
   } = useAppStore()
 
@@ -165,17 +165,24 @@ export function Canvas() {
           }
         } else {
           // Add pixels for brush size
-          for (let dx = 0; dx < brushSize; dx++) {
-            for (let dy = 0; dy < brushSize; dy++) {
-              const px = x + dx
-              const py = y + dy
-              if (px < CANVAS_CONFIG.width && py < CANVAS_CONFIG.height) {
-                // Check if each brush pixel is also paintable
-                const isBrushPixelPaintable = tshirtMask[py] && tshirtMask[py][px]
-                if (isBrushPixelPaintable) {
-                  addPixel({ x: px, y: py, color: currentColor })
+          if (brushSize === 1) {
+            addPixel({ x, y, color: currentColor })
+          } else {
+            const pixelsToAdd = []
+            for (let dx = 0; dx < brushSize; dx++) {
+              for (let dy = 0; dy < brushSize; dy++) {
+                const px = x + dx
+                const py = y + dy
+                if (px < CANVAS_CONFIG.width && py < CANVAS_CONFIG.height) {
+                  const isBrushPixelPaintable = tshirtMask[py] && tshirtMask[py][px]
+                  if (isBrushPixelPaintable) {
+                    pixelsToAdd.push({ x: px, y: py, color: currentColor })
+                  }
                 }
               }
+            }
+            if (pixelsToAdd.length > 0) {
+              addPixels(pixelsToAdd)
             }
           }
         }
@@ -213,17 +220,24 @@ export function Canvas() {
           }
         } else {
           // Add pixels for brush size
-          for (let dx = 0; dx < brushSize; dx++) {
-            for (let dy = 0; dy < brushSize; dy++) {
-              const px = x + dx
-              const py = y + dy
-              if (px < CANVAS_CONFIG.width && py < CANVAS_CONFIG.height) {
-                // Check if each brush pixel is also paintable
-                const isBrushPixelPaintable = tshirtMask[py] && tshirtMask[py][px]
-                if (isBrushPixelPaintable) {
-                  addPixel({ x: px, y: py, color: currentColor })
+          if (brushSize === 1) {
+            addPixel({ x, y, color: currentColor })
+          } else {
+            const pixelsToAdd = []
+            for (let dx = 0; dx < brushSize; dx++) {
+              for (let dy = 0; dy < brushSize; dy++) {
+                const px = x + dx
+                const py = y + dy
+                if (px < CANVAS_CONFIG.width && py < CANVAS_CONFIG.height) {
+                  const isBrushPixelPaintable = tshirtMask[py] && tshirtMask[py][px]
+                  if (isBrushPixelPaintable) {
+                    pixelsToAdd.push({ x: px, y: py, color: currentColor })
+                  }
                 }
               }
+            }
+            if (pixelsToAdd.length > 0) {
+              addPixels(pixelsToAdd)
             }
           }
         }

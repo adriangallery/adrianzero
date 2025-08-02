@@ -49,7 +49,6 @@ export interface AppState {
   setTool: (tool: 'brush' | 'eraser' | 'fill') => void
   toggleGrid: () => void
   addPixel: (pixel: Pixel) => void
-  addPixels: (pixels: Pixel[]) => void
   removePixel: (x: number, y: number) => void
   clearCanvas: () => void
   undo: () => void
@@ -151,35 +150,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     }))
   },
 
-
-  addPixels: (pixels) => {
-    const state = get()
-    const newPixels = [...state.design.pixels]
-    
-    // Agregar todos los píxeles de una vez
-    pixels.forEach(pixel => {
-      const existingIndex = newPixels.findIndex(p => p.x === pixel.x && p.y === pixel.y)
-      if (existingIndex !== -1) {
-        newPixels.splice(existingIndex, 1)
-      }
-      newPixels.push(pixel)
-    })
-    
-    // Crear una sola entrada en el historial
-    const newHistory = [...state.design.history.slice(0, state.design.historyIndex + 1), newPixels]
-    if (newHistory.length > MAX_HISTORY) {
-      newHistory.shift()
-    }
-    
-    set((state) => ({
-      design: {
-        ...state.design,
-        pixels: newPixels,
-        history: newHistory,
-        historyIndex: newHistory.length - 1,
-      }
-    }))
-  },
   removePixel: (x, y) => {
     const state = get()
     const newPixels = state.design.pixels.filter(p => !(p.x === x && p.y === y))
