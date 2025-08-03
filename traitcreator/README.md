@@ -208,3 +208,5 @@ This project is licensed under the MIT License.
 ---
 
 **Built with ❤️ for the NFT community** # Force new deploy
+
+# Force Vercel deployment - Sun Aug  3 12:13:30 CEST 2025
