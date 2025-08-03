@@ -158,4 +158,38 @@
 *:focus {
   outline: 2px solid #0080ff;
   outline-offset: 2px;
+}
+
+/* Menu styles */
+.menu-link {
+  @apply text-gray-300 font-pixel text-sm transition-all duration-200;
+}
+
+.menu-link:hover {
+  @apply text-retro-primary shadow-lg shadow-retro-primary/50;
+}
+
+/* Hamburger menu animation */
+.hamburger-line {
+  @apply w-6 h-0.5 bg-retro-primary transition-all duration-200;
+}
+
+.hamburger-button:hover .hamburger-line {
+  @apply bg-retro-primary/80;
+}
+
+/* Menu dropdown animation */
+.menu-dropdown {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 } 
