@@ -1,7 +1,6 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import './globals.css'
-import { Header } from '../components/ui/Header'
 
 export const metadata: Metadata = {
   title: 'TraitCreator - Custom T-Shirt Designer',
@@ -16,8 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-        <Header />
-        <div className="scan-line pt-20">
+        <div className="scan-line">
           {children}
         </div>
       </body>
