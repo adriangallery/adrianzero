@@ -25,8 +25,22 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-800/95 backdrop-blur-md border-b-2 border-retro-primary">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
-          {/* Logo y hamburguesa */}
+          {/* Logo en su posición original */}
           <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
+              <img 
+                src="/traitstudio.png" 
+                alt="TraitStudio Logo" 
+                className="h-16 w-auto"
+              />
+              <div className="text-xl font-pixel text-white">
+                v2.0.0
+              </div>
+            </div>
+          </div>
+
+          {/* Menú hamburguesa en el centro */}
+          <div className="flex items-center">
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 border border-retro-primary bg-transparent hover:bg-retro-primary/20 transition-colors"
@@ -36,26 +50,19 @@ export function Header() {
               <div className="w-6 h-0.5 bg-retro-primary mb-1 transition-all"></div>
               <div className="w-6 h-0.5 bg-retro-primary transition-all"></div>
             </button>
-            <div className="flex items-center space-x-2">
-              <img 
-                src="/traitstudio.png" 
-                alt="TraitStudio Logo" 
-                className="h-8 w-auto"
-              />
-              <span className="text-retro-primary font-pixel text-xl">$ADRIAN</span>
-            </div>
+            <span className="text-retro-primary font-pixel text-xl ml-2">$ADRIAN</span>
           </div>
           
-          {/* Wallet info */}
+          {/* Wallet info en su posición original */}
           <div className="flex items-center space-x-4">
-            <div className="text-sm font-pixel text-white">
-              <span className="animate-pulse text-retro-primary">●</span> ONLINE
+            <div className="text-lg font-pixel text-white">
+              <span className="animate-blink text-retro-primary">●</span> ONLINE
             </div>
-            <div className="text-sm font-pixel text-white">
+            <div className="text-lg font-pixel text-white">
               {isConnected ? 'WALLET CONNECTED' : 'CONNECT WALLET'}
             </div>
             {isConnected && (
-              <div className="text-sm font-pixel text-retro-accent">
+              <div className="text-lg font-pixel text-retro-accent">
                 {isConfigured ? 'CONTRACT READY' : 'CONTRACT LOADING'}
               </div>
             )}
