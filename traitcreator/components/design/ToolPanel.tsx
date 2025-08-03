@@ -59,7 +59,7 @@ export function ToolPanel() {
 
         {/* Brush Softness */}
         <div>
-          <h4 className="text-xs sm:text-sm font-pixel text-retro-primary mb-2">BRUSH SOFTNESS</h4>
+          <h4 className="text-xs sm:text-sm font-pixel text-retro-primary mb-2">BRUSH OPACITY</h4>
           <div className="space-y-2">
             <div className="flex justify-between text-xs text-retro-gray">
               <span>Hard</span>
