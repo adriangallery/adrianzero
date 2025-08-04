@@ -630,6 +630,51 @@
         #menu-container .navbar-nav .nav-link {
             font-size: 1rem;
         }
+    
+        /* Botón de refresh para tokens AdrianZERO */
+        .refresh-token-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 255, 0, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .refresh-token-btn:hover {
+            background: rgba(0, 255, 0, 1);
+            transform: rotate(180deg);
+            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
+        }
+
+        .refresh-token-btn:active {
+            transform: rotate(360deg);
+        }
+
+        .refresh-token-btn.refreshing {
+            animation: spin 1s linear infinite;
+            background: rgba(255, 165, 0, 0.8);
+        }
+
+        .refresh-token-btn.refreshing:hover {
+            background: rgba(255, 165, 0, 1);
+            transform: none;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -1247,8 +1292,8 @@
                             // For ERC721 tokens (AdrianZERO), use the specific render API format
                             if (isERC721) {
                                 // Use the working format for AdrianZERO tokens
-                                const timestamp = Date.now();
-                                mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png?v=${timestamp}`;
+                                // Cache persistente para AdrianZERO tokens - refresh manual disponible
+                                mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
                             } else {
                                 // For ERC1155 tokens, use the original logic
                                 // Try multiple locations for image URL
@@ -1745,6 +1790,7 @@
                     <div style="position: relative;">
                         <img src="${imageUrl}" alt="${displayTitle}" class="token-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+">
                         ${quantityTag}
+                        ${token.tokenType === 'ERC721' ? '<button class="refresh-token-btn" onclick="refreshAdrianZeroToken(' + token.tokenId + ', this)" title="Actualizar imagen"><span>🔄</span></button>' : ''}
                     </div>
                     <div class="token-info">
                         <div class="token-title">${displayTitle}</div>
@@ -3279,6 +3325,56 @@
         const bootstrapScript = document.createElement('script');
         bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
         document.head.appendChild(bootstrapScript);
+    
+        // Función para refrescar imagen individual de AdrianZERO
+        function refreshAdrianZeroToken(tokenId, buttonElement) {
+            console.log('🔄 Refreshing AdrianZERO token:', tokenId);
+            
+            // Añadir clase de loading al botón
+            buttonElement.classList.add('refreshing');
+            buttonElement.title = 'Actualizando...';
+            
+            // Encontrar la imagen del token
+            const tokenCard = buttonElement.closest('.token-card');
+            const img = tokenCard.querySelector('.token-image');
+            
+            if (img) {
+                // Crear nueva URL con timestamp para forzar refresh
+                const timestamp = Date.now();
+                const newUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png?v=${timestamp}`;
+                
+                // Precargar la nueva imagen
+                const preloadImg = new Image();
+                preloadImg.onload = function() {
+                    // Actualizar la imagen principal cuando se haya cargado
+                    img.src = newUrl;
+                    
+                    // Remover clase de loading después de un breve delay
+                    setTimeout(() => {
+                        buttonElement.classList.remove('refreshing');
+                        buttonElement.title = 'Actualizar imagen';
+                        console.log('✅ Token image refreshed:', tokenId);
+                    }, 500);
+                };
+                
+                preloadImg.onerror = function() {
+                    // Manejar error de carga
+                    console.error('❌ Error refreshing token:', tokenId);
+                    buttonElement.classList.remove('refreshing');
+                    buttonElement.title = 'Error - Reintentar';
+                    
+                    // Cambiar temporalmente el color del botón para indicar error
+                    buttonElement.style.background = 'rgba(255, 0, 0, 0.8)';
+                    setTimeout(() => {
+                        buttonElement.style.background = '';
+                        buttonElement.title = 'Actualizar imagen';
+                    }, 3000);
+                };
+                
+                // Iniciar la precarga
+                preloadImg.src = newUrl;
+            }
+        }
     </script>
 </body>
 </html>
