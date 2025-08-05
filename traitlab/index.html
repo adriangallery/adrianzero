@@ -675,6 +675,40 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+    
+        /* Optimización para imágenes SVG de renders personalizados */
+        .generated-image img[src*="/svg"] {
+            /* Escalar la imagen SVG para mantener el tamaño visual */
+            transform: scale(1.2); /* Aumentar 20% para compensar el tamaño más pequeño del SVG */
+            transform-origin: center;
+            /* Mantener el max-width original pero permitir escalado */
+            max-width: 300px;
+            width: auto;
+            height: auto;
+            /* Mejorar la calidad de renderizado para SVG */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            /* Asegurar que el escalado no afecte el layout */
+            display: block;
+            margin: 0 auto;
+        }
+        
+        /* Ajustar el overlay de loading para SVG */
+        .image-loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -2131,11 +2165,11 @@
                 return;
             }
 
-            // Create the URL
+            // Create the URL (SVG format for better performance)
             const baseUrl = 'https://adrianlab.vercel.app/api/render/custom';
             const erc721TokenId = selectedERC721.tokenId;
             const queryString = queryParams.join('&');
-            const imageUrl = `${baseUrl}/${erc721TokenId}?${queryString}`;
+            const imageUrl = `${baseUrl}/${erc721TokenId}/svg?${queryString}`;
 
             console.log('Generated combined image URL:', imageUrl);
 
@@ -3375,6 +3409,30 @@
                 preloadImg.src = newUrl;
             }
         }
+    
+        // Función para verificar que las URLs SVG se están generando correctamente
+        function debugSvgCustomRender() {
+            console.log('🔍 DEBUG: Verificando URLs de renders personalizados SVG');
+            
+            if (selectedERC721 && selectedERC1155.length > 0) {
+                const baseUrl = 'https://adrianlab.vercel.app/api/render/custom';
+                const erc721TokenId = selectedERC721.tokenId;
+                const queryParams = selectedERC1155.map(token => 'trait=' + token.tokenId);
+                const queryString = queryParams.join('&');
+                const imageUrl = baseUrl + '/' + erc721TokenId + '/svg?' + queryString;
+                
+                console.log('📋 URL generada:', imageUrl);
+                console.log('✅ Formato SVG detectado:', imageUrl.includes('/svg'));
+                
+                return imageUrl;
+            } else {
+                console.log('⚠️ No hay selecciones activas para generar URL');
+                return null;
+            }
+        }
+        
+        // Hacer función disponible globalmente
+        window.debugSvgCustomRender = debugSvgCustomRender;
     </script>
 </body>
 </html>
