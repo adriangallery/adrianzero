@@ -22,6 +22,20 @@
             overflow-x: hidden;
         }
 
+        /* Banner Section */
+        .banner-section {
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .banner-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
         /* Hero Section */
         .hero {
             min-height: auto;
@@ -745,6 +759,11 @@
         })
         .catch(error => console.error('Error loading menu:', error));
     </script>
+
+    <!-- Banner Section -->
+    <div class="banner-section">
+        <img src="components/images/ADRIAN_ZERO_Banner.gif" alt="ADRIAN ZERO Banner" class="banner-image">
+    </div>
 
     <!-- Hero Section -->
     <section class="hero">
