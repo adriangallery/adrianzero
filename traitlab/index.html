@@ -1708,6 +1708,20 @@
             });
         }
 
+        // Function to get correct image path based on environment
+        function getImagePath(assetId, extension) {
+            // Check if we're running locally (localhost) or online
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocal) {
+                // Local development - use relative path from current directory
+                return '../components/images/' + assetId + extension;
+            } else {
+                // Production - use absolute path from root
+                return '/components/images/' + assetId + extension;
+            }
+        }
+
         // Display tokens in grid
         function displayTokens(tokens, skipSelectionUpdate = false) {
             tokensGrid.innerHTML = "";
@@ -1740,33 +1754,33 @@
                 } else if (currentFilter === 'floppy') {
                     // Use local images for floppy discs
                     if (token.tokenId === 10000) {
-                        imageUrl = '/components/images/10000.gif';
+                        imageUrl = getImagePath(10000, '.gif');
                     } else if (token.tokenId === 10001) {
-                        imageUrl = '/components/images/10001.gif';
+                        imageUrl = getImagePath(10001, '.gif');
                     } else if (token.tokenId === 10002) {
-                        imageUrl = '/components/images/10002.gif';
+                        imageUrl = getImagePath(10002, '.gif');
                     } else if (token.tokenId === 10003) {
-                        imageUrl = '/components/images/10003.gif';
+                        imageUrl = getImagePath(10003, '.gif');
                     } else if (token.tokenId === 10004) {
-                        imageUrl = '/components/images/10004.gif';
+                        imageUrl = getImagePath(10004, '.gif');
                     } else if (token.tokenId === 10005) {
-                        imageUrl = '/components/images/10005.gif';
+                        imageUrl = getImagePath(10005, '.gif');
                     } else if (token.tokenId === 15000) {
-                        imageUrl = '/components/images/15000.gif';
+                        imageUrl = getImagePath(15000, '.gif');
                     } else if (token.tokenId === 15001) {
-                        imageUrl = '/components/images/15001.gif';
+                        imageUrl = getImagePath(15001, '.gif');
                     } else if (token.tokenId === 15002) {
-                        imageUrl = '/components/images/15002.gif';
+                        imageUrl = getImagePath(15002, '.gif');
                     } else if (token.tokenId === 15003) {
-                        imageUrl = '/components/images/15003.gif';
+                        imageUrl = getImagePath(15003, '.gif');
                     } else if (token.tokenId === 15004) {
-                        imageUrl = '/components/images/15004.gif';
+                        imageUrl = getImagePath(15004, '.gif');
                     } else if (token.tokenId === 15005) {
-                        imageUrl = '/components/images/15005.gif';
+                        imageUrl = getImagePath(15005, '.gif');
                     } else if (token.tokenId === 15006) {
-                        imageUrl = '/components/images/15006.gif';
+                        imageUrl = getImagePath(15006, '.gif');
                     } else if (token.tokenId === 15007) {
-                        imageUrl = '/components/images/15007.gif';
+                        imageUrl = getImagePath(15007, '.gif');
                     }
                 }
                 
