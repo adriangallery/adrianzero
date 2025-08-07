@@ -148,6 +148,57 @@
             background: #c82333;
         }
 
+        /* Tabs Styles */
+        .tabs-section {
+            margin-bottom: 30px;
+        }
+
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #333;
+            color: #ccc;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #00ff00;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #00cc00, #009900);
+            border-color: #00ff00;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .tab-icon {
+            font-size: 1.2rem;
+        }
+
+        .tab-text {
+            font-weight: bold;
+        }
+
         .shop-section {
             background: rgba(255, 255, 255, 0.1);
             padding: 30px;
@@ -673,6 +724,20 @@
             <p>Buy traits and assets with $ADRIAN tokens</p>
         </div>
 
+        <!-- Tabs Section -->
+        <div class="tabs-section">
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="traits" onclick="switchTab('traits')">
+                    <span class="tab-icon">🎨</span>
+                    <span class="tab-text">Traits</span>
+                </button>
+                <button class="tab-btn" data-tab="serums" onclick="switchTab('serums')">
+                    <span class="tab-icon">🧪</span>
+                    <span class="tab-text">Serums</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Connect Section -->
         <div id="connect-section" class="connect-section">
             <h2>Connect Your Wallet</h2>
@@ -812,6 +877,11 @@
         var itemsGrid = document.getElementById('items-grid');
         var totalItemsEl = document.getElementById('totalItems');
         var currentPageEl = document.getElementById('currentPage');
+
+        // Tab state
+        var currentTab = 'traits';
+        var allTraitsItems = [];
+        var allSerumsItems = [];
         var pagination = document.getElementById('pagination');
         var cartItemsEl = document.getElementById('cart-items');
         var cartTotalEl = document.getElementById('cart-total');
@@ -911,11 +981,50 @@
             }
         }
 
+        // Switch tabs
+        function switchTab(tabName) {
+            console.log('Switching to tab:', tabName);
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Update current tab
+            currentTab = tabName;
+            currentPage = 1;
+            
+            // Update section title
+            const sectionTitle = document.querySelector('.section-title');
+            if (tabName === 'traits') {
+                sectionTitle.textContent = 'Traits Store';
+            } else if (tabName === 'serums') {
+                sectionTitle.textContent = 'Serums Store';
+            }
+            
+            // Filter and display items
+            filterAndDisplayItems();
+        }
+
+        // Filter items based on current tab
+        function filterAndDisplayItems() {
+            if (currentTab === 'traits') {
+                allItems = allTraitsItems;
+            } else if (currentTab === 'serums') {
+                allItems = allSerumsItems;
+            }
+            
+            displayItems();
+        }
+
         // Disconnect wallet
         function disconnectWallet() {
             currentAccount = null;
             currentPage = 1;
             allItems = [];
+            allTraitsItems = [];
+            allSerumsItems = [];
             cart = [];
             
             connectSection.style.display = "block";
@@ -1012,11 +1121,19 @@
                 
                 console.log(`Loaded ${items.length} items out of ${totalActive} total active`);
                 
-                // Process items
-                allItems = [];
+                // Process items and separate by type
+                allTraitsItems = [];
+                allSerumsItems = [];
+                
                 for (var i = 0; i < items.length; i++) {
                     var processedItem = processShopItem(items[i]);
-                    allItems.push(processedItem);
+                    
+                    // Separate items by assetId range
+                    if (processedItem.assetId >= 262144 && processedItem.assetId <= 262147) {
+                        allSerumsItems.push(processedItem);
+                    } else {
+                        allTraitsItems.push(processedItem);
+                    }
                     
                     // Add small delay between processing items to avoid overload
                     if (i < items.length - 1) {
@@ -1024,7 +1141,11 @@
                     }
                 }
                 
-                console.log("Processed items:", allItems);
+                console.log("Processed traits items:", allTraitsItems);
+                console.log("Processed serums items:", allSerumsItems);
+                
+                // Set initial items based on current tab
+                allItems = allTraitsItems;
                 
                 // Load metadata for all items (with error handling)
                 try {
@@ -1054,19 +1175,28 @@
 
         // Load metadata for all items with better error handling
         async function loadMetadataForItems() {
-            console.log('Loading metadata for', allItems.length, 'items...');
+            console.log('Loading metadata for traits:', allTraitsItems.length, 'and serums:', allSerumsItems.length);
             
-            var metadataPromises = allItems.map(function(item, index) {
-                // Add staggered delay to avoid overwhelming the server
+            // Load metadata for traits items
+            var traitsMetadataPromises = allTraitsItems.map(function(item, index) {
                 return new Promise(function(resolve) {
                     setTimeout(function() {
                         loadItemMetadata(item).then(resolve).catch(resolve);
-                    }, index * 200); // 200ms delay between each request
+                    }, index * 200);
+                });
+            });
+            
+            // Load metadata for serums items
+            var serumsMetadataPromises = allSerumsItems.map(function(item, index) {
+                return new Promise(function(resolve) {
+                    setTimeout(function() {
+                        loadItemMetadata(item).then(resolve).catch(resolve);
+                    }, index * 200);
                 });
             });
             
             try {
-                await Promise.all(metadataPromises);
+                await Promise.all([...traitsMetadataPromises, ...serumsMetadataPromises]);
                 console.log('All metadata loading attempts completed');
             } catch (err) {
                 console.error('Error in metadata loading:', err);
