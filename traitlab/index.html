@@ -1421,8 +1421,8 @@
                                     return false;
                                 }
                             } else if (currentFilter === 'serum') {
-                                // Serums filter: show only token 262144
-                                if (token.tokenId === 262144) {
+                                // Serums filter: show tokens 262144-262147
+                                if (token.tokenId >= 262144 && token.tokenId <= 262147) {
                                     console.log(`Including ERC1155 token ${token.tokenId} in serums`);
                                     return true;
                                 } else {
@@ -1749,8 +1749,8 @@
                 }
                 
                 // Override image URL for specific token types
-                if (currentFilter === 'serum' && token.tokenId === 262144) {
-                    imageUrl = 'https://adrianlab-dhnfmyura-adrianlab.vercel.app/labimages/262144.gif';
+                if (currentFilter === 'serum' && token.tokenId >= 262144 && token.tokenId <= 262147) {
+                    imageUrl = getImagePath(token.tokenId, '.gif');
                 } else if (currentFilter === 'floppy') {
                     // Use local images for floppy discs
                     if (token.tokenId === 10000) {
