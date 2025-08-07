@@ -1729,6 +1729,8 @@
                         displayTitle = 'GLITCH Floppy';
                     } else if (token.tokenId === 10004) {
                         displayTitle = 'GF Floppy';
+                    } else if (token.tokenId === 10005) {
+                        displayTitle = 'Golden Floppy';
                     }
                 }
                 
@@ -1736,33 +1738,35 @@
                 if (currentFilter === 'serum' && token.tokenId === 262144) {
                     imageUrl = 'https://adrianlab-dhnfmyura-adrianlab.vercel.app/labimages/262144.gif';
                 } else if (currentFilter === 'floppy') {
-                    // Use specific URLs for floppy discs
+                    // Use local images for floppy discs
                     if (token.tokenId === 10000) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/10000.gif';
+                        imageUrl = '../components/images/10000.gif';
                     } else if (token.tokenId === 10001) {
-                        imageUrl = 'https://adrianlab-gupkaj4rt-adrianlab.vercel.app/labimages/10001.gif';
+                        imageUrl = '../components/images/10001.gif';
                     } else if (token.tokenId === 10002) {
-                        imageUrl = 'https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif';
+                        imageUrl = '../components/images/10002.gif';
                     } else if (token.tokenId === 10003) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/10003.gif';
+                        imageUrl = '../components/images/10003.gif';
                     } else if (token.tokenId === 10004) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/10004.gif';
+                        imageUrl = '../components/images/10004.gif';
+                    } else if (token.tokenId === 10005) {
+                        imageUrl = '../components/images/10005.gif';
                     } else if (token.tokenId === 15000) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/15000.gif';
+                        imageUrl = '../components/images/15000.gif';
                     } else if (token.tokenId === 15001) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/15001.gif';
+                        imageUrl = '../components/images/15001.gif';
                     } else if (token.tokenId === 15002) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/15002.gif';
+                        imageUrl = '../components/images/15002.gif';
                     } else if (token.tokenId === 15003) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/15003.gif';
+                        imageUrl = '../components/images/15003.gif';
                     } else if (token.tokenId === 15004) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/15004.gif';
+                        imageUrl = '../components/images/15004.gif';
                     } else if (token.tokenId === 15005) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/15005.gif';
+                        imageUrl = '../components/images/15005.gif';
                     } else if (token.tokenId === 15006) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/15006.gif';
+                        imageUrl = '../components/images/15006.gif';
                     } else if (token.tokenId === 15007) {
-                        imageUrl = 'https://adrianlab.vercel.app/labimages/15007.gif';
+                        imageUrl = '../components/images/15007.gif';
                     }
                 }
                 
@@ -1903,6 +1907,8 @@
                         floppyDisplayName = 'GLITCH Floppy';
                     } else if (selectedFloppy.tokenId === 10004) {
                         floppyDisplayName = 'GF Floppy';
+                    } else if (selectedFloppy.tokenId === 10005) {
+                        floppyDisplayName = 'Golden Floppy';
                     }
                     infoText = `Selected Floppy: ${floppyDisplayName} (ID: ${selectedFloppy.tokenId})`;
                     selectionText.innerHTML = infoText;
@@ -1913,7 +1919,7 @@
                     refreshMetadataSection.style.display = 'none'; // Hide refresh metadata in floppy tab
                     
                     // Check if it's a token that should show SOON or Open Pack
-                    // Token 10003 should show SOON, token 10004 should show Open Pack, all other floppy discs should be openable
+                    // Token 10003 should show SOON, token 10004 should show Open Pack, token 10005 should show SOON, all other floppy discs should be openable
                     if (selectedFloppy.tokenId === 10003) {
                         openFloppyBtn.textContent = 'SOON';
                         openFloppyBtn.disabled = true;
@@ -1923,6 +1929,10 @@
                         openPackSection.style.display = 'block';
                         openPackBtn.textContent = 'Open Pack';
                         openPackBtn.disabled = false;
+                    } else if (selectedFloppy.tokenId === 10005) {
+                        openFloppyBtn.textContent = 'SOON';
+                        openFloppyBtn.disabled = true;
+                        openPackSection.style.display = 'none';
                     } else {
                         openFloppyBtn.textContent = 'Open Floppy';
                         openFloppyBtn.disabled = false;
