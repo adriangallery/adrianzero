@@ -1297,7 +1297,9 @@
                 isAllowlisted: item.isAllowlisted,
                 imageUrl: (assetId >= 262144 && assetId <= 262147) ? 
                     '../components/images/' + assetId + '.gif' : 
-                    'https://adrianlab.vercel.app/api/render/floppy/' + assetId + '.png',
+                    (assetId === 150 || assetId === 559) ? 
+                        '../components/images/' + assetId + '.png' : 
+                        'https://adrianlab.vercel.app/api/render/floppy/' + assetId + '.png',
                 metadataUrl: 'https://adrianlab.vercel.app/api/metadata/floppy/' + assetId + '.json',
                 description: '',
                 attributes: []
