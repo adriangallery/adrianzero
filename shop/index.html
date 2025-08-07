@@ -1162,7 +1162,9 @@
                 freeUsedByUser: freeUsedByUser,
                 freeRemaining: freeRemaining,
                 isAllowlisted: item.isAllowlisted,
-                imageUrl: 'https://adrianlab.vercel.app/api/render/floppy/' + assetId + '.png',
+                imageUrl: (assetId >= 262144 && assetId <= 262147) ? 
+                    '../components/images/' + assetId + '.gif' : 
+                    'https://adrianlab.vercel.app/api/render/floppy/' + assetId + '.png',
                 metadataUrl: 'https://adrianlab.vercel.app/api/metadata/floppy/' + assetId + '.json',
                 description: '',
                 attributes: []
