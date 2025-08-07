@@ -898,6 +898,11 @@
                 // Production - use absolute path from root
                 return '/components/images/' + assetId + extension;
             }
+        // Function to check if an item uses local images
+        function isLocalItem(assetId) {
+            // Check if assetId is in the range of local items
+            return (assetId >= 262144 && assetId <= 262147) || assetId === 150 || assetId === 559;
+        }
         }
         var pagination = document.getElementById('pagination');
         var cartItemsEl = document.getElementById('cart-items');
@@ -1248,7 +1253,7 @@
                 if (metadata.description) {
                     item.description = metadata.description;
                 }
-                if (metadata.image) {
+                if (metadata.image && !isLocalItem(item.assetId)) {
                     item.imageUrl = metadata.image;
                 }
                 if (metadata.attributes) {
