@@ -3319,19 +3319,19 @@
                         const provider = new ethers.providers.Web3Provider(window.ethereum);
                         const signer = provider.getSigner();
 
-                        // ActionPacks ABI (openPack(uint256,uint256))
+                        // ActionPacks ABI (openPack(uint256 packId))
                         const actionPacksABI = [
-                            'function openPack(uint256,uint256) external'
+                            'function openPack(uint256 packId) external'
                         ];
 
                         const contract = new ethers.Contract(ACTION_PACKS_CONTRACT, actionPacksABI, signer);
-                        const tokenId = selectedFloppy.tokenId;
+                        const packId = selectedFloppy.tokenId;
 
-                        console.log('Opening action pack for token ID:', tokenId);
+                        console.log('Opening action pack for pack ID:', packId);
                         showOpenPackStatus('Confirming transaction in your wallet...', 'loading');
 
-                        // Algunos UIs muestran 2 campos "packId"; pasamos el tokenId dos veces según el selector 0x50a88c7e
-                        const tx = await contract.openPack(tokenId, tokenId);
+                        // Llamar openPack(uint256 packId) con un solo parámetro
+                        const tx = await contract.openPack(packId);
 
                         showOpenPackStatus('Transaction sent! Waiting for confirmation...', 'loading');
                         console.log('Transaction hash:', tx.hash);
