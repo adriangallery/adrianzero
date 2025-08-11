@@ -985,6 +985,13 @@
             "function balanceOf(address account) view returns (uint256)"
         ];
 
+        // Helper: formato amigable para cantidades (sin ceros largos)
+        function formatAmount(amount) {
+            // amount puede ser float; limitamos a 4 decimales y con separador de miles
+            const rounded = Math.round((amount + Number.EPSILON) * 10000) / 10000;
+            return rounded.toLocaleString(undefined, { maximumFractionDigits: 4 });
+        }
+
         const ADRIAN_ZERO_ABI = [
             "function mintMultiplePublic(uint256 quantity)",
             "function getCurrentBatchInfo() view returns (uint256 batchId, string name, uint256 price, uint256 minted, uint256 maxSupply, bool active, uint256 startTime, uint256 endTime, bool useMerkleWhitelist)"
@@ -1382,7 +1389,7 @@
                     // Add delay before approval transaction
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    showStatus('adrianZero', `Approving ${userDisplayAmount} ADRIAN tokens for mint...`, 'loading');
+                    showStatus('adrianZero', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(ADRIAN_ZERO_MINT, totalCostWei);
@@ -1463,7 +1470,7 @@
                     // Add delay before approval transaction
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    showStatus('starterFloppy', `Approving ${userDisplayAmount} ADRIAN tokens for mint...`, 'loading');
+                    showStatus('starterFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
@@ -1544,7 +1551,7 @@
                     // Add delay before approval transaction
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    showStatus('gfFloppy', `Approving ${userDisplayAmount} ADRIAN tokens for mint...`, 'loading');
+                    showStatus('gfFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
@@ -1625,7 +1632,7 @@
                     // Add delay before approval transaction
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    showStatus('glitchedFloppy', `Approving ${userDisplayAmount} ADRIAN tokens for mint...`, 'loading');
+                    showStatus('glitchedFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
