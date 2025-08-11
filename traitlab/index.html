@@ -3272,7 +3272,80 @@
             }
         }
 
-        // Open Action Pack function para tokens 15008-15015 (ActionPacks contract)
+        
+        // Open Pack function for token 10004 (PackTokenMinter contract)
+        async function openPack() {
+            console.log('openPack called');
+            if (!selectedFloppy) {
+                showOpenPackStatus('Please select a pack first.', 'error');
+                return;
+            }
+            if (selectedFloppy.tokenId !== 10004) {
+                showOpenPackStatus('This function is only available for Pack token 10004.', 'error');
+                return;
+            }
+            if (!currentAccount) {
+                showOpenPackStatus('Please connect your wallet first.', 'error');
+                return;
+            }
+            try {
+                showOpenPackStatus('Loading ethers library...', 'loading');
+                openPackBtn.disabled = true;
+                let ethers;
+                if (typeof window.ethers === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        executeOpenPack();
+                    };
+                    script.onerror = () => {
+                        showOpenPackStatus('Failed to load ethers library. Please refresh the page.', 'error');
+                        openPackBtn.disabled = false;
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    ethers = window.ethers;
+                    await executeOpenPack();
+                }
+                async function executeOpenPack() {
+                    try {
+                        showOpenPackStatus('Preparing transaction...', 'loading');
+                        const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        const signer = provider.getSigner();
+                        const packMinterABI = [
+                            'function openPack(uint256 packId) external'
+                        ];
+                        const contract = new ethers.Contract(PACK_TOKEN_MINTER_CONTRACT, packMinterABI, signer);
+                        const packId = selectedFloppy.tokenId;
+                        showOpenPackStatus('Confirming transaction in your wallet...', 'loading');
+                        const tx = await contract.openPack(packId);
+                        showOpenPackStatus('Transaction sent! Waiting for confirmation...', 'loading');
+                        const receipt = await tx.wait();
+                        showOpenPackStatus(`✅ Pack opened successfully! Transaction: ${receipt.transactionHash}`, 'success');
+                        setTimeout(() => { loadTokens(currentAccount, currentContract); }, 2000);
+                    } catch (error) {
+                        console.error('Error opening pack (10004):', error);
+                        let errorMessage = 'Failed to open pack.';
+                        if (error.code === 4001) {
+                            errorMessage = 'Transaction was rejected by user.';
+                        } else if (error.message) {
+                            errorMessage = `Error: ${error.message}`;
+                        }
+                        showOpenPackStatus(errorMessage, 'error');
+                    } finally {
+                        openPackBtn.disabled = false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error opening pack (10004):', error);
+                showOpenPackStatus('Failed to load ethers library. Please refresh the page.', 'error');
+                openPackBtn.disabled = false;
+            }
+        }
+
+    // Open Action Pack function para tokens 15008-15015 (ActionPacks contract)
         async function openActionPack() {
             console.log('openActionPack called');
 
@@ -3319,13 +3392,22 @@
                         const provider = new ethers.providers.Web3Provider(window.ethereum);
                         const signer = provider.getSigner();
 
-                        // ActionPacks ABI (openPack(uint256 packId))
+                        // ActionPacks ABI (openPack(uint256 packId), canOpenPack(address,uint256))
                         const actionPacksABI = [
-                            'function openPack(uint256 packId) external'
+                            'function openPack(uint256 packId) external',
+                            'function canOpenPack(address user, uint256 packId) view returns (bool canOpen, string reason)'
                         ];
 
                         const contract = new ethers.Contract(ACTION_PACKS_CONTRACT, actionPacksABI, signer);
                         const packId = selectedFloppy.tokenId;
+
+                        // Pre-chequeo: canOpenPack(user, packId)
+                        const user = await signer.getAddress();
+                        const [canOpen, reason] = await contract.canOpenPack(user, packId);
+                        if (!canOpen) {
+                            showOpenPackStatus(`Cannot open pack: ${reason || 'Not eligible or inactive'}`, 'error');
+                            return;
+                        }
 
                         console.log('Opening action pack for pack ID:', packId);
                         showOpenPackStatus('Confirming transaction in your wallet...', 'loading');
