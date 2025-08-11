@@ -1002,6 +1002,9 @@
         let adrianToken;
         let adrianZeroContract;
         let packMinterContract;
+        // Estado global adicional (igual que SHOP/)
+        let approvedAmount = 0; // Monto total de ADRIAN actualmente aprobado para minteos
+        let adrianBalance = 0;   // Balance actual de ADRIAN del usuario
         let quantities = {
             adrianZero: 1,
             starterFloppy: 1,
@@ -1067,6 +1070,9 @@
                 adrianZeroContract = new ethers.Contract(ADRIAN_ZERO_MINT, ADRIAN_ZERO_ABI, signer);
                 packMinterContract = new ethers.Contract(PACK_MINTER, PACK_MINTER_ABI, signer);
                 
+                // Cargar balances y allowance para simplificar approves
+                await loadBalances();
+
                 // Update UI
                 document.getElementById('connectBtn').style.display = 'none';
                 document.getElementById('walletInfo').style.display = 'block';
@@ -1106,6 +1112,25 @@
             } catch (error) {
                 console.error('Network check failed:', error);
                 throw error;
+            }
+        }
+
+        // Cargar balances y allowance (similar a SHOP/)
+        async function loadBalances() {
+            try {
+                // Balance ADRIAN
+                const balanceWei = await adrianToken.balanceOf(userAddress);
+                adrianBalance = parseFloat(ethers.utils.formatEther(balanceWei));
+
+                // Allowances relevantes (tomamos el mayor para simplificar UX)
+                const allowanceZeroWei = await adrianToken.allowance(userAddress, ADRIAN_ZERO_MINT);
+                const allowancePackWei = await adrianToken.allowance(userAddress, PACK_MINTER);
+                const maxAllowanceWei = allowanceZeroWei.gt(allowancePackWei) ? allowanceZeroWei : allowancePackWei;
+                approvedAmount = parseFloat(ethers.utils.formatEther(maxAllowanceWei));
+
+                console.log('Balances loaded - ADRIAN:', adrianBalance, 'Approved:', approvedAmount);
+            } catch (err) {
+                console.error('Error loading balances:', err);
             }
         }
 
@@ -1334,11 +1359,8 @@
                     return;
                 }
                 
-                // Check current allowance
-                const currentAllowance = await adrianToken.allowance(userAddress, ADRIAN_ZERO_MINT);
-                
-                // Step 1: Check if approval is needed and handle it
-                if (totalCostWei.gt(currentAllowance)) {
+                // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
+                if (totalCostEther > approvedAmount) {
                     showStatus('adrianZero', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
@@ -1351,6 +1373,9 @@
                     await approveTx.wait();
                     
                     showStatus('adrianZero', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Refresh approval amount
+                    await loadBalances();
                     
                     // Add delay before proceeding to mint
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1366,6 +1391,9 @@
                 await tx.wait();
                 
                 showStatus('adrianZero', `🎉 Successfully minted ${quantities.adrianZero} AdrianZERO NFT(s)!`, 'success');
+                
+                // Refresh balances post-mint
+                await loadBalances();
                 
             } catch (error) {
                 console.error('Mint error:', error);
@@ -1412,11 +1440,8 @@
                     return;
                 }
                 
-                // Check current allowance
-                const currentAllowance = await adrianToken.allowance(userAddress, PACK_MINTER);
-                
-                // Step 1: Check if approval is needed and handle it
-                if (totalCostWei.gt(currentAllowance)) {
+                // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
+                if (totalCostEther > approvedAmount) {
                     showStatus('starterFloppy', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
@@ -1429,6 +1454,9 @@
                     await approveTx.wait();
                     
                     showStatus('starterFloppy', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Refresh approval amount
+                    await loadBalances();
                     
                     // Add delay before proceeding to mint
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1493,11 +1521,8 @@
                     return;
                 }
                 
-                // Check current allowance
-                const currentAllowance = await adrianToken.allowance(userAddress, PACK_MINTER);
-                
-                // Step 1: Check if approval is needed and handle it
-                if (totalCostWei.gt(currentAllowance)) {
+                // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
+                if (totalCostEther > approvedAmount) {
                     showStatus('gfFloppy', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
@@ -1510,6 +1535,9 @@
                     await approveTx.wait();
                     
                     showStatus('gfFloppy', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Refresh approval amount
+                    await loadBalances();
                     
                     // Add delay before proceeding to mint
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1574,11 +1602,8 @@
                     return;
                 }
                 
-                // Check current allowance
-                const currentAllowance = await adrianToken.allowance(userAddress, PACK_MINTER);
-                
-                // Step 1: Check if approval is needed and handle it
-                if (totalCostWei.gt(currentAllowance)) {
+                // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
+                if (totalCostEther > approvedAmount) {
                     showStatus('glitchedFloppy', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
@@ -1591,6 +1616,9 @@
                     await approveTx.wait();
                     
                     showStatus('glitchedFloppy', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Refresh approval amount
+                    await loadBalances();
                     
                     // Add delay before proceeding to mint
                     await new Promise(resolve => setTimeout(resolve, 1000));
