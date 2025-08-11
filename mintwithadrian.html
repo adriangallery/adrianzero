@@ -1003,7 +1003,8 @@
         let adrianZeroContract;
         let packMinterContract;
         // Estado global adicional (igual que SHOP/)
-        let approvedAmount = 0; // Monto total de ADRIAN actualmente aprobado para minteos
+        let approvedAmountZero = 0; // Allowance para ADRIAN_ZERO_MINT
+        let approvedAmountPack = 0; // Allowance para PACK_MINTER
         let adrianBalance = 0;   // Balance actual de ADRIAN del usuario
         let quantities = {
             adrianZero: 1,
@@ -1122,13 +1123,13 @@
                 const balanceWei = await adrianToken.balanceOf(userAddress);
                 adrianBalance = parseFloat(ethers.utils.formatEther(balanceWei));
 
-                // Allowances relevantes (tomamos el mayor para simplificar UX)
+                // Allowances relevantes
                 const allowanceZeroWei = await adrianToken.allowance(userAddress, ADRIAN_ZERO_MINT);
                 const allowancePackWei = await adrianToken.allowance(userAddress, PACK_MINTER);
-                const maxAllowanceWei = allowanceZeroWei.gt(allowancePackWei) ? allowanceZeroWei : allowancePackWei;
-                approvedAmount = parseFloat(ethers.utils.formatEther(maxAllowanceWei));
+                approvedAmountZero = parseFloat(ethers.utils.formatEther(allowanceZeroWei));
+                approvedAmountPack = parseFloat(ethers.utils.formatEther(allowancePackWei));
 
-                console.log('Balances loaded - ADRIAN:', adrianBalance, 'Approved:', approvedAmount);
+                console.log('Balances loaded - ADRIAN:', adrianBalance, 'Approved(Zero):', approvedAmountZero, 'Approved(Pack):', approvedAmountPack);
             } catch (err) {
                 console.error('Error loading balances:', err);
             }
@@ -1199,7 +1200,22 @@
 
                 for (const pack of packIds) {
                     try {
-                        const packConfig = await packMinterContract.packConfigs(pack.id);
+                        // Retry/backoff simple para rate limiting
+                        const getConfig = async () => packMinterContract.packConfigs(pack.id);
+                        let packConfig;
+                        let attempts = 0;
+                        while (true) {
+                            try {
+                                packConfig = await getConfig();
+                                break;
+                            } catch (err) {
+                                attempts++;
+                                const isRateLimited = err && (err.code === -32005 || (err.message && err.message.includes('rate limited')));
+                                const isCallException = err && err.code === 'CALL_EXCEPTION';
+                                if (attempts >= 3 || (!isRateLimited && !isCallException)) throw err;
+                                await new Promise(r => setTimeout(r, 500 * attempts));
+                            }
+                        }
                         supplyInfo[pack.key] = {
                             total: packConfig.maxSupply.toNumber(),
                             minted: packConfig.minted.toNumber()
@@ -1360,7 +1376,7 @@
                 }
                 
                 // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
-                if (totalCostEther > approvedAmount) {
+                if (totalCostEther > approvedAmountZero) {
                     showStatus('adrianZero', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
@@ -1441,7 +1457,7 @@
                 }
                 
                 // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
-                if (totalCostEther > approvedAmount) {
+                if (totalCostEther > approvedAmountPack) {
                     showStatus('starterFloppy', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
@@ -1522,7 +1538,7 @@
                 }
                 
                 // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
-                if (totalCostEther > approvedAmount) {
+                if (totalCostEther > approvedAmountPack) {
                     showStatus('gfFloppy', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
@@ -1603,7 +1619,7 @@
                 }
                 
                 // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
-                if (totalCostEther > approvedAmount) {
+                if (totalCostEther > approvedAmountPack) {
                     showStatus('glitchedFloppy', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
