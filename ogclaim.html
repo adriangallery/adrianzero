@@ -423,6 +423,10 @@
         const batchInfo = document.getElementById('batchInfo');
         const batchClaimBtn = document.getElementById('batchClaimBtn');
         const claimSelectedBtn = document.getElementById('claimSelectedBtn');
+        // Referencias faltantes para evitar ReferenceError
+        const scanEnumerableBtn = document.getElementById('scanEnumerableBtn');
+        const scanFullBtn = document.getElementById('scanFullBtn');
+        const toggleDebugBtn = document.getElementById('toggleDebugBtn');
 
         // Debug State
         let DEBUG = false;
