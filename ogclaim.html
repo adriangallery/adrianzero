@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OG Claim - AdrianPunks Holders</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <link rel="icon" href="components/images/adrianzero.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: #0e0e0e;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #9d50ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            color: #bdbdbd;
+        }
+
+        /* Menu */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff88;
+            font-family: 'VT323', monospace;
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #00ff88 !important;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        #menu-container .navbar-toggler {
+            border-color: #00ff88;
+        }
+
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 136, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .container {
+            padding-top: 70px;
+        }
+
+        /* Connect */
+        .connect-section {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
+            margin-bottom: 20px;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #00ff88, #00aaff);
+            color: #000;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            font-weight: bold;
+        }
+
+        .connect-btn:hover { transform: translateY(-2px); }
+
+        .wallet-pill {
+            display: inline-block;
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid rgba(0, 170, 255, 0.4);
+            padding: 8px 14px;
+            border-radius: 10px;
+            color: #00aaff;
+            font-family: monospace;
+            margin-top: 10px;
+        }
+
+        .network-warning {
+            display: none;
+            background: rgba(255, 187, 0, 0.1);
+            border: 1px solid rgba(255, 187, 0, 0.3);
+            color: #ffbb00;
+            padding: 10px 14px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .network-warning button {
+            background: rgba(255, 187, 0, 0.15);
+            border: 1px solid rgba(255, 187, 0, 0.4);
+            color: #ffbb00;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            margin-left: 8px;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .stat-title { color: #cccccc; font-size: 0.95rem; margin-bottom: 6px; }
+        .stat-value { color: #00ff88; font-size: 1.6rem; font-weight: bold; }
+        .progress { height: 10px; background: #1d1d1d; border-radius: 6px; overflow: hidden; }
+        .progress-bar { height: 10px; background: linear-gradient(90deg, #00ff88, #00aaff); }
+
+        /* Search/eligibility */
+        .eligibility-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .eligibility-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .input-id { flex: 1; min-width: 220px; padding: 10px 12px; border-radius: 10px; border: 1px solid #2a2a2a; background: #0f0f0f; color: #fff; }
+        .btn-secondary { padding: 10px 14px; border-radius: 10px; background: #1f1f1f; border: 1px solid #2a2a2a; color: #ddd; cursor: pointer; }
+        .btn-secondary:hover { background: #262626; }
+
+        .status-line { margin-top: 10px; font-size: 1rem; }
+        .status-line.success { color: #00ff88; }
+        .status-line.error { color: #ff6666; }
+        .status-line.info { color: #00aaff; }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .token-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .token-img { width: 100%; height: 220px; background: #1c1c1c; display: flex; align-items: center; justify-content: center; }
+        .token-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .token-body { padding: 12px; }
+        .token-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 6px; }
+        .token-sub { color: #bdbdbd; font-size: 0.95rem; margin-bottom: 6px; }
+
+        .claim-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #00ff88, #00aaff);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .claim-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .batch-bar {
+            position: sticky;
+            bottom: 15px;
+            background: rgba(0,0,0,0.85);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 12px;
+            display: none;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .checkbox { transform: scale(1.2); margin-right: 6px; }
+
+        .footer {
+            text-align: center;
+            margin: 30px 0 10px;
+            color: #8a8a8a;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu -->
+    <div id="menu-container"></div>
+    <script>
+      fetch('components/menu.html')
+        .then(r => r.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const s = document.createElement('script');
+          s.src = 'components/menu.js';
+          document.head.appendChild(s);
+        })
+        .catch(err => console.error('Error loading menu:', err));
+    </script>
+
+    <div class="container">
+        <div class="header">
+            <h1>OG Claim</h1>
+            <div class="subtitle">1:1 claim for AdrianPunks holders → AdrianTraitsCore assets</div>
+        </div>
+
+        <div id="networkWarning" class="network-warning">
+            ⚠️ Please switch to Base Network
+            <button onclick="switchToBase()">Switch Network</button>
+        </div>
+
+        <div class="connect-section" id="connectSection">
+            <button id="connectBtn" class="connect-btn">Connect Wallet</button>
+            <div id="walletInfo" class="wallet-pill" style="display:none;"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-title">Total Claimed</div>
+                <div class="stat-value" id="claimedCount">-</div>
+                <div class="progress" style="margin-top:10px;">
+                    <div class="progress-bar" id="claimedProgress" style="width:0%"></div>
+                </div>
+                <div class="stat-title" style="margin-top:6px;">Supply: 1..1000</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Contract</div>
+                <div class="stat-value" style="font-size:1.05rem; color:#00aaff;">
+                    0x31D66c...D84b
+                </div>
+                <div class="stat-title" style="margin-top:6px;">AdrianPunks</div>
+                <div class="stat-value" style="font-size:1.05rem; color:#00ff88;">
+                    0x79BE8A...7566
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Batch Actions</div>
+                <div class="stat-value" id="batchSelectedCount">0 selected</div>
+                <button class="btn-secondary" id="claimSelectedBtn" style="margin-top:8px;" disabled>Claim Selected</button>
+            </div>
+        </div>
+
+        <div class="eligibility-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div>
+                    <div style="font-size:1.2rem; font-weight:bold;">Check Eligibility</div>
+                    <div style="color:#bdbdbd; font-size:0.95rem;">Enter an AdrianPunks token ID (1..1000)</div>
+                </div>
+                <div class="eligibility-actions">
+                    <input id="checkIdInput" type="number" min="1" max="1000" placeholder="Punk ID" class="input-id">
+                    <button class="btn-secondary" id="checkBtn">Check</button>
+                </div>
+            </div>
+            <div id="checkStatus" class="status-line"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="font-size:1.4rem; font-weight:bold;">Your AdrianPunks</div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-secondary" id="refreshBtn">Refresh</button>
+                <button class="btn-secondary" id="selectAllBtn">Select All Eligible</button>
+                <button class="btn-secondary" id="clearSelectionBtn">Clear Selection</button>
+            </div>
+        </div>
+
+        <div id="scanStatus" class="status-line info" style="display:none;">Scanning tokens...</div>
+        <div id="fallbackActions" style="display:none; margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="scanEnumerableBtn" class="btn-secondary">Scan via on-chain (fast)</button>
+            <button id="scanFullBtn" class="btn-secondary" title="Scan IDs 1..1000 (slow)">Advanced: Full scan</button>
+        </div>
+
+        <div id="myPunksGrid" class="grid" style="margin-top:12px;"></div>
+        <div id="noTokens" class="subtitle" style="display:none; text-align:center; margin:20px 0;">No AdrianPunks found in this wallet</div>
+
+        <div id="batchBar" class="batch-bar">
+            <div style="flex:1; color:#bdbdbd;">
+                <span id="batchInfo">0 selected</span>
+            </div>
+            <button id="batchClaimBtn" class="claim-btn" disabled>Claim Selected</button>
+        </div>
+
+        <div class="footer">Powered by $ADRIAN</div>
+    </div>
+
+    <script>
+        // Config
+        const CLAIM_CONTRACT = '0x31D66caBC1D6E65a4947D19ed22FB63ee2C8D84b';
+        const PUNKS_CONTRACT = '0x79BE8AcdD339C7b92918fcC3fd3875b5Aaad7566';
+        const ALCHEMY_API_KEY = '5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot';
+        const ALCHEMY_RPC_URL = `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+        const BASE_CHAIN_ID_HEX = '0x2105'; // 8453
+        const BASE_PUBLIC_RPC = 'https://mainnet.base.org';
+        const IPFS_GATEWAY = 'https://ipfs.infura.io/ipfs/'; // Prefer Infura
+        
+        // ABIs
+        const OG_CLAIM_ABI = [
+            'function claim(uint256 punkId) external',
+            'function claimBatch(uint256[] punkIds) external',
+            'function isClaimed(uint256 punkId) external view returns (bool)',
+            'function previewTraitId(uint256 punkId) external pure returns (uint256)',
+            'function getClaimedCount() external view returns (uint256)'
+        ];
+        const ERC721_MIN_ABI = [
+            'function ownerOf(uint256 tokenId) external view returns (address)'
+        ];
+        const ERC721_ENUM_ABI = [
+            'function balanceOf(address owner) view returns (uint256)',
+            'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)'
+        ];
+
+        function getReadProvider() {
+            try { if (window.ethereum) return new ethers.providers.Web3Provider(window.ethereum); } catch {}
+            return new ethers.providers.JsonRpcProvider(BASE_PUBLIC_RPC);
+        }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        // State
+        let provider, signer, userAddress;
+        let claimContract, punksContract;
+        let myPunks = [];
+        let selectedIds = new Set();
+
+        // DOM
+        const connectBtn = document.getElementById('connectBtn');
+        const walletInfo = document.getElementById('walletInfo');
+        const networkWarning = document.getElementById('networkWarning');
+        const claimedCountEl = document.getElementById('claimedCount');
+        const claimedProgressEl = document.getElementById('claimedProgress');
+        const myPunksGrid = document.getElementById('myPunksGrid');
+        const noTokensEl = document.getElementById('noTokens');
+        const checkBtn = document.getElementById('checkBtn');
+        const checkIdInput = document.getElementById('checkIdInput');
+        const checkStatus = document.getElementById('checkStatus');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const batchBar = document.getElementById('batchBar');
+        const batchInfo = document.getElementById('batchInfo');
+        const batchClaimBtn = document.getElementById('batchClaimBtn');
+        const claimSelectedBtn = document.getElementById('claimSelectedBtn');
+        const batchSelectedCount = document.getElementById('batchSelectedCount');
+        const scanStatusEl = document.getElementById('scanStatus');
+        const fallbackActions = document.getElementById('fallbackActions');
+        const scanEnumerableBtn = document.getElementById('scanEnumerableBtn');
+        const scanFullBtn = document.getElementById('scanFullBtn');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            connectBtn.addEventListener('click', connectWallet);
+            checkBtn.addEventListener('click', checkEligibility);
+            refreshBtn.addEventListener('click', loadEverything);
+            selectAllBtn.addEventListener('click', selectAllEligible);
+            clearSelectionBtn.addEventListener('click', clearSelection);
+            batchClaimBtn.addEventListener('click', claimSelected);
+            claimSelectedBtn.addEventListener('click', claimSelected);
+            if (scanEnumerableBtn) scanEnumerableBtn.addEventListener('click', async () => { fallbackActions.style.display='none'; await loadMyPunksByEnumerable(); });
+            if (scanFullBtn) scanFullBtn.addEventListener('click', async () => { fallbackActions.style.display='none'; await loadMyPunksByScanFallback(); });
+            checkAutoConnect();
+        });
+
+        async function checkAutoConnect() {
+            if (window.ethereum) {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    await connectWallet();
+                }
+            }
+        }
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) { alert('Please install MetaMask'); return; }
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== BASE_CHAIN_ID_HEX) { networkWarning.style.display = 'block'; throw new Error('Wrong network'); }
+                networkWarning.style.display = 'none';
+                claimContract = new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, signer);
+                punksContract = new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, provider);
+                connectBtn.style.display = 'none';
+                walletInfo.style.display = 'inline-block';
+                walletInfo.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+                await loadEverything();
+                attachWalletListeners();
+            } catch (e) { console.error('Connect error:', e); }
+        }
+
+        async function ensureBase() {
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            if (chainId !== BASE_CHAIN_ID_HEX) { networkWarning.style.display = 'block'; throw new Error('Wrong network'); }
+            networkWarning.style.display = 'none';
+        }
+
+        async function switchToBase() {
+            try {
+                await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX }] });
+                setTimeout(() => window.location.reload(), 600);
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{ chainId: BASE_CHAIN_ID_HEX, chainName: 'Base Mainnet', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: [BASE_PUBLIC_RPC], blockExplorerUrls: ['https://basescan.org'] }]
+                        });
+                        setTimeout(() => window.location.reload(), 600);
+                    } catch (addError) { console.error(addError); }
+                }
+            }
+        }
+
+        function attachWalletListeners() {
+            if (!window.ethereum) return;
+            window.ethereum.on('accountsChanged', () => window.location.reload());
+            window.ethereum.on('chainChanged', () => window.location.reload());
+        }
+
+        async function loadEverything() {
+            try {
+                await ensureBase();
+                await Promise.all([ loadStats(), loadMyPunks() ]);
+            } catch (e) { console.error('Load error:', e); }
+        }
+
+        async function loadStats() {
+            try {
+                const claimed = await claimContract.getClaimedCount();
+                const claimedNum = parseInt(claimed.toString(), 10) || 0;
+                claimedCountEl.textContent = `${claimedNum} / 1000`;
+                const pct = Math.max(0, Math.min(100, (claimedNum / 1000) * 100));
+                claimedProgressEl.style.width = pct.toFixed(1) + '%';
+            } catch { claimedCountEl.textContent = 'Error'; }
+        }
+
+        async function fetchOwnedPunksViaAlchemy(owner) {
+            const results = [];
+            let pageKey = null; let attempt = 0;
+            while (true) {
+                let url = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${owner}&contractAddresses[]=${PUNKS_CONTRACT}&withMetadata=true&pageSize=100&tokenType=ERC721`;
+                if (pageKey) url += `&pageKey=${pageKey}`;
+                let res;
+                try { res = await fetch(url); } catch (netErr) { if (++attempt <= 2) { await sleep(300 * attempt); continue; } throw netErr; }
+                if (!res.ok) {
+                    if ((res.status === 429 || res.status === 403) && attempt < 3) { attempt++; await sleep(600 * attempt); continue; }
+                    const errText = await res.text().catch(() => '');
+                    throw new Error(`Alchemy API error ${res.status}: ${errText}`);
+                }
+                attempt = 0;
+                const data = await res.json();
+                const owned = Array.isArray(data.ownedNfts) ? data.ownedNfts : [];
+                owned.forEach(nft => {
+                    if (nft.contract && nft.contract.address && nft.contract.address.toLowerCase() === PUNKS_CONTRACT.toLowerCase()) {
+                        results.push(nft);
+                    }
+                });
+                pageKey = data.pageKey || null;
+                if (!pageKey) break;
+                await sleep(80);
+            }
+            return results;
+        }
+
+        function extractTokenInfoFromAlchemyNft(nft) {
+            let tokenIdRaw = nft.tokenId || (nft.id && nft.id.tokenId) || '0x0';
+            const tokenId = tokenIdRaw.startsWith('0x') ? parseInt(tokenIdRaw, 16) : parseInt(tokenIdRaw, 10);
+            let title = nft.title || nft.name || (nft.metadata && nft.metadata.name) || `Punk #${tokenId}`;
+            let imageUrl = '';
+            if (nft.media && Array.isArray(nft.media) && nft.media.length > 0) {
+                const media = nft.media[0];
+                imageUrl = media.gateway || media.raw || media.thumbnail || media.format || '';
+            }
+            if (!imageUrl && nft.metadata) {
+                const m = nft.metadata;
+                const keys = ['image', 'image_url', 'imageUrl', 'imageURI', 'image_uri', 'imageData'];
+                for (const k of keys) { if (m[k]) { imageUrl = m[k]; break; } }
+            }
+            if (imageUrl && imageUrl.startsWith('ipfs://')) {
+                imageUrl = imageUrl.replace('ipfs://', IPFS_GATEWAY);
+            }
+            return { tokenId, title, imageUrl };
+        }
+
+        async function loadMyPunks() {
+            try {
+                myPunksGrid.innerHTML = '<div class="subtitle">Loading your AdrianPunks...</div>';
+                noTokensEl.style.display = 'none';
+                selectedIds.clear();
+                updateBatchBar();
+
+                const alchemyNfts = await fetchOwnedPunksViaAlchemy(userAddress);
+                const owned = alchemyNfts.map(extractTokenInfoFromAlchemyNft).filter(t => Number.isFinite(t.tokenId));
+                if (owned.length === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; return; }
+
+                // Pequeños lotes para isClaimed (reduce rate-limit)
+                const results = [];
+                const batchSize = 3; // bajamos concurrencia
+                for (let i = 0; i < owned.length; i += batchSize) {
+                    const slice = owned.slice(i, i + batchSize);
+                    const statuses = await Promise.all(slice.map(async (t) => {
+                        try { const claimed = await claimContract.isClaimed(t.tokenId); return { ...t, isClaimed: !!claimed }; }
+                        catch { return { ...t, isClaimed: false, _err: true }; }
+                    }));
+                    results.push(...statuses);
+                    await sleep(120);
+                }
+
+                myPunks = results.sort((a,b) => a.tokenId - b.tokenId);
+                renderMyPunks();
+            } catch (e) {
+                console.error('Alchemy API failed. On-chain scan is disabled by default:', e);
+                scanStatusEl.style.display = 'block';
+                scanStatusEl.textContent = 'API rate-limited. You can scan on-chain your wallet tokens.';
+                fallbackActions.style.display = 'flex';
+            }
+        }
+
+        function renderMyPunks() {
+            myPunksGrid.innerHTML = '';
+            myPunks.forEach(tok => {
+                const traitId = 100000 + tok.tokenId;
+                const el = document.createElement('div');
+                el.className = 'token-card';
+                el.innerHTML = `
+                    <div class="token-img">
+                        <img src="${tok.imageUrl || ''}" alt="${tok.title}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDMyMCAxODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHrectIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIiBmaWxsPSIjMTkxOTE5Ii8+PHRleHQgeD0iMTYwIiB5PSI5MCIgZmlsbD0iI2NjYyIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBpbWFnZTwvdGV4dD48L3N2Zz4=';">
+                    </div>
+                    <div class="token-body">
+                        <div class="token-title">${tok.title || 'Punk'} #${tok.tokenId}</div>
+                        <div class="token-sub">Trait ID → ${traitId}</div>
+                        <div class="token-sub" style="${tok.isClaimed ? 'color:#ffbb00' : 'color:#00ff88'}">${tok.isClaimed ? 'Already claimed' : 'Eligible to claim'}</div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                            <label style="display:flex; align-items:center; gap:8px; color:#bdbdbd;">
+                                <input type="checkbox" class="checkbox" data-id="${tok.tokenId}" ${tok.isClaimed ? 'disabled' : ''} ${selectedIds.has(tok.tokenId) ? 'checked' : ''}>
+                                Select
+                            </label>
+                            <button class="claim-btn" ${tok.isClaimed ? 'disabled' : ''} data-claim-id="${tok.tokenId}">Claim</button>
+                        </div>
+                    </div>
+                `;
+                myPunksGrid.appendChild(el);
+            });
+            myPunksGrid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (e.target.checked) selectedIds.add(id); else selectedIds.delete(id);
+                    updateBatchBar();
+                });
+            });
+            myPunksGrid.querySelectorAll('button[data-claim-id]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(e.target.getAttribute('data-claim-id'), 10);
+                    await claimSingle(id, e.target);
+                });
+            });
+            updateBatchBar();
+        }
+
+        function updateBatchBar() {
+            const count = selectedIds.size;
+            batchInfo.textContent = `${count} selected`;
+            batchSelectedCount.textContent = `${count} selected`;
+            batchClaimBtn.disabled = count === 0;
+            claimSelectedBtn.disabled = count === 0;
+            batchBar.style.display = count > 0 ? 'flex' : 'none';
+        }
+
+        async function loadMyPunksByEnumerable() {
+            try {
+                const readProvider = getReadProvider();
+                const enumContract = new ethers.Contract(PUNKS_CONTRACT, ERC721_ENUM_ABI, readProvider);
+                scanStatusEl.style.display = 'block';
+                scanStatusEl.textContent = 'Loading tokens via tokenOfOwnerByIndex...';
+                const bal = await enumContract.balanceOf(userAddress);
+                const count = parseInt(bal.toString(), 10);
+                if (count === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; scanStatusEl.style.display = 'none'; return; }
+                const ids = [];
+                for (let i = 0; i < count; i++) {
+                    try { const idBN = await enumContract.tokenOfOwnerByIndex(userAddress, i); ids.push(parseInt(idBN.toString(), 10)); }
+                    catch (e) { console.warn('tokenOfOwnerByIndex failed at', i, e); }
+                    if (i % 10 === 9) await sleep(80);
+                }
+                const uniqueIds = Array.from(new Set(ids)).filter(n => Number.isFinite(n)).sort((a,b)=>a-b);
+                if (uniqueIds.length === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; scanStatusEl.style.display = 'none'; return; }
+                const tokens = uniqueIds.map(id => ({ tokenId: id, title: `Punk #${id}`, imageUrl: '' }));
+                // isClaimed con baja concurrencia
+                const enriched = [];
+                const batchSize = 3;
+                for (let i = 0; i < tokens.length; i += batchSize) {
+                    const slice = tokens.slice(i, i + batchSize);
+                    const statuses = await Promise.all(slice.map(async (t) => {
+                        try { const claimed = await claimContract.isClaimed(t.tokenId); return { ...t, isClaimed: !!claimed }; }
+                        catch { return { ...t, isClaimed: false }; }
+                    }));
+                    enriched.push(...statuses);
+                    await sleep(100);
+                }
+                myPunks = enriched;
+                renderMyPunks();
+                scanStatusEl.style.display = 'none';
+            } catch (err) {
+                console.error('Enumerable scan failed:', err);
+                scanStatusEl.textContent = 'Enumerable scan failed.';
+            }
+        }
+
+        async function loadMyPunksByScanFallback() {
+            try {
+                scanStatusEl.style.display = 'block';
+                scanStatusEl.textContent = 'Scanning tokens on-chain (ownerOf)... 0/1000';
+                const readProvider = getReadProvider();
+                const readPunks = new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, readProvider);
+                const found = [];
+                const MIN_ID = 1, MAX_ID = 1000, CHUNK = 25;
+                for (let start = MIN_ID; start <= MAX_ID; start += CHUNK) {
+                    const end = Math.min(MAX_ID, start + CHUNK - 1);
+                    const ids = []; for (let id = start; id <= end; id++) ids.push(id);
+                    const results = await Promise.all(ids.map(async (id) => {
+                        try { const owner = await readPunks.ownerOf(id); if (owner && userAddress && owner.toLowerCase() === userAddress.toLowerCase()) { return { tokenId: id, title: `Punk #${id}`, imageUrl: '' }; } }
+                        catch {}
+                        return null;
+                    }));
+                    results.forEach(r => { if (r) found.push(r); });
+                    scanStatusEl.textContent = `Scanning tokens on-chain (ownerOf)... ${end}/1000`;
+                    await sleep(200);
+                }
+                if (found.length === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; scanStatusEl.textContent = 'No tokens found for this wallet.'; setTimeout(() => { scanStatusEl.style.display = 'none'; }, 2500); return; }
+                const enriched = [];
+                const batchSize = 3;
+                for (let i = 0; i < found.length; i += batchSize) {
+                    const slice = found.slice(i, i + batchSize);
+                    const statuses = await Promise.all(slice.map(async (t) => {
+                        try { const claimed = await claimContract.isClaimed(t.tokenId); return { ...t, isClaimed: !!claimed }; }
+                        catch { return { ...t, isClaimed: false }; }
+                    }));
+                    enriched.push(...statuses);
+                    await sleep(100);
+                }
+                myPunks = enriched.sort((a,b) => a.tokenId - b.tokenId);
+                renderMyPunks();
+                scanStatusEl.style.display = 'none';
+            } catch (err) {
+                console.error('Fallback scan failed:', err);
+                myPunksGrid.innerHTML = '<div class="subtitle" style="color:#ff6666;">Error loading tokens (fallback)</div>';
+                scanStatusEl.style.display = 'none';
+            }
+        }
+
+        function selectAllEligible() { myPunks.filter(t => !t.isClaimed).forEach(t => selectedIds.add(t.tokenId)); renderMyPunks(); }
+        function clearSelection() { selectedIds.clear(); renderMyPunks(); }
+
+        async function checkEligibility() {
+            const val = parseInt(checkIdInput.value, 10);
+            checkStatus.className = 'status-line info';
+            if (!Number.isFinite(val) || val < 1 || val > 1000) { checkStatus.className = 'status-line error'; checkStatus.textContent = 'Enter a valid Punk ID between 1 and 1000'; return; }
+            try {
+                checkStatus.textContent = 'Checking...';
+                const claimed = await claimContract.isClaimed(val);
+                const traitId = 100000 + val;
+                let ownership = '';
+                try { const readProvider = getReadProvider(); const readPunks = new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, readProvider); const owner = await readPunks.ownerOf(val); ownership = owner && userAddress ? (owner.toLowerCase() === userAddress.toLowerCase() ? 'You own this token.' : 'You do not own this token.') : ''; } catch {}
+                if (claimed) { checkStatus.className = 'status-line error'; checkStatus.textContent = `Token #${val} already claimed. Trait ${traitId}. ${ownership}`; }
+                else { checkStatus.className = 'status-line success'; checkStatus.textContent = `Token #${val} is eligible. Claim will mint trait ${traitId}. ${ownership}`; }
+            } catch { checkStatus.className = 'status-line error'; checkStatus.textContent = 'Error checking eligibility'; }
+        }
+
+        async function claimSingle(id, btnEl) {
+            try {
+                await ensureBase();
+                if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Claiming...'; }
+                const tx = await claimContract.claim(id);
+                await tx.wait();
+                const idx = myPunks.findIndex(t => t.tokenId === id);
+                if (idx >= 0) myPunks[idx].isClaimed = true;
+                selectedIds.delete(id);
+                renderMyPunks();
+                await loadStats();
+            } catch (e) { console.error('claimSingle error:', e); if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Claim'; } alert(parseError(e)); }
+        }
+
+        async function claimSelected() {
+            const ids = Array.from(selectedIds);
+            if (ids.length === 0) return;
+            try {
+                await ensureBase();
+                batchClaimBtn.disabled = true; batchClaimBtn.textContent = 'Claiming...';
+                claimSelectedBtn.disabled = true;
+                const toClaim = ids.filter(id => { const t = myPunks.find(x => x.tokenId === id); return t && !t.isClaimed; });
+                if (toClaim.length === 0) { alert('Nothing to claim'); return; }
+                if (toClaim.length === 1) { const tx = await claimContract.claim(toClaim[0]); await tx.wait(); }
+                else { const tx = await claimContract.claimBatch(toClaim); await tx.wait(); }
+                toClaim.forEach(id => { const idx = myPunks.findIndex(t => t.tokenId === id); if (idx >= 0) myPunks[idx].isClaimed = true; selectedIds.delete(id); });
+                renderMyPunks();
+                await loadStats();
+            } catch (e) { console.error('claimSelected error:', e); alert(parseError(e)); }
+            finally { batchClaimBtn.disabled = false; batchClaimBtn.textContent = 'Claim Selected'; claimSelectedBtn.disabled = selectedIds.size === 0; }
+        }
+
+        function parseError(error) {
+            if (!error) return 'Unknown error'; if (error.code === 4001) return 'Transaction rejected by user';
+            const msg = error.message || String(error);
+            if (msg.includes('Not extension')) return 'Extension not authorized in TraitsCore';
+            if (msg.toLowerCase().includes('owner')) return 'You must own the AdrianPunk to claim';
+            if (msg.toLowerCase().includes('already claimed')) return 'Token already claimed';
+            return msg;
+        }
+
+        const bs = document.createElement('script'); bs.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'; document.head.appendChild(bs);
+    </script>
+</body>
+</html> 
