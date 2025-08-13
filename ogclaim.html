@@ -371,15 +371,23 @@
     </div>
 
     <script>
-        // Config
+        // Config principal
         const CLAIM_CONTRACT = '0x31D66caBC1D6E65a4947D19ed22FB63ee2C8D84b';
         const PUNKS_CONTRACT = '0x79BE8AcdD339C7b92918fcC3fd3875b5Aaad7566';
-        const ALCHEMY_API_KEY = '5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot';
-        const ALCHEMY_RPC_URL = `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-        const BASE_CHAIN_ID_HEX = '0x2105';
-        const BASE_PUBLIC_RPC = 'https://mainnet.base.org';
+        const BASE_CHAIN_ID_HEX = '0x2105'; // 8453
         const PLACEHOLDER_IMG = 'components/images/adrianzero.png';
         const PUNKS_IMAGE_BASE = 'https://adrianpunks.com/market/adrianpunksimages/';
+        
+        // Infura Base RPC (como mypunks.html)
+        const INFURA_URL = 'https://base-mainnet.infura.io/v3/cc0c8013b1e044dcba79d4f7ec3b2ba1';
+        const NETWORK_CONF = { name: 'base', chainId: 8453 };
+        const baseProvider = new ethers.providers.JsonRpcProvider(INFURA_URL, NETWORK_CONF);
+
+        // Multicall3 en Base
+        const MULTICALL3 = '0xcA11bde05977b3631167028862bE2a173976CA11';
+        const multicallAbi = [
+          'function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) public view returns (tuple(bool success, bytes returnData)[] returnData)'
+        ];
 
         // ABIs
         const OG_CLAIM_ABI = [
@@ -391,17 +399,30 @@
         const ERC721_MIN_ABI = [ 'function ownerOf(uint256 tokenId) view returns (address)' ];
         const ERC721_ENUM_ABI = [ 'function balanceOf(address) view returns (uint256)', 'function tokenOfOwnerByIndex(address,uint256) view returns (uint256)' ];
 
-        // Providers
-        function getWalletProvider() { return window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null; }
-        function getPublicProvider() { return new ethers.providers.JsonRpcProvider(BASE_PUBLIC_RPC); }
-        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        // Helpers
         function getPunkImageUrl(id) { return `${PUNKS_IMAGE_BASE}${id}.png`; }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-        // State
+        // Estado
         let provider, signer, userAddress;
-        let claimContract, punksContract;
+        let claimContract;
         let myPunks = [];
         let selectedIds = new Set();
+
+        // DOM (referencias existentes)
+        const connectBtn = document.getElementById('connectBtn');
+        const walletInfo = document.getElementById('walletInfo');
+        const networkWarning = document.getElementById('networkWarning');
+        const claimedCountEl = document.getElementById('claimedCount');
+        const claimedProgressEl = document.getElementById('claimedProgress');
+        const myPunksGrid = document.getElementById('myPunksGrid');
+        const noTokensEl = document.getElementById('noTokens');
+        const scanStatusEl = document.getElementById('scanStatus');
+        const fallbackActions = document.getElementById('fallbackActions');
+        const batchBar = document.getElementById('batchBar');
+        const batchInfo = document.getElementById('batchInfo');
+        const batchClaimBtn = document.getElementById('batchClaimBtn');
+        const claimSelectedBtn = document.getElementById('claimSelectedBtn');
 
         // Debug State
         let DEBUG = false;
@@ -411,31 +432,7 @@
         const RATE_LIMIT_MAX = 5;
 
         // DOM
-        const connectBtn = document.getElementById('connectBtn');
-        const walletInfo = document.getElementById('walletInfo');
-        const networkWarning = document.getElementById('networkWarning');
-        const claimedCountEl = document.getElementById('claimedCount');
-        const claimedProgressEl = document.getElementById('claimedProgress');
-        const myPunksGrid = document.getElementById('myPunksGrid');
-        const noTokensEl = document.getElementById('noTokens');
-        const checkBtn = document.getElementById('checkBtn');
-        const checkIdInput = document.getElementById('checkIdInput');
-        const checkStatus = document.getElementById('checkStatus');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const selectAllBtn = document.getElementById('selectAllBtn');
-        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
-        const batchBar = document.getElementById('batchBar');
-        const batchInfo = document.getElementById('batchInfo');
-        const batchClaimBtn = document.getElementById('batchClaimBtn');
-        const claimSelectedBtn = document.getElementById('claimSelectedBtn');
-        const scanStatusEl = document.getElementById('scanStatus');
-        const fallbackActions = document.getElementById('fallbackActions');
-        const scanEnumerableBtn = document.getElementById('scanEnumerableBtn');
-        const scanFullBtn = document.getElementById('scanFullBtn');
-
-        // Debug DOM
         const debugPanel = document.getElementById('debugPanel');
-        const toggleDebugBtn = document.getElementById('toggleDebugBtn');
         const debugEnabled = document.getElementById('debugEnabled');
         const maxItemsInput = document.getElementById('maxItemsInput');
         const debugLogEl = document.getElementById('debugLog');
@@ -446,15 +443,7 @@
         const closeDebugBtn = document.getElementById('closeDebugBtn');
 
         // Debug helpers
-        function dbg(msg, data) {
-            const ts = new Date().toISOString().slice(11, 23);
-            const line = `[${ts}] ${msg}${data !== undefined ? ' ' + safeStringify(data) : ''}`;
-            if (DEBUG) console.log(line);
-            if (debugLogEl) {
-                debugLogEl.textContent += (debugLogEl.textContent ? '\n' : '') + line;
-                debugLogEl.scrollTop = debugLogEl.scrollHeight;
-            }
-        }
+        function dbg(msg, data) { const ts = new Date().toISOString().slice(11, 23); const line = `[${ts}] ${msg}${data!==undefined?' '+safeStringify(data):''}`; if (DEBUG) console.log(line); if (debugLogEl) { debugLogEl.textContent += (debugLogEl.textContent?'\n':'') + line; debugLogEl.scrollTop = debugLogEl.scrollHeight; } }
         function safeStringify(v) { try { return typeof v === 'string' ? v : JSON.stringify(v); } catch { return String(v); } }
         function setDot(on) { if (debugDot) debugDot.classList.toggle('on', !!on); }
 
@@ -467,7 +456,9 @@
         if (stopBtn) stopBtn.addEventListener('click', () => { STOP_FLAG = true; dbg('Stop flag set'); });
         if (clearLogBtn) clearLogBtn.addEventListener('click', () => { debugLogEl.textContent = ''; });
 
+        // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
+            if (connectBtn) connectBtn.addEventListener('click', connectWallet);
             if (scanEnumerableBtn) scanEnumerableBtn.addEventListener('click', async () => { fallbackActions.style.display='none'; await loadMyPunksByEnumerable(); });
             if (scanFullBtn) scanFullBtn.addEventListener('click', async () => { fallbackActions.style.display='none'; await loadMyPunksByScanFallback(); });
             checkAutoConnect();
@@ -476,23 +467,10 @@
         async function runSelfTest() {
             try {
                 dbg('SelfTest start');
-                const pub = getPublicProvider();
-                const net = await pub.getNetwork();
-                dbg('Public RPC network', net);
+                const pub = baseProvider; const net = await pub.getNetwork(); dbg('Public RPC network', net);
                 if (provider) { const wnet = await provider.getNetwork(); dbg('Wallet network', wnet); }
                 const claimRead = new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, pub);
-                const claimedCount = await claimRead.getClaimedCount();
-                dbg('getClaimedCount()', claimedCount.toString());
-                const sampleId = 1;
-                const isCl = await claimRead.isClaimed(sampleId);
-                dbg(`isClaimed(${sampleId})`, isCl);
-                if (userAddress) {
-                    const enumC = new ethers.Contract(PUNKS_CONTRACT, ERC721_ENUM_ABI, pub);
-                    try {
-                        const bal = await enumC.balanceOf(userAddress);
-                        dbg('balanceOf(user)', bal.toString());
-                    } catch (e) { dbg('balanceOf error', e.message || e); }
-                }
+                const claimedCount = await claimRead.getClaimedCount(); dbg('getClaimedCount()', claimedCount.toString());
                 dbg('SelfTest end');
             } catch (e) { dbg('SelfTest error', e.message || e); }
         }
@@ -500,7 +478,7 @@
         async function checkAutoConnect() {
             if (window.ethereum) {
                 const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts && accounts.length > 0) { await connectWallet(); }
+                if (accounts && accounts.length > 0) await connectWallet();
             }
         }
 
@@ -509,136 +487,93 @@
                 if (!window.ethereum) { alert('Please install MetaMask'); return; }
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 userAddress = accounts[0];
-                provider = getWalletProvider();
+                provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
                 const chainId = await window.ethereum.request({ method: 'eth_chainId' });
                 if (chainId !== BASE_CHAIN_ID_HEX) { networkWarning.style.display = 'block'; throw new Error('Wrong network'); }
                 networkWarning.style.display = 'none';
                 claimContract = new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, signer);
-                punksContract = new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, provider);
-                connectBtn.style.display = 'none';
-                walletInfo.style.display = 'inline-block';
-                walletInfo.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+                if (connectBtn) connectBtn.style.display = 'none';
+                if (walletInfo) { walletInfo.style.display = 'inline-block'; walletInfo.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`; }
                 await loadEverything();
-                attachWalletListeners();
-            } catch (e) { dbg('Connect error', e.message || e); }
+            } catch (e) { console.error('Connect error:', e); }
         }
 
-        async function ensureBase() {
-            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-            if (chainId !== BASE_CHAIN_ID_HEX) { networkWarning.style.display = 'block'; throw new Error('Wrong network'); }
-            networkWarning.style.display = 'none';
-        }
+        async function ensureBase() { const chainId = await window.ethereum.request({ method: 'eth_chainId' }); if (chainId !== BASE_CHAIN_ID_HEX) { networkWarning.style.display = 'block'; throw new Error('Wrong network'); } networkWarning.style.display = 'none'; }
 
-        async function switchToBase() {
-            try {
-                await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX }] });
-                setTimeout(() => window.location.reload(), 600);
-            } catch (switchError) {
-                if (switchError.code === 4902) {
-                    try {
-                        await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX, chainName: 'Base Mainnet', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: [BASE_PUBLIC_RPC], blockExplorerUrls: ['https://basescan.org'] }] });
-                        setTimeout(() => window.location.reload(), 600);
-                    } catch (addError) { dbg('Add network error', addError.message || addError); }
-                }
-            }
-        }
+        async function switchToBase() { try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX }] }); setTimeout(() => window.location.reload(), 600); } catch (switchError) { if (switchError.code === 4902) { try { await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX, chainName: 'Base Mainnet', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://mainnet.base.org'], blockExplorerUrls: ['https://basescan.org'] }] }); setTimeout(() => window.location.reload(), 600); } catch (addError) { dbg('Add network error', addError.message || addError); } } } }
 
-        function attachWalletListeners() {
-            if (!window.ethereum) return;
-            window.ethereum.on('accountsChanged', () => window.location.reload());
-            window.ethereum.on('chainChanged', () => window.location.reload());
-        }
+        function attachWalletListeners() { if (!window.ethereum) return; window.ethereum.on('accountsChanged', () => window.location.reload()); window.ethereum.on('chainChanged', () => window.location.reload()); }
 
-        async function loadEverything() {
-            try {
-                rateLimitHits = 0; STOP_FLAG = false;
-                await ensureBase();
-                await Promise.all([ loadStats(), loadMyPunks() ]);
-            } catch (e) { dbg('Load error', e.message || e); }
-        }
+        async function loadEverything() { try { rateLimitHits = 0; STOP_FLAG = false; await ensureBase(); await Promise.all([ loadStats(), loadMyPunks() ]); } catch (e) { dbg('Load error', e.message || e); } }
 
         async function loadStats() {
             try {
-                const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, getPublicProvider()).getClaimedCount();
+                const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, baseProvider).getClaimedCount();
                 const claimedNum = parseInt(claimed.toString(), 10) || 0;
                 claimedCountEl.textContent = `${claimedNum} / 1000`;
                 const pct = Math.max(0, Math.min(100, (claimedNum / 1000) * 100));
                 claimedProgressEl.style.width = pct.toFixed(1) + '%';
-            } catch (e) { claimedCountEl.textContent = 'Error'; dbg('loadStats error', e.message || e); }
+            } catch { claimedCountEl.textContent = 'Error'; }
         }
 
-        async function fetchOwnedPunksViaAlchemy(owner) {
-            const results = [];
-            let pageKey = null; let attempt = 0;
-            while (!STOP_FLAG) {
-                let url = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${owner}&contractAddresses[]=${PUNKS_CONTRACT}&withMetadata=false&pageSize=100&tokenType=ERC721`;
-                if (pageKey) url += `&pageKey=${pageKey}`;
-                let res;
-                try { res = await fetch(url); } catch (netErr) { if (++attempt <= 2) { await sleep(300 * attempt); continue; } throw netErr; }
-                if (!res.ok) {
-                    if ((res.status === 429 || res.status === 403) && attempt < 3) { attempt++; rateLimitHits++; dbg('Alchemy rate-limited, backing off', { attempt, status: res.status }); await sleep(600 * attempt); if (rateLimitHits >= RATE_LIMIT_MAX) { dbg('Rate limit threshold reached, aborting API pagination'); break; } continue; }
-                    const errText = await res.text().catch(() => '');
-                    throw new Error(`Alchemy API error ${res.status}: ${errText}`);
-                }
-                attempt = 0;
-                const data = await res.json();
-                const owned = Array.isArray(data.ownedNfts) ? data.ownedNfts : [];
-                for (const nft of owned) {
-                    if (nft.contract && nft.contract.address && nft.contract.address.toLowerCase() === PUNKS_CONTRACT.toLowerCase()) {
-                        let tokenIdRaw = nft.tokenId || (nft.id && nft.id.tokenId) || '0x0';
-                        const tokenId = tokenIdRaw.startsWith('0x') ? parseInt(tokenIdRaw, 16) : parseInt(tokenIdRaw, 10);
-                        if (Number.isFinite(tokenId)) results.push({ tokenId });
-                    }
-                    if (results.length >= MAX_ITEMS) break;
-                }
-                if (results.length >= MAX_ITEMS) break;
-                pageKey = data.pageKey || null;
-                if (!pageKey) break;
-                await sleep(80);
-            }
-            dbg('Owned via API', { count: results.length });
-            return results;
-        }
-
+        // NUEVO: Cargar tokens con Multicall3 (igual que mypunks)
         async function loadMyPunks() {
             try {
                 myPunksGrid.innerHTML = '<div class="subtitle">Loading your AdrianPunks...</div>';
                 noTokensEl.style.display = 'none';
                 selectedIds.clear(); updateBatchBar();
 
-                const apiTokens = await fetchOwnedPunksViaAlchemy(userAddress);
-                if (STOP_FLAG) { dbg('Stopped before processing API results'); return; }
-                const owned = apiTokens.map(t => ({ tokenId: t.tokenId, title: `Punk #${t.tokenId}`, imageUrl: getPunkImageUrl(t.tokenId) }));
-                if (owned.length === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; return; }
+                // balanceOf(owner)
+                const enumNft = new ethers.Contract(PUNKS_CONTRACT, ERC721_ENUM_ABI, baseProvider);
+                const balanceBN = await enumNft.balanceOf(userAddress);
+                const total = balanceBN.toNumber();
+                if (total === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; return; }
 
-                // isClaimed in very small batches
-                const results = [];
-                const batchSize = 2;
-                for (let i = 0; i < owned.length && !STOP_FLAG; i += batchSize) {
-                    const slice = owned.slice(i, i + batchSize);
-                    const statuses = await Promise.all(slice.map(async (t) => {
-                        try { const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, getPublicProvider()).isClaimed(t.tokenId); return { ...t, isClaimed: !!claimed }; }
-                        catch (e) { dbg('isClaimed error', e.message || e); return { ...t, isClaimed: false, _err: true }; }
-                    }));
-                    results.push(...statuses);
-                    await sleep(120);
+                // aggregate3 tokenOfOwnerByIndex(owner, i)
+                const multicall = new ethers.Contract(MULTICALL3, multicallAbi, baseProvider);
+                const iface = new ethers.utils.Interface(ERC721_ENUM_ABI);
+                const calls = [];
+                for (let i = 0; i < total; i++) {
+                    calls.push({
+                        target: PUNKS_CONTRACT,
+                        allowFailure: true,
+                        callData: iface.encodeFunctionData('tokenOfOwnerByIndex', [userAddress, i])
+                    });
+                }
+                const results = await multicall.aggregate3(calls);
+                const tokenIds = results
+                    .filter(r => r.success)
+                    .map(r => iface.decodeFunctionResult('tokenOfOwnerByIndex', r.returnData)[0])
+                    .map(bn => (ethers.BigNumber.isBigNumber(bn) ? bn.toNumber() : parseInt(bn, 10)));
+
+                // Construir lista con imágenes directas
+                const owned = tokenIds.map(id => ({ tokenId: id, title: `Punk #${id}`, imageUrl: getPunkImageUrl(id) }));
+
+                // isClaimed (lotes pequeños)
+                const claimRead = new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, baseProvider);
+                const enriched = [];
+                for (let i = 0; i < owned.length; i++) {
+                    try {
+                        const claimed = await claimRead.isClaimed(owned[i].tokenId);
+                        enriched.push({ ...owned[i], isClaimed: !!claimed });
+                    } catch (e) {
+                        enriched.push({ ...owned[i], isClaimed: false });
+                        await sleep(50);
+                    }
                 }
 
-                myPunks = results.sort((a,b) => a.tokenId - b.tokenId);
+                myPunks = enriched.sort((a,b) => a.tokenId - b.tokenId);
                 renderMyPunks();
             } catch (e) {
-                dbg('loadMyPunks API error', e.message || e);
-                scanStatusEl.style.display = 'block';
-                scanStatusEl.textContent = 'API rate-limited. You can scan on-chain your wallet tokens.';
-                fallbackActions.style.display = 'flex';
+                console.error('loadMyPunks error:', e);
+                myPunksGrid.innerHTML = '<div class="subtitle" style="color:#ff6666;">Error loading tokens</div>';
             }
         }
 
         function renderMyPunks() {
             myPunksGrid.innerHTML = '';
-            const limited = myPunks.slice(0, MAX_ITEMS);
-            limited.forEach(tok => {
+            myPunks.forEach(tok => {
                 const traitId = 100000 + tok.tokenId;
                 const el = document.createElement('div');
                 el.className = 'token-card';
@@ -662,77 +597,34 @@
                 `;
                 myPunksGrid.appendChild(el);
             });
+            // Eventos selección y claim
+            myPunksGrid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (e.target.checked) selectedIds.add(id); else selectedIds.delete(id);
+                    updateBatchBar();
+                });
+            });
+            myPunksGrid.querySelectorAll('button[data-claim-id]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(e.target.getAttribute('data-claim-id'), 10);
+                    await claimSingle(id, e.target);
+                });
+            });
             updateBatchBar();
-            dbg('Rendered tokens', { rendered: limited.length, total: myPunks.length, MAX_ITEMS });
         }
 
         function updateBatchBar() {
             const count = selectedIds.size;
             batchInfo.textContent = `${count} selected`;
-            batchSelectedCount.textContent = `${count} selected`;
             batchClaimBtn.disabled = count === 0;
             claimSelectedBtn.disabled = count === 0;
             batchBar.style.display = count > 0 ? 'flex' : 'none';
         }
 
-        async function loadMyPunksByEnumerable() {
-            try {
-                const pub = getPublicProvider();
-                const enumContract = new ethers.Contract(PUNKS_CONTRACT, ERC721_ENUM_ABI, pub);
-                STOP_FLAG = false; rateLimitHits = 0;
-                scanStatusEl.style.display = 'block'; scanStatusEl.textContent = 'Loading tokens via tokenOfOwnerByIndex...';
-                const bal = await enumContract.balanceOf(userAddress);
-                const count = Math.min(parseInt(bal.toString(), 10), MAX_ITEMS);
-                dbg('Enumerable balance', count);
-                if (count === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; scanStatusEl.style.display = 'none'; return; }
-                const ids = [];
-                for (let i = 0; i < count && !STOP_FLAG; i++) {
-                    try { const idBN = await enumContract.tokenOfOwnerByIndex(userAddress, i); ids.push(parseInt(idBN.toString(), 10)); }
-                    catch (e) { dbg('tokenOfOwnerByIndex error', { index: i, msg: e.message || e }); rateLimitHits++; if (rateLimitHits >= RATE_LIMIT_MAX) { dbg('Too many rate limits, abort enum'); break; } await sleep(250); }
-                    if (i % 5 === 4) await sleep(120);
-                }
-                const uniqueIds = Array.from(new Set(ids)).filter(n => Number.isFinite(n)).sort((a,b)=>a-b);
-                const tokens = uniqueIds.map(id => ({ tokenId: id, title: `Punk #${id}`, imageUrl: getPunkImageUrl(id) }));
-                const enriched = [];
-                for (let i = 0; i < tokens.length && !STOP_FLAG; i++) {
-                    try { const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, pub).isClaimed(tokens[i].tokenId); enriched.push({ ...tokens[i], isClaimed: !!claimed }); }
-                    catch (e) { dbg('isClaimed enum error', e.message || e); enriched.push({ ...tokens[i], isClaimed: false }); await sleep(80); }
-                }
-                myPunks = enriched; renderMyPunks(); scanStatusEl.style.display = 'none';
-            } catch (err) { dbg('Enumerable scan failed', err.message || err); scanStatusEl.textContent = 'Enumerable scan failed.'; }
-        }
+        async function loadMyPunksByEnumerable() { try { const pub = baseProvider; const enumContract = new ethers.Contract(PUNKS_CONTRACT, ERC721_ENUM_ABI, pub); STOP_FLAG = false; rateLimitHits = 0; scanStatusEl.style.display = 'block'; scanStatusEl.textContent = 'Loading tokens via tokenOfOwnerByIndex...'; const bal = await enumContract.balanceOf(userAddress); const count = Math.min(parseInt(bal.toString(), 10), MAX_ITEMS); dbg('Enumerable balance', count); if (count === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; scanStatusEl.style.display = 'none'; return; } const ids = []; for (let i = 0; i < count && !STOP_FLAG; i++) { try { const idBN = await enumContract.tokenOfOwnerByIndex(userAddress, i); ids.push(parseInt(idBN.toString(), 10)); } catch (e) { dbg('tokenOfOwnerByIndex error', { index: i, msg: e.message || e }); rateLimitHits++; if (rateLimitHits >= RATE_LIMIT_MAX) { dbg('Too many rate limits, abort enum'); break; } await sleep(250); } if (i % 5 === 4) await sleep(120); } const uniqueIds = Array.from(new Set(ids)).filter(n => Number.isFinite(n)).sort((a,b)=>a-b); const tokens = uniqueIds.map(id => ({ tokenId: id, title: `Punk #${id}`, imageUrl: getPunkImageUrl(id) })); const enriched = []; for (let i = 0; i < tokens.length && !STOP_FLAG; i++) { try { const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, pub).isClaimed(tokens[i].tokenId); enriched.push({ ...tokens[i], isClaimed: !!claimed }); } catch (e) { dbg('isClaimed enum error', e.message || e); enriched.push({ ...tokens[i], isClaimed: false }); await sleep(80); } } myPunks = enriched; renderMyPunks(); scanStatusEl.style.display = 'none'; } catch (err) { dbg('Enumerable scan failed', err.message || err); scanStatusEl.textContent = 'Enumerable scan failed.'; } }
 
-        async function loadMyPunksByScanFallback() {
-            try {
-                const pub = getPublicProvider();
-                const readPunks = new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, pub);
-                STOP_FLAG = false; rateLimitHits = 0;
-                scanStatusEl.style.display = 'block'; scanStatusEl.textContent = 'Scanning tokens on-chain (ownerOf)...';
-                const found = [];
-                const MIN_ID = 1, MAX_ID = 1000, CHUNK = 20;
-                for (let start = MIN_ID; start <= MAX_ID && !STOP_FLAG; start += CHUNK) {
-                    const end = Math.min(MAX_ID, start + CHUNK - 1);
-                    const ids = []; for (let id = start; id <= end; id++) ids.push(id);
-                    const results = await Promise.all(ids.map(async (id) => {
-                        try { const owner = await readPunks.ownerOf(id); if (owner && userAddress && owner.toLowerCase() === userAddress.toLowerCase()) { return { tokenId: id, title: `Punk #${id}`, imageUrl: getPunkImageUrl(id) }; } }
-                        catch (e) { if (String(e.message||'').includes('rate limited')) { rateLimitHits++; } }
-                        return null;
-                    }));
-                    results.forEach(r => { if (r) found.push(r); });
-                    scanStatusEl.textContent = `Scanning... ${end}/1000 (found ${found.length})`;
-                    if (rateLimitHits >= RATE_LIMIT_MAX) { dbg('Too many rate limits, pausing scan'); await sleep(600); rateLimitHits = 0; }
-                    if (found.length >= MAX_ITEMS) break;
-                    await sleep(200);
-                }
-                if (found.length === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; scanStatusEl.textContent = 'No tokens found.'; setTimeout(() => { scanStatusEl.style.display = 'none'; }, 2500); return; }
-                const enriched = [];
-                for (let i = 0; i < found.length && !STOP_FLAG; i++) {
-                    try { const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, pub).isClaimed(found[i].tokenId); enriched.push({ ...found[i], isClaimed: !!claimed }); }
-                    catch (e) { dbg('isClaimed scan error', e.message || e); enriched.push({ ...found[i], isClaimed: false }); await sleep(80); }
-                }
-                myPunks = enriched.sort((a,b) => a.tokenId - b.tokenId); renderMyPunks(); scanStatusEl.style.display = 'none';
-            } catch (err) { dbg('Fallback scan failed', err.message || err); myPunksGrid.innerHTML = '<div class="subtitle" style="color:#ff6666;">Error loading tokens (fallback)</div>'; scanStatusEl.style.display = 'none'; }
-        }
+        async function loadMyPunksByScanFallback() { try { const pub = baseProvider; const readPunks = new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, pub); STOP_FLAG = false; rateLimitHits = 0; scanStatusEl.style.display = 'block'; scanStatusEl.textContent = 'Scanning tokens on-chain (ownerOf)...'; const found = []; const MIN_ID = 1, MAX_ID = 1000, CHUNK = 20; for (let start = MIN_ID; start <= MAX_ID && !STOP_FLAG; start += CHUNK) { const end = Math.min(MAX_ID, start + CHUNK - 1); const ids = []; for (let id = start; id <= end; id++) ids.push(id); const results = await Promise.all(ids.map(async (id) => { try { const owner = await readPunks.ownerOf(id); if (owner && userAddress && owner.toLowerCase() === userAddress.toLowerCase()) { return { tokenId: id, title: `Punk #${id}`, imageUrl: getPunkImageUrl(id) }; } } catch (e) { if (String(e.message||'').includes('rate limited')) { rateLimitHits++; } } return null; })); results.forEach(r => { if (r) found.push(r); }); scanStatusEl.textContent = `Scanning... ${end}/1000 (found ${found.length})`; if (rateLimitHits >= RATE_LIMIT_MAX) { dbg('Too many rate limits, pausing scan'); await sleep(600); rateLimitHits = 0; } if (found.length >= MAX_ITEMS) break; await sleep(200); } if (found.length === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; scanStatusEl.textContent = 'No tokens found.'; setTimeout(() => { scanStatusEl.style.display = 'none'; }, 2500); return; } const enriched = []; for (let i = 0; i < found.length && !STOP_FLAG; i++) { try { const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, pub).isClaimed(found[i].tokenId); enriched.push({ ...found[i], isClaimed: !!claimed }); } catch (e) { dbg('isClaimed scan error', e.message || e); enriched.push({ ...found[i], isClaimed: false }); await sleep(80); } } myPunks = enriched.sort((a,b) => a.tokenId - b.tokenId); renderMyPunks(); scanStatusEl.style.display = 'none'; } catch (err) { dbg('Fallback scan failed', err.message || err); myPunksGrid.innerHTML = '<div class="subtitle" style="color:#ff6666;">Error loading tokens (fallback)</div>'; scanStatusEl.style.display = 'none'; } }
 
         function selectAllEligible() { myPunks.filter(t => !t.isClaimed).forEach(t => selectedIds.add(t.tokenId)); renderMyPunks(); }
         function clearSelection() { selectedIds.clear(); renderMyPunks(); }
@@ -743,10 +635,10 @@
             if (!Number.isFinite(val) || val < 1 || val > 1000) { checkStatus.className = 'status-line error'; checkStatus.textContent = 'Enter a valid Punk ID between 1 and 1000'; return; }
             try {
                 checkStatus.textContent = 'Checking...';
-                const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, getPublicProvider()).isClaimed(val);
+                const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, baseProvider).isClaimed(val);
                 const traitId = 100000 + val;
                 let ownership = '';
-                try { const owner = await new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, getPublicProvider()).ownerOf(val); ownership = owner && userAddress ? (owner.toLowerCase() === userAddress.toLowerCase() ? 'You own this token.' : 'You do not own this token.') : ''; } catch {}
+                try { const owner = await new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, baseProvider).ownerOf(val); ownership = owner && userAddress ? (owner.toLowerCase() === userAddress.toLowerCase() ? 'You own this token.' : 'You do not own this token.') : ''; } catch {}
                 checkStatus.className = claimed ? 'status-line error' : 'status-line success';
                 checkStatus.textContent = claimed ? `Token #${val} already claimed. Trait ${traitId}. ${ownership}` : `Token #${val} is eligible. Claim will mint trait ${traitId}. ${ownership}`;
             } catch (e) { checkStatus.className = 'status-line error'; checkStatus.textContent = 'Error checking eligibility'; dbg('checkEligibility error', e.message || e); }
@@ -754,24 +646,26 @@
 
         async function claimSingle(id, btnEl) {
             try {
-                await ensureBase();
                 if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Claiming...'; }
                 const tx = await claimContract.claim(id); await tx.wait();
                 const idx = myPunks.findIndex(t => t.tokenId === id); if (idx >= 0) myPunks[idx].isClaimed = true;
                 selectedIds.delete(id); renderMyPunks(); await loadStats();
-            } catch (e) { dbg('claimSingle error', e.message || e); if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Claim'; } alert(parseError(e)); }
+            } catch (e) {
+                if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Claim'; }
+                alert(parseError(e));
+            }
         }
 
         async function claimSelected() {
             const ids = Array.from(selectedIds); if (ids.length === 0) return;
             try {
-                await ensureBase(); batchClaimBtn.disabled = true; batchClaimBtn.textContent = 'Claiming...'; claimSelectedBtn.disabled = true;
+                batchClaimBtn.disabled = true; batchClaimBtn.textContent = 'Claiming...'; claimSelectedBtn.disabled = true;
                 const toClaim = ids.filter(id => { const t = myPunks.find(x => x.tokenId === id); return t && !t.isClaimed; }); if (toClaim.length === 0) { alert('Nothing to claim'); return; }
                 if (toClaim.length === 1) { const tx = await claimContract.claim(toClaim[0]); await tx.wait(); }
                 else { const tx = await claimContract.claimBatch(toClaim); await tx.wait(); }
                 toClaim.forEach(id => { const idx = myPunks.findIndex(t => t.tokenId === id); if (idx >= 0) myPunks[idx].isClaimed = true; selectedIds.delete(id); });
                 renderMyPunks(); await loadStats();
-            } catch (e) { dbg('claimSelected error', e.message || e); alert(parseError(e)); }
+            } catch (e) { alert(parseError(e)); }
             finally { batchClaimBtn.disabled = false; batchClaimBtn.textContent = 'Claim Selected'; claimSelectedBtn.disabled = selectedIds.size === 0; }
         }
 
