@@ -416,6 +416,11 @@
         const batchInfo = document.getElementById('batchInfo');
         const batchClaimBtn = document.getElementById('batchClaimBtn');
         const claimSelectedBtn = document.getElementById('claimSelectedBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        const checkIdInput = document.getElementById('checkIdInput');
         const toggleDebugBtn = document.getElementById('toggleDebugBtn');
 
         // Debug State
@@ -453,6 +458,12 @@
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
             if (connectBtn) connectBtn.addEventListener('click', connectWallet);
+            if (refreshBtn) refreshBtn.addEventListener('click', loadMyPunks);
+            if (selectAllBtn) selectAllBtn.addEventListener('click', selectAllEligible);
+            if (clearSelectionBtn) clearSelectionBtn.addEventListener('click', clearSelection);
+            if (checkBtn) checkBtn.addEventListener('click', checkEligibility);
+            if (batchClaimBtn) batchClaimBtn.addEventListener('click', claimSelected);
+            if (claimSelectedBtn) claimSelectedBtn.addEventListener('click', claimSelected);
             attachWalletListeners();
             checkAutoConnect();
         });
@@ -650,6 +661,7 @@
         async function claimSelected() {
             const ids = Array.from(selectedIds); if (ids.length === 0) return;
             try {
+                await ensureBase();
                 batchClaimBtn.disabled = true; batchClaimBtn.textContent = 'Claiming...'; claimSelectedBtn.disabled = true;
                 const toClaim = ids.filter(id => { const t = myPunks.find(x => x.tokenId === id); return t && !t.isClaimed; }); if (toClaim.length === 0) { alert('Nothing to claim'); return; }
                 if (toClaim.length === 1) { const tx = await claimContract.claim(toClaim[0]); await tx.wait(); }
