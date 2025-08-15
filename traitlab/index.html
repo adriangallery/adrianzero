@@ -838,6 +838,8 @@
         
         // ActionPacks contract (para abrir packs 15008-15015)
         const ACTION_PACKS_CONTRACT = "0xa7e2ae50e7f15d220cd3f61728e52d0e6e1b2e36";
+        // Nuevo contrato para abrir pack del floppy 10003
+        const NEW_FLOPPY_PACK_CONTRACT = "0x03f501158103dd54A23898bADf8E77Cb8305EB38";
 
         // App state
         let currentAccount = null;
@@ -1962,9 +1964,11 @@
                     // Token 10003 should show SOON, token 10004 should show Open Pack (PackTokenMinter), token 10005 should show SOON,
                     // tokens 15008-15015 should show Open Pack (ActionPacks), all other floppy discs should be openable
                     if (selectedFloppy.tokenId === 10003) {
-                        openFloppyBtn.textContent = 'SOON';
-                        openFloppyBtn.disabled = true;
-                        openPackSection.style.display = 'none';
+                        // Activar openPack con nuevo contrato para 10003
+                        openFloppySection.style.display = 'none';
+                        openPackSection.style.display = 'block';
+                        openPackBtn.textContent = 'Open Pack';
+                        openPackBtn.disabled = false;
                     } else if (selectedFloppy.tokenId === 10004) {
                         openFloppySection.style.display = 'none';
                         openPackSection.style.display = 'block';
@@ -3265,7 +3269,9 @@
                 showOpenPackStatus('Please select a pack first.', 'error');
                 return;
             }
-            if (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015) {
+            if (selectedFloppy.tokenId === 10003) {
+                await openPack10003();
+            } else if (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015) {
                 await openActionPack();
             } else {
                 await openPack();
@@ -3524,6 +3530,54 @@
             }
         }
     
+        // Nuevo: Open Pack function para token 10003 con contrato NEW_FLOPPY_PACK_CONTRACT
+        async function openPack10003() {
+            console.log('openPack10003 called');
+            if (!selectedFloppy) { showOpenPackStatus('Please select a pack first.', 'error'); return; }
+            if (selectedFloppy.tokenId !== 10003) { showOpenPackStatus('This function is only available for Pack token 10003.', 'error'); return; }
+            if (!currentAccount) { showOpenPackStatus('Please connect your wallet first.', 'error'); return; }
+            try {
+                showOpenPackStatus('Loading ethers library...', 'loading');
+                openPackBtn.disabled = true;
+                let ethers;
+                if (typeof window.ethers === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                    script.onload = () => { ethers = window.ethers; console.log('Ethers loaded successfully'); executeOpenPack10003(); };
+                    script.onerror = () => { showOpenPackStatus('Failed to load ethers library. Please refresh the page.', 'error'); openPackBtn.disabled = false; };
+                    document.head.appendChild(script);
+                } else {
+                    ethers = window.ethers;
+                    await executeOpenPack10003();
+                }
+                async function executeOpenPack10003() {
+                    try {
+                        showOpenPackStatus('Preparing transaction...', 'loading');
+                        const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        const signer = provider.getSigner();
+                        const abi = [ 'function openPack(uint256 packId) external' ];
+                        const contract = new ethers.Contract(NEW_FLOPPY_PACK_CONTRACT, abi, signer);
+                        const packId = selectedFloppy.tokenId; // 10003
+                        showOpenPackStatus('Confirming transaction in your wallet...', 'loading');
+                        const tx = await contract.openPack(packId);
+                        showOpenPackStatus('Transaction sent! Waiting for confirmation...', 'loading');
+                        const receipt = await tx.wait();
+                        showOpenPackStatus(`✅ Pack opened successfully! Transaction: ${receipt.transactionHash}`, 'success');
+                        setTimeout(() => { loadTokens(currentAccount, currentContract); }, 2000);
+                    } catch (error) {
+                        console.error('Error opening pack (10003):', error);
+                        let errorMessage = 'Failed to open pack.';
+                        if (error.code === 4001) { errorMessage = 'Transaction was rejected by user.'; }
+                        else if (error.message) { errorMessage = `Error: ${error.message}`; }
+                        showOpenPackStatus(errorMessage, 'error');
+                    } finally { openPackBtn.disabled = false; }
+                }
+            } catch (error) {
+                console.error('Error opening pack (10003):', error);
+                showOpenPackStatus('Failed to load ethers library. Please refresh the page.', 'error');
+                openPackBtn.disabled = false;
+            }
+        }
 
     </script>
 </body>
