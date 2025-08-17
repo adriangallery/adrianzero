@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>$ADRIAN Ecosystem — Historical Roadmap</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="icon" href="components/images/adrianzero.png">
+  <style>
+    :root{
+      --bg:#0a0f14;
+      --fg:#e6f1ff;
+      --muted:#98a6b3;
+      --cyan:#00e5ff;
+      --red:#ff004c;
+      --card:#0f1620;
+      --line:#182431;
+      --ring1:0 0 30px rgba(0,229,255,.28);
+      --ring2:0 0 30px rgba(255,0,76,.16);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--fg);
+      background:
+        radial-gradient(1200px 800px at 80% -10%, rgba(0,229,255,.06), transparent 60%),
+        radial-gradient(900px 600px at -10% 100%, rgba(255,0,76,.07), transparent 65%),
+        var(--bg);
+      font:500 16px/1.45 "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .container{width:min(1100px,92%);margin:0 auto 64px;position:relative}
+    h1{margin:32px auto 8px;text-align:center;font-size:28px;letter-spacing:.5px;text-shadow:-2px 0 var(--red),2px 0 var(--cyan)}
+    .subtitle{text-align:center;color:var(--muted);margin-bottom:28px}
+
+    .timeline{position:relative;padding:30px 0}
+    .timeline::before{
+      content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;
+      background:linear-gradient(to bottom, transparent, var(--cyan) 10%, var(--line) 40%, var(--line) 60%, var(--red) 90%, transparent);
+    }
+
+    .item{position:relative;width:calc(50% - 28px);margin-bottom:24px}
+    .item:nth-child(odd){margin-left:0;padding-right:34px;float:left;clear:both}
+    .item:nth-child(even){margin-left:calc(50% + 28px);padding-left:34px;float:none;clear:both}
+
+    .dot{position:absolute;top:14px;left:100%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;
+         background:linear-gradient(135deg,var(--cyan),var(--red));
+         box-shadow:0 0 0 4px rgba(255,255,255,.03),0 0 14px rgba(0,229,255,.6)}
+    .item:nth-child(even) .dot{left:0%}
+
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.00));
+          border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:14px 16px;
+          box-shadow:var(--ring1),var(--ring2);backdrop-filter:blur(4px)}
+    .header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+    .emoji{font-size:20px}
+    .week{font-weight:700}
+    .date{font-weight:600;color:var(--cyan);opacity:.95}
+    .title{margin-top:4px}
+    .meta{color:var(--muted);font-size:12px;margin-top:6px}
+    .badge{display:inline-block;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:2px 8px;font-size:12px;letter-spacing:.2px;margin-right:6px}
+
+    .footer-note{text-align:center;color:var(--muted);margin-top:28px;font-size:12px}
+
+    @media (max-width: 800px){
+      .timeline::before{left:8px}
+      .item,.item:nth-child(even){width:100%;margin:0 0 18px 0;padding:0 0 0 26px}
+      .item .dot{left:8px;transform:none}
+    }
+  </style>
+</head>
+<body>
+  <!-- Menu -->
+  <div id="menu-container"></div>
+  <script>
+    fetch('components/menu.html')
+      .then(r => r.text())
+      .then(html => { document.getElementById('menu-container').innerHTML = html; const s = document.createElement('script'); s.src = 'components/menu.js'; document.head.appendChild(s); })
+      .catch(err => console.error('Error loading menu:', err));
+  </script>
+
+  <div class="container" style="padding-top:70px;">
+    <h1 style="font-family: 'VT323', monospace;">$ADRIAN Ecosystem — Historical Roadmap</h1>
+    <p class="subtitle" style="font-family: 'VT323', monospace;">Weeks start from <strong>Jan 21, 2025</strong>. Dates in English.</p>
+
+    <div class="timeline">
+      <!-- Week 1 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🚀</span><span class="week">Week 1</span><span class="date"> · Jan 21, 2025</span></div>
+        <div class="title">$ADRIAN launch PumpFun</div>
+      </div></div>
+
+      <!-- Week 2 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">💬</span><span class="week">Week 2</span><span class="date"> · Jan 28, 2025</span></div>
+        <div class="title">Discord</div>
+      </div></div>
+
+      <!-- Week 3 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">⚡</span><span class="week">Week 3</span><span class="date"> · Feb 04, 2025</span></div>
+        <div class="title">$ADRIAN v2 on BASE</div>
+      </div></div>
+
+      <!-- Week 4 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">💧</span><span class="week">Week 4</span><span class="date"> · Feb 11, 2025</span></div>
+        <div class="title">LP created</div>
+      </div></div>
+
+      <!-- Week 5 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">📈</span><span class="week">Week 5</span><span class="date"> · Feb 18, 2025</span></div>
+        <div class="title">Pumpyour$Adrians</div>
+      </div></div>
+
+      <!-- Week 6 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🔄</span><span class="week">Week 6</span><span class="date"> · Feb 25, 2025</span></div>
+        <div class="title">$ADRIAN v3</div>
+      </div></div>
+
+      <!-- Week 7 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🏦</span><span class="week">Week 7</span><span class="date"> · Mar 04, 2025</span></div>
+        <div class="title">AdrianAuctions</div>
+      </div></div>
+
+      <!-- Week 8 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">💎</span><span class="week">Week 8</span><span class="date"> · Mar 11, 2025</span></div>
+        <div class="title">FilthyRICH + Forked AdrianGALLERY + BurnStatsDAPP + HoldingsDapp</div>
+      </div></div>
+
+      <!-- Week 9 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🖼️</span><span class="week">Week 9</span><span class="date"> · Mar 18, 2025</span></div>
+        <div class="title">AdrianGALLERY marketplace ERC1155</div>
+      </div></div>
+
+      <!-- Week 10 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🎨</span><span class="week">Week 10</span><span class="date"> · Mar 25, 2025</span></div>
+        <div class="title">Mint PIMPS + Akashi auction + THE OFFERING</div>
+      </div></div>
+
+      <!-- Week 11 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🛠️</span><span class="week">Week 11</span><span class="date"> · Apr 01, 2025</span></div>
+        <div class="title">AdrianPunks contract coding</div>
+      </div></div>
+
+      <!-- Week 12 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🎲</span><span class="week">Week 12</span><span class="date"> · Apr 08, 2025</span></div>
+        <div class="title">AdrianLOTTERY + AdrianMARKET</div>
+      </div></div>
+
+      <!-- Week 13 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">☠️</span><span class="week">Week 13</span><span class="date"> · Apr 15, 2025</span></div>
+        <div class="title">TAX Reaper</div>
+      </div></div>
+
+      <!-- Week 14 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🖌️</span><span class="week">Week 14</span><span class="date"> · Apr 22, 2025</span></div>
+        <div class="title">AdrianPUNKS mint + PunkQUEST soft stake</div>
+      </div></div>
+
+      <!-- Week 15 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🤖</span><span class="week">Week 15</span><span class="date"> · Apr 29, 2025</span></div>
+        <div class="title">Coding random shit</div>
+      </div></div>
+
+      <!-- Week 16 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">⚔️</span><span class="week">Week 16</span><span class="date"> · May 06, 2025</span></div>
+        <div class="title">TOMO auction + Punk Exchange P2P + HalfXAdrians</div>
+      </div></div>
+
+      <!-- Week 17 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🏎️</span><span class="week">Week 17</span><span class="date"> · May 13, 2025</span></div>
+        <div class="title">OG Lambobuilder + Art auctions + AdrianTOGGLER</div>
+      </div></div>
+
+      <!-- Week 18 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">📦</span><span class="week">Week 18</span><span class="date"> · May 20, 2025</span></div>
+        <div class="title">AdrianAuctions launch</div>
+      </div></div>
+
+      <!-- Week 19 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🧩</span><span class="week">Week 19</span><span class="date"> · May 27, 2025</span></div>
+        <div class="title">VECTORadrians toggled</div>
+      </div></div>
+
+      <!-- Week 20 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">💻</span><span class="week">Week 20</span><span class="date"> · Jun 03, 2025</span></div>
+        <div class="title">Vercel render + AdrianLAB coding</div>
+      </div></div>
+
+      <!-- Week 21 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🔧</span><span class="week">Week 21</span><span class="date"> · Jun 10, 2025</span></div>
+        <div class="title">Coding AdrianLAB</div>
+      </div></div>
+
+      <!-- Week 22 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🔧</span><span class="week">Week 22</span><span class="date"> · Jun 17, 2025</span></div>
+        <div class="title">Coding AdrianLAB</div>
+      </div></div>
+
+      <!-- Week 23 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🔧</span><span class="week">Week 23</span><span class="date"> · Jun 24, 2025</span></div>
+        <div class="title">Coding AdrianLAB</div>
+      </div></div>
+
+      <!-- Week 24 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🔧</span><span class="week">Week 24</span><span class="date"> · Jul 01, 2025</span></div>
+        <div class="title">Coding AdrianLAB</div>
+      </div></div>
+
+      <!-- Week 25 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">💾</span><span class="week">Week 25</span><span class="date"> · Jul 08, 2025</span></div>
+        <div class="title">OG Floppy</div>
+      </div></div>
+
+      <!-- Week 26 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🧪</span><span class="week">Week 26</span><span class="date"> · Jul 15, 2025</span></div>
+        <div class="title">PatientZERO + First ActionPACK + AdrianZERO + AdrianLAB + GREENFloppy</div>
+      </div></div>
+
+      <!-- Week 27 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🪙</span><span class="week">Week 27</span><span class="date"> · Jul 22, 2025</span></div>
+        <div class="title">GF Floppy + AdrianNAMEregistry + GF Serum</div>
+      </div></div>
+
+      <!-- Week 28 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">💰</span><span class="week">Week 28</span><span class="date"> · Jul 29, 2025</span></div>
+        <div class="title">OG mint proceeds distribution</div>
+      </div></div>
+
+      <!-- Week 29 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">👕</span><span class="week">Week 29</span><span class="date"> · Aug 05, 2025</span></div>
+        <div class="title">T-Shit Studio + TraitSHOP + First stream</div>
+      </div></div>
+
+      <!-- Week 30 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🥇</span><span class="week">Week 30</span><span class="date"> · Aug 12, 2025</span></div>
+        <div class="title">Gold serums</div>
+      </div></div>
+
+      <!-- Week 31 -->
+      <div class="item"><span class="dot"></span><div class="card">
+        <div class="header"><span class="emoji">🎭</span><span class="week">Week 31</span><span class="date"> · Aug 19, 2025</span></div>
+        <div class="title">OG traitcards + Glitch Floppy</div>
+      </div></div>
+
+    </div>
+
+    <p class="footer-note">Last updated Aug 16, 2025 · Anaglyph cyan/red styling · Monospace vibe</p>
+  </div>
+</body>
+</html>
