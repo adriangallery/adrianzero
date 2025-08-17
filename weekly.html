@@ -211,6 +211,24 @@
       .ax-card h3 .ax-date{font-size:13px}
       .ax-card p{font-size:16px;line-height:1.3}
     }
+
+    /* Zoom móvil en lugar de reflow: mantiene proporciones del desktop */
+    @media (max-width:900px){
+      .ax-timeline{transform:scale(.85);transform-origin:top center}
+      /* Revertir a layout desktop para evitar desplazamientos */
+      .ax-event,.ax-event.left,.ax-event.right{width:calc(50% - var(--side-pad));margin-left:0;text-align:left;padding:0;min-height:unset}
+      .ax-event.right{margin-left:calc(50% + var(--side-pad));padding-left:calc(var(--branch-l) + 12px)}
+      .ax-event.left{padding-right:calc(var(--branch-l) + 12px);text-align:right}
+      .ax-event .ax-branch{top:50%;left:auto;right:auto;width:var(--branch-l);height:var(--trunk-w);transform:translateY(-50%);display:block}
+      .ax-event.left .ax-branch{right:calc(-1 * var(--side-pad))}
+      .ax-event.right .ax-branch{left:calc(-1 * var(--side-pad))}
+      .ax-event.left .ax-node{top:50%;right:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2);left:auto}
+      .ax-event.right .ax-node{top:50%;left:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2);right:auto}
+      .ax-event .ax-card{display:inline-block;margin:0;padding:8px 0;max-width:420px;text-align:inherit}
+    }
+    @media (max-width:600px){
+      .ax-timeline{transform:scale(.72)}
+    }
   </style>
 </head>
 <body class="grid-soft">
