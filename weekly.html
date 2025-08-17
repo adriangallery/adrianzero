@@ -10,7 +10,7 @@
   <link rel="icon" href="components/images/adrianzero.png">
   <style>
     :root{
-      --bg:#0a0f14;
+      --bg:#0b0f14;
       --fg:#e6f1ff;
       --muted:#98a6b3;
       --cyan:#00e5ff;
@@ -19,32 +19,55 @@
       --line:#182431;
       --ring1:0 0 30px rgba(0,229,255,.28);
       --ring2:0 0 30px rgba(255,0,76,.16);
+      /* Grid suave */
+      --grid-rgb: 255,255,255;       /* líneas blancas suaves (visibles) */
+      --cell: 144px;                 /* separación cuadrícula fina (3x más grande) */
+      --block: 384px;                /* mantener líneas mayores como estaban (8*48px) */
+      --minor-a: .18;                /* opacidad finas (visible) */
+      --major-a: .28;                /* opacidad mayores (visible) */
+    }
+    /* Fondo cuadriculado suave estilo Miro ($ADRIAN) */
+    .grid-soft{
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(to right, rgba(var(--grid-rgb), var(--minor-a)) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--grid-rgb), var(--minor-a)) 1px, transparent 1px),
+        linear-gradient(to right, rgba(var(--grid-rgb), var(--major-a)) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--grid-rgb), var(--major-a)) 1px, transparent 1px),
+        radial-gradient(1200px 800px at 80% -10%, rgba(0,229,255,.06), transparent 60%),
+        radial-gradient(900px 600px at -10% 100%, rgba(255,0,76,.07), transparent 65%);
+      background-size:
+        var(--cell) var(--cell),
+        var(--cell) var(--cell),
+        var(--block) var(--block),
+        var(--block) var(--block),
+        auto,
+        auto;
+      background-position:
+         0 0,
+         0 0,
+         0 0,
+         0 0,
+         center,
+         center;
+      background-repeat: repeat;
+      background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+      image-rendering: pixelated;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
       color:#ffffff;
-      background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
       font-family:"VT323", monospace;
       line-height:1.6;
       overflow-x:hidden;
-      position:relative;
+      position:relative;min-height:100vh;
     }
     body::before{
-      content:'';
-      position:fixed;top:0;left:0;right:0;bottom:0;
-      background-image:
-        linear-gradient(rgba(255, 0, 136, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 170, 255, 0.03) 1px, transparent 1px);
-      background-size:20px 20px;
-      opacity:.5;
-      z-index:-1;
+      content:none;
     }
-    .container{width:min(1100px,92%);margin:0 auto 64px;position:relative;background:
-       repeating-linear-gradient(0deg,transparent 0 31px, rgba(26,31,39,.08) 31px 32px),
-       repeating-linear-gradient(90deg,transparent 0 31px, rgba(26,31,39,.08) 31px 32px),
-       var(--bg)}
+    .container{width:min(1100px,92%);margin:0 auto 64px;position:relative}
     h1{margin:32px auto 8px;text-align:center;font-size:52px;letter-spacing:.5px;
        background: linear-gradient(45deg, #00ff00, #00ccff, #ff0088);
        -webkit-background-clip:text;
@@ -190,7 +213,7 @@
     }
   </style>
 </head>
-<body>
+<body class="grid-soft">
   <!-- Menu -->
   <div id="menu-container"></div>
   <script>
