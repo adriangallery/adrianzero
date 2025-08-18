@@ -1824,6 +1824,27 @@
                         }
                     } catch {}
                     const total = goldenPriceWei.mul(quantities.goldenFloppy);
+                    // Comprobación previa: balance suficiente para value + gas
+                    try {
+                        const [balanceWei, gasPrice] = await Promise.all([
+                            signer.getBalance(),
+                            provider.getGasPrice()
+                        ]);
+                        let estGas;
+                        try {
+                            estGas = await adrianEthContract.estimateGas.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total });
+                        } catch {
+                            estGas = ethers.BigNumber.from('300000');
+                        }
+                        const fee = gasPrice.mul(estGas);
+                        const needed = total.add(fee);
+                        if (balanceWei.lt(needed)) {
+                            const have = formatEthString(ethers.utils.formatEther(balanceWei));
+                            const needTotal = formatEthString(ethers.utils.formatEther(needed));
+                            showStatus('goldenFloppy', `Insufficient ETH for value + gas. Need ~${needTotal} ETH total, you have ${have} ETH.`, 'error');
+                            return;
+                        }
+                    } catch {}
                     showStatus('goldenFloppy', `Minting ${quantities.goldenFloppy} Golden Floppy with ETH...`, 'loading');
                     // callStatic para detectar reverts antes de enviar
                     try {
@@ -1926,6 +1947,10 @@
             if ((error?.message || '').includes('UNPREDICTABLE_GAS_LIMIT')) {
                 return 'Cannot estimate gas. Transaction may revert. Retrying with fallback gas...';
             }
+            // Insufficient ETH for value + gas
+            if ((error?.message || '').includes('insufficient funds for gas * price + value') || (error?.data?.message || '').includes('insufficient funds for gas * price + value')) {
+                return 'Insufficient ETH for value + gas';
+            }
             // Nested messages (MetaMask -32603)
             const mmDataMsg = error?.data?.message || error?.error?.message;
             if (mmDataMsg) {
@@ -1941,7 +1966,7 @@
                 try {
                     // Decode Error(string) manually
                     const reasonHex = dataHex.slice(10 + 64 * 1, 10 + 64 * 2); // naive slice
-                    const length = parseInt(dataHex.slice(10 + 64 * 2, 10 + 64 * 3), 16);
+                    const length = parseInt(dataHex.slice(10 + 64 * 2, 16), 16);
                     const strHex = dataHex.slice(10 + 64 * 3, 10 + 64 * 3 + length * 2);
                     const reason = decodeURIComponent(strHex.replace(/(..)/g, '%$1'));
                     if (reason) return reason;
