@@ -840,6 +840,8 @@
         const ACTION_PACKS_CONTRACT = "0xa7e2ae50e7f15d220cd3f61728e52d0e6e1b2e36";
         // Nuevo contrato para abrir pack del floppy 10003
         const NEW_FLOPPY_PACK_CONTRACT = "0x03f501158103dd54A23898bADf8E77Cb8305EB38";
+        // Nuevo contrato para Golden Floppy 10005
+        const ADRIAN_FLOPPY_DISCS_CONTRACT = "0x56B3fCc1417f269138CB7eBA1272e8Ccfee8fFc8";
 
         // App state
         let currentAccount = null;
@@ -1980,8 +1982,8 @@
                         openPackBtn.textContent = 'Open Pack';
                         openPackBtn.disabled = false;
                     } else if (selectedFloppy.tokenId === 10005) {
-                        openFloppyBtn.textContent = 'SOON';
-                        openFloppyBtn.disabled = true;
+                        openFloppyBtn.textContent = 'Open Floppy';
+                        openFloppyBtn.disabled = false;
                         openPackSection.style.display = 'none';
                     } else {
                         openFloppyBtn.textContent = 'Open Floppy';
@@ -2524,12 +2526,13 @@
                         ];
 
                         // Create contract instance
-                        const contract = new ethers.Contract(PACK_TOKEN_MINTER_CONTRACT, contractABI, signer);
+                        const targetContract = (selectedFloppy.tokenId === 10005) ? ADRIAN_FLOPPY_DISCS_CONTRACT : PACK_TOKEN_MINTER_CONTRACT;
+                        const contract = new ethers.Contract(targetContract, contractABI, signer);
 
                         // Prepare parameters - use the floppy token ID as packId
                         const packId = selectedFloppy.tokenId;
 
-                        console.log('Contract address:', PACK_TOKEN_MINTER_CONTRACT);
+                        console.log('Contract address:', targetContract);
                         console.log('Pack ID:', packId);
 
                         showOpenFloppyStatus('Confirming transaction in your wallet...', 'loading');
