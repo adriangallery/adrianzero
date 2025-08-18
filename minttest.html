@@ -1841,7 +1841,7 @@
                         if (balanceWei.lt(needed)) {
                             const have = formatEthString(ethers.utils.formatEther(balanceWei));
                             const needTotal = formatEthString(ethers.utils.formatEther(needed));
-                            showStatus('goldenFloppy', `Insufficient ETH for value + gas. Need ~${needTotal} ETH total, you have ${have} ETH.`, 'error');
+                            showStatus('goldenFloppy', `You don't have enough ETH to complete this transaction (mint price + gas). Needed ~${needTotal} ETH total, you have ${have} ETH.`, 'error');
                             return;
                         }
                     } catch {}
@@ -1949,7 +1949,7 @@
             }
             // Insufficient ETH for value + gas
             if ((error?.message || '').includes('insufficient funds for gas * price + value') || (error?.data?.message || '').includes('insufficient funds for gas * price + value')) {
-                return 'Insufficient ETH for value + gas';
+                return "You don't have enough ETH to complete this transaction (mint price + gas).";
             }
             // Nested messages (MetaMask -32603)
             const mmDataMsg = error?.data?.message || error?.error?.message;
