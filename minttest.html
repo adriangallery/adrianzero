@@ -1028,6 +1028,7 @@
         let adrianZeroContract;
         let packMinterContract;
         let adrianEthContract;
+        let goldenSummary; // último resumen de Golden ETH
         // Estado global adicional (igual que SHOP/)
         let approvedAmountZero = 0; // Allowance para ADRIAN_ZERO_MINT
         let approvedAmountPack = 0; // Allowance para PACK_MINTER
@@ -1299,6 +1300,7 @@
                         await new Promise(r => setTimeout(r, 600 * attempts));
                     }
                 }
+                goldenSummary = summary;
                 goldenPriceWei = summary.priceWei; // uint256
                 goldenPriceToken = summary.priceToken; // uint256 (decimales del token)
                 const active = summary.active;
@@ -1804,9 +1806,46 @@
                         showStatus('goldenFloppy', 'ETH payment disabled for this batch', 'error');
                         return;
                     }
+                    if (!goldenSummary || !goldenSummary.active) {
+                        showStatus('goldenFloppy', 'Sale not active', 'error');
+                        return;
+                    }
+                    // Validaciones básicas de límites
+                    try {
+                        const maxPerTx = goldenSummary.maxPerTx?.toNumber?.() ?? 0;
+                        const remaining = goldenSummary.remaining?.toNumber?.() ?? 0;
+                        if (maxPerTx > 0 && quantities.goldenFloppy > maxPerTx) {
+                            showStatus('goldenFloppy', `Max per tx: ${maxPerTx}`, 'error');
+                            return;
+                        }
+                        if (remaining > 0 && quantities.goldenFloppy > remaining) {
+                            showStatus('goldenFloppy', `Only ${remaining} remaining`, 'error');
+                            return;
+                        }
+                    } catch {}
                     const total = goldenPriceWei.mul(quantities.goldenFloppy);
                     showStatus('goldenFloppy', `Minting ${quantities.goldenFloppy} Golden Floppy with ETH...`, 'loading');
-                    const tx = await adrianEthContract.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total });
+                    // callStatic para detectar reverts antes de enviar
+                    try {
+                        await adrianEthContract.callStatic.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total });
+                    } catch (preErr) {
+                        throw preErr;
+                    }
+                    let tx;
+                    try {
+                        tx = await adrianEthContract.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total });
+                    } catch (sendErr) {
+                        // Fallback con gasLimit si la estimación falla o proveedor da -32603
+                        const msg = sendErr?.message || '';
+                        const code = sendErr?.code;
+                        const isUnpredictable = msg.includes('UNPREDICTABLE_GAS_LIMIT') || (code === 'UNPREDICTABLE_GAS_LIMIT');
+                        const isInternal = code === -32603;
+                        if (isUnpredictable || isInternal) {
+                            tx = await adrianEthContract.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total, gasLimit: ethers.BigNumber.from('300000') });
+                        } else {
+                            throw sendErr;
+                        }
+                    }
                     await tx.wait();
                 } else { // ADRIAN
                     try {
@@ -1877,15 +1916,41 @@
         }
 
         function parseError(error) {
-            if (error.code === 4001) {
-                return 'Transaction rejected by user';
-            } else if (error.message && error.message.includes('insufficient funds')) {
-                return 'Insufficient funds';
-            } else if (error.message && error.message.includes('allowance')) {
-                return 'Need to approve tokens first';
-            } else {
-                return error.message || 'Unknown error occurred';
+            // User rejection
+            if (error?.code === 4001) return 'Transaction rejected by user';
+            // Rate limited
+            if (error?.code === -32005 || (error?.message && error.message.includes('rate limited'))) {
+                return 'Provider rate limited. Please retry in a few seconds.';
             }
+            // Ethers unpredictable gas
+            if ((error?.message || '').includes('UNPREDICTABLE_GAS_LIMIT')) {
+                return 'Cannot estimate gas. Transaction may revert. Retrying with fallback gas...';
+            }
+            // Nested messages (MetaMask -32603)
+            const mmDataMsg = error?.data?.message || error?.error?.message;
+            if (mmDataMsg) {
+                const execReverted = mmDataMsg.match(/execution reverted:([^\n]+)/i);
+                if (execReverted && execReverted[1]) {
+                    return execReverted[1].trim();
+                }
+                return mmDataMsg;
+            }
+            // Hex-encoded revert data (0x08c379a0...)
+            const dataHex = error?.data?.data || error?.data;
+            if (typeof dataHex === 'string' && dataHex.startsWith('0x08c379a0')) {
+                try {
+                    // Decode Error(string) manually
+                    const reasonHex = dataHex.slice(10 + 64 * 1, 10 + 64 * 2); // naive slice
+                    const length = parseInt(dataHex.slice(10 + 64 * 2, 10 + 64 * 3), 16);
+                    const strHex = dataHex.slice(10 + 64 * 3, 10 + 64 * 3 + length * 2);
+                    const reason = decodeURIComponent(strHex.replace(/(..)/g, '%$1'));
+                    if (reason) return reason;
+                } catch {}
+            }
+            // Fallbacks
+            if (error?.message) return error.message;
+            try { return JSON.stringify(error); } catch {}
+            return 'Unknown error occurred';
         }
 
         function capitalizeFirst(str) {
