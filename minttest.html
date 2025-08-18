@@ -1100,9 +1100,6 @@
                 packMinterContract = new ethers.Contract(PACK_MINTER, PACK_MINTER_ABI, signer);
                 adrianEthContract = new ethers.Contract(ADRIAN_ETH_MINTER, ADRIAN_ETH_ABI, signer);
                 
-                // Asegura que MetaMask tenga el token ADRIAN registrado (mejor UX en approves)
-                await ensureAdrianWatched();
-                
                 // Cargar balances y allowance para simplificar approves
                 await loadBalances();
 
@@ -1447,9 +1444,7 @@
                     elementId = type + 'Total';
             }
             document.getElementById(elementId).textContent = 
-                (type === 'goldenFloppy' && (document.querySelector('input[name="goldenPay"]:checked')?.value === 'ETH')
-                    ? formatted
-                    : parseFloat(formatted).toLocaleString());
+                formatted;
         }
 
         function updateAllTotals() {
@@ -1507,7 +1502,6 @@
                     
                     showStatus('adrianZero', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
-                    await ensureAdrianWatched();
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(ADRIAN_ZERO_MINT, totalCostWei);
                     await approveTx.wait();
@@ -1589,7 +1583,6 @@
                     
                     showStatus('starterFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
-                    await ensureAdrianWatched();
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
                     await approveTx.wait();
@@ -1671,7 +1664,6 @@
                     
                     showStatus('gfFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
-                    await ensureAdrianWatched();
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
                     await approveTx.wait();
@@ -1753,7 +1745,6 @@
                     
                     showStatus('glitchedFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
-                    await ensureAdrianWatched();
                     // Use the pre-calculated BigNumber (no conversion needed)
                     const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
                     await approveTx.wait();
@@ -1833,7 +1824,6 @@
                     if (allowWei.lt(totalToken)) {
                         const human = parseFloat(ethers.utils.formatEther(totalToken)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 });
                         showStatus('goldenFloppy', `Approving ${human} $ADRIAN...`, 'loading');
-                        await ensureAdrianWatched();
                         const approveTx = await adrianToken.approve(ADRIAN_ETH_MINTER, totalToken);
                         await approveTx.wait();
                     }
@@ -1961,34 +1951,8 @@
         // Helper: formato ETH visible (min 2 decimales, max 8)
         function formatEthString(etherString) {
             const n = Number(etherString);
-            if (!isFinite(n) || n <= 0) return '0.00';
-            // Para valores muy pequeños, mostrar más decimales para que no aparezca 0
-            if (n < 0.01) {
-                return n.toLocaleString(undefined, { minimumFractionDigits: 6, maximumFractionDigits: 8 });
-            }
-            return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
-        }
-
-        // Pide a MetaMask que registre el token para mostrar cantidades legibles en approves
-        async function ensureAdrianWatched() {
-            try {
-                if (!window.ethereum) return;
-                await window.ethereum.request({
-                    method: 'wallet_watchAsset',
-                    params: {
-                        type: 'ERC20',
-                        options: {
-                            address: ADRIAN_TOKEN,
-                            symbol: 'ADRIAN',
-                            decimals: 18,
-                            image: (window.location && window.location.origin ? window.location.origin : '') + '/components/images/adrianlogo.png'
-                        }
-                    }
-                });
-            } catch (err) {
-                // Silenciar: si el usuario cancela o MM no soporta, no interrumpimos el flujo
-                console.debug('watchAsset skipped:', err && err.message ? err.message : err);
-            }
+            if (!isFinite(n)) return '0.00';
+            return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 });
         }
     </script>
 </body>
