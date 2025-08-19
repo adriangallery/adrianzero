@@ -138,6 +138,17 @@
       bottom: 120px; /* Cortar el espiral antes de la imagen */
     }
     
+    /* Desactivar espiral en móvil */
+    @media (max-width: 900px) {
+      .timeline-base::before {
+        display: none; /* Ocultar espiral completamente en móvil */
+      }
+      
+      .timeline-base.weekly-timeline::before {
+        display: none; /* Ocultar espiral extendido en móvil */
+      }
+    }
+    
     @keyframes trunkGlow {
       0% { box-shadow: 0 0 0 1px rgba(255,255,255,.02) inset, 0 0 14px rgba(0,0,0,.25); }
       100% { box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset, 0 0 20px rgba(255,255,255,.15), 0 0 14px rgba(0,0,0,.25); }
@@ -226,6 +237,17 @@
       .ax-event .ax-card,.roadmap-event .roadmap-card{display:block;margin:12px auto 0;padding:0 16px;max-width:560px}
       .ax-card h3,.roadmap-card h3{font-size:19px}
       .ax-card p,.roadmap-card p{font-size:16px;line-height:1.35}
+      
+      /* Mejorar espaciado en móvil sin espiral */
+      .ax-event,.roadmap-event{margin:24px 0}
+      .ax-card,.roadmap-card{margin:16px auto 0}
+    }
+    
+    /* Móviles muy pequeños - desactivar ramas completamente */
+    @media (max-width: 600px) {
+      .ax-branch,.roadmap-branch{display:none}
+      .ax-event,.roadmap-event{padding-top:16px}
+      .ax-event .ax-node,.roadmap-event .roadmap-node{position:static;margin:8px auto;display:block}
     }
     
     /* Indicador de progreso del scroll */
