@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>$ADRIAN Ecosystem — Project Roadmap</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="icon" href="components/images/adrianzero.png">
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --fg:#e6f1ff;
+      --muted:#98a6b3;
+      --cyan:#00e5ff;
+      --red:#ff004c;
+      --green:#00ff88;
+      --orange:#ff8800;
+      --card:#0f1620;
+      --line:#182431;
+      --ring1:0 0 30px rgba(0,229,255,.28);
+      --ring2:0 0 30px rgba(255,0,76,.16);
+      /* Grid suave */
+      --grid-rgb: 255,255,255;
+      --cell: 144px;
+      --block: 384px;
+      --minor-a: .18;
+      --major-a: .28;
+    }
+    
+    /* Fondo cuadriculado suave estilo Miro ($ADRIAN) */
+    .grid-soft{
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(to right, rgba(var(--grid-rgb), var(--minor-a)) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--grid-rgb), var(--minor-a)) 1px, transparent 1px),
+        linear-gradient(to right, rgba(var(--grid-rgb), var(--major-a)) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--grid-rgb), var(--major-a)) 1px, transparent 1px),
+        radial-gradient(1200px 800px at 80% -10%, rgba(0,229,255,.06), transparent 60%),
+        radial-gradient(900px 600px at -10% 100%, rgba(255,0,76,.07), transparent 65%);
+      background-size:
+        var(--cell) var(--cell),
+        var(--cell) var(--cell),
+        var(--block) var(--block),
+        var(--block) var(--block),
+        auto,
+        auto;
+      background-position:
+         0 0,
+         0 0,
+         0 0,
+         0 0,
+         center,
+         center;
+      background-repeat: repeat;
+      background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+      image-rendering: pixelated;
+    }
+    
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:#ffffff;
+      font-family:"VT323", monospace;
+      line-height:1.6;
+      overflow-x:hidden;
+      position:relative;min-height:100vh;
+    }
+    
+    .container{width:min(1100px,92%);margin:0 auto 64px;position:relative}
+    
+    /* Logo hero superior */
+    .logo-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;margin:8px 0 20px}
+    .logo-hero img{width:280px;height:auto;user-select:none;-webkit-user-drag:none}
+    .logo-hero img.brand{filter:drop-shadow(0 0 12px rgba(255,0,136,.35))}
+    .logo-hero img.glasses{filter:drop-shadow(0 0 12px rgba(0,170,255,.35))}
+    @media (min-width: 992px){.logo-hero img{width:360px}}
+
+    .subtitle{text-align:center;color:#cccccc;margin-bottom:32px;font-size:24px}
+    
+    /* ===== ROADMAP TIMELINE ===== */
+    :root{
+      --trunk-w: 14px;
+      --branch-h: var(--trunk-w);
+      --node: 38px;
+      --branch-l: 96px;
+      --row-gap: 18px;
+      --side-pad: 32px;
+    }
+    
+    .roadmap-timeline{
+      position:relative;margin:0 auto;width:100%;
+      padding:80px var(--side-pad);color:var(--fg);
+    }
+    
+    .roadmap-timeline::before{
+       content:"";position:absolute;top:0;bottom:0;left:50%;width:var(--trunk-w);
+       transform:translateX(-50%);background:#ffffff;z-index:0;
+       box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, 0 0 14px rgba(0,0,0,.25);
+       /* Animación del tronco central */
+       animation: trunkGlow 4s ease-in-out infinite alternate;
+    }
+    
+    @keyframes trunkGlow {
+      0% { box-shadow: 0 0 0 1px rgba(255,255,255,.02) inset, 0 0 14px rgba(0,0,0,.25); }
+      100% { box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset, 0 0 20px rgba(255,255,255,.15), 0 0 14px rgba(0,0,0,.25); }
+    }
+    
+    .roadmap-events{list-style:none;margin:0;padding:0}
+    
+    .roadmap-event{position:relative;display:block;min-height:var(--node);margin:var(--row-gap) 0;
+                  /* Estado inicial para animaciones */
+                  opacity: 0;
+                  transform: translateY(30px);
+                  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);}
+    
+    /* Clase para activar animaciones */
+    .roadmap-event.animate-in{
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .roadmap-event.left{width:calc(50% - var(--side-pad));padding-right:calc(var(--branch-l) + 12px);text-align:right}
+    .roadmap-event.right{width:calc(50% - var(--side-pad));margin-left:calc(50% + var(--side-pad));padding-left:calc(var(--branch-l) + 12px);text-align:left}
+    
+    .roadmap-branch{position:absolute;top:50%;height:var(--trunk-w);background:#ffffff;transform:translateY(-50%);width:var(--branch-l);z-index:1;
+                    /* Animación de entrada para las ramas */
+                    opacity: 0;
+                    transform: translateY(-50%) scaleX(0);
+                    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s;}
+    
+    .roadmap-event.animate-in .roadmap-branch{
+      opacity: 1;
+      transform: translateY(-50%) scaleX(1);
+    }
+    
+    .roadmap-event.left .roadmap-branch{right:calc(-1 * var(--side-pad));transform-origin: right;}
+    .roadmap-event.right .roadmap-branch{left:calc(-1 * var(--side-pad));transform-origin: left;}
+    
+    /* Nodos con colores según el status */
+    .roadmap-node{position:absolute;top:50%;width:var(--node);height:var(--node);border-radius:50%;
+      transform:translateY(-50%);
+      box-shadow:0 0 0 2px rgba(255,255,255,.04) inset, 0 6px 18px rgba(0,0,0,.35);z-index:2;
+      /* Animación de entrada para los nodos */
+      opacity: 0;
+      transform: translateY(-50%) scale(0);
+      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s;
+      /* Efecto de pulso continuo */
+      animation: nodePulse 3s ease-in-out infinite;}
+    
+    .roadmap-event.animate-in .roadmap-node{
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+    
+    /* Colores según status */
+    .roadmap-node.completed{background:var(--green)}
+    .roadmap-node.in-progress{background:var(--orange)}
+    .roadmap-node.future{background:var(--cyan)}
+    
+    @keyframes nodePulse {
+      0%, 100% { 
+        box-shadow: 0 0 0 2px rgba(255,255,255,.04) inset, 0 6px 18px rgba(0,0,0,.35);
+      }
+      50% { 
+        box-shadow: 0 0 0 2px rgba(255,255,255,.1) inset, 0 6px 18px rgba(0,0,0,.35), 0 0 20px currentColor;
+      }
+    }
+    
+    .roadmap-event.left .roadmap-node{right:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2)}
+    .roadmap-event.right .roadmap-node{left:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2)}
+    
+    .roadmap-card{display:inline-block;max-width:420px;padding:8px 0;position:relative;z-index:3;
+                  /* Animación de entrada para las tarjetas */
+                  opacity: 0;
+                  transform: translateX(20px);
+                  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s;}
+    
+    .roadmap-event.animate-in .roadmap-card{
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    .roadmap-event.left .roadmap-card{
+      transform: translateX(-20px);
+    }
+    
+    .roadmap-event.left.animate-in .roadmap-card{
+      transform: translateX(0);
+    }
+    
+    .roadmap-card h3{margin:0 0 2px 0;font-size:22px;letter-spacing:.2px;color:#ffffff;font-weight:700}
+    .roadmap-card h3 .roadmap-subtitle{font-size:16px;font-weight:400;color:var(--muted);margin-left:8px}
+    .roadmap-card p{margin:8px 0 0 0;font-size:18px;line-height:1.45;color:#ffffff;font-weight:400}
+    
+    /* Status badges */
+    .status-badge{
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+    }
+    
+    .status-badge.completed{
+      background: rgba(0, 255, 136, 0.2);
+      color: var(--green);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .status-badge.in-progress{
+      background: rgba(255, 136, 0, 0.2);
+      color: var(--orange);
+      border: 1px solid rgba(255, 136, 0, 0.3);
+    }
+    
+    .status-badge.future{
+      background: rgba(0, 229, 255, 0.2);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+    }
+    
+    /* Efecto hover en las tarjetas */
+    .roadmap-card:hover {
+      transform: translateY(-2px);
+      transition: transform 0.3s ease;
+    }
+    
+    /* Línea divisoria entre completed y future */
+    .timeline-divider{
+      position: relative;
+      margin: 40px 0;
+      text-align: center;
+      z-index: 10;
+    }
+    
+    .timeline-divider::before{
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--green), var(--orange), var(--cyan));
+      transform: translateY(-50%);
+      z-index: -1;
+    }
+    
+    .timeline-divider .divider-text{
+      background: var(--bg);
+      padding: 0 20px;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Responsive */
+    @media (max-width:900px){
+      :root{--branch-l:52px;--row-gap:16px;--side-pad:16px;--trunk-w:10px}
+      .roadmap-event,.roadmap-event.left,.roadmap-event.right{width:100%;margin-left:0;text-align:center;padding:0;min-height:unset}
+      .roadmap-event{padding-top:calc(var(--node) + 8px)}
+      .roadmap-event .roadmap-branch{top:calc(var(--node)/2);left:50%;right:auto;width:var(--branch-l)}
+      .roadmap-event.left .roadmap-branch{transform:translate(-100%,-50%);transform-origin: right;}
+      .roadmap-event.right .roadmap-branch{transform:translate(0,-50%);transform-origin: left;}
+      .roadmap-event.left .roadmap-node{top:calc(var(--node)/2);left:calc(50% - var(--branch-l) - var(--node)/2);right:auto}
+      .roadmap-event.right .roadmap-node{top:calc(var(--node)/2);left:calc(50% + var(--branch-l) - var(--node)/2);right:auto}
+      .roadmap-event .roadmap-card{display:block;margin:12px auto 0;padding:0 16px;max-width:560px}
+      .roadmap-card h3{font-size:19px}
+      .roadmap-card p{font-size:16px;line-height:1.35}
+    }
+    
+    /* Indicador de progreso del scroll */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--green), var(--orange), var(--cyan));
+      transform-origin: left;
+      z-index: 1001;
+    }
+    
+    .footer-note{text-align:center;color:#cccccc;margin-top:32px;font-size:12px}
+  </style>
+</head>
+<body class="grid-soft">
+  <!-- Indicador de progreso del scroll -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+  
+  <!-- Menu -->
+  <div id="menu-container"></div>
+  <script>
+    fetch('components/menu.html')
+      .then(r => r.text())
+      .then(html => { document.getElementById('menu-container').innerHTML = html; const s = document.createElement('script'); s.src = 'components/menu.js'; document.head.appendChild(s); })
+      .catch(err => console.error('Error loading menu:', err));
+  </script>
+
+  <div class="container" style="padding-top:70px;">
+    <div class="logo-hero">
+      <img src="components/images/adrianlogo.png" alt="Adrian Logo" class="brand">
+      <img src="components/images/glasses.png" alt="Adrian Glasses" class="glasses">
+    </div>
+    <p class="subtitle" style="font-family: 'VT323', monospace;">$ADRIAN Ecosystem — Project Roadmap</p>
+
+    <section class="roadmap-timeline">
+      <ol class="roadmap-events" id="roadmapEvents">
+        <!-- Los eventos se generarán dinámicamente con JavaScript -->
+      </ol>
+    </section>
+
+    <p class="footer-note">Last updated Aug 19, 2025 · Project Roadmap · Organized by completion status</p>
+  </div>
+
+  <!-- Script para las animaciones de scroll y generación del roadmap -->
+  <script src="roadmap-data.js"></script>
+  <script>
+    // Función para generar el HTML del roadmap
+    function generateRoadmap() {
+      const eventsContainer = document.getElementById('roadmapEvents');
+      let html = '';
+      
+      roadmapData.forEach((item, index) => {
+        const isLeft = index % 2 === 0;
+        const position = isLeft ? 'left' : 'right';
+        
+        html += `
+          <li class="roadmap-event ${position}" data-status="${item.status}">
+            <div class="roadmap-branch"></div>
+            <div class="roadmap-node ${item.status}"></div>
+            <div class="roadmap-card">
+              <h3>
+                <span class="roadmap-title">${item.title}</span>
+                <span class="roadmap-subtitle">· ${item.subtitle}</span>
+              </h3>
+              <p>${item.description}</p>
+              <div class="status-badge ${item.status}">${item.status}</div>
+            </div>
+          </li>
+        `;
+        
+        // Agregar línea divisoria después del último item completed
+        if (item.status === 'completed' && 
+            (index === roadmapData.length - 1 || roadmapData[index + 1].status !== 'completed')) {
+          html += `
+            <div class="timeline-divider">
+              <span class="divider-text">Future Development</span>
+            </div>
+          `;
+        }
+      });
+      
+      eventsContainer.innerHTML = html;
+    }
+
+    // Función para verificar si un elemento está en el viewport
+    function isInViewport(element) {
+      const rect = element.getBoundingClientRect();
+      return (
+        rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
+        rect.bottom >= 0
+      );
+    }
+
+    // Función para activar animaciones
+    function activateAnimations() {
+      const events = document.querySelectorAll('.roadmap-event');
+      
+      events.forEach(event => {
+        if (isInViewport(event) && !event.classList.contains('animate-in')) {
+          event.classList.add('animate-in');
+        }
+      });
+    }
+
+    // Función para actualizar la barra de progreso del scroll
+    function updateScrollProgress() {
+      const scrollProgress = document.getElementById('scrollProgress');
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      
+      scrollProgress.style.transform = `scaleX(${scrollPercent / 100})`;
+    }
+
+    // Event listeners
+    window.addEventListener('scroll', () => {
+      activateAnimations();
+      updateScrollProgress();
+    });
+
+    // Activar animaciones al cargar la página
+    window.addEventListener('load', () => {
+      generateRoadmap();
+      
+      // Pequeño delay para asegurar que todo esté renderizado
+      setTimeout(() => {
+        activateAnimations();
+      }, 100);
+    });
+
+    // Activar animaciones al hacer resize
+    window.addEventListener('resize', activateAnimations);
+  </script>
+</body>
+</html>
