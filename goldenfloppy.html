@@ -475,8 +475,8 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <span class="navbar-text token-symbol ms-2">$ADRIAN</span>
-            </div>
-            
+        </div>
+
             <div class="d-flex align-items-center">
                 <!-- Espacio reservado para futuras funcionalidades -->
             </div>
@@ -526,12 +526,12 @@
                         <a class="nav-link" href="https://x.com/adriancerda" target="_blank">X</a>
                     </li>
                 </ul>
-            </div>
+                </div>
 
             <div class="d-none d-lg-flex align-items-center ms-auto desktop-wallet-section">
                 <!-- Botón de wallet quitado pero dejando el espacio -->
-            </div>
-        </div>
+                </div>
+                </div>
     </nav>
 
     <div class="hero">
@@ -543,12 +543,12 @@
                 <button class="connect-btn" id="connectBtn">
                     Connect Wallet
                 </button>
-            </div>
+                </div>
 
             <div class="wallet-info" id="walletInfo">
                 <div class="wallet-address" id="walletAddress"></div>
                 <button class="disconnect-btn" id="disconnectBtn">Disconnect</button>
-            </div>
+                </div>
 
             <!-- Golden Floppy Card -->
             <div class="golden-floppy-card fade-in">
@@ -565,14 +565,14 @@
                 
                 <div class="price-tag">
                     Price: <span id="goldenFloppyPrice">Loading...</span>
-                </div>
-                
+            </div>
+
                 <div class="supply-info">
                     <span class="supply-text">
                         Minted: <span id="goldenFloppyMinted">--</span> / <span id="goldenFloppyTotal">--</span>
                     </span>
-                </div>
-                
+            </div>
+
                 <div class="mint-interface" id="goldenFloppyMint">
                     <div class="payment-method">
                         <label>
@@ -581,13 +581,13 @@
                         <label>
                             <input type="radio" name="goldenPay" value="ETH"> Pay with ETH
                         </label>
-                    </div>
-                    
-                    <div class="quantity-controls">
+            </div>
+
+                        <div class="quantity-controls">
                         <button class="quantity-btn" onclick="changeQuantity(-1)" id="decreaseBtn">-</button>
                         <div class="quantity-display" id="goldenFloppyQuantity">1</div>
                         <button class="quantity-btn" onclick="changeQuantity(1)" id="increaseBtn">+</button>
-                    </div>
+                        </div>
                     
                     <div class="total-cost">
                         Total: <span class="cost-amount" id="goldenFloppyCostTotal">Loading...</span> 
@@ -655,27 +655,27 @@
                 const chainId = await window.ethereum.request({ method: 'eth_chainId' });
                 if (chainId !== BASE_CHAIN_ID_HEX) {
                     try {
-                        await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
                             params: [{ chainId: BASE_CHAIN_ID_HEX }],
                         });
-                    } catch (switchError) {
-                        if (switchError.code === 4902) {
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: BASE_CHAIN_ID_HEX,
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BASE_CHAIN_ID_HEX,
                                     chainName: 'Base Mainnet',
-                                    nativeCurrency: {
-                                        name: 'ETH',
-                                        symbol: 'ETH',
+                                nativeCurrency: {
+                                    name: 'ETH',
+                                    symbol: 'ETH',
                                         decimals: 18,
-                                    },
-                                    rpcUrls: ['https://mainnet.base.org'],
+                                },
+                                rpcUrls: ['https://mainnet.base.org'],
                                     blockExplorerUrls: ['https://basescan.org/'],
                                 }],
                             });
-                        } else {
+                } else {
                             throw switchError;
                         }
                     }
@@ -706,7 +706,7 @@
                 updateUI();
                 await loadGoldenBatch();
 
-            } catch (error) {
+                } catch (error) {
                 console.error('Error connecting wallet:', error);
                 alert('Failed to connect wallet: ' + error.message);
             }
@@ -774,7 +774,7 @@
                                 console.log(`Found Golden Floppy batch: ${batchId}`);
                                 break;
                             }
-                        } catch (error) {
+            } catch (error) {
                             console.log(`Could not read batch ${batchId}:`, error.message);
                         }
                     }
@@ -785,7 +785,7 @@
                         console.log(`No specific Golden Floppy batch found, using first active: ${GOLDEN_ETH_BATCH_ID}`);
                     }
                     
-                } catch (error) {
+            } catch (error) {
                     console.log('Could not get active batch IDs:', error.message);
                     // Fallback to batch 0
                     GOLDEN_ETH_BATCH_ID = 0;
@@ -900,8 +900,8 @@
                     
                     if (maxPerTx > 0 && currentQuantity > maxPerTx) {
                         showStatus(`Max per tx: ${maxPerTx}`, 'error');
-                        return;
-                    }
+                return;
+            }
                     if (remaining > 0 && currentQuantity > remaining) {
                         showStatus(`Only ${remaining} remaining`, 'error');
                         return;
@@ -932,7 +932,7 @@
                         value: total, 
                         gasLimit: gasLimit 
                     });
-                    await tx.wait();
+                await tx.wait();
                     
                 } else { // ADRIAN
                     const totalToken = goldenPriceToken.mul(currentQuantity);
@@ -953,7 +953,7 @@
                 showStatus(`🎉 Successfully minted ${currentQuantity} Golden Floppy!`, 'success');
                 await loadGoldenBatch();
                 
-            } catch (error) {
+                } catch (error) {
                 console.error('Mint error:', error);
                 showStatus('Mint failed: ' + parseError(error), 'error');
             } finally {
@@ -983,14 +983,14 @@
             if (window.ethereum) {
                 window.ethereum.request({ method: 'eth_accounts' })
                     .then(accounts => {
-                        if (accounts.length > 0) {
+                    if (accounts.length > 0) {
                             userAddress = accounts[0];
-                            connectWallet();
-                        }
+                        connectWallet();
+                    }
                     })
                     .catch(console.error);
+                }
             }
-        }
 
         // Handle wallet changes
         if (window.ethereum) {
@@ -1004,8 +1004,8 @@
             });
             
             window.ethereum.on('chainChanged', () => {
-                window.location.reload();
-            });
+            window.location.reload();
+        });
         }
     </script>
 </body>

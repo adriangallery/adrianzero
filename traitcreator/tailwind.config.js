@@ -36,8 +36,8 @@ module.exports = {
       },
       keyframes: {
         glow: {
-          '0%': { textShadow: '0 0 5px #0080ff, 0 0 10px #0080ff, 0 0 15px #0080ff, 1px 1px 0px #ff0080' },
-          '100%': { textShadow: '0 0 10px #0080ff, 0 0 20px #0080ff, 0 0 30px #0080ff, 2px 2px 0px #ff0080' }
+          '0%': { textShadow: '0 0 5px #0080ff, 0 0 10px #0080ff, 0 0 15px #0080ff, 0 0 20px #ff0080' },
+          '100%': { textShadow: '0 0 10px #0080ff, 0 0 20px #0080ff, 0 0 30px #0080ff, 0 0 40px #ff0080' }
         },
         blink: {
           '0%, 50%': { opacity: '1' },

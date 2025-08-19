@@ -20,28 +20,33 @@
     @apply bg-gray-800 text-white 
            px-4 py-2 font-pixel text-lg cursor-pointer transition-all duration-200
            hover:bg-retro-primary hover:text-retro-dark hover:shadow-lg hover:shadow-retro-primary/50
-           active:scale-95 focus:outline-none focus:ring-2 focus:ring-retro-primary/50 anaglyph-border;
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-retro-primary/50;
+    @apply anaglyph-border-simple;
   }
   
   .retro-button-secondary {
     @apply bg-gray-800 text-retro-secondary 
            px-4 py-2 font-pixel text-lg cursor-pointer transition-all duration-200
            hover:bg-retro-secondary hover:text-retro-dark hover:shadow-lg hover:shadow-retro-secondary/50
-           active:scale-95 focus:outline-none focus:ring-2 focus:ring-retro-secondary/50 anaglyph-border;
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-retro-secondary/50;
+    @apply anaglyph-border-simple;
   }
   
   .retro-input {
     @apply bg-gray-800 text-white 
            px-3 py-2 font-pixel text-base focus:outline-none focus:ring-2 focus:ring-retro-primary/50
-           placeholder-gray-400 anaglyph-border;
+           placeholder-gray-400;
+    @apply anaglyph-border-simple;
   }
   
   .retro-card {
-    @apply bg-gray-900 p-4 shadow-lg shadow-retro-primary/20 anaglyph-border;
+    @apply bg-gray-900 p-4 shadow-lg shadow-retro-primary/20;
+    @apply anaglyph-border-simple;
   }
   
   .retro-panel {
-    @apply bg-gray-900 p-4 anaglyph-border;
+    @apply bg-gray-900 p-4;
+    @apply anaglyph-border-simple;
   }
   
   .pixel-border {
@@ -77,40 +82,35 @@
     animation: scan 3s linear infinite;
   }
   
-  /* Anaglyph effect with dual colored lines */
-  .anaglyph-border {
-    position: relative;
-  }
-  
-  .anaglyph-border::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border: 3px solid #0080ff;
-    z-index: -1;
-    opacity: 0.8;
-  }
-  
-  .anaglyph-border::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    border: 3px solid #ff0080;
-    z-index: -2;
-    opacity: 0.8;
-  }
-  
-  /* Anaglyph glow effect */
+  /* Anaglyph glow effect - solo colores sin efecto 3D */
   .anaglyph-glow {
     text-shadow: 
       0 0 5px #0080ff, 0 0 10px #0080ff, 0 0 15px #0080ff,
-      1px 1px 0px #ff0080, 2px 2px 0px #ff0080;
+      0 0 20px #ff0080, 0 0 25px #ff0080;
+  }
+  
+  /* Glow con colores anaglyph individuales */
+  .anaglyph-glow-blue {
+    text-shadow: 0 0 5px #0080ff, 0 0 10px #0080ff, 0 0 15px #0080ff;
+  }
+  
+  .anaglyph-glow-magenta {
+    text-shadow: 0 0 5px #ff0080, 0 0 10px #ff0080, 0 0 15px #ff0080;
+  }
+  
+  .anaglyph-glow-cyan {
+    text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+  }
+  
+  /* Borde simple con color anaglyph */
+  .anaglyph-border-simple {
+    border: 2px solid #0080ff;
+    box-shadow: 0 0 10px rgba(0, 128, 255, 0.5);
+  }
+  
+  .anaglyph-border-simple:hover {
+    border-color: #ff0080;
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
   }
 }
 
