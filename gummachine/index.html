@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adrian Gumball Machine</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">ADRIAN GUMBALL</h1>
+            <p class="subtitle">Insert coin & get random AdrianZERO NFT</p>
+        </header>
+
+        <!-- Gumball Machine Canvas -->
+        <div class="gumball-machine">
+            <canvas id="gumballCanvas" width="400" height="600"></canvas>
+            
+            <!-- Overlay UI Elements -->
+            <div class="machine-ui">
+                <!-- Coin Slot -->
+                <div class="coin-slot">
+                    <div class="coin-slot-hole"></div>
+                    <div class="coin-slot-text">INSERT COIN</div>
+                </div>
+
+                <!-- Display Screen -->
+                <div class="display-screen">
+                    <div class="display-content">
+                        <div class="price-display">PRICE: <span id="priceDisplay">0.01 ETH</span></div>
+                        <div class="stock-display">STOCK: <span id="stockDisplay">--</span></div>
+                        <div class="status-display" id="statusDisplay">READY TO PLAY</div>
+                    </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <div class="quantity-selector">
+                        <button class="qty-btn" data-qty="1">1</button>
+                        <button class="qty-btn" data-qty="3">3</button>
+                        <button class="qty-btn" data-qty="5">5</button>
+                        <button class="qty-btn" data-qty="10">10</button>
+                    </div>
+                    
+                    <button class="play-btn" id="playBtn">
+                        <span class="play-text">PLAY NOW</span>
+                        <div class="play-glow"></div>
+                    </button>
+                </div>
+
+                <!-- Dispenser -->
+                <div class="dispenser">
+                    <div class="dispenser-hole"></div>
+                    <div class="dispenser-text">DISPENSER</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallet Connection -->
+        <div class="wallet-section" id="walletSection">
+            <button class="connect-btn" id="connectBtn">
+                <span class="btn-text">CONNECT WALLET</span>
+                <div class="btn-glow"></div>
+            </button>
+        </div>
+
+        <!-- Connected Wallet Info -->
+        <div class="wallet-info" id="walletInfo" style="display: none;">
+            <div class="wallet-details">
+                <span class="wallet-address" id="walletAddress">0x...</span>
+                <button class="disconnect-btn" id="disconnectBtn">DISCONNECT</button>
+            </div>
+        </div>
+
+        <!-- Game History -->
+        <div class="history-section">
+            <h3 class="history-title">RECENT DROPS</h3>
+            <div class="history-grid" id="historyGrid">
+                <!-- History items will be populated here -->
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">PROCESSING...</div>
+        </div>
+
+        <!-- Success Modal -->
+        <div class="success-modal" id="successModal" style="display: none;">
+            <div class="modal-content">
+                <div class="success-icon">🎉</div>
+                <h3 class="modal-title">GUMBALL DISPENSED!</h3>
+                <p class="modal-text">Check your wallet for your new AdrianZERO NFT!</p>
+                <button class="modal-close" id="modalClose">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="config.js"></script>
+    <script src="gumball-machine.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
