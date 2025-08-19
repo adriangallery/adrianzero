@@ -1,0 +1,227 @@
+// SPDX-License-Identifier: MIT
+/*
+           ███   ███                                                                                      
+      ████  ████████████                                                                                   
+       ████████████████████                                                                                
+    ██   ███████████████████     ██████      ██████     ███████            ██████     ███████████████████  
+      ███████████████████        ██████      ██████     ███████            ██████     ███████████████████  
+      ██████            ███      ██████      ██████         ██████      ██████              ██████         
+        ████            █        ██████      ██████            ████████████                 ██████         
+      ████              █        ██████      ██████            ████████████                 ██████         
+      █          █     ██        ██████████████████               █████                     ██████         
+      █             █   █        ██████████████████               ██████                    ██████         
+       ██           ██  █        ██████      ██████            ████████████                 ██████         
+         █              █        ██████      ██████         ██████      ██████              ██████         
+         █        ████  █        ██████      ██████         ██████      ██████              ██████         
+         █              █        ██████      ██████     ███████            ██████           ██████         
+         █            ██         ██████      ██████     ██████             ██████           ██████         
+         █     ███████                                                                                     
+         █     █                                                                                           
+         █     █    
+*/
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/interfaces/IERC2981.sol";
+
+contract AdrianPunksV3 is ERC721Enumerable, Ownable, IERC2981 {
+    using SafeERC20 for IERC20;
+    using Strings for uint256;
+
+    // ADRIANTOKEN (hardcodeado)
+    IERC20 public constant adrianToken = IERC20(0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea);
+    // Máximo suministro: 1000 tokens.
+    uint256 public constant maxSupply = 1000;
+    // Los tokenIDs se asignan secuencialmente.
+    uint256 public currentTokenId;
+    uint256 public totalMinted;
+
+    // Estructura para definir una fase de venta.
+    struct SalePhase {
+        uint256 saleStart; // Timestamp de inicio (Unix time).
+        uint256 price;     // Precio en la unidad mínima del token ADRIAN.
+        uint256 allowed;   // Cantidad máxima que cada wallet puede mintear en esta fase.
+    }
+    // Se definen 8 fases: tiers 0 a 6 (whitelist) y tier 7 (mint público).
+    SalePhase[8] public salePhases;
+    // Mappings para whitelist y para llevar cuenta de tokens minteados.
+    mapping(uint256 => mapping(address => bool)) public whitelist;
+    mapping(uint256 => mapping(address => uint256)) public mintedCount;
+
+    // ERC2981: Royalties del 5%.
+    address public constant royaltyReceiver = 0x4943407105999e3E97EFA2035F5cbC64D72581C6;
+    uint96 public constant royaltyFeeBasisPoints = 500;
+
+    // Metadata: Se utilizan dos base URI fijas.
+    // Para tokens 1-500.
+    string public constant baseURI1 = "https://ipfs.io/ipfs/bafybeidbbude2dgk6edcny6aer4o5hgv4ylf3qf6rlwczfrxjhr5g4udvy/";
+    // Para tokens 501-1000.
+    string public constant baseURI2 = "https://ipfs.io/ipfs/bafybeicu3m2stjtumasetjxixyai47ejd6ky55dbnqbaro5xnvei2rtl6e/";
+
+    event Minted(address indexed minter, uint256 tokenId);
+    event SalePhaseUpdated(uint256 indexed tier, uint256 saleStart, uint256 price, uint256 allowed);
+    event WhitelistUpdated(uint256 indexed tier, address indexed user, bool whitelisted);
+
+    constructor() ERC721("AdrianPunks", "AdrianPunks") Ownable(msg.sender) {
+        currentTokenId = 1;
+    }
+
+    // Permite al owner configurar la fase de venta para cada tier (0 a 7).
+    function setSalePhase(uint256 tier, uint256 saleStart, uint256 price, uint256 allowed) external onlyOwner {
+        require(tier < 8, "Invalid tier");
+        salePhases[tier] = SalePhase(saleStart, price, allowed);
+        emit SalePhaseUpdated(tier, saleStart, price, allowed);
+    }
+
+    // Gestión de whitelist para los tiers 0 a 6.
+    function addToWhitelist(uint256 tier, address[] calldata addresses) external onlyOwner {
+        require(tier < 8, "Invalid tier");
+        // Para el tier 7 (mint público) no se requiere whitelist.
+        require(tier != 7, "Public mint tier does not require whitelist");
+        for (uint256 i = 0; i < addresses.length; i++) {
+            whitelist[tier][addresses[i]] = true;
+            emit WhitelistUpdated(tier, addresses[i], true);
+        }
+    }
+
+    function removeFromWhitelist(uint256 tier, address[] calldata addresses) external onlyOwner {
+        require(tier < 8, "Invalid tier");
+        require(tier != 7, "Public mint tier does not require whitelist");
+        for (uint256 i = 0; i < addresses.length; i++) {
+            whitelist[tier][addresses[i]] = false;
+            emit WhitelistUpdated(tier, addresses[i], false);
+        }
+    }
+
+    // Función para obtener la información de whitelist de un tier.
+    function getWhitelistInfo(uint256 tier, address user) public view returns (
+        bool isWhitelisted,
+        uint256 allowed,
+        uint256 minted,
+        uint256 remaining,
+        uint256 price
+    ) {
+        require(tier < 8, "Invalid tier");
+        if (tier != 7) {
+            isWhitelisted = whitelist[tier][user];
+        } else {
+            isWhitelisted = true; // El tier público siempre está abierto.
+        }
+        allowed = salePhases[tier].allowed;
+        minted = mintedCount[tier][user];
+        remaining = allowed > minted ? allowed - minted : 0;
+        price = salePhases[tier].price;
+    }
+
+    function getAggregatedWhitelistInfo(address user) external view returns (
+        uint256 totalAllowed,
+        uint256 mintedByUser,
+        uint256 totalRemaining,
+        uint256[] memory prices,
+        uint256[] memory saleStarts
+    ) {
+        totalAllowed = 0;
+        mintedByUser = 0;
+        prices = new uint256[](8);
+        saleStarts = new uint256[](8);
+        for (uint256 tier = 0; tier < 8; tier++) {
+            if (tier != 7) {
+                if (whitelist[tier][user]) {
+                    totalAllowed += salePhases[tier].allowed;
+                }
+            } else {
+                totalAllowed += salePhases[tier].allowed;
+            }
+            mintedByUser += mintedCount[tier][user];
+            prices[tier] = salePhases[tier].price;
+            saleStarts[tier] = salePhases[tier].saleStart;
+        }
+        totalRemaining = totalAllowed > mintedByUser ? totalAllowed - mintedByUser : 0;
+    }
+
+    // Función de mint para usuarios.
+    function mint(uint256[] calldata tiers, uint256[] calldata amounts) external {
+        require(tiers.length == amounts.length, "Mismatched array lengths");
+        uint256 totalToMint = 0;
+        uint256 totalCost = 0;
+        uint256 currentTime = block.timestamp;
+        for (uint256 i = 0; i < tiers.length; i++) {
+            uint256 tier = tiers[i];
+            uint256 amount = amounts[i];
+            require(tier < 8, "Invalid tier");
+            SalePhase memory phase = salePhases[tier];
+            require(currentTime >= phase.saleStart, "Sale phase not started");
+            // Para los tiers 0 a 6 se requiere whitelist, tier 7 es mint público.
+            if (tier != 7) {
+                require(whitelist[tier][msg.sender], "Not whitelisted for this tier");
+            }
+            uint256 alreadyMinted = mintedCount[tier][msg.sender];
+            require(alreadyMinted + amount <= phase.allowed, "Exceeds allowed mint for this tier");
+            totalToMint += amount;
+            totalCost += phase.price * amount;
+            mintedCount[tier][msg.sender] = alreadyMinted + amount;
+        }
+        require(totalMinted + totalToMint <= maxSupply, "Exceeds max supply");
+        adrianToken.safeTransferFrom(msg.sender, address(this), totalCost);
+        for (uint256 i = 0; i < totalToMint; i++) {
+            _safeMint(msg.sender, currentTokenId);
+            emit Minted(msg.sender, currentTokenId);
+            currentTokenId++;
+        }
+        totalMinted += totalToMint;
+    }
+
+    // Función de mint para el owner.
+    function ownerMint(uint256 amount, address to) external onlyOwner {
+        require(totalMinted + amount <= maxSupply, "Exceeds max supply");
+        for (uint256 i = 0; i < amount; i++) {
+            _safeMint(to, currentTokenId);
+            emit Minted(to, currentTokenId);
+            currentTokenId++;
+        }
+        totalMinted += amount;
+    }
+
+    // tokenURI: Construye la URL de metadata individual en función del tokenId.
+    // Tokens 1-500 usan baseURI1; tokens 501-1000 usan baseURI2.
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        require(tokenId > 0 && tokenId < currentTokenId, "Nonexistent token");
+        if (tokenId <= 500) {
+            return string(abi.encodePacked(baseURI1, tokenId.toString(), ".json"));
+        } else {
+            return string(abi.encodePacked(baseURI2, tokenId.toString(), ".json"));
+        }
+    }
+
+    // Permite al owner retirar los tokens ADRIAN acumulados en el contrato.
+    function withdrawTokens(address to) external onlyOwner {
+        uint256 balance = adrianToken.balanceOf(address(this));
+        adrianToken.safeTransfer(to, balance);
+    }
+
+    // ERC2981: Royalties.
+    function royaltyInfo(uint256, uint256 _salePrice)
+        external
+        pure
+        override
+        returns (address receiver, uint256 royaltyAmount)
+    {
+        receiver = royaltyReceiver;
+        royaltyAmount = (_salePrice * royaltyFeeBasisPoints) / 10000;
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721Enumerable, IERC165)
+        returns (bool)
+    {
+        return (interfaceId == type(IERC2981).interfaceId ||
+                super.supportsInterface(interfaceId));
+    }
+}
