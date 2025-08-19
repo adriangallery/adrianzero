@@ -16,41 +16,48 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
     text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 /* Header Styles */
 .header {
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 .title {
-    font-size: 3.5rem;
-    margin-bottom: 10px;
+    font-size: 2.5rem;
+    margin-bottom: 5px;
     text-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
     color: #00ff88;
     letter-spacing: 3px;
 }
 
 .subtitle {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: #cccccc;
     opacity: 0.8;
+    margin-bottom: 10px;
 }
 
 /* Gumball Machine Container */
 .gumball-machine {
     position: relative;
     display: inline-block;
-    margin: 20px auto;
+    margin: 10px auto;
     filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
     background-image: url('gumball.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    width: 400px;
-    height: 600px;
+    width: 90vw;
+    height: 80vh;
+    max-width: 800px;
+    max-height: 1000px;
     border-radius: 20px;
 }
 
@@ -448,18 +455,26 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
-        padding: 15px;
+        padding: 5px;
     }
     
     .title {
-        font-size: 2.5rem;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 15px;
     }
     
     .gumball-machine {
-        transform: scale(0.8);
-        margin: 10px auto;
-        width: 320px; /* 400 * 0.8 */
-        height: 480px; /* 600 * 0.8 */
+        transform: none;
+        margin: 5px auto;
+        width: 95vw;
+        height: 75vh;
+        max-width: none;
+        max-height: none;
     }
     
     .quantity-selector {
@@ -503,14 +518,27 @@ body {
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 2px;
+    }
+    
     .title {
-        font-size: 2rem;
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+    
+    .subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 10px;
     }
     
     .gumball-machine {
-        transform: scale(0.7);
-        width: 280px; /* 400 * 0.7 */
-        height: 420px; /* 600 * 0.7 */
+        transform: none;
+        width: 98vw;
+        height: 80vh;
+        margin: 2px auto;
+        max-width: none;
+        max-height: none;
     }
     
     .history-grid {
