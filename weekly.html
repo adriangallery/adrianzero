@@ -155,26 +155,124 @@
        content:"";position:absolute;top:0;bottom:0;left:50%;width:var(--trunk-w);
        transform:translateX(-50%);background:#ffffff;z-index:0;
        box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, 0 0 14px rgba(0,0,0,.25);
+       /* Animación del tronco central */
+       animation: trunkGlow 4s ease-in-out infinite alternate;
     }
+    
+    @keyframes trunkGlow {
+      0% { box-shadow: 0 0 0 1px rgba(255,255,255,.02) inset, 0 0 14px rgba(0,0,0,.25); }
+      100% { box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset, 0 0 20px rgba(255,255,255,.15), 0 0 14px rgba(0,0,0,.25); }
+    }
+    
     .ax-events{list-style:none;margin:0;padding:0}
-    .ax-event{position:relative;display:block;min-height:var(--node);margin:var(--row-gap) 0}
+    .ax-event{position:relative;display:block;min-height:var(--node);margin:var(--row-gap) 0;
+              /* Estado inicial para animaciones */
+              opacity: 0;
+              transform: translateY(30px);
+              transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);}
+    
+    /* Clase para activar animaciones */
+    .ax-event.animate-in{
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
     .ax-event.left{width:calc(50% - var(--side-pad));padding-right:calc(var(--branch-l) + 12px);text-align:right}
     .ax-event.right{width:calc(50% - var(--side-pad));margin-left:calc(50% + var(--side-pad));padding-left:calc(var(--branch-l) + 12px);text-align:left}
-    .ax-branch{position:absolute;top:50%;height:var(--trunk-w);background:#ffffff;transform:translateY(-50%);width:var(--branch-l);z-index:1}
-    .ax-event.left .ax-branch{right:calc(-1 * var(--side-pad))}
-    .ax-event.right .ax-branch{left:calc(-1 * var(--side-pad))}
+    
+    .ax-branch{position:absolute;top:50%;height:var(--trunk-w);background:#ffffff;transform:translateY(-50%);width:var(--branch-l);z-index:1;
+                /* Animación de entrada para las ramas */
+                opacity: 0;
+                transform: translateY(-50%) scaleX(0);
+                transform-origin: left;
+                transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s;}
+    
+    .ax-event.animate-in .ax-branch{
+      opacity: 1;
+      transform: translateY(-50%) scaleX(1);
+    }
+    
+    .ax-event.left .ax-branch{right:calc(-1 * var(--side-pad));transform-origin: right;}
+    .ax-event.right .ax-branch{left:calc(-1 * var(--side-pad));transform-origin: left;}
+    
     .ax-node{position:absolute;top:50%;width:var(--node);height:var(--node);background:var(--node-color, var(--cyan));
       transform:translateY(-50%);
-      box-shadow:0 0 0 2px rgba(255,255,255,.04) inset, 0 6px 18px rgba(0,0,0,.35);z-index:2}
+      box-shadow:0 0 0 2px rgba(255,255,255,.04) inset, 0 6px 18px rgba(0,0,0,.35);z-index:2;
+      /* Animación de entrada para los nodos */
+      opacity: 0;
+      transform: translateY(-50%) scale(0);
+      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s;
+      /* Efecto de pulso continuo */
+      animation: nodePulse 3s ease-in-out infinite;}
+    
+    .ax-event.animate-in .ax-node{
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+    
+    @keyframes nodePulse {
+      0%, 100% { 
+        box-shadow: 0 0 0 2px rgba(255,255,255,.04) inset, 0 6px 18px rgba(0,0,0,.35);
+      }
+      50% { 
+        box-shadow: 0 0 0 2px rgba(255,255,255,.1) inset, 0 6px 18px rgba(0,0,0,.35), 0 0 20px var(--node-color, var(--cyan));
+      }
+    }
+    
     .ax-event.left .ax-node{right:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2)}
     .ax-event.right .ax-node{left:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2)}
-    .ax-card{display:inline-block;max-width:420px;padding:8px 0;position:relative;z-index:3}
+    
+    .ax-card{display:inline-block;max-width:420px;padding:8px 0;position:relative;z-index:3;
+             /* Animación de entrada para las tarjetas */
+             opacity: 0;
+             transform: translateX(20px);
+             transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s;}
+    
+    .ax-event.animate-in .ax-card{
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    .ax-event.left .ax-card{
+      transform: translateX(-20px);
+    }
+    
+    .ax-event.left.animate-in .ax-card{
+      transform: translateX(0);
+    }
+    
     .ax-card h3{margin:0 0 2px 0;font-size:22px;letter-spacing:.2px;color:#ffffff;font-weight:700}
     .ax-card h3 .ax-week{font-size:22px;font-weight:700}
     .ax-card h3 .ax-date{font-size:16px;font-weight:400;color:var(--muted)}
     .ax-card p{margin:0;font-size:28px;line-height:1.45;color:#ffffff;font-weight:700}
-    .ax-end-image{display:flex;justify-content:center;align-items:center;margin:40px 0 0}
-    .ax-end-image img{max-width:260px;width:50%;height:auto;opacity:.98}
+    
+    /* Efecto hover en las tarjetas */
+    .ax-card:hover {
+      transform: translateY(-2px);
+      transition: transform 0.3s ease;
+    }
+    
+    .ax-end-image{display:flex;justify-content:center;align-items:center;margin:40px 0 0;
+                  /* Animación de entrada para la imagen final */
+                  opacity: 0;
+                  transform: translateY(20px);
+                  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1s;
+                  min-height: 100px;}
+    
+    .ax-end-image.animate-in{
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Asegurar que la imagen sea visible incluso sin animación */
+    .ax-end-image img{
+      max-width: 260px;
+      width: 50%;
+      height: auto;
+      opacity: 0.98;
+      display: block;
+    }
+    
     @media (max-width:900px){
       :root{--branch-l:52px;--row-gap:16px;--side-pad:16px;--trunk-w:10px}
       .ax-event,.ax-event.left,.ax-event.right{width:100%;margin-left:0;text-align:center;padding:0;min-height:unset}
@@ -182,8 +280,8 @@
       .ax-event{padding-top:calc(var(--node) + 8px)}
       /* Tronco centrado ya por defecto; ramas ancladas al centro */
       .ax-event .ax-branch{top:calc(var(--node)/2);left:50%;right:auto;width:var(--branch-l)}
-      .ax-event.left .ax-branch{transform:translate(-100%,-50%)}
-      .ax-event.right .ax-branch{transform:translate(0,-50%)}
+      .ax-event.left .ax-branch{transform:translate(-100%,-50%);transform-origin: right;}
+      .ax-event.right .ax-branch{transform:translate(0,-50%);transform-origin: left;}
       /* Nodos en el extremo de cada rama, anclados al centro */
       .ax-event.left .ax-node{top:calc(var(--node)/2);left:calc(50% - var(--branch-l) - var(--node)/2);right:auto}
       .ax-event.right .ax-node{top:calc(var(--node)/2);left:calc(50% + var(--branch-l) - var(--node)/2);right:auto}
@@ -220,8 +318,8 @@
       .ax-event.right{margin-left:calc(50% + var(--side-pad));padding-left:calc(var(--branch-l) + 12px)}
       .ax-event.left{padding-right:calc(var(--branch-l) + 12px);text-align:right}
       .ax-event .ax-branch{top:50%;left:auto;right:auto;width:var(--branch-l);height:var(--trunk-w);transform:translateY(-50%);display:block}
-      .ax-event.left .ax-branch{right:calc(-1 * var(--side-pad))}
-      .ax-event.right .ax-branch{left:calc(-1 * var(--side-pad))}
+      .ax-event.left .ax-branch{right:calc(-1 * var(--side-pad));transform-origin: right;}
+      .ax-event.right .ax-branch{left:calc(-1 * var(--side-pad));transform-origin: left;}
       .ax-event.left .ax-node{top:50%;right:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2);left:auto}
       .ax-event.right .ax-node{top:50%;left:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2);right:auto}
       .ax-event .ax-card{display:inline-block;margin:0;padding:8px 0;max-width:420px;text-align:inherit}
@@ -229,9 +327,24 @@
     @media (max-width:600px){
       .ax-timeline{transform:scale(.72)}
     }
+    
+    /* Indicador de progreso del scroll */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--red));
+      transform-origin: left;
+      z-index: 1001;
+    }
   </style>
 </head>
 <body class="grid-soft">
+  <!-- Indicador de progreso del scroll -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+  
   <!-- Menu -->
   <div id="menu-container"></div>
   <script>
@@ -501,10 +614,74 @@
       </ol>
     </section>
     <div class="ax-end-image">
-      <img src="components/images/bereal.png" alt="BeReal">
+      <img src="components/images/bereal.png" alt="BeReal" style="max-width: 260px; width: 50%; height: auto; opacity: 0.98;">
     </div>
 
     <p class="footer-note">Last updated Aug 16, 2025 · Anaglyph cyan/red styling · Monospace vibe</p>
   </div>
+
+  <!-- Script para las animaciones de scroll -->
+  <script>
+    // Función para verificar si un elemento está en el viewport
+    function isInViewport(element) {
+      const rect = element.getBoundingClientRect();
+      return (
+        rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
+        rect.bottom >= 0
+      );
+    }
+
+    // Función para activar animaciones
+    function activateAnimations() {
+      const events = document.querySelectorAll('.ax-event');
+      const endImage = document.querySelector('.ax-end-image');
+      
+      events.forEach(event => {
+        if (isInViewport(event) && !event.classList.contains('animate-in')) {
+          event.classList.add('animate-in');
+        }
+      });
+      
+      // Asegurar que la imagen final se active cuando esté visible
+      if (endImage && isInViewport(endImage) && !endImage.classList.contains('animate-in')) {
+        endImage.classList.add('animate-in');
+      }
+    }
+
+    // Función para actualizar la barra de progreso del scroll
+    function updateScrollProgress() {
+      const scrollProgress = document.getElementById('scrollProgress');
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      
+      scrollProgress.style.transform = `scaleX(${scrollPercent / 100})`;
+    }
+
+    // Event listeners
+    window.addEventListener('scroll', () => {
+      activateAnimations();
+      updateScrollProgress();
+    });
+
+    // Activar animaciones al cargar la página
+    window.addEventListener('load', () => {
+      // Pequeño delay para asegurar que todo esté renderizado
+      setTimeout(() => {
+        activateAnimations();
+      }, 100);
+      
+      // Forzar activación de la imagen final después de 2 segundos
+      setTimeout(() => {
+        const endImage = document.querySelector('.ax-end-image');
+        if (endImage && !endImage.classList.contains('animate-in')) {
+          endImage.classList.add('animate-in');
+        }
+      }, 2000);
+    });
+
+    // Activar animaciones al hacer resize
+    window.addEventListener('resize', activateAnimations);
+  </script>
 </body>
 </html>
