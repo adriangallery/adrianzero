@@ -612,7 +612,10 @@
     // Generar roadmap cuando se active
     function generateRoadmap() {
       const eventsContainer = document.getElementById('roadmapEvents');
-      if (!eventsContainer || eventsContainer.children.length > 0) return;
+      if (!eventsContainer) return;
+      
+      // Limpiar contenido existente para regenerar
+      eventsContainer.innerHTML = '';
       
       let html = '';
       roadmapData.forEach((item, index) => {
@@ -695,6 +698,12 @@
       setTimeout(() => {
         activateAnimations();
       }, 100);
+      
+      // Generar roadmap si el tab está activo al cargar
+      const activeTab = document.querySelector('.tab-content.active');
+      if (activeTab && activeTab.id === 'roadmap-tab') {
+        generateRoadmap();
+      }
       
       // Forzar activación de la imagen final después de 2 segundos
       setTimeout(() => {
