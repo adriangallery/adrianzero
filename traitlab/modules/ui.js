@@ -100,7 +100,9 @@ class UIManager {
      * Set current filter
      */
     setCurrentFilter(filter) {
+        console.log('🔧 setCurrentFilter called with:', filter);
         this.currentFilter = filter;
+        console.log('✅ currentFilter set to:', this.currentFilter);
         
         // Update mobile grid layout based on current tab
         const tokensGrid = this.domElements.get('tokens-grid');
@@ -231,9 +233,6 @@ class UIManager {
             tokenCard.addEventListener('click', () => {
                 // Handle visual selection state
                 this.handleTokenSelection(tokenCard, token);
-                
-                // Emit event for other modules
-                this.emit('tokenSelected', { token, filter: this.currentFilter });
             });
             
             tokensGrid.appendChild(tokenCard);
@@ -248,8 +247,13 @@ class UIManager {
      * Handle token selection with visual feedback
      */
     handleTokenSelection(tokenCard, token) {
+        console.log('🔍 handleTokenSelection called with:', { token, currentFilter: this.currentFilter });
+        
         const tokensGrid = this.domElements.get('tokens-grid');
-        if (!tokensGrid) return;
+        if (!tokensGrid) {
+            console.error('❌ tokensGrid not found');
+            return;
+        }
 
         if (token.tokenType === 'ERC721') {
             // Single selection for ERC721 tokens
@@ -281,6 +285,7 @@ class UIManager {
             }
         }
         
+        console.log('📤 Emitting tokenSelected event with:', { token, filter: this.currentFilter });
         // Emit tokenSelected event for main app to handle
         this.emit('tokenSelected', { token, filter: this.currentFilter });
     }

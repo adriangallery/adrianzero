@@ -809,10 +809,12 @@
                 
                 // UI events
                 this.modules.ui.on('filterChanged', (data) => {
+                    console.log('🔄 filterChanged event received:', data);
                     this.onFilterChanged(data);
                 });
                 
                 this.modules.ui.on('tokenSelected', (data) => {
+                    console.log('🎯 tokenSelected event received in main app:', data);
                     this.onTokenSelected(data);
                 });
                 
@@ -1001,28 +1003,33 @@
             }
 
             onTokenSelected(data) {
-                console.log('Token selected:', data);
+                console.log('🎯 onTokenSelected called with:', data);
                 
                 const { token, filter } = data;
+                console.log('📋 Parsed data:', { token, filter, currentContract: this.currentContract });
                 
                 if (filter === 'rename' || this.currentContract === "0x6e369bf0e4e0c106192d606fb6d85836d684da75") {
                     // AdrianZERO tokens
+                    console.log('🔵 Setting as ERC721 token');
                     this.selectedERC721 = token;
                     this.selectedERC1155 = [];
                     this.selectedFloppy = null;
                     this.selectedSerum = null;
                 } else if (filter === 'floppy') {
+                    console.log('💾 Setting as Floppy token');
                     this.selectedFloppy = token;
                     this.selectedERC721 = null;
                     this.selectedERC1155 = [];
                     this.selectedSerum = null;
                 } else if (filter === 'serum') {
+                    console.log('🧪 Setting as Serum token');
                     this.selectedSerum = token;
                     this.selectedERC721 = null;
                     this.selectedERC1155 = [];
                     this.selectedFloppy = null;
                 } else {
                     // AdrianLAB - traits
+                    console.log('🎭 Setting as Traits token');
                     if (token.tokenType === 'ERC721') {
                         this.selectedERC721 = token;
                     } else if (token.tokenType === 'ERC1155') {
@@ -1031,6 +1038,13 @@
                         this.selectedERC1155 = this.modules.traits.getSelectedTraits();
                     }
                 }
+                
+                console.log('📊 Final selection state:', {
+                    selectedERC721: this.selectedERC721?.tokenId,
+                    selectedFloppy: this.selectedFloppy?.tokenId,
+                    selectedSerum: this.selectedSerum?.tokenId,
+                    selectedERC1155: this.selectedERC1155.map(t => t.tokenId)
+                });
                 
                 this.updateSelectionInfo();
             }
