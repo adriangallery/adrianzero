@@ -582,9 +582,14 @@
             <div id="connect-section">
                 <button id="connectBtn" class="connect-btn">🔌 Conectar Wallet</button>
             </div>
-            <div id="account-section" class="account-info" style="display: none;">
-                <p>Wallet conectada: <span id="walletAddress"></span></p>
-                <button id="disconnectBtn" class="connect-btn">🔌 Desconectar</button>
+            <div id="account-section" class="account-section" style="display: none;">
+                <div class="wallet-info">
+                    <div>
+                        <strong>Connected Wallet:</strong>
+                        <span id="walletAddress" class="wallet-address"></span>
+                    </div>
+                    <button id="disconnectBtn" class="disconnect-btn">Disconnect</button>
+                </div>
             </div>
         </div>
 
@@ -811,6 +816,10 @@
                     this.displayGeneratedImage(data);
                 });
                 
+                this.modules.traits.on('traitsSelectionUpdated', (data) => {
+                    this.updateTraitsVisualSelection(data);
+                });
+                
                 // Floppy events
                 this.modules.floppy.on('floppyOpened', (data) => {
                     this.showSuccess(`Floppy abierto exitosamente! TX: ${data.transactionHash}`);
@@ -922,7 +931,7 @@
                 // Update UI
                 document.getElementById('connect-section').style.display = 'none';
                 document.getElementById('account-section').style.display = 'block';
-                document.getElementById('walletAddress').textContent = `${data.account.substring(0, 6)}...${data.account.substring(38)}`;
+                document.getElementById('walletAddress').textContent = `${data.account.substring(0, 6)}...${data.account.substring(-4)}`;
                 
                 // Show tokens section
                 document.getElementById('tokens-section').style.display = 'block';
@@ -1153,6 +1162,18 @@
                         imageLoadingOverlay.style.display = 'none';
                     }
                 };
+            }
+
+            updateTraitsVisualSelection(data) {
+                console.log('Updating traits visual selection:', data);
+                
+                // Update the local selection state
+                this.selectedERC1155 = data.selectedTraits;
+                
+                // Update visual selection using UI module
+                if (this.modules.ui && this.modules.ui.updateVisualSelection) {
+                    this.modules.ui.updateVisualSelection(data.selectedTraits);
+                }
             }
 
             async applyTraits() {

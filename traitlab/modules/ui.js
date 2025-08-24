@@ -229,6 +229,10 @@ class UIManager {
             
             // Add click event for token selection
             tokenCard.addEventListener('click', () => {
+                // Handle visual selection state
+                this.handleTokenSelection(tokenCard, token);
+                
+                // Emit event for other modules
                 this.emit('tokenSelected', { token, filter: this.currentFilter });
             });
             
@@ -238,6 +242,64 @@ class UIManager {
         if (!skipSelectionUpdate) {
             this.updateSelectionInfo();
         }
+    }
+
+    /**
+     * Handle token selection with visual feedback
+     */
+    handleTokenSelection(tokenCard, token) {
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid) return;
+
+        if (token.tokenType === 'ERC721') {
+            // Single selection for ERC721 tokens
+            const prevSelected = tokensGrid.querySelector('.token-card.selected');
+            if (prevSelected) prevSelected.classList.remove('selected');
+            
+            if (tokenCard.classList.contains('selected')) {
+                tokenCard.classList.remove('selected');
+            } else {
+                tokenCard.classList.add('selected');
+            }
+        } else if (token.tokenType === 'ERC1155') {
+            // Handle ERC1155 selection based on current filter
+            if (this.currentFilter === 'floppy' || this.currentFilter === 'serum') {
+                // Single selection for Floppy Discs and Serums
+                const prevSelected = tokensGrid.querySelector('.token-card.selected');
+                if (prevSelected) prevSelected.classList.remove('selected');
+                
+                if (tokenCard.classList.contains('selected')) {
+                    tokenCard.classList.remove('selected');
+                } else {
+                    tokenCard.classList.add('selected');
+                }
+            } else {
+                // Handle selection for AdrianLAB (Traits tab) with category management
+                // This will be handled by the traits module
+                // Just toggle the visual state for now
+                tokenCard.classList.toggle('selected');
+            }
+        }
+    }
+
+    /**
+     * Update visual selection state for all tokens
+     */
+    updateVisualSelection(selectedTokens) {
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid) return;
+
+        const allTokenCards = tokensGrid.querySelectorAll('.token-card');
+        allTokenCards.forEach(card => {
+            const tokenId = parseInt(card.getAttribute('data-token-id'));
+            const isSelected = selectedTokens.some(t => t.tokenId === tokenId);
+            
+            if (isSelected) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        });
     }
 
     /**

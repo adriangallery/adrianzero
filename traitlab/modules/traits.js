@@ -100,6 +100,13 @@ class TraitsManager {
             }
             console.log(`Deselected trait ${token.tokenId} from category ${category}`);
             this.emit('traitDeselected', { token, category });
+            
+            // Emit event for visual selection update
+            this.emit('traitsSelectionUpdated', { 
+                selectedTraits: this.selectedERC1155,
+                selectedTraitsByCategory: Array.from(this.selectedTraitsByCategory.entries())
+            });
+            
             return false;
         } else if (existingTrait) {
             // Remove the existing trait from the same category
@@ -108,6 +115,12 @@ class TraitsManager {
                 this.selectedERC1155.splice(index, 1);
             }
             console.log(`Replaced trait ${existingTrait.tokenId} with ${token.tokenId} in category ${category}`);
+            
+            // Emit event for visual selection update after replacement
+            this.emit('traitsSelectionUpdated', { 
+                selectedTraits: this.selectedERC1155,
+                selectedTraitsByCategory: Array.from(this.selectedTraitsByCategory.entries())
+            });
         }
         
         // Add the new trait
@@ -116,6 +129,13 @@ class TraitsManager {
         console.log(`Selected trait ${token.tokenId} for category ${category}`);
         
         this.emit('traitSelected', { token, category });
+        
+        // Emit event for visual selection update
+        this.emit('traitsSelectionUpdated', { 
+            selectedTraits: this.selectedERC1155,
+            selectedTraitsByCategory: Array.from(this.selectedTraitsByCategory.entries())
+        });
+        
         return true;
     }
 
