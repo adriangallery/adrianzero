@@ -288,7 +288,7 @@ class WalletManager {
 
 // Export for browser environment
 if (typeof window !== 'undefined') {
-    window.TraitLABWallet = WalletManager;
+    window.TraitLABWallet = new WalletManager();
 }
 
 // Export for Node.js environment
