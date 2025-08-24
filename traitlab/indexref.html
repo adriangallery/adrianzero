@@ -1259,11 +1259,16 @@
             filterTraitsByCategory(category) {
                 console.log('Filtering traits by category:', category);
                 
-                // Get all trait tokens
-                const traitTokens = this.tokens.filter(token => 
-                    token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" && 
-                    token.tokenType === 'ERC1155'
-                );
+                // Get all trait tokens - check multiple possible contract properties
+                const traitTokens = this.tokens.filter(token => {
+                    const isTraitContract = token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" || 
+                                          token.contractAddress === "0x90546848474fb3c9fda3fdad887969bb244e7e58" ||
+                                          token.contractId === "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                    const isERC1155 = token.tokenType === 'ERC1155' || token.type === 'ERC1155';
+                    return isTraitContract && isERC1155;
+                });
+                
+                console.log('Found trait tokens:', traitTokens.length);
                 
                 if (category === 'all') {
                     this.displayTraitsByCategory(traitTokens);
@@ -1271,8 +1276,10 @@
                     // Filter by specific category
                     const filteredTraits = traitTokens.filter(token => {
                         const traitInfo = this.modules.traits.getTraitCategory(token.tokenId);
+                        console.log(`Token ${token.tokenId} category: ${traitInfo}, looking for: ${category}`);
                         return traitInfo === category;
                     });
+                    console.log(`Filtered traits for ${category}:`, filteredTraits.length);
                     this.displayTraitsByCategory(filteredTraits);
                 }
             }
@@ -1286,11 +1293,16 @@
                     return;
                 }
                 
-                // Get all trait tokens
-                const traitTokens = this.tokens.filter(token => 
-                    token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" && 
-                    token.tokenType === 'ERC1155'
-                );
+                // Get all trait tokens - check multiple possible contract properties
+                const traitTokens = this.tokens.filter(token => {
+                    const isTraitContract = token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" || 
+                                          token.contractAddress === "0x90546848474fb3c9fda3fdad887969bb244e7e58" ||
+                                          token.contractId === "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                    const isERC1155 = token.tokenType === 'ERC1155' || token.type === 'ERC1155';
+                    return isTraitContract && isERC1155;
+                });
+                
+                console.log('Found trait tokens for search:', traitTokens.length);
                 
                 // Filter by search term
                 const searchResults = traitTokens.filter(token => 
@@ -1298,11 +1310,13 @@
                     token.tokenId.toString().includes(searchTerm)
                 );
                 
+                console.log('Search results:', searchResults.length);
                 this.displayTraitsByCategory(searchResults);
             }
 
             displayTraitsByCategory(traits) {
                 console.log('Displaying traits by category:', traits);
+                console.log('Sample trait structure:', traits[0]);
                 
                 const grid = document.getElementById('tokens-grid');
                 if (!grid) return;
@@ -1316,6 +1330,7 @@
                 const traitsByCategory = new Map();
                 traits.forEach(trait => {
                     const category = this.modules.traits.getTraitCategory(trait.tokenId) || 'UNKNOWN';
+                    console.log(`Trait ${trait.tokenId} (${trait.title}) -> Category: ${category}`);
                     if (!traitsByCategory.has(category)) {
                         traitsByCategory.set(category, []);
                     }
@@ -1336,7 +1351,8 @@
                     
                     categoryTraits.forEach(trait => {
                         const isSelected = this.selectedERC1155.some(t => t.tokenId === trait.tokenId);
-                        const imageUrl = `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
+                        // Try multiple possible image URLs
+                        const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
                         
                         html += `
                             <div class="trait-token-card ${isSelected ? 'selected' : ''}" 
@@ -1344,7 +1360,7 @@
                                  onclick="window.app.selectTraitToken(${trait.tokenId})">
                                 <div class="trait-token-category">${category}</div>
                                 <img src="${imageUrl}" alt="${trait.title}" class="trait-token-image" 
-                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'">
+                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'">
                                 <div class="trait-token-name">${trait.title}</div>
                                 <div class="trait-token-id">#${trait.tokenId}</div>
                             </div>
@@ -1363,17 +1379,22 @@
             selectTraitToken(tokenId) {
                 console.log('Selecting trait token:', tokenId);
                 
-                // Find the token in the current tokens array
-                const token = this.tokens.find(t => 
-                    t.tokenId === tokenId && 
-                    t.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" &&
-                    t.tokenType === 'ERC1155'
-                );
+                // Find the token in the current tokens array - check multiple possible contract properties
+                const token = this.tokens.find(t => {
+                    const isTraitContract = t.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" || 
+                                          t.contractAddress === "0x90546848474fb3c9fda3fdad887969bb244e7e58" ||
+                                          t.contractId === "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                    const isERC1155 = t.tokenType === 'ERC1155' || t.type === 'ERC1155';
+                    return t.tokenId === tokenId && isTraitContract && isERC1155;
+                });
                 
                 if (!token) {
                     console.error('Token not found:', tokenId);
+                    console.log('Available tokens:', this.tokens.map(t => ({ id: t.tokenId, contract: t.contract || t.contractAddress || t.contractId, type: t.tokenType || t.type })));
                     return;
                 }
+                
+                console.log('Found token for selection:', token);
                 
                 // Use the traits module to handle selection
                 this.modules.traits.handleTraitSelection(token);
