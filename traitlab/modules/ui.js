@@ -280,6 +280,9 @@ class UIManager {
                 tokenCard.classList.toggle('selected');
             }
         }
+        
+        // Emit tokenSelected event for main app to handle
+        this.emit('tokenSelected', { token, filter: this.currentFilter });
     }
 
     /**
