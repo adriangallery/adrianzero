@@ -34,10 +34,25 @@ class TraitsManager {
     async loadTraitsDatabase() {
         try {
             console.log('Loading traits database...');
-            const response = await fetch('https://adrianlab.vercel.app/labmetadata/traits.json');
-            if (!response.ok) {
-                throw new Error(`Failed to load traits database: ${response.status}`);
+            
+            // Try local file first, then fallback to Vercel
+            let response;
+            try {
+                console.log('Trying local traits.json file...');
+                response = await fetch('./json/traits.json');
+                if (!response.ok) {
+                    throw new Error(`Local file not found: ${response.status}`);
+                }
+                console.log('Local traits.json loaded successfully');
+            } catch (localError) {
+                console.log('Local file failed, trying Vercel...');
+                response = await fetch('https://adrianlab.vercel.app/labmetadata/traits.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to load traits database: ${response.status}`);
+                }
+                console.log('Vercel traits.json loaded successfully');
             }
+            
             const data = await response.json();
             this.traitsDatabase = data;
             console.log('Traits database loaded successfully:', data);

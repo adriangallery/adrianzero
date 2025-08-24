@@ -1351,8 +1351,8 @@
                     
                     categoryTraits.forEach(trait => {
                         const isSelected = this.selectedERC1155.some(t => t.tokenId === trait.tokenId);
-                        // Try multiple possible image URLs
-                        const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
+                        // Try multiple possible image URLs - local first, then Vercel
+                        const imageUrl = trait.image || trait.imageUrl || `./json/images/${trait.tokenId}.png` || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
                         
                         html += `
                             <div class="trait-token-card ${isSelected ? 'selected' : ''}" 
