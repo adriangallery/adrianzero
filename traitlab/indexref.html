@@ -1463,17 +1463,18 @@
             }
 
             async useSerum() {
-                // Get current selection state from UI module
-                const selectionState = this.modules.ui.getSelectionState();
-                console.log('🔍 useSerum - Current selection state:', selectionState);
+                console.log('🔍 useSerum - Direct app state:', {
+                    selectedSerum: this.selectedSerum?.tokenId,
+                    selectedERC721: this.selectedERC721?.tokenId
+                });
                 
-                if (!selectionState.selectedSerum || !selectionState.selectedERC721) {
+                if (!this.selectedSerum || !this.selectedERC721) {
                     this.showError('Please select both a serum and an AdrianZERO token first.');
                     return;
                 }
                 
                 try {
-                    await this.modules.serums.useSerum(selectionState.selectedERC721);
+                    await this.modules.serums.useSerum(this.selectedERC721);
                 } catch (error) {
                     this.showError(`Error using serum: ${error.message}`);
                 }
