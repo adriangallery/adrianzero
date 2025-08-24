@@ -1351,13 +1351,13 @@
                     
                     categoryTraits.forEach(trait => {
                         const isSelected = this.selectedERC1155.some(t => t.tokenId === trait.tokenId);
-                        // Try multiple possible image URLs - local first, then Vercel
-                        const imageUrl = trait.image || trait.imageUrl || `./json/images/${trait.tokenId}.png` || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
+                        // Use Alchemy cache images as before - they work well
+                        const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
                         
                         html += `
                             <div class="trait-token-card ${isSelected ? 'selected' : ''}" 
                                  data-token-id="${trait.tokenId}" 
-                                 onclick="window.app.selectTraitToken(${trait.tokenId})">
+                                 onclick="window.app.handleTraitSelectionFromDisplay(${JSON.stringify(trait).replace(/"/g, '&quot;')})">
                                 <div class="trait-token-category">${category}</div>
                                 <img src="${imageUrl}" alt="${trait.title}" class="trait-token-image" 
                                      onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'">
@@ -1422,6 +1422,24 @@
                 } else {
                     this.filterTraitsByCategory(currentCategory);
                 }
+            }
+
+            handleTraitSelectionFromDisplay(traitData) {
+                console.log('handleTraitSelectionFromDisplay called with:', traitData);
+                
+                // Use the traits module to handle selection
+                this.modules.traits.handleTraitSelection(traitData);
+                
+                // Update visual selection
+                this.updateTraitsVisualSelection({
+                    selectedTraits: this.modules.traits.getSelectedTraits()
+                });
+                
+                // Refresh the display to show updated selection
+                this.refreshTraitsDisplay();
+                
+                // Update selection info to show selected traits
+                this.updateSelectionInfo();
             }
 
             async loadTokensForTab() {
