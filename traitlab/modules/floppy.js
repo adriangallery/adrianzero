@@ -90,6 +90,56 @@ class FloppyManager {
     }
 
     /**
+     * Determine which contract to use for a specific floppy
+     * Based on the logic from index.html original
+     */
+    getContractForFloppy(tokenId) {
+        if (tokenId === 10003) {
+            // GLITCH Floppy - NEW_FLOPPY_PACK_CONTRACT
+            return {
+                address: window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT,
+                type: 'pack',
+                name: 'GLITCH Pack'
+            };
+        } else if (tokenId === 10004) {
+            // GF Floppy - PackTokenMinter
+            return {
+                address: window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT,
+                type: 'pack',
+                name: 'GF Pack'
+            };
+        } else if (tokenId === 10007) {
+            // Action Pack 10007 - ActionPack
+            return {
+                address: window.TraitLABConfig.ACTION_PACK_10007_CONTRACT,
+                type: 'pack',
+                name: 'Action Pack 10007'
+            };
+        } else if (tokenId >= 15008 && tokenId <= 15015) {
+            // Action Packs 15008-15015
+            return {
+                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
+                type: 'pack',
+                name: 'Action Pack'
+            };
+        } else if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || tokenId === 10005) {
+            // Regular floppies - ADRIAN_FLOPPY_DISCS_CONTRACT
+            return {
+                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
+                type: 'floppy',
+                name: 'Floppy'
+            };
+        } else {
+            // Default fallback
+            return {
+                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
+                type: 'floppy',
+                name: 'Floppy'
+            };
+        }
+    }
+
+    /**
      * Wrapper para decidir qué contrato usar al abrir un pack
      * Basado en openSelectedPack() del index.html original
      */
@@ -655,22 +705,18 @@ class FloppyManager {
             }
             
             // Determine which contract to use based on floppy type
-            let contractAddress;
-            let contractABI;
+            const contractInfo = this.getContractForFloppy(this.selectedFloppy.tokenId);
+            console.log('Contract info for floppy:', contractInfo);
             
-            if (this.selectedFloppy.tokenId === 10005) {
-                // Golden Floppy uses ADRIAN_FLOPPY_DISCS_CONTRACT
-                contractAddress = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
-                contractABI = [
-                    'function openFloppy(uint256 floppyId) external'
-                ];
-            } else {
-                // Default floppy contract
-                contractAddress = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
-                contractABI = [
-                    'function openFloppy(uint256 floppyId) external'
-                ];
+            // Check if this floppy should use Open Pack instead of Open Floppy
+            if (contractInfo.type === 'pack') {
+                throw new Error(`This floppy (${this.selectedFloppy.tokenId}) should use "Open Pack" instead of "Open Floppy". Please use the correct button.`);
             }
+            
+            const contractAddress = contractInfo.address;
+            const contractABI = [
+                'function openFloppy(uint256 floppyId) external'
+            ];
             
             console.log('Using contract:', contractAddress);
             console.log('Contract ABI:', contractABI);
