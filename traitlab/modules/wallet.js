@@ -10,6 +10,13 @@ class WalletManager {
         this.isConnected = false;
         this.eventListeners = new Map();
         
+        // Maintain a global singleton for cross-module static helpers
+        // This allows calls like window.TraitLABWallet.isWalletConnected()
+        // even if the class was not instantiated in that context yet.
+        if (typeof window !== 'undefined') {
+            window.__TRAITLAB_WALLET_SINGLETON = this;
+        }
+        
         // Bind methods
         this.connectWallet = this.connectWallet.bind(this);
         this.disconnectWallet = this.disconnectWallet.bind(this);
@@ -241,6 +248,30 @@ class WalletManager {
     }
 
     /**
+     * Static helper for legacy calls:
+     * window.TraitLABWallet.isWalletConnected()
+     * - If a singleton instance exists, delegate to it.
+     * - Else, try to infer from window.ethereum.selectedAddress (best-effort).
+     */
+    static isWalletConnected() {
+        try {
+            const inst = (typeof window !== 'undefined')
+              ? window.__TRAITLAB_WALLET_SINGLETON
+              : null;
+            if (inst && typeof inst.isWalletConnected === 'function') {
+                return inst.isWalletConnected();
+            }
+            if (typeof window !== 'undefined' &&
+                window.ethereum &&
+                (window.ethereum.selectedAddress ||
+                 (window.ethereum._state && Array.isArray(window.ethereum._state.accounts) && window.ethereum._state.accounts[0]))) {
+                return true;
+            }
+        } catch (_) { /* no-op */ }
+        return false;
+    }
+
+    /**
      * Event system for communication with other modules
      */
     on(event, callback) {
@@ -288,7 +319,7 @@ class WalletManager {
 
 // Export for browser environment
 if (typeof window !== 'undefined') {
-    window.TraitLABWallet = new WalletManager();
+    window.TraitLABWallet = WalletManager; // keep as class export (constructor)
 }
 
 // Export for Node.js environment
