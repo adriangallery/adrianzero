@@ -3272,11 +3272,17 @@
                 showOpenPackStatus('Please select a pack first.', 'error');
                 return;
             }
+            
+            console.log('openSelectedPack: selectedFloppy.tokenId =', selectedFloppy.tokenId);
+            
             if (selectedFloppy.tokenId === 10003) {
+                console.log('Redirecting to openPack10003()');
                 await openPack10003();
             } else if (selectedFloppy.tokenId === 10007 || (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015)) {
+                console.log('Redirecting to openActionPack() for token', selectedFloppy.tokenId);
                 await openActionPack();
             } else {
+                console.log('Redirecting to openPack() for token', selectedFloppy.tokenId);
                 await openPack();
             }
         }
@@ -3356,7 +3362,7 @@
 
     // Open Action Pack function para tokens 15008-15015 (ActionPacks contract)
         async function openActionPack() {
-            console.log('openActionPack called');
+            console.log('openActionPack called for token:', selectedFloppy?.tokenId);
 
             if (!selectedFloppy) {
                 showOpenPackStatus('Please select a pack first.', 'error');
