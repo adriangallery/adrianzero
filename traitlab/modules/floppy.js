@@ -708,12 +708,20 @@ class FloppyManager {
             const contractInfo = this.getContractForFloppy(this.selectedFloppy.tokenId);
             console.log('Contract info for floppy:', contractInfo);
             
-            // Check if this floppy should use Open Pack instead of Open Floppy
-            if (contractInfo.type === 'pack') {
+            // For Open Floppy, we need to use the correct contract based on floppy type
+            let contractAddress;
+            
+            if (this.selectedFloppy.tokenId === 10000 || 
+                this.selectedFloppy.tokenId === 10001 || 
+                this.selectedFloppy.tokenId === 10002 || 
+                this.selectedFloppy.tokenId === 10005) {
+                // Regular floppies use ADRIAN_FLOPPY_DISCS_CONTRACT
+                contractAddress = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                console.log('Using ADRIAN_FLOPPY_DISCS_CONTRACT for regular floppy');
+            } else {
+                // This floppy should use Open Pack, not Open Floppy
                 throw new Error(`This floppy (${this.selectedFloppy.tokenId}) should use "Open Pack" instead of "Open Floppy". Please use the correct button.`);
             }
-            
-            const contractAddress = contractInfo.address;
             const contractABI = [
                 {
                     "inputs": [
