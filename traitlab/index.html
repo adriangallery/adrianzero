@@ -1417,8 +1417,8 @@
                     const filteredTokens = tokens.filter(token => {
                         if (token.tokenType === 'ERC1155') {
                             if (currentFilter === 'floppy') {
-                                // Floppy discs filter: show only tokens 10000-10005, 15000-15015
-                                if (token.tokenId === 10000 || token.tokenId === 10001 || token.tokenId === 10002 || token.tokenId === 10003 || token.tokenId === 10004 || token.tokenId === 10005 ||
+                                // Floppy discs filter: show only tokens 10000-10007, 15000-15015
+                                if (token.tokenId === 10000 || token.tokenId === 10001 || token.tokenId === 10002 || token.tokenId === 10003 || token.tokenId === 10004 || token.tokenId === 10005 || token.tokenId === 10007 ||
                                     token.tokenId === 15000 || token.tokenId === 15001 || token.tokenId === 15002 || 
                                     token.tokenId === 15003 || token.tokenId === 15004 || token.tokenId === 15005 ||
                                     token.tokenId === 15006 || token.tokenId === 15007 ||
@@ -1442,8 +1442,8 @@
                                 }
                             } else {
                                 // Normal filter: exclude floppy & serum tokens
-                                if (token.tokenId === 10000 || token.tokenId === 10001 || token.tokenId === 10002 || token.tokenId === 10003 || token.tokenId === 10004 || token.tokenId === 10005 ||
-                                    token.tokenId === 15000 || token.tokenId === 15001 || token.tokenId === 15002 || 
+                                if (token.tokenId === 10000 || token.tokenId === 10001 || token.tokenId === 10002 || token.tokenId === 10003 || token.tokenId === 10004 || token.tokenId === 10005 || token.tokenId === 10007 ||
+                                    token.tokenId === 15000 || token.tokenId === 10001 || token.tokenId === 10002 || 
                                     token.tokenId === 15003 || token.tokenId === 15004 || token.tokenId === 15005 ||
                                     token.tokenId === 15006 || token.tokenId === 15007 ||
                                     token.tokenId === 15008 || token.tokenId === 15009 || token.tokenId === 15010 ||
@@ -3274,7 +3274,7 @@
             }
             if (selectedFloppy.tokenId === 10003) {
                 await openPack10003();
-            } else if (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015) {
+            } else if (selectedFloppy.tokenId === 10007 || (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015)) {
                 await openActionPack();
             } else {
                 await openPack();
@@ -3362,8 +3362,8 @@
                 showOpenPackStatus('Please select a pack first.', 'error');
                 return;
             }
-            if (!(selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015)) {
-                showOpenPackStatus('This function is only available for Action Packs (15008-15015).', 'error');
+            if (!(selectedFloppy.tokenId === 10007 || (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015))) {
+                showOpenPackStatus('This function is only available for Action Packs (10007, 15008-15015).', 'error');
                 return;
             }
             if (!currentAccount) {
