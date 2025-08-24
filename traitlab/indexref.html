@@ -1054,6 +1054,8 @@
                     
                     if (this.modules.floppy.shouldShowOpenPack(this.selectedFloppy.tokenId)) {
                         buttons += `<button class="apply-traits-btn" onclick="app.openPack()">📦 Open Pack</button>`;
+                    } else {
+                        buttons += `<button class="apply-traits-btn" onclick="app.openFloppy()">💾 Open Floppy</button>`;
                     }
                 }
                 
@@ -1286,6 +1288,16 @@
                     await this.modules.floppy.openSelectedPack();
                 } catch (error) {
                     this.showError(`Error opening pack: ${error.message}`);
+                }
+            }
+
+            async openFloppy() {
+                if (!this.selectedFloppy) return;
+                
+                try {
+                    await this.modules.floppy.openFloppy();
+                } catch (error) {
+                    this.showError(`Error opening floppy: ${error.message}`);
                 }
             }
 
