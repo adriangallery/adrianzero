@@ -134,108 +134,139 @@ class ZeroManager {
                 return [];
             }
             
-            // Process all NFTs
-            const tokens = allNfts.map(nft => {
-                try {
-                    // Extract tokenId
-                    let tokenId;
-                    if (nft.tokenId) {
-                        tokenId = nft.tokenId;
-                    } else if (nft.id && nft.id.tokenId) {
-                        tokenId = nft.id.tokenId;
-                    } else {
-                        console.error("No tokenId found in NFT:", nft);
-                        return null;
-                    }
-                    
-                    // Convert tokenId to integer
-                    let tokenIdInt;
-                    if (typeof tokenId === 'number') {
-                        tokenIdInt = tokenId;
-                    } else if (tokenId.startsWith('0x')) {
-                        tokenIdInt = parseInt(tokenId, 16);
-                    } else {
-                        tokenIdInt = parseInt(tokenId, 10);
-                    }
-                    
-                    if (isNaN(tokenIdInt)) {
-                        console.error("Invalid tokenId format:", tokenId);
-                        return null;
-                    }
-                    
-                    // Extract title/name
-                    let title = `Token #${tokenIdInt}`;
-                    
-                    if (nft.title) {
-                        title = nft.title;
-                    } else if (nft.name) {
-                        title = nft.name;
-                    } else if (nft.metadata && nft.metadata.name) {
-                        title = nft.metadata.name;
-                    } else if (nft.contract && nft.contract.name) {
-                        title = `${nft.contract.name} #${tokenIdInt}`;
-                    }
-                    
-                    // Extract image URL
-                    let mediaUrl = "";
-                    
-                    // For ERC721 tokens (AdrianZERO), use the specific render API format
-                    if (isERC721) {
-                        // Use the working format for AdrianZERO tokens
-                        mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
-                    } else {
-                        // For ERC1155 tokens, use the original logic
-                        // Try multiple locations for image URL
-                        if (nft.raw && nft.raw.metadata && nft.raw.metadata.image) {
-                            mediaUrl = nft.raw.metadata.image;
-                        } else if (nft.media && Array.isArray(nft.media) && nft.media.length > 0) {
-                            mediaUrl = nft.media[0].gateway || nft.media[0].raw || '';
-                        } else if (nft.metadata && nft.metadata.image) {
-                            mediaUrl = nft.metadata.image;
+                            // Process all NFTs
+                const tokens = allNfts.map(nft => {
+                    try {
+                        // Extract tokenId
+                        let tokenId;
+                        if (nft.tokenId) {
+                            tokenId = nft.tokenId;
+                        } else if (nft.id && nft.id.tokenId) {
+                            tokenId = nft.id.tokenId;
+                        } else {
+                            console.error("No tokenId found in NFT:", nft);
+                            return null;
                         }
-                    }
-                    
-                    // Extract balance
-                    const balance = nft.balance || '1';
-                    
-                    // Extract category
-                    let category = '';
-                    if (nft.metadata) {
-                        category = nft.metadata.category || nft.metadata.Category || '';
                         
-                        if (!category && nft.metadata.attributes) {
-                            const categoryAttr = nft.metadata.attributes.find(attr => 
-                                attr.trait_type && attr.trait_type.toLowerCase() === 'category'
-                            );
-                            if (categoryAttr) {
-                                category = categoryAttr.value.toLowerCase();
+                        // Convert tokenId to integer
+                        let tokenIdInt;
+                        if (typeof tokenId === 'number') {
+                            tokenIdInt = tokenId;
+                        } else if (tokenId.startsWith('0x')) {
+                            tokenIdInt = parseInt(tokenId, 16);
+                        } else {
+                            tokenIdInt = parseInt(tokenId, 10);
+                        }
+                        
+                        if (isNaN(tokenIdInt)) {
+                            console.error("Invalid tokenId format:", tokenId);
+                            return null;
+                        }
+                        
+                        // Extract title/name
+                        let title = `Token #${tokenIdInt}`;
+                        
+                        if (nft.title) {
+                            title = nft.title;
+                        } else if (nft.name) {
+                            title = nft.name;
+                        } else if (nft.metadata && nft.metadata.name) {
+                            title = nft.metadata.name;
+                        } else if (nft.contract && nft.contract.name) {
+                            title = `${nft.contract.name} #${tokenIdInt}`;
+                        }
+                        
+                        // Extract image URL
+                        let mediaUrl = "";
+                        
+                        // For ERC721 tokens (AdrianZERO), use the specific render API format
+                        if (isERC721) {
+                            // Use the working format for AdrianZERO tokens
+                            mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
+                        } else {
+                            // For ERC1155 tokens, use the original logic
+                            // Try multiple locations for image URL
+                            if (nft.raw && nft.raw.metadata && nft.raw.metadata.image) {
+                                mediaUrl = nft.raw.metadata.image;
+                            } else if (nft.media && Array.isArray(nft.media) && nft.media.length > 0) {
+                                mediaUrl = nft.media[0].gateway || nft.media[0].raw || '';
+                            } else if (nft.metadata && nft.metadata.image) {
+                                mediaUrl = nft.metadata.image;
                             }
                         }
+                        
+                        // Extract balance
+                        const balance = nft.balance || '1';
+                        
+                        // Extract category
+                        let category = '';
+                        if (nft.metadata) {
+                            category = nft.metadata.category || nft.metadata.Category || '';
+                            
+                            if (!category && nft.metadata.attributes) {
+                                const categoryAttr = nft.metadata.attributes.find(attr => 
+                                    attr.trait_type && attr.trait_type.toLowerCase() === 'category'
+                                );
+                                if (categoryAttr) {
+                                    category = categoryAttr.value.toLowerCase();
+                                }
+                            }
+                        }
+                        
+                        return {
+                            tokenId: tokenIdInt,
+                            title: title,
+                            imageUrl: mediaUrl,
+                            contract: nft.contract.address,
+                            contractName: nft.contract.name || 'Unknown Contract',
+                            tokenType: tokenType,
+                            category: category,
+                            balance: balance,
+                            metadata: nft.metadata || {}
+                        };
+                    } catch (err) {
+                        console.error("Error processing NFT:", err, nft);
+                        return null;
                     }
-                    
-                    return {
-                        tokenId: tokenIdInt,
-                        title: title,
-                        imageUrl: mediaUrl,
-                        contract: nft.contract.address,
-                        contractName: nft.contract.name || 'Unknown Contract',
-                        tokenType: tokenType,
-                        category: category,
-                        balance: balance,
-                        metadata: nft.metadata || {}
-                    };
-                } catch (err) {
-                    console.error("Error processing NFT:", err, nft);
-                    return null;
+                }).filter(token => token !== null);
+
+                // Apply filtering based on current filter (if provided)
+                let filteredTokens = tokens;
+                
+                // If we have a filter context, apply it
+                if (this.currentFilter) {
+                    filteredTokens = tokens.filter(token => {
+                        if (token.tokenType === 'ERC1155') {
+                            if (this.currentFilter === 'floppy') {
+                                // Floppy discs filter: show only tokens 10000-10007, 15000-15015
+                                const isFloppy = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
+                                               (token.tokenId >= 15000 && token.tokenId <= 15015);
+                                console.log(`Token ${token.tokenId} floppy filter: ${isFloppy}`);
+                                return isFloppy;
+                            } else if (this.currentFilter === 'serum') {
+                                // Serums filter: show tokens 262144-262147
+                                const isSerum = token.tokenId >= 262144 && token.tokenId <= 262147;
+                                console.log(`Token ${token.tokenId} serum filter: ${isSerum}`);
+                                return isSerum;
+                            } else {
+                                // Normal filter: exclude floppy & serum tokens
+                                const isExcluded = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
+                                                 (token.tokenId >= 15000 && token.tokenId <= 15015) ||
+                                                 (token.tokenId >= 262144 && token.tokenId <= 262147);
+                                console.log(`Token ${token.tokenId} normal filter: ${!isExcluded}`);
+                                return !isExcluded;
+                            }
+                        }
+                        return true; // Keep all ERC721 tokens
+                    });
                 }
-            }).filter(token => token !== null);
             
-            console.log('Processed tokens:', tokens);
+            console.log('Processed tokens:', filteredTokens);
             
             // For ERC1155 tokens, fetch individual metadata if it's empty
             if (tokenType === 'ERC1155') {
                 const tokensWithMetadata = await Promise.all(
-                    tokens.map(async (token) => {
+                    filteredTokens.map(async (token) => {
                         if (!token.metadata || Object.keys(token.metadata).length === 0) {
                             console.log(`Fetching individual metadata for token ${token.tokenId}`);
                             try {
@@ -721,6 +752,86 @@ class ZeroManager {
     }
 
     /**
+     * Approve ADRIAN tokens for rename
+     */
+    async approveRename(userAddress) {
+        console.log('Approving ADRIAN tokens for rename...');
+        
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            
+            // ADRIAN token contract
+            const adrianToken = new ethers.Contract(
+                window.TraitLABConfig.ADRIAN_TOKEN,
+                window.TraitLABConfig.ERC20_ABI,
+                signer
+            );
+            
+            // Check current allowance
+            const allowance = await adrianToken.allowance(
+                userAddress, 
+                window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT
+            );
+            
+            if (allowance.gte(this.namePrice)) {
+                console.log('Allowance already sufficient');
+                return true;
+            }
+            
+            console.log('Approving ADRIAN tokens...');
+            const tx = await adrianToken.approve(
+                window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, 
+                this.namePrice
+            );
+            
+            console.log('Approval transaction:', tx.hash);
+            await tx.wait();
+            
+            console.log('Approval successful');
+            return true;
+            
+        } catch (error) {
+            console.error('Error in approval:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute rename transaction
+     */
+    async executeRename(userAddress, tokenId, newName) {
+        console.log('Executing rename transaction...');
+        
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            
+            const contract = new ethers.Contract(
+                window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT,
+                window.TraitLABConfig.ADRIAN_NAME_REGISTRY_ABI,
+                signer
+            );
+            
+            console.log('Contract address:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            console.log('Token ID:', tokenId);
+            console.log('New name:', newName);
+            
+            const tx = await contract.rename(tokenId, newName);
+            console.log('Rename transaction:', tx.hash);
+            
+            const receipt = await tx.wait();
+            console.log('Rename successful:', receipt);
+            
+            return receipt;
+            
+        } catch (error) {
+            console.error('Error in rename:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Approve $ADRIAN tokens for rename
      */
     async approveRename() {
@@ -1015,6 +1126,14 @@ class ZeroManager {
 
         // Emit event
         this.emit('tokenImageRefreshed', { tokenId });
+    }
+
+    /**
+     * Set the current filter for token filtering
+     */
+    setCurrentFilter(filter) {
+        this.currentFilter = filter;
+        console.log('ZeroManager: Filter set to:', filter);
     }
 
     /**

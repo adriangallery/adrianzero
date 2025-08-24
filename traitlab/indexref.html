@@ -877,6 +877,11 @@
                             this.modules.ui.setCurrentFilter(filter);
                         }
                         
+                        // Update zero module filter
+                        if (this.modules.zero && this.modules.zero.setCurrentFilter) {
+                            this.modules.zero.setCurrentFilter(filter);
+                        }
+                        
                         // Load tokens for this contract/filter
                         this.loadTokensForTab();
                     });
@@ -1117,8 +1122,93 @@
             }
 
             showRenameSection() {
-                // Implementation for rename section
-                this.showSuccess('Rename section - To be implemented');
+                if (!this.selectedERC721) {
+                    this.showError('Please select an AdrianZERO token first.');
+                    return;
+                }
+
+                const renameSection = document.getElementById('rename-section');
+                if (renameSection) {
+                    renameSection.style.display = 'block';
+                    
+                    // Clear previous input
+                    const nameInput = document.getElementById('newTokenName');
+                    if (nameInput) {
+                        nameInput.value = '';
+                    }
+                    
+                    // Show status
+                    this.showSuccess('Rename section opened. Enter new name and approve ADRIAN tokens.');
+                }
+            }
+
+            async approveRename() {
+                if (!this.selectedERC721) {
+                    this.showError('Please select an AdrianZERO token first.');
+                    return;
+                }
+
+                try {
+                    this.showLoading();
+                    const userAddress = this.modules.wallet.getCurrentAccount();
+                    
+                    // Load name price first if not loaded
+                    if (!this.modules.zero.namePrice) {
+                        await this.modules.zero.loadNamePrice();
+                    }
+                    
+                    // Approve ADRIAN tokens
+                    await this.modules.zero.approveRename(userAddress);
+                    
+                    this.showSuccess('ADRIAN tokens approved successfully! You can now rename your token.');
+                    
+                } catch (error) {
+                    console.error('Error approving rename:', error);
+                    this.showError(`Error approving rename: ${error.message}`);
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async renameToken() {
+                if (!this.selectedERC721) {
+                    this.showError('Please select an AdrianZERO token first.');
+                    return;
+                }
+
+                const nameInput = document.getElementById('newTokenName');
+                if (!nameInput || !nameInput.value.trim()) {
+                    this.showError('Please enter a new name for your token.');
+                    return;
+                }
+
+                const newName = nameInput.value.trim();
+                
+                try {
+                    this.showLoading();
+                    const userAddress = this.modules.wallet.getCurrentAccount();
+                    
+                    // Execute rename transaction
+                    const receipt = await this.modules.zero.executeRename(
+                        userAddress, 
+                        this.selectedERC721.tokenId, 
+                        newName
+                    );
+                    
+                    this.showSuccess(`Token renamed successfully! Transaction: ${receipt.transactionHash}`);
+                    
+                    // Hide rename section
+                    const renameSection = document.getElementById('rename-section');
+                    if (renameSection) {
+                        renameSection.style.display = 'none';
+                    }
+                    
+                } catch (error) {
+                    console.error('Error renaming token:', error);
+                    this.showError(`Error renaming token: ${error.message}`);
+                } finally {
+                    this.hideLoading();
+                }
             }
 
             generateCombinedImage() {
@@ -1211,6 +1301,11 @@
             showLoading() {
                 const loading = document.getElementById('loading');
                 if (loading) loading.style.display = 'block';
+            }
+
+            hideLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) loading.style.display = 'none';
             }
 
             hideLoading() {
