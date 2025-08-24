@@ -85,7 +85,7 @@ class FloppyManager {
      * Check if floppy should show Open Pack button
      */
     shouldShowOpenPack(tokenId) {
-        return tokenId === 10003 || tokenId === 10004 || tokenId === 10007 || 
+        return tokenId === 10000 || tokenId === 10003 || tokenId === 10004 || tokenId === 10007 || 
                (tokenId >= 15008 && tokenId <= 15015);
     }
 
@@ -122,12 +122,19 @@ class FloppyManager {
                 type: 'pack',
                 name: 'Action Pack'
             };
-        } else if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || tokenId === 10005) {
+        } else if (tokenId === 10001 || tokenId === 10002 || tokenId === 10005) {
             // Regular floppies - ADRIAN_FLOPPY_DISCS_CONTRACT
             return {
                 address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
                 type: 'floppy',
                 name: 'Floppy'
+            };
+        } else if (tokenId === 10000) {
+            // Floppy 10000 uses PackTokenMinter (Open Pack)
+            return {
+                address: window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT,
+                type: 'pack',
+                name: 'Pack 10000'
             };
         } else {
             // Default fallback
