@@ -85,7 +85,7 @@ class FloppyManager {
      * Check if floppy should show Open Pack button
      */
     shouldShowOpenPack(tokenId) {
-        return tokenId === 10000 || tokenId === 10003 || tokenId === 10004 || tokenId === 10007 || 
+        return tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || tokenId === 10003 || tokenId === 10004 || tokenId === 10007 || 
                (tokenId >= 15008 && tokenId <= 15015);
     }
 
@@ -122,19 +122,19 @@ class FloppyManager {
                 type: 'pack',
                 name: 'Action Pack'
             };
-        } else if (tokenId === 10001 || tokenId === 10002 || tokenId === 10005) {
-            // Regular floppies - ADRIAN_FLOPPY_DISCS_CONTRACT
+        } else if (tokenId === 10005) {
+            // Golden Floppy - ADRIAN_FLOPPY_DISCS_CONTRACT
             return {
                 address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
                 type: 'floppy',
                 name: 'Floppy'
             };
-        } else if (tokenId === 10000) {
-            // Floppy 10000 uses PackTokenMinter (Open Pack)
+        } else if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002) {
+            // Floppies 10000, 10001, 10002 use PackTokenMinter (Open Pack)
             return {
                 address: window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT,
                 type: 'pack',
-                name: 'Pack 10000'
+                name: 'Pack'
             };
         } else {
             // Default fallback
@@ -181,8 +181,8 @@ class FloppyManager {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (this.selectedFloppy.tokenId !== 10000 && this.selectedFloppy.tokenId !== 10004) {
-            throw new Error('This function is only available for Pack tokens 10000 and 10004.');
+        if (this.selectedFloppy.tokenId !== 10000 && this.selectedFloppy.tokenId !== 10001 && this.selectedFloppy.tokenId !== 10002 && this.selectedFloppy.tokenId !== 10004) {
+            throw new Error('This function is only available for Pack tokens 10000, 10001, 10002 and 10004.');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
