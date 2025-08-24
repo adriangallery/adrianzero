@@ -75,39 +75,146 @@ class ZeroManager {
         }
 
         try {
-            const tokenType = contractAddress === window.TraitLABConfig.CONTRACTS.ERC721 ? 'ERC721' : 'ERC1155';
-            console.log('Token type:', tokenType);
-
-            // Build API URL
-            const apiUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTs?owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=100`;
-
-            console.log('API URL:', apiUrl);
-
-            const response = await fetch(apiUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            // Determine token type based on contract address
+            const isERC721 = contractAddress.toLowerCase() === window.TraitLABConfig.CONTRACTS.ERC721.toLowerCase(); // AdrianZERO
+            const tokenType = isERC721 ? "ERC721" : "ERC1155";
+            
+            console.log(`Loading ${tokenType} tokens from contract: ${contractAddress}`);
+            
+            // Load all tokens with pagination
+            let allNfts = [];
+            let pageKey = null;
+            let hasMore = true;
+            let pageCount = 0;
+            
+            while (hasMore) {
+                pageCount++;
+                console.log(`Loading page ${pageCount}...`);
+                
+                // Build URL with pagination and correct endpoint
+                let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTsForOwner?owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=100&tokenType=${tokenType}`;
+                
+                if (pageKey) {
+                    alchemyUrl += `&pageKey=${pageKey}`;
+                }
+                
+                console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
+                
+                const alchemyResponse = await fetch(alchemyUrl);
+                
+                if (!alchemyResponse.ok) {
+                    throw new Error(`Error getting NFTs from Alchemy API: ${alchemyResponse.status}`);
+                }
+                
+                const nftsData = await alchemyResponse.json();
+                console.log(`Page ${pageCount}: ${nftsData.ownedNfts?.length || 0} tokens received`);
+                
+                // Add tokens from this page
+                if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
+                    allNfts = allNfts.concat(nftsData.ownedNfts);
+                }
+                
+                // Check if there are more pages
+                pageKey = nftsData.pageKey;
+                hasMore = !!pageKey;
+                
+                console.log(`Total tokens loaded so far: ${allNfts.length}. Has more: ${hasMore}`);
+                
+                // Optional: Add a small delay to avoid rate limiting
+                if (hasMore) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
             }
-
-            const data = await response.json();
-            console.log('API response:', data);
-
-            if (!data.ownedNfts || data.ownedNfts.length === 0) {
+            
+            console.log(`Total tokens loaded: ${allNfts.length} from ${pageCount} pages`);
+            
+            if (allNfts.length === 0) {
                 console.log('No NFTs found for this user');
                 this.emit('noTokensFound', { userAddress, contractAddress });
                 return [];
             }
-
-            // Process tokens
-            const tokens = data.ownedNfts.map(nft => {
+            
+            // Process all NFTs
+            const tokens = allNfts.map(nft => {
                 try {
-                    const tokenId = parseInt(nft.id.tokenId, 16);
-                    const title = nft.title || `Token #${tokenId}`;
-                    const mediaUrl = nft.media?.[0]?.gateway || nft.media?.[0]?.raw || '';
+                    // Extract tokenId
+                    let tokenId;
+                    if (nft.tokenId) {
+                        tokenId = nft.tokenId;
+                    } else if (nft.id && nft.id.tokenId) {
+                        tokenId = nft.id.tokenId;
+                    } else {
+                        console.error("No tokenId found in NFT:", nft);
+                        return null;
+                    }
+                    
+                    // Convert tokenId to integer
+                    let tokenIdInt;
+                    if (typeof tokenId === 'number') {
+                        tokenIdInt = tokenId;
+                    } else if (tokenId.startsWith('0x')) {
+                        tokenIdInt = parseInt(tokenId, 16);
+                    } else {
+                        tokenIdInt = parseInt(tokenId, 10);
+                    }
+                    
+                    if (isNaN(tokenIdInt)) {
+                        console.error("Invalid tokenId format:", tokenId);
+                        return null;
+                    }
+                    
+                    // Extract title/name
+                    let title = `Token #${tokenIdInt}`;
+                    
+                    if (nft.title) {
+                        title = nft.title;
+                    } else if (nft.name) {
+                        title = nft.name;
+                    } else if (nft.metadata && nft.metadata.name) {
+                        title = nft.metadata.name;
+                    } else if (nft.contract && nft.contract.name) {
+                        title = `${nft.contract.name} #${tokenIdInt}`;
+                    }
+                    
+                    // Extract image URL
+                    let mediaUrl = "";
+                    
+                    // For ERC721 tokens (AdrianZERO), use the specific render API format
+                    if (isERC721) {
+                        // Use the working format for AdrianZERO tokens
+                        mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
+                    } else {
+                        // For ERC1155 tokens, use the original logic
+                        // Try multiple locations for image URL
+                        if (nft.raw && nft.raw.metadata && nft.raw.metadata.image) {
+                            mediaUrl = nft.raw.metadata.image;
+                        } else if (nft.media && Array.isArray(nft.media) && nft.media.length > 0) {
+                            mediaUrl = nft.media[0].gateway || nft.media[0].raw || '';
+                        } else if (nft.metadata && nft.metadata.image) {
+                            mediaUrl = nft.metadata.image;
+                        }
+                    }
+                    
+                    // Extract balance
                     const balance = nft.balance || '1';
-                    const category = nft.metadata?.category || nft.metadata?.Category || '';
-
+                    
+                    // Extract category
+                    let category = '';
+                    if (nft.metadata) {
+                        category = nft.metadata.category || nft.metadata.Category || '';
+                        
+                        if (!category && nft.metadata.attributes) {
+                            const categoryAttr = nft.metadata.attributes.find(attr => 
+                                attr.trait_type && attr.trait_type.toLowerCase() === 'category'
+                            );
+                            if (categoryAttr) {
+                                category = categoryAttr.value.toLowerCase();
+                            }
+                        }
+                    }
+                    
                     return {
-                        tokenId: tokenId,
+                        tokenId: tokenIdInt,
                         title: title,
                         imageUrl: mediaUrl,
                         contract: nft.contract.address,
@@ -122,9 +229,9 @@ class ZeroManager {
                     return null;
                 }
             }).filter(token => token !== null);
-
+            
             console.log('Processed tokens:', tokens);
-
+            
             // For ERC1155 tokens, fetch individual metadata if it's empty
             if (tokenType === 'ERC1155') {
                 const tokensWithMetadata = await Promise.all(
