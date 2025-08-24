@@ -586,7 +586,7 @@
         <!-- Wallet Section -->
         <div class="wallet-section">
             <div id="connect-section">
-                <button id="connectBtn" class="connect-btn">🔌 Conectar Wallet</button>
+                                    <button id="connectBtn" class="connect-btn">🔌 Connect Wallet</button>
             </div>
             <div id="account-section" class="account-section" style="display: none;">
                 <div class="wallet-info">
@@ -644,23 +644,23 @@
                     <div id="activate-token-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="open-floppy-section" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="openFloppyBtn" class="apply-traits-btn">Abrir Floppy</button>
+                    <button id="openFloppyBtn" class="apply-traits-btn">Open Floppy</button>
                     <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="open-pack-section" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="openPackBtn" class="apply-traits-btn">Abrir Pack</button>
+                    <button id="openPackBtn" class="apply-traits-btn">Open Pack</button>
                     <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="use-serum-section" style="display: none; margin-top: 10px; text-align: none;">
-                    <button id="useSerumBtn" class="apply-traits-btn">Usar Serum</button>
+                    <button id="useSerumBtn" class="apply-traits-btn">Use Serum</button>
                     <div id="open-serum-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="rename-section" style="display: none; margin-top: 10px; text-align: center;">
                     <div style="margin-bottom: 8px;">
                         <input type="text" id="newTokenName" placeholder="Ingresa el nuevo nombre para tu AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
                     </div>
-                    <button id="approveRenameBtn" class="apply-traits-btn" style="margin-right: 10px;">Aprobar $ADRIAN</button>
-                    <button id="renameTokenBtn" class="apply-traits-btn">Renombrar Token</button>
+                    <button id="approveRenameBtn" class="apply-traits-btn" style="margin-right: 10px;">Approve $ADRIAN</button>
+                    <button id="renameTokenBtn" class="apply-traits-btn">Rename Token</button>
                     <div id="rename-status" class="apply-status" style="display: none;"></div>
                 </div>
             </div>
@@ -743,7 +743,7 @@
             }
 
             async init() {
-                console.log('🚀 Inicializando TraitLAB Refactorizado...');
+                console.log('🚀 Initializing TraitLAB (refactor)...');
                 
                 try {
                     // Initialize all modules
@@ -755,10 +755,10 @@
                     // Setup tab system
                     this.setupTabs();
                     
-                    console.log('✅ TraitLAB inicializado correctamente');
+                    console.log('✅ TraitLAB initialized successfully');
                     
                 } catch (error) {
-                    console.error('❌ Error inicializando TraitLAB:', error);
+                    console.error('❌ Error initializing TraitLAB:', error);
                 }
             }
 
@@ -817,7 +817,7 @@
                 });
                 
                 this.modules.traits.on('traitsApplied', (data) => {
-                    this.showSuccess(`Traits aplicados exitosamente! TX: ${data.transactionHash}`);
+                    this.showSuccess(`Traits applied successfully! TX: ${data.transactionHash}`);
                 });
                 
                 this.modules.traits.on('imageGenerated', (data) => {
@@ -830,20 +830,20 @@
                 
                 // Floppy events
                 this.modules.floppy.on('floppyOpened', (data) => {
-                    this.showSuccess(`Floppy abierto exitosamente! TX: ${data.transactionHash}`);
+                    this.showSuccess(`Floppy opened successfully! TX: ${data.transactionHash}`);
                 });
                 
                 this.modules.floppy.on('packOpened', (data) => {
-                    this.showSuccess(`Pack abierto exitosamente! TX: ${data.transactionHash}`);
+                    this.showSuccess(`Pack opened successfully! TX: ${data.transactionHash}`);
                 });
                 
                 this.modules.floppy.on('actionPackOpened', (data) => {
-                    this.showSuccess(`Action Pack abierto exitosamente! TX: ${data.transactionHash}`);
+                    this.showSuccess(`Action Pack opened successfully! TX: ${data.transactionHash}`);
                 });
                 
                 // Serums events
                 this.modules.serums.on('serumUsed', (data) => {
-                    this.showSuccess(`Serum usado exitosamente! TX: ${data.transactionHash}`);
+                    this.showSuccess(`Serum used successfully! TX: ${data.transactionHash}`);
                 });
                 
                 // Zero events
@@ -860,11 +860,11 @@
                 
                 // Zero events (continued)
                 this.modules.zero.on('tokenActivated', (data) => {
-                    this.showSuccess(`Token activado exitosamente! TX: ${data.transactionHash}`);
+                    this.showSuccess(`Token activated successfully! TX: ${data.transactionHash}`);
                 });
                 
                 this.modules.zero.on('tokenRenamed', (data) => {
-                    this.showSuccess(`Token renombrado exitosamente! TX: ${data.transactionHash}`);
+                    this.showSuccess(`Token renamed successfully! TX: ${data.transactionHash}`);
                 });
             }
             
@@ -934,7 +934,7 @@
                     
                 } catch (error) {
                     console.error('Error loading tokens:', error);
-                    this.showError(`Error cargando tokens: ${error.message}`);
+                    this.showError(`Failed to load tokens: ${error.message}`);
                 } finally {
                     this.hideLoading();
                 }
@@ -966,7 +966,7 @@
                 // Update UI
                 document.getElementById('connect-section').style.display = 'none';
                 document.getElementById('account-section').style.display = 'block';
-                document.getElementById('walletAddress').textContent = `${data.account.substring(0, 6)}...${data.account.substring(-4)}`;
+                document.getElementById('walletAddress').textContent = `${data.account.substring(0, 6)}...${data.account.slice(-4)}`;
                 
                 // Show tokens section
                 document.getElementById('tokens-section').style.display = 'block';
@@ -1014,12 +1014,18 @@
                     this.selectedERC721 = null;
                     this.selectedERC1155 = [];
                     this.selectedSerum = null;
+                    
+                    // Propagate selection to floppy module
+                    this.modules.floppy.setSelectedFloppy(token);
                 } else if (filter === 'serum') {
                     console.log('🧪 Setting as Serum token');
                     this.selectedSerum = token;
                     this.selectedERC721 = null;
                     this.selectedERC1155 = [];
                     this.selectedFloppy = null;
+                    
+                    // Propagate selection to serum module
+                    this.modules.serums.setSelectedSerum(token);
                 } else {
                     // AdrianLAB - traits
                     console.log('🎭 Setting as Traits token');
@@ -1074,10 +1080,10 @@
                     text += `<p><strong>Título:</strong> ${this.selectedERC721.title}</p>`;
                     
                     // Add action buttons for ERC721
-                    buttons += `<button class="apply-traits-btn" onclick="app.refreshMetadata()">🔄 Actualizar Metadata</button>`;
-                    buttons += `<button class="apply-traits-btn" onclick="app.activateToken()">⚡ Activar Token</button>`;
-                    buttons += `<button class="apply-traits-btn" onclick="app.loadNamePrice()">💰 Cargar Precio Nombre</button>`;
-                    buttons += `<button class="apply-traits-btn" onclick="app.showRenameSection()">✏️ Renombrar Token</button>`;
+                    buttons += `<button class="apply-traits-btn" onclick="app.refreshMetadata()">🔄 Refresh OpenSea Metadata</button>`;
+                    buttons += `<button class="apply-traits-btn" onclick="app.activateToken()">⚡ Assign SKIN</button>`;
+                    buttons += `<button class="apply-traits-btn" onclick="app.loadNamePrice()">💰 Load Name Price</button>`;
+                    buttons += `<button class="apply-traits-btn" onclick="app.showRenameSection()">✏️ Rename Token</button>`;
                 }
                 
                 if (this.selectedERC1155.length > 0) {
@@ -1087,8 +1093,8 @@
                     });
                     
                     if (this.selectedERC721) {
-                        buttons += `<button class="apply-traits-btn" onclick="app.generateCombinedImage()">🖼️ Generar Imagen</button>`;
-                        buttons += `<button class="apply-traits-btn" onclick="app.applyTraits()">🎭 Aplicar Traits</button>`;
+                        buttons += `<button class="apply-traits-btn" onclick="app.generateCombinedImage()">🖼️ Generate Image</button>`;
+                        buttons += `<button class="apply-traits-btn" onclick="app.applyTraits()">🎭 Apply Traits</button>`;
                         
                         // Automatically generate combined image when both are selected
                         this.generateCombinedImage();
@@ -1289,7 +1295,7 @@
                     }
                     
                     // Approve ADRIAN tokens
-                    await this.modules.zero.approveRename(userAddress);
+                    await this.modules.zero.approveRename();
                     
                     this.showSuccess('ADRIAN tokens approved successfully! You can now rename your token.');
                     
@@ -1467,11 +1473,6 @@
             showLoading() {
                 const loading = document.getElementById('loading');
                 if (loading) loading.style.display = 'block';
-            }
-
-            hideLoading() {
-                const loading = document.getElementById('loading');
-                if (loading) loading.style.display = 'none';
             }
 
             hideLoading() {
