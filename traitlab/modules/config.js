@@ -64,6 +64,8 @@ const ADRIAN_NAME_REGISTRY_ABI = [
     "function namePrice() view returns (uint256)",
     // Optional introspection (logged if present)
     "function getCoreContract() view returns (address)",
+    // Get name for token
+    "function getName(uint256 tokenId) view returns (string)",
     // Rename action
     "function rename(uint256 tokenId, string name)"
 ];
