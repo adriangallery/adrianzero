@@ -1203,7 +1203,14 @@
 
             // Action Methods
             async refreshMetadata() {
-                if (!this.selectedERC721) return;
+                // Get current selection state from UI module
+                const selectionState = this.modules.ui.getSelectionState();
+                console.log('🔍 refreshMetadata - Current selection state:', selectionState);
+                
+                if (!selectionState.selectedERC721) {
+                    this.showError('Please select an AdrianZERO token first.');
+                    return;
+                }
                 
                 try {
                     await this.modules.zero.refreshMetadata();
@@ -1213,7 +1220,14 @@
             }
 
             async activateToken() {
-                if (!this.selectedERC721) return;
+                // Get current selection state from UI module
+                const selectionState = this.modules.ui.getSelectionState();
+                console.log('🔍 activateToken - Current selection state:', selectionState);
+                
+                if (!selectionState.selectedERC721) {
+                    this.showError('Please select an AdrianZERO token first.');
+                    return;
+                }
                 
                 try {
                     await this.modules.zero.activateToken();
@@ -1231,7 +1245,11 @@
             }
 
             showRenameSection() {
-                if (!this.selectedERC721) {
+                // Get current selection state from UI module
+                const selectionState = this.modules.ui.getSelectionState();
+                console.log('🔍 showRenameSection - Current selection state:', selectionState);
+                
+                if (!selectionState.selectedERC721) {
                     this.showError('Please select an AdrianZERO token first.');
                     return;
                 }
@@ -1252,7 +1270,11 @@
             }
 
             async approveRename() {
-                if (!this.selectedERC721) {
+                // Get current selection state from UI module
+                const selectionState = this.modules.ui.getSelectionState();
+                console.log('🔍 approveRename - Current selection state:', selectionState);
+                
+                if (!selectionState.selectedERC721) {
                     this.showError('Please select an AdrianZERO token first.');
                     return;
                 }
@@ -1280,7 +1302,11 @@
             }
 
             async renameToken() {
-                if (!this.selectedERC721) {
+                // Get current selection state from UI module
+                const selectionState = this.modules.ui.getSelectionState();
+                console.log('🔍 renameToken - Current selection state:', selectionState);
+                
+                if (!selectionState.selectedERC721) {
                     this.showError('Please select an AdrianZERO token first.');
                     return;
                 }
@@ -1387,7 +1413,14 @@
             }
 
             async openPack() {
-                if (!this.selectedFloppy) return;
+                // Get current selection state from UI module
+                const selectionState = this.modules.ui.getSelectionState();
+                console.log('🔍 openPack - Current selection state:', selectionState);
+                
+                if (!selectionState.selectedFloppy) {
+                    this.showError('Please select a floppy disc first.');
+                    return;
+                }
                 
                 try {
                     await this.modules.floppy.openSelectedPack();
@@ -1397,7 +1430,14 @@
             }
 
             async openFloppy() {
-                if (!this.selectedFloppy) return;
+                // Get current selection state from UI module
+                const selectionState = this.modules.ui.getSelectionState();
+                console.log('🔍 openFloppy - Current selection state:', selectionState);
+                
+                if (!selectionState.selectedFloppy) {
+                    this.showError('Please select a floppy disc first.');
+                    return;
+                }
                 
                 try {
                     await this.modules.floppy.openFloppy();
@@ -1407,10 +1447,17 @@
             }
 
             async useSerum() {
-                if (!this.selectedSerum || !this.selectedERC721) return;
+                // Get current selection state from UI module
+                const selectionState = this.modules.ui.getSelectionState();
+                console.log('🔍 useSerum - Current selection state:', selectionState);
+                
+                if (!selectionState.selectedSerum || !selectionState.selectedERC721) {
+                    this.showError('Please select both a serum and an AdrianZERO token first.');
+                    return;
+                }
                 
                 try {
-                    await this.modules.serums.useSerum(this.selectedERC721);
+                    await this.modules.serums.useSerum(selectionState.selectedERC721);
                 } catch (error) {
                     this.showError(`Error using serum: ${error.message}`);
                 }
