@@ -138,6 +138,15 @@ class UIManager {
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid) return;
 
+        // Clean up existing event listeners before clearing
+        const existingCards = tokensGrid.querySelectorAll('.token-card');
+        existingCards.forEach(card => {
+            if (card._clickHandler) {
+                card.removeEventListener('click', card._clickHandler);
+                delete card._clickHandler;
+            }
+        });
+
         tokensGrid.innerHTML = "";
         
         tokens.forEach(token => {
@@ -238,11 +247,15 @@ class UIManager {
                 </div>
             `;
             
-            // Add click event for token selection
-            tokenCard.addEventListener('click', () => {
-                // Handle visual selection state and emit event
-                this.handleTokenSelection(tokenCard, token);
-            });
+                    // Add click event for token selection
+        const clickHandler = () => {
+            // Handle visual selection state and emit event
+            this.handleTokenSelection(tokenCard, token);
+        };
+        
+        // Store the handler reference for potential removal
+        tokenCard._clickHandler = clickHandler;
+        tokenCard.addEventListener('click', clickHandler);
             
             tokensGrid.appendChild(tokenCard);
         });
