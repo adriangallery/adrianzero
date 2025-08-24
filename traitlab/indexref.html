@@ -1007,7 +1007,10 @@
                     this.selectedERC721 = token;
                     this.selectedERC1155 = [];
                     this.selectedFloppy = null;
-                    this.selectedSerum = null;
+                    // Don't reset selectedSerum if we're in serum mode
+                    if (this.currentTab !== 'serum') {
+                        this.selectedSerum = null;
+                    }
                 } else if (filter === 'floppy') {
                     console.log('💾 Setting as Floppy token');
                     this.selectedFloppy = token;
