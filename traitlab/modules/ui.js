@@ -170,7 +170,7 @@ class UIManager {
                 } else if (token.tokenId === 10005) {
                     imageUrl = this.getImagePath(10005, '.gif');
                 } else if (token.tokenId === 10007) {
-                    imageUrl = this.getImagePath(10007, '.png');
+                    imageUrl = this.getImagePath(10007, '.gif');
                 } else if (token.tokenId === 15000) {
                     imageUrl = this.getImagePath(15000, '.gif');
                 } else if (token.tokenId === 15001) {
