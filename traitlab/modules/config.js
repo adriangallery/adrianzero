@@ -102,6 +102,7 @@ if (typeof module !== 'undefined' && module.exports) {
         ACTION_PACK_10007_CONTRACT,
         SERUM_MODULE_CONTRACT,
         ADRIAN_TOKEN,
-        ADRIAN_LAB_CORE_CONTRACT
+        ADRIAN_LAB_CORE_CONTRACT,
+        ADRIAN_NAME_REGISTRY_ABI
     };
 }
