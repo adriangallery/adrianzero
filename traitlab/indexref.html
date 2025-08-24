@@ -988,6 +988,7 @@
                 this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO por defecto
                 this.currentFilter = null;
                 this.tokens = [];
+                this.traitTokens = []; // Store trait tokens separately
                 this.selectedERC721 = null;
                 this.selectedERC1155 = [];
                 this.selectedFloppy = null;
@@ -1258,23 +1259,19 @@
 
             filterTraitsByCategory(category) {
                 console.log('Filtering traits by category:', category);
+                console.log('Using stored trait tokens:', this.traitTokens.length);
                 
-                // Get all trait tokens - check multiple possible contract properties
-                const traitTokens = this.tokens.filter(token => {
-                    const isTraitContract = token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" || 
-                                          token.contractAddress === "0x90546848474fb3c9fda3fdad887969bb244e7e58" ||
-                                          token.contractId === "0x90546848474fb3c9fda3fdad887969bb244e7e58";
-                    const isERC1155 = token.tokenType === 'ERC1155' || token.type === 'ERC1155';
-                    return isTraitContract && isERC1155;
-                });
-                
-                console.log('Found trait tokens:', traitTokens.length);
+                if (!this.traitTokens || this.traitTokens.length === 0) {
+                    console.log('No trait tokens available, showing empty state');
+                    this.displayTraitsByCategory([]);
+                    return;
+                }
                 
                 if (category === 'all') {
-                    this.displayTraitsByCategory(traitTokens);
+                    this.displayTraitsByCategory(this.traitTokens);
                 } else {
                     // Filter by specific category
-                    const filteredTraits = traitTokens.filter(token => {
+                    const filteredTraits = this.traitTokens.filter(token => {
                         const traitInfo = this.modules.traits.getTraitCategory(token.tokenId);
                         console.log(`Token ${token.tokenId} category: ${traitInfo}, looking for: ${category}`);
                         return traitInfo === category;
@@ -1293,19 +1290,16 @@
                     return;
                 }
                 
-                // Get all trait tokens - check multiple possible contract properties
-                const traitTokens = this.tokens.filter(token => {
-                    const isTraitContract = token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" || 
-                                          token.contractAddress === "0x90546848474fb3c9fda3fdad887969bb244e7e58" ||
-                                          token.contractId === "0x90546848474fb3c9fda3fdad887969bb244e7e58";
-                    const isERC1155 = token.tokenType === 'ERC1155' || token.type === 'ERC1155';
-                    return isTraitContract && isERC1155;
-                });
+                if (!this.traitTokens || this.traitTokens.length === 0) {
+                    console.log('No trait tokens available for search');
+                    this.displayTraitsByCategory([]);
+                    return;
+                }
                 
-                console.log('Found trait tokens for search:', traitTokens.length);
+                console.log('Using stored trait tokens for search:', this.traitTokens.length);
                 
                 // Filter by search term
-                const searchResults = traitTokens.filter(token => 
+                const searchResults = this.traitTokens.filter(token => 
                     token.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     token.tokenId.toString().includes(searchTerm)
                 );
@@ -1587,6 +1581,17 @@
             onTokensLoaded(data) {
                 console.log('Tokens loaded:', data);
                 this.tokens = data.tokens;
+                
+                // Store trait tokens separately for the categories system
+                this.traitTokens = data.tokens.filter(token => {
+                    const isTraitContract = token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" || 
+                                          token.contractAddress === "0x90546848474fb3c9fda3fdad887969bb244e7e58" ||
+                                          token.contractId === "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                    const isERC1155 = token.tokenType === 'ERC1155' || token.type === 'ERC1155';
+                    return isTraitContract && isERC1155;
+                });
+                
+                console.log('Trait tokens stored:', this.traitTokens.length);
                 
                 // Update display based on current tab
                 this.displayTokens(data.tokens, this.currentTab);
