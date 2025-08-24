@@ -3,6 +3,8 @@
  * Contiene todas las constantes, contratos y configuración base
  */
 
+console.log('🚀 CONFIG.JS: Archivo cargado y ejecutándose...');
+
 // API Configuration
 const ALCHEMY_API_KEY = "5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot";
 const ALCHEMY_RPC_URL = `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
@@ -89,6 +91,7 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
     // Browser environment - attach to window
     console.log('🔧 Config.js: Setting up window.TraitLABConfig...');
+    console.log('🔧 Config.js: ADRIAN_NAME_REGISTRY_ABI value:', ADRIAN_NAME_REGISTRY_ABI);
     window.TraitLABConfig = {
         ALCHEMY_API_KEY,
         ALCHEMY_RPC_URL,
@@ -107,4 +110,5 @@ if (typeof module !== 'undefined' && module.exports) {
         ADRIAN_NAME_REGISTRY_ABI
     };
     console.log('🔧 Config.js: window.TraitLABConfig setup complete:', window.TraitLABConfig);
+    console.log('🔧 Config.js: Verificando ABI específica:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_ABI);
 }
