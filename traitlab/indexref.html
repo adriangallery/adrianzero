@@ -549,6 +549,188 @@
             font-size: 1.1rem;
         }
 
+        .traits-categories-filter {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .categories-title {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 15px;
+            font-family: 'VT323', monospace;
+        }
+
+        .categories-grid {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .category-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-family: 'VT323', monospace;
+        }
+
+        .category-btn.active {
+            background: #00cc00;
+            color: #000;
+        }
+
+        .category-btn:hover:not(.active) {
+            background: rgba(0, 255, 0, 0.2);
+            color: #fff;
+        }
+
+        .traits-search {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .traits-search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            width: 300px;
+            font-family: 'VT323', monospace;
+        }
+
+        .traits-search-input:focus {
+            outline: none;
+            border-color: #00ff00;
+        }
+
+        .clear-search-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+        }
+
+        .clear-search-btn:hover {
+            background: #c82333;
+        }
+
+        /* Estilos para tokens organizados por categorías */
+        .traits-category-section {
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00ff00;
+        }
+
+        .category-name {
+            font-size: 1.3rem;
+            color: #00ff00;
+            font-family: 'VT323', monospace;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .category-count {
+            background: #00ff00;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .category-tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .trait-token-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .trait-token-card:hover {
+            border-color: #00ff00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .trait-token-card.selected {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .trait-token-image {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 8px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .trait-token-name {
+            font-size: 0.8rem;
+            color: #fff;
+            margin-bottom: 4px;
+            font-family: 'VT323', monospace;
+            line-height: 1.2;
+        }
+
+        .trait-token-id {
+            font-size: 0.7rem;
+            color: #888;
+            font-family: 'VT323', monospace;
+        }
+
+        .trait-token-category {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-family: 'VT323', monospace;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -569,6 +751,48 @@
             
             .tokens-grid {
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            /* Mobile styles for traits categories */
+            .categories-grid {
+                gap: 8px;
+            }
+            
+            .category-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .traits-search {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .traits-search-input {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .category-tokens-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 8px;
+            }
+            
+            .trait-token-card {
+                padding: 8px;
+            }
+            
+            .trait-token-image {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .trait-token-name {
+                font-size: 0.7rem;
+            }
+            
+            .trait-token-id {
+                font-size: 0.6rem;
             }
         }
     </style>
@@ -619,6 +843,26 @@
                 <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">
                     RENAME
                 </button>
+            </div>
+
+            <!-- Traits Categories Filter - Solo visible en tab de Traits -->
+            <div id="traits-categories-filter" class="traits-categories-filter" style="display: none;">
+                <h4 class="categories-title">🎭 Filtrar por Categoría:</h4>
+                <div class="categories-grid">
+                    <button class="category-btn active" data-category="all">Todas</button>
+                    <button class="category-btn" data-category="BACKGROUND">Background</button>
+                    <button class="category-btn" data-category="EAR">Ear</button>
+                    <button class="category-btn" data-category="EYE">Eye</button>
+                    <button class="category-btn" data-category="MOUTH">Mouth</button>
+                    <button class="category-btn" data-category="NOSE">Nose</button>
+                    <button class="category-btn" data-category="SKIN">Skin</button>
+                    <button class="category-btn" data-category="ACCESSORY">Accessory</button>
+                    <button class="category-btn" data-category="SPECIAL">Special</button>
+                </div>
+                <div class="traits-search">
+                    <input type="text" id="traits-search-input" placeholder="🔍 Buscar traits por nombre..." class="traits-search-input">
+                    <button id="clear-traits-search" class="clear-search-btn">Limpiar</button>
+                </div>
             </div>
 
             <div id="selection-info" class="selection-info minimized" style="display: none;">
@@ -949,6 +1193,9 @@
                         this.currentContract = contract;
                         this.currentFilter = filter;
                         
+                        // Show/hide traits categories filter based on tab
+                        this.toggleTraitsCategoriesFilter(filter);
+                        
                         // Update UI filter
                         if (this.modules.ui && this.modules.ui.setCurrentFilter) {
                             this.modules.ui.setCurrentFilter(filter);
@@ -963,6 +1210,197 @@
                         this.loadTokensForTab();
                     });
                 });
+            }
+
+            toggleTraitsCategoriesFilter(filter) {
+                const traitsCategoriesFilter = document.getElementById('traits-categories-filter');
+                if (traitsCategoriesFilter) {
+                    if (filter === 'traits' || (!filter && this.currentContract === "0x90546848474fb3c9fda3fdad887969bb244e7e58")) {
+                        traitsCategoriesFilter.style.display = 'block';
+                        this.setupTraitsCategoriesFilter();
+                    } else {
+                        traitsCategoriesFilter.style.display = 'none';
+                    }
+                }
+            }
+
+            setupTraitsCategoriesFilter() {
+                // Setup category filter buttons
+                const categoryBtns = document.querySelectorAll('.category-btn');
+                categoryBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // Update active category button
+                        categoryBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        const category = btn.dataset.category;
+                        this.filterTraitsByCategory(category);
+                    });
+                });
+
+                // Setup search functionality
+                const searchInput = document.getElementById('traits-search-input');
+                const clearSearchBtn = document.getElementById('clear-traits-search');
+                
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        this.searchTraits(e.target.value);
+                    });
+                }
+                
+                if (clearSearchBtn) {
+                    clearSearchBtn.addEventListener('click', () => {
+                        if (searchInput) searchInput.value = '';
+                        this.searchTraits('');
+                    });
+                }
+            }
+
+            filterTraitsByCategory(category) {
+                console.log('Filtering traits by category:', category);
+                
+                // Get all trait tokens
+                const traitTokens = this.tokens.filter(token => 
+                    token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" && 
+                    token.tokenType === 'ERC1155'
+                );
+                
+                if (category === 'all') {
+                    this.displayTraitsByCategory(traitTokens);
+                } else {
+                    // Filter by specific category
+                    const filteredTraits = traitTokens.filter(token => {
+                        const traitInfo = this.modules.traits.getTraitCategory(token.tokenId);
+                        return traitInfo === category;
+                    });
+                    this.displayTraitsByCategory(filteredTraits);
+                }
+            }
+
+            searchTraits(searchTerm) {
+                console.log('Searching traits with term:', searchTerm);
+                
+                if (!searchTerm.trim()) {
+                    // If search is empty, show all traits
+                    this.filterTraitsByCategory('all');
+                    return;
+                }
+                
+                // Get all trait tokens
+                const traitTokens = this.tokens.filter(token => 
+                    token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" && 
+                    token.tokenType === 'ERC1155'
+                );
+                
+                // Filter by search term
+                const searchResults = traitTokens.filter(token => 
+                    token.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    token.tokenId.toString().includes(searchTerm)
+                );
+                
+                this.displayTraitsByCategory(searchResults);
+            }
+
+            displayTraitsByCategory(traits) {
+                console.log('Displaying traits by category:', traits);
+                
+                const grid = document.getElementById('tokens-grid');
+                if (!grid) return;
+                
+                if (!traits || traits.length === 0) {
+                    grid.innerHTML = '<div class="no-tokens"><p>No traits found for this category/search</p></div>';
+                    return;
+                }
+                
+                // Group traits by category
+                const traitsByCategory = new Map();
+                traits.forEach(trait => {
+                    const category = this.modules.traits.getTraitCategory(trait.tokenId) || 'UNKNOWN';
+                    if (!traitsByCategory.has(category)) {
+                        traitsByCategory.set(category, []);
+                    }
+                    traitsByCategory.get(category).push(trait);
+                });
+                
+                // Generate HTML for each category
+                let html = '';
+                traitsByCategory.forEach((categoryTraits, category) => {
+                    html += `
+                        <div class="traits-category-section">
+                            <div class="category-header">
+                                <span class="category-name">${category}</span>
+                                <span class="category-count">${categoryTraits.length}</span>
+                            </div>
+                            <div class="category-tokens-grid">
+                    `;
+                    
+                    categoryTraits.forEach(trait => {
+                        const isSelected = this.selectedERC1155.some(t => t.tokenId === trait.tokenId);
+                        const imageUrl = `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
+                        
+                        html += `
+                            <div class="trait-token-card ${isSelected ? 'selected' : ''}" 
+                                 data-token-id="${trait.tokenId}" 
+                                 onclick="window.app.selectTraitToken(${trait.tokenId})">
+                                <div class="trait-token-category">${category}</div>
+                                <img src="${imageUrl}" alt="${trait.title}" class="trait-token-image" 
+                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'">
+                                <div class="trait-token-name">${trait.title}</div>
+                                <div class="trait-token-id">#${trait.tokenId}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                grid.innerHTML = html;
+            }
+
+            selectTraitToken(tokenId) {
+                console.log('Selecting trait token:', tokenId);
+                
+                // Find the token in the current tokens array
+                const token = this.tokens.find(t => 
+                    t.tokenId === tokenId && 
+                    t.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" &&
+                    t.tokenType === 'ERC1155'
+                );
+                
+                if (!token) {
+                    console.error('Token not found:', tokenId);
+                    return;
+                }
+                
+                // Use the traits module to handle selection
+                this.modules.traits.handleTraitSelection(token);
+                
+                // Update visual selection
+                this.updateTraitsVisualSelection({
+                    selectedTraits: this.modules.traits.getSelectedTraits()
+                });
+                
+                // Refresh the display to show updated selection
+                this.refreshTraitsDisplay();
+            }
+
+            refreshTraitsDisplay() {
+                // Get current active category
+                const activeCategoryBtn = document.querySelector('.category-btn.active');
+                const currentCategory = activeCategoryBtn ? activeCategoryBtn.dataset.category : 'all';
+                
+                // Get current search term
+                const searchInput = document.getElementById('traits-search-input');
+                const currentSearch = searchInput ? searchInput.value : '';
+                
+                if (currentSearch.trim()) {
+                    this.searchTraits(currentSearch);
+                } else {
+                    this.filterTraitsByCategory(currentCategory);
+                }
             }
 
             async loadTokensForTab() {
@@ -1001,9 +1439,16 @@
                 
                 if (noTokens) noTokens.style.display = 'none';
                 
-                // Use UI module to display tokens
-                if (this.modules.ui && this.modules.ui.displayTokens) {
-                    this.modules.ui.displayTokens(tokens, true);
+                // Check if we're in traits tab and should use category display
+                if (this.currentFilter === 'traits' || 
+                    (!this.currentFilter && this.currentContract === "0x90546848474fb3c9fda3fdad887969bb244e7e58")) {
+                    // Use new category-based display for traits
+                    this.displayTraitsByCategory(tokens);
+                } else {
+                    // Use UI module to display tokens for other tabs
+                    if (this.modules.ui && this.modules.ui.displayTokens) {
+                        this.modules.ui.displayTokens(tokens, true);
+                    }
                 }
             }
 
