@@ -849,7 +849,29 @@
                     this.showSuccess(`Metadata refrescada para token ${data.tokenId}`);
                 });
                 
-                this.modules.zero.on('tokenActivated', (data) => {
+                                // Setup button event listeners after DOM is loaded
+                this.setupButtonEventListeners();
+            }
+            
+            setupButtonEventListeners() {
+                // Open Floppy button
+                const openFloppyBtn = document.getElementById('openFloppyBtn');
+                if (openFloppyBtn) {
+                    openFloppyBtn.addEventListener('click', () => {
+                        this.openFloppy();
+                    });
+                }
+                
+                // Open Pack button
+                const openPackBtn = document.getElementById('openPackBtn');
+                if (openPackBtn) {
+                    openPackBtn.addEventListener('click', () => {
+                        this.openPack();
+                    });
+                }
+            }
+            
+            this.modules.zero.on('tokenActivated', (data) => {
                     this.showSuccess(`Token activado exitosamente! TX: ${data.transactionHash}`);
                 });
                 
@@ -1014,11 +1036,19 @@
                 const selectionInfo = document.getElementById('selection-info');
                 const selectionText = document.getElementById('selection-text');
                 const actionButtons = document.querySelector('.action-buttons');
+                const openFloppySection = document.getElementById('open-floppy-section');
+                const openPackSection = document.getElementById('open-pack-section');
+                const openFloppyBtn = document.getElementById('openFloppyBtn');
+                const openPackBtn = document.getElementById('openPackBtn');
                 
                 if (!selectionInfo || !selectionText || !actionButtons) return;
                 
                 let text = '';
                 let buttons = '';
+                
+                // Hide all sections by default
+                if (openFloppySection) openFloppySection.style.display = 'none';
+                if (openPackSection) openPackSection.style.display = 'none';
                 
                 if (this.selectedERC721) {
                     text += `<h4>Token ERC721 Seleccionado:</h4>`;
@@ -1048,14 +1078,71 @@
                 }
                 
                 if (this.selectedFloppy) {
+                    // Use hardcoded names for specific floppy discs (same as index.html)
+                    let floppyDisplayName = this.selectedFloppy.title;
+                    if (this.selectedFloppy.tokenId === 10003) {
+                        floppyDisplayName = 'GLITCH Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10004) {
+                        floppyDisplayName = 'GF Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10005) {
+                        floppyDisplayName = 'Golden Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10007) {
+                        floppyDisplayName = 'Action Pack 10007';
+                    }
+                    
                     text += `<h4>Floppy Seleccionado:</h4>`;
                     text += `<p><strong>ID:</strong> ${this.selectedFloppy.tokenId}</p>`;
-                    text += `<p><strong>Título:</strong> ${this.selectedFloppy.title}</p>`;
+                    text += `<p><strong>Título:</strong> ${floppyDisplayName}</p>`;
                     
-                    if (this.modules.floppy.shouldShowOpenPack(this.selectedFloppy.tokenId)) {
-                        buttons += `<button class="apply-traits-btn" onclick="app.openPack()">📦 Open Pack</button>`;
+                    // LÓGICA COMPLETA PARA MOSTRAR/OCULTAR BOTONES (basada en index.html)
+                    if (this.selectedFloppy.tokenId === 10003) {
+                        // GLITCH Floppy → Open Pack
+                        if (openFloppySection) openFloppySection.style.display = 'none';
+                        if (openPackSection) openPackSection.style.display = 'block';
+                        if (openPackBtn) {
+                            openPackBtn.textContent = 'Open Pack';
+                            openPackBtn.disabled = false;
+                        }
+                    } else if (this.selectedFloppy.tokenId === 10004) {
+                        // GF Floppy → Open Pack
+                        if (openFloppySection) openFloppySection.style.display = 'none';
+                        if (openPackSection) openPackSection.style.display = 'block';
+                        if (openPackBtn) {
+                            openPackBtn.textContent = 'Open Pack';
+                            openPackBtn.disabled = false;
+                        }
+                    } else if (this.selectedFloppy.tokenId === 10007) {
+                        // Action Pack 10007 → Open Pack
+                        if (openFloppySection) openFloppySection.style.display = 'none';
+                        if (openPackSection) openPackSection.style.display = 'block';
+                        if (openPackBtn) {
+                            openPackBtn.textContent = 'Open Pack';
+                            openPackBtn.disabled = false;
+                        }
+                    } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015) {
+                        // Action Packs 15008-15015 → Open Pack
+                        if (openFloppySection) openFloppySection.style.display = 'none';
+                        if (openPackSection) openPackSection.style.display = 'block';
+                        if (openPackBtn) {
+                            openPackBtn.textContent = 'Open Pack';
+                            openPackBtn.disabled = false;
+                        }
+                    } else if (this.selectedFloppy.tokenId === 10005) {
+                        // Golden Floppy → Open Floppy
+                        if (openFloppySection) openFloppySection.style.display = 'block';
+                        if (openPackSection) openPackSection.style.display = 'none';
+                        if (openFloppyBtn) {
+                            openFloppyBtn.textContent = 'Open Floppy';
+                            openFloppyBtn.disabled = false;
+                        }
                     } else {
-                        buttons += `<button class="apply-traits-btn" onclick="app.openFloppy()">💾 Open Floppy</button>`;
+                        // Otros floppies → Open Floppy
+                        if (openFloppySection) openFloppySection.style.display = 'block';
+                        if (openPackSection) openPackSection.style.display = 'none';
+                        if (openFloppyBtn) {
+                            openFloppyBtn.textContent = 'Open Floppy';
+                            openFloppyBtn.disabled = false;
+                        }
                     }
                 }
                 
