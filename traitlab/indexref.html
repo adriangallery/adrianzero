@@ -1014,7 +1014,10 @@
                 } else if (filter === 'floppy') {
                     console.log('💾 Setting as Floppy token');
                     this.selectedFloppy = token;
-                    this.selectedERC721 = null;
+                    // Don't reset selectedERC721 if we're in floppy mode
+                    if (this.currentTab !== 'floppy') {
+                        this.selectedERC721 = null;
+                    }
                     this.selectedERC1155 = [];
                     this.selectedSerum = null;
                     
@@ -1185,8 +1188,17 @@
                     text += `<p><strong>ID:</strong> ${this.selectedSerum.tokenId}</p>`;
                     text += `<p><strong>Título:</strong> ${this.selectedSerum.title}</p>`;
                     
+                    console.log('🔍 updateSelectionInfo - Serum + ERC721 check:', {
+                        selectedSerum: this.selectedSerum?.tokenId,
+                        selectedERC721: this.selectedERC721?.tokenId,
+                        willShowButton: !!this.selectedERC721
+                    });
+                    
                     if (this.selectedERC721) {
                         buttons += `<button class="apply-traits-btn" onclick="app.useSerum()">🧪 Usar Serum</button>`;
+                        console.log('✅ Botón "Use Serum" añadido');
+                    } else {
+                        console.log('❌ No se añade botón - falta selectedERC721');
                     }
                 }
                 
