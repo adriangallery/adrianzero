@@ -715,7 +715,19 @@ class FloppyManager {
             
             const contractAddress = contractInfo.address;
             const contractABI = [
-                'function openFloppy(uint256 floppyId) external'
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "packId",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "openPack",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
             ];
             
             console.log('Using contract:', contractAddress);
@@ -739,13 +751,13 @@ class FloppyManager {
             const contractWithSigner = new ethers.Contract(contractAddress, contractABI, signer);
             
             // Prepare transaction parameters
-            const floppyId = this.selectedFloppy.tokenId;
+            const packId = this.selectedFloppy.tokenId;
             
             console.log('Confirming transaction in your wallet...');
-            console.log('Floppy ID:', floppyId);
+            console.log('Pack ID:', packId);
             
-            // Call openFloppy function
-            const tx = await contractWithSigner.openFloppy(floppyId);
+            // Call openPack function
+            const tx = await contractWithSigner.openPack(packId);
             
             console.log('Transaction sent:', tx.hash);
             
@@ -756,7 +768,7 @@ class FloppyManager {
             
             // Emit success event
             this.emit('floppyOpened', { 
-                floppyId, 
+                packId, 
                 transactionHash: receipt.transactionHash,
                 receipt 
             });
