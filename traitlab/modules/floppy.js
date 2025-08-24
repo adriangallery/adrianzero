@@ -181,8 +181,8 @@ class FloppyManager {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (this.selectedFloppy.tokenId !== 10004) {
-            throw new Error('This function is only available for Pack token 10004.');
+        if (this.selectedFloppy.tokenId !== 10000 && this.selectedFloppy.tokenId !== 10004) {
+            throw new Error('This function is only available for Pack tokens 10000 and 10004.');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
