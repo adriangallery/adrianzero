@@ -9,6 +9,12 @@ class UIManager {
         this.domElements = new Map();
         this.currentFilter = null;
         
+        // Selection state properties (like in original index.html)
+        this.selectedERC721 = null;
+        this.selectedERC1155 = [];
+        this.selectedFloppy = null;
+        this.selectedSerum = null;
+        
         // Bind methods
         this.displayTokens = this.displayTokens.bind(this);
         this.updateSelectionInfo = this.updateSelectionInfo.bind(this);
@@ -32,6 +38,9 @@ class UIManager {
         this.showActivateTokenStatus = this.showActivateTokenStatus.bind(this);
         this.showRenameStatus = this.showRenameStatus.bind(this);
         this.showOpenPackStatus = this.showOpenPackStatus.bind(this);
+        
+        // Selection methods
+        this.getSelectionState = this.getSelectionState.bind(this);
     }
 
     /**
@@ -231,7 +240,7 @@ class UIManager {
             
             // Add click event for token selection
             tokenCard.addEventListener('click', () => {
-                // Handle visual selection state
+                // Handle visual selection state and emit event
                 this.handleTokenSelection(tokenCard, token);
             });
             
@@ -244,7 +253,7 @@ class UIManager {
     }
 
     /**
-     * Handle token selection with visual feedback
+     * Handle token selection with visual feedback - using original logic
      */
     handleTokenSelection(tokenCard, token) {
         console.log('🔍 handleTokenSelection called with:', { token, currentFilter: this.currentFilter });
@@ -256,25 +265,44 @@ class UIManager {
         }
 
         if (token.tokenType === 'ERC721') {
-            // Single selection for ERC721 tokens
-            const prevSelected = tokensGrid.querySelector('.token-card.selected');
-            if (prevSelected) prevSelected.classList.remove('selected');
-            
-            if (tokenCard.classList.contains('selected')) {
+            // Single selection for ERC721
+            if (this.selectedERC721 && this.selectedERC721.tokenId === token.tokenId) {
+                this.selectedERC721 = null;
                 tokenCard.classList.remove('selected');
             } else {
-                tokenCard.classList.add('selected');
-            }
-        } else if (token.tokenType === 'ERC1155') {
-            // Handle ERC1155 selection based on current filter
-            if (this.currentFilter === 'floppy' || this.currentFilter === 'serum') {
-                // Single selection for Floppy Discs and Serums
+                // Deselect previous ERC721
                 const prevSelected = tokensGrid.querySelector('.token-card.selected');
                 if (prevSelected) prevSelected.classList.remove('selected');
                 
-                if (tokenCard.classList.contains('selected')) {
+                this.selectedERC721 = token;
+                tokenCard.classList.add('selected');
+            }
+        } else {
+            // Handle ERC1155 selection based on current filter
+            if (this.currentFilter === 'floppy') {
+                // Single selection for Floppy Discs
+                if (this.selectedFloppy && this.selectedFloppy.tokenId === token.tokenId) {
+                    this.selectedFloppy = null;
                     tokenCard.classList.remove('selected');
                 } else {
+                    // Deselect previous floppy
+                    const prevSelected = tokensGrid.querySelector('.token-card.selected');
+                    if (prevSelected) prevSelected.classList.remove('selected');
+                    
+                    this.selectedFloppy = token;
+                    tokenCard.classList.add('selected');
+                }
+            } else if (this.currentFilter === 'serum') {
+                // Single selection for Serums
+                if (this.selectedSerum && this.selectedSerum.tokenId === token.tokenId) {
+                    this.selectedSerum = null;
+                    tokenCard.classList.remove('selected');
+                } else {
+                    // Deselect previous serum
+                    const prevSelected = tokensGrid.querySelector('.token-card.selected');
+                    if (prevSelected) prevSelected.classList.remove('selected');
+                    
+                    this.selectedSerum = token;
                     tokenCard.classList.add('selected');
                 }
             } else {
@@ -571,6 +599,19 @@ class UIManager {
                 }, 5000);
             }
         }
+    }
+
+    /**
+     * Get current selection state
+     */
+    getSelectionState() {
+        return {
+            selectedERC721: this.selectedERC721,
+            selectedERC1155: this.selectedERC1155,
+            selectedFloppy: this.selectedFloppy,
+            selectedSerum: this.selectedSerum,
+            currentFilter: this.currentFilter
+        };
     }
 
     /**
