@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraitLAB - Refactorizado</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: #1a1a1a;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 4.5rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header h1 .trait {
+            color: #ffffff;
+        }
+
+        .header h1 .lab {
+            color: #00ff00;
+        }
+
+        .header .subtitle {
+            font-size: 1.45rem;
+            color: #cccccc;
+            margin-bottom: 20px;
+            font-family: 'VT323', monospace;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .connect-section {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-family: 'VT323', monospace;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .account-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .wallet-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .wallet-address {
+            background: #2a2a2a;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .disconnect-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+        }
+
+        .disconnect-btn:hover {
+            background: #c82333;
+        }
+
+        .tokens-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #fff;
+            text-align: center;
+            font-family: 'VT323', monospace;
+        }
+
+        .contract-filter {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .contract-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-family: 'VT323', monospace;
+        }
+
+        .contract-btn.active {
+            background: #00cc00;
+        }
+
+        .contract-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: #ccc;
+            border: none;
+            padding: 12px 20px;
+            margin: 0 2px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(0, 255, 0, 0.2);
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tokens-grid.adrianlab-mobile {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+
+        .token-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        .token-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .token-card.selected {
+            border-color: #00cc00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .token-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .token-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #00ff00;
+        }
+
+        .token-id {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .token-category {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .token-quantity-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #00ff00;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .refresh-token-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-token-btn:hover {
+            background: rgba(0, 255, 0, 0.8);
+        }
+
+        .refresh-token-btn.refreshing {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .selection-info {
+            background: rgba(51, 51, 51, 0.95);
+            border: 2px solid #333333;
+            border-radius: 10px;
+            padding: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            color: white;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .selection-info.minimized {
+            max-width: 50%;
+            margin: 10px auto;
+        }
+
+        .selection-info.minimized .selection-text {
+            display: none;
+        }
+
+        .selection-info.minimized .generated-image img {
+            max-width: 210px; /* 30% reduction from 300px */
+            height: auto;
+        }
+
+        .selection-info.minimized .image-loading-overlay {
+            width: 210px;
+            height: 210px;
+        }
+
+        .minimize-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: #666666;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            transition: all 0.3s ease;
+            z-index: 101;
+        }
+
+        .minimize-btn:hover {
+            background: #888888;
+        }
+
+        .minimize-btn.minimized {
+            background: #00cc00;
+            color: #000;
+        }
+
+        .minimize-btn.minimized:hover {
+            background: #009900;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .apply-traits-btn {
+            background: #00cc00;
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-family: 'VT323', monospace;
+        }
+
+        .apply-traits-btn:hover {
+            transform: translateY(-1px);
+            background: #009900;
+        }
+
+        .apply-traits-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .apply-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+        }
+
+        .apply-status.loading {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .apply-status.success {
+            background: rgba(0, 204, 0, 0.2);
+            color: #00cc00;
+            border: 1px solid #00cc00;
+        }
+
+        .apply-status.error {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: 'VT323', monospace;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: 'VT323', monospace;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #00ff00;
+        }
+
+        .no-tokens {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .input-group {
+            margin: 10px 0;
+        }
+
+        .input-group input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            font-family: 'VT323', monospace;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #00ff00;
+        }
+
+        .generated-image {
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .generated-image img {
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .image-loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        .image-loading-overlay p {
+            color: #00cc00;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            margin-top: 15px;
+            text-shadow: 0 0 10px #00cc00;
+        }
+
+        .pixelated-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid #00cc00;
+            border-radius: 0;
+            animation: pixelated-spin 1s linear infinite;
+            image-rendering: pixelated;
+        }
+
+        @keyframes pixelated-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 3.5rem;
+            }
+            
+            .contract-filter {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .contract-btn {
+                margin: 2px 0;
+            }
+            
+            .tokens-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span class="trait">TRAIT</span><span class="lab">LAB</span>
+            </h1>
+            <div class="subtitle">Refactorizado - Módulos Integrados</div>
+        </div>
+
+        <!-- Wallet Section -->
+        <div class="wallet-section">
+            <div id="connect-section">
+                <button id="connectBtn" class="connect-btn">🔌 Conectar Wallet</button>
+            </div>
+            <div id="account-section" class="account-info" style="display: none;">
+                <p>Wallet conectada: <span id="walletAddress"></span></p>
+                <button id="disconnectBtn" class="connect-btn">🔌 Desconectar</button>
+            </div>
+        </div>
+
+        <!-- Tokens Section -->
+        <div id="tokens-section" class="tokens-section" style="display: none;">
+            <h2 class="section-title">Your Tokens</h2>
+            
+            <div class="contract-filter">
+                <button class="contract-btn active" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75">
+                    AdrianZERO
+                </button>
+                <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58">
+                    Traits
+                </button>
+                <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">
+                    Floppy Discs
+                </button>
+                <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">
+                    Serums
+                </button>
+                <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">
+                    RENAME
+                </button>
+            </div>
+
+            <div id="selection-info" class="selection-info minimized" style="display: none;">
+                <button id="minimizeBtn" class="minimize-btn minimized">Expand</button>
+                <div id="selection-text"></div>
+                <div id="generated-image" class="generated-image" style="display: none;">
+                    <div id="image-loading-overlay" class="image-loading-overlay" style="display: none;">
+                        <div class="pixelated-spinner"></div>
+                        <p>Generating image...</p>
+                    </div>
+                    <img id="combined-image" src="" alt="Generated Image">
+                </div>
+                <div id="apply-traits-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="applyTraitsBtn" class="apply-traits-btn">Apply Traits</button>
+                    <div id="apply-status" class="apply-status" style="display: none;"></div>
+                </div>
+                <div id="refresh-metadata-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="refreshMetadataBtn" class="apply-traits-btn">Refresh metadata OpenSea</button>
+                    <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
+                </div>
+                <div id="activate-token-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="activateTokenBtn" class="apply-traits-btn">Assign SKIN</button>
+                    <div id="activate-token-status" class="apply-status" style="display: none;"></div>
+                </div>
+                <div id="open-floppy-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="openFloppyBtn" class="apply-traits-btn">Open Floppy</button>
+                    <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
+                </div>
+                <div id="open-pack-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="openPackBtn" class="apply-traits-btn">Open Pack</button>
+                    <div id="open-pack-status" class="apply-status" style="display: none;"></div>
+                </div>
+                <div id="use-serum-section" style="display: none; margin-top: 10px; text-align: none;">
+                    <button id="useSerumBtn" class="apply-traits-btn">Use Serum</button>
+                    <div id="use-serum-status" class="apply-status" style="display: none;"></div>
+                </div>
+                <div id="rename-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" id="newTokenName" placeholder="Enter new name for your AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
+                    </div>
+                    <button id="approveRenameBtn" class="apply-traits-btn" style="margin-right: 10px;">Approve $ADRIAN</button>
+                    <button id="renameTokenBtn" class="apply-traits-btn">Rename Token</button>
+                    <div id="rename-status" class="apply-status" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading tokens...</p>
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+            <div id="success" class="success" style="display: none;"></div>
+
+            <div id="no-tokens" class="no-tokens" style="display: none;">
+                <p>No tokens found in this contract</p>
+            </div>
+
+            <div id="tokens-grid" class="tokens-grid"></div>
+        </div>
+
+        <div class="footer">
+            Powered by $ADRIAN
+        </div>
+
+        <!-- Selection Info -->
+        <div id="selection-info" class="selection-info" style="display: none;">
+            <button id="minimizeBtn" class="minimize-btn">Minimize</button>
+            <div id="selection-text"></div>
+            <div class="action-buttons">
+                <!-- Buttons will be added dynamically -->
+            </div>
+        </div>
+
+        <!-- Generated Image -->
+        <div id="generated-image" class="generated-image" style="display: none;">
+            <h4>Imagen Generada</h4>
+            <img id="combined-image" src="" alt="Imagen combinada">
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">🔄 Cargando...</div>
+
+        <!-- Status Messages -->
+        <div id="error" class="status-message error"></div>
+        <div id="success" class="status-message success"></div>
+
+        <!-- Status Messages for Different Operations -->
+        <div id="apply-status" class="status-message"></div>
+        <div id="refresh-metadata-status" class="status-message"></div>
+        <div id="open-floppy-status" class="status-message"></div>
+        <div id="open-pack-status" class="status-message"></div>
+        <div id="use-serum-status" class="status-message"></div>
+        <div id="activate-token-status" class="status-message"></div>
+        <div id="rename-status" class="status-message"></div>
+    </div>
+
+    <!-- Load Modules -->
+    <script src="modules/config.js"></script>
+    <script src="modules/wallet.js"></script>
+    <script src="modules/ui.js"></script>
+    <script src="modules/traits.js"></script>
+    <script src="modules/floppy.js"></script>
+    <script src="modules/serums.js"></script>
+    <script src="modules/zero.js"></script>
+
+    <!-- Main Application Script -->
+    <script>
+        // Main TraitLAB Application
+        class TraitLABApp {
+            constructor() {
+                this.modules = {};
+                this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO por defecto
+                this.currentFilter = null;
+                this.tokens = [];
+                this.selectedERC721 = null;
+                this.selectedERC1155 = [];
+                this.selectedFloppy = null;
+                this.selectedSerum = null;
+                
+                this.init();
+            }
+
+            async init() {
+                console.log('🚀 Inicializando TraitLAB Refactorizado...');
+                
+                try {
+                    // Initialize all modules
+                    await this.initializeModules();
+                    
+                    // Setup event listeners
+                    this.setupEventListeners();
+                    
+                    // Setup tab system
+                    this.setupTabs();
+                    
+                    console.log('✅ TraitLAB inicializado correctamente');
+                    
+                } catch (error) {
+                    console.error('❌ Error inicializando TraitLAB:', error);
+                }
+            }
+
+            async initializeModules() {
+                // Initialize Wallet Manager
+                this.modules.wallet = new window.TraitLABWallet();
+                this.modules.wallet.init();
+                
+                // Initialize UI Manager
+                this.modules.ui = new window.TraitLABUI();
+                this.modules.ui.init();
+                
+                // Initialize Traits Manager
+                this.modules.traits = new window.TraitLABTraits();
+                await this.modules.traits.init();
+                
+                // Initialize Floppy Manager
+                this.modules.floppy = new window.TraitLABFloppy();
+                this.modules.floppy.init();
+                
+                // Initialize Serums Manager
+                this.modules.serums = new window.TraitLABSerums();
+                this.modules.serums.init();
+                
+                // Initialize Zero Manager
+                this.modules.zero = new window.TraitLABZero();
+                this.modules.zero.init();
+                
+                console.log('✅ Todos los módulos inicializados');
+            }
+
+            setupEventListeners() {
+                // Wallet events
+                this.modules.wallet.on('walletConnected', (data) => {
+                    this.onWalletConnected(data);
+                });
+                
+                this.modules.wallet.on('walletDisconnected', () => {
+                    this.onWalletDisconnected();
+                });
+                
+                // UI events
+                this.modules.ui.on('filterChanged', (data) => {
+                    this.onFilterChanged(data);
+                });
+                
+                this.modules.ui.on('tokenSelected', (data) => {
+                    this.onTokenSelected(data);
+                });
+                
+                // Traits events
+                this.modules.traits.on('traitsDatabaseLoaded', (data) => {
+                    console.log('Traits database loaded:', data);
+                });
+                
+                this.modules.traits.on('traitsApplied', (data) => {
+                    this.showSuccess(`Traits aplicados exitosamente! TX: ${data.transactionHash}`);
+                });
+                
+                // Floppy events
+                this.modules.floppy.on('floppyOpened', (data) => {
+                    this.showSuccess(`Floppy abierto exitosamente! TX: ${data.transactionHash}`);
+                });
+                
+                this.modules.floppy.on('packOpened', (data) => {
+                    this.showSuccess(`Pack abierto exitosamente! TX: ${data.transactionHash}`);
+                });
+                
+                this.modules.floppy.on('actionPackOpened', (data) => {
+                    this.showSuccess(`Action Pack abierto exitosamente! TX: ${data.transactionHash}`);
+                });
+                
+                // Serums events
+                this.modules.serums.on('serumUsed', (data) => {
+                    this.showSuccess(`Serum usado exitosamente! TX: ${data.transactionHash}`);
+                });
+                
+                // Zero events
+                this.modules.zero.on('tokensLoaded', (data) => {
+                    this.onTokensLoaded(data);
+                });
+                
+                this.modules.zero.on('metadataRefreshed', (data) => {
+                    this.showSuccess(`Metadata refrescada para token ${data.tokenId}`);
+                });
+                
+                this.modules.zero.on('tokenActivated', (data) => {
+                    this.showSuccess(`Token activado exitosamente! TX: ${data.transactionHash}`);
+                });
+                
+                this.modules.zero.on('tokenRenamed', (data) => {
+                    this.showSuccess(`Token renombrado exitosamente! TX: ${data.transactionHash}`);
+                });
+            }
+
+            setupTabs() {
+                const contractBtns = document.querySelectorAll('.contract-btn');
+                
+                contractBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contract = btn.dataset.contract;
+                        const filter = btn.dataset.filter;
+                        
+                        // Update active button
+                        contractBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        // Update current contract and filter
+                        this.currentContract = contract;
+                        this.currentFilter = filter;
+                        
+                        // Update UI filter
+                        if (this.modules.ui && this.modules.ui.setCurrentFilter) {
+                            this.modules.ui.setCurrentFilter(filter);
+                        }
+                        
+                        // Load tokens for this contract/filter
+                        this.loadTokensForTab();
+                    });
+                });
+            }
+
+            async loadTokensForTab() {
+                if (!this.modules.wallet.isWalletConnected()) {
+                    return;
+                }
+                
+                const userAddress = this.modules.wallet.getCurrentAccount();
+                
+                try {
+                    this.showLoading();
+                    
+                    // Load tokens based on current contract and filter
+                    const tokens = await this.modules.zero.loadTokens(userAddress, this.currentContract);
+                    this.displayTokens(tokens, this.currentFilter);
+                    
+                } catch (error) {
+                    console.error('Error loading tokens:', error);
+                    this.showError(`Error cargando tokens: ${error.message}`);
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            displayTokens(tokens, tabType) {
+                const grid = document.getElementById('tokens-grid');
+                const noTokens = document.getElementById('no-tokens');
+                
+                if (!grid) return;
+                
+                if (!tokens || tokens.length === 0) {
+                    grid.innerHTML = '';
+                    if (noTokens) noTokens.style.display = 'block';
+                    return;
+                }
+                
+                if (noTokens) noTokens.style.display = 'none';
+                
+                // Use UI module to display tokens
+                if (this.modules.ui && this.modules.ui.displayTokens) {
+                    this.modules.ui.displayTokens(tokens, true);
+                }
+            }
+
+            onWalletConnected(data) {
+                console.log('Wallet connected:', data);
+                
+                // Update UI
+                document.getElementById('connect-section').style.display = 'none';
+                document.getElementById('account-section').style.display = 'block';
+                document.getElementById('walletAddress').textContent = `${data.account.substring(0, 6)}...${data.account.substring(38)}`;
+                
+                // Show tokens section
+                document.getElementById('tokens-section').style.display = 'block';
+                
+                // Load tokens for current contract
+                this.loadTokensForTab();
+            }
+
+            onWalletDisconnected() {
+                console.log('Wallet disconnected');
+                
+                // Update UI
+                document.getElementById('connect-section').style.display = 'block';
+                document.getElementById('account-section').style.display = 'none';
+                document.getElementById('tokens-section').style.display = 'none';
+                
+                // Clear tokens
+                this.clearAllTokens();
+                
+                // Clear selection
+                this.clearSelection();
+            }
+
+            onFilterChanged(data) {
+                console.log('Filter changed:', data);
+                // Handle filter changes if needed
+            }
+
+            onTokenSelected(data) {
+                console.log('Token selected:', data);
+                
+                const { token, filter } = data;
+                
+                if (filter === 'rename' || this.currentContract === "0x6e369bf0e4e0c106192d606fb6d85836d684da75") {
+                    // AdrianZERO tokens
+                    this.selectedERC721 = token;
+                    this.selectedERC1155 = [];
+                    this.selectedFloppy = null;
+                    this.selectedSerum = null;
+                } else if (filter === 'floppy') {
+                    this.selectedFloppy = token;
+                    this.selectedERC721 = null;
+                    this.selectedERC1155 = [];
+                    this.selectedSerum = null;
+                } else if (filter === 'serum') {
+                    this.selectedSerum = token;
+                    this.selectedERC721 = null;
+                    this.selectedERC1155 = [];
+                    this.selectedFloppy = null;
+                } else {
+                    // AdrianLAB - traits
+                    if (token.tokenType === 'ERC721') {
+                        this.selectedERC721 = token;
+                    } else if (token.tokenType === 'ERC1155') {
+                        this.selectedERC1155 = [token];
+                    }
+                }
+                
+                this.updateSelectionInfo();
+            }
+
+            onTokensLoaded(data) {
+                console.log('Tokens loaded:', data);
+                this.tokens = data.tokens;
+                
+                // Update display based on current tab
+                this.displayTokens(data.tokens, this.currentTab);
+            }
+
+            updateSelectionInfo() {
+                const selectionInfo = document.getElementById('selection-info');
+                const selectionText = document.getElementById('selection-text');
+                const actionButtons = document.querySelector('.action-buttons');
+                
+                if (!selectionInfo || !selectionText || !actionButtons) return;
+                
+                let text = '';
+                let buttons = '';
+                
+                if (this.selectedERC721) {
+                    text += `<h4>Token ERC721 Seleccionado:</h4>`;
+                    text += `<p><strong>ID:</strong> ${this.selectedERC721.tokenId}</p>`;
+                    text += `<p><strong>Título:</strong> ${this.selectedERC721.title}</p>`;
+                    
+                    // Add action buttons for ERC721
+                    buttons += `<button class="apply-traits-btn" onclick="app.refreshMetadata()">🔄 Refresh Metadata</button>`;
+                    buttons += `<button class="apply-traits-btn" onclick="app.activateToken()">⚡ Activate Token</button>`;
+                    buttons += `<button class="apply-traits-btn" onclick="app.loadNamePrice()">💰 Load Name Price</button>`;
+                    buttons += `<button class="apply-traits-btn" onclick="app.showRenameSection()">✏️ Rename Token</button>`;
+                }
+                
+                if (this.selectedERC1155.length > 0) {
+                    text += `<h4>Traits Seleccionados:</h4>`;
+                    this.selectedERC1155.forEach(trait => {
+                        text += `<p><strong>ID:</strong> ${trait.tokenId} - <strong>Título:</strong> ${trait.title}</p>`;
+                    });
+                    
+                    if (this.selectedERC721) {
+                        buttons += `<button class="apply-traits-btn" onclick="app.generateCombinedImage()">🖼️ Generate Image</button>`;
+                        buttons += `<button class="apply-traits-btn" onclick="app.applyTraits()">🎭 Apply Traits</button>`;
+                    }
+                }
+                
+                if (this.selectedFloppy) {
+                    text += `<h4>Floppy Seleccionado:</h4>`;
+                    text += `<p><strong>ID:</strong> ${this.selectedFloppy.tokenId}</p>`;
+                    text += `<p><strong>Título:</strong> ${this.selectedFloppy.title}</p>`;
+                    
+                    if (this.modules.floppy.shouldShowOpenPack(this.selectedFloppy.tokenId)) {
+                        buttons += `<button class="apply-traits-btn" onclick="app.openPack()">📦 Open Pack</button>`;
+                    }
+                }
+                
+                if (this.selectedSerum) {
+                    text += `<h4>Serum Seleccionado:</h4>`;
+                    text += `<p><strong>ID:</strong> ${this.selectedSerum.tokenId}</p>`;
+                    text += `<p><strong>Título:</strong> ${this.selectedSerum.title}</p>`;
+                    
+                    if (this.selectedERC721) {
+                        buttons += `<button class="apply-traits-btn" onclick="app.useSerum()">🧪 Use Serum</button>`;
+                    }
+                }
+                
+                if (text === '') {
+                    selectionInfo.style.display = 'none';
+                    return;
+                }
+                
+                selectionText.innerHTML = text;
+                actionButtons.innerHTML = buttons;
+                selectionInfo.style.display = 'block';
+            }
+
+            clearSelection() {
+                this.selectedERC721 = null;
+                this.selectedERC1155 = [];
+                this.selectedFloppy = null;
+                this.selectedSerum = null;
+                this.updateSelectionInfo();
+            }
+
+            clearAllTokens() {
+                this.tokens = [];
+                const grid = document.getElementById('tokens-grid');
+                if (grid) grid.innerHTML = '';
+                
+                const noTokens = document.getElementById('no-tokens');
+                if (noTokens) noTokens.style.display = 'none';
+            }
+
+            // Action Methods
+            async refreshMetadata() {
+                if (!this.selectedERC721) return;
+                
+                try {
+                    await this.modules.zero.refreshMetadata();
+                } catch (error) {
+                    this.showError(`Error refreshing metadata: ${error.message}`);
+                }
+            }
+
+            async activateToken() {
+                if (!this.selectedERC721) return;
+                
+                try {
+                    await this.modules.zero.activateToken();
+                } catch (error) {
+                    this.showError(`Error activating token: ${error.message}`);
+                }
+            }
+
+            async loadNamePrice() {
+                try {
+                    await this.modules.zero.loadNamePrice();
+                } catch (error) {
+                    this.showError(`Error loading name price: ${error.message}`);
+                }
+            }
+
+            showRenameSection() {
+                // Implementation for rename section
+                this.showSuccess('Rename section - To be implemented');
+            }
+
+            generateCombinedImage() {
+                if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
+                
+                this.modules.traits.generateCombinedImage(this.selectedERC721);
+            }
+
+            async applyTraits() {
+                if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
+                
+                try {
+                    const userAddress = this.modules.wallet.getCurrentAccount();
+                    await this.modules.traits.applyTraitsToNFT(this.selectedERC721, userAddress);
+                } catch (error) {
+                    this.showError(`Error applying traits: ${error.message}`);
+                }
+            }
+
+            async openPack() {
+                if (!this.selectedFloppy) return;
+                
+                try {
+                    await this.modules.floppy.openSelectedPack();
+                } catch (error) {
+                    this.showError(`Error opening pack: ${error.message}`);
+                }
+            }
+
+            async useSerum() {
+                if (!this.selectedSerum || !this.selectedERC721) return;
+                
+                try {
+                    await this.modules.serums.useSerum(this.selectedERC721);
+                } catch (error) {
+                    this.showError(`Error using serum: ${error.message}`);
+                }
+            }
+
+            // UI Helper Methods
+            showLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) loading.style.display = 'block';
+            }
+
+            hideLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) loading.style.display = 'none';
+            }
+
+            showError(message) {
+                const error = document.getElementById('error');
+                if (error) {
+                    error.textContent = message;
+                    error.style.display = 'block';
+                    setTimeout(() => error.style.display = 'none', 5000);
+                }
+            }
+
+            showSuccess(message) {
+                const success = document.getElementById('success');
+                if (success) {
+                    success.textContent = message;
+                    success.style.display = 'block';
+                    setTimeout(() => success.style.display = 'none', 5000);
+                }
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new TraitLABApp();
+        });
+
+        // Connect wallet button
+        document.getElementById('connectBtn').addEventListener('click', () => {
+            if (window.app && window.app.modules.wallet) {
+                window.app.modules.wallet.connectWallet();
+            }
+        });
+
+        // Disconnect wallet button
+        document.getElementById('disconnectBtn').addEventListener('click', () => {
+            if (window.app && window.app.modules.wallet) {
+                window.app.modules.wallet.disconnectWallet();
+            }
+        });
+
+        // Minimize selection info
+        document.getElementById('minimizeBtn').addEventListener('click', () => {
+            const selectionInfo = document.getElementById('selection-info');
+            if (selectionInfo) {
+                selectionInfo.classList.toggle('minimized');
+                const btn = document.getElementById('minimizeBtn');
+                if (btn) {
+                    btn.textContent = selectionInfo.classList.contains('minimized') ? 'Expand' : 'Minimize';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,944 @@
+/**
+ * TRAITLAB - Módulo de ZERO
+ * Maneja la gestión completa de tokens AdrianZERO (ERC721)
+ */
+
+class ZeroManager {
+    constructor() {
+        this.selectedERC721 = null;
+        this.selectedTokenForRename = null;
+        this.namePrice = null;
+        this.eventListeners = new Map();
+        
+        // Bind methods
+        this.loadTokens = this.loadTokens.bind(this);
+        this.loadCustomNames = this.loadCustomNames.bind(this);
+        this.refreshMetadata = this.refreshMetadata.bind(this);
+        this.activateToken = this.activateToken.bind(this);
+        this.loadNamePrice = this.loadNamePrice.bind(this);
+        this.approveRename = this.approveRename.bind(this);
+        this.renameToken = this.renameToken.bind(this);
+        this.refreshAdrianZeroToken = this.refreshAdrianZeroToken.bind(this);
+        this.setSelectedERC721 = this.setSelectedERC721.bind(this);
+        this.getSelectedERC721 = this.getSelectedERC721.bind(this);
+        this.clearSelection = this.clearSelection.bind(this);
+        this.isAdrianZeroToken = this.isAdrianZeroToken.bind(this);
+    }
+
+    /**
+     * Initialize zero manager
+     */
+    init() {
+        console.log('🚀 ZeroManager inicializado');
+    }
+
+    /**
+     * Set selected ERC721 token
+     */
+    setSelectedERC721(token) {
+        this.selectedERC721 = token;
+        this.emit('erc721Selected', { token });
+    }
+
+    /**
+     * Get selected ERC721 token
+     */
+    getSelectedERC721() {
+        return this.selectedERC721;
+    }
+
+    /**
+     * Clear ERC721 selection
+     */
+    clearSelection() {
+        this.selectedERC721 = null;
+        this.selectedTokenForRename = null;
+        this.emit('erc721SelectionCleared');
+    }
+
+    /**
+     * Check if token is an AdrianZERO token
+     */
+    isAdrianZeroToken(token) {
+        return token && token.tokenType === 'ERC721' && 
+               token.contract.toLowerCase() === window.TraitLABConfig.CONTRACTS.ERC721.toLowerCase();
+    }
+
+    /**
+     * Load tokens for specific contract using direct API calls with pagination
+     */
+    async loadTokens(userAddress, contractAddress) {
+        console.log('loadTokens called with:', { userAddress, contractAddress });
+        
+        if (!userAddress) {
+            throw new Error('User address is required');
+        }
+
+        try {
+            const tokenType = contractAddress === window.TraitLABConfig.CONTRACTS.ERC721 ? 'ERC721' : 'ERC1155';
+            console.log('Token type:', tokenType);
+
+            // Build API URL
+            const apiUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTs?owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=100`;
+
+            console.log('API URL:', apiUrl);
+
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('API response:', data);
+
+            if (!data.ownedNfts || data.ownedNfts.length === 0) {
+                console.log('No NFTs found for this user');
+                this.emit('noTokensFound', { userAddress, contractAddress });
+                return [];
+            }
+
+            // Process tokens
+            const tokens = data.ownedNfts.map(nft => {
+                try {
+                    const tokenId = parseInt(nft.id.tokenId, 16);
+                    const title = nft.title || `Token #${tokenId}`;
+                    const mediaUrl = nft.media?.[0]?.gateway || nft.media?.[0]?.raw || '';
+                    const balance = nft.balance || '1';
+                    const category = nft.metadata?.category || nft.metadata?.Category || '';
+
+                    return {
+                        tokenId: tokenId,
+                        title: title,
+                        imageUrl: mediaUrl,
+                        contract: nft.contract.address,
+                        contractName: nft.contract.name || 'Unknown Contract',
+                        tokenType: tokenType,
+                        category: category,
+                        balance: balance,
+                        metadata: nft.metadata || {}
+                    };
+                } catch (err) {
+                    console.error("Error processing NFT:", err, nft);
+                    return null;
+                }
+            }).filter(token => token !== null);
+
+            console.log('Processed tokens:', tokens);
+
+            // For ERC1155 tokens, fetch individual metadata if it's empty
+            if (tokenType === 'ERC1155') {
+                const tokensWithMetadata = await Promise.all(
+                    tokens.map(async (token) => {
+                        if (!token.metadata || Object.keys(token.metadata).length === 0) {
+                            console.log(`Fetching individual metadata for token ${token.tokenId}`);
+                            try {
+                                const metadataUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=ERC1155`;
+                                const metadataResponse = await fetch(metadataUrl);
+                                
+                                if (metadataResponse.ok) {
+                                    const metadataData = await metadataResponse.json();
+                                    console.log(`Metadata for token ${token.tokenId}:`, metadataData);
+                                    
+                                    // Extract category from the new metadata
+                                    let category = '';
+                                    if (metadataData.metadata) {
+                                        category = metadataData.metadata.category || metadataData.metadata.Category || '';
+                                        
+                                        if (!category && metadataData.metadata.attributes) {
+                                            const categoryAttr = metadataData.metadata.attributes.find(attr => 
+                                                attr.trait_type && attr.trait_type.toLowerCase() === 'category'
+                                            );
+                                            if (categoryAttr) {
+                                                category = categoryAttr.value.toLowerCase();
+                                            }
+                                        }
+                                    }
+                                    
+                                    return {
+                                        ...token,
+                                        metadata: metadataData.metadata || {},
+                                        category: category
+                                    };
+                                }
+                            } catch (error) {
+                                console.error(`Error fetching metadata for token ${token.tokenId}:`, error);
+                            }
+                        }
+                        // Return the token as is, preserving the balance
+                        console.log(`Returning token ${token.tokenId} with balance: ${token.balance}`);
+                        return token;
+                    })
+                );
+                
+                console.log(`Tokens with metadata:`, tokensWithMetadata);
+                this.emit('tokensLoaded', { tokens: tokensWithMetadata, contractAddress, tokenType });
+                return tokensWithMetadata;
+            } else {
+                // For ERC721 tokens, load custom names
+                await this.loadCustomNames(tokens);
+                this.emit('tokensLoaded', { tokens, contractAddress, tokenType });
+                return tokens;
+            }
+
+        } catch (error) {
+            console.error("Error loading tokens:", error);
+            this.emit('tokensLoadError', { error: error.message, contractAddress });
+            throw error;
+        }
+    }
+
+    /**
+     * Load custom names from AdrianNameRegistry contract with cascading approach
+     */
+    async loadCustomNames(tokens) {
+        // Only process AdrianZERO tokens (ERC721)
+        const adrianZeroTokens = tokens.filter(token => 
+            this.isAdrianZeroToken(token)
+        );
+        
+        if (adrianZeroTokens.length === 0) {
+            console.log('No AdrianZERO tokens to process for custom names');
+            return;
+        }
+
+        console.log(`Processing ${adrianZeroTokens.length} AdrianZERO tokens for custom names`);
+
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        this.executeLoadCustomNames(ethers, adrianZeroTokens)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeLoadCustomNames(ethers, adrianZeroTokens);
+            }
+        } catch (error) {
+            console.error('Error in loadCustomNames:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute the load custom names transaction
+     */
+    async executeLoadCustomNames(ethers, adrianZeroTokens) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            
+            // Check if we're on the correct network (Base)
+            const network = await provider.getNetwork();
+            console.log('Current network:', network);
+            
+            if (network.chainId !== 8453) { // Base mainnet
+                throw new Error('Please switch to Base network to use this feature.');
+            }
+            
+            console.log('Contract address:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            
+            // Check if contract exists
+            const code = await provider.getCode(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            if (code === '0x') {
+                throw new Error('Contract not found at specified address');
+            }
+            
+            // Load the full contract ABI
+            console.log('Loading ABI from file...');
+            const response = await fetch('./adrian-name-registry-abi.json');
+            if (!response.ok) {
+                throw new Error(`Failed to load ABI: ${response.status} ${response.statusText}`);
+            }
+            const contractABI = await response.json();
+            console.log('ABI loaded successfully, functions:', contractABI.filter(f => f.type === 'function').map(f => f.name));
+
+            // Create contract instance
+            const contract = new ethers.Contract(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, contractABI, provider);
+
+            // Mostrar el coreContract configurado
+            try {
+                const coreContract = await contract.getCoreContract();
+                console.log('AdrianNameRegistry coreContract:', coreContract);
+            } catch (e) {
+                console.warn('No se pudo leer el coreContract:', e);
+            }
+
+            // Process each token to get custom names
+            const nameMap = new Map();
+            
+            for (const token of adrianZeroTokens) {
+                try {
+                    console.log(`Getting name for token ${token.tokenId}...`);
+                    const name = await contract.getName(token.tokenId);
+                    
+                    if (name && name.trim() !== '') {
+                        console.log(`Token ${token.tokenId} has custom name: ${name}`);
+                        nameMap.set(token.tokenId, name);
+                    } else {
+                        console.log(`Token ${token.tokenId} has no custom name`);
+                    }
+                } catch (error) {
+                    console.log(`Error getting name for token ${token.tokenId}:`, error);
+                }
+            }
+
+            console.log('Final name map:', nameMap);
+            
+            // Emit event with name map
+            this.emit('customNamesLoaded', { nameMap });
+            
+            return nameMap;
+
+        } catch (error) {
+            console.error('Error loading custom names:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Refresh metadata by calling Vercel endpoints
+     */
+    async refreshMetadata() {
+        console.log('refreshMetadata called');
+        
+        if (!this.selectedERC721) {
+            throw new Error('Please select an AdrianZERO token first.');
+        }
+
+        try {
+            const tokenId = this.selectedERC721.tokenId;
+            const renderUrl = `https://adrianlab.vercel.app/api/render/${tokenId}`;
+            const metadataUrl = `https://adrianlab.vercel.app/api/metadata/${tokenId}`;
+
+            console.log('Calling render URL:', renderUrl);
+            console.log('Calling metadata URL:', metadataUrl);
+
+            // Make both requests in parallel
+            const [renderResponse, metadataResponse] = await Promise.all([
+                fetch(renderUrl),
+                fetch(metadataUrl)
+            ]);
+
+            console.log('Render response status:', renderResponse.status);
+            console.log('Metadata response status:', metadataResponse.status);
+
+            // Check if both requests were successful
+            if (renderResponse.ok && metadataResponse.ok) {
+                console.log('Both endpoints called successfully');
+                
+                // Emit success event
+                this.emit('metadataRefreshed', { 
+                    tokenId, 
+                    renderStatus: 'success', 
+                    metadataStatus: 'success' 
+                });
+                
+                return { success: true, message: `Metadata refreshed successfully for token ${tokenId}!` };
+            } else {
+                let errorMessage = 'Failed to refresh metadata.';
+                if (!renderResponse.ok) {
+                    errorMessage += ` Render endpoint returned ${renderResponse.status}.`;
+                }
+                if (!metadataResponse.ok) {
+                    errorMessage += ` Metadata endpoint returned ${metadataResponse.status}.`;
+                }
+                
+                throw new Error(errorMessage);
+            }
+
+        } catch (error) {
+            console.error('Error refreshing metadata:', error);
+            
+            // Check if it's a CORS error
+            if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                throw new Error('❌ CORS Error: Server needs to be configured to allow requests from this domain. Please contact the server administrator.');
+            } else {
+                throw error;
+            }
+        }
+    }
+
+    /**
+     * Activate AdrianZERO token using AdrianLabCore contract
+     */
+    async activateToken() {
+        console.log('activateToken called');
+        
+        if (!this.selectedERC721) {
+            throw new Error('Please select an AdrianZERO token first.');
+        }
+
+        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+            throw new Error('Please connect your wallet first.');
+        }
+
+        // Check if user owns the token
+        if (this.selectedERC721.owner && this.selectedERC721.owner.toLowerCase() !== window.TraitLABWallet.getCurrentAccount().toLowerCase()) {
+            throw new Error('❌ You must own this token to activate it.');
+        }
+
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        this.executeActivateTokenTransaction(ethers)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library. Please refresh the page.'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeActivateTokenTransaction(ethers);
+            }
+        } catch (error) {
+            console.error('Error in activateToken:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute the activate token transaction
+     */
+    async executeActivateTokenTransaction(ethers) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            // AdrianLabCore contract address - using AdrianZERO contract for now
+            const ADRIAN_LAB_CORE_CONTRACT = window.TraitLABConfig.ADRIAN_LAB_CORE_CONTRACT;
+            
+            // Contract ABI for assignTokenAttributes function
+            const contractABI = [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "tokenId",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "assignTokenAttributes",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ];
+
+            // Create contract instance
+            const contract = new ethers.Contract(ADRIAN_LAB_CORE_CONTRACT, contractABI, signer);
+
+            // Prepare parameters
+            const tokenId = this.selectedERC721.tokenId;
+
+            console.log('Contract address:', ADRIAN_LAB_CORE_CONTRACT);
+            console.log('Token ID:', tokenId);
+
+            // Call the contract function
+            const tx = await contract.assignTokenAttributes(tokenId);
+            
+            console.log('Transaction hash:', tx.hash);
+
+            // Wait for transaction confirmation
+            const receipt = await tx.wait();
+            
+            console.log('Transaction confirmed:', receipt);
+
+            // Emit success event
+            this.emit('tokenActivated', { 
+                tokenId, 
+                transactionHash: receipt.transactionHash 
+            });
+
+            return receipt;
+
+        } catch (error) {
+            console.error('Error in transaction:', error);
+            
+            let errorMessage = 'Failed to assign SKIN.';
+            
+            // Handle specific error cases
+            if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
+                errorMessage = '❌ Transaction was cancelled by user.';
+            } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+                // Check for specific revert reasons
+                if (error.reason && error.reason.includes('already assigned')) {
+                    errorMessage = '❌ This token has already been activated!';
+                } else if (error.reason && error.reason.includes('not owner')) {
+                    errorMessage = '❌ You must own this token to activate it.';
+                } else if (error.reason && error.reason.includes('token does not exist')) {
+                    errorMessage = '❌ Token does not exist.';
+                } else if (error.reason && error.reason.includes('not authorized')) {
+                    errorMessage = '❌ You are not authorized to activate this token.';
+                } else {
+                    errorMessage = `❌ Transaction failed: ${error.reason}`;
+                }
+            } else if (error.code === 'INSUFFICIENT_FUNDS') {
+                errorMessage = '❌ Insufficient funds for gas fees.';
+            } else if (error.message) {
+                errorMessage = `❌ Error: ${error.message}`;
+            }
+            
+            throw new Error(errorMessage);
+        }
+    }
+
+    /**
+     * Load name price from AdrianNameRegistry contract
+     */
+    async loadNamePrice() {
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        this.executeLoadPrice(ethers)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeLoadPrice(ethers);
+            }
+        } catch (error) {
+            console.error('Error in loadNamePrice:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute the load price transaction
+     */
+    async executeLoadPrice(ethers) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            
+            // Check if we're on the correct network (Base)
+            const network = await provider.getNetwork();
+            console.log('Current network:', network);
+            
+            if (network.chainId !== 8453) { // Base mainnet
+                throw new Error('Please switch to Base network to use this feature.');
+            }
+            
+            console.log('Contract address:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            
+            // Check if contract exists
+            const code = await provider.getCode(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            if (code === '0x') {
+                throw new Error('Contract not found at specified address');
+            }
+            
+            // Load the full contract ABI
+            console.log('Loading ABI from file...');
+            const response = await fetch('./adrian-name-registry-abi.json');
+            if (!response.ok) {
+                throw new Error(`Failed to load ABI: ${response.status} ${response.statusText}`);
+            }
+            const contractABI = await response.json();
+            console.log('ABI loaded successfully, functions:', contractABI.filter(f => f.type === 'function').map(f => f.name));
+
+            // Create contract instance
+            const contract = new ethers.Contract(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, contractABI, provider);
+
+            // Mostrar el coreContract configurado
+            try {
+                const coreContract = await contract.getCoreContract();
+                console.log('AdrianNameRegistry coreContract:', coreContract);
+            } catch (e) {
+                console.warn('No se pudo leer el coreContract:', e);
+            }
+            
+            // Get the name price
+            console.log('Calling namePrice()...');
+            const price = await contract.namePrice();
+            this.namePrice = price;
+            
+            console.log('Name price loaded:', ethers.utils.formatEther(price), 'ADRIAN');
+            
+            // Emit success event
+            this.emit('namePriceLoaded', { 
+                price: ethers.utils.formatEther(price), 
+                rawPrice: price 
+            });
+            
+            return ethers.utils.formatEther(price);
+            
+        } catch (error) {
+            console.error('Error loading name price:', error);
+            // Use default price if contract call fails
+            this.namePrice = ethers.utils.parseEther("10000"); // 10000 ADRIAN default
+            
+            // Emit event with default price
+            this.emit('namePriceLoaded', { 
+                price: "10000", 
+                rawPrice: this.namePrice,
+                isDefault: true 
+            });
+            
+            return "10000";
+        }
+    }
+
+    /**
+     * Approve $ADRIAN tokens for rename
+     */
+    async approveRename() {
+        console.log('approveRename called');
+        
+        if (!this.selectedERC721) {
+            throw new Error('Please select an AdrianZERO token first.');
+        }
+
+        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+            throw new Error('Please connect your wallet first.');
+        }
+
+        if (!this.namePrice) {
+            throw new Error('Loading name price...');
+        }
+
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        this.executeApproval(ethers)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library. Please refresh the page.'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeApproval(ethers);
+            }
+        } catch (error) {
+            console.error('Error in approveRename:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute the approval transaction
+     */
+    async executeApproval(ethers) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            // ADRIAN token contract
+            const ADRIAN_TOKEN = window.TraitLABConfig.ADRIAN_TOKEN;
+            
+            // ERC20 ABI for approve function
+            const erc20ABI = [
+                "function approve(address spender, uint256 amount) returns (bool)",
+                "function allowance(address owner, address spender) view returns (uint256)"
+            ];
+
+            // Create contract instance
+            const contract = new ethers.Contract(ADRIAN_TOKEN, erc20ABI, signer);
+
+            // Check current allowance
+            const userAddress = await signer.getAddress();
+            const currentAllowance = await contract.allowance(userAddress, window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            
+            console.log('Current allowance:', ethers.utils.formatEther(currentAllowance));
+            console.log('Required amount:', ethers.utils.formatEther(this.namePrice));
+
+            // Check if approval is needed
+            if (currentAllowance.gte(this.namePrice)) {
+                console.log('Sufficient allowance already exists');
+                
+                // Emit event
+                this.emit('renameApproved', { 
+                    allowance: ethers.utils.formatEther(currentAllowance),
+                    required: ethers.utils.formatEther(this.namePrice)
+                });
+                
+                return { approved: true, message: 'Sufficient allowance already exists' };
+            }
+
+            // Approve the required amount
+            console.log('Approving ADRIAN tokens...');
+            const tx = await contract.approve(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, this.namePrice);
+            
+            console.log('Approval transaction hash:', tx.hash);
+
+            // Wait for transaction confirmation
+            const receipt = await tx.wait();
+            
+            console.log('Approval confirmed:', receipt);
+
+            // Emit success event
+            this.emit('renameApproved', { 
+                transactionHash: receipt.transactionHash,
+                amount: ethers.utils.formatEther(this.namePrice)
+            });
+
+            return receipt;
+
+        } catch (error) {
+            console.error('Error in approval transaction:', error);
+            
+            let errorMessage = 'Failed to approve ADRIAN tokens.';
+            
+            if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
+                errorMessage = '❌ Transaction was cancelled by user.';
+            } else if (error.code === 'INSUFFICIENT_FUNDS') {
+                errorMessage = '❌ Insufficient funds for gas fees.';
+            } else if (error.message) {
+                errorMessage = `❌ Error: ${error.message}`;
+            }
+            
+            throw new Error(errorMessage);
+        }
+    }
+
+    /**
+     * Rename token using AdrianNameRegistry contract
+     */
+    async renameToken(newName) {
+        console.log('renameToken called with name:', newName);
+        
+        if (!this.selectedERC721) {
+            throw new Error('Please select an AdrianZERO token first.');
+        }
+
+        if (!newName || newName.trim() === '') {
+            throw new Error('Please provide a valid name.');
+        }
+
+        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+            throw new Error('Please connect your wallet first.');
+        }
+
+        if (!this.namePrice) {
+            throw new Error('Name price not loaded. Please try again.');
+        }
+
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        this.executeRename(ethers, newName)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library. Please refresh the page.'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeRename(ethers, newName);
+            }
+        } catch (error) {
+            console.error('Error in renameToken:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute the rename transaction
+     */
+    async executeRename(ethers, newName) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            // Load the full contract ABI
+            const response = await fetch('./adrian-name-registry-abi.json');
+            if (!response.ok) {
+                throw new Error(`Failed to load ABI: ${response.status} ${response.statusText}`);
+            }
+            const contractABI = await response.json();
+
+            // Create contract instance
+            const contract = new ethers.Contract(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, contractABI, signer);
+
+            // Prepare parameters
+            const tokenId = this.selectedERC721.tokenId;
+            const name = newName.trim();
+
+            console.log('Contract address:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            console.log('Token ID:', tokenId);
+            console.log('New name:', name);
+
+            // Call the rename function
+            const tx = await contract.rename(tokenId, name);
+            
+            console.log('Rename transaction hash:', tx.hash);
+
+            // Wait for transaction confirmation
+            const receipt = await tx.wait();
+            
+            console.log('Rename confirmed:', receipt);
+
+            // Emit success event
+            this.emit('tokenRenamed', { 
+                tokenId, 
+                newName: name,
+                transactionHash: receipt.transactionHash 
+            });
+
+            return receipt;
+
+        } catch (error) {
+            console.error('Error in rename transaction:', error);
+            
+            let errorMessage = 'Failed to rename token.';
+            
+            if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
+                errorMessage = '❌ Transaction was cancelled by user.';
+            } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+                // Check for specific revert reasons
+                if (error.reason && error.reason.includes('name already taken')) {
+                    errorMessage = '❌ This name is already taken!';
+                } else if (error.reason && error.reason.includes('not owner')) {
+                    errorMessage = '❌ You must own this token to rename it.';
+                } else if (error.reason && error.reason.includes('insufficient balance')) {
+                    errorMessage = '❌ Insufficient ADRIAN balance for rename.';
+                } else if (error.reason && error.reason.includes('not approved')) {
+                    errorMessage = '❌ Please approve ADRIAN tokens first.';
+                } else {
+                    errorMessage = `❌ Transaction failed: ${error.reason}`;
+                }
+            } else if (error.code === 'INSUFFICIENT_FUNDS') {
+                errorMessage = '❌ Insufficient funds for gas fees.';
+            } else if (error.message) {
+                errorMessage = `❌ Error: ${error.message}`;
+            }
+            
+            throw new Error(errorMessage);
+        }
+    }
+
+    /**
+     * Refresh AdrianZERO token image
+     */
+    refreshAdrianZeroToken(tokenId, buttonElement) {
+        console.log('🔄 Refreshing AdrianZERO token:', tokenId);
+        
+        // Add loading class to button
+        buttonElement.classList.add('refreshing');
+        buttonElement.title = 'Actualizando...';
+        
+        // Find token image
+        const tokenCard = buttonElement.closest('.token-card');
+        const img = tokenCard.querySelector('.token-image');
+        
+        if (img) {
+            // Create new URL with timestamp to force refresh
+            const timestamp = Date.now();
+            const newUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png?v=${timestamp}`;
+            
+            // Preload new image
+            const preloadImg = new Image();
+            preloadImg.onload = function() {
+                // Update main image when loaded
+                img.src = newUrl;
+                
+                // Remove loading class after delay
+                setTimeout(() => {
+                    buttonElement.classList.remove('refreshing');
+                    buttonElement.title = 'Actualizar imagen';
+                    console.log('✅ Token image refreshed:', tokenId);
+                }, 500);
+            };
+            
+            preloadImg.onerror = function() {
+                console.error('❌ Error refreshing token:', tokenId);
+                buttonElement.classList.remove('refreshing');
+                buttonElement.title = 'Actualizar imagen';
+            };
+            
+            preloadImg.src = newUrl;
+        }
+
+        // Emit event
+        this.emit('tokenImageRefreshed', { tokenId });
+    }
+
+    /**
+     * Event system for communication with other modules
+     */
+    on(event, callback) {
+        if (!this.eventListeners.has(event)) {
+            this.eventListeners.set(event, []);
+        }
+        this.eventListeners.get(event).push(callback);
+    }
+
+    emit(event, data) {
+        if (this.eventListeners.has(event)) {
+            this.eventListeners.get(event).forEach(callback => {
+                try {
+                    callback(data);
+                } catch (error) {
+                    console.error(`Error in event listener for ${event}:`, error);
+                }
+            });
+        }
+    }
+}
+
+// Export for browser environment
+if (typeof window !== 'undefined') {
+    window.TraitLABZero = ZeroManager;
+}
+
+// Export for Node.js environment
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ZeroManager;
+}
