@@ -131,17 +131,42 @@ class TraitsManager {
         console.log('Generating combined image for token:', selectedERC721.tokenId);
         console.log('Selected traits:', this.selectedERC1155.map(t => t.tokenId));
 
-        // Create the image URL with selected traits
-        const traitIds = this.selectedERC1155.map(token => token.tokenId).join(',');
-        const imageUrl = `https://adrianlab.vercel.app/api/render/${selectedERC721.tokenId}?traits=${traitIds}`;
+        // Build query parameters from ERC1155 tokens
+        // Use 'trait' as parameter name for all ERC1155 tokens (same as index.html)
+        const queryParams = [];
+        this.selectedERC1155.forEach(token => {
+            console.log('Processing ERC1155 token:', token);
+            console.log('Token tokenId:', token.tokenId);
+            
+            if (token.tokenId) {
+                queryParams.push(`trait=${token.tokenId}`);
+                console.log(`Added parameter: trait=${token.tokenId}`);
+            } else {
+                console.log('Token missing tokenId:', token);
+            }
+        });
+
+        console.log('Query params built:', queryParams);
+
+        if (queryParams.length === 0) {
+            console.log('No valid query parameters for image generation');
+            return;
+        }
+
+        // Create the URL with correct format (same as index.html)
+        const baseUrl = 'https://adrianlab.vercel.app/api/render/custom';
+        const erc721TokenId = selectedERC721.tokenId;
+        const queryString = queryParams.join('&');
+        const imageUrl = `${baseUrl}/${erc721TokenId}?${queryString}`;
         
-        console.log('Generated image URL:', imageUrl);
+        console.log('Generated combined image URL:', imageUrl);
 
         // Emit event for UI to display the image
         this.emit('imageGenerated', { 
             imageUrl, 
             tokenId: selectedERC721.tokenId, 
-            traitIds: this.selectedERC1155.map(t => t.tokenId) 
+            traitIds: this.selectedERC1155.map(t => t.tokenId),
+            queryParams: queryParams
         });
     }
 

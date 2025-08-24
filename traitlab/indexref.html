@@ -807,6 +807,10 @@
                     this.showSuccess(`Traits aplicados exitosamente! TX: ${data.transactionHash}`);
                 });
                 
+                this.modules.traits.on('imageGenerated', (data) => {
+                    this.displayGeneratedImage(data);
+                });
+                
                 // Floppy events
                 this.modules.floppy.on('floppyOpened', (data) => {
                     this.showSuccess(`Floppy abierto exitosamente! TX: ${data.transactionHash}`);
@@ -973,7 +977,9 @@
                     if (token.tokenType === 'ERC721') {
                         this.selectedERC721 = token;
                     } else if (token.tokenType === 'ERC1155') {
-                        this.selectedERC1155 = [token];
+                        // Update traits module selection
+                        this.modules.traits.handleTraitSelection(token);
+                        this.selectedERC1155 = this.modules.traits.getSelectedTraits();
                     }
                 }
                 
@@ -1019,6 +1025,9 @@
                     if (this.selectedERC721) {
                         buttons += `<button class="apply-traits-btn" onclick="app.generateCombinedImage()">🖼️ Generate Image</button>`;
                         buttons += `<button class="apply-traits-btn" onclick="app.applyTraits()">🎭 Apply Traits</button>`;
+                        
+                        // Automatically generate combined image when both are selected
+                        this.generateCombinedImage();
                     }
                 }
                 
@@ -1107,6 +1116,43 @@
                 if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
                 
                 this.modules.traits.generateCombinedImage(this.selectedERC721);
+            }
+
+            displayGeneratedImage(data) {
+                console.log('Displaying generated image:', data);
+                
+                const generatedImage = document.getElementById('generated-image');
+                const combinedImage = document.getElementById('combined-image');
+                
+                if (!generatedImage || !combinedImage) {
+                    console.error('Generated image elements not found');
+                    return;
+                }
+                
+                // Show loading overlay
+                const imageLoadingOverlay = document.getElementById('image-loading-overlay');
+                if (imageLoadingOverlay) {
+                    imageLoadingOverlay.style.display = 'flex';
+                }
+                
+                // Update the image display
+                combinedImage.src = data.imageUrl;
+                generatedImage.style.display = 'block';
+                
+                // Add error handling for image load
+                combinedImage.onerror = function() {
+                    console.error('Failed to load generated image:', data.imageUrl);
+                    if (imageLoadingOverlay) {
+                        imageLoadingOverlay.style.display = 'none';
+                    }
+                };
+                
+                combinedImage.onload = function() {
+                    console.log('Generated image loaded successfully');
+                    if (imageLoadingOverlay) {
+                        imageLoadingOverlay.style.display = 'none';
+                    }
+                };
             }
 
             async applyTraits() {
