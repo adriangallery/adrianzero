@@ -1127,6 +1127,14 @@
                             openPackBtn.textContent = 'Open Pack';
                             openPackBtn.disabled = false;
                         }
+                    } else if (this.selectedFloppy.tokenId === 10000) {
+                        // Floppy 10000 → Open Pack (PackTokenMinter)
+                        if (openFloppySection) openFloppySection.style.display = 'none';
+                        if (openPackSection) openPackSection.style.display = 'block';
+                        if (openPackBtn) {
+                            openPackBtn.textContent = 'Open Pack';
+                            openPackBtn.disabled = false;
+                        }
                     } else if (this.selectedFloppy.tokenId === 10004) {
                         // GF Floppy → Open Pack
                         if (openFloppySection) openFloppySection.style.display = 'none';
