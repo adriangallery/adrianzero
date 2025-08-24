@@ -56,6 +56,16 @@ const ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
 // AdrianLabCore contract address
 const ADRIAN_LAB_CORE_CONTRACT = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
 
+// Minimal ABI for AdrianNameRegistry used by ZERO rename & name overrides
+const ADRIAN_NAME_REGISTRY_ABI = [
+    // Read price
+    "function namePrice() view returns (uint256)",
+    // Optional introspection (logged if present)
+    "function getCoreContract() view returns (address)",
+    // Rename action
+    "function rename(uint256 tokenId, string name)"
+];
+
 // Export configuration
 if (typeof module !== 'undefined' && module.exports) {
     // Node.js environment
@@ -73,7 +83,8 @@ if (typeof module !== 'undefined' && module.exports) {
         ACTION_PACK_10007_CONTRACT,
         SERUM_MODULE_CONTRACT,
         ADRIAN_TOKEN,
-        ADRIAN_LAB_CORE_CONTRACT
+        ADRIAN_LAB_CORE_CONTRACT,
+        ADRIAN_NAME_REGISTRY_ABI
     };
 } else {
     // Browser environment - attach to window

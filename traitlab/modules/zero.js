@@ -327,7 +327,13 @@ class ZeroManager {
                 return tokensWithMetadata;
             } else {
                 // For ERC721 tokens, load custom names
-                await this.loadCustomNames(tokens);
+                const nameMap = await this.loadCustomNames(tokens);
+                if (nameMap) {
+                    tokens.forEach(t => {
+                        const n = nameMap.get(t.tokenId);
+                        if (n) t.title = n; // Override displayed name
+                    });
+                }
                 this.emit('tokensLoaded', { tokens, contractAddress, tokenType });
                 return tokens;
             }
@@ -408,14 +414,8 @@ class ZeroManager {
                 throw new Error('Contract not found at specified address');
             }
             
-            // Load the full contract ABI
-            console.log('Loading ABI from file...');
-            const response = await fetch('./adrian-name-registry-abi.json');
-            if (!response.ok) {
-                throw new Error(`Failed to load ABI: ${response.status} ${response.statusText}`);
-            }
-            const contractABI = await response.json();
-            console.log('ABI loaded successfully, functions:', contractABI.filter(f => f.type === 'function').map(f => f.name));
+            // Use ABI from config
+            const contractABI = window.TraitLABConfig.ADRIAN_NAME_REGISTRY_ABI;
 
             // Create contract instance
             const contract = new ethers.Contract(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, contractABI, provider);
@@ -714,14 +714,8 @@ class ZeroManager {
                 throw new Error('Contract not found at specified address');
             }
             
-            // Load the full contract ABI
-            console.log('Loading ABI from file...');
-            const response = await fetch('./adrian-name-registry-abi.json');
-            if (!response.ok) {
-                throw new Error(`Failed to load ABI: ${response.status} ${response.statusText}`);
-            }
-            const contractABI = await response.json();
-            console.log('ABI loaded successfully, functions:', contractABI.filter(f => f.type === 'function').map(f => f.name));
+            // Use ABI from config
+            const contractABI = window.TraitLABConfig.ADRIAN_NAME_REGISTRY_ABI;
 
             // Create contract instance
             const contract = new ethers.Contract(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, contractABI, provider);
@@ -1021,80 +1015,7 @@ class ZeroManager {
         }
     }
 
-    /**
-     * Execute the rename transaction
-     */
-    async executeRename(ethers, newName) {
-        try {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = provider.getSigner();
 
-            // Load the full contract ABI
-            const response = await fetch('./adrian-name-registry-abi.json');
-            if (!response.ok) {
-                throw new Error(`Failed to load ABI: ${response.status} ${response.statusText}`);
-            }
-            const contractABI = await response.json();
-
-            // Create contract instance
-            const contract = new ethers.Contract(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, contractABI, signer);
-
-            // Prepare parameters
-            const tokenId = this.selectedERC721.tokenId;
-            const name = newName.trim();
-
-            console.log('Contract address:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
-            console.log('Token ID:', tokenId);
-            console.log('New name:', name);
-
-            // Call the rename function
-            const tx = await contract.rename(tokenId, name);
-            
-            console.log('Rename transaction hash:', tx.hash);
-
-            // Wait for transaction confirmation
-            const receipt = await tx.wait();
-            
-            console.log('Rename confirmed:', receipt);
-
-            // Emit success event
-            this.emit('tokenRenamed', { 
-                tokenId, 
-                newName: name,
-                transactionHash: receipt.transactionHash 
-            });
-
-            return receipt;
-
-        } catch (error) {
-            console.error('Error in rename transaction:', error);
-            
-            let errorMessage = 'Failed to rename token.';
-            
-            if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
-                errorMessage = '❌ Transaction was cancelled by user.';
-            } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
-                // Check for specific revert reasons
-                if (error.reason && error.reason.includes('name already taken')) {
-                    errorMessage = '❌ This name is already taken!';
-                } else if (error.reason && error.reason.includes('not owner')) {
-                    errorMessage = '❌ You must own this token to rename it.';
-                } else if (error.reason && error.reason.includes('insufficient balance')) {
-                    errorMessage = '❌ Insufficient ADRIAN balance for rename.';
-                } else if (error.reason && error.reason.includes('not approved')) {
-                    errorMessage = '❌ Please approve ADRIAN tokens first.';
-                } else {
-                    errorMessage = `❌ Transaction failed: ${error.reason}`;
-                }
-            } else if (error.code === 'INSUFFICIENT_FUNDS') {
-                errorMessage = '❌ Insufficient funds for gas fees.';
-            } else if (error.message) {
-                errorMessage = `❌ Error: ${error.message}`;
-            }
-            
-            throw new Error(errorMessage);
-        }
-    }
 
     /**
      * Refresh AdrianZERO token image
