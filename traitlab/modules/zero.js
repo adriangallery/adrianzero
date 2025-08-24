@@ -396,6 +396,9 @@ class ZeroManager {
      */
     async executeLoadCustomNames(ethers, adrianZeroTokens) {
         try {
+            console.log('🔍 executeLoadCustomNames - window.TraitLABConfig:', window.TraitLABConfig);
+            console.log('🔍 executeLoadCustomNames - ADRIAN_NAME_REGISTRY_ABI:', window.TraitLABConfig?.ADRIAN_NAME_REGISTRY_ABI);
+            
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             
             // Check if we're on the correct network (Base)
@@ -696,6 +699,9 @@ class ZeroManager {
      */
     async executeLoadPrice(ethers) {
         try {
+            console.log('🔍 executeLoadPrice - window.TraitLABConfig:', window.TraitLABConfig);
+            console.log('🔍 executeLoadPrice - ADRIAN_NAME_REGISTRY_ABI:', window.TraitLABConfig?.ADRIAN_NAME_REGISTRY_ABI);
+            
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             
             // Check if we're on the correct network (Base)
