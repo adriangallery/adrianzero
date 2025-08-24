@@ -851,6 +851,15 @@
                 
                                 // Setup button event listeners after DOM is loaded
                 this.setupButtonEventListeners();
+                
+                // Zero events (continued)
+                this.modules.zero.on('tokenActivated', (data) => {
+                    this.showSuccess(`Token activado exitosamente! TX: ${data.transactionHash}`);
+                });
+                
+                this.modules.zero.on('tokenRenamed', (data) => {
+                    this.showSuccess(`Token renombrado exitosamente! TX: ${data.transactionHash}`);
+                });
             }
             
             setupButtonEventListeners() {
@@ -869,15 +878,6 @@
                         this.openPack();
                     });
                 }
-            }
-            
-            this.modules.zero.on('tokenActivated', (data) => {
-                    this.showSuccess(`Token activado exitosamente! TX: ${data.transactionHash}`);
-                });
-                
-                this.modules.zero.on('tokenRenamed', (data) => {
-                    this.showSuccess(`Token renombrado exitosamente! TX: ${data.transactionHash}`);
-                });
             }
 
             setupTabs() {
