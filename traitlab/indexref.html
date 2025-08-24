@@ -1207,9 +1207,21 @@
                     return;
                 }
                 
+                console.log('🔍 updateSelectionInfo - Final HTML:', {
+                    text: text,
+                    buttons: buttons,
+                    actionButtonsElement: actionButtons,
+                    selectionInfoElement: selectionInfo
+                });
+                
                 selectionText.innerHTML = text;
                 actionButtons.innerHTML = buttons;
                 selectionInfo.style.display = 'block';
+                
+                console.log('🔍 updateSelectionInfo - After DOM update:', {
+                    actionButtonsInnerHTML: actionButtons.innerHTML,
+                    selectionInfoDisplay: selectionInfo.style.display
+                });
             }
 
             clearSelection() {
