@@ -320,9 +320,27 @@ class UIManager {
                 }
             } else {
                 // Handle selection for AdrianLAB (Traits tab) with category management
-                // This will be handled by the traits module
-                // Just toggle the visual state for now
-                tokenCard.classList.toggle('selected');
+                if (token.tokenType === 'ERC721') {
+                    // Single selection for ERC721 in AdrianLAB tab
+                    if (this.selectedERC721 && this.selectedERC721.tokenId === token.tokenId) {
+                        this.selectedERC721 = null;
+                        tokenCard.classList.remove('selected');
+                    } else {
+                        // Deselect previous ERC721
+                        const prevSelected = tokensGrid.querySelector('.token-card.selected');
+                        if (prevSelected) prevSelected.classList.remove('selected');
+                        
+                        this.selectedERC721 = token;
+                        tokenCard.classList.add('selected');
+                    }
+                    // Emit event for main app to react if needed
+                    this.emit('tokenSelected', { token, filter: this.currentFilter });
+                } else if (token.tokenType === 'ERC1155') {
+                    // Handle selection for AdrianLAB (Traits tab) with category management
+                    // This will be handled by the traits module
+                    // Just toggle the visual state for now
+                    tokenCard.classList.toggle('selected');
+                }
             }
         }
         
