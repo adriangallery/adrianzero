@@ -88,6 +88,7 @@ if (typeof module !== 'undefined' && module.exports) {
     };
 } else {
     // Browser environment - attach to window
+    console.log('🔧 Config.js: Setting up window.TraitLABConfig...');
     window.TraitLABConfig = {
         ALCHEMY_API_KEY,
         ALCHEMY_RPC_URL,
@@ -105,4 +106,5 @@ if (typeof module !== 'undefined' && module.exports) {
         ADRIAN_LAB_CORE_CONTRACT,
         ADRIAN_NAME_REGISTRY_ABI
     };
+    console.log('🔧 Config.js: window.TraitLABConfig setup complete:', window.TraitLABConfig);
 }
