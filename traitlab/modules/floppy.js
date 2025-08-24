@@ -1,6 +1,7 @@
 /**
  * TRAITLAB - Módulo de Floppy
  * Maneja floppy discs, packs, actionpacks y toda la lógica de opening
+ * Implementación completa basada en index.html original
  */
 
 class FloppyManager {
@@ -89,180 +90,8 @@ class FloppyManager {
     }
 
     /**
-     * Open floppy using blockchain contract
-     */
-    async openFloppy() {
-        console.log('openFloppy called');
-        
-        if (!this.selectedFloppy) {
-            throw new Error('Please select a floppy disc first.');
-        }
-
-        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
-            throw new Error('Please connect your wallet first.');
-        }
-
-        try {
-            // Load ethers dynamically only when needed
-            let ethers;
-            if (typeof window.ethers === 'undefined') {
-                // Load ethers from CDN
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
-                
-                return new Promise((resolve, reject) => {
-                    script.onload = () => {
-                        ethers = window.ethers;
-                        console.log('Ethers loaded successfully');
-                        this.executeOpenFloppy(ethers)
-                            .then(resolve)
-                            .catch(reject);
-                    };
-                    script.onerror = () => {
-                        reject(new Error('Failed to load ethers library. Please refresh the page.'));
-                    };
-                    document.head.appendChild(script);
-                });
-            } else {
-                ethers = window.ethers;
-                return await this.executeOpenFloppy(ethers);
-            }
-        } catch (error) {
-            console.error('Error in openFloppy:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Execute the open floppy transaction
-     */
-    async executeOpenFloppy(ethers) {
-        try {
-            // Get provider and signer
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            
-            // Check if we're on the correct network (Base)
-            const network = await provider.getNetwork();
-            console.log('Current network:', network);
-            
-            if (network.chainId !== 8453) { // Base mainnet
-                throw new Error('Please switch to Base network to use this feature.');
-            }
-            
-            // Determine which contract to use based on floppy type
-            let contractAddress;
-            let contractABI;
-            
-            if (this.selectedFloppy.tokenId === 10007) {
-                // ActionPack 10007 uses different contract
-                contractAddress = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
-                contractABI = window.TraitLABConfig.ACTION_PACKS_ABI;
-            } else if (this.selectedFloppy.tokenId === 10003) {
-                // GLITCH Floppy uses PackTokenMinter
-                contractAddress = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
-                contractABI = window.TraitLABConfig.PACK_TOKEN_MINTER_ABI;
-            } else if (this.selectedFloppy.tokenId === 10004) {
-                // GF Floppy uses PackTokenMinter
-                contractAddress = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
-                contractABI = window.TraitLABConfig.PACK_TOKEN_MINTER_ABI;
-            } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015) {
-                // Pack tokens use PackTokenMinter
-                contractAddress = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
-                contractABI = window.TraitLABConfig.PACK_TOKEN_MINTER_ABI;
-            } else {
-                // Default floppy contract
-                contractAddress = window.TraitLABConfig.FLOPPY_CONTRACT;
-                contractABI = window.TraitLABConfig.FLOPPY_ABI;
-            }
-            
-            console.log('Using contract:', contractAddress);
-            console.log('Contract ABI:', contractABI);
-            
-            // Check if contract exists
-            const code = await provider.getCode(contractAddress);
-            if (code === '0x') {
-                throw new Error('Contract not found at specified address');
-            }
-            
-            // Create contract instance
-            const contract = new ethers.Contract(contractAddress, contractABI, provider);
-            
-            // Prepare transaction
-            console.log('Preparing transaction...');
-            const signer = provider.getSigner();
-            const userAddress = await signer.getAddress();
-            
-            // Create contract instance with signer
-            const contractWithSigner = new ethers.Contract(contractAddress, contractABI, signer);
-            
-            // Prepare transaction parameters
-            const floppyId = this.selectedFloppy.tokenId;
-            
-            console.log('Confirming transaction in your wallet...');
-            console.log('Floppy ID:', floppyId);
-            
-            let tx;
-            
-            // Call appropriate function based on floppy type
-            if (floppyId === 10007) {
-                // ActionPack 10007
-                tx = await contractWithSigner.openActionPack(floppyId);
-            } else if (floppyId === 10003 || floppyId === 10004) {
-                // GLITCH/GF Floppy
-                tx = await contractWithSigner.openPack(floppyId);
-            } else if (floppyId >= 15008 && floppyId <= 15015) {
-                // Pack tokens
-                tx = await contractWithSigner.openPack(floppyId);
-            } else {
-                // Default floppy
-                tx = await contractWithSigner.openFloppy(floppyId);
-            }
-            
-            console.log('Transaction sent:', tx.hash);
-            
-            // Wait for confirmation
-            console.log('Transaction sent! Waiting for confirmation...');
-            const receipt = await tx.wait();
-            console.log('Transaction confirmed:', receipt);
-            
-            // Emit success event
-            this.emit('floppyOpened', { 
-                floppyId, 
-                transactionHash: receipt.transactionHash,
-                receipt 
-            });
-            
-            return receipt;
-            
-        } catch (error) {
-            console.error('Error in executeOpenFloppy:', error);
-            
-            // Handle specific error cases
-            let errorMessage = 'Failed to open floppy.';
-            if (error.code === 4001) {
-                errorMessage = 'Transaction was rejected by user.';
-            } else if (error.reason) {
-                if (error.reason.includes('not owner')) {
-                    errorMessage = '❌ You must own this floppy to open it.';
-                } else if (error.reason.includes('already opened')) {
-                    errorMessage = '❌ This floppy has already been opened.';
-                } else if (error.reason.includes('insufficient balance')) {
-                    errorMessage = '❌ Insufficient floppy balance.';
-                } else {
-                    errorMessage = `❌ Transaction failed: ${error.reason}`;
-                }
-            } else if (error.code === 'INSUFFICIENT_FUNDS') {
-                errorMessage = '❌ Insufficient funds for gas fees.';
-            } else if (error.message) {
-                errorMessage = `❌ Error: ${error.message}`;
-            }
-            
-            throw new Error(errorMessage);
-        }
-    }
-
-    /**
      * Wrapper para decidir qué contrato usar al abrir un pack
+     * Basado en openSelectedPack() del index.html original
      */
     async openSelectedPack() {
         if (!this.selectedFloppy) {
@@ -288,6 +117,7 @@ class FloppyManager {
 
     /**
      * Open Pack function for token 10004 (PackTokenMinter contract)
+     * Basado en openPack() del index.html original
      */
     async openPack() {
         console.log('openPack called');
@@ -333,6 +163,7 @@ class FloppyManager {
 
     /**
      * Execute the open pack transaction
+     * Basado en executeOpenPack() del index.html original
      */
     async executeOpenPackTransaction(ethers) {
         try {
@@ -340,34 +171,22 @@ class FloppyManager {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
-            // Contract ABI for openPack function
-            const contractABI = [
-                {
-                    "inputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "packId",
-                            "type": "uint256"
-                        }
-                    ],
-                    "name": "openPack",
-                    "outputs": [],
-                    "stateMutability": "nonpayable",
-                    "type": "function"
-                }
+            // PackTokenMinter ABI - solo la función openPack
+            const packMinterABI = [
+                'function openPack(uint256 packId) external'
             ];
 
             // Create contract instance
             const contract = new ethers.Contract(
-                window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT, 
-                contractABI, 
+                window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT, 
+                packMinterABI, 
                 signer
             );
 
             // Prepare parameters
             const packId = this.selectedFloppy.tokenId;
 
-            console.log('Contract address:', window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT);
+            console.log('Contract address:', window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT);
             console.log('Pack ID:', packId);
 
             // Call the contract function
@@ -383,7 +202,8 @@ class FloppyManager {
             // Emit success event
             this.emit('floppyOpened', { 
                 tokenId: packId, 
-                transactionHash: receipt.transactionHash 
+                transactionHash: receipt.transactionHash,
+                receipt 
             });
 
             return receipt;
@@ -391,26 +211,13 @@ class FloppyManager {
         } catch (error) {
             console.error('Error in transaction:', error);
             
-            let errorMessage = 'Failed to open floppy.';
+            let errorMessage = 'Failed to open pack.';
             
             // Handle specific error cases
-            if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
-                errorMessage = '❌ Transaction was cancelled by user.';
-            } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
-                // Check for specific revert reasons
-                if (error.reason && error.reason.includes('already opened')) {
-                    errorMessage = '❌ This floppy has already been opened!';
-                } else if (error.reason && error.reason.includes('not owner')) {
-                    errorMessage = '❌ You must own this floppy to open it.';
-                } else if (error.reason && error.reason.includes('not authorized')) {
-                    errorMessage = '❌ You are not authorized to open this floppy.';
-                } else {
-                    errorMessage = `❌ Transaction failed: ${error.reason}`;
-                }
-            } else if (error.code === 'INSUFFICIENT_FUNDS') {
-                errorMessage = '❌ Insufficient funds for gas fees.';
+            if (error.code === 4001) {
+                errorMessage = 'Transaction was rejected by user.';
             } else if (error.message) {
-                errorMessage = `❌ Error: ${error.message}`;
+                errorMessage = `Error: ${error.message}`;
             }
             
             throw new Error(errorMessage);
@@ -419,6 +226,7 @@ class FloppyManager {
 
     /**
      * Open Pack 10003 function (GLITCH Floppy)
+     * Basado en openPack10003() del index.html original
      */
     async openPack10003() {
         console.log('openPack10003 called');
@@ -426,7 +234,7 @@ class FloppyManager {
             throw new Error('Please select a pack first.');
         }
         if (this.selectedFloppy.tokenId !== 10003) {
-            throw new Error('This function is only available for GLITCH Floppy token 10003.');
+            throw new Error('This function is only available for Pack token 10003.');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
@@ -464,6 +272,7 @@ class FloppyManager {
 
     /**
      * Execute the open pack 10003 transaction
+     * Basado en executeOpenPack10003() del index.html original
      */
     async executeOpenPack10003Transaction(ethers) {
         try {
@@ -471,34 +280,22 @@ class FloppyManager {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
-            // Contract ABI for openPack function
-            const contractABI = [
-                {
-                    "inputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "packId",
-                            "type": "uint256"
-                        }
-                    ],
-                    "name": "openPack",
-                    "outputs": [],
-                    "stateMutability": "nonpayable",
-                    "type": "function"
-                }
+            // NEW_FLOPPY_PACK_CONTRACT ABI - solo la función openPack
+            const abi = [
+                'function openPack(uint256 packId) external'
             ];
 
             // Create contract instance
             const contract = new ethers.Contract(
-                window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT, 
-                contractABI, 
+                window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT, 
+                abi, 
                 signer
             );
 
             // Prepare parameters
-            const packId = this.selectedFloppy.tokenId;
+            const packId = this.selectedFloppy.tokenId; // 10003
 
-            console.log('Contract address:', window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT);
+            console.log('Contract address:', window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT);
             console.log('Pack ID:', packId);
 
             // Call the contract function
@@ -514,7 +311,8 @@ class FloppyManager {
             // Emit success event
             this.emit('floppyOpened', { 
                 tokenId: packId, 
-                transactionHash: receipt.transactionHash 
+                transactionHash: receipt.transactionHash,
+                receipt 
             });
 
             return receipt;
@@ -522,26 +320,13 @@ class FloppyManager {
         } catch (error) {
             console.error('Error in transaction:', error);
             
-            let errorMessage = 'Failed to open floppy.';
+            let errorMessage = 'Failed to open pack.';
             
             // Handle specific error cases
-            if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
-                errorMessage = '❌ Transaction was cancelled by user.';
-            } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
-                // Check for specific revert reasons
-                if (error.reason && error.reason.includes('already opened')) {
-                    errorMessage = '❌ This floppy has already been opened!';
-                } else if (error.reason && error.reason.includes('not owner')) {
-                    errorMessage = '❌ You must own this floppy to open it.';
-                } else if (error.reason && error.reason.includes('not authorized')) {
-                    errorMessage = '❌ You are not authorized to open this floppy.';
-                } else {
-                    errorMessage = `❌ Transaction failed: ${error.reason}`;
-                }
-            } else if (error.code === 'INSUFFICIENT_FUNDS') {
-                errorMessage = '❌ Insufficient funds for gas fees.';
+            if (error.code === 4001) {
+                errorMessage = 'Transaction was rejected by user.';
             } else if (error.message) {
-                errorMessage = `❌ Error: ${error.message}`;
+                errorMessage = `Error: ${error.message}`;
             }
             
             throw new Error(errorMessage);
@@ -549,15 +334,17 @@ class FloppyManager {
     }
 
     /**
-     * Open ActionPack function for tokens 15008-15015
+     * Open ActionPack function para tokens 15008-15015 (ActionPacks contract)
+     * Basado en openActionPack() del index.html original
      */
     async openActionPack() {
-        console.log('openActionPack called');
+        console.log('openActionPack called for token:', this.selectedFloppy?.tokenId);
+
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (this.selectedFloppy.tokenId < 15008 || this.selectedFloppy.tokenId > 15015) {
-            throw new Error('This function is only available for ActionPack tokens 15008-15015.');
+        if (!(this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015)) {
+            throw new Error('This function is only available for Action Packs (15008-15015).');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
@@ -595,6 +382,7 @@ class FloppyManager {
 
     /**
      * Execute the open action pack transaction
+     * Basado en executeOpenActionPack() del index.html original
      */
     async executeOpenActionPackTransaction(ethers) {
         try {
@@ -602,27 +390,17 @@ class FloppyManager {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
-            // Contract ABI for openActionPack function
-            const contractABI = [
-                {
-                    "inputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "packId",
-                            "type": "uint256"
-                        }
-                    ],
-                    "name": "openActionPack",
-                    "outputs": [],
-                    "stateMutability": "nonpayable",
-                    "type": "function"
-                }
+            // ActionPacks ABI completo
+            const actionPacksABI = [
+                'function openPack(uint256 packId) external',
+                'function canOpenPack(address user, uint256 packId) view returns (bool canOpen, string reason)',
+                'function packConfigs(uint256 packId) view returns (uint256 id, bool active)'
             ];
 
             // Create contract instance
             const contract = new ethers.Contract(
                 window.TraitLABConfig.ACTION_PACKS_CONTRACT, 
-                contractABI, 
+                actionPacksABI, 
                 signer
             );
 
@@ -632,9 +410,28 @@ class FloppyManager {
             console.log('Contract address:', window.TraitLABConfig.ACTION_PACKS_CONTRACT);
             console.log('Pack ID:', packId);
 
-            // Call the contract function
-            const tx = await contract.openActionPack(packId);
-            
+            // Pre-chequeo 1: Verificar si el pack está activo
+            try {
+                const packConfig = await contract.packConfigs(packId);
+                if (!packConfig.active) {
+                    throw new Error(`Pack ${packId} is not active. Please try again later.`);
+                }
+            } catch (error) {
+                console.log(`Could not check pack config for ${packId}:`, error);
+            }
+
+            // Pre-chequeo 2: canOpenPack(user, packId)
+            const user = await signer.getAddress();
+            const [canOpen, reason] = await contract.canOpenPack(user, packId);
+            if (!canOpen) {
+                throw new Error(`Cannot open pack: ${reason || 'Not eligible or inactive'}`);
+            }
+
+            console.log('Opening action pack for pack ID:', packId);
+
+            // Llamar openPack(uint256 packId) con un solo parámetro
+            const tx = await contract.openPack(packId);
+
             console.log('Transaction hash:', tx.hash);
 
             // Wait for transaction confirmation
@@ -645,34 +442,20 @@ class FloppyManager {
             // Emit success event
             this.emit('floppyOpened', { 
                 tokenId: packId, 
-                transactionHash: receipt.transactionHash 
+                transactionHash: receipt.transactionHash,
+                receipt 
             });
 
             return receipt;
 
         } catch (error) {
-            console.error('Error in transaction:', error);
+            console.error('Error opening action pack:', error);
             
-            let errorMessage = 'Failed to open action pack.';
-            
-            // Handle specific error cases
-            if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
-                errorMessage = '❌ Transaction was cancelled by user.';
-            } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
-                // Check for specific revert reasons
-                if (error.reason && error.reason.includes('already opened')) {
-                    errorMessage = '❌ This action pack has already been opened!';
-                } else if (error.reason && error.reason.includes('not owner')) {
-                    errorMessage = '❌ You must own this action pack to open it.';
-                } else if (error.reason && error.reason.includes('not authorized')) {
-                    errorMessage = '❌ You are not authorized to open this action pack.';
-                } else {
-                    errorMessage = `❌ Transaction failed: ${error.reason}`;
-                }
-            } else if (error.code === 'INSUFFICIENT_FUNDS') {
-                errorMessage = '❌ Insufficient funds for gas fees.';
+            let errorMessage = 'Failed to open pack.';
+            if (error.code === 4001) {
+                errorMessage = 'Transaction was rejected by user.';
             } else if (error.message) {
-                errorMessage = `❌ Error: ${error.message}`;
+                errorMessage = `Error: ${error.message}`;
             }
             
             throw new Error(errorMessage);
@@ -680,15 +463,17 @@ class FloppyManager {
     }
 
     /**
-     * Open ActionPack 10007 function
+     * Open Action Pack function específica para token 10007
+     * Basado en openActionPack10007() del index.html original
      */
     async openActionPack10007() {
-        console.log('openActionPack10007 called');
+        console.log('openActionPack10007 called for token:', this.selectedFloppy?.tokenId);
+
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
         if (this.selectedFloppy.tokenId !== 10007) {
-            throw new Error('This function is only available for ActionPack token 10007.');
+            throw new Error('This function is only available for Action Pack 10007.');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
@@ -726,6 +511,7 @@ class FloppyManager {
 
     /**
      * Execute the open action pack 10007 transaction
+     * Basado en executeOpenActionPack10007() del index.html original
      */
     async executeOpenActionPack10007Transaction(ethers) {
         try {
@@ -733,39 +519,48 @@ class FloppyManager {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
-            // Contract ABI for openActionPack function
-            const contractABI = [
-                {
-                    "inputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "packId",
-                            "type": "uint256"
-                        }
-                    ],
-                    "name": "openActionPack",
-                    "outputs": [],
-                    "stateMutability": "nonpayable",
-                    "type": "function"
-                }
+            // ActionPacks ABI para token 10007
+            const actionPacksABI = [
+                'function openPack(uint256 packId) external',
+                'function canOpenPack(address user, uint256 packId) view returns (bool canOpen, string reason)',
+                'function packConfigs(uint256 packId) view returns (uint256 id, bool active)'
             ];
 
             // Create contract instance
             const contract = new ethers.Contract(
-                window.TraitLABConfig.ACTION_PACKS_CONTRACT, 
-                contractABI, 
+                window.TraitLABConfig.ACTION_PACK_10007_CONTRACT, 
+                actionPacksABI, 
                 signer
             );
 
             // Prepare parameters
             const packId = this.selectedFloppy.tokenId;
 
-            console.log('Contract address:', window.TraitLABConfig.ACTION_PACKS_CONTRACT);
+            console.log('Contract address:', window.TraitLABConfig.ACTION_PACK_10007_CONTRACT);
             console.log('Pack ID:', packId);
 
-            // Call the contract function
-            const tx = await contract.openActionPack(packId);
-            
+            // Pre-chequeo 1: Verificar si el pack está activo
+            try {
+                const packConfig = await contract.packConfigs(packId);
+                if (!packConfig.active) {
+                    throw new Error(`Pack ${packId} is not active. Please try again later.`);
+                }
+            } catch (error) {
+                console.log(`Could not check pack config for ${packId}:`, error);
+            }
+
+            // Pre-chequeo 2: canOpenPack(user, packId)
+            const user = await signer.getAddress();
+            const [canOpen, reason] = await contract.canOpenPack(user, packId);
+            if (!canOpen) {
+                throw new Error(`Cannot open pack: ${reason || 'Not eligible or inactive'}`);
+            }
+
+            console.log('Opening action pack 10007 for pack ID:', packId);
+
+            // Llamar openPack(uint256 packId) con un solo parámetro
+            const tx = await contract.openPack(packId);
+
             console.log('Transaction hash:', tx.hash);
 
             // Wait for transaction confirmation
@@ -776,27 +571,166 @@ class FloppyManager {
             // Emit success event
             this.emit('floppyOpened', { 
                 tokenId: packId, 
-                transactionHash: receipt.transactionHash 
+                transactionHash: receipt.transactionHash,
+                receipt 
             });
 
             return receipt;
 
         } catch (error) {
-            console.error('Error in transaction:', error);
+            console.error('Error opening action pack 10007:', error);
             
-            let errorMessage = 'Failed to open action pack.';
+            let errorMessage = 'Failed to open pack.';
+            if (error.code === 4001) {
+                errorMessage = 'Transaction was rejected by user.';
+            } else if (error.message) {
+                errorMessage = `Error: ${error.message}`;
+            }
+            
+            throw new Error(errorMessage);
+        }
+    }
+
+    /**
+     * Open floppy using blockchain contract
+     * Función genérica para floppies que no son packs
+     */
+    async openFloppy() {
+        console.log('openFloppy called');
+        
+        if (!this.selectedFloppy) {
+            throw new Error('Please select a floppy disc first.');
+        }
+
+        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+            throw new Error('Please connect your wallet first.');
+        }
+
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                // Load ethers from CDN
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        this.executeOpenFloppy(ethers)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library. Please refresh the page.'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeOpenFloppy(ethers);
+            }
+        } catch (error) {
+            console.error('Error in openFloppy:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute the open floppy transaction
+     * Para floppies que no son packs (tokens 10000, 10001, 10002, 10005, 10006)
+     */
+    async executeOpenFloppy(ethers) {
+        try {
+            // Get provider and signer
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            
+            // Check if we're on the correct network (Base)
+            const network = await provider.getNetwork();
+            console.log('Current network:', network);
+            
+            if (network.chainId !== 8453) { // Base mainnet
+                throw new Error('Please switch to Base network to use this feature.');
+            }
+            
+            // Determine which contract to use based on floppy type
+            let contractAddress;
+            let contractABI;
+            
+            if (this.selectedFloppy.tokenId === 10005) {
+                // Golden Floppy uses ADRIAN_FLOPPY_DISCS_CONTRACT
+                contractAddress = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                contractABI = [
+                    'function openFloppy(uint256 floppyId) external'
+                ];
+            } else {
+                // Default floppy contract
+                contractAddress = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                contractABI = [
+                    'function openFloppy(uint256 floppyId) external'
+                ];
+            }
+            
+            console.log('Using contract:', contractAddress);
+            console.log('Contract ABI:', contractABI);
+            
+            // Check if contract exists
+            const code = await provider.getCode(contractAddress);
+            if (code === '0x') {
+                throw new Error('Contract not found at specified address');
+            }
+            
+            // Create contract instance
+            const contract = new ethers.Contract(contractAddress, contractABI, provider);
+            
+            // Prepare transaction
+            console.log('Preparing transaction...');
+            const signer = provider.getSigner();
+            const userAddress = await signer.getAddress();
+            
+            // Create contract instance with signer
+            const contractWithSigner = new ethers.Contract(contractAddress, contractABI, signer);
+            
+            // Prepare transaction parameters
+            const floppyId = this.selectedFloppy.tokenId;
+            
+            console.log('Confirming transaction in your wallet...');
+            console.log('Floppy ID:', floppyId);
+            
+            // Call openFloppy function
+            const tx = await contractWithSigner.openFloppy(floppyId);
+            
+            console.log('Transaction sent:', tx.hash);
+            
+            // Wait for confirmation
+            console.log('Transaction sent! Waiting for confirmation...');
+            const receipt = await tx.wait();
+            console.log('Transaction confirmed:', receipt);
+            
+            // Emit success event
+            this.emit('floppyOpened', { 
+                floppyId, 
+                transactionHash: receipt.transactionHash,
+                receipt 
+            });
+            
+            return receipt;
+            
+        } catch (error) {
+            console.error('Error in executeOpenFloppy:', error);
             
             // Handle specific error cases
-            if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
-                errorMessage = '❌ Transaction was cancelled by user.';
-            } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
-                // Check for specific revert reasons
-                if (error.reason && error.reason.includes('already opened')) {
-                    errorMessage = '❌ This action pack has already been opened!';
-                } else if (error.reason && error.reason.includes('not owner')) {
-                    errorMessage = '❌ You must own this action pack to open it.';
-                } else if (error.reason && error.reason.includes('not authorized')) {
-                    errorMessage = '❌ You are not authorized to open this action pack.';
+            let errorMessage = 'Failed to open floppy.';
+            if (error.code === 4001) {
+                errorMessage = 'Transaction was rejected by user.';
+            } else if (error.reason) {
+                if (error.reason.includes('not owner')) {
+                    errorMessage = '❌ You must own this floppy to open it.';
+                } else if (error.reason.includes('already opened')) {
+                    errorMessage = '❌ This floppy has already been opened.';
+                } else if (error.reason.includes('insufficient balance')) {
+                    errorMessage = '❌ Insufficient floppy balance.';
                 } else {
                     errorMessage = `❌ Transaction failed: ${error.reason}`;
                 }
