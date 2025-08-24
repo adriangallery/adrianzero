@@ -651,9 +651,19 @@
                     <button id="openPackBtn" class="apply-traits-btn">Open Pack</button>
                     <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="use-serum-section" style="display: none; margin-top: 10px; text-align: none;">
-                    <button id="useSerumBtn" class="apply-traits-btn">Use Serum</button>
-                    <div id="open-serum-status" class="apply-status" style="display: none;"></div>
+                <div id="use-serum-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="useSerumBtn" class="apply-traits-btn">🧪 Usar Serum</button>
+                    <div id="use-serum-status" class="apply-status" style="display: none;"></div>
+                </div>
+                <div id="erc721-actions-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="refreshMetadataBtn" class="apply-traits-btn">🔄 Refresh OpenSea Metadata</button>
+                    <button id="activateTokenBtn" class="apply-traits-btn">⚡ Assign SKIN</button>
+                    <button id="loadNamePriceBtn" class="apply-traits-btn">💰 Load Name Price</button>
+                    <button id="showRenameSectionBtn" class="apply-traits-btn">✏️ Rename Token</button>
+                </div>
+                <div id="traits-actions-section" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="generateCombinedImageBtn" class="apply-traits-btn">🖼️ Generate Image</button>
+                    <button id="applyTraitsBtn" class="apply-traits-btn">🎭 Apply Traits</button>
                 </div>
                 <div id="rename-section" style="display: none; margin-top: 10px; text-align: center;">
                     <div style="margin-bottom: 8px;">
@@ -857,6 +867,43 @@
                 
                                 // Setup button event listeners after DOM is loaded
                 this.setupButtonEventListeners();
+                
+                // Setup Use Serum button event listener
+                const useSerumBtn = document.getElementById('useSerumBtn');
+                if (useSerumBtn) {
+                    useSerumBtn.addEventListener('click', () => this.useSerum());
+                }
+                
+                // Setup other button event listeners
+                const refreshMetadataBtn = document.getElementById('refreshMetadataBtn');
+                if (refreshMetadataBtn) {
+                    refreshMetadataBtn.addEventListener('click', () => this.refreshMetadata());
+                }
+                
+                const activateTokenBtn = document.getElementById('activateTokenBtn');
+                if (activateTokenBtn) {
+                    activateTokenBtn.addEventListener('click', () => this.activateToken());
+                }
+                
+                const loadNamePriceBtn = document.getElementById('loadNamePriceBtn');
+                if (loadNamePriceBtn) {
+                    loadNamePriceBtn.addEventListener('click', () => this.loadNamePrice());
+                }
+                
+                const showRenameSectionBtn = document.getElementById('showRenameSectionBtn');
+                if (showRenameSectionBtn) {
+                    showRenameSectionBtn.addEventListener('click', () => this.showRenameSection());
+                }
+                
+                const generateCombinedImageBtn = document.getElementById('generateCombinedImageBtn');
+                if (generateCombinedImageBtn) {
+                    generateCombinedImageBtn.addEventListener('click', () => this.generateCombinedImage());
+                }
+                
+                const applyTraitsBtn = document.getElementById('applyTraitsBtn');
+                if (applyTraitsBtn) {
+                    applyTraitsBtn.addEventListener('click', () => this.applyTraits());
+                }
                 
                 // Zero events (continued)
                 this.modules.zero.on('tokenActivated', (data) => {
@@ -1073,22 +1120,32 @@
                 if (!selectionInfo || !selectionText || !actionButtons) return;
                 
                 let text = '';
-                let buttons = '';
+                // let buttons = ''; // Ya no se usa - eliminado para evitar conflictos
                 
                 // Hide all sections by default
                 if (openFloppySection) openFloppySection.style.display = 'none';
                 if (openPackSection) openPackSection.style.display = 'none';
+                
+                // Get all sections
+                const useSerumSection = document.getElementById('use-serum-section');
+                const erc721ActionsSection = document.getElementById('erc721-actions-section');
+                const traitsActionsSection = document.getElementById('traits-actions-section');
+                
+                // Hide all sections by default
+                if (useSerumSection) useSerumSection.style.display = 'none';
+                if (erc721ActionsSection) erc721ActionsSection.style.display = 'none';
+                if (traitsActionsSection) traitsActionsSection.style.display = 'none';
                 
                 if (this.selectedERC721) {
                     text += `<h4>Token ERC721 Seleccionado:</h4>`;
                     text += `<p><strong>ID:</strong> ${this.selectedERC721.tokenId}</p>`;
                     text += `<p><strong>Título:</strong> ${this.selectedERC721.title}</p>`;
                     
-                    // Add action buttons for ERC721
-                    buttons += `<button class="apply-traits-btn" onclick="app.refreshMetadata()">🔄 Refresh OpenSea Metadata</button>`;
-                    buttons += `<button class="apply-traits-btn" onclick="app.activateToken()">⚡ Assign SKIN</button>`;
-                    buttons += `<button class="apply-traits-btn" onclick="app.loadNamePrice()">💰 Load Name Price</button>`;
-                    buttons += `<button class="apply-traits-btn" onclick="app.showRenameSection()">✏️ Rename Token</button>`;
+                    // Show ERC721 actions section
+                    if (erc721ActionsSection) {
+                        erc721ActionsSection.style.display = 'block';
+                        console.log('✅ Sección ERC721 Actions mostrada');
+                    }
                 }
                 
                 if (this.selectedERC1155.length > 0) {
@@ -1098,8 +1155,11 @@
                     });
                     
                     if (this.selectedERC721) {
-                        buttons += `<button class="apply-traits-btn" onclick="app.generateCombinedImage()">🖼️ Generate Image</button>`;
-                        buttons += `<button class="apply-traits-btn" onclick="app.applyTraits()">🎭 Apply Traits</button>`;
+                        // Show traits actions section
+                        if (traitsActionsSection) {
+                            traitsActionsSection.style.display = 'block';
+                            console.log('✅ Sección Traits Actions mostrada');
+                        }
                         
                         // Automatically generate combined image when both are selected
                         this.generateCombinedImage();
@@ -1194,34 +1254,30 @@
                         willShowButton: !!this.selectedERC721
                     });
                     
-                    if (this.selectedERC721) {
-                        buttons += `<button class="apply-traits-btn" onclick="app.useSerum()">🧪 Usar Serum</button>`;
-                        console.log('✅ Botón "Use Serum" añadido');
+                    // Show Use Serum section if both serum and ERC721 are selected
+                    if (this.selectedERC721 && useSerumSection) {
+                        useSerumSection.style.display = 'block';
+                        console.log('✅ Sección Use Serum mostrada');
                     } else {
-                        console.log('❌ No se añade botón - falta selectedERC721');
+                        console.log('❌ No se muestra sección - falta selectedERC721 o useSerumSection');
                     }
                 }
                 
                 if (text === '') {
                     selectionInfo.style.display = 'none';
+                    // Hide all sections when no selection
+                    if (openFloppySection) openFloppySection.style.display = 'none';
+                    if (openPackSection) openPackSection.style.display = 'none';
+                    if (useSerumSection) useSerumSection.style.display = 'none';
+                    if (erc721ActionsSection) erc721ActionsSection.style.display = 'none';
+                    if (traitsActionsSection) traitsActionsSection.style.display = 'none';
                     return;
                 }
                 
-                console.log('🔍 updateSelectionInfo - Final HTML:', {
-                    text: text,
-                    buttons: buttons,
-                    actionButtonsElement: actionButtons,
-                    selectionInfoElement: selectionInfo
-                });
-                
                 selectionText.innerHTML = text;
-                actionButtons.innerHTML = buttons;
+                // NO usar actionButtons.innerHTML = buttons (sobrescribe las secciones específicas)
+                // actionButtons.innerHTML = buttons;
                 selectionInfo.style.display = 'block';
-                
-                console.log('🔍 updateSelectionInfo - After DOM update:', {
-                    actionButtonsInnerHTML: actionButtons.innerHTML,
-                    selectionInfoDisplay: selectionInfo.style.display
-                });
             }
 
             clearSelection() {
