@@ -235,6 +235,7 @@ class ZeroManager {
                 
                 // If we have a filter context, apply it
                 if (this.currentFilter) {
+                    console.log(`Applying filter: ${this.currentFilter}`);
                     filteredTokens = tokens.filter(token => {
                         if (token.tokenType === 'ERC1155') {
                             if (this.currentFilter === 'floppy') {
@@ -248,7 +249,7 @@ class ZeroManager {
                                 const isSerum = token.tokenId >= 262144 && token.tokenId <= 262147;
                                 console.log(`Token ${token.tokenId} serum filter: ${isSerum}`);
                                 return isSerum;
-                            } else {
+                            } else if (this.currentFilter === 'traits' || !this.currentFilter) {
                                 // Normal filter: exclude floppy & serum tokens
                                 const isExcluded = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
                                                  (token.tokenId >= 15000 && token.tokenId <= 15015) ||
@@ -258,6 +259,19 @@ class ZeroManager {
                             }
                         }
                         return true; // Keep all ERC721 tokens
+                    });
+                } else {
+                    // Default filter: exclude floppy & serum tokens
+                    console.log('No filter specified, applying default filter');
+                    filteredTokens = tokens.filter(token => {
+                        if (token.tokenType === 'ERC1155') {
+                            const isExcluded = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
+                                             (token.tokenId >= 15000 && token.tokenId <= 15015) ||
+                                             (token.tokenId >= 262144 && token.tokenId <= 262147);
+                            console.log(`Token ${token.tokenId} default filter: ${!isExcluded}`);
+                            return !isExcluded;
+                        }
+                        return true;
                     });
                 }
             
