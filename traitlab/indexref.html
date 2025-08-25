@@ -351,6 +351,10 @@
             height: 210px;
         }
 
+        .selection-info.sticky .sticky-hidden {
+            display: none !important;
+        }
+
         .minimize-btn {
             position: absolute;
             top: 5px;
@@ -378,6 +382,15 @@
 
         .minimize-btn.minimized:hover {
             background: #009900;
+        }
+
+        .minimize-btn:not(.minimized) {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        .minimize-btn:not(.minimized):hover {
+            background: #990000;
         }
 
         .action-buttons {
@@ -847,45 +860,45 @@
 
 
 
-            <div id="selection-info" class="selection-info minimized" style="display: none;">
-                <button id="minimizeBtn" class="minimize-btn minimized">Expand</button>
-                <div id="selection-text"></div>
-                <div id="generated-image" class="generated-image" style="display: none;">
+            <div id="selection-info" class="selection-info expanded" style="display: none;">
+                <button id="minimizeBtn" class="minimize-btn">Minimize</button>
+                <div id="selection-text" class="sticky-hidden"></div>
+                <div id="generated-image" class="generated-image sticky-hidden" style="display: none;">
                     <div id="image-loading-overlay" class="image-loading-overlay" style="display: none;">
                         <div class="pixelated-spinner"></div>
                         <p>Generating image...</p>
                     </div>
                     <img id="combined-image" src="" alt="Generated Image">
                 </div>
-                <div id="apply-traits-section" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="apply-traits-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="applyTraitsBtn" class="apply-traits-btn">Aplicar Traits</button>
                     <div id="apply-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="refresh-metadata-section" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="refresh-metadata-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="refreshMetadataBtn" class="apply-traits-btn">Actualizar metadata OpenSea</button>
                     <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="activate-token-section" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="activate-token-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="activateTokenBtn" class="apply-traits-btn">Asignar SKIN</button>
                     <div id="activate-token-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="open-floppy-section" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="open-floppy-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="openFloppyBtn" class="apply-traits-btn">Open Floppy</button>
                     <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="open-pack-section" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="open-pack-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="openPackBtn" class="apply-traits-btn">Open Pack</button>
                     <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="use-serum-section" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="use-serum-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="useSerumBtn" class="apply-traits-btn">🧪 Usar Serum</button>
                     <div id="use-serum-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="erc721-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
+                <div id="erc721-actions-section" class="actions-grid sticky-hidden" style="display: none; margin-top: 10px;">
                     <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
                     <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
                 </div>
-                <div id="traits-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
+                <div id="traits-actions-section" class="actions-grid sticky-hidden" style="display: none; margin-top: 10px;">
                     <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
                 </div>
                 <div id="rename-section" style="display: none; margin-top: 10px; text-align: center;">
@@ -2104,6 +2117,18 @@
                 const btn = document.getElementById('minimizeBtn');
                 if (btn) {
                     btn.textContent = selectionInfo.classList.contains('minimized') ? 'Expand' : 'Minimize';
+                }
+            }
+        });
+
+        // Add scroll detection for sticky behavior
+        window.addEventListener('scroll', () => {
+            const selectionInfo = document.getElementById('selection-info');
+            if (selectionInfo && selectionInfo.style.display !== 'none') {
+                if (window.scrollY > 100) {
+                    selectionInfo.classList.add('sticky');
+                } else {
+                    selectionInfo.classList.remove('sticky');
                 }
             }
         });
