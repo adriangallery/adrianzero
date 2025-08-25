@@ -731,6 +731,71 @@
             font-family: 'VT323', monospace;
         }
 
+        /* Estilos para la nueva selección elegante */
+        .selected-token-title {
+            font-size: 1.8rem;
+            color: #00ff00;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: 'VT323', monospace;
+            text-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .selected-traits-title {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 15px;
+            text-align: center;
+            font-family: 'VT323', monospace;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+        }
+
+        .trait-item {
+            font-size: 1rem;
+            color: #ccc;
+            margin: 8px 0;
+            text-align: center;
+            font-family: 'VT323', monospace;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        /* Grid de botones de acciones */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #764ba2, #667eea);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -793,6 +858,30 @@
             
             .trait-token-id {
                 font-size: 0.6rem;
+            }
+
+            /* Mobile styles for new selection design */
+            .selected-token-title {
+                font-size: 1.5rem;
+            }
+
+            .selected-traits-title {
+                font-size: 1.1rem;
+            }
+
+            .trait-item {
+                font-size: 0.9rem;
+                margin: 6px 0;
+            }
+
+            .actions-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .action-btn {
+                padding: 12px 16px;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -899,15 +988,15 @@
                     <button id="useSerumBtn" class="apply-traits-btn">🧪 Usar Serum</button>
                     <div id="use-serum-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="erc721-actions-section" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="refreshMetadataBtn" class="apply-traits-btn">🔄 Refresh OpenSea Metadata</button>
-                    <button id="activateTokenBtn" class="apply-traits-btn">⚡ Assign SKIN</button>
-                    <button id="loadNamePriceBtn" class="apply-traits-btn">💰 Load Name Price</button>
-                    <button id="showRenameSectionBtn" class="apply-traits-btn">✏️ Rename Token</button>
+                <div id="erc721-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
+                    <button id="refreshMetadataBtn" class="action-btn">Refresh OpenSea Metadata</button>
+                    <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
+                    <button id="loadNamePriceBtn" class="action-btn">Load Name Price</button>
+                    <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
                 </div>
-                <div id="traits-actions-section" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="generateCombinedImageBtn" class="apply-traits-btn">🖼️ Generate Image</button>
-                    <button id="applyTraitsBtn" class="apply-traits-btn">🎭 Apply Traits</button>
+                <div id="traits-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
+                    <button id="generateCombinedImageBtn" class="action-btn">Generate Image</button>
+                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
                 </div>
                 <div id="rename-section" style="display: none; margin-top: 10px; text-align: center;">
                     <div style="margin-bottom: 8px;">
@@ -1632,9 +1721,7 @@
                 if (traitsActionsSection) traitsActionsSection.style.display = 'none';
                 
                 if (this.selectedERC721) {
-                    text += `<h4>Token ERC721 Seleccionado:</h4>`;
-                    text += `<p><strong>ID:</strong> ${this.selectedERC721.tokenId}</p>`;
-                    text += `<p><strong>Título:</strong> ${this.selectedERC721.title}</p>`;
+                    text += `<h3 class="selected-token-title">${this.selectedERC721.title}</h3>`;
                     
                     // Show ERC721 actions section
                     if (erc721ActionsSection) {
@@ -1644,9 +1731,9 @@
                 }
                 
                 if (this.selectedERC1155.length > 0) {
-                    text += `<h4>Traits Seleccionados:</h4>`;
+                    text += `<h4 class="selected-traits-title">Selected Traits</h4>`;
                     this.selectedERC1155.forEach(trait => {
-                        text += `<p><strong>ID:</strong> ${trait.tokenId} - <strong>Título:</strong> ${trait.title}</p>`;
+                        text += `<p class="trait-item">${trait.title}</p>`;
                     });
                     
                     if (this.selectedERC721) {
@@ -1654,6 +1741,17 @@
                         if (traitsActionsSection) {
                             traitsActionsSection.style.display = 'block';
                             console.log('✅ Sección Traits Actions mostrada');
+                        }
+                        
+                        // Hide specific buttons when applying traits
+                        if (erc721ActionsSection) {
+                            const refreshBtn = document.getElementById('refreshMetadataBtn');
+                            const loadPriceBtn = document.getElementById('loadNamePriceBtn');
+                            const generateImageBtn = document.getElementById('generateCombinedImageBtn');
+                            
+                            if (refreshBtn) refreshBtn.style.display = 'none';
+                            if (loadPriceBtn) loadPriceBtn.style.display = 'none';
+                            if (generateImageBtn) generateImageBtn.style.display = 'none';
                         }
                         
                         // Automatically generate combined image when both are selected
