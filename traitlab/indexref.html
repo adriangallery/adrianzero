@@ -1134,8 +1134,8 @@
                 this.modules.zero = new window.TraitLABZero();
                 this.modules.zero.init();
                 
-                // Initialize StickyVisibilityManager
-                this.stickyManager = new window.StickyVisibilityManager();
+                // Initialize StickyVisibilityManager (se inicializará después del DOM)
+                // this.stickyManager = new window.StickyVisibilityManager();
                 
                 console.log('✅ Todos los módulos inicializados');
             }
@@ -2359,6 +2359,12 @@
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             window.app = new TraitLABApp();
+            
+            // Inicializar StickyVisibilityManager después del DOM
+            if (window.app) {
+                window.app.stickyManager = new window.StickyVisibilityManager();
+                console.log('✅ StickyVisibilityManager inicializado después del DOM');
+            }
             
             // Aplicar estado responsive por defecto al selection-info
             applyResponsiveSelectionInfo();
