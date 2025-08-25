@@ -1078,6 +1078,7 @@
                 this.modules = {};
                 this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO por defecto
                 this.currentFilter = null;
+                this.currentTab = null; // Tab actual para sticky visibility
                 this.tokens = [];
                 this.traitTokens = []; // Store trait tokens separately
                 this.selectedERC721 = null;
@@ -1287,6 +1288,7 @@
                         // Update current contract and filter
                         this.currentContract = contract;
                         this.currentFilter = filter;
+                        this.currentTab = filter; // Actualizar currentTab para sticky visibility
                         
                         // Show/hide traits categories filter based on tab
                         this.toggleTraitsCategoriesFilter(filter);
@@ -1800,9 +1802,9 @@
                         floppyDisplayName = 'Action Pack 10007';
                     }
                     
-                    text += `<h4>Floppy Seleccionado:</h4>`;
+                    text += `<h4>Floppy Selected:</h4>`;
                     text += `<p><strong>ID:</strong> ${this.selectedFloppy.tokenId}</p>`;
-                    text += `<p><strong>Título:</strong> ${floppyDisplayName}</p>`;
+                    text += `<p><strong>Name:</strong> ${floppyDisplayName}</p>`;
                     
                     // LÓGICA COMPLETA PARA MOSTRAR/OCULTAR BOTONES (basada en index.html)
                     if (this.selectedFloppy.tokenId === 10003) {
@@ -1897,17 +1899,17 @@
                 
                 selectionText.innerHTML = text;
                 
-                // TEMPORALMENTE DESHABILITADO: Actualizar visibilidad sticky según el estado actual
-                // if (this.stickyManager) {
-                //     const appState = {
-                //         selectedERC721: this.selectedERC721,
-                //         selectedERC1155: this.selectedERC1155,
-                //         selectedFloppy: this.selectedFloppy,
-                //         selectedSerum: this.selectedSerum,
-                //         currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
-                //     };
-                //     this.stickyManager.update(appState);
-                // }
+                // Actualizar visibilidad sticky según el estado actual
+                if (this.stickyManager) {
+                    const appState = {
+                        selectedERC721: this.selectedERC721,
+                        selectedERC1155: this.selectedERC1155,
+                        selectedFloppy: this.selectedFloppy,
+                        selectedSerum: this.selectedSerum,
+                        currentTab: this.currentTab // Usar currentTab en lugar de currentFilter
+                    };
+                    this.stickyManager.update(appState);
+                }
                 // NO usar actionButtons.innerHTML = buttons (sobrescribe las secciones específicas)
                 // actionButtons.innerHTML = buttons;
                 selectionInfo.style.display = 'block';
@@ -2080,11 +2082,23 @@
             generateCombinedImage() {
                 if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
                 
+                // Si estamos en tab Floppy, no generar imagen
+                if (this.currentTab === 'floppy') {
+                    console.log('🖼️ Tab Floppy detectado - no generando imagen combinada');
+                    return;
+                }
+                
                 this.modules.traits.generateCombinedImage(this.selectedERC721);
             }
 
             displayGeneratedImage(data) {
                 console.log('Displaying generated image:', data);
+                
+                // Si estamos en tab Floppy, no mostrar la imagen
+                if (this.currentTab === 'floppy') {
+                    console.log('🖼️ Tab Floppy detectado - ocultando imagen generada');
+                    return;
+                }
                 
                 const generatedImage = document.getElementById('generated-image');
                 const combinedImage = document.getElementById('combined-image');
