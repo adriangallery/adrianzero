@@ -2233,13 +2233,13 @@
                     ];
 
                     // Create contract instance
-                    const contract = new ethers.Contract(this.modules.config.TRAITS_EXTENSIONS_CONTRACT, contractABI, signer);
+                    const contract = new ethers.Contract(window.TraitLABConfig.TRAITS_EXTENSIONS_CONTRACT, contractABI, signer);
 
                     // Prepare parameters
                     const erc721TokenId = this.selectedERC721.tokenId;
                     const traitIds = this.selectedERC1155.map(token => token.tokenId);
 
-                    console.log('Contract address:', this.modules.config.TRAITS_EXTENSIONS_CONTRACT);
+                    console.log('Contract address:', window.TraitLABConfig.TRAITS_EXTENSIONS_CONTRACT);
                     console.log('ERC721 Token ID:', erc721TokenId);
                     console.log('Trait IDs:', traitIds);
 
