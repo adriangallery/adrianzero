@@ -377,6 +377,30 @@
             height: auto;
         }
 
+        /* En modo sticky, el botón Apply Traits debe ser más prominente */
+        .selection-info.sticky .traits-actions-section {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .selection-info.sticky .action-btn {
+            background: #00cc00;
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'VT323', monospace;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .selection-info.sticky .action-btn:hover {
+            background: #009900;
+            transform: translateY(-1px);
+        }
+
         .minimize-btn {
             position: absolute;
             top: 5px;
@@ -920,7 +944,7 @@
                     <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
                     <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
                 </div>
-                <div id="traits-actions-section" class="actions-grid sticky-hidden" style="display: none; margin-top: 10px;">
+                <div id="traits-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
                     <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
                 </div>
                 <div id="rename-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
@@ -1656,8 +1680,8 @@
                 }
                 
                 if (this.selectedERC1155.length > 0) {
-                    text += `<h4 class="selected-traits-title">Selected Traits</h4>`;
-                    text += `<div class="traits-container">`;
+                    text += `<h4 class="selected-traits-title sticky-hidden">Selected Traits</h4>`;
+                    text += `<div class="traits-container sticky-hidden">`;
                     this.selectedERC1155.forEach(trait => {
                         text += `<p class="trait-item">${trait.title}</p>`;
                     });
