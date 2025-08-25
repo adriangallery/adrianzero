@@ -917,7 +917,6 @@
                     <img id="combined-image" src="" alt="Generated Image">
                 </div>
                 <div id="apply-traits-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="applyTraitsBtn" class="apply-traits-btn">Aplicar Traits</button>
                     <div id="apply-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="refresh-metadata-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
@@ -2044,13 +2043,130 @@
             }
 
             async applyTraits() {
-                if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
+                console.log('🔍 applyTraits - Direct app state:', {
+                    selectedERC721: this.selectedERC721?.tokenId,
+                    selectedERC1155: this.selectedERC1155.map(t => t.tokenId)
+                });
+                
+                if (!this.selectedERC721 || this.selectedERC1155.length === 0) {
+                    this.showError('Please select both an ERC721 token and ERC1155 traits first.');
+                    return;
+                }
                 
                 try {
-                    const userAddress = this.modules.wallet.getCurrentAccount();
-                    await this.modules.traits.applyTraitsToNFT(this.selectedERC721, userAddress);
+                    const userAddress = await this.modules.wallet.getCurrentAccount();
+                    if (!userAddress) {
+                        this.showError('Please connect your wallet first.');
+                        return;
+                    }
+                    
+                    // Show loading state
+                    this.showApplyStatus('Loading ethers library...', 'loading');
+                    const applyTraitsBtn = document.getElementById('applyTraitsBtn');
+                    if (applyTraitsBtn) applyTraitsBtn.disabled = true;
+
+                    // Load ethers dynamically only when needed
+                    let ethers;
+                    if (typeof window.ethers === 'undefined') {
+                        // Load ethers from CDN
+                        const script = document.createElement('script');
+                        script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                        script.onload = () => {
+                            ethers = window.ethers;
+                            console.log('Ethers loaded successfully');
+                            this.executeApplyTraitsTransaction(ethers, userAddress);
+                        };
+                        script.onerror = () => {
+                            this.showApplyStatus('Failed to load ethers library. Please refresh the page.', 'error');
+                            if (applyTraitsBtn) applyTraitsBtn.disabled = false;
+                        };
+                        document.head.appendChild(script);
+                    } else {
+                        ethers = window.ethers;
+                        this.executeApplyTraitsTransaction(ethers, userAddress);
+                    }
                 } catch (error) {
                     this.showError(`Error applying traits: ${error.message}`);
+                    const applyTraitsBtn = document.getElementById('applyTraitsBtn');
+                    if (applyTraitsBtn) applyTraitsBtn.disabled = false;
+                }
+            }
+
+            async executeApplyTraitsTransaction(ethers, userAddress) {
+                try {
+                    this.showApplyStatus('Preparing transaction...', 'loading');
+
+                    // Get provider and signer
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const signer = provider.getSigner();
+
+                    // Contract ABI for applyTraitMultiple function
+                    const contractABI = [
+                        {
+                            "inputs": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "tokenId",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "uint256[]",
+                                    "name": "traitIds",
+                                    "type": "uint256[]"
+                                }
+                            ],
+                            "name": "applyTraitMultiple",
+                            "outputs": [],
+                            "stateMutability": "nonpayable",
+                            "type": "function"
+                        }
+                    ];
+
+                    // Create contract instance
+                    const contract = new ethers.Contract(this.modules.config.TRAITS_EXTENSIONS_CONTRACT, contractABI, signer);
+
+                    // Prepare parameters
+                    const erc721TokenId = this.selectedERC721.tokenId;
+                    const traitIds = this.selectedERC1155.map(token => token.tokenId);
+
+                    console.log('Contract address:', this.modules.config.TRAITS_EXTENSIONS_CONTRACT);
+                    console.log('ERC721 Token ID:', erc721TokenId);
+                    console.log('Trait IDs:', traitIds);
+
+                    this.showApplyStatus('Confirming transaction in your wallet...', 'loading');
+
+                    // Call the contract function
+                    const tx = await contract.applyTraitMultiple(erc721TokenId, traitIds);
+                    
+                    this.showApplyStatus('Transaction sent! Waiting for confirmation...', 'loading');
+                    console.log('Transaction hash:', tx.hash);
+
+                    // Wait for transaction confirmation
+                    const receipt = await tx.wait();
+                    
+                    this.showApplyStatus(`✅ Traits applied successfully! Transaction: ${receipt.transactionHash}`, 'success');
+                    console.log('Transaction confirmed:', receipt);
+
+                    // Refresh tokens after successful application
+                    setTimeout(() => {
+                        this.loadTokens(userAddress, this.currentContract);
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('Error in executeApplyTraitsTransaction:', error);
+                    this.showApplyStatus(`❌ Error: ${error.message}`, 'error');
+                } finally {
+                    const applyTraitsBtn = document.getElementById('applyTraitsBtn');
+                    if (applyTraitsBtn) applyTraitsBtn.disabled = false;
+                }
+            }
+
+            showApplyStatus(message, type) {
+                const applyStatus = document.getElementById('apply-status');
+                if (applyStatus) {
+                    applyStatus.textContent = message;
+                    applyStatus.style.display = 'block';
+                    applyStatus.className = `apply-status ${type}`;
                 }
             }
 
