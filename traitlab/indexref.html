@@ -549,90 +549,7 @@
             font-size: 1.1rem;
         }
 
-        .traits-categories-filter {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border: 1px solid #333;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
 
-        .categories-title {
-            font-size: 1.2rem;
-            color: #fff;
-            margin-bottom: 15px;
-            font-family: 'VT323', monospace;
-        }
-
-        .categories-grid {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-
-        .category-btn {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            font-family: 'VT323', monospace;
-        }
-
-        .category-btn.active {
-            background: #00cc00;
-            color: #000;
-        }
-
-        .category-btn:hover:not(.active) {
-            background: rgba(0, 255, 0, 0.2);
-            color: #fff;
-        }
-
-        .traits-search {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .traits-search-input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #333;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            width: 300px;
-            font-family: 'VT323', monospace;
-        }
-
-        .traits-search-input:focus {
-            outline: none;
-            border-color: #00ff00;
-        }
-
-        .clear-search-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'VT323', monospace;
-        }
-
-        .clear-search-btn:hover {
-            background: #c82333;
-        }
 
         /* Estilos para tokens organizados por categorías */
         .traits-category-section {
@@ -754,7 +671,7 @@
         .trait-item {
             font-size: 1rem;
             color: #ccc;
-            margin: 8px 0;
+            margin: 4px 0;
             text-align: center;
             font-family: 'VT323', monospace;
             padding: 5px;
@@ -826,26 +743,6 @@
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
 
-            /* Mobile styles for traits categories */
-            .categories-grid {
-                gap: 8px;
-            }
-            
-            .category-btn {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-            }
-            
-            .traits-search {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .traits-search-input {
-                width: 100%;
-                max-width: 300px;
-            }
-            
             .category-tokens-grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
                 gap: 8px;
@@ -948,25 +845,7 @@
                 </button>
             </div>
 
-            <!-- Traits Categories Filter - Solo visible en tab de Traits -->
-            <div id="traits-categories-filter" class="traits-categories-filter" style="display: none;">
-                <h4 class="categories-title">🎭 Filtrar por Categoría:</h4>
-                <div class="categories-grid">
-                    <button class="category-btn active" data-category="all">Todas</button>
-                    <button class="category-btn" data-category="BACKGROUND">Background</button>
-                    <button class="category-btn" data-category="EAR">Ear</button>
-                    <button class="category-btn" data-category="EYE">Eye</button>
-                    <button class="category-btn" data-category="MOUTH">Mouth</button>
-                    <button class="category-btn" data-category="NOSE">Nose</button>
-                    <button class="category-btn" data-category="SKIN">Skin</button>
-                    <button class="category-btn" data-category="ACCESSORY">Accessory</button>
-                    <button class="category-btn" data-category="SPECIAL">Special</button>
-                </div>
-                <div class="traits-search">
-                    <input type="text" id="traits-search-input" placeholder="🔍 Buscar traits por nombre..." class="traits-search-input">
-                    <button id="clear-traits-search" class="clear-search-btn">Limpiar</button>
-                </div>
-            </div>
+
 
             <div id="selection-info" class="selection-info minimized" style="display: none;">
                 <button id="minimizeBtn" class="minimize-btn minimized">Expand</button>
@@ -1003,7 +882,6 @@
                     <div id="use-serum-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="erc721-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
-                    <button id="refreshMetadataBtn" class="action-btn">Refresh OpenSea Metadata</button>
                     <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
                     <button id="loadNamePriceBtn" class="action-btn">Load Name Price</button>
                     <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
