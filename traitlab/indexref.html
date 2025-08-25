@@ -1021,6 +1021,7 @@
     <script src="modules/floppy.js"></script>
     <script src="modules/serums.js"></script>
     <script src="modules/zero.js"></script>
+    <script src="modules/sticky-visibility.js"></script>
 
     <!-- Main Application Script -->
     <script>
@@ -1084,6 +1085,9 @@
                 // Initialize Zero Manager
                 this.modules.zero = new window.TraitLABZero();
                 this.modules.zero.init();
+                
+                // Initialize StickyVisibilityManager
+                this.stickyManager = new window.StickyVisibilityManager();
                 
                 console.log('✅ Todos los módulos inicializados');
             }
@@ -1824,6 +1828,18 @@
                 }
                 
                 selectionText.innerHTML = text;
+                
+                // Actualizar visibilidad sticky según el estado actual
+                if (this.stickyManager) {
+                    const appState = {
+                        selectedERC721: this.selectedERC721,
+                        selectedERC1155: this.selectedERC1155,
+                        selectedFloppy: this.selectedFloppy,
+                        selectedSerum: this.selectedSerum,
+                        currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
+                    };
+                    this.stickyManager.update(appState);
+                }
                 // NO usar actionButtons.innerHTML = buttons (sobrescribe las secciones específicas)
                 // actionButtons.innerHTML = buttons;
                 selectionInfo.style.display = 'block';
