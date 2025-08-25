@@ -332,6 +332,51 @@
             transition: all 0.3s ease;
         }
 
+        /* Comportamiento responsive por defecto */
+        /* Desktop (≥768px): Expanded por defecto */
+        @media (min-width: 768px) {
+            .selection-info {
+                max-width: none;
+                margin: 10px auto;
+            }
+            
+            .selection-info .selection-text {
+                display: block;
+            }
+            
+            .selection-info .generated-image img {
+                max-width: 300px;
+                height: auto;
+            }
+            
+            .selection-info .image-loading-overlay {
+                width: 300px;
+                height: 300px;
+            }
+        }
+
+        /* Mobile (<768px): Minimized por defecto */
+        @media (max-width: 767px) {
+            .selection-info {
+                max-width: 50%;
+                margin: 10px auto;
+            }
+            
+            .selection-info .selection-text {
+                display: none;
+            }
+            
+            .selection-info .generated-image img {
+                max-width: 210px;
+                height: auto;
+            }
+            
+            .selection-info .image-loading-overlay {
+                width: 210px;
+                height: 210px;
+            }
+        }
+
         .selection-info.minimized {
             max-width: 50%;
             margin: 10px auto;
@@ -912,7 +957,7 @@
 
 
 
-            <div id="selection-info" class="selection-info expanded" style="display: none;">
+            <div id="selection-info" class="selection-info" style="display: none;">
                 <button id="minimizeBtn" class="minimize-btn">Minimize</button>
                 <div id="selection-text"></div>
                 <div id="generated-image" class="generated-image" style="display: none;">
@@ -2298,6 +2343,36 @@
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             window.app = new TraitLABApp();
+            
+            // Aplicar estado responsive por defecto al selection-info
+            applyResponsiveSelectionInfo();
+        });
+
+        // Función para aplicar estado responsive al selection-info
+        function applyResponsiveSelectionInfo() {
+            const selectionInfo = document.getElementById('selection-info');
+            const minimizeBtn = document.getElementById('minimizeBtn');
+            
+            if (selectionInfo && minimizeBtn) {
+                const isMobile = window.innerWidth < 768;
+                
+                if (isMobile) {
+                    // Mobile: Minimized por defecto
+                    selectionInfo.classList.add('minimized');
+                    minimizeBtn.textContent = 'Expand';
+                    console.log('📱 Mobile detectado: selection-info minimized por defecto');
+                } else {
+                    // Desktop: Expanded por defecto
+                    selectionInfo.classList.remove('minimized');
+                    minimizeBtn.textContent = 'Minimize';
+                    console.log('🖥️ Desktop detectado: selection-info expanded por defecto');
+                }
+            }
+        }
+
+        // Aplicar estado responsive cuando cambie el tamaño de ventana
+        window.addEventListener('resize', () => {
+            applyResponsiveSelectionInfo();
         });
 
         // Connect wallet button
