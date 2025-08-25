@@ -150,6 +150,28 @@
             flex-wrap: wrap;
         }
 
+        /* Responsive para contract-filter en móviles */
+        @media (max-width: 767px) {
+            .contract-filter {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin-bottom: 20px;
+                width: 100%;
+                padding: 0 10px;
+            }
+            
+            .contract-btn {
+                width: 100%;
+                padding: 15px 16px;
+                font-size: 0.9rem;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
         .contract-btn {
             background: #333;
             color: white;
