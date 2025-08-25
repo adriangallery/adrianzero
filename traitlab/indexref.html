@@ -1403,6 +1403,8 @@
             }
 
             refreshTraitsDisplay() {
+                console.log('refreshTraitsDisplay called - traitTokens available:', this.traitTokens.length);
+                
                 // Get current active category
                 const activeCategoryBtn = document.querySelector('.category-btn.active');
                 const currentCategory = activeCategoryBtn ? activeCategoryBtn.dataset.category : 'all';
@@ -1420,6 +1422,7 @@
 
             handleTraitSelectionFromDisplay(traitData) {
                 console.log('handleTraitSelectionFromDisplay called with:', traitData);
+                console.log('Current traitTokens before selection:', this.traitTokens.length);
                 
                 // Use the traits module to handle selection
                 this.modules.traits.handleTraitSelection(traitData);
@@ -1429,11 +1432,14 @@
                     selectedTraits: this.modules.traits.getSelectedTraits()
                 });
                 
-                // Refresh the display to show updated selection
-                this.refreshTraitsDisplay();
+                // IMPORTANT: Don't refresh the display here - it causes traits to disappear
+                // this.refreshTraitsDisplay(); // Commented out to prevent loss of traits
                 
                 // Update selection info to show selected traits
                 this.updateSelectionInfo();
+                
+                console.log('Current traitTokens after selection:', this.traitTokens.length);
+                console.log('Traits should remain visible on screen');
             }
 
             async loadTokensForTab() {
@@ -1779,6 +1785,8 @@
 
             clearAllTokens() {
                 this.tokens = [];
+                // DON'T clear traitTokens - they should persist for the categories system
+                // this.traitTokens = []; // Commented out to prevent loss of traits
                 const grid = document.getElementById('tokens-grid');
                 if (grid) grid.innerHTML = '';
                 
