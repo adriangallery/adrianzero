@@ -762,6 +762,14 @@
             border-radius: 5px;
         }
 
+        /* Container para traits en dos columnas */
+        .traits-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
         /* Grid de botones de acciones */
         .actions-grid {
             display: grid;
@@ -772,24 +780,24 @@
         }
 
         .action-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ccc;
+            border: 1px solid #333;
             padding: 15px 20px;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'VT323', monospace;
             font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            background: linear-gradient(45deg, #764ba2, #667eea);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #00ff00;
         }
 
         .action-btn:active {
@@ -872,6 +880,12 @@
             .trait-item {
                 font-size: 0.9rem;
                 margin: 6px 0;
+            }
+
+            /* Traits vuelven a una columna en móviles */
+            .traits-container {
+                grid-template-columns: 1fr;
+                gap: 8px;
             }
 
             .actions-grid {
@@ -1732,9 +1746,11 @@
                 
                 if (this.selectedERC1155.length > 0) {
                     text += `<h4 class="selected-traits-title">Selected Traits</h4>`;
+                    text += `<div class="traits-container">`;
                     this.selectedERC1155.forEach(trait => {
                         text += `<p class="trait-item">${trait.title}</p>`;
                     });
+                    text += `</div>`;
                     
                     if (this.selectedERC721) {
                         // Show traits actions section
