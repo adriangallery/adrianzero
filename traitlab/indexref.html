@@ -1850,17 +1850,17 @@
                 
                 selectionText.innerHTML = text;
                 
-                // Actualizar visibilidad sticky según el estado actual
-                if (this.stickyManager) {
-                    const appState = {
-                        selectedERC721: this.selectedERC721,
-                        selectedERC1155: this.selectedERC1155,
-                        selectedFloppy: this.selectedFloppy,
-                        selectedSerum: this.selectedSerum,
-                        currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
-                    };
-                    this.stickyManager.update(appState);
-                }
+                // TEMPORALMENTE DESHABILITADO: Actualizar visibilidad sticky según el estado actual
+                // if (this.stickyManager) {
+                //     const appState = {
+                //         selectedERC721: this.selectedERC721,
+                //         selectedERC1155: this.selectedERC1155,
+                //         selectedFloppy: this.selectedFloppy,
+                //         selectedSerum: this.selectedSerum,
+                //         currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
+                //     };
+                //     this.stickyManager.update(appState);
+                // }
                 // NO usar actionButtons.innerHTML = buttons (sobrescribe las secciones específicas)
                 // actionButtons.innerHTML = buttons;
                 selectionInfo.style.display = 'block';
