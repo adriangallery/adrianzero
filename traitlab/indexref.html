@@ -355,6 +355,12 @@
             display: none !important;
         }
 
+        /* En modo sticky, solo ocultar elementos realmente prescindibles */
+        .selection-info.sticky .selected-traits-title,
+        .selection-info.sticky .traits-container {
+            display: none !important;
+        }
+
         /* En modo sticky, solo mostrar elementos esenciales */
         .selection-info.sticky {
             background: rgba(0, 0, 0, 0.95);
@@ -923,19 +929,19 @@
                     <button id="refreshMetadataBtn" class="apply-traits-btn">Actualizar metadata OpenSea</button>
                     <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="activate-token-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="activate-token-section" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="activateTokenBtn" class="apply-traits-btn">Asignar SKIN</button>
                     <div id="activate-token-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="open-floppy-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="open-floppy-section" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="openFloppyBtn" class="apply-traits-btn">Open Floppy</button>
                     <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="open-pack-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="open-pack-section" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="openPackBtn" class="apply-traits-btn">Open Pack</button>
                     <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="use-serum-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                <div id="use-serum-section" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="useSerumBtn" class="apply-traits-btn">🧪 Usar Serum</button>
                     <div id="use-serum-status" class="apply-status" style="display: none;"></div>
                 </div>
