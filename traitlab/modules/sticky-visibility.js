@@ -81,8 +81,8 @@ class StickyVisibilityManager {
             this.elements.set('serum-btn', document.getElementById('use-serum-section'));
             this.elements.set('open-btn', document.getElementById('open-floppy-section') || document.getElementById('open-pack-section'));
             
-            // Buscar elementos de floppy de manera más robusta
-            const floppyInfoElement = document.querySelector('h4')?.textContent?.includes('Floppy Seleccionado') 
+            // Buscar elementos de floppy de manera más robusta - actualizado para "Floppy Selected"
+            const floppyInfoElement = document.querySelector('h4')?.textContent?.includes('Floppy Selected') 
                 ? document.querySelector('h4') 
                 : null;
             this.elements.set('floppy-info', floppyInfoElement);
@@ -177,14 +177,20 @@ class StickyVisibilityManager {
     showElement(selector) {
         const element = this.elements.get(selector);
         if (element) {
-            if (Array.isArray(element)) {
-                element.forEach(el => el.style.display = 'block');
-            } else {
-                element.style.display = 'block';
+            try {
+                if (Array.isArray(element)) {
+                    element.forEach(el => {
+                        if (el && el.style) el.style.display = 'block';
+                    });
+                } else if (element && element.style) {
+                    element.style.display = 'block';
+                }
+                console.log('✅ Mostrando elemento:', selector);
+            } catch (error) {
+                console.warn('⚠️ Error mostrando elemento:', selector, error);
             }
-            console.log('✅ Mostrando elemento:', selector);
         } else {
-            console.warn('⚠️ Elemento no encontrado para mostrar:', selector);
+            console.log('ℹ️ Elemento no encontrado para mostrar:', selector);
         }
     }
 
@@ -194,14 +200,20 @@ class StickyVisibilityManager {
     hideElement(selector) {
         const element = this.elements.get(selector);
         if (element) {
-            if (Array.isArray(element)) {
-                element.forEach(el => el.style.display = 'none');
-            } else {
-                element.style.display = 'none';
+            try {
+                if (Array.isArray(element)) {
+                    element.forEach(el => {
+                        if (el && el.style) el.style.display = 'none';
+                    });
+                } else if (element && element.style) {
+                    element.style.display = 'none';
+                }
+                console.log('❌ Ocultando elemento:', selector);
+            } catch (error) {
+                console.warn('⚠️ Error ocultando elemento:', selector, error);
             }
-            console.log('❌ Ocultando elemento:', selector);
         } else {
-            console.warn('⚠️ Elemento no encontrado para ocultar:', selector);
+            console.log('ℹ️ Elemento no encontrado para ocultar:', selector);
         }
     }
 
@@ -210,6 +222,9 @@ class StickyVisibilityManager {
      * Se llama desde la clase principal cuando cambian las selecciones
      */
     update(appState) {
+        // Re-mapear elementos si es necesario (por si el DOM cambió)
+        this.remapElementsIfNeeded();
+        
         const newState = this.detectCurrentState(appState);
         
         if (newState !== this.currentState) {
@@ -231,6 +246,18 @@ class StickyVisibilityManager {
      */
     getCurrentState() {
         return this.currentState;
+    }
+
+    /**
+     * Re-mapear elementos si es necesario (por si el DOM cambió)
+     */
+    remapElementsIfNeeded() {
+        // Verificar si los elementos principales existen
+        const minimizeBtn = document.getElementById('minimizeBtn');
+        if (!minimizeBtn) {
+            console.log('🔄 Re-mapeando elementos del DOM...');
+            this.mapElements();
+        }
     }
 
     /**
