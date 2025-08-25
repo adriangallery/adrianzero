@@ -55,26 +55,43 @@ class StickyVisibilityManager {
     }
 
     init() {
-        // Mapear elementos del DOM
-        this.mapElements();
-        console.log('🔧 StickyVisibilityManager inicializado');
+        try {
+            // Mapear elementos del DOM
+            this.mapElements();
+            console.log('🔧 StickyVisibilityManager inicializado correctamente');
+        } catch (error) {
+            console.warn('⚠️ StickyVisibilityManager: Error durante inicialización, continuando sin sticky:', error);
+            // No fallar la aplicación si hay problemas con sticky
+        }
     }
 
     mapElements() {
-        // Elementos principales
-        this.elements.set('minimize-btn', document.getElementById('minimizeBtn'));
-        this.elements.set('token-title', document.querySelector('.selected-token-title'));
-        this.elements.set('generated-image', document.getElementById('generated-image'));
-        this.elements.set('selected-traits-list', document.querySelector('.selected-traits-title'));
-        this.elements.set('traits-actions', document.getElementById('traits-actions-section'));
-        this.elements.set('serum-actions', document.getElementById('use-serum-section'));
-        this.elements.set('floppy-actions', document.getElementById('open-floppy-section'));
-        this.elements.set('rename-form', document.getElementById('rename-section'));
-        this.elements.set('rename-buttons', document.querySelectorAll('#rename-section button'));
-        this.elements.set('apply-traits-btn', document.getElementById('traits-actions-section'));
-        this.elements.set('serum-btn', document.getElementById('use-serum-section'));
-        this.elements.set('open-btn', document.getElementById('open-floppy-section') || document.getElementById('open-pack-section'));
-        this.elements.set('floppy-info', document.querySelector('h4:contains("Floppy Seleccionado")'));
+        try {
+            // Elementos principales - usar getElementById de manera segura
+            this.elements.set('minimize-btn', document.getElementById('minimizeBtn'));
+            this.elements.set('token-title', document.querySelector('.selected-token-title'));
+            this.elements.set('generated-image', document.getElementById('generated-image'));
+            this.elements.set('selected-traits-list', document.querySelector('.selected-traits-title'));
+            this.elements.set('traits-actions', document.getElementById('traits-actions-section'));
+            this.elements.set('serum-actions', document.getElementById('use-serum-section'));
+            this.elements.set('floppy-actions', document.getElementById('open-floppy-section'));
+            this.elements.set('rename-form', document.getElementById('rename-section'));
+            this.elements.set('rename-buttons', document.querySelectorAll('#rename-section button'));
+            this.elements.set('apply-traits-btn', document.getElementById('traits-actions-section'));
+            this.elements.set('serum-btn', document.getElementById('use-serum-section'));
+            this.elements.set('open-btn', document.getElementById('open-floppy-section') || document.getElementById('open-pack-section'));
+            
+            // Buscar elementos de floppy de manera más robusta
+            const floppyInfoElement = document.querySelector('h4')?.textContent?.includes('Floppy Seleccionado') 
+                ? document.querySelector('h4') 
+                : null;
+            this.elements.set('floppy-info', floppyInfoElement);
+            
+            console.log('✅ Elementos mapeados correctamente');
+        } catch (error) {
+            console.warn('⚠️ StickyVisibilityManager: Error mapeando elementos:', error);
+            // Continuar con elementos básicos
+        }
     }
 
     /**
