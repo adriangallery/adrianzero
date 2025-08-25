@@ -1490,23 +1490,37 @@
             }
 
             async loadTokensForTab() {
+                console.log('🔍 loadTokensForTab called');
+                console.log('🔍 Wallet connected:', this.modules.wallet.isWalletConnected());
+                console.log('🔍 Zero module:', this.modules.zero);
+                console.log('🔍 Current contract:', this.currentContract);
+                console.log('🔍 Current filter:', this.currentFilter);
+                
                 if (!this.modules.wallet.isWalletConnected()) {
+                    console.log('❌ Wallet not connected, returning');
                     return;
                 }
                 
                 const userAddress = this.modules.wallet.getCurrentAccount();
+                console.log('🔍 User address:', userAddress);
                 
                 try {
+                    console.log('🚀 Showing loading...');
                     this.showLoading();
                     
+                    console.log('🚀 Calling zero.loadTokens...');
                     // Load tokens based on current contract and filter
                     const tokens = await this.modules.zero.loadTokens(userAddress, this.currentContract);
+                    console.log('✅ Tokens loaded:', tokens);
+                    
+                    console.log('🚀 Calling displayTokens...');
                     this.displayTokens(tokens, this.currentFilter);
                     
                 } catch (error) {
-                    console.error('Error loading tokens:', error);
+                    console.error('❌ Error loading tokens:', error);
                     this.showError(`Failed to load tokens: ${error.message}`);
                 } finally {
+                    console.log('🚀 Hiding loading...');
                     this.hideLoading();
                 }
             }
@@ -1539,7 +1553,13 @@
             }
 
             onWalletConnected(data) {
-                console.log('Wallet connected:', data);
+                console.log('🔌 onWalletConnected called with:', data);
+                console.log('🔍 Current app state:', {
+                    modules: Object.keys(this.modules),
+                    zeroModule: this.modules.zero,
+                    currentContract: this.currentContract,
+                    currentFilter: this.currentFilter
+                });
                 
                 // Update UI
                 document.getElementById('connect-section').style.display = 'none';
@@ -1550,6 +1570,7 @@
                 document.getElementById('tokens-section').style.display = 'block';
                 
                 // Load tokens for current contract
+                console.log('🚀 Calling loadTokensForTab...');
                 this.loadTokensForTab();
             }
 
