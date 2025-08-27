@@ -1798,6 +1798,25 @@
                         erc721ActionsSection.style.display = 'block';
                         console.log('✅ Sección ERC721 Actions mostrada');
                     }
+
+                    // Mostrar imagen base del AdrianZERO cuando no hay traits seleccionados
+                    if (this.selectedERC1155.length === 0) {
+                        const generatedImage = document.getElementById('generated-image');
+                        const combinedImage = document.getElementById('combined-image');
+                        const imageLoadingOverlay = document.getElementById('image-loading-overlay');
+                        if (generatedImage && combinedImage) {
+                            const baseImageUrl = this.selectedERC721.image || this.selectedERC721.imageUrl || `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
+                            if (imageLoadingOverlay) imageLoadingOverlay.style.display = 'flex';
+                            combinedImage.src = baseImageUrl;
+                            generatedImage.style.display = 'block';
+                            combinedImage.onload = function() {
+                                if (imageLoadingOverlay) imageLoadingOverlay.style.display = 'none';
+                            };
+                            combinedImage.onerror = function() {
+                                if (imageLoadingOverlay) imageLoadingOverlay.style.display = 'none';
+                            };
+                        }
+                    }
                 }
                 
                 if (this.selectedERC1155.length > 0) {
