@@ -464,6 +464,15 @@
             background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(15px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            /* Alto mínimo para mantener la botonera lateral visible */
+            min-height: 120px;
+        }
+
+        /* En modo sticky móvil, ajustar alto mínimo */
+        @media (max-width: 767px) {
+            .selection-info.sticky {
+                min-height: 140px; /* Más alto en móviles para la botonera */
+            }
         }
 
         .selection-info.sticky .selection-text {
@@ -503,6 +512,34 @@
         .selection-info.sticky .action-btn:hover {
             background: #009900;
             transform: translateY(-1px);
+        }
+
+        /* Estado sticky sin botones - mantener alto mínimo */
+        .selection-info.sticky.no-buttons {
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .selection-info.sticky.no-buttons .side-emoji-menu {
+            position: relative;
+            left: auto;
+            top: auto;
+            transform: none;
+            flex-direction: row;
+            gap: 8px;
+        }
+
+        /* Móvil: sticky sin botones */
+        @media (max-width: 767px) {
+            .selection-info.sticky.no-buttons {
+                min-height: 140px;
+            }
+            
+            .selection-info.sticky.no-buttons .side-emoji-menu {
+                gap: 6px;
+            }
         }
 
         .minimize-btn {
@@ -1046,7 +1083,7 @@
                     <button id="useSerumBtn" class="apply-traits-btn">🧪 Usar Serum</button>
                     <div id="use-serum-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="erc721-actions-section" class="actions-grid sticky-hidden" style="display: none; margin-top: 10px;">
+                <div id="erc721-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
                     <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
                     <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
                 </div>
@@ -1880,9 +1917,9 @@
                         floppyDisplayName = 'Action Pack 10007';
                     }
                     
-                    text += `<h4>Floppy Selected:</h4>`;
+                    text += `<h4>Floppy Seleccionado:</h4>`;
                     text += `<p><strong>ID:</strong> ${this.selectedFloppy.tokenId}</p>`;
-                    text += `<p><strong>Name:</strong> ${floppyDisplayName}</p>`;
+                    text += `<p><strong>Título:</strong> ${floppyDisplayName}</p>`;
                     
                     // LÓGICA COMPLETA PARA MOSTRAR/OCULTAR BOTONES (basada en index.html)
                     if (this.selectedFloppy.tokenId === 10003) {
@@ -1977,20 +2014,42 @@
                 
                 selectionText.innerHTML = text;
                 
-                // Actualizar visibilidad sticky según el estado actual
-                if (this.stickyManager) {
-                    const appState = {
-                        selectedERC721: this.selectedERC721,
-                        selectedERC1155: this.selectedERC1155,
-                        selectedFloppy: this.selectedFloppy,
-                        selectedSerum: this.selectedSerum,
-                        currentTab: this.currentTab // Usar currentTab en lugar de currentFilter
-                    };
-                    this.stickyManager.update(appState);
-                }
+                // TEMPORALMENTE DESHABILITADO: Actualizar visibilidad sticky según el estado actual
+                // if (this.stickyManager) {
+                //     const appState = {
+                //         selectedERC721: this.selectedERC721,
+                //         selectedERC1155: this.selectedERC1155,
+                //         selectedFloppy: this.selectedFloppy,
+                //         selectedSerum: this.selectedSerum,
+                //         currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
+                //     };
+                //     this.stickyManager.update(appState);
+                // }
                 // NO usar actionButtons.innerHTML = buttons (sobrescribe las secciones específicas)
                 // actionButtons.innerHTML = buttons;
                 selectionInfo.style.display = 'block';
+                
+                // Verificar si hay botones visibles en modo sticky
+                this.checkStickyButtonsVisibility();
+            }
+
+            // Método para verificar si hay botones visibles en modo sticky
+            checkStickyButtonsVisibility() {
+                const selectionInfo = document.getElementById('selection-info');
+                if (!selectionInfo || !selectionInfo.classList.contains('sticky')) return;
+                
+                // Buscar botones visibles
+                const visibleButtons = selectionInfo.querySelectorAll('button[style*="display: block"], button:not([style*="display: none"])');
+                const hasVisibleButtons = visibleButtons.length > 0;
+                
+                // Aplicar clase no-buttons si no hay botones visibles
+                if (!hasVisibleButtons) {
+                    selectionInfo.classList.add('no-buttons');
+                    console.log('🔍 Modo sticky sin botones - aplicando alto mínimo');
+                } else {
+                    selectionInfo.classList.remove('no-buttons');
+                    console.log('🔍 Modo sticky con botones - removiendo alto mínimo');
+                }
             }
 
             clearSelection() {
