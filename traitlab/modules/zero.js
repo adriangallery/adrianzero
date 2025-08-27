@@ -895,7 +895,7 @@ class ZeroManager {
             console.log('Token ID:', tokenId);
             console.log('New name:', newName);
             
-            const tx = await contract.rename(tokenId, newName);
+            const tx = await contract.setTokenName(tokenId, newName);
             console.log('Rename transaction:', tx.hash);
             
             const receipt = await tx.wait();
