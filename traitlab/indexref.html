@@ -1415,6 +1415,18 @@
                         this.openPack();
                     });
                 }
+                
+                // Approve Rename button (rename flow)
+                const approveRenameBtn = document.getElementById('approveRenameBtn');
+                if (approveRenameBtn) {
+                    approveRenameBtn.addEventListener('click', () => this.approveRename());
+                }
+                
+                // Rename Token button (rename flow)
+                const renameTokenBtn = document.getElementById('renameTokenBtn');
+                if (renameTokenBtn) {
+                    renameTokenBtn.addEventListener('click', () => this.renameToken());
+                }
             }
 
             setupTabs() {
@@ -1797,6 +1809,10 @@
                     // AdrianZERO tokens
                     console.log('🔵 Setting as ERC721 token');
                     this.selectedERC721 = token;
+                    // Propagar selección al ZeroManager para operaciones on-chain
+                    if (this.modules.zero && this.modules.zero.setSelectedERC721) {
+                        this.modules.zero.setSelectedERC721(token);
+                    }
                     this.selectedERC1155 = [];
                     this.selectedFloppy = null;
                     // Don't reset selectedSerum if we're in serum mode
@@ -2071,7 +2087,7 @@
                     selectedERC1155: this.selectedERC1155?.length,
                     selectedFloppy: this.selectedFloppy?.tokenId,
                     selectedSerum: this.selectedSerum?.tokenId,
-                    currentTab: this.currentFilter
+                    currentTab: this.currentTab
                 });
                 
                 if (this.stickyManager) {
@@ -2080,7 +2096,7 @@
                         selectedERC1155: this.selectedERC1155,
                         selectedFloppy: this.selectedFloppy,
                         selectedSerum: this.selectedSerum,
-                        currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
+                        currentTab: this.currentTab
                     };
                     console.log('🔍 DEBUG: Llamando stickyManager.update con:', appState);
                     this.stickyManager.update(appState);
@@ -2222,6 +2238,17 @@
                 const renameSection = document.getElementById('rename-section');
                 if (renameSection) {
                     renameSection.style.display = 'block';
+                    // Activar modo rename para sticky visibility
+                    this.currentTab = 'rename';
+                    if (this.stickyManager) {
+                        this.stickyManager.update({
+                            selectedERC721: this.selectedERC721,
+                            selectedERC1155: this.selectedERC1155,
+                            selectedFloppy: this.selectedFloppy,
+                            selectedSerum: this.selectedSerum,
+                            currentTab: this.currentTab
+                        });
+                    }
                     
                     // Clear previous input
                     const nameInput = document.getElementById('newTokenName');
@@ -2301,6 +2328,17 @@
                     const renameSection = document.getElementById('rename-section');
                     if (renameSection) {
                         renameSection.style.display = 'none';
+                    }
+                    // Reset modo rename y actualizar sticky
+                    this.currentTab = null;
+                    if (this.stickyManager) {
+                        this.stickyManager.update({
+                            selectedERC721: this.selectedERC721,
+                            selectedERC1155: this.selectedERC1155,
+                            selectedFloppy: this.selectedFloppy,
+                            selectedSerum: this.selectedSerum,
+                            currentTab: this.currentTab
+                        });
                     }
                     
                 } catch (error) {
