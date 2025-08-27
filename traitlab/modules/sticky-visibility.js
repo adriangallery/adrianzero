@@ -164,17 +164,9 @@ class StickyVisibilityManager {
             selectionInfo.classList.add(state);
         }
         
-        const rules = this.states[state];
-        
-        // Mostrar elementos
-        rules.show.forEach(selector => {
-            this.showElement(selector);
-        });
-        
-        // Ocultar elementos
-        rules.hide.forEach(selector => {
-            this.hideElement(selector);
-        });
+        // En lugar de usar showElement/hideElement, usar clases CSS
+        // El CSS se encargará de mostrar/ocultar según el estado
+        console.log('🎨 Estado aplicado via CSS:', state);
 
         this.currentState = state;
     }
