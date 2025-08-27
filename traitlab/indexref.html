@@ -1053,6 +1053,38 @@
             border: 1px solid #333;
         }
 
+        /* Crafting sections */
+        .crafting-section, .user-traits-section {
+            margin-bottom: 30px;
+        }
+
+        .crafting-section h3, .user-traits-section h3 {
+            color: #00ff00;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .selection-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #00ff00;
+            color: #000;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .trait-token-card {
+            position: relative;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -2813,24 +2845,88 @@
                 
                 if (!grid) return;
                 
-                if (recipes.length === 0) {
-                    grid.innerHTML = '<div class="no-tokens"><p>No recipes available</p></div>';
-                    return;
+                let html = '';
+                
+                // First, show recipes
+                if (recipes.length > 0) {
+                    html += '<div class="crafting-section"><h3>🔨 Available Recipes</h3>';
+                    recipes.forEach(recipe => {
+                        if (recipe.type === 'specific') {
+                            html += this.renderSpecificRecipeCard(recipe);
+                        } else if (recipe.type === 'any') {
+                            html += this.renderAnyRecipeCard(recipe);
+                        }
+                    });
+                    html += '</div>';
                 }
                 
-                let html = '';
-                recipes.forEach(recipe => {
-                    if (recipe.type === 'specific') {
-                        html += this.renderSpecificRecipeCard(recipe);
-                    } else if (recipe.type === 'any') {
-                        html += this.renderAnyRecipeCard(recipe);
-                    }
-                });
+                // Then, show user's traits for selection
+                if (this.traitTokens && this.traitTokens.length > 0) {
+                    html += '<div class="user-traits-section"><h3>🎭 Your Traits (Select for Crafting)</h3>';
+                    html += this.renderUserTraitsForCrafting();
+                    html += '</div>';
+                } else {
+                    html += '<div class="no-traits"><p>No traits found. Please visit the Traits tab first to load your traits.</p></div>';
+                }
                 
                 grid.innerHTML = html;
                 
                 // Add event listeners to recipe cards
                 this.setupCraftingEventListeners();
+            }
+
+            renderUserTraitsForCrafting() {
+                if (!this.traitTokens || this.traitTokens.length === 0) {
+                    return '<p>No traits available</p>';
+                }
+                
+                // Group traits by category (same logic as displayTraitsByCategory)
+                const traitsByCategory = new Map();
+                this.traitTokens.forEach(trait => {
+                    const category = this.modules.traits.getTraitCategory(trait.tokenId) || 'UNKNOWN';
+                    if (!traitsByCategory.has(category)) {
+                        traitsByCategory.set(category, []);
+                    }
+                    traitsByCategory.get(category).push(trait);
+                });
+                
+                // Generate HTML for each category
+                let html = '';
+                traitsByCategory.forEach((categoryTraits, category) => {
+                    html += `
+                        <div class="traits-category-section">
+                            <div class="category-header">
+                                <span class="category-name">${category}</span>
+                                <span class="category-count">${categoryTraits.length}</span>
+                            </div>
+                            <div class="category-tokens-grid">
+                    `;
+                    
+                    categoryTraits.forEach(trait => {
+                        const isSelected = this.modules.crafting.getSelectedTraits().has(trait.tokenId);
+                        const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
+                        
+                        html += `
+                            <div class="trait-token-card ${isSelected ? 'selected' : ''}" 
+                                 data-token-id="${trait.tokenId}" 
+                                 onclick="window.app.handleCraftingTraitSelection(${JSON.stringify(trait).replace(/"/g, '&quot;')})">
+                                <div class="trait-token-category">${category}</div>
+                                <img src="${imageUrl}" alt="${trait.title}" class="trait-token-image" 
+                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'">
+                                <div class="trait-token-name">${trait.title}</div>
+                                <div class="trait-token-id">#${trait.tokenId}</div>
+                                ${isSelected ? `<div class="selection-indicator">✓</div>` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                return html;
             }
 
             renderSpecificRecipeCard(recipe) {
@@ -2953,6 +3049,21 @@
                     console.error('Error executing crafting:', error);
                     this.showError(`Error executing recipe: ${error.message}`);
                 }
+            }
+
+            handleCraftingTraitSelection(trait) {
+                console.log('🔨 handleCraftingTraitSelection:', trait);
+                
+                // Toggle selection in crafting module
+                const selectedTraits = this.modules.crafting.getSelectedTraits();
+                if (selectedTraits.has(trait.tokenId)) {
+                    this.modules.crafting.deselectTrait(trait.tokenId);
+                } else {
+                    this.modules.crafting.selectTrait(trait.tokenId, 1);
+                }
+                
+                // Refresh the display to show updated selection
+                this.displayCraftingRecipes();
             }
 
             // UI Helper Methods
