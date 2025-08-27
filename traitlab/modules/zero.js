@@ -327,12 +327,16 @@ class ZeroManager {
                 return tokensWithMetadata;
             } else {
                 // For ERC721 tokens, load custom names
-                const nameMap = await this.loadCustomNames(tokens);
-                if (nameMap) {
+                const customNamesResult = await this.loadCustomNames(tokens);
+                if (customNamesResult && customNamesResult.nameMap) {
+                    // If we got a result with nameMap, use it
                     tokens.forEach(t => {
-                        const n = nameMap.get(t.tokenId);
+                        const n = customNamesResult.nameMap.get(t.tokenId);
                         if (n) t.title = n; // Override displayed name
                     });
+                } else if (customNamesResult && Array.isArray(customNamesResult)) {
+                    // If we got updated tokens array directly, use it
+                    tokens = customNamesResult;
                 }
                 this.emit('tokensLoaded', { tokens, contractAddress, tokenType });
                 return tokens;
@@ -514,7 +518,7 @@ class ZeroManager {
             // Emit final event with complete name map
             this.emit('customNamesLoaded', { nameMap, tokens: finalUpdatedTokens });
             
-            return finalUpdatedTokens;
+            return { nameMap, tokens: finalUpdatedTokens }; // Return an object with nameMap and finalTokens
 
         } catch (error) {
             console.error('Error loading custom names:', error);
