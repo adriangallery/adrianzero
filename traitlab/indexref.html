@@ -997,48 +997,48 @@
         }
 
         /* Excepción: mostrar botones erc721-actions en estado adrianzero-only */
-        .selection-info.sticky.adrianzero-only .erc721-actions-section {
+        .selection-info.sticky.adrianzero-only #erc721-actions-section {
             display: block !important;
         }
 
         /* Estado adrianzero-traits: mostrar traits-actions, ocultar erc721-actions */
-        .selection-info.sticky.adrianzero-traits .traits-actions-section {
+        .selection-info.sticky.adrianzero-traits #traits-actions-section {
             display: block !important;
         }
-        .selection-info.sticky.adrianzero-traits .erc721-actions-section {
+        .selection-info.sticky.adrianzero-traits #erc721-actions-section {
             display: none !important;
         }
 
         /* Estado adrianzero-serum: mostrar serum-actions, ocultar erc721-actions */
-        .selection-info.sticky.adrianzero-serum .use-serum-section {
+        .selection-info.sticky.adrianzero-serum #use-serum-section {
             display: block !important;
         }
-        .selection-info.sticky.adrianzero-serum .erc721-actions-section {
+        .selection-info.sticky.adrianzero-serum #erc721-actions-section {
             display: none !important;
         }
 
         /* Estado floppy-pack: mostrar floppy-actions, ocultar erc721-actions */
-        .selection-info.sticky.floppy-pack .open-floppy-section,
-        .selection-info.sticky.floppy-pack .open-pack-section {
+        .selection-info.sticky.floppy-pack #open-floppy-section,
+        .selection-info.sticky.floppy-pack #open-pack-section {
             display: block !important;
         }
-        .selection-info.sticky.floppy-pack .erc721-actions-section {
+        .selection-info.sticky.floppy-pack #erc721-actions-section {
             display: none !important;
         }
 
         /* Estado rename: mostrar rename-section, ocultar erc721-actions */
-        .selection-info.sticky.rename .rename-section {
+        .selection-info.sticky.rename #rename-section {
             display: block !important;
         }
-        .selection-info.sticky.rename .erc721-actions-section {
+        .selection-info.sticky.rename #erc721-actions-section {
             display: none !important;
         }
 
         /* Estado mixed-rename: mostrar rename-section, ocultar erc721-actions */
-        .selection-info.sticky.mixed-rename .rename-section {
+        .selection-info.sticky.mixed-rename #rename-section {
             display: block !important;
         }
-        .selection-info.sticky.mixed-rename .erc721-actions-section {
+        .selection-info.sticky.mixed-rename #erc721-actions-section {
             display: none !important;
         }
     </style>
@@ -2060,6 +2060,9 @@
                 
                 selectionText.innerHTML = text;
                 
+                // Gestionar botones específicos del sticky
+                this.updateStickyButtons();
+                
                 // TEMPORALMENTE DESHABILITADO: Actualizar visibilidad sticky según el estado actual
                 console.log('🔍 DEBUG: Antes de llamar stickyManager.update');
                 console.log('🔍 DEBUG: this.stickyManager existe?', !!this.stickyManager);
@@ -2109,6 +2112,54 @@
                 } else {
                     selectionInfo.classList.remove('no-buttons');
                     console.log('🔍 Modo sticky con botones - removiendo alto mínimo');
+                }
+            }
+
+            // Método para gestionar botones específicos del sticky
+            updateStickyButtons() {
+                const actionButtons = document.querySelector('.action-buttons');
+                if (!actionButtons) return;
+                
+                // Limpiar botones existentes del sticky
+                actionButtons.innerHTML = '';
+                
+                // Estado: AdrianZERO seleccionado sin traits ni serum
+                if (this.selectedERC721 && this.selectedERC1155.length === 0 && !this.selectedSerum && !this.selectedFloppy) {
+                    console.log('🔍 DEBUG: Creando botones sticky para AdrianZERO sin traits');
+                    
+                    // Botón Assign SKIN (mismo formato que Apply Traits)
+                    const assignSkinBtn = document.createElement('button');
+                    assignSkinBtn.id = 'assignSkinStickyBtn';
+                    assignSkinBtn.className = 'action-btn';
+                    assignSkinBtn.textContent = 'Assign SKIN';
+                    assignSkinBtn.onclick = () => this.activateToken();
+                    actionButtons.appendChild(assignSkinBtn);
+                    
+                    // Botón Rename Token (mismo formato que Apply Traits)
+                    const renameTokenBtn = document.createElement('button');
+                    renameTokenBtn.id = 'renameTokenStickyBtn';
+                    renameTokenBtn.className = 'action-btn';
+                    renameTokenBtn.textContent = 'Rename Token';
+                    renameTokenBtn.onclick = () => this.showRenameSection();
+                    actionButtons.appendChild(renameTokenBtn);
+                    
+                    console.log('✅ DEBUG: Botones sticky creados para AdrianZERO sin traits');
+                }
+                // Estado: Con traits seleccionados - NO crear botones (Apply Traits ya funciona perfectamente)
+                else if (this.selectedERC721 && this.selectedERC1155.length > 0) {
+                    console.log('🔍 DEBUG: AdrianZERO con traits - NO creando botones sticky (Apply Traits ya funciona)');
+                }
+                // Estado: Con serum seleccionado - NO crear botones (Use Serum ya funciona)
+                else if (this.selectedERC721 && this.selectedSerum) {
+                    console.log('🔍 DEBUG: AdrianZERO con serum - NO creando botones sticky (Use Serum ya funciona)');
+                }
+                // Estado: Con floppy seleccionado - NO crear botones (Open Floppy/Pack ya funciona)
+                else if (this.selectedFloppy) {
+                    console.log('🔍 DEBUG: Floppy seleccionado - NO creando botones sticky (Open Floppy/Pack ya funciona)');
+                }
+                // Estado: Sin selección - NO crear botones
+                else {
+                    console.log('🔍 DEBUG: Sin selección - NO creando botones sticky');
                 }
             }
 
