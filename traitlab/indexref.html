@@ -2039,6 +2039,12 @@
                 
                 console.log('Trait tokens stored:', this.traitTokens.length);
                 
+                // Share traits with crafting module if available
+                if (this.modules.crafting && this.traitTokens.length > 0) {
+                    console.log('🔨 Compartiendo traits con módulo de crafting:', this.traitTokens.length);
+                    this.modules.crafting.setAvailableTraits(this.traitTokens);
+                }
+                
                 // Update display based on current tab
                 this.displayTokens(data.tokens, this.currentTab);
             }
@@ -2786,6 +2792,16 @@
                 
                 try {
                     this.showLoading();
+                    
+                    // Check if we have traits available
+                    if (!this.modules.crafting.getAvailableTraits() || this.modules.crafting.getAvailableTraits().length === 0) {
+                        console.log('🔨 No traits disponibles, cargando desde traits tab...');
+                        // Try to load traits from traits tab first
+                        if (this.traitTokens && this.traitTokens.length > 0) {
+                            this.modules.crafting.setAvailableTraits(this.traitTokens);
+                        }
+                    }
+                    
                     await this.modules.crafting.loadRecipes();
                     this.hideLoading();
                     
