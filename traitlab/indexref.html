@@ -2152,7 +2152,12 @@
                     assignSkinBtn.id = 'assignSkinStickyBtn';
                     assignSkinBtn.className = 'action-btn';
                     assignSkinBtn.textContent = 'Assign SKIN';
-                    assignSkinBtn.onclick = () => this.activateToken();
+                    assignSkinBtn.onclick = () => {
+                        console.log('🔍 DEBUG: Click en Assign SKIN detectado');
+                        console.log('🔍 DEBUG: this.activateToken existe?', typeof this.activateToken);
+                        console.log('🔍 DEBUG: Llamando this.activateToken()...');
+                        this.activateToken();
+                    };
                     actionButtons.appendChild(assignSkinBtn);
                     
                     // Botón Rename Token (mismo formato que Apply Traits)
@@ -2205,6 +2210,7 @@
             // Action Methods
 
             async activateToken() {
+                console.log('🔍 DEBUG: activateToken() llamado en TraitLABApp');
                 // Get current selection state from UI module
                 const selectionState = this.modules.ui.getSelectionState();
                 console.log('🔍 activateToken - Current selection state:', selectionState);
