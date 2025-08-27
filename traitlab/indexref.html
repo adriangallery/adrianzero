@@ -2061,6 +2061,16 @@
                 selectionText.innerHTML = text;
                 
                 // TEMPORALMENTE DESHABILITADO: Actualizar visibilidad sticky según el estado actual
+                console.log('🔍 DEBUG: Antes de llamar stickyManager.update');
+                console.log('🔍 DEBUG: this.stickyManager existe?', !!this.stickyManager);
+                console.log('🔍 DEBUG: Estado actual:', {
+                    selectedERC721: this.selectedERC721?.tokenId,
+                    selectedERC1155: this.selectedERC1155?.length,
+                    selectedFloppy: this.selectedFloppy?.tokenId,
+                    selectedSerum: this.selectedSerum?.tokenId,
+                    currentTab: this.currentFilter
+                });
+                
                 if (this.stickyManager) {
                     const appState = {
                         selectedERC721: this.selectedERC721,
@@ -2069,7 +2079,11 @@
                         selectedSerum: this.selectedSerum,
                         currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
                     };
+                    console.log('🔍 DEBUG: Llamando stickyManager.update con:', appState);
                     this.stickyManager.update(appState);
+                    console.log('🔍 DEBUG: stickyManager.update completado');
+                } else {
+                    console.log('❌ DEBUG: this.stickyManager NO existe!');
                 }
                 // NO usar actionButtons.innerHTML = buttons (sobrescribe las secciones específicas)
                 // actionButtons.innerHTML = buttons;
