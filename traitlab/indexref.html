@@ -1026,6 +1026,33 @@
             opacity: 0.6;
         }
 
+        .output-trait {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        .trait-title {
+            font-weight: bold;
+            color: #00ff00;
+            margin-bottom: 5px;
+        }
+
+        .trait-details {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .output-trait-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -2817,8 +2844,11 @@
                         </div>
                         <div class="recipe-output">
                             <h4>Output:</h4>
-                            <div>Token ID: ${recipe.output.id}</div>
-                            <div>Amount: ${recipe.output.amount}</div>
+                            <div class="output-trait">
+                                <div class="trait-title">${recipe.output.title}</div>
+                                <div class="trait-details">ID: ${recipe.output.id} | Amount: ${recipe.output.amount}</div>
+                                ${recipe.output.image ? `<img src="${recipe.output.image}" alt="Output Trait" class="output-trait-image">` : ''}
+                            </div>
                         </div>
                         <div class="recipe-actions">
                             <button class="craft-btn ${recipe.eligible ? 'enabled' : 'disabled'}" 
@@ -2849,8 +2879,11 @@
                         </div>
                         <div class="recipe-output">
                             <h4>Output:</h4>
-                            <div>Token ID: ${recipe.output.id}</div>
-                            <div>Amount: ${recipe.output.amount}</div>
+                            <div class="output-trait">
+                                <div class="trait-title">${recipe.output.title}</div>
+                                <div class="trait-details">ID: ${recipe.output.id} | Amount: ${recipe.output.amount}</div>
+                                ${recipe.output.image ? `<img src="${recipe.output.image}" alt="Output Trait" class="output-trait-image">` : ''}
+                            </div>
                         </div>
                         <div class="recipe-actions">
                             <button class="craft-btn ${meetsRequirement ? 'enabled' : 'disabled'}" 

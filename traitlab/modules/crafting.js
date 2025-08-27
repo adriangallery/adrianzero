@@ -77,6 +77,139 @@ class TraitLABCrafting {
     }
 
     /**
+     * Load available traits for crafting (ERC1155 from AdrianLAB)
+     */
+    async loadAvailableTraits() {
+        console.log('🔨 TraitLABCrafting: Cargando traits disponibles...');
+        
+        try {
+            if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+                console.log('Wallet not connected, skipping traits load');
+                return [];
+            }
+            
+            const userAddress = window.TraitLABWallet.getCurrentAccount();
+            
+            // Load ERC1155 traits from AdrianLAB contract
+            const contractAddress = window.TraitLABConfig.CONTRACTS.ERC1155;
+            const tokenType = "ERC1155";
+            
+            // Load all traits with pagination
+            let allTraits = [];
+            let pageKey = null;
+            let hasMore = true;
+            let pageCount = 0;
+            
+            while (hasMore) {
+                pageCount++;
+                console.log(`Loading traits page ${pageCount}...`);
+                
+                // Build URL with pagination and correct endpoint
+                let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTsForOwner?owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=100&tokenType=${tokenType}`;
+                
+                if (pageKey) {
+                    alchemyUrl += `&pageKey=${pageKey}`;
+                }
+                
+                const alchemyResponse = await fetch(alchemyUrl);
+                
+                if (!alchemyResponse.ok) {
+                    throw new Error(`Error getting traits from Alchemy API: ${alchemyResponse.status}`);
+                }
+                
+                const nftsData = await alchemyResponse.json();
+                console.log(`Page ${pageCount}: ${nftsData.ownedNfts?.length || 0} traits received`);
+                
+                // Add traits from this page
+                if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
+                    allTraits = allTraits.concat(nftsData.ownedNfts);
+                }
+                
+                // Check if there are more pages
+                pageKey = nftsData.pageKey;
+                hasMore = !!pageKey;
+                
+                // Optional: Add a small delay to avoid rate limiting
+                if (hasMore) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            
+            console.log(`Total traits loaded: ${allTraits.length} from ${pageCount} pages`);
+            
+            // Process traits and store them
+            this.availableTraits = allTraits.map(nft => {
+                try {
+                    // Extract tokenId
+                    let tokenId;
+                    if (nft.tokenId) {
+                        tokenId = nft.tokenId;
+                    } else if (nft.id && nft.id.tokenId) {
+                        tokenId = nft.id.tokenId;
+                    } else {
+                        console.error("No tokenId found in trait:", nft);
+                        return null;
+                    }
+                    
+                    // Convert tokenId to integer
+                    let tokenIdInt;
+                    if (typeof tokenId === 'number') {
+                        tokenIdInt = tokenId;
+                    } else if (tokenId.startsWith('0x')) {
+                        tokenIdInt = parseInt(tokenId, 16);
+                    } else {
+                        tokenIdInt = parseInt(tokenId, 10);
+                    }
+                    
+                    if (isNaN(tokenIdInt)) {
+                        console.error("Invalid tokenId format:", tokenId);
+                        return null;
+                    }
+                    
+                    // Extract title/name
+                    let title = `Trait #${tokenIdInt}`;
+                    if (nft.title) {
+                        title = nft.title;
+                    } else if (nft.metadata && nft.metadata.name) {
+                        title = nft.metadata.name;
+                    }
+                    
+                    // Extract image
+                    let image = '';
+                    if (nft.metadata && nft.metadata.image) {
+                        image = nft.metadata.image;
+                    } else if (nft.media && nft.media.length > 0 && nft.media[0].gateway) {
+                        image = nft.media[0].gateway;
+                    }
+                    
+                    return {
+                        tokenId: tokenIdInt,
+                        title: title,
+                        image: image,
+                        contract: contractAddress,
+                        tokenType: tokenType,
+                        metadata: nft.metadata || {}
+                    };
+                } catch (error) {
+                    console.error('Error processing trait:', error, nft);
+                    return null;
+                }
+            }).filter(trait => trait !== null);
+            
+            console.log('🔨 TraitLABCrafting: Traits procesados:', this.availableTraits);
+            
+            // Emit event
+            this.emit('traitsLoaded', { traits: this.availableTraits });
+            
+            return this.availableTraits;
+            
+        } catch (error) {
+            console.error('Error loading available traits:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Load recipes from the smart contract
      */
     async loadRecipesFromContract(ethers) {
@@ -99,6 +232,9 @@ class TraitLABCrafting {
             // In production, you'd index events to get all recipe IDs
             const recipeIds = [1, 2, 3, 4, 5]; // Example IDs
             
+            // Load available traits first
+            await this.loadAvailableTraits();
+            
             const recipes = [];
             
             for (const recipeId of recipeIds) {
@@ -106,6 +242,9 @@ class TraitLABCrafting {
                     // Try specific recipe first
                     const specificRecipe = await contract.getSpecificRecipe(recipeId);
                     if (specificRecipe.active) {
+                        // Find output trait information
+                        const outputTrait = this.availableTraits.find(trait => trait.tokenId === parseInt(specificRecipe.outId.toString()));
+                        
                         recipes.push({
                             type: 'specific',
                             recipeId: recipeId,
@@ -117,7 +256,10 @@ class TraitLABCrafting {
                             })),
                             output: {
                                 id: specificRecipe.outId.toString(),
-                                amount: specificRecipe.outAmount.toString()
+                                amount: specificRecipe.outAmount.toString(),
+                                title: outputTrait ? outputTrait.title : `Trait #${specificRecipe.outId}`,
+                                image: outputTrait ? outputTrait.image : '',
+                                metadata: outputTrait ? outputTrait.metadata : {}
                             },
                             eligible: false // Will be calculated after loading balances
                         });
@@ -130,6 +272,9 @@ class TraitLABCrafting {
                 try {
                     const anyRecipe = await contract.getAnyRecipe(recipeId);
                     if (anyRecipe.active) {
+                        // Find output trait information
+                        const outputTrait = this.availableTraits.find(trait => trait.tokenId === parseInt(anyRecipe.outId.toString()));
+                        
                         recipes.push({
                             type: 'any',
                             recipeId: recipeId,
@@ -139,7 +284,10 @@ class TraitLABCrafting {
                             },
                             output: {
                                 id: anyRecipe.outId.toString(),
-                                amount: anyRecipe.outAmount.toString()
+                                amount: anyRecipe.outAmount.toString(),
+                                title: outputTrait ? outputTrait.title : `Trait #${anyRecipe.outId}`,
+                                image: outputTrait ? outputTrait.image : '',
+                                metadata: outputTrait ? outputTrait.metadata : {}
                             },
                             selection: {
                                 chosen: [],
@@ -195,8 +343,13 @@ class TraitLABCrafting {
             
             const contract = new ethers.Contract(ADRIAN_TRAITS_CORE_CONTRACT, contractABI, provider);
             
-            // Get all unique trait IDs from recipes
+            // Get all unique trait IDs from available traits
             const traitIds = new Set();
+            if (this.availableTraits) {
+                this.availableTraits.forEach(trait => traitIds.add(trait.tokenId.toString()));
+            }
+            
+            // Also add trait IDs from recipes
             this.recipes.forEach(recipe => {
                 if (recipe.type === 'specific') {
                     recipe.burn.forEach(item => traitIds.add(item.id));
@@ -395,6 +548,13 @@ class TraitLABCrafting {
      */
     getSelectedTraits() {
         return this.selectedTraits;
+    }
+
+    /**
+     * Get available traits
+     */
+    getAvailableTraits() {
+        return this.availableTraits || [];
     }
 
     /**
