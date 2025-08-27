@@ -1085,6 +1085,50 @@
             position: relative;
         }
 
+        /* Flat grid for crafting traits */
+        .crafting-traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            width: 100%;
+        }
+        .crafting-traits-grid .trait-token-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .crafting-traits-grid .trait-token-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+            border-color: #00ff00;
+        }
+        .crafting-traits-grid .trait-token-card.selected {
+            border-color: #00ff00;
+            box-shadow: 0 0 0 2px rgba(0,255,0,0.25);
+            background: rgba(0,255,0,0.08);
+        }
+        .crafting-traits-grid .trait-token-image {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #222;
+            margin-bottom: 6px;
+        }
+        .crafting-traits-grid .trait-token-name {
+            font-size: 0.9rem;
+            color: #ddd;
+            margin-bottom: 2px;
+        }
+        .crafting-traits-grid .trait-token-id {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -2881,52 +2925,25 @@
                     return '<p>No traits available</p>';
                 }
                 
-                // Group traits by category (same logic as displayTraitsByCategory)
-                const traitsByCategory = new Map();
+                // Flat grid (no categories) for easy multi-selection
+                let html = '<div class="crafting-traits-grid">';
                 this.traitTokens.forEach(trait => {
-                    const category = this.modules.traits.getTraitCategory(trait.tokenId) || 'UNKNOWN';
-                    if (!traitsByCategory.has(category)) {
-                        traitsByCategory.set(category, []);
-                    }
-                    traitsByCategory.get(category).push(trait);
-                });
-                
-                // Generate HTML for each category
-                let html = '';
-                traitsByCategory.forEach((categoryTraits, category) => {
+                    const isSelected = this.modules.crafting.getSelectedTraits().has(trait.tokenId);
+                    const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
+                    const safeTrait = JSON.stringify(trait).replace(/\"/g, '&quot;');
                     html += `
-                        <div class="traits-category-section">
-                            <div class="category-header">
-                                <span class="category-name">${category}</span>
-                                <span class="category-count">${categoryTraits.length}</span>
-                            </div>
-                            <div class="category-tokens-grid">
-                    `;
-                    
-                    categoryTraits.forEach(trait => {
-                        const isSelected = this.modules.crafting.getSelectedTraits().has(trait.tokenId);
-                        const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
-                        
-                        html += `
-                            <div class="trait-token-card ${isSelected ? 'selected' : ''}" 
-                                 data-token-id="${trait.tokenId}" 
-                                 onclick="window.app.handleCraftingTraitSelection(${JSON.stringify(trait).replace(/"/g, '&quot;')})">
-                                <div class="trait-token-category">${category}</div>
-                                <img src="${imageUrl}" alt="${trait.title}" class="trait-token-image" 
-                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'">
-                                <div class="trait-token-name">${trait.title}</div>
-                                <div class="trait-token-id">#${trait.tokenId}</div>
-                                ${isSelected ? `<div class="selection-indicator">✓</div>` : ''}
-                            </div>
-                        `;
-                    });
-                    
-                    html += `
-                            </div>
+                        <div class="trait-token-card ${isSelected ? 'selected' : ''}" 
+                             data-token-id="${trait.tokenId}" 
+                             onclick=\"window.app.handleCraftingTraitSelection(${safeTrait})\">
+                            <img src="${imageUrl}" alt="${trait.title}" class="trait-token-image" 
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'">
+                            <div class="trait-token-name">${trait.title}</div>
+                            <div class="trait-token-id">#${trait.tokenId}</div>
+                            ${isSelected ? `<div class=\\\"selection-indicator\\\">✓</div>` : ''}
                         </div>
                     `;
                 });
-                
+                html += '</div>';
                 return html;
             }
 
