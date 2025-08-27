@@ -1844,6 +1844,10 @@
                     console.log('🎭 Setting as Traits token');
                     if (token.tokenType === 'ERC721') {
                         this.selectedERC721 = token;
+                        // Propagar selección al ZeroManager para operaciones on-chain
+                        if (this.modules.zero && this.modules.zero.setSelectedERC721) {
+                            this.modules.zero.setSelectedERC721(token);
+                        }
                     } else if (token.tokenType === 'ERC1155') {
                         // Update traits module selection
                         this.modules.traits.handleTraitSelection(token);
@@ -2212,8 +2216,24 @@
                 
                 try {
                     await this.modules.zero.activateToken();
+                    this.showSuccess('Token activated successfully!');
                 } catch (error) {
-                    this.showError(`Error activating token: ${error.message}`);
+                    console.error('Error activating token:', error);
+                    let errorMessage = 'Error activating token';
+                    
+                    if (error.message.includes('not owner')) {
+                        errorMessage = 'You are not the owner of this token';
+                    } else if (error.message.includes('network')) {
+                        errorMessage = 'Network error. Please check your connection';
+                    } else if (error.message.includes('wallet')) {
+                        errorMessage = 'Please connect your wallet first';
+                    } else if (error.message.includes('user rejected')) {
+                        errorMessage = 'Transaction was cancelled by user';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                    
+                    this.showError(errorMessage);
                 }
             }
 
