@@ -356,110 +356,170 @@ class ZeroManager {
         
         if (adrianZeroTokens.length === 0) {
             console.log('No AdrianZERO tokens to process for custom names');
-            return;
+            return tokens;
         }
 
-        console.log(`Processing ${adrianZeroTokens.length} AdrianZERO tokens for custom names`);
+        console.log(`Loading custom names for ${adrianZeroTokens.length} AdrianZERO tokens with cascading approach...`);
 
         try {
-            // Load ethers dynamically only when needed
-            let ethers;
-            if (typeof window.ethers === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
-                
-                return new Promise((resolve, reject) => {
+            // Load ethers dynamically if not available
+            let ethers = window.ethers;
+            if (typeof ethers === 'undefined') {
+                console.log('Ethers not available, loading dynamically...');
+                try {
+                    // Load ethers dynamically
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
                     script.onload = () => {
-                        ethers = window.ethers;
-                        console.log('Ethers loaded successfully');
-                        this.executeLoadCustomNames(ethers, adrianZeroTokens)
-                            .then(resolve)
-                            .catch(reject);
+                        console.log('Ethers loaded successfully for custom names');
                     };
                     script.onerror = () => {
-                        reject(new Error('Failed to load ethers library'));
+                        console.log('Failed to load ethers for custom names');
                     };
                     document.head.appendChild(script);
-                });
-            } else {
-                ethers = window.ethers;
-                return await this.executeLoadCustomNames(ethers, adrianZeroTokens);
-            }
-        } catch (error) {
-            console.error('Error in loadCustomNames:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Execute the load custom names transaction
-     */
-    async executeLoadCustomNames(ethers, adrianZeroTokens) {
-        try {
-            console.log('🔍 executeLoadCustomNames - window.TraitLABConfig:', window.TraitLABConfig);
-            console.log('🔍 executeLoadCustomNames - ADRIAN_NAME_REGISTRY_ABI:', window.TraitLABConfig?.ADRIAN_NAME_REGISTRY_ABI);
-            
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            
-            // Check if we're on the correct network (Base)
-            const network = await provider.getNetwork();
-            console.log('Current network:', network);
-            
-            if (network.chainId !== 8453) { // Base mainnet
-                throw new Error('Please switch to Base network to use this feature.');
-            }
-            
-            console.log('Contract address:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
-            
-            // Check if contract exists
-            const code = await provider.getCode(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
-            if (code === '0x') {
-                throw new Error('Contract not found at specified address');
-            }
-            
-            // Use ABI from config
-            const contractABI = window.TraitLABConfig.ADRIAN_NAME_REGISTRY_ABI;
-
-            // Create contract instance
-            const contract = new ethers.Contract(window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT, contractABI, provider);
-
-            // Mostrar el coreContract configurado
-            try {
-                const coreContract = await contract.getCoreContract();
-                console.log('AdrianNameRegistry coreContract:', coreContract);
-            } catch (e) {
-                console.warn('No se pudo leer el coreContract:', e);
-            }
-
-            // Process each token to get custom names
-            const nameMap = new Map();
-            
-            for (const token of adrianZeroTokens) {
-                try {
-                    console.log(`Getting name for token ${token.tokenId}...`);
-                    const name = await contract.getName(token.tokenId);
                     
-                    if (name && name.trim() !== '') {
-                        console.log(`Token ${token.tokenId} has custom name: ${name}`);
-                        nameMap.set(token.tokenId, name);
-                    } else {
-                        console.log(`Token ${token.tokenId} has no custom name`);
+                    // Wait a bit for ethers to load
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    ethers = window.ethers;
+                    if (typeof ethers === 'undefined') {
+                        console.log('Ethers still not available after loading, skipping custom names');
+                        return tokens;
                     }
-                } catch (error) {
-                    console.log(`Error getting name for token ${token.tokenId}:`, error);
+                } catch (loadError) {
+                    console.log('Error loading ethers dynamically:', loadError.message);
+                    return tokens;
                 }
             }
 
-            console.log('Final name map:', nameMap);
+            // Check if wallet is connected
+            if (!window.ethereum) {
+                console.log('Wallet not connected, skipping custom names');
+                return tokens;
+            }
+
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const network = await provider.getNetwork();
             
-            // Emit event with name map
-            this.emit('customNamesLoaded', { nameMap });
+            // Only proceed if on Base network
+            if (network.chainId !== 8453) {
+                console.log('Not on Base network, skipping custom names');
+                return tokens;
+            }
+
+            // Try to load ABI from config first, fallback to local file
+            let contractABI;
+            try {
+                if (window.TraitLABConfig?.ADRIAN_NAME_REGISTRY_ABI) {
+                    contractABI = window.TraitLABConfig.ADRIAN_NAME_REGISTRY_ABI;
+                    console.log('Using ABI from config');
+                } else {
+                    // Fallback to local ABI file
+                    const response = await fetch('./adrian-name-registry-abi.json');
+                    if (!response.ok) {
+                        throw new Error('Failed to load local ABI');
+                    }
+                    contractABI = await response.json();
+                    console.log('Using local ABI file');
+                }
+            } catch (abiError) {
+                console.log('Failed to load ABI, skipping custom names:', abiError.message);
+                return tokens;
+            }
+
+            // Create contract instance
+            const nameRegistryContract = new ethers.Contract(
+                window.TraitLABConfig?.ADRIAN_NAME_REGISTRY_CONTRACT || '0x...', // Add your contract address here
+                contractABI, 
+                provider
+            );
+
+            // First, display all tokens with Alchemy names immediately
+            console.log('🔄 Displaying tokens with Alchemy names first...');
+            // Emit event to trigger display update
+            this.emit('tokensReadyForDisplay', { tokens, skipSelectionUpdate: true });
+
+            // Then, get custom names with delays to avoid rate limiting
+            const nameMap = new Map();
+            let processedCount = 0;
+
+            // Process tokens in batches with delays
+            const batchSize = 5; // Process 5 tokens at a time
+            const delayBetweenBatches = 2000; // 2 seconds between batches
+
+            for (let i = 0; i < adrianZeroTokens.length; i += batchSize) {
+                const batch = adrianZeroTokens.slice(i, i + batchSize);
+                
+                console.log(`📦 Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(adrianZeroTokens.length/batchSize)} (${batch.length} tokens)`);
+                
+                // Process batch with individual delays
+                const batchPromises = batch.map(async (token, index) => {
+                    // Add delay between individual requests
+                    await new Promise(resolve => setTimeout(resolve, index * 500)); // 500ms between each request
+                    
+                    try {
+                        const customName = await nameRegistryContract.getTokenName(token.tokenId);
+                        if (customName && customName.trim()) {
+                            nameMap.set(token.tokenId, customName.trim());
+                            console.log(`✅ Custom name found for token ${token.tokenId}: "${customName.trim()}"`);
+                        }
+                    } catch (error) {
+                        console.log(`No custom name for token ${token.tokenId}:`, error.message);
+                    }
+                    
+                    processedCount++;
+                    console.log(`📊 Progress: ${processedCount}/${adrianZeroTokens.length} tokens processed`);
+                });
+
+                await Promise.all(batchPromises);
+
+                // Update display with any custom names found so far
+                if (nameMap.size > 0) {
+                    // Update tokens array with new names
+                    tokens.forEach(token => {
+                        if (this.isAdrianZeroToken(token) && nameMap.has(token.tokenId)) {
+                            const customName = nameMap.get(token.tokenId);
+                            token.title = customName;
+                            token.originalTitle = token.originalTitle || token.title; // Keep original title as backup
+                        }
+                    });
+
+                    console.log(`🔄 Updating display with ${nameMap.size} custom names found so far...`);
+                    // Emit event to update names progressively
+                    this.emit('customNamesProgressUpdate', { nameMap, tokens });
+                }
+
+                // Add delay between batches (except for the last batch)
+                if (i + batchSize < adrianZeroTokens.length) {
+                    console.log(`⏳ Waiting ${delayBetweenBatches}ms before next batch...`);
+                    await new Promise(resolve => setTimeout(resolve, delayBetweenBatches));
+                }
+            }
+
+            // Final update with all custom names
+            const finalUpdatedTokens = tokens.map(token => {
+                if (this.isAdrianZeroToken(token) && nameMap.has(token.tokenId)) {
+                    const customName = nameMap.get(token.tokenId);
+                    return {
+                        ...token,
+                        title: customName,
+                        originalTitle: token.title // Keep original title as backup
+                    };
+                }
+                return token;
+            });
+
+            console.log(`✅ Custom names loading complete: ${nameMap.size} tokens updated`);
             
-            return nameMap;
+            // Emit final event with complete name map
+            this.emit('customNamesLoaded', { nameMap, tokens: finalUpdatedTokens });
+            
+            return finalUpdatedTokens;
 
         } catch (error) {
             console.error('Error loading custom names:', error);
-            throw error;
+            // Return original tokens if custom names fail
+            return tokens;
         }
     }
 
