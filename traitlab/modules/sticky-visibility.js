@@ -157,6 +157,13 @@ class StickyVisibilityManager {
 
         console.log('🎯 Aplicando estado sticky:', state);
         
+        // Limpiar clases de estado anteriores
+        const selectionInfo = document.getElementById('selection-info');
+        if (selectionInfo) {
+            selectionInfo.classList.remove('adrianzero-only', 'adrianzero-traits', 'adrianzero-serum', 'floppy-pack', 'rename', 'mixed-rename');
+            selectionInfo.classList.add(state);
+        }
+        
         const rules = this.states[state];
         
         // Mostrar elementos
