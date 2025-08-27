@@ -921,6 +921,111 @@
             transform: translateY(0);
         }
 
+        /* Crafting Recipe Cards */
+        .recipe-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .recipe-card h3 {
+            color: #00ff00;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .recipe-type {
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .recipe-ingredients, .recipe-requirement, .recipe-output {
+            margin-bottom: 15px;
+        }
+
+        .recipe-ingredients h4, .recipe-requirement h4, .recipe-output h4 {
+            color: #fff;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .recipe-ingredient {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 3px solid #666;
+        }
+
+        .recipe-ingredient.eligible {
+            border-left-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .recipe-ingredient.insufficient {
+            border-left-color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .requirement-status {
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .requirement-status.met {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .requirement-status.not-met {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+
+        .craft-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            width: 100%;
+        }
+
+        .craft-btn.enabled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .craft-btn.disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -1086,6 +1191,9 @@
                 <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">
                     Serums
                 </button>
+                <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">
+                    🔨 Crafting
+                </button>
                 <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">
                     RENAME
                 </button>
@@ -1099,6 +1207,7 @@
                     <button class="contract-btn" title="Traits" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="traits">🎭</button>
                     <button class="contract-btn" title="Floppy Discs" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">💾</button>
                     <button class="contract-btn" title="Serums" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">🧪</button>
+                    <button class="contract-btn" title="Crafting" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">🔨</button>
                     <button class="contract-btn" title="Rename" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">✍️</button>
                 </div>
                 <button id="minimizeBtn" class="minimize-btn">Minimize</button>
@@ -1197,14 +1306,15 @@
     </div>
 
     <!-- Load Modules -->
-    <script src="modules/config.js"></script>
-    <script src="modules/wallet.js"></script>
-    <script src="modules/ui.js"></script>
-    <script src="modules/traits.js"></script>
-    <script src="modules/floppy.js"></script>
-    <script src="modules/serums.js"></script>
-    <script src="modules/zero.js"></script>
-    <script src="modules/sticky-visibility.js"></script>
+            <script src="modules/config.js"></script>
+        <script src="modules/wallet.js"></script>
+        <script src="modules/ui.js"></script>
+        <script src="modules/traits.js"></script>
+        <script src="modules/floppy.js"></script>
+        <script src="modules/serums.js"></script>
+        <script src="modules/zero.js"></script>
+        <script src="modules/crafting.js"></script>
+        <script src="modules/sticky-visibility.js"></script>
 
     <!-- Main Application Script -->
     <script>
@@ -1262,9 +1372,12 @@
                 this.modules.floppy = new window.TraitLABFloppy();
                 this.modules.floppy.init();
                 
-                // Initialize Serums Manager
-                this.modules.serums = new window.TraitLABSerums();
-                this.modules.serums.init();
+                            // Initialize Serums Manager
+            this.modules.serums = new window.TraitLABSerums();
+            this.modules.serums.init();
+            
+            // Initialize Crafting Manager
+            this.modules.crafting = new window.TraitLABCrafting();
                 
                 // Initialize Zero Manager
                 this.modules.zero = new window.TraitLABZero();
@@ -1744,6 +1857,12 @@
                 
                 if (noTokens) noTokens.style.display = 'none';
                 
+                // Special handling for crafting tab
+                if (this.currentFilter === 'crafting') {
+                    this.displayCraftingRecipes();
+                    return;
+                }
+                
                 // Check if we're in traits tab and should use category display
                 if (this.currentFilter === 'traits' || 
                     (!this.currentFilter && this.currentContract === "0x90546848474fb3c9fda3fdad887969bb244e7e58")) {
@@ -1796,7 +1915,12 @@
 
             onFilterChanged(data) {
                 console.log('Filter changed:', data);
-                // Handle filter changes if needed
+                
+                // Handle crafting tab specifically
+                if (data.filter === 'crafting') {
+                    console.log('🔨 Crafting tab selected, loading recipes...');
+                    this.loadCraftingRecipes();
+                }
             }
 
             onTokenSelected(data) {
@@ -1839,6 +1963,14 @@
                     
                     // Propagate selection to serum module
                     this.modules.serums.setSelectedSerum(token);
+                } else if (filter === 'crafting') {
+                    console.log('🔨 Setting as Crafting token');
+                    // For crafting, we treat traits as ingredients
+                    if (token.tokenType === 'ERC1155') {
+                        this.selectedERC1155 = [token];
+                        // Propagate selection to crafting module
+                        this.modules.crafting.selectTrait(token.tokenId, 1);
+                    }
                 } else {
                     // AdrianLAB - traits
                     console.log('🎭 Setting as Traits token');
@@ -2619,6 +2751,166 @@
                     await this.modules.serums.useSerum(this.selectedERC721);
                 } catch (error) {
                     this.showError(`Error using serum: ${error.message}`);
+                }
+            }
+
+            async loadCraftingRecipes() {
+                console.log('🔨 loadCraftingRecipes: Iniciando carga de recetas...');
+                
+                try {
+                    this.showLoading();
+                    await this.modules.crafting.loadRecipes();
+                    this.hideLoading();
+                    
+                    // Display recipes in the tokens grid
+                    this.displayCraftingRecipes();
+                    
+                } catch (error) {
+                    console.error('Error loading crafting recipes:', error);
+                    this.hideLoading();
+                    this.showError(`Error loading recipes: ${error.message}`);
+                }
+            }
+
+            displayCraftingRecipes() {
+                const recipes = this.modules.crafting.getRecipes();
+                const grid = document.getElementById('tokens-grid');
+                
+                if (!grid) return;
+                
+                if (recipes.length === 0) {
+                    grid.innerHTML = '<div class="no-tokens"><p>No recipes available</p></div>';
+                    return;
+                }
+                
+                let html = '';
+                recipes.forEach(recipe => {
+                    if (recipe.type === 'specific') {
+                        html += this.renderSpecificRecipeCard(recipe);
+                    } else if (recipe.type === 'any') {
+                        html += this.renderAnyRecipeCard(recipe);
+                    }
+                });
+                
+                grid.innerHTML = html;
+                
+                // Add event listeners to recipe cards
+                this.setupCraftingEventListeners();
+            }
+
+            renderSpecificRecipeCard(recipe) {
+                const burnItems = recipe.burn.map(item => 
+                    `<div class="recipe-ingredient ${item.userBalance >= item.amount ? 'eligible' : 'insufficient'}">
+                        <span>ID: ${item.id}</span>
+                        <span>Required: ${item.amount}</span>
+                        <span>Owned: ${item.userBalance}</span>
+                    </div>`
+                ).join('');
+                
+                return `
+                    <div class="recipe-card specific-recipe" data-recipe-id="${recipe.recipeId}">
+                        <h3>Recipe #${recipe.recipeId}</h3>
+                        <div class="recipe-type">Specific Recipe</div>
+                        <div class="recipe-ingredients">
+                            <h4>Burn Requirements:</h4>
+                            ${burnItems}
+                        </div>
+                        <div class="recipe-output">
+                            <h4>Output:</h4>
+                            <div>Token ID: ${recipe.output.id}</div>
+                            <div>Amount: ${recipe.output.amount}</div>
+                        </div>
+                        <div class="recipe-actions">
+                            <button class="craft-btn ${recipe.eligible ? 'enabled' : 'disabled'}" 
+                                    data-recipe-id="${recipe.recipeId}" 
+                                    ${recipe.eligible ? '' : 'disabled'}>
+                                ${recipe.eligible ? '🔨 Craft' : '❌ Insufficient Materials'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderAnyRecipeCard(recipe) {
+                const selectedTotal = this.modules.crafting.getSelectedTotal();
+                const meetsRequirement = selectedTotal >= parseInt(recipe.requirement.burnTotal);
+                
+                return `
+                    <div class="recipe-card any-recipe" data-recipe-id="${recipe.recipeId}">
+                        <h3>Recipe #${recipe.recipeId}</h3>
+                        <div class="recipe-type">Any Recipe</div>
+                        <div class="recipe-requirement">
+                            <h4>Burn Requirement:</h4>
+                            <div>Total: ${recipe.requirement.burnTotal} units</div>
+                            <div>Selected: ${selectedTotal} units</div>
+                            <div class="requirement-status ${meetsRequirement ? 'met' : 'not-met'}">
+                                ${meetsRequirement ? '✅ Requirement Met' : '❌ Need More'}
+                            </div>
+                        </div>
+                        <div class="recipe-output">
+                            <h4>Output:</h4>
+                            <div>Token ID: ${recipe.output.id}</div>
+                            <div>Amount: ${recipe.output.amount}</div>
+                        </div>
+                        <div class="recipe-actions">
+                            <button class="craft-btn ${meetsRequirement ? 'enabled' : 'disabled'}" 
+                                    data-recipe-id="${recipe.recipeId}" 
+                                    ${meetsRequirement ? '' : 'disabled'}>
+                                ${meetsRequirement ? '🔨 Craft' : '❌ Insufficient Materials'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            setupCraftingEventListeners() {
+                // Listen for trait selection changes
+                this.modules.crafting.on('traitsSelectionChanged', (data) => {
+                    console.log('🔨 Crafting: Traits selection changed:', data);
+                    this.displayCraftingRecipes(); // Refresh display
+                });
+                
+                // Listen for crafting success
+                this.modules.crafting.on('craftingSuccessful', (data) => {
+                    console.log('🔨 Crafting: Success:', data);
+                    this.showSuccess(`Crafting successful! TX: ${data.transactionHash}`);
+                    // Refresh recipes
+                    this.loadCraftingRecipes();
+                });
+                
+                // Add click listeners to craft buttons
+                document.querySelectorAll('.craft-btn.enabled').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const recipeId = parseInt(e.target.dataset.recipeId);
+                        this.executeCrafting(recipeId);
+                    });
+                });
+            }
+
+            async executeCrafting(recipeId) {
+                console.log('🔨 executeCrafting: Executing recipe:', recipeId);
+                
+                try {
+                    const recipes = this.modules.crafting.getRecipes();
+                    const recipe = recipes.find(r => r.recipeId === recipeId);
+                    
+                    if (!recipe) {
+                        throw new Error('Recipe not found');
+                    }
+                    
+                    if (recipe.type === 'specific') {
+                        await this.modules.crafting.craftSpecific(recipeId);
+                    } else if (recipe.type === 'any') {
+                        const selectedTraits = this.modules.crafting.getSelectedTraits();
+                        const burnIds = Array.from(selectedTraits.keys()).map(id => parseInt(id));
+                        const burnAmounts = Array.from(selectedTraits.values());
+                        
+                        await this.modules.crafting.craftAny(recipeId, burnIds, burnAmounts);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error executing crafting:', error);
+                    this.showError(`Error executing recipe: ${error.message}`);
                 }
             }
 
