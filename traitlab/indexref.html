@@ -1254,10 +1254,25 @@
                     this.onTokensLoaded(data);
                 });
                 
-                
-                
-                                // Setup button event listeners after DOM is loaded
+                // Setup button event listeners after DOM is loaded
                 this.setupButtonEventListeners();
+                
+                // AdrianNameRegistry events
+                this.modules.zero.on('tokensReadyForDisplay', (data) => {
+                    this.handleTokensReadyForDisplay(data);
+                });
+                
+                this.modules.zero.on('customNamesProgressUpdate', (data) => {
+                    this.handleCustomNamesProgressUpdate(data);
+                });
+                
+                this.modules.zero.on('customNamesLoaded', (data) => {
+                    console.log('✅ Custom names fully loaded:', data);
+                    // Final update if needed
+                    if (data.tokens) {
+                        this.tokens = data.tokens;
+                    }
+                });
                 
                 // Setup Use Serum button event listener
                 const useSerumBtn = document.getElementById('useSerumBtn');
@@ -2400,6 +2415,60 @@
                     success.style.display = 'block';
                     setTimeout(() => success.style.display = 'none', 5000);
                 }
+            }
+
+            // AdrianNameRegistry Helper Methods
+            updateTokenNamesOnly(nameMap) {
+                console.log(`🔄 Starting name update for ${nameMap.size} tokens...`);
+                
+                // Use requestAnimationFrame to ensure smooth updates
+                requestAnimationFrame(() => {
+                    nameMap.forEach((customName, tokenId) => {
+                        // Find the token card by token ID
+                        const selector = `[data-token-id="${tokenId}"][data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75"]`;
+                        const tokenCard = document.querySelector(selector);
+                        
+                        if (tokenCard) {
+                            // Find the title element within the card
+                            const titleElement = tokenCard.querySelector('.token-title');
+                            if (titleElement) {
+                                const oldName = titleElement.textContent;
+                                // Only update if the name is actually different
+                                if (oldName !== customName) {
+                                    titleElement.textContent = customName;
+                                    console.log(`✨ Updated name for token ${tokenId}: "${oldName}" → "${customName}"`);
+                                } else {
+                                    console.log(`ℹ️ Name already up to date for token ${tokenId}: "${customName}"`);
+                                }
+                            } else {
+                                console.log(`⚠️ Title element not found for token ${tokenId}`);
+                            }
+                        } else {
+                            console.log(`⚠️ Token card not found for token ${tokenId} with selector: ${selector}`);
+                        }
+                    });
+                    
+                    console.log(`✅ Name update completed for ${nameMap.size} tokens`);
+                });
+            }
+
+            handleCustomNamesProgressUpdate(data) {
+                console.log('🔄 Custom names progress update:', data);
+                const { nameMap, tokens } = data;
+                
+                // Update the local tokens array
+                this.tokens = tokens;
+                
+                // Update display progressively
+                this.updateTokenNamesOnly(nameMap);
+            }
+
+            handleTokensReadyForDisplay(data) {
+                console.log('🔄 Tokens ready for display:', data);
+                const { tokens, skipSelectionUpdate } = data;
+                
+                // Display tokens immediately with Alchemy names
+                this.displayTokens(tokens, skipSelectionUpdate);
             }
         }
 
