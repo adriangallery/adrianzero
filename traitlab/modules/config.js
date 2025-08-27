@@ -58,6 +58,9 @@ const ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
 // AdrianLabCore contract address
 const ADRIAN_LAB_CORE_CONTRACT = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
 
+// AdrianCrafting contract address
+const ADRIAN_CRAFTING_CONTRACT = "0x9ab651F50ac78A13a1612CCDDF5a074B2e570829";
+
 // Minimal ABI for AdrianNameRegistry used by ZERO rename & name overrides
 const ADRIAN_NAME_REGISTRY_ABI = [
     // Read price
@@ -88,6 +91,7 @@ if (typeof module !== 'undefined' && module.exports) {
         SERUM_MODULE_CONTRACT,
         ADRIAN_TOKEN,
         ADRIAN_LAB_CORE_CONTRACT,
+        ADRIAN_CRAFTING_CONTRACT,
         ADRIAN_NAME_REGISTRY_ABI
     };
 } else {
@@ -109,6 +113,7 @@ if (typeof module !== 'undefined' && module.exports) {
         SERUM_MODULE_CONTRACT,
         ADRIAN_TOKEN,
         ADRIAN_LAB_CORE_CONTRACT,
+        ADRIAN_CRAFTING_CONTRACT,
         ADRIAN_NAME_REGISTRY_ABI
     };
     console.log('🔧 Config.js: window.TraitLABConfig setup complete:', window.TraitLABConfig);
