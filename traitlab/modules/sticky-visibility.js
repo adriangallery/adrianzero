@@ -26,7 +26,7 @@ class StickyVisibilityManager {
                 hide: ['token-title', 'generated-image', 'selected-traits-list', 'traits-actions', 'serum-actions', 'floppy-actions', 'rename-form', 'rename-buttons']
             },
             'adrianzero-only': {
-                show: ['token-title', 'generated-image', 'minimize-btn'],
+                show: ['token-title', 'generated-image', 'minimize-btn', 'erc721-actions'],
                 hide: ['selected-traits-list', 'traits-actions', 'serum-actions', 'floppy-actions', 'rename-form', 'rename-buttons']
             },
             'adrianzero-traits': {
@@ -80,6 +80,7 @@ class StickyVisibilityManager {
             this.elements.set('apply-traits-btn', document.getElementById('traits-actions-section'));
             this.elements.set('serum-btn', document.getElementById('use-serum-section'));
             this.elements.set('open-btn', document.getElementById('open-floppy-section') || document.getElementById('open-pack-section'));
+            this.elements.set('erc721-actions', document.getElementById('erc721-actions-section'));
             
             // Buscar elementos de floppy de manera más robusta - actualizado para "Floppy Selected"
             const floppyInfoElement = document.querySelector('h4')?.textContent?.includes('Floppy Selected') 
