@@ -251,11 +251,14 @@ class StickyVisibilityManager {
         console.log('🔍 DEBUG StickyManager: Estado detectado:', newState);
         console.log('🔍 DEBUG StickyManager: Estado actual:', this.currentState);
         
+        // Siempre aplicar el estado detectado, incluso si es el mismo
+        // Esto asegura que las clases CSS se apliquen desde el primer momento
         if (newState !== this.currentState) {
             console.log('🔄 Cambio de estado sticky:', this.currentState, '→', newState);
             this.applyState(newState);
         } else {
-            console.log('🔍 DEBUG StickyManager: No hay cambio de estado, manteniendo:', this.currentState);
+            console.log('🔍 DEBUG StickyManager: Mismo estado, pero aplicando para asegurar clases CSS');
+            this.applyState(newState);
         }
     }
 
