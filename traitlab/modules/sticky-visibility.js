@@ -18,6 +18,7 @@
 
 class StickyVisibilityManager {
     constructor() {
+        console.log('🔧 DEBUG: StickyVisibilityManager constructor llamado');
         this.currentState = 'default';
         this.elements = new Map();
         this.states = {
@@ -51,6 +52,7 @@ class StickyVisibilityManager {
             }
         };
         
+        console.log('🔧 DEBUG: StickyVisibilityManager constructor completado, llamando init()');
         this.init();
     }
 
@@ -112,8 +114,10 @@ class StickyVisibilityManager {
 
         // REGLA 1: ADRIANZERO_TRAITS tiene PRIORIDAD ALTA
         if (selectedERC721 && selectedERC1155 && selectedERC1155.length > 0) {
+            console.log('🔍 DEBUG detectCurrentState: Regla 1 aplicada - ADRIANZERO_TRAITS');
             // Si estamos en tab rename, es MIXED_RENAME
             if (currentTab === 'rename') {
+                console.log('🔍 DEBUG detectCurrentState: Sub-regla 1a aplicada - MIXED_RENAME');
                 return 'mixed-rename';
             }
             return 'adrianzero-traits';
@@ -121,7 +125,9 @@ class StickyVisibilityManager {
 
         // REGLA 2: ADRIANZERO_SERUM
         if (selectedERC721 && selectedSerum) {
+            console.log('🔍 DEBUG detectCurrentState: Regla 2 aplicada - ADRIANZERO_SERUM');
             if (currentTab === 'rename') {
+                console.log('🔍 DEBUG detectCurrentState: Sub-regla 2a aplicada - MIXED_RENAME');
                 return 'mixed-rename';
             }
             return 'adrianzero-serum';
@@ -129,20 +135,24 @@ class StickyVisibilityManager {
 
         // REGLA 3: FLOPPY_PACK
         if (selectedFloppy) {
+            console.log('🔍 DEBUG detectCurrentState: Regla 3 aplicada - FLOPPY_PACK');
             return 'floppy-pack';
         }
 
         // REGLA 4: RENAME (solo si no hay otros elementos seleccionados)
         if (currentTab === 'rename' && selectedERC721 && !selectedERC1155?.length && !selectedSerum) {
+            console.log('🔍 DEBUG detectCurrentState: Regla 4 aplicada - RENAME');
             return 'rename';
         }
 
         // REGLA 5: ADRIANZERO_ONLY
         if (selectedERC721 && !selectedERC1155?.length && !selectedSerum) {
+            console.log('🔍 DEBUG detectCurrentState: Regla 5 aplicada - ADRIANZERO_ONLY');
             return 'adrianzero-only';
         }
 
         // REGLA 6: DEFAULT
+        console.log('🔍 DEBUG detectCurrentState: Regla 6 aplicada - DEFAULT');
         return 'default';
     }
 
@@ -159,9 +169,19 @@ class StickyVisibilityManager {
         
         // Limpiar clases de estado anteriores
         const selectionInfo = document.getElementById('selection-info');
+        console.log('🔍 DEBUG applyState: selection-info encontrado?', !!selectionInfo);
+        
         if (selectionInfo) {
+            console.log('🔍 DEBUG applyState: Clases antes de limpiar:', selectionInfo.className);
             selectionInfo.classList.remove('adrianzero-only', 'adrianzero-traits', 'adrianzero-serum', 'floppy-pack', 'rename', 'mixed-rename');
+            console.log('🔍 DEBUG applyState: Clases después de limpiar:', selectionInfo.className);
             selectionInfo.classList.add(state);
+            console.log('🔍 DEBUG applyState: Clases después de agregar', state, ':', selectionInfo.className);
+            
+            // Verificar si la clase se agregó correctamente
+            console.log('🔍 DEBUG applyState: selection-info tiene clase', state, '?', selectionInfo.classList.contains(state));
+        } else {
+            console.log('❌ DEBUG applyState: selection-info NO encontrado!');
         }
         
         // En lugar de usar showElement/hideElement, usar clases CSS
@@ -222,14 +242,20 @@ class StickyVisibilityManager {
      * Se llama desde la clase principal cuando cambian las selecciones
      */
     update(appState) {
+        console.log('🔍 DEBUG StickyManager: update() llamado con:', appState);
+        
         // Re-mapear elementos si es necesario (por si el DOM cambió)
         this.remapElementsIfNeeded();
         
         const newState = this.detectCurrentState(appState);
+        console.log('🔍 DEBUG StickyManager: Estado detectado:', newState);
+        console.log('🔍 DEBUG StickyManager: Estado actual:', this.currentState);
         
         if (newState !== this.currentState) {
             console.log('🔄 Cambio de estado sticky:', this.currentState, '→', newState);
             this.applyState(newState);
+        } else {
+            console.log('🔍 DEBUG StickyManager: No hay cambio de estado, manteniendo:', this.currentState);
         }
     }
 
