@@ -2061,11 +2061,12 @@
                 this.tokens = data.tokens;
                 
                 // Store trait tokens separately for the categories system
+                const TRAITS_CONTRACT = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
                 this.traitTokens = data.tokens.filter(token => {
-                    const isTraitContract = token.contract === "0x90546848474fb3c9fda3fdad887969bb244e7e58" || 
-                                          token.contractAddress === "0x90546848474fb3c9fda3fdad887969bb244e7e58" ||
-                                          token.contractId === "0x90546848474fb3c9fda3fdad887969bb244e7e58";
-                    const isERC1155 = token.tokenType === 'ERC1155' || token.type === 'ERC1155';
+                    const contractAddr = (token.contract || token.contractAddress || token.contractId || '').toLowerCase();
+                    const isTraitContract = contractAddr === TRAITS_CONTRACT.toLowerCase();
+                    const tokenType = (token.tokenType || token.type || '').toUpperCase();
+                    const isERC1155 = tokenType === 'ERC1155';
                     return isTraitContract && isERC1155;
                 });
                 
