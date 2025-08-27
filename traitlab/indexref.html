@@ -2061,16 +2061,16 @@
                 selectionText.innerHTML = text;
                 
                 // TEMPORALMENTE DESHABILITADO: Actualizar visibilidad sticky según el estado actual
-                // if (this.stickyManager) {
-                //     const appState = {
-                //         selectedERC721: this.selectedERC721,
-                //         selectedERC1155: this.selectedERC1155,
-                //         selectedFloppy: this.selectedFloppy,
-                //         selectedSerum: this.selectedSerum,
-                //         currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
-                //     };
-                //     this.stickyManager.update(appState);
-                // }
+                if (this.stickyManager) {
+                    const appState = {
+                        selectedERC721: this.selectedERC721,
+                        selectedERC1155: this.selectedERC1155,
+                        selectedFloppy: this.selectedFloppy,
+                        selectedSerum: this.selectedSerum,
+                        currentTab: this.currentFilter // Asumiendo que currentFilter es el tab actual
+                    };
+                    this.stickyManager.update(appState);
+                }
                 // NO usar actionButtons.innerHTML = buttons (sobrescribe las secciones específicas)
                 // actionButtons.innerHTML = buttons;
                 selectionInfo.style.display = 'block';
@@ -2579,11 +2579,12 @@
 
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            window.app = new TraitLABApp();
+            const app = new TraitLABApp();
+            window.app = app;
             
             // Inicializar StickyVisibilityManager después del DOM
-            if (window.app) {
-                window.app.stickyManager = new window.StickyVisibilityManager();
+            if (app) {
+                app.stickyManager = new window.StickyVisibilityManager();
                 console.log('✅ StickyVisibilityManager inicializado después del DOM');
             }
             
