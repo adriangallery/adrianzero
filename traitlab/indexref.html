@@ -334,6 +334,46 @@
             transition: all 0.3s ease;
         }
 
+        /* Side emoji menu inside selection-info */
+        .selection-info.with-side-menu {
+            padding-left: 56px;
+        }
+
+        .side-emoji-menu {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 101;
+        }
+
+        .side-emoji-menu .contract-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #333;
+            color: #fff;
+        }
+
+        .side-emoji-menu .contract-btn.active {
+            background: #00cc00;
+            color: #000;
+        }
+
+        .side-emoji-menu .contract-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
         /* Comportamiento responsive por defecto */
         /* Desktop (≥768px): Expanded por defecto */
         @media (min-width: 768px) {
@@ -362,6 +402,13 @@
             .selection-info {
                 max-width: 50%;
                 margin: 10px auto;
+            }
+            .selection-info.with-side-menu {
+                padding-left: 56px;
+            }
+            .side-emoji-menu {
+                left: 6px;
+                gap: 6px;
             }
             
             .selection-info .selection-text {
@@ -959,7 +1006,14 @@
 
 
 
-            <div id="selection-info" class="selection-info" style="display: none;">
+            <div id="selection-info" class="selection-info with-side-menu" style="display: none;">
+                <div class="side-emoji-menu">
+                    <button class="contract-btn active" title="AdrianZERO" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75">🧑‍🔬</button>
+                    <button class="contract-btn" title="Traits" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="traits">🎭</button>
+                    <button class="contract-btn" title="Floppy Discs" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">💾</button>
+                    <button class="contract-btn" title="Serums" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">🧪</button>
+                    <button class="contract-btn" title="Rename" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">✍️</button>
+                </div>
                 <button id="minimizeBtn" class="minimize-btn">Minimize</button>
                 <div id="selection-text"></div>
                 <div id="generated-image" class="generated-image" style="display: none;">
@@ -971,10 +1025,6 @@
                 </div>
                 <div id="apply-traits-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
                     <div id="apply-status" class="apply-status" style="display: none;"></div>
-                </div>
-                <div id="refresh-metadata-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="refreshMetadataBtn" class="apply-traits-btn">Actualizar metadata OpenSea</button>
-                    <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
                 </div>
                 <div id="activate-token-section" style="display: none; margin-top: 10px; text-align: center;">
                     <button id="activateTokenBtn" class="apply-traits-btn">Asignar SKIN</button>
@@ -1052,7 +1102,6 @@
 
         <!-- Status Messages for Different Operations -->
         <div id="apply-status" class="status-message"></div>
-        <div id="refresh-metadata-status" class="status-message"></div>
         <div id="open-floppy-status" class="status-message"></div>
         <div id="open-pack-status" class="status-message"></div>
         <div id="use-serum-status" class="status-message"></div>
@@ -1201,9 +1250,7 @@
                     this.onTokensLoaded(data);
                 });
                 
-                this.modules.zero.on('metadataRefreshed', (data) => {
-                    this.showSuccess(`Metadata refrescada para token ${data.tokenId}`);
-                });
+                
                 
                                 // Setup button event listeners after DOM is loaded
                 this.setupButtonEventListeners();
@@ -1215,11 +1262,6 @@
                 }
                 
                 // Setup other button event listeners
-                const refreshMetadataBtn = document.getElementById('refreshMetadataBtn');
-                if (refreshMetadataBtn) {
-                    refreshMetadataBtn.addEventListener('click', () => this.refreshMetadata());
-                }
-                
                 const activateTokenBtn = document.getElementById('activateTokenBtn');
                 if (activateTokenBtn) {
                     activateTokenBtn.addEventListener('click', () => this.activateToken());
@@ -1775,11 +1817,9 @@
                         
                         // Hide specific buttons when applying traits
                         if (erc721ActionsSection) {
-                            const refreshBtn = document.getElementById('refreshMetadataBtn');
                             const loadPriceBtn = document.getElementById('loadNamePriceBtn');
                             const generateImageBtn = document.getElementById('generateCombinedImageBtn');
                             
-                            if (refreshBtn) refreshBtn.style.display = 'none';
                             if (loadPriceBtn) loadPriceBtn.style.display = 'none';
                             if (generateImageBtn) generateImageBtn.style.display = 'none';
                         }
@@ -1935,22 +1975,6 @@
             }
 
             // Action Methods
-            async refreshMetadata() {
-                // Get current selection state from UI module
-                const selectionState = this.modules.ui.getSelectionState();
-                console.log('🔍 refreshMetadata - Current selection state:', selectionState);
-                
-                if (!selectionState.selectedERC721) {
-                    this.showError('Please select an AdrianZERO token first.');
-                    return;
-                }
-                
-                try {
-                    await this.modules.zero.refreshMetadata();
-                } catch (error) {
-                    this.showError(`Error refreshing metadata: ${error.message}`);
-                }
-            }
 
             async activateToken() {
                 // Get current selection state from UI module
