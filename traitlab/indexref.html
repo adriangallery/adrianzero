@@ -995,6 +995,11 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Excepción: mostrar botones erc721-actions en estado adrianzero-only */
+        .selection-info.sticky.adrianzero-only .erc721-actions-section {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
@@ -1083,7 +1088,7 @@
                     <button id="useSerumBtn" class="apply-traits-btn">🧪 Usar Serum</button>
                     <div id="use-serum-status" class="apply-status" style="display: none;"></div>
                 </div>
-                <div id="erc721-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
+                <div id="erc721-actions-section" class="actions-grid sticky-hidden" style="display: none; margin-top: 10px;">
                     <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
                     <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
                 </div>
