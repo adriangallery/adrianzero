@@ -271,6 +271,20 @@ class TraitLABCrafting {
                         
                         // Find output trait information
                         const outputTrait = this.availableTraits ? this.availableTraits.find(trait => trait.tokenId === parseInt(specificRecipe.outId.toString())) : null;
+                        // Fallback: fetch image from Alchemy if not in wallet
+                        let outputImage = outputTrait ? outputTrait.image : '';
+                        let outputTitle = outputTrait ? outputTrait.title : `Trait #${specificRecipe.outId}`;
+                        if (!outputImage) {
+                            try {
+                                const alch = await this.fetchOutputTraitFromAlchemy(specificRecipe.outId.toString());
+                                if (alch && (alch.image || alch.media)) {
+                                    outputImage = alch.image || (alch.media && alch.media[0] && alch.media[0].gateway) || '';
+                                    if (alch.title) outputTitle = alch.title;
+                                }
+                            } catch (e) {
+                                console.warn('Could not fetch output image from Alchemy:', e.message);
+                            }
+                        }
                         
                         recipes.push({
                             type: 'specific',
@@ -284,8 +298,8 @@ class TraitLABCrafting {
                             output: {
                                 id: specificRecipe.outId.toString(),
                                 amount: specificRecipe.outAmount.toString(),
-                                title: outputTrait ? outputTrait.title : `Trait #${specificRecipe.outId}`,
-                                image: outputTrait ? outputTrait.image : '',
+                                title: outputTitle,
+                                image: outputImage,
                                 metadata: outputTrait ? outputTrait.metadata : {}
                             },
                             eligible: false // Will be calculated after loading balances
@@ -309,6 +323,20 @@ class TraitLABCrafting {
                         
                         // Find output trait information
                         const outputTrait = this.availableTraits ? this.availableTraits.find(trait => trait.tokenId === parseInt(anyRecipe.outId.toString())) : null;
+                        // Fallback: fetch image from Alchemy if not in wallet
+                        let outputImage = outputTrait ? outputTrait.image : '';
+                        let outputTitle = outputTrait ? outputTrait.title : `Trait #${anyRecipe.outId}`;
+                        if (!outputImage) {
+                            try {
+                                const alch = await this.fetchOutputTraitFromAlchemy(anyRecipe.outId.toString());
+                                if (alch && (alch.image || alch.media)) {
+                                    outputImage = alch.image || (alch.media && alch.media[0] && alch.media[0].gateway) || '';
+                                    if (alch.title) outputTitle = alch.title;
+                                }
+                            } catch (e) {
+                                console.warn('Could not fetch output image from Alchemy (any):', e.message);
+                            }
+                        }
                         
                         recipes.push({
                             type: 'any',
@@ -320,8 +348,8 @@ class TraitLABCrafting {
                             output: {
                                 id: anyRecipe.outId.toString(),
                                 amount: anyRecipe.outAmount.toString(),
-                                title: outputTrait ? outputTrait.title : `Trait #${anyRecipe.outId}`,
-                                image: outputTrait ? outputTrait.image : '',
+                                title: outputTitle,
+                                image: outputImage,
                                 metadata: outputTrait ? outputTrait.metadata : {}
                             },
                             selection: {
@@ -342,10 +370,13 @@ class TraitLABCrafting {
             this.recipes = recipes;
             console.log('🔨 TraitLABCrafting: Recetas finales:', recipes);
             
-            // Skip balance loading for now to avoid wallet errors
-            console.log('🔨 TraitLABCrafting: Saltando carga de balances por ahora');
-            
-            // Calculate eligibility (all false for now)
+            // Load balances to compute eligibility correctly
+            try {
+                await this.loadUserBalances();
+            } catch (e) {
+                console.warn('Could not load user balances:', e.message);
+            }
+            // Calculate eligibility using loaded balances
             this.calculateEligibility();
             
             // If no recipes found, create some example recipes for testing
@@ -360,6 +391,29 @@ class TraitLABCrafting {
         } catch (error) {
             console.error('Error loading recipes from contract:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Fetch output trait metadata (image/title) from Alchemy by tokenId
+     */
+    async fetchOutputTraitFromAlchemy(tokenId) {
+        try {
+            const contractAddress = window.TraitLABConfig.CONTRACTS.ERC1155;
+            const apiKey = window.TraitLABConfig.ALCHEMY_API_KEY;
+            const url = `https://base-mainnet.g.alchemy.com/nft/v3/${apiKey}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}&tokenType=erc1155`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Alchemy ${res.status}`);
+            const data = await res.json();
+            // Normalize minimal fields
+            const image = (data.raw && data.raw.metadata && data.raw.metadata.image)
+                || (data.media && data.media[0] && data.media[0].gateway)
+                || '';
+            const title = (data.raw && data.raw.metadata && data.raw.metadata.name) || data.name || '';
+            return { image, title, media: data.media };
+        } catch (e) {
+            console.warn('fetchOutputTraitFromAlchemy failed:', e.message);
+            return null;
         }
     }
 
