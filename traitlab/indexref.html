@@ -1132,24 +1132,19 @@
             position: relative;
         }
 
-        /* Grid separadas para recetas y traits en Crafting */
-        .recipes-grid {
+        /* Grid separadas para recetas y traits en Crafting (alineadas con tokens-grid) */
+        .recipes-grid, .traits-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
             width: 100%;
-        }
-        .traits-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            width: 100%;
-        }
-        @media (max-width: 1200px) {
-            .recipes-grid, .traits-grid { grid-template-columns: repeat(3, 1fr); }
+            margin-top: 20px;
         }
         @media (max-width: 768px) {
-            .recipes-grid, .traits-grid { grid-template-columns: repeat(2, 1fr); }
+            .recipes-grid, .traits-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 16px;
+            }
         }
         .crafting-traits-grid .trait-token-card {
             background: rgba(255, 255, 255, 0.05);
