@@ -1088,9 +1088,22 @@
         /* Flat grid for crafting traits */
         .crafting-traits-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
             width: 100%;
+        }
+        /* Unified crafting grid to use same columns for recipes and traits */
+        .crafting-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+        @media (max-width: 1200px) {
+            .crafting-grid, .crafting-traits-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .crafting-grid, .crafting-traits-grid { grid-template-columns: repeat(2, 1fr); }
         }
         .crafting-traits-grid .trait-token-card {
             background: rgba(255, 255, 255, 0.05);
@@ -2894,7 +2907,7 @@
                 
                 // First, show recipes
                 if (recipes.length > 0) {
-                    html += '<div class="crafting-section"><h3>🔨 Available Recipes</h3>';
+                    html += '<div class="crafting-section"><h3>🔨 Available Recipes</h3><div class="crafting-grid">';
                     recipes.forEach(recipe => {
                         if (recipe.type === 'specific') {
                             html += this.renderSpecificRecipeCard(recipe);
@@ -2902,7 +2915,7 @@
                             html += this.renderAnyRecipeCard(recipe);
                         }
                     });
-                    html += '</div>';
+                    html += '</div></div>';
                 }
                 
                 // Then, show user's traits for selection
@@ -2925,8 +2938,8 @@
                     return '<p>No traits available</p>';
                 }
                 
-                // Flat grid (no categories) for easy multi-selection
-                let html = '<div class="crafting-traits-grid">';
+                // Flat grid (no categories) for easy multi-selection, same columns as recipes
+                let html = '<div class="crafting-grid">';
                 this.traitTokens.forEach(trait => {
                     const isSelected = this.modules.crafting.getSelectedTraits().has(trait.tokenId);
                     const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
