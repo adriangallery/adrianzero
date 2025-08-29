@@ -1085,25 +1085,24 @@
             position: relative;
         }
 
-        /* Flat grid for crafting traits */
-        .crafting-traits-grid {
+        /* Grid separadas para recetas y traits en Crafting */
+        .recipes-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             width: 100%;
         }
-        /* Unified crafting grid to use same columns for recipes and traits */
-        .crafting-grid {
+        .traits-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             width: 100%;
         }
         @media (max-width: 1200px) {
-            .crafting-grid, .crafting-traits-grid { grid-template-columns: repeat(3, 1fr); }
+            .recipes-grid, .traits-grid { grid-template-columns: repeat(3, 1fr); }
         }
         @media (max-width: 768px) {
-            .crafting-grid, .crafting-traits-grid { grid-template-columns: repeat(2, 1fr); }
+            .recipes-grid, .traits-grid { grid-template-columns: repeat(2, 1fr); }
         }
         .crafting-traits-grid .trait-token-card {
             background: rgba(255, 255, 255, 0.05);
@@ -2907,7 +2906,7 @@
                 
                 // First, show recipes
                 if (recipes.length > 0) {
-                    html += '<div class="crafting-section"><h3>🔨 Available Recipes</h3><div class="crafting-grid">';
+                    html += '<div class="crafting-section"><h3>🔨 Available Recipes</h3><div class="recipes-grid">';
                     recipes.forEach(recipe => {
                         if (recipe.type === 'specific') {
                             html += this.renderSpecificRecipeCard(recipe);
@@ -2938,8 +2937,8 @@
                     return '<p>No traits available</p>';
                 }
                 
-                // Flat grid (no categories) for easy multi-selection, same columns as recipes
-                let html = '<div class="crafting-grid">';
+                // Flat grid (no categories) for easy multi-selection, sección separada
+                let html = '<div class="traits-grid">';
                 this.traitTokens.forEach(trait => {
                     const isSelected = this.modules.crafting.getSelectedTraits().has(trait.tokenId);
                     const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
