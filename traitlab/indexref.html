@@ -3061,7 +3061,41 @@
                 try {
                     this.showLoading();
                     
-                    // Load recipes directly (no need to wait for traits)
+                    // First, ensure traits are loaded from the ERC1155 contract
+                    if (!this.traitTokens || this.traitTokens.length === 0) {
+                        console.log('🔨 No traits available, loading traits from ERC1155 contract...');
+                        const userAddress = this.modules.wallet.getCurrentAccount();
+                        if (userAddress) {
+                            const traitsContract = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                            console.log('🔨 Loading traits from contract:', traitsContract);
+                            
+                            try {
+                                const traits = await this.modules.zero.loadTokens(userAddress, traitsContract);
+                                this.traitTokens = traits.filter(t => t.tokenType === 'ERC1155');
+                                console.log('🔨 Traits loaded for crafting:', this.traitTokens.length);
+                                
+                                // Share traits with crafting module
+                                if (this.traitTokens.length > 0) {
+                                    console.log('🔨 Compartiendo traits con módulo de crafting:', this.traitTokens.length);
+                                    this.modules.crafting.setAvailableTraits(this.traitTokens);
+                                }
+                            } catch (error) {
+                                console.error('🔨 Error loading traits from ERC1155 contract:', error);
+                                this.traitTokens = [];
+                            }
+                        } else {
+                            console.log('🔨 No user address available');
+                            this.traitTokens = [];
+                        }
+                    } else {
+                        console.log('🔨 Traits already available:', this.traitTokens.length);
+                        // Ensure traits are shared with crafting module
+                        if (this.traitTokens.length > 0) {
+                            this.modules.crafting.setAvailableTraits(this.traitTokens);
+                        }
+                    }
+                    
+                    // Now load recipes (they will have access to traits for balance calculation)
                     await this.modules.crafting.loadRecipes();
                     this.hideLoading();
                     
