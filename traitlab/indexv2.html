@@ -600,6 +600,161 @@
                 max-width: none;
             }
         }
+
+        /* Crafting Styles */
+        .crafting-container {
+            padding: 20px;
+        }
+
+        .crafting-section {
+            margin-bottom: 30px;
+        }
+
+        .crafting-section h3 {
+            color: #00ff00;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .recipe-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .recipe-card:hover {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .recipe-header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .recipe-header h4 {
+            color: #00ff00;
+            margin-bottom: 5px;
+        }
+
+        .recipe-type {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .recipe-ingredients, .recipe-output {
+            margin-bottom: 15px;
+        }
+
+        .recipe-ingredients h5, .recipe-output h5 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .recipe-ingredient {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .trait-id {
+            color: #00ff00;
+        }
+
+        .trait-required {
+            color: #888;
+        }
+
+        .output-info {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+        }
+
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .trait-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .trait-card:hover {
+            border-color: #00ff00;
+            transform: translateY(-2px);
+        }
+
+        .trait-image {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+
+        .trait-info {
+            text-align: center;
+        }
+
+        .trait-title {
+            color: #00ff00;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .trait-id {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .loading-recipes, .no-recipes, .no-traits {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .traits-placeholder {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        /* Responsive crafting */
+        @media (max-width: 767px) {
+            .recipes-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .traits-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -853,6 +1008,12 @@
                 this.currentFilter = null;
                 this.isInitialized = false;
                 
+                // Selection state properties
+                this.selectedERC721 = null;
+                this.selectedERC1155 = [];
+                this.selectedFloppy = null;
+                this.selectedSerum = null;
+                
                 console.log('🚀 TraitLAB v2: Inicializando aplicación modular...');
             }
 
@@ -946,6 +1107,14 @@
                 if (this.modules.wallet) {
                     this.modules.wallet.on('walletConnected', (data) => this.onWalletConnected(data));
                     this.modules.wallet.on('walletDisconnected', () => this.onWalletDisconnected());
+                }
+                
+                // UI events
+                if (this.modules.ui) {
+                    this.modules.ui.on('tokenSelected', (data) => {
+                        console.log('🎯 tokenSelected event received in main app:', data);
+                        this.onTokenSelected(data);
+                    });
                 }
                 
                 console.log('✅ TraitLAB v2: Event listeners configurados');
@@ -1102,20 +1271,45 @@
                             throw new Error('Módulo de traits no disponible');
                         }
                     } else if (this.currentFilter === 'floppy') {
-                        // Usar módulo de floppy
-                        if (this.modules.floppy) {
-                            const floppys = await this.modules.floppy.loadFloppys();
-                            this.modules.ui.displayTokens(floppys, 'floppy');
+                        // Cargar tokens y filtrar por floppy
+                        if (this.modules.zero && this.currentContract) {
+                            console.log('🔍 Cargando tokens para filtrar floppys...');
+                            const allTokens = await this.modules.zero.loadTokens(
+                                userAddress,
+                                this.currentContract
+                            );
+                            // Filtrar solo tokens floppy
+                            const floppyTokens = allTokens.filter(token => {
+                                if (this.modules.floppy && this.modules.floppy.isFloppyToken) {
+                                    return this.modules.floppy.isFloppyToken(token.tokenId);
+                                }
+                                // Fallback: filtrar por ID de floppy
+                                const tokenId = parseInt(token.tokenId);
+                                return (tokenId >= 10000 && tokenId <= 10007) || 
+                                       (tokenId >= 15000 && tokenId <= 15015);
+                            });
+                            console.log('💾 Floppy tokens encontrados:', floppyTokens.length);
+                            this.modules.ui.displayTokens(floppyTokens, 'floppy');
                         } else {
-                            throw new Error('Módulo de floppy no disponible');
+                            throw new Error('Módulo zero o contrato no disponible');
                         }
                     } else if (this.currentFilter === 'serum') {
-                        // Usar módulo de serums
-                        if (this.modules.serums) {
-                            const serums = await this.modules.serums.loadSerums();
-                            this.modules.ui.displayTokens(serums, 'serum');
+                        // Cargar tokens y filtrar por serums
+                        if (this.modules.zero && this.currentContract) {
+                            console.log('🔍 Cargando tokens para filtrar serums...');
+                            const allTokens = await this.modules.zero.loadTokens(
+                                userAddress,
+                                this.currentContract
+                            );
+                            // Filtrar solo tokens serum
+                            const serumTokens = allTokens.filter(token => {
+                                const tokenId = parseInt(token.tokenId);
+                                return tokenId >= 262144 && tokenId <= 262147;
+                            });
+                            console.log('🧪 Serum tokens encontrados:', serumTokens.length);
+                            this.modules.ui.displayTokens(serumTokens, 'serum');
                         } else {
-                            throw new Error('Módulo de serums no disponible');
+                            throw new Error('Módulo zero o contrato no disponible');
                         }
                     } else {
                         // Usar módulo zero para AdrianZERO (caso por defecto)
@@ -1147,8 +1341,149 @@
                 const grid = document.getElementById('tokens-grid');
                 if (!grid) return;
                 
-                // Usar el módulo de crafting para mostrar contenido
-                this.modules.crafting.displayRecipes(grid);
+                // Limpiar el grid
+                grid.innerHTML = '';
+                grid.className = 'crafting-container';
+                
+                // Verificar si el módulo de crafting está disponible
+                if (!this.modules.crafting) {
+                    grid.innerHTML = '<div class="no-recipes"><p>Módulo de crafting no disponible</p></div>';
+                    return;
+                }
+                
+                // Verificar el estado de carga de las recetas
+                if (this.modules.crafting.isLoadingRecipes && this.modules.crafting.isLoadingRecipes()) {
+                    grid.innerHTML = '<div class="loading-recipes"><p>Loading recipes...</p></div>';
+                } else if (this.modules.crafting.isRecipesLoaded && this.modules.crafting.isRecipesLoaded()) {
+                    // Las recetas se cargaron, verificar si hay contenido
+                    const recipes = this.modules.crafting.getRecipes ? this.modules.crafting.getRecipes() : [];
+                    if (recipes && recipes.length > 0) {
+                        // Crear contenedor para recetas
+                        const recipesSection = document.createElement('div');
+                        recipesSection.className = 'crafting-section recipes-section';
+                        recipesSection.innerHTML = `
+                            <h3>Available Recipes</h3>
+                            <div class="recipes-grid" id="recipes-grid"></div>
+                        `;
+                        grid.appendChild(recipesSection);
+                        
+                        // Llenar el grid de recetas
+                        const recipesGrid = document.getElementById('recipes-grid');
+                        if (recipesGrid) {
+                            recipes.forEach(recipe => {
+                                const recipeCard = this.renderRecipeCard(recipe);
+                                recipesGrid.appendChild(recipeCard);
+                            });
+                        }
+                        
+                        // Crear contenedor para traits
+                        const traitsSection = document.createElement('div');
+                        traitsSection.className = 'crafting-section traits-section';
+                        traitsSection.innerHTML = `
+                            <h3>Your Traits</h3>
+                            <div class="traits-grid" id="traits-grid">
+                                <div class="traits-placeholder"><p>Loading traits...</p></div>
+                            </div>
+                        `;
+                        grid.appendChild(traitsSection);
+                        
+                        // Cargar traits si están disponibles
+                        this.loadTraitsInCraftingGrid();
+                    } else {
+                        grid.innerHTML = '<div class="no-recipes"><p>No recipes available.</p></div>';
+                    }
+                } else {
+                    // Aún no se han cargado las recetas, mostrar loading
+                    grid.innerHTML = '<div class="loading-recipes"><p>Loading recipes...</p></div>';
+                }
+            }
+
+            /**
+             * Renderizar tarjeta de receta
+             */
+            renderRecipeCard(recipe) {
+                const recipeCard = document.createElement('div');
+                recipeCard.className = 'recipe-card';
+                recipeCard.setAttribute('data-recipe-id', recipe.recipeId);
+                
+                let burnItems = '';
+                if (recipe.burn && Array.isArray(recipe.burn)) {
+                    burnItems = recipe.burn.map(item => 
+                        `<div class="recipe-ingredient">
+                            <span class="trait-id">ID: ${item.id}</span>
+                            <span class="trait-required">Required: ${item.amount}</span>
+                        </div>`
+                    ).join('');
+                }
+                
+                recipeCard.innerHTML = `
+                    <div class="recipe-header">
+                        <h4>Recipe #${recipe.recipeId}</h4>
+                        <span class="recipe-type">${recipe.type || 'Standard'} Recipe</span>
+                    </div>
+                    <div class="recipe-ingredients">
+                        <h5>Burn Requirements:</h5>
+                        ${burnItems || '<p>No requirements</p>'}
+                    </div>
+                    <div class="recipe-output">
+                        <h5>Output:</h5>
+                        <div class="output-info">
+                            <span>Trait #${recipe.output?.id || 'Unknown'}</span>
+                            <span>Amount: ${recipe.output?.amount || 1}</span>
+                        </div>
+                    </div>
+                `;
+                
+                return recipeCard;
+            }
+
+            /**
+             * Cargar traits en el grid de crafting
+             */
+            loadTraitsInCraftingGrid() {
+                const traitsGrid = document.getElementById('traits-grid');
+                if (!traitsGrid) return;
+                
+                // Verificar si tenemos traits disponibles
+                if (this.modules.dataManager && this.modules.dataManager.getAdrianLabTokens) {
+                    const traits = this.modules.dataManager.getAdrianLabTokens();
+                    if (traits && traits.length > 0) {
+                        this.displayTraitsInCraftingGrid(traits);
+                    } else {
+                        traitsGrid.innerHTML = '<div class="no-traits"><p>No traits available for crafting</p></div>';
+                    }
+                } else {
+                    traitsGrid.innerHTML = '<div class="no-traits"><p>DataManager not available</p></div>';
+                }
+            }
+
+            /**
+             * Mostrar traits en el grid de crafting
+             */
+            displayTraitsInCraftingGrid(traits) {
+                const traitsGrid = document.getElementById('traits-grid');
+                if (!traitsGrid) return;
+                
+                traitsGrid.innerHTML = '';
+                
+                traits.forEach(trait => {
+                    const traitCard = document.createElement('div');
+                    traitCard.className = 'trait-card';
+                    traitCard.setAttribute('data-token-id', trait.tokenId);
+                    
+                    const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
+                    
+                    traitCard.innerHTML = `
+                        <img src="${imageUrl}" alt="${trait.title}" class="trait-image" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'>
+                        <div class="trait-info">
+                            <div class="trait-title">${trait.title}</div>
+                            <div class="trait-id">#${trait.tokenId}</div>
+                        </div>
+                    `;
+                    
+                    traitsGrid.appendChild(traitCard);
+                });
             }
 
             /**
@@ -1207,6 +1542,252 @@
                         success.style.display = 'none';
                     }, 3000);
                 }
+            }
+
+            /**
+             * Manejar selección de token
+             */
+            onTokenSelected(data) {
+                console.log('🎯 onTokenSelected called with:', data);
+                
+                const { token, filter } = data;
+                console.log('📋 Parsed data:', { token, filter, currentContract: this.currentContract });
+                
+                if (filter === 'rename' || this.currentContract === "0x6e369bf0e4e0c106192d606fb6d85836d684da75") {
+                    // AdrianZERO tokens
+                    console.log('🔵 Setting as ERC721 token');
+                    this.selectedERC721 = token;
+                    // Propagar selección al ZeroManager para operaciones on-chain
+                    if (this.modules.zero && this.modules.zero.setSelectedERC721) {
+                        this.modules.zero.setSelectedERC721(token);
+                    }
+                    this.selectedERC1155 = [];
+                    this.selectedFloppy = null;
+                    // Don't reset selectedSerum if we're in serum mode
+                    if (this.currentFilter !== 'serum') {
+                        this.selectedSerum = null;
+                    }
+                } else if (filter === 'floppy') {
+                    console.log('💾 Setting as Floppy token');
+                    this.selectedFloppy = token;
+                    // Don't reset selectedERC721 if we're in floppy mode
+                    if (this.currentFilter !== 'floppy') {
+                        this.selectedERC721 = null;
+                    }
+                    this.selectedERC1155 = [];
+                    this.selectedSerum = null;
+                    
+                    // Propagate selection to floppy module
+                    if (this.modules.floppy && this.modules.floppy.setSelectedFloppy) {
+                        this.modules.floppy.setSelectedFloppy(token);
+                    }
+                } else if (filter === 'serum') {
+                    console.log('🧪 Setting as Serum token');
+                    this.selectedSerum = token;
+                    this.selectedERC1155 = [];
+                    this.selectedFloppy = null;
+                    
+                    // Propagate selection to serum module
+                    if (this.modules.serums && this.modules.serums.setSelectedSerum) {
+                        this.modules.serums.setSelectedSerum(token);
+                    }
+                } else if (filter === 'crafting') {
+                    console.log('🔨 Setting as Crafting token');
+                    // For crafting, we treat traits as ingredients
+                    if (token.tokenType === 'ERC1155') {
+                        this.selectedERC1155 = [token];
+                        // Propagate selection to crafting module
+                        if (this.modules.crafting && this.modules.crafting.selectTrait) {
+                            this.modules.crafting.selectTrait(token.tokenId, 1);
+                        }
+                    }
+                } else {
+                    // AdrianLAB - traits
+                    console.log('🎭 Setting as Traits token');
+                    if (token.tokenType === 'ERC721') {
+                        this.selectedERC721 = token;
+                        // Propagar selección al ZeroManager para operaciones on-chain
+                        if (this.modules.zero && this.modules.zero.setSelectedERC721) {
+                            this.modules.zero.setSelectedERC721(token);
+                        }
+                    } else if (token.tokenType === 'ERC1155') {
+                        // Update traits module selection
+                        if (this.modules.traits && this.modules.traits.handleTraitSelection) {
+                            this.modules.traits.handleTraitSelection(token);
+                            this.selectedERC1155 = this.modules.traits.getSelectedTraits();
+                        }
+                    }
+                }
+                
+                console.log('📊 Final selection state:', {
+                    selectedERC721: this.selectedERC721?.tokenId,
+                    selectedFloppy: this.selectedFloppy?.tokenId,
+                    selectedSerum: this.selectedSerum?.tokenId,
+                    selectedERC1155: this.selectedERC1155.map(t => t.tokenId)
+                });
+                
+                this.updateSelectionInfo();
+            }
+
+            /**
+             * Actualizar información de selección
+             */
+            updateSelectionInfo() {
+                const selectionInfo = document.getElementById('selection-info');
+                const selectionText = document.querySelector('.selection-text');
+                
+                if (!selectionInfo || !selectionText) return;
+                
+                // Mostrar la sección de selección
+                selectionInfo.style.display = 'block';
+                
+                let text = '';
+                
+                // Hide all sections by default
+                const sections = [
+                    'erc721-actions-section',
+                    'traits-actions-section',
+                    'use-serum-section',
+                    'open-floppy-section',
+                    'open-pack-section',
+                    'activate-token-section',
+                    'rename-section',
+                    'apply-traits-section',
+                    'refresh-metadata-section'
+                ];
+                
+                sections.forEach(sectionId => {
+                    const section = document.getElementById(sectionId);
+                    if (section) section.style.display = 'none';
+                });
+                
+                if (this.selectedERC721) {
+                    text += `<h3 class="selected-token-title">${this.selectedERC721.title}</h3>`;
+                    
+                    // Show ERC721 actions section
+                    const erc721ActionsSection = document.getElementById('erc721-actions-section');
+                    if (erc721ActionsSection) {
+                        erc721ActionsSection.style.display = 'block';
+                        console.log('✅ Sección ERC721 Actions mostrada');
+                    }
+
+                    // Mostrar imagen base del AdrianZERO cuando no hay traits seleccionados
+                    if (this.selectedERC1155.length === 0) {
+                        const generatedImage = selectionInfo.querySelector('.generated-image img');
+                        const imageLoadingOverlay = selectionInfo.querySelector('.image-loading-overlay');
+                        if (generatedImage && imageLoadingOverlay) {
+                            const baseImageUrl = this.selectedERC721.image || this.selectedERC721.imageUrl || `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
+                            imageLoadingOverlay.style.display = 'flex';
+                            generatedImage.src = baseImageUrl;
+                            generatedImage.style.display = 'block';
+                            generatedImage.onload = function() {
+                                imageLoadingOverlay.style.display = 'none';
+                            };
+                            generatedImage.onerror = function() {
+                                imageLoadingOverlay.style.display = 'none';
+                            };
+                        }
+                    }
+                }
+                
+                if (this.selectedERC1155.length > 0) {
+                    text += `<h4 class="selected-traits-title sticky-hidden">Selected Traits</h4>`;
+                    text += `<div class="traits-container sticky-hidden">`;
+                    this.selectedERC1155.forEach(trait => {
+                        text += `<p class="trait-item">${trait.title}</p>`;
+                    });
+                    text += `</div>`;
+                    
+                    if (this.selectedERC721) {
+                        // Show traits actions section
+                        const traitsActionsSection = document.getElementById('traits-actions-section');
+                        if (traitsActionsSection) {
+                            traitsActionsSection.style.display = 'block';
+                            console.log('✅ Sección Traits Actions mostrada');
+                        }
+                    }
+                }
+                
+                if (this.selectedFloppy) {
+                    // Use hardcoded names for specific floppy discs
+                    let floppyDisplayName = this.selectedFloppy.title;
+                    if (this.selectedFloppy.tokenId === 10003) {
+                        floppyDisplayName = 'GLITCH Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10004) {
+                        floppyDisplayName = 'GF Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10005) {
+                        floppyDisplayName = 'Golden Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10007) {
+                        floppyDisplayName = 'Action Pack 10007';
+                    }
+                    
+                    text += `<h4 class="selected-floppy-title">${floppyDisplayName}</h4>`;
+                    
+                    // Show floppy actions section
+                    const openFloppySection = document.getElementById('open-floppy-section');
+                    if (openFloppySection) {
+                        openFloppySection.style.display = 'block';
+                    }
+                }
+                
+                if (this.selectedSerum) {
+                    text += `<h4 class="selected-serum-title">${this.selectedSerum.title}</h4>`;
+                    
+                    // Show serum actions section
+                    const useSerumSection = document.getElementById('use-serum-section');
+                    if (useSerumSection) {
+                        useSerumSection.style.display = 'block';
+                    }
+                }
+                
+                // Update selection text
+                if (selectionText) {
+                    selectionText.innerHTML = text;
+                }
+                
+                // Update sticky visibility manager
+                if (this.stickyManager) {
+                    const appState = {
+                        selectedERC721: this.selectedERC721,
+                        selectedERC1155: this.selectedERC1155,
+                        selectedFloppy: this.selectedFloppy,
+                        selectedSerum: this.selectedSerum,
+                        currentFilter: this.currentFilter
+                    };
+                    this.stickyManager.update(appState);
+                }
+            }
+
+            /**
+             * Generar imagen combinada
+             */
+            generateCombinedImage() {
+                if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
+                
+                const generatedImage = document.querySelector('.generated-image img');
+                const imageLoadingOverlay = document.querySelector('.image-loading-overlay');
+                
+                if (!generatedImage || !imageLoadingOverlay) return;
+                
+                // Show loading
+                imageLoadingOverlay.style.display = 'flex';
+                
+                // Generate combined image URL
+                const baseTokenId = this.selectedERC721.tokenId;
+                const traitIds = this.selectedERC1155.map(t => t.tokenId).join(',');
+                const combinedImageUrl = `https://adrianlab.vercel.app/api/render/${baseTokenId}?traits=${traitIds}`;
+                
+                // Load combined image
+                generatedImage.src = combinedImageUrl;
+                generatedImage.style.display = 'block';
+                
+                generatedImage.onload = function() {
+                    imageLoadingOverlay.style.display = 'none';
+                };
+                
+                generatedImage.onerror = function() {
+                    imageLoadingOverlay.style.display = 'none';
+                };
             }
         }
 
