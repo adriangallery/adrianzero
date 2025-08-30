@@ -1435,6 +1435,44 @@
             margin: 0;
         }
 
+        /* Estilos para las dos secciones de crafting */
+        .crafting-section {
+            margin-bottom: 40px;
+        }
+
+        .crafting-section h3 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .recipes-section h3 {
+            color: #00ff88;
+        }
+
+        .traits-section h3 {
+            color: #ff8800;
+        }
+
+        /* Placeholder para traits */
+        .traits-placeholder {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed #444;
+            border-radius: 8px;
+        }
+
+        .traits-placeholder p {
+            font-size: 1rem;
+            margin: 0;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -3273,8 +3311,10 @@
                     // Las recetas se cargaron, verificar si hay contenido
                     const recipes = craftingModule.getRecipes();
                     if (recipes && recipes.length > 0) {
-                        // Hay recetas disponibles
-                        grid.className = 'tokens-grid recipes-grid';
+                        // Grid superior: Recetas disponibles
+                        html += '<div class="crafting-section recipes-section">';
+                        html += '<h3>Available Recipes</h3>';
+                        html += '<div class="recipes-grid">';
                         recipes.forEach(recipe => {
                             if (recipe.type === 'specific') {
                                 html += this.renderSimpleRecipeCard(recipe);
@@ -3282,6 +3322,16 @@
                                 html += this.renderSimpleRecipeCard(recipe);
                             }
                         });
+                        html += '</div>';
+                        html += '</div>';
+                        
+                        // Grid inferior: Traits de la wallet (por ahora vacío)
+                        html += '<div class="crafting-section traits-section">';
+                        html += '<h3>Your Traits</h3>';
+                        html += '<div class="traits-grid">';
+                        html += '<div class="traits-placeholder"><p>Traits will be loaded here...</p></div>';
+                        html += '</div>';
+                        html += '</div>';
                     } else {
                         // Las recetas se cargaron pero están vacías
                         grid.className = 'tokens-grid';
