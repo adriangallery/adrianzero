@@ -6,7 +6,7 @@
     <title>TraitLAB v2 - Modular</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
+    <link href="modules/styles.css" rel="stylesheet">
         * {
             margin: 0;
             padding: 0;
@@ -994,6 +994,8 @@
     <script src="modules/crafting.js"></script>
     <script src="modules/sticky-visibility.js"></script>
     <script src="modules/data-manager.js"></script>
+    <script src="modules/filters.js"></script>
+    <script src="modules/display-manager.js"></script>
 
     <!-- Main App -->
     <script>
@@ -1081,6 +1083,12 @@
                 
                 // Data Manager
                 this.modules.dataManager = new window.TraitLABDataManager();
+                
+                // Token Filters
+                this.modules.filters = new window.TraitLABFilters();
+                
+                // Display Manager
+                this.modules.displayManager = new window.TraitLABDisplayManager();
                 
                 console.log('✅ TraitLAB v2: Todos los módulos inicializados');
             }
@@ -1254,75 +1262,46 @@
                         throw new Error('No hay wallet conectada');
                     }
                     
-                    if (this.currentFilter === 'crafting') {
-                        // Usar módulo de crafting
-                        if (this.modules.crafting) {
-                            await this.modules.crafting.loadRecipes();
-                            this.displayCraftingContent();
+                    // Cargar tokens base según el contrato
+                    if (!this.modules.zero || !this.currentContract) {
+                        throw new Error('Módulo zero o contrato no disponible');
+                    }
+                    
+                    const allTokens = await this.modules.zero.loadTokens(userAddress, this.currentContract);
+                    console.log(`📊 Tokens cargados: ${allTokens.length}`);
+                    
+                    // Usar módulo de filtros para procesar tokens
+                    if (this.modules.filters) {
+                        let filteredTokens;
+                        
+                        if (this.currentFilter === 'crafting') {
+                            // Mostrar contenido de crafting
+                            if (this.modules.crafting) {
+                                await this.modules.crafting.loadRecipes();
+                                this.modules.displayManager.displayCraftingContent(
+                                    document.getElementById('tokens-grid'),
+                                    this.modules.crafting,
+                                    this.modules.dataManager
+                                );
+                            } else {
+                                throw new Error('Módulo de crafting no disponible');
+                            }
                         } else {
-                            throw new Error('Módulo de crafting no disponible');
-                        }
-                    } else if (this.currentFilter === 'traits') {
-                        // Usar módulo de traits
-                        if (this.modules.traits) {
-                            const traits = await this.modules.traits.loadTraits();
-                            this.modules.ui.displayTokens(traits, 'traits');
-                        } else {
-                            throw new Error('Módulo de traits no disponible');
-                        }
-                    } else if (this.currentFilter === 'floppy') {
-                        // Cargar tokens y filtrar por floppy
-                        if (this.modules.zero && this.currentContract) {
-                            console.log('🔍 Cargando tokens para filtrar floppys...');
-                            const allTokens = await this.modules.zero.loadTokens(
-                                userAddress,
-                                this.currentContract
-                            );
-                            // Filtrar solo tokens floppy
-                            const floppyTokens = allTokens.filter(token => {
-                                if (this.modules.floppy && this.modules.floppy.isFloppyToken) {
-                                    return this.modules.floppy.isFloppyToken(token.tokenId);
-                                }
-                                // Fallback: filtrar por ID de floppy
-                                const tokenId = parseInt(token.tokenId);
-                                return (tokenId >= 10000 && tokenId <= 10007) || 
-                                       (tokenId >= 15000 && tokenId <= 15015);
-                            });
-                            console.log('💾 Floppy tokens encontrados:', floppyTokens.length);
-                            this.modules.ui.displayTokens(floppyTokens, 'floppy');
-                        } else {
-                            throw new Error('Módulo zero o contrato no disponible');
-                        }
-                    } else if (this.currentFilter === 'serum') {
-                        // Cargar tokens y filtrar por serums
-                        if (this.modules.zero && this.currentContract) {
-                            console.log('🔍 Cargando tokens para filtrar serums...');
-                            const allTokens = await this.modules.zero.loadTokens(
-                                userAddress,
-                                this.currentContract
-                            );
-                            // Filtrar solo tokens serum
-                            const serumTokens = allTokens.filter(token => {
-                                const tokenId = parseInt(token.tokenId);
-                                return tokenId >= 262144 && tokenId <= 262147;
-                            });
-                            console.log('🧪 Serum tokens encontrados:', serumTokens.length);
-                            this.modules.ui.displayTokens(serumTokens, 'serum');
-                        } else {
-                            throw new Error('Módulo zero o contrato no disponible');
+                            // Filtrar tokens por tipo
+                            filteredTokens = this.modules.filters.filterTokensByType(allTokens, this.currentFilter || 'adrianzero');
+                            
+                            // Mostrar tokens filtrados
+                            if (filteredTokens.length > 0) {
+                                this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
+                            } else {
+                                this.modules.displayManager.showNoTokens(
+                                    document.getElementById('tokens-grid'),
+                                    `No ${this.currentFilter || 'adrianzero'} tokens found`
+                                );
+                            }
                         }
                     } else {
-                        // Usar módulo zero para AdrianZERO (caso por defecto)
-                        if (this.modules.zero && this.currentContract) {
-                            console.log('🔍 Cargando tokens AdrianZERO con contrato:', this.currentContract);
-                            const tokens = await this.modules.zero.loadTokens(
-                                userAddress,
-                                this.currentContract
-                            );
-                            this.modules.ui.displayTokens(tokens, this.currentFilter || 'adrianzero');
-                        } else {
-                            throw new Error('Módulo zero o contrato no disponible');
-                        }
+                        throw new Error('Módulo de filtros no disponible');
                     }
                     
                     this.hideLoading();

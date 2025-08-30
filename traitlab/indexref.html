@@ -1994,12 +1994,12 @@
                 this.modules.floppy = new window.TraitLABFloppy();
                 this.modules.floppy.init();
                 
-                // Initialize Serums Manager
-                this.modules.serums = new window.TraitLABSerums();
-                this.modules.serums.init();
-                
-                // Initialize Crafting Manager
-                this.modules.crafting = new window.TraitLABCrafting();
+                            // Initialize Serums Manager
+            this.modules.serums = new window.TraitLABSerums();
+            this.modules.serums.init();
+            
+            // Initialize Crafting Manager
+            this.modules.crafting = new window.TraitLABCrafting();
                 
                 // Initialize Zero Manager
                 this.modules.zero = new window.TraitLABZero();
@@ -3567,10 +3567,10 @@
                         
                         // Llenar el grid de recetas
                         const recipesGrid = document.getElementById('recipes-grid');
-                        recipes.forEach(recipe => {
-                            if (recipe.type === 'specific') {
+                    recipes.forEach(recipe => {
+                        if (recipe.type === 'specific') {
                                 recipesGrid.innerHTML += this.renderSimpleRecipeCard(recipe);
-                            } else if (recipe.type === 'any') {
+                        } else if (recipe.type === 'any') {
                                 recipesGrid.innerHTML += this.renderSimpleRecipeCard(recipe);
                             }
                         });
@@ -3608,54 +3608,54 @@
 
             renderSimpleRecipeCard(recipe) {
                 if (recipe.type === 'specific') {
-                    const burnItems = recipe.burn.map(item => 
+                const burnItems = recipe.burn.map(item => 
                         `<div class="recipe-ingredient">
                             <span class="trait-id">ID: ${item.id}</span>
                             <span class="trait-required">Required: ${item.amount}</span>
-                        </div>`
-                    ).join('');
-                    
-                    return `
-                        <div class="recipe-card specific-recipe" data-recipe-id="${recipe.recipeId}">
+                    </div>`
+                ).join('');
+                
+                return `
+                    <div class="recipe-card specific-recipe" data-recipe-id="${recipe.recipeId}">
                             <div class="recipe-header">
                                 <h4>Recipe #${recipe.recipeId}</h4>
                                 <span class="recipe-type">Specific Recipe</span>
                             </div>
-                            <div class="recipe-ingredients">
+                        <div class="recipe-ingredients">
                                 <h5>Burn Requirements:</h5>
-                                ${burnItems}
-                            </div>
-                            <div class="recipe-output">
+                            ${burnItems}
+                        </div>
+                        <div class="recipe-output">
                                 <h5>Output:</h5>
                                 <div class="output-info">
                                     <span>Trait #${recipe.output.id}</span>
                                     <span>Amount: ${recipe.output.amount}</span>
-                                </div>
                             </div>
                         </div>
-                    `;
+                    </div>
+                `;
                 } else {
-                    return `
-                        <div class="recipe-card any-recipe" data-recipe-id="${recipe.recipeId}">
+                return `
+                    <div class="recipe-card any-recipe" data-recipe-id="${recipe.recipeId}">
                             <div class="recipe-header">
                                 <h4>Recipe #${recipe.recipeId}</h4>
                                 <span class="recipe-type">Any Recipe</span>
                             </div>
-                            <div class="recipe-requirement">
+                        <div class="recipe-requirement">
                                 <h5>Requirement:</h5>
                                 <div class="requirement-info">
                                     <span>Burn Total: ${recipe.requirement.burnTotal} traits</span>
-                                </div>
                             </div>
-                            <div class="recipe-output">
+                        </div>
+                        <div class="recipe-output">
                                 <h5>Output:</h5>
                                 <div class="output-info">
                                     <span>Trait #${recipe.output.id}</span>
                                     <span>Amount: ${recipe.output.amount}</span>
-                                </div>
                             </div>
                         </div>
-                    `;
+                    </div>
+                `;
                 }
             }
 
