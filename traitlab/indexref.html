@@ -3257,33 +3257,40 @@
             }
 
             displayCraftingRecipes() {
-                const recipes = this.modules.crafting.getRecipes();
+                const craftingModule = this.modules.crafting;
                 const grid = document.getElementById('tokens-grid');
                 
                 if (!grid) return;
                 
                 let html = '';
                 
-                // Solo mostrar recetas en un grid limpio
-                if (recipes && recipes.length > 0) {
-                    // Cambiar la clase del grid para que use el estilo de recetas
-                    grid.className = 'tokens-grid recipes-grid';
-                    
-                    recipes.forEach(recipe => {
-                        if (recipe.type === 'specific') {
-                            html += this.renderSimpleRecipeCard(recipe);
-                        } else if (recipe.type === 'any') {
-                            html += this.renderSimpleRecipeCard(recipe);
-                        }
-                    });
-                } else if (recipes === null || recipes === undefined) {
+                // Verificar el estado de carga de las recetas
+                if (craftingModule.isLoadingRecipes()) {
+                    // Está cargando
+                    grid.className = 'tokens-grid';
+                    html += '<div class="loading-recipes"><p>Loading recipes...</p></div>';
+                } else if (craftingModule.isRecipesLoaded()) {
+                    // Las recetas se cargaron, verificar si hay contenido
+                    const recipes = craftingModule.getRecipes();
+                    if (recipes && recipes.length > 0) {
+                        // Hay recetas disponibles
+                        grid.className = 'tokens-grid recipes-grid';
+                        recipes.forEach(recipe => {
+                            if (recipe.type === 'specific') {
+                                html += this.renderSimpleRecipeCard(recipe);
+                            } else if (recipe.type === 'any') {
+                                html += this.renderSimpleRecipeCard(recipe);
+                            }
+                        });
+                    } else {
+                        // Las recetas se cargaron pero están vacías
+                        grid.className = 'tokens-grid';
+                        html += '<div class="no-recipes"><p>No recipes available.</p></div>';
+                    }
+                } else {
                     // Aún no se han cargado las recetas, mostrar loading
                     grid.className = 'tokens-grid';
                     html += '<div class="loading-recipes"><p>Loading recipes...</p></div>';
-                } else {
-                    // Las recetas se cargaron pero están vacías
-                    grid.className = 'tokens-grid';
-                    html += '<div class="no-recipes"><p>No recipes available.</p></div>';
                 }
                 
                 grid.innerHTML = html;

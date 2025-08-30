@@ -5,8 +5,9 @@
 
 class TraitLABCrafting {
     constructor() {
-        this.recipes = [];
+        this.recipes = null; // null = no cargado, [] = cargado pero vacío
         this.availableTraits = [];
+        this.isLoading = false;
         console.log('🔨 TraitLABCrafting: Módulo simplificado inicializado');
     }
 
@@ -15,6 +16,8 @@ class TraitLABCrafting {
      */
     async loadRecipes() {
         console.log('🔨 TraitLABCrafting: Cargando recetas desde contrato...');
+        
+        this.isLoading = true;
         
         try {
             // Verificar que ethers esté disponible
@@ -100,6 +103,7 @@ class TraitLABCrafting {
             }
             
             this.recipes = recipes;
+            this.isLoading = false;
             console.log('🔨 TraitLABCrafting: Recetas cargadas:', recipes);
             
             return recipes;
@@ -109,6 +113,7 @@ class TraitLABCrafting {
             
             // Crear recetas de ejemplo si falla
             this.recipes = this.createExampleRecipes();
+            this.isLoading = false;
             console.log('🔨 TraitLABCrafting: Usando recetas de ejemplo:', this.recipes);
             
             return this.recipes;
@@ -153,6 +158,20 @@ class TraitLABCrafting {
      */
     getRecipes() {
         return this.recipes;
+    }
+
+    /**
+     * Verificar si las recetas están cargadas
+     */
+    isRecipesLoaded() {
+        return this.recipes !== null;
+    }
+
+    /**
+     * Verificar si está cargando
+     */
+    isLoadingRecipes() {
+        return this.isLoading;
     }
 
     /**
