@@ -234,7 +234,13 @@ class TraitLABCrafting {
         try {
             console.log('🔨 TraitLABCrafting: Cargando recetas desde contrato...');
             
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            // Use the ethers parameter or fallback to window.ethers
+            const ethersLib = ethers || window.ethers;
+            if (!ethersLib) {
+                throw new Error('Ethers library not available');
+            }
+            
+            const provider = new ethersLib.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             
             // AdrianCrafting contract
@@ -247,8 +253,20 @@ class TraitLABCrafting {
                 "function getAnyRecipe(uint256 recipeId) view returns (bool active, uint256 burnTotal, uint256 outId, uint256 outAmount)"
             ];
 
-            const contract = new ethers.Contract(ADRIAN_CRAFTING_CONTRACT, contractABI, signer);
+            const contract = new ethersLib.Contract(ADRIAN_CRAFTING_CONTRACT, contractABI, signer);
             console.log('🔨 TraitLABCrafting: Contrato creado:', !!contract);
+            
+            // Verify contract exists and is responsive
+            try {
+                const code = await provider.getCode(ADRIAN_CRAFTING_CONTRACT);
+                if (code === '0x') {
+                    throw new Error('Contract not deployed at specified address');
+                }
+                console.log('🔨 TraitLABCrafting: Contrato verificado y desplegado');
+            } catch (error) {
+                console.error('🔨 TraitLABCrafting: Error verificando contrato:', error);
+                throw new Error(`Contract verification failed: ${error.message}`);
+            }
             
             // For now, we'll use a curated list of recipe IDs
             // In production, you'd index events to get all recipe IDs
@@ -268,6 +286,12 @@ class TraitLABCrafting {
                     
                     if (specificRecipe.active) {
                         console.log(`🔨 TraitLABCrafting: Receta específica ${recipeId} activa`);
+                        
+                        // Validate array lengths match
+                        if (specificRecipe.burnIds.length !== specificRecipe.burnAmounts.length) {
+                            console.error(`🔨 TraitLABCrafting: Arrays de burnIds y burnAmounts no coinciden para receta ${recipeId}`);
+                            continue;
+                        }
                         
                         // Find output trait information
                         const outputTrait = this.availableTraits ? this.availableTraits.find(trait => trait.tokenId === parseInt(specificRecipe.outId.toString())) : null;
@@ -356,7 +380,8 @@ class TraitLABCrafting {
                                 chosen: [],
                                 total: 0,
                                 meetsRequirement: false
-                            }
+                            },
+                            eligible: false // Will be calculated after loading balances
                         });
                     } else {
                         console.log(`🔨 TraitLABCrafting: Receta general ${recipeId} inactiva`);
@@ -424,13 +449,47 @@ class TraitLABCrafting {
         console.log('🔨 TraitLABCrafting: Cargando balances del usuario...');
         
         try {
-            if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
-                console.log('Wallet not connected, skipping balance load');
+            // Check if wallet is available and connected
+            let userAddress = null;
+            
+            // Try multiple ways to get user address
+            if (window.TraitLABWallet && typeof window.TraitLABWallet.getCurrentAccount === 'function') {
+                try {
+                    userAddress = window.TraitLABWallet.getCurrentAccount();
+                    console.log('🔨 TraitLABCrafting: Address from TraitLABWallet:', userAddress);
+                } catch (error) {
+                    console.warn('🔨 TraitLABCrafting: Error getting address from TraitLABWallet:', error.message);
+                }
+            }
+            
+            // Fallback to ethereum provider
+            if (!userAddress && window.ethereum && window.ethereum.selectedAddress) {
+                userAddress = window.ethereum.selectedAddress;
+                console.log('🔨 TraitLABCrafting: Address from ethereum provider:', userAddress);
+            }
+            
+            // Fallback to app instance
+            if (!userAddress && window.app && window.app.modules && window.app.modules.wallet) {
+                try {
+                    userAddress = window.app.modules.wallet.getCurrentAccount();
+                    console.log('🔨 TraitLABCrafting: Address from app wallet:', userAddress);
+                } catch (error) {
+                    console.warn('🔨 TraitLABCrafting: Error getting address from app wallet:', error.message);
+                }
+            }
+            
+            if (!userAddress) {
+                console.log('🔨 TraitLABCrafting: No user address available, skipping balance load');
                 return;
             }
             
-            const userAddress = window.TraitLABWallet.getCurrentAccount();
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            // Check if ethers is available
+            if (typeof window.ethers === 'undefined') {
+                console.log('🔨 TraitLABCrafting: Ethers not available, skipping balance load');
+                return;
+            }
+            
+            const provider = new window.ethers.providers.Web3Provider(window.ethereum);
             
             // AdrianTraitsCore contract for balanceOf
             const ADRIAN_TRAITS_CORE_CONTRACT = window.TraitLABConfig.CONTRACTS.ERC1155;
@@ -439,12 +498,13 @@ class TraitLABCrafting {
                 "function balanceOf(address account, uint256 id) view returns (uint256)"
             ];
             
-            const contract = new ethers.Contract(ADRIAN_TRAITS_CORE_CONTRACT, contractABI, provider);
+            const contract = new window.ethers.Contract(ADRIAN_TRAITS_CORE_CONTRACT, contractABI, provider);
             
             // Get all unique trait IDs from available traits
             const traitIds = new Set();
-            if (this.availableTraits) {
+            if (this.availableTraits && this.availableTraits.length > 0) {
                 this.availableTraits.forEach(trait => traitIds.add(trait.tokenId.toString()));
+                console.log('🔨 TraitLABCrafting: Traits disponibles para balance:', traitIds.size);
             }
             
             // Also add trait IDs from recipes
@@ -454,13 +514,21 @@ class TraitLABCrafting {
                 }
             });
             
+            if (traitIds.size === 0) {
+                console.log('🔨 TraitLABCrafting: No trait IDs to check balances for');
+                return;
+            }
+            
+            console.log('🔨 TraitLABCrafting: Verificando balances para', traitIds.size, 'traits...');
+            
             // Load balances for each trait
             for (const traitId of traitIds) {
                 try {
                     const balance = await contract.balanceOf(userAddress, traitId);
                     this.userBalances.set(traitId, balance.toString());
+                    console.log(`🔨 TraitLABCrafting: Balance para trait ${traitId}: ${balance.toString()}`);
                 } catch (error) {
-                    console.warn(`Failed to load balance for trait ${traitId}:`, error);
+                    console.warn(`🔨 TraitLABCrafting: Falló carga de balance para trait ${traitId}:`, error.message);
                     this.userBalances.set(traitId, '0');
                 }
             }
@@ -468,7 +536,8 @@ class TraitLABCrafting {
             console.log('🔨 TraitLABCrafting: Balances cargados:', Object.fromEntries(this.userBalances));
             
         } catch (error) {
-            console.error('Error loading user balances:', error);
+            console.error('🔨 TraitLABCrafting: Error cargando balances del usuario:', error);
+            // Don't throw, just log the error
         }
     }
 
