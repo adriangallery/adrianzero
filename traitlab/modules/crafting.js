@@ -163,3 +163,8 @@ class TraitLABCrafting {
         console.log('🔨 TraitLABCrafting: Traits establecidos:', this.availableTraits.length);
     }
 }
+
+// Exportar la clase al scope global
+if (typeof window !== 'undefined') {
+    window.TraitLABCrafting = TraitLABCrafting;
+}
