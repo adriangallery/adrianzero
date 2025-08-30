@@ -169,6 +169,78 @@
             transform: translateY(-2px);
         }
 
+        /* Grid de traits para crafting */
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .trait-card.crafting-trait {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .trait-card.crafting-trait:hover {
+            transform: translateY(-2px);
+            border-color: #00ff00;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .trait-card.crafting-trait .trait-image {
+            margin-bottom: 10px;
+        }
+
+        .trait-card.crafting-trait .trait-image img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #444;
+        }
+
+        .trait-card.crafting-trait .trait-info h4 {
+            font-size: 14px;
+            margin: 5px 0;
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .trait-card.crafting-trait .trait-title {
+            font-size: 12px;
+            color: #ccc;
+            margin: 3px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .trait-card.crafting-trait .trait-balance {
+            font-size: 11px;
+            color: #999;
+            margin: 3px 0;
+            font-weight: bold;
+        }
+
+        .no-traits {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .loading-traits {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
         .connect-section {
             text-align: center;
             background: rgba(255, 255, 255, 0.1);
@@ -3511,10 +3583,13 @@
                         traitsSection.innerHTML = `
                             <h3>Your Traits</h3>
                             <div class="traits-grid" id="traits-grid">
-                                <div class="traits-placeholder"><p>Traits will be loaded here...</p></div>
+                                <div class="traits-placeholder"><p>Loading traits...</p></div>
                             </div>
                         `;
                         mainContainer.appendChild(traitsSection);
+                        
+                        // Cargar traits del DataManager en el grid de traits
+                        this.loadTraitsInCraftingGrid();
                     } else {
                         // Las recetas se cargaron pero están vacías
                         mainContainer.innerHTML = '<div class="no-recipes"><p>No recipes available.</p></div>';
@@ -3575,6 +3650,121 @@
                             </div>
                         </div>
                     `;
+                }
+            }
+
+            /**
+             * Cargar traits del DataManager en el grid de crafting
+             */
+            loadTraitsInCraftingGrid() {
+                console.log('🔨 loadTraitsInCraftingGrid: Cargando traits para crafting...');
+                
+                const traitsGrid = document.getElementById('traits-grid');
+                if (!traitsGrid) {
+                    console.warn('🔨 Traits grid no encontrado');
+                    return;
+                }
+                
+                // Verificar si el DataManager está disponible y tiene traits
+                if (this.modules.dataManager && this.modules.dataManager.isReady('adrianLab')) {
+                    const traits = this.modules.dataManager.getTokens('adrianLab', 'traits');
+                    console.log('🔨 Traits disponibles en DataManager:', traits.length);
+                    
+                    if (traits && traits.length > 0) {
+                        // Limpiar placeholder y mostrar traits
+                        traitsGrid.innerHTML = '';
+                        
+                        // Crear grid de traits similar al tab traits
+                        traits.forEach(trait => {
+                            const traitCard = this.createTraitCardForCrafting(trait);
+                            traitsGrid.appendChild(traitCard);
+                        });
+                        
+                        console.log('🔨 Traits cargados en grid de crafting:', traits.length);
+                    } else {
+                        traitsGrid.innerHTML = '<div class="no-traits"><p>No traits available. Please visit the Traits tab first to load your traits.</p></div>';
+                    }
+                } else {
+                    // Si el DataManager no está listo, mostrar mensaje de espera
+                    console.log('🔨 DataManager no está listo, esperando...');
+                    traitsGrid.innerHTML = '<div class="loading-traits"><p>Waiting for traits to load...</p></div>';
+                    
+                    // Intentar cargar traits del módulo zero como fallback
+                    this.loadTraitsFallback();
+                }
+            }
+
+            /**
+             * Fallback para cargar traits si el DataManager no está disponible
+             */
+            async loadTraitsFallback() {
+                console.log('🔨 loadTraitsFallback: Intentando cargar traits del módulo zero...');
+                
+                try {
+                    const userAddress = this.modules.wallet.getCurrentAccount();
+                    if (userAddress) {
+                        const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                        const traits = await this.modules.zero.loadTokens(userAddress, contractAddress);
+                        const erc1155Traits = traits.filter(t => t.tokenType === 'ERC1155');
+                        
+                        if (erc1155Traits.length > 0) {
+                            console.log('🔨 Traits cargados por fallback:', erc1155Traits.length);
+                            this.displayTraitsInCraftingGrid(erc1155Traits);
+                        } else {
+                            this.showNoTraitsMessage();
+                        }
+                    }
+                } catch (error) {
+                    console.error('🔨 Error en fallback de traits:', error);
+                    this.showNoTraitsMessage();
+                }
+            }
+
+            /**
+             * Mostrar traits en el grid de crafting
+             */
+            displayTraitsInCraftingGrid(traits) {
+                const traitsGrid = document.getElementById('traits-grid');
+                if (!traitsGrid) return;
+                
+                traitsGrid.innerHTML = '';
+                
+                traits.forEach(trait => {
+                    const traitCard = this.createTraitCardForCrafting(trait);
+                    traitsGrid.appendChild(traitCard);
+                });
+            }
+
+            /**
+             * Crear tarjeta de trait para el grid de crafting
+             */
+            createTraitCardForCrafting(trait) {
+                const traitCard = document.createElement('div');
+                traitCard.className = 'trait-card crafting-trait';
+                traitCard.setAttribute('data-trait-id', trait.tokenId);
+                traitCard.setAttribute('data-trait-balance', trait.balance);
+                
+                traitCard.innerHTML = `
+                    <div class="trait-image">
+                        <img src="${trait.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JDt0cmFpdC50b2tlbklkPC90ZXh0Pjwvc3ZnPg=='}" alt="Trait #${trait.tokenId}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JCB7dHJhaXQudG9rZW5JZH08L3RleHQ+PC9zdmc+'">
+                    </div>
+                    <div class="trait-info">
+                        <h4>Trait #${trait.tokenId}</h4>
+                        <p class="trait-title">${trait.title || `Trait #${trait.tokenId}`}</p>
+                        <p class="trait-balance">Balance: ${trait.balance}</p>
+                    </div>
+                `;
+                
+                return traitCard;
+            }
+
+            /**
+             * Mostrar mensaje de no traits disponibles
+             */
+            showNoTraitsMessage() {
+                const traitsGrid = document.getElementById('traits-grid');
+                if (traitsGrid) {
+                    traitsGrid.innerHTML = '<div class="no-traits"><p>No traits found. Please visit the Traits tab first to load your traits.</p></div>';
                 }
             }
 
