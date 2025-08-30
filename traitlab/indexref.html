@@ -968,73 +968,181 @@
             transform: translateY(0);
         }
 
-        /* Crafting Recipe Cards */
+        /* Recipe Cards - Mejorados */
         .recipe-card {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #333;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #333;
+            border-radius: 15px;
             padding: 20px;
-            margin: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recipe-card.eligible {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .recipe-card.not-eligible {
+            border-color: #ff4444;
+            background: rgba(255, 68, 68, 0.05);
         }
 
         .recipe-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
 
-        .recipe-card h3 {
-            color: #00ff00;
-            margin-bottom: 10px;
-            font-size: 1.5rem;
+        .recipe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .recipe-header h3 {
+            margin: 0;
+            color: #fff;
+            font-size: 1.4rem;
         }
 
         .recipe-type {
-            background: #333;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            display: inline-block;
-            margin-bottom: 15px;
+            background: rgba(0, 150, 255, 0.3);
+            color: #00aaff;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 0.9rem;
+            font-weight: bold;
         }
 
-        .recipe-ingredients, .recipe-requirement, .recipe-output {
-            margin-bottom: 15px;
+        .recipe-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
         }
 
-        .recipe-ingredients h4, .recipe-requirement h4, .recipe-output h4 {
-            color: #fff;
-            margin-bottom: 8px;
+        .recipe-status.eligible {
+            background: rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .recipe-status.not-eligible {
+            background: rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+        }
+
+        .recipe-ingredients h4,
+        .recipe-requirement h4,
+        .recipe-output h4 {
+            color: #00aaff;
+            margin-bottom: 10px;
             font-size: 1.1rem;
+        }
+
+        .ingredients-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .recipe-ingredient {
             display: flex;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.05);
+            align-items: center;
             padding: 8px 12px;
-            margin: 5px 0;
-            border-radius: 5px;
-            border-left: 3px solid #666;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid #444;
         }
 
         .recipe-ingredient.eligible {
-            border-left-color: #00ff00;
+            border-color: #00ff00;
             background: rgba(0, 255, 0, 0.1);
         }
 
         .recipe-ingredient.insufficient {
-            border-left-color: #ff4444;
+            border-color: #ff4444;
             background: rgba(255, 68, 68, 0.1);
         }
 
-        .requirement-status {
-            padding: 8px 12px;
-            border-radius: 5px;
-            margin-top: 8px;
+        .recipe-ingredient span {
+            font-size: 0.9rem;
+        }
+
+        .trait-id {
+            color: #00aaff;
             font-weight: bold;
+        }
+
+        .trait-required {
+            color: #ffaa00;
+        }
+
+        .trait-owned.sufficient {
+            color: #00ff00;
+        }
+
+        .trait-owned.insufficient {
+            color: #ff4444;
+        }
+
+        .status-ok {
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .status-error {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .requirement-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .requirement-total,
+        .requirement-selected {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .requirement-total .label,
+        .requirement-selected .label {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .requirement-total .value,
+        .requirement-selected .value {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .value.sufficient {
+            color: #00ff00;
+        }
+
+        .value.insufficient {
+            color: #ff4444;
+        }
+
+        .requirement-status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
         }
 
         .requirement-status.met {
@@ -1049,55 +1157,65 @@
             border: 1px solid #ff4444;
         }
 
-        .craft-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 1rem;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'VT323', monospace;
-            width: 100%;
-        }
-
-        .craft-btn.enabled:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .craft-btn.disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
         .output-trait {
             background: rgba(0, 255, 0, 0.1);
             border: 1px solid #00ff00;
             border-radius: 8px;
-            padding: 12px;
-            margin-top: 8px;
+            padding: 15px;
+            text-align: center;
         }
 
         .trait-title {
-            font-weight: bold;
             color: #00ff00;
+            font-weight: bold;
+            font-size: 1.1rem;
             margin-bottom: 5px;
         }
 
         .trait-details {
             color: #ccc;
             font-size: 0.9rem;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .output-trait-image {
-            width: 60px;
-            height: 60px;
-            border-radius: 5px;
-            border: 1px solid #333;
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+            border: 2px solid #00ff00;
+        }
+
+        .recipe-actions {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .craft-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .craft-btn.enabled {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .craft-btn.enabled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 0, 0.6);
+        }
+
+        .craft-btn.disabled {
+            background: #666;
+            color: #ccc;
+            cursor: not-allowed;
         }
 
         /* Crafting sections */

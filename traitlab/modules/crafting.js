@@ -667,14 +667,14 @@ class TraitLABCrafting {
                 recipeId: 1,
                 active: true,
                 burn: [
-                    { id: '1', amount: '2', userBalance: 0 },
-                    { id: '3', amount: '1', userBalance: 0 }
+                    { id: '375', amount: '1', userBalance: 0 },
+                    { id: '371', amount: '1', userBalance: 0 }
                 ],
                 output: {
-                    id: '100',
+                    id: '33',
                     amount: '1',
-                    title: 'Rare Trait #100',
-                    image: '',
+                    title: 'Rare Trait #33',
+                    image: 'https://adrianlab.vercel.app/labmetadata/images/33.png',
                     metadata: {}
                 },
                 eligible: false
@@ -684,35 +684,35 @@ class TraitLABCrafting {
                 recipeId: 2,
                 active: true,
                 requirement: {
-                    burnTotal: '5'
+                    burnTotal: '3'
                 },
                 output: {
-                    id: '200',
+                    id: '100',
                     amount: '1',
-                    title: 'Epic Trait #200',
-                    image: '',
+                    title: 'Epic Trait #100',
+                    image: 'https://adrianlab.vercel.app/labmetadata/images/100.png',
                     metadata: {}
                 },
                 selection: {
                     chosen: [],
                     total: 0,
                     meetsRequirement: false
-                }
+                },
+                eligible: false
             },
             {
                 type: 'specific',
                 recipeId: 3,
                 active: true,
                 burn: [
-                    { id: '7', amount: '1', userBalance: 0 },
-                    { id: '8', amount: '1', userBalance: 0 },
-                    { id: '9', amount: '1', userBalance: 0 }
+                    { id: '150', amount: '2', userBalance: 0 },
+                    { id: '200', amount: '1', userBalance: 0 }
                 ],
                 output: {
                     id: '300',
                     amount: '1',
                     title: 'Legendary Trait #300',
-                    image: '',
+                    image: 'https://adrianlab.vercel.app/labmetadata/images/300.png',
                     metadata: {}
                 },
                 eligible: false
