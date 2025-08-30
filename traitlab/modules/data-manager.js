@@ -86,14 +86,22 @@ class TraitLABDataManager {
                 const userAddress = window.app.modules.wallet?.getCurrentAccount();
                 if (userAddress) {
                     const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
-                    const allTokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
+                    // Cargar todos los tipos de tokens por separado
+                    console.log('📊 Cargando traits...');
+                    const traits = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
+                    
+                    console.log('📊 Cargando floppys...');
+                    const floppys = await window.app.modules.zero.loadTokens(userAddress, contractAddress, 'floppy');
+                    
+                    console.log('📊 Cargando serums...');
+                    const serums = await window.app.modules.zero.loadTokens(userAddress, contractAddress, 'serum');
                     
                     // Separar por tipo
                     this.cache.adrianLab = {
-                        traits: allTokens.filter(t => t.tokenType === 'ERC1155'),
-                        floppys: allTokens.filter(t => t.tokenType === 'ERC721' && t.category === 'floppy'),
-                        packs: allTokens.filter(t => t.tokenType === 'ERC721' && t.category === 'pack'),
-                        serums: allTokens.filter(t => t.tokenType === 'ERC721' && t.category === 'serum')
+                        traits: traits.filter(t => t.tokenType === 'ERC1155'),
+                        floppys: floppys.filter(t => t.tokenType === 'ERC1155'),
+                        packs: [], // Por ahora vacío, se puede implementar después
+                        serums: serums.filter(t => t.tokenType === 'ERC1155')
                     };
                     
                     console.log('📊 AdrianLAB tokens cargados:', {
