@@ -1673,6 +1673,15 @@
                 </button>
             </div>
 
+            <!-- Debug Section for DataManager -->
+            <div class="debug-section" style="margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; display: none;">
+                <h4 style="margin: 0 0 10px 0; color: #00ff00;">📊 DataManager Debug</h4>
+                <button id="debugDataManagerBtn" class="debug-btn" style="background: #333; color: #00ff00; border: 1px solid #00ff00; padding: 5px 10px; border-radius: 3px; margin-right: 10px;">Show Cache Status</button>
+                <button id="reloadDataManagerBtn" class="debug-btn" style="background: #333; color: #00ff00; border: 1px solid #00ff00; padding: 5px 10px; border-radius: 3px; margin-right: 10px;">Reload Cache</button>
+                <button id="clearDataManagerBtn" class="debug-btn" style="background: #333; color: #00ff00; border: 1px solid #00ff00; padding: 5px 10px; border-radius: 3px;">Clear Cache</button>
+                <div id="debugDataManagerOutput" style="margin-top: 10px; font-family: monospace; font-size: 12px; color: #00ff00;"></div>
+            </div>
+
 
 
             <div id="selection-info" class="selection-info with-side-menu" style="display: none;">
@@ -1789,6 +1798,7 @@
         <script src="modules/zero.js"></script>
         <script src="modules/crafting.js"></script>
         <script src="modules/sticky-visibility.js"></script>
+        <script src="modules/data-manager.js"></script>
 
     <!-- Main Application Script -->
     <script>
@@ -1846,16 +1856,20 @@
                 this.modules.floppy = new window.TraitLABFloppy();
                 this.modules.floppy.init();
                 
-                            // Initialize Serums Manager
-            this.modules.serums = new window.TraitLABSerums();
-            this.modules.serums.init();
-            
-            // Initialize Crafting Manager
-            this.modules.crafting = new window.TraitLABCrafting();
+                // Initialize Serums Manager
+                this.modules.serums = new window.TraitLABSerums();
+                this.modules.serums.init();
+                
+                // Initialize Crafting Manager
+                this.modules.crafting = new window.TraitLABCrafting();
                 
                 // Initialize Zero Manager
                 this.modules.zero = new window.TraitLABZero();
                 this.modules.zero.init();
+                
+                // Initialize DataManager (carga en background)
+                this.modules.dataManager = new window.TraitLABDataManager();
+                await this.modules.dataManager.init();
                 
                 // Initialize StickyVisibilityManager (se inicializará después del DOM)
                 this.stickyManager = new window.StickyVisibilityManager();
@@ -1974,6 +1988,22 @@
                 const applyTraitsBtn = document.getElementById('applyTraitsBtn');
                 if (applyTraitsBtn) {
                     applyTraitsBtn.addEventListener('click', () => this.applyTraits());
+                }
+
+                // Setup DataManager debug button event listeners
+                const debugDataManagerBtn = document.getElementById('debugDataManagerBtn');
+                if (debugDataManagerBtn) {
+                    debugDataManagerBtn.addEventListener('click', () => this.debugDataManager());
+                }
+
+                const reloadDataManagerBtn = document.getElementById('reloadDataManagerBtn');
+                if (reloadDataManagerBtn) {
+                    reloadDataManagerBtn.addEventListener('click', () => this.reloadDataManager());
+                }
+
+                const clearDataManagerBtn = document.getElementById('clearDataManagerBtn');
+                if (clearDataManagerBtn) {
+                    clearDataManagerBtn.addEventListener('click', () => this.clearDataManager());
                 }
                 
                 // Zero events (continued)
@@ -2367,6 +2397,25 @@
                 // Show tokens section
                 document.getElementById('tokens-section').style.display = 'block';
                 
+                // Iniciar carga en background del DataManager
+                if (this.modules.dataManager) {
+                    console.log('📊 Iniciando carga en background del DataManager...');
+                    this.modules.dataManager.init().then(() => {
+                        console.log('📊 DataManager cargado en background');
+                        // Mostrar estado del cache
+                        const status = this.modules.dataManager.getStatus();
+                        console.log('📊 Estado del cache:', status);
+                        
+                        // Mostrar sección de debug
+                        const debugSection = document.querySelector('.debug-section');
+                        if (debugSection) {
+                            debugSection.style.display = 'block';
+                        }
+                    }).catch(error => {
+                        console.warn('📊 Error cargando DataManager en background:', error);
+                    });
+                }
+                
                 // Load tokens for current contract
                 console.log('🚀 Calling loadTokensForTab...');
                 this.loadTokensForTab();
@@ -2401,6 +2450,40 @@
                     }
                     
                     this.loadCraftingRecipes();
+                } else if (data.filter === 'traits') {
+                    // Usar cache del DataManager para traits
+                    console.log('🎭 Traits tab selected, checking cache...');
+                    const traits = this.modules.dataManager.getTokens('adrianLab', 'traits');
+                    if (traits.length > 0) {
+                        console.log('📊 Usando cache del DataManager para traits:', traits.length);
+                        this.displayTokens(traits, 'traits');
+                    } else {
+                        console.log('📊 Cache vacío, cargando traits normalmente...');
+                        // Si no hay cache, cargar normalmente
+                        this.loadTokens(this.modules.wallet.getCurrentAccount(), this.currentContract);
+                    }
+                } else if (data.filter === 'floppy') {
+                    // Usar cache del DataManager para floppys
+                    console.log('💾 Floppy tab selected, checking cache...');
+                    const floppys = this.modules.dataManager.getTokens('adrianLab', 'floppys');
+                    if (floppys.length > 0) {
+                        console.log('📊 Usando cache del DataManager para floppys:', floppys.length);
+                        this.displayTokens(floppys, 'floppy');
+                    } else {
+                        console.log('📊 Cache vacío, cargando floppys normalmente...');
+                        this.loadTokens(this.modules.wallet.getCurrentAccount(), this.currentContract);
+                    }
+                } else if (data.filter === 'serum') {
+                    // Usar cache del DataManager para serums
+                    console.log('🧪 Serum tab selected, checking cache...');
+                    const serums = this.modules.dataManager.getTokens('adrianLab', 'serums');
+                    if (serums.length > 0) {
+                        console.log('📊 Usando cache del DataManager para serums:', serums.length);
+                        this.displayTokens(serums, 'serum');
+                    } else {
+                        console.log('📊 Cache vacío, cargando serums normalmente...');
+                        this.loadTokens(this.modules.wallet.getCurrentAccount(), this.currentContract);
+                    }
                 } else {
                     // Rehabilitar sticky-visibility en otros tabs
                     if (this.stickyManager) {
@@ -3246,6 +3329,72 @@
                 } catch (error) {
                     this.showError(`Error using serum: ${error.message}`);
                 }
+            }
+
+            // DataManager Debug Functions
+            debugDataManager() {
+                if (!this.modules.dataManager) {
+                    this.showError('DataManager not available');
+                    return;
+                }
+
+                const status = this.modules.dataManager.getStatus();
+                const output = document.getElementById('debugDataManagerOutput');
+                
+                if (output) {
+                    output.innerHTML = `
+                        <strong>📊 DataManager Status:</strong><br>
+                        <strong>AdrianZERO:</strong> ${status.adrianZero.ready ? '✅ Ready' : '⏳ Loading'} 
+                        (${status.adrianZero.count} tokens)<br>
+                        <strong>AdrianLAB:</strong> ${status.adrianLab.ready ? '✅ Ready' : '⏳ Loading'}<br>
+                        &nbsp;&nbsp;• Traits: ${status.adrianLab.counts.traits || 0}<br>
+                        &nbsp;&nbsp;• Floppys: ${status.adrianLab.counts.floppys || 0}<br>
+                        &nbsp;&nbsp;• Packs: ${status.adrianLab.counts.packs || 0}<br>
+                        &nbsp;&nbsp;• Serums: ${status.adrianLab.counts.serums || 0}<br>
+                        <br><strong>Cache Status:</strong> ${this.modules.dataManager.isInitialized ? '✅ Initialized' : '❌ Not Initialized'}
+                    `;
+                }
+
+                console.log('📊 DataManager Status:', status);
+                this.showSuccess('DataManager status displayed');
+            }
+
+            async reloadDataManager() {
+                if (!this.modules.dataManager) {
+                    this.showError('DataManager not available');
+                    return;
+                }
+
+                try {
+                    this.showLoading();
+                    console.log('📊 Reloading DataManager cache...');
+                    
+                    await this.modules.dataManager.reload('adrianZero');
+                    await this.modules.dataManager.reload('adrianLab');
+                    
+                    this.hideLoading();
+                    this.showSuccess('DataManager cache reloaded successfully');
+                    
+                    // Update debug output
+                    this.debugDataManager();
+                    
+                } catch (error) {
+                    this.hideLoading();
+                    this.showError(`Error reloading DataManager: ${error.message}`);
+                }
+            }
+
+            clearDataManager() {
+                if (!this.modules.dataManager) {
+                    this.showError('DataManager not available');
+                    return;
+                }
+
+                this.modules.dataManager.clearCache();
+                this.showSuccess('DataManager cache cleared');
+                
+                // Update debug output
+                this.debugDataManager();
             }
 
             async loadCraftingRecipes() {
