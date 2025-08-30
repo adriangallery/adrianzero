@@ -382,7 +382,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     
     <!-- TraitLAB Modules -->
     <script src="modules/config.js"></script>
@@ -611,29 +611,59 @@
                     
                     this.showLoading();
                     
+                    // Verificar que tengamos los módulos necesarios
+                    if (!this.modules.wallet || !this.modules.ui) {
+                        throw new Error('Módulos wallet o UI no disponibles');
+                    }
+                    
+                    const userAddress = this.modules.wallet.getCurrentAccount();
+                    if (!userAddress) {
+                        throw new Error('No hay wallet conectada');
+                    }
+                    
                     if (this.currentFilter === 'crafting') {
                         // Usar módulo de crafting
-                        await this.modules.crafting.loadRecipes();
-                        this.displayCraftingContent();
+                        if (this.modules.crafting) {
+                            await this.modules.crafting.loadRecipes();
+                            this.displayCraftingContent();
+                        } else {
+                            throw new Error('Módulo de crafting no disponible');
+                        }
                     } else if (this.currentFilter === 'traits') {
                         // Usar módulo de traits
-                        const traits = await this.modules.traits.loadTraits();
-                        this.modules.ui.displayTokens(traits, 'traits');
+                        if (this.modules.traits) {
+                            const traits = await this.modules.traits.loadTraits();
+                            this.modules.ui.displayTokens(traits, 'traits');
+                        } else {
+                            throw new Error('Módulo de traits no disponible');
+                        }
                     } else if (this.currentFilter === 'floppy') {
                         // Usar módulo de floppy
-                        const floppys = await this.modules.floppy.loadFloppys();
-                        this.modules.ui.displayTokens(floppys, 'floppy');
+                        if (this.modules.floppy) {
+                            const floppys = await this.modules.floppy.loadFloppys();
+                            this.modules.ui.displayTokens(floppys, 'floppy');
+                        } else {
+                            throw new Error('Módulo de floppy no disponible');
+                        }
                     } else if (this.currentFilter === 'serum') {
                         // Usar módulo de serums
-                        const serums = await this.modules.serums.loadSerums();
-                        this.modules.ui.displayTokens(serums, 'serum');
+                        if (this.modules.serums) {
+                            const serums = await this.modules.serums.loadSerums();
+                            this.modules.ui.displayTokens(serums, 'serum');
+                        } else {
+                            throw new Error('Módulo de serums no disponible');
+                        }
                     } else {
                         // Usar módulo zero para AdrianZERO
-                        const tokens = await this.modules.zero.loadTokens(
-                            this.modules.wallet.getCurrentAccount(),
-                            this.currentContract
-                        );
-                        this.modules.ui.displayTokens(tokens, this.currentFilter);
+                        if (this.modules.zero && this.currentContract) {
+                            const tokens = await this.modules.zero.loadTokens(
+                                userAddress,
+                                this.currentContract
+                            );
+                            this.modules.ui.displayTokens(tokens, this.currentFilter || 'default');
+                        } else {
+                            throw new Error('Módulo zero o contrato no disponible');
+                        }
                     }
                     
                     this.hideLoading();
