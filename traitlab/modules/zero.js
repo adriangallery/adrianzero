@@ -67,8 +67,8 @@ class ZeroManager {
     /**
      * Load tokens for specific contract using direct API calls with pagination
      */
-    async loadTokens(userAddress, contractAddress) {
-        console.log('loadTokens called with:', { userAddress, contractAddress });
+    async loadTokens(userAddress, contractAddress, filter = null) {
+        console.log('loadTokens called with:', { userAddress, contractAddress, filter });
         
         if (!userAddress) {
             throw new Error('User address is required');
@@ -230,26 +230,26 @@ class ZeroManager {
                     }
                 }).filter(token => token !== null);
 
-                // Apply filtering based on current filter (if provided)
+                // Apply filtering based on filter parameter or current filter
                 let filteredTokens = tokens;
+                const activeFilter = filter || this.currentFilter;
                 
-                // If we have a filter context, apply it
-                if (this.currentFilter) {
-                    console.log(`Applying filter: ${this.currentFilter}`);
+                if (activeFilter) {
+                    console.log(`Applying filter: ${activeFilter}`);
                     filteredTokens = tokens.filter(token => {
                         if (token.tokenType === 'ERC1155') {
-                            if (this.currentFilter === 'floppy') {
+                            if (activeFilter === 'floppy') {
                                 // Floppy discs filter: show only tokens 10000-10007, 15000-15015
                                 const isFloppy = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
                                                (token.tokenId >= 15000 && token.tokenId <= 15015);
                                 console.log(`Token ${token.tokenId} floppy filter: ${isFloppy}`);
                                 return isFloppy;
-                            } else if (this.currentFilter === 'serum') {
+                            } else if (activeFilter === 'serum') {
                                 // Serums filter: show tokens 262144-262147
                                 const isSerum = token.tokenId >= 262144 && token.tokenId <= 262147;
                                 console.log(`Token ${token.tokenId} serum filter: ${isSerum}`);
                                 return isSerum;
-                            } else if (this.currentFilter === 'traits' || !this.currentFilter) {
+                            } else if (activeFilter === 'traits' || !activeFilter) {
                                 // Normal filter: exclude floppy & serum tokens
                                 const isExcluded = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
                                                  (token.tokenId >= 15000 && token.tokenId <= 15015) ||
