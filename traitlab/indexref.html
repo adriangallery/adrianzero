@@ -1423,6 +1423,18 @@
             }
         }
 
+        /* Estilos para loading de recetas */
+        .loading-recipes {
+            text-align: center;
+            padding: 40px 20px;
+            color: #ccc;
+        }
+
+        .loading-recipes p {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -3253,9 +3265,8 @@
                 let html = '';
                 
                 // Solo mostrar recetas en un grid limpio
-                if (recipes.length > 0) {
+                if (recipes && recipes.length > 0) {
                     html += '<div class="crafting-section">';
-                    html += '<h3>🔨 Available Recipes</h3>';
                     html += '<div class="recipes-grid">';
                     
                     recipes.forEach(recipe => {
@@ -3268,7 +3279,11 @@
                     
                     html += '</div>';
                     html += '</div>';
+                } else if (recipes === null || recipes === undefined) {
+                    // Aún no se han cargado las recetas, mostrar loading
+                    html += '<div class="loading-recipes"><p>Loading recipes...</p></div>';
                 } else {
+                    // Las recetas se cargaron pero están vacías
                     html += '<div class="no-recipes"><p>No recipes available.</p></div>';
                 }
                 
