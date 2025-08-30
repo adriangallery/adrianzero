@@ -2554,10 +2554,8 @@
                     console.log('🚀 Cargando tokens del contrato actual en background...');
                     await this.loadTokensForTab();
                     
-                    // 3. Limpiar mensaje de carga
-                    if (tokensGrid) {
-                        tokensGrid.innerHTML = '';
-                    }
+                    // 3. NO limpiar el grid aquí - los tokens ya se mostraron
+                    // El grid se mantiene con el contenido mostrado por displayTokens
                     
                 } catch (error) {
                     console.error('❌ Error en carga en background:', error);
@@ -3693,16 +3691,54 @@
                         traitsGrid.innerHTML = '<div class="no-traits"><p>No traits available. Please visit the Traits tab first to load your traits.</p></div>';
                     }
                 } else {
-                    // Si el DataManager no está listo, mostrar mensaje de espera
-                    console.log('🔨 DataManager no está listo, esperando...');
-                    traitsGrid.innerHTML = '<div class="loading-traits"><p>Waiting for DataManager to load traits...</p></div>';
+                    // Si el DataManager no está listo, cargar traits directamente como en el tab traits
+                    console.log('🔨 DataManager no está listo, cargando traits directamente...');
+                    traitsGrid.innerHTML = '<div class="loading-traits"><p>Loading traits...</p></div>';
                     
-                    // NO hacer fallback para evitar sobrecarga de API
-                    // Los traits se cargarán automáticamente cuando el DataManager esté listo
+                    // Cargar traits directamente del contrato como en el tab traits
+                    this.loadTraitsDirectlyForCrafting();
                 }
             }
 
 
+
+            /**
+             * Cargar traits directamente del contrato para crafting (como en tab traits)
+             */
+            async loadTraitsDirectlyForCrafting() {
+                console.log('🔨 loadTraitsDirectlyForCrafting: Cargando traits directamente...');
+                
+                try {
+                    const userAddress = this.modules.wallet.getCurrentAccount();
+                    if (userAddress) {
+                        const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                        console.log('🔨 Cargando traits del contrato:', contractAddress);
+                        
+                        const traits = await this.modules.zero.loadTokens(userAddress, contractAddress);
+                        const erc1155Traits = traits.filter(t => t.tokenType === 'ERC1155');
+                        
+                        if (erc1155Traits.length > 0) {
+                            console.log('🔨 Traits cargados directamente:', erc1155Traits.length);
+                            
+                            // Mostrar traits en el grid de crafting
+                            const traitsGrid = document.getElementById('traits-grid');
+                            if (traitsGrid) {
+                                traitsGrid.innerHTML = '';
+                                
+                                erc1155Traits.forEach(trait => {
+                                    const traitCard = this.createTraitCardForCrafting(trait);
+                                    traitsGrid.appendChild(traitCard);
+                                });
+                            }
+                        } else {
+                            this.showNoTraitsMessage();
+                        }
+                    }
+                } catch (error) {
+                    console.error('🔨 Error cargando traits directamente:', error);
+                    this.showNoTraitsMessage();
+                }
+            }
 
             /**
              * Crear tarjeta de trait para el grid de crafting
