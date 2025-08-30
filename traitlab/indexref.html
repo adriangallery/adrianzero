@@ -1608,7 +1608,7 @@
                     Serums
                 </button>
                 <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">
-                    🔨 Crafting
+                    Crafting
                 </button>
                 <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">
                     RENAME
@@ -1623,7 +1623,7 @@
                     <button class="contract-btn" title="Traits" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="traits">🎭</button>
                     <button class="contract-btn" title="Floppy Discs" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">💾</button>
                     <button class="contract-btn" title="Serums" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">🧪</button>
-                    <button class="contract-btn" title="Crafting" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">🔨</button>
+                    <button class="contract-btn" title="Crafting" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">⚒️</button>
                     <button class="contract-btn" title="Rename" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">✍️</button>
                 </div>
                 <button id="minimizeBtn" class="minimize-btn">Minimize</button>
@@ -2335,7 +2335,20 @@
                 // Handle crafting tab specifically
                 if (data.filter === 'crafting') {
                     console.log('🔨 Crafting tab selected, loading recipes...');
+                    
+                    // Deshabilitar sticky-visibility en crafting
+                    if (this.stickyManager) {
+                        this.stickyManager.disable();
+                        console.log('🔨 Sticky-visibility deshabilitado para crafting');
+                    }
+                    
                     this.loadCraftingRecipes();
+                } else {
+                    // Rehabilitar sticky-visibility en otros tabs
+                    if (this.stickyManager) {
+                        this.stickyManager.enable();
+                        console.log('✅ Sticky-visibility rehabilitado para otros tabs');
+                    }
                 }
             }
 
