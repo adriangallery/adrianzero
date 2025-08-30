@@ -1673,14 +1673,7 @@
                 </button>
             </div>
 
-            <!-- Debug Section for DataManager -->
-            <div class="debug-section" style="margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; display: none;">
-                <h4 style="margin: 0 0 10px 0; color: #00ff00;">📊 DataManager Debug</h4>
-                <button id="debugDataManagerBtn" class="debug-btn" style="background: #333; color: #00ff00; border: 1px solid #00ff00; padding: 5px 10px; border-radius: 3px; margin-right: 10px;">Show Cache Status</button>
-                <button id="reloadDataManagerBtn" class="debug-btn" style="background: #333; color: #00ff00; border: 1px solid #00ff00; padding: 5px 10px; border-radius: 3px; margin-right: 10px;">Reload Cache</button>
-                <button id="clearDataManagerBtn" class="debug-btn" style="background: #333; color: #00ff00; border: 1px solid #00ff00; padding: 5px 10px; border-radius: 3px;">Clear Cache</button>
-                <div id="debugDataManagerOutput" style="margin-top: 10px; font-family: monospace; font-size: 12px; color: #00ff00;"></div>
-            </div>
+
 
 
 
@@ -1990,21 +1983,7 @@
                     applyTraitsBtn.addEventListener('click', () => this.applyTraits());
                 }
 
-                // Setup DataManager debug button event listeners
-                const debugDataManagerBtn = document.getElementById('debugDataManagerBtn');
-                if (debugDataManagerBtn) {
-                    debugDataManagerBtn.addEventListener('click', () => this.debugDataManager());
-                }
 
-                const reloadDataManagerBtn = document.getElementById('reloadDataManagerBtn');
-                if (reloadDataManagerBtn) {
-                    reloadDataManagerBtn.addEventListener('click', () => this.reloadDataManager());
-                }
-
-                const clearDataManagerBtn = document.getElementById('clearDataManagerBtn');
-                if (clearDataManagerBtn) {
-                    clearDataManagerBtn.addEventListener('click', () => this.clearDataManager());
-                }
                 
                 // Zero events (continued)
                 this.modules.zero.on('tokenActivated', (data) => {
@@ -3331,71 +3310,7 @@
                 }
             }
 
-            // DataManager Debug Functions
-            debugDataManager() {
-                if (!this.modules.dataManager) {
-                    this.showError('DataManager not available');
-                    return;
-                }
 
-                const status = this.modules.dataManager.getStatus();
-                const output = document.getElementById('debugDataManagerOutput');
-                
-                if (output) {
-                    output.innerHTML = `
-                        <strong>📊 DataManager Status:</strong><br>
-                        <strong>AdrianZERO:</strong> ${status.adrianZero.ready ? '✅ Ready' : '⏳ Loading'} 
-                        (${status.adrianZero.count} tokens)<br>
-                        <strong>AdrianLAB:</strong> ${status.adrianLab.ready ? '✅ Ready' : '⏳ Loading'}<br>
-                        &nbsp;&nbsp;• Traits: ${status.adrianLab.counts.traits || 0}<br>
-                        &nbsp;&nbsp;• Floppys: ${status.adrianLab.counts.floppys || 0}<br>
-                        &nbsp;&nbsp;• Packs: ${status.adrianLab.counts.packs || 0}<br>
-                        &nbsp;&nbsp;• Serums: ${status.adrianLab.counts.serums || 0}<br>
-                        <br><strong>Cache Status:</strong> ${this.modules.dataManager.isInitialized ? '✅ Initialized' : '❌ Not Initialized'}
-                    `;
-                }
-
-                console.log('📊 DataManager Status:', status);
-                this.showSuccess('DataManager status displayed');
-            }
-
-            async reloadDataManager() {
-                if (!this.modules.dataManager) {
-                    this.showError('DataManager not available');
-                    return;
-                }
-
-                try {
-                    this.showLoading();
-                    console.log('📊 Reloading DataManager cache...');
-                    
-                    await this.modules.dataManager.reload('adrianZero');
-                    await this.modules.dataManager.reload('adrianLab');
-                    
-                    this.hideLoading();
-                    this.showSuccess('DataManager cache reloaded successfully');
-                    
-                    // Update debug output
-                    this.debugDataManager();
-                    
-                } catch (error) {
-                    this.hideLoading();
-                    this.showError(`Error reloading DataManager: ${error.message}`);
-                }
-            }
-
-            clearDataManager() {
-                if (!this.modules.dataManager) {
-                    this.showError('DataManager not available');
-                    return;
-                }
-
-                this.modules.dataManager.clearCache();
-                this.showSuccess('DataManager cache cleared');
-                
-                // Update debug output
-                this.debugDataManager();
-            }
 
             async loadCraftingRecipes() {
                 console.log('🔨 loadCraftingRecipes: Iniciando carga de recetas...');
