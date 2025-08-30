@@ -405,7 +405,7 @@
         class TraitLABv2 {
             constructor() {
                 this.modules = {};
-                this.currentContract = null;
+                this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO por defecto
                 this.currentFilter = null;
                 this.isInitialized = false;
                 
@@ -533,6 +533,14 @@
                     });
                 });
                 
+                // Activar automáticamente el primer tab si hay wallet conectada
+                if (this.modules.wallet && this.modules.wallet.getCurrentAccount()) {
+                    const firstBtn = contractBtns[0];
+                    if (firstBtn) {
+                        firstBtn.click(); // Esto activará el tab y cargará tokens
+                    }
+                }
+                
                 console.log('✅ TraitLAB v2: Tabs configurados');
             }
 
@@ -583,8 +591,8 @@
                     });
                 }
                 
-                // Load initial tokens
-                this.loadTokensForTab();
+                // No cargar tokens aquí, se cargarán cuando se configure el primer tab
+                console.log('🔧 TraitLAB v2: Wallet conectada, esperando configuración de tabs...');
             }
 
             /**
@@ -608,6 +616,7 @@
             async loadTokensForTab() {
                 try {
                     console.log('🚀 TraitLAB v2: Cargando tokens para tab:', this.currentFilter);
+                    console.log('🔍 Contrato actual:', this.currentContract);
                     
                     this.showLoading();
                     
@@ -654,13 +663,14 @@
                             throw new Error('Módulo de serums no disponible');
                         }
                     } else {
-                        // Usar módulo zero para AdrianZERO
+                        // Usar módulo zero para AdrianZERO (caso por defecto)
                         if (this.modules.zero && this.currentContract) {
+                            console.log('🔍 Cargando tokens AdrianZERO con contrato:', this.currentContract);
                             const tokens = await this.modules.zero.loadTokens(
                                 userAddress,
                                 this.currentContract
                             );
-                            this.modules.ui.displayTokens(tokens, this.currentFilter || 'default');
+                            this.modules.ui.displayTokens(tokens, this.currentFilter || 'adrianzero');
                         } else {
                             throw new Error('Módulo zero o contrato no disponible');
                         }
