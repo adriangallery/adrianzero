@@ -1435,9 +1435,17 @@
             margin: 0;
         }
 
+        /* Contenedor principal de crafting */
+        .crafting-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
         /* Estilos para las dos secciones de crafting */
         .crafting-section {
-            margin-bottom: 40px;
+            width: 100%;
         }
 
         .crafting-section h3 {
@@ -3296,54 +3304,59 @@
 
             displayCraftingRecipes() {
                 const craftingModule = this.modules.crafting;
-                const grid = document.getElementById('tokens-grid');
+                const mainContainer = document.getElementById('tokens-grid');
                 
-                if (!grid) return;
+                if (!mainContainer) return;
                 
-                let html = '';
+                // Limpiar el contenedor principal
+                mainContainer.innerHTML = '';
+                mainContainer.className = 'crafting-container';
                 
                 // Verificar el estado de carga de las recetas
                 if (craftingModule.isLoadingRecipes()) {
                     // Está cargando
-                    grid.className = 'tokens-grid';
-                    html += '<div class="loading-recipes"><p>Loading recipes...</p></div>';
+                    mainContainer.innerHTML = '<div class="loading-recipes"><p>Loading recipes...</p></div>';
                 } else if (craftingModule.isRecipesLoaded()) {
                     // Las recetas se cargaron, verificar si hay contenido
                     const recipes = craftingModule.getRecipes();
                     if (recipes && recipes.length > 0) {
-                        // Grid superior: Recetas disponibles
-                        html += '<div class="crafting-section recipes-section">';
-                        html += '<h3>Available Recipes</h3>';
-                        html += '<div class="recipes-grid">';
+                        // Crear contenedor para recetas
+                        const recipesSection = document.createElement('div');
+                        recipesSection.className = 'crafting-section recipes-section';
+                        recipesSection.innerHTML = `
+                            <h3>Available Recipes</h3>
+                            <div class="recipes-grid" id="recipes-grid"></div>
+                        `;
+                        mainContainer.appendChild(recipesSection);
+                        
+                        // Llenar el grid de recetas
+                        const recipesGrid = document.getElementById('recipes-grid');
                         recipes.forEach(recipe => {
                             if (recipe.type === 'specific') {
-                                html += this.renderSimpleRecipeCard(recipe);
+                                recipesGrid.innerHTML += this.renderSimpleRecipeCard(recipe);
                             } else if (recipe.type === 'any') {
-                                html += this.renderSimpleRecipeCard(recipe);
+                                recipesGrid.innerHTML += this.renderSimpleRecipeCard(recipe);
                             }
                         });
-                        html += '</div>';
-                        html += '</div>';
                         
-                        // Grid inferior: Traits de la wallet (por ahora vacío)
-                        html += '<div class="crafting-section traits-section">';
-                        html += '<h3>Your Traits</h3>';
-                        html += '<div class="traits-grid">';
-                        html += '<div class="traits-placeholder"><p>Traits will be loaded here...</p></div>';
-                        html += '</div>';
-                        html += '</div>';
+                        // Crear contenedor para traits
+                        const traitsSection = document.createElement('div');
+                        traitsSection.className = 'crafting-section traits-section';
+                        traitsSection.innerHTML = `
+                            <h3>Your Traits</h3>
+                            <div class="traits-grid" id="traits-grid">
+                                <div class="traits-placeholder"><p>Traits will be loaded here...</p></div>
+                            </div>
+                        `;
+                        mainContainer.appendChild(traitsSection);
                     } else {
                         // Las recetas se cargaron pero están vacías
-                        grid.className = 'tokens-grid';
-                        html += '<div class="no-recipes"><p>No recipes available.</p></div>';
+                        mainContainer.innerHTML = '<div class="no-recipes"><p>No recipes available.</p></div>';
                     }
                 } else {
                     // Aún no se han cargado las recetas, mostrar loading
-                    grid.className = 'tokens-grid';
-                    html += '<div class="loading-recipes"><p>Loading recipes...</p></div>';
+                    mainContainer.innerHTML = '<div class="loading-recipes"><p>Loading recipes...</p></div>';
                 }
-                
-                grid.innerHTML = html;
             }
 
             renderSimpleRecipeCard(recipe) {
