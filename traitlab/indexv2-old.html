@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraitLAB v2 - Modular</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="modules/styles.css" rel="stylesheet">
+
+
+</head>
+<body>
+    <!-- Menu -->
+    <div id="menu-container">
+        <!-- AdrianLAB Navigation Menu - Always hamburger mode -->
+        <nav class="navbar">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <span class="navbar-text token-symbol ms-2">$ADRIAN</span>
+                </div>
+                
+                <!-- Espacio para mantener el balance visual -->
+                <div class="d-flex align-items-center">
+                    <!-- Espacio reservado para futuras funcionalidades -->
+                </div>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" target="_blank">Buy $ADRIAN</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/mintwithadrian">Mint with $ADRIAN</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/roadmaps">Roadmap</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/traitlab">TraitLAB</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/ogclaim">OG Claim</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/">Adventure</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/shop">TraitSHOP</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/traitcreator">T-Shit Studio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/patientzero">PatientZERO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adriangallery.com">AdrianGALLERY</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianpunks.com">AdrianPUNKS</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://discord.gg/ZtyBkXGtwd" target="_blank">DISCORD</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://x.com/adriancerda" target="_blank">X</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Quitamos el botón desktop pero dejamos un div vacío para mantener el espacio -->
+                <div class="d-none d-lg-flex align-items-center ms-auto desktop-wallet-section">
+                    <!-- Botón de wallet quitado pero dejando el espacio -->
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="menu-spacer"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span class="trait">TRAIT</span><span class="lab">LAB</span>
+            </h1>
+            <div class="subtitle">Modular & Clean Architecture</div>
+        </div>
+
+        <!-- Wallet Section -->
+        <div class="wallet-section">
+            <div id="connect-section" class="connect-section">
+                <button id="connectBtn" class="connect-btn">Connect Wallet</button>
+            </div>
+            <div id="account-section" class="account-section" style="display: none;">
+                <div class="wallet-info">
+                    <div>
+                        <strong>Connected Wallet:</strong>
+                        <span id="walletAddress" class="wallet-address"></span>
+                    </div>
+                    <button id="disconnectBtn" class="disconnect-btn">Disconnect</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tokens Section -->
+        <div id="tokens-section" class="tokens-section" style="display: none;">
+            <h2 class="section-title">Your Tokens</h2>
+            
+            <!-- Contract Filter -->
+            <div class="contract-filter">
+                <button class="contract-btn active" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75">
+                    AdrianZERO
+                </button>
+                <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58">
+                    Traits
+                </button>
+                <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">
+                    Floppy Discs
+                </button>
+                <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">
+                    Serums
+                </button>
+                <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">
+                    Crafting
+                </button>
+                <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">
+                    RENAME
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading tokens...</p>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div id="error" class="error" style="display: none;"></div>
+            <div id="success" class="success" style="display: none;"></div>
+
+            <!-- No Tokens -->
+            <div id="no-tokens" class="no-tokens" style="display: none;">
+                <p>No tokens found in this contract</p>
+            </div>
+
+            <!-- Tokens Grid -->
+            <div id="tokens-grid" class="tokens-grid"></div>
+
+            <!-- Selection Info -->
+            <div id="selection-info" class="selection-info with-side-menu" style="display: none;">
+                <div class="selection-text">
+                    <div class="selected-traits-title">Selected Traits</div>
+                    <div class="traits-container">
+                        <!-- Traits will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="generated-image">
+                    <img src="" alt="Generated Image" style="display: none;">
+                    <div class="image-loading-overlay" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Generating image...</p>
+                    </div>
+                </div>
+
+                <!-- Side Emoji Menu -->
+                <div class="side-emoji-menu">
+                    <button class="emoji-btn" data-action="minimize">📱</button>
+                    <button class="emoji-btn" data-action="expand">📱</button>
+                </div>
+
+                <!-- Actions Sections -->
+                <div class="traits-actions-section">
+                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
+                </div>
+
+                <div id="erc721-actions-section">
+                    <button id="refreshMetadataBtn" class="action-btn">Refresh Metadata</button>
+                    <button id="openFloppyBtn" class="action-btn">Open Floppy</button>
+                    <button id="useSerumBtn" class="action-btn">Use Serum</button>
+                    <button id="activateTokenBtn" class="action-btn">Activate Token</button>
+                    <button id="renameTokenBtn" class="action-btn">Rename Token</button>
+                    <button id="openPackBtn" class="action-btn">Open Pack</button>
+                </div>
+
+                <div id="traits-actions-section">
+                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
+                </div>
+
+                <div id="use-serum-section">
+                    <button id="useSerumBtn" class="action-btn">Use Serum</button>
+                </div>
+
+                <div id="open-floppy-section">
+                    <button id="openFloppyBtn" class="action-btn">Open Floppy</button>
+                </div>
+
+                <div id="open-pack-section">
+                    <button id="openPackBtn" class="action-btn">Open Pack</button>
+                </div>
+
+                <div id="activate-token-section">
+                    <button id="activateTokenBtn" class="action-btn">Activate Token</button>
+                </div>
+
+                <div id="rename-section">
+                    <input type="text" id="newTokenName" placeholder="New token name" class="form-control">
+                    <button id="approveRenameBtn" class="action-btn">Approve</button>
+                    <button id="renameTokenBtn" class="action-btn">Rename</button>
+                </div>
+
+                <div id="apply-traits-section">
+                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
+                </div>
+
+                <div id="refresh-metadata-section">
+                    <button id="refreshMetadataBtn" class="action-btn">Refresh Metadata</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Powered by $ADRIAN
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    
+    <!-- TraitLAB Modules -->
+    <script src="modules/config.js"></script>
+    <script src="modules/wallet.js"></script>
+    <script src="modules/ui.js"></script>
+    <script src="modules/traits.js"></script>
+    <script src="modules/floppy.js"></script>
+    <script src="modules/serums.js"></script>
+    <script src="modules/zero.js"></script>
+    <script src="modules/crafting.js"></script>
+    <script src="modules/sticky-visibility.js"></script>
+    <script src="modules/data-manager.js"></script>
+    <script src="modules/filters.js"></script>
+    <script src="modules/display-manager.js"></script>
+
+    <!-- Main App -->
+    <script>
+        /**
+         * TRAITLAB v2 - Main Application
+         * Arquitectura modular limpia y organizada
+         */
+        class TraitLABv2 {
+            constructor() {
+                this.modules = {};
+                this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO por defecto
+                this.currentFilter = null;
+                this.isInitialized = false;
+                
+                // Selection state properties
+                this.selectedERC721 = null;
+                this.selectedERC1155 = [];
+                this.selectedFloppy = null;
+                this.selectedSerum = null;
+                
+                console.log('🚀 TraitLAB v2: Inicializando aplicación modular...');
+            }
+
+            /**
+             * Inicializar la aplicación
+             */
+            async init() {
+                try {
+                    console.log('🚀 TraitLAB v2: Iniciando...');
+                    
+                    // Inicializar módulos
+                    await this.initializeModules();
+                    
+                    // Configurar event listeners
+                    this.setupEventListeners();
+                    
+                    // Configurar tabs
+                    this.setupTabs();
+                    
+                    this.isInitialized = true;
+                    console.log('✅ TraitLAB v2: Inicializada correctamente');
+                    
+                } catch (error) {
+                    console.error('❌ Error inicializando TraitLAB v2:', error);
+                    this.showError(`Error inicializando: ${error.message}`);
+                }
+            }
+
+            /**
+             * Inicializar todos los módulos
+             */
+            async initializeModules() {
+                console.log('🔧 TraitLAB v2: Inicializando módulos...');
+                
+                // Wallet Manager
+                this.modules.wallet = new window.TraitLABWallet();
+                this.modules.wallet.init();
+                
+                // UI Manager
+                this.modules.ui = new window.TraitLABUI();
+                this.modules.ui.init();
+                
+                // Traits Manager
+                this.modules.traits = new window.TraitLABTraits();
+                await this.modules.traits.init();
+                
+                // Floppy Manager
+                this.modules.floppy = new window.TraitLABFloppy();
+                this.modules.floppy.init();
+                
+                // Serums Manager
+                this.modules.serums = new window.TraitLABSerums();
+                this.modules.serums.init();
+                
+                // Crafting Manager
+                this.modules.crafting = new window.TraitLABCrafting();
+                
+                // Zero Manager
+                this.modules.zero = new window.TraitLABZero();
+                this.modules.zero.init();
+                
+                // Sticky Visibility Manager
+                this.stickyManager = new window.StickyVisibilityManager();
+                this.stickyManager.init();
+                
+                // Data Manager
+                this.modules.dataManager = new window.TraitLABDataManager();
+                
+                // Token Filters
+                this.modules.filters = new window.TraitLABFilters();
+                
+                // Display Manager
+                this.modules.displayManager = new window.TraitLABDisplayManager();
+                
+                console.log('✅ TraitLAB v2: Todos los módulos inicializados');
+            }
+
+            /**
+             * Configurar event listeners básicos
+             */
+            setupEventListeners() {
+                console.log('🔧 TraitLAB v2: Configurando event listeners...');
+                
+                // Connect Wallet button
+                const connectBtn = document.getElementById('connectBtn');
+                if (connectBtn) {
+                    connectBtn.addEventListener('click', () => this.connectWallet());
+                }
+                
+                // Disconnect Wallet button
+                const disconnectBtn = document.getElementById('disconnectBtn');
+                if (disconnectBtn) {
+                    disconnectBtn.addEventListener('click', () => this.disconnectWallet());
+                }
+                
+                // Wallet events
+                if (this.modules.wallet) {
+                    this.modules.wallet.on('walletConnected', (data) => this.onWalletConnected(data));
+                    this.modules.wallet.on('walletDisconnected', () => this.onWalletDisconnected());
+                }
+                
+                // UI events
+                if (this.modules.ui) {
+                    this.modules.ui.on('tokenSelected', (data) => {
+                        console.log('🎯 tokenSelected event received in main app:', data);
+                        this.onTokenSelected(data);
+                    });
+                }
+                
+                console.log('✅ TraitLAB v2: Event listeners configurados');
+            }
+
+            /**
+             * Configurar sistema de tabs
+             */
+            setupTabs() {
+                console.log('🔧 TraitLAB v2: Configurando tabs...');
+                
+                const contractBtns = document.querySelectorAll('.contract-btn');
+                
+                contractBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contract = btn.dataset.contract;
+                        const filter = btn.dataset.filter;
+                        
+                        // Update active button
+                        contractBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        // Update current contract and filter
+                        this.currentContract = contract;
+                        this.currentFilter = filter;
+                        
+                        // Load tokens for this contract/filter
+                        this.loadTokensForTab();
+                    });
+                });
+                
+                // Activar automáticamente el primer tab si hay wallet conectada
+                if (this.modules.wallet && this.modules.wallet.getCurrentAccount()) {
+                    const firstBtn = contractBtns[0];
+                    if (firstBtn) {
+                        firstBtn.click(); // Esto activará el tab y cargará tokens
+                    }
+                }
+                
+                console.log('✅ TraitLAB v2: Tabs configurados');
+            }
+
+            /**
+             * Conectar wallet
+             */
+            async connectWallet() {
+                try {
+                    console.log('🔌 TraitLAB v2: Conectando wallet...');
+                    await this.modules.wallet.connectWallet();
+                } catch (error) {
+                    console.error('❌ Error conectando wallet:', error);
+                    this.showError(`Error conectando wallet: ${error.message}`);
+                }
+            }
+
+            /**
+             * Desconectar wallet
+             */
+            async disconnectWallet() {
+                try {
+                    console.log('🔌 TraitLAB v2: Desconectando wallet...');
+                    await this.modules.wallet.disconnectWallet();
+                } catch (error) {
+                    console.error('❌ Error desconectando wallet:', error);
+                    this.showError(`Error desconectando wallet: ${error.message}`);
+                }
+            }
+
+            /**
+             * Wallet conectado
+             */
+            onWalletConnected(data) {
+                console.log('🔌 TraitLAB v2: Wallet conectada:', data);
+                
+                // Update UI
+                document.getElementById('connect-section').style.display = 'none';
+                document.getElementById('account-section').style.display = 'block';
+                document.getElementById('walletAddress').textContent = `${data.account.substring(0, 6)}...${data.account.slice(-4)}`;
+                
+                // Show tokens section
+                document.getElementById('tokens-section').style.display = 'block';
+                
+                // Iniciar DataManager en background
+                if (this.modules.dataManager) {
+                    this.modules.dataManager.init().catch(error => {
+                        console.warn('📊 DataManager error:', error);
+                    });
+                }
+                
+                // Activar automáticamente el primer tab para cargar tokens
+                console.log('🔧 TraitLAB v2: Wallet conectada, activando primer tab...');
+                const contractBtns = document.querySelectorAll('.contract-btn');
+                if (contractBtns.length > 0) {
+                    const firstBtn = contractBtns[0];
+                    // Simular click en el primer botón para activar el tab
+                    firstBtn.click();
+                } else {
+                    // Si no hay botones, establecer valores por defecto
+                    this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO
+                    this.currentFilter = null;
+                    this.loadTokensForTab();
+                }
+            }
+
+            /**
+             * Wallet desconectada
+             */
+            onWalletDisconnected() {
+                console.log('�� TraitLAB v2: Wallet desconectada');
+                
+                // Update UI
+                document.getElementById('connect-section').style.display = 'block';
+                document.getElementById('account-section').style.display = 'none';
+                document.getElementById('tokens-section').style.display = 'none';
+                
+                // Clear tokens
+                this.clearTokens();
+            }
+
+            /**
+             * Cargar tokens para el tab actual
+             */
+            async loadTokensForTab() {
+                try {
+                    console.log('🚀 TraitLAB v2: Cargando tokens para tab:', this.currentFilter);
+                    console.log('🔍 Contrato actual:', this.currentContract);
+                    
+                    this.showLoading();
+                    
+                    // Verificar que tengamos los módulos necesarios
+                    if (!this.modules.wallet || !this.modules.ui) {
+                        throw new Error('Módulos wallet o UI no disponibles');
+                    }
+                    
+                    const userAddress = this.modules.wallet.getCurrentAccount();
+                    if (!userAddress) {
+                        throw new Error('No hay wallet conectada');
+                    }
+                    
+                    // Cargar tokens base según el contrato
+                    if (!this.modules.zero || !this.currentContract) {
+                        throw new Error('Módulo zero o contrato no disponible');
+                    }
+                    
+                    const allTokens = await this.modules.zero.loadTokens(userAddress, this.currentContract);
+                    console.log(`📊 Tokens cargados: ${allTokens.length}`);
+                    
+                    // Usar módulo de filtros para procesar tokens
+                    if (this.modules.filters) {
+                        let filteredTokens;
+                        
+                        if (this.currentFilter === 'crafting') {
+                            // Mostrar contenido de crafting
+                            if (this.modules.crafting) {
+                                await this.modules.crafting.loadRecipes();
+                                this.modules.displayManager.displayCraftingContent(
+                                    document.getElementById('tokens-grid'),
+                                    this.modules.crafting,
+                                    this.modules.dataManager
+                                );
+                            } else {
+                                throw new Error('Módulo de crafting no disponible');
+                            }
+                        } else {
+                            // Filtrar tokens por tipo
+                            filteredTokens = this.modules.filters.filterTokensByType(allTokens, this.currentFilter || 'adrianzero');
+                            
+                            // Mostrar tokens filtrados
+                            if (filteredTokens.length > 0) {
+                                this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
+                            } else {
+                                this.modules.displayManager.showNoTokens(
+                                    document.getElementById('tokens-grid'),
+                                    `No ${this.currentFilter || 'adrianzero'} tokens found`
+                                );
+                            }
+                        }
+                    } else {
+                        throw new Error('Módulo de filtros no disponible');
+                    }
+                    
+                    this.hideLoading();
+                    
+                } catch (error) {
+                    console.error('❌ Error cargando tokens:', error);
+                    this.hideLoading();
+                    this.showError(`Error cargando tokens: ${error.message}`);
+                }
+            }
+
+            /**
+             * Mostrar contenido de crafting
+             */
+            displayCraftingContent() {
+                const grid = document.getElementById('tokens-grid');
+                if (!grid) return;
+                
+                // Limpiar el grid
+                grid.innerHTML = '';
+                grid.className = 'crafting-container';
+                
+                // Verificar si el módulo de crafting está disponible
+                if (!this.modules.crafting) {
+                    grid.innerHTML = '<div class="no-recipes"><p>Módulo de crafting no disponible</p></div>';
+                    return;
+                }
+                
+                // Verificar el estado de carga de las recetas
+                if (this.modules.crafting.isLoadingRecipes && this.modules.crafting.isLoadingRecipes()) {
+                    grid.innerHTML = '<div class="loading-recipes"><p>Loading recipes...</p></div>';
+                } else if (this.modules.crafting.isRecipesLoaded && this.modules.crafting.isRecipesLoaded()) {
+                    // Las recetas se cargaron, verificar si hay contenido
+                    const recipes = this.modules.crafting.getRecipes ? this.modules.crafting.getRecipes() : [];
+                    if (recipes && recipes.length > 0) {
+                        // Crear contenedor para recetas
+                        const recipesSection = document.createElement('div');
+                        recipesSection.className = 'crafting-section recipes-section';
+                        recipesSection.innerHTML = `
+                            <h3>Available Recipes</h3>
+                            <div class="recipes-grid" id="recipes-grid"></div>
+                        `;
+                        grid.appendChild(recipesSection);
+                        
+                        // Llenar el grid de recetas
+                        const recipesGrid = document.getElementById('recipes-grid');
+                        if (recipesGrid) {
+                            recipes.forEach(recipe => {
+                                const recipeCard = this.renderRecipeCard(recipe);
+                                recipesGrid.appendChild(recipeCard);
+                            });
+                        }
+                        
+                        // Crear contenedor para traits
+                        const traitsSection = document.createElement('div');
+                        traitsSection.className = 'crafting-section traits-section';
+                        traitsSection.innerHTML = `
+                            <h3>Your Traits</h3>
+                            <div class="traits-grid" id="traits-grid">
+                                <div class="traits-placeholder"><p>Loading traits...</p></div>
+                            </div>
+                        `;
+                        grid.appendChild(traitsSection);
+                        
+                        // Cargar traits si están disponibles
+                        this.loadTraitsInCraftingGrid();
+                    } else {
+                        grid.innerHTML = '<div class="no-recipes"><p>No recipes available.</p></div>';
+                    }
+                } else {
+                    // Aún no se han cargado las recetas, mostrar loading
+                    grid.innerHTML = '<div class="loading-recipes"><p>Loading recipes...</p></div>';
+                }
+            }
+
+            /**
+             * Renderizar tarjeta de receta
+             */
+            renderRecipeCard(recipe) {
+                const recipeCard = document.createElement('div');
+                recipeCard.className = 'recipe-card';
+                recipeCard.setAttribute('data-recipe-id', recipe.recipeId);
+                
+                let burnItems = '';
+                if (recipe.burn && Array.isArray(recipe.burn)) {
+                    burnItems = recipe.burn.map(item => 
+                        `<div class="recipe-ingredient">
+                            <span class="trait-id">ID: ${item.id}</span>
+                            <span class="trait-required">Required: ${item.amount}</span>
+                        </div>`
+                    ).join('');
+                }
+                
+                recipeCard.innerHTML = `
+                    <div class="recipe-header">
+                        <h4>Recipe #${recipe.recipeId}</h4>
+                        <span class="recipe-type">${recipe.type || 'Standard'} Recipe</span>
+                    </div>
+                    <div class="recipe-ingredients">
+                        <h5>Burn Requirements:</h5>
+                        ${burnItems || '<p>No requirements</p>'}
+                    </div>
+                    <div class="recipe-output">
+                        <h5>Output:</h5>
+                        <div class="output-info">
+                            <span>Trait #${recipe.output?.id || 'Unknown'}</span>
+                            <span>Amount: ${recipe.output?.amount || 1}</span>
+                        </div>
+                    </div>
+                `;
+                
+                return recipeCard;
+            }
+
+            /**
+             * Cargar traits en el grid de crafting
+             */
+            loadTraitsInCraftingGrid() {
+                const traitsGrid = document.getElementById('traits-grid');
+                if (!traitsGrid) return;
+                
+                // Verificar si tenemos traits disponibles
+                if (this.modules.dataManager && this.modules.dataManager.getAdrianLabTokens) {
+                    const traits = this.modules.dataManager.getAdrianLabTokens();
+                    if (traits && traits.length > 0) {
+                        this.displayTraitsInCraftingGrid(traits);
+                    } else {
+                        traitsGrid.innerHTML = '<div class="no-traits"><p>No traits available for crafting</p></div>';
+                    }
+                } else {
+                    traitsGrid.innerHTML = '<div class="no-traits"><p>DataManager not available</p></div>';
+                }
+            }
+
+            /**
+             * Mostrar traits en el grid de crafting
+             */
+            displayTraitsInCraftingGrid(traits) {
+                const traitsGrid = document.getElementById('traits-grid');
+                if (!traitsGrid) return;
+                
+                traitsGrid.innerHTML = '';
+                
+                traits.forEach(trait => {
+                    const traitCard = document.createElement('div');
+                    traitCard.className = 'trait-card';
+                    traitCard.setAttribute('data-token-id', trait.tokenId);
+                    
+                    const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
+                    
+                    traitCard.innerHTML = `
+                        <img src="${imageUrl}" alt="${trait.title}" class="trait-image" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'>
+                        <div class="trait-info">
+                            <div class="trait-title">${trait.title}</div>
+                            <div class="trait-id">#${trait.tokenId}</div>
+                        </div>
+                    `;
+                    
+                    traitsGrid.appendChild(traitCard);
+                });
+            }
+
+            /**
+             * Limpiar tokens
+             */
+            clearTokens() {
+                const grid = document.getElementById('tokens-grid');
+                if (grid) {
+                    grid.innerHTML = '';
+                }
+            }
+
+            /**
+             * Mostrar loading
+             */
+            showLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) {
+                    loading.style.display = 'block';
+                }
+            }
+
+            /**
+             * Ocultar loading
+             */
+            hideLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+            }
+
+            /**
+             * Mostrar error
+             */
+            showError(message) {
+                const error = document.getElementById('error');
+                if (error) {
+                    error.textContent = message;
+                    error.style.display = 'block';
+                    setTimeout(() => {
+                        error.style.display = 'none';
+                    }, 5000);
+                }
+            }
+
+            /**
+             * Mostrar éxito
+             */
+            showSuccess(message) {
+                const success = document.getElementById('success');
+                if (success) {
+                    success.textContent = message;
+                    success.style.display = 'block';
+                    setTimeout(() => {
+                        success.style.display = 'none';
+                    }, 3000);
+                }
+            }
+
+            /**
+             * Manejar selección de token
+             */
+            onTokenSelected(data) {
+                console.log('🎯 onTokenSelected called with:', data);
+                
+                const { token, filter } = data;
+                console.log('📋 Parsed data:', { token, filter, currentContract: this.currentContract });
+                
+                if (filter === 'rename' || this.currentContract === "0x6e369bf0e4e0c106192d606fb6d85836d684da75") {
+                    // AdrianZERO tokens
+                    console.log('🔵 Setting as ERC721 token');
+                    this.selectedERC721 = token;
+                    // Propagar selección al ZeroManager para operaciones on-chain
+                    if (this.modules.zero && this.modules.zero.setSelectedERC721) {
+                        this.modules.zero.setSelectedERC721(token);
+                    }
+                    this.selectedERC1155 = [];
+                    this.selectedFloppy = null;
+                    // Don't reset selectedSerum if we're in serum mode
+                    if (this.currentFilter !== 'serum') {
+                        this.selectedSerum = null;
+                    }
+                } else if (filter === 'floppy') {
+                    console.log('💾 Setting as Floppy token');
+                    this.selectedFloppy = token;
+                    // Don't reset selectedERC721 if we're in floppy mode
+                    if (this.currentFilter !== 'floppy') {
+                        this.selectedERC721 = null;
+                    }
+                    this.selectedERC1155 = [];
+                    this.selectedSerum = null;
+                    
+                    // Propagate selection to floppy module
+                    if (this.modules.floppy && this.modules.floppy.setSelectedFloppy) {
+                        this.modules.floppy.setSelectedFloppy(token);
+                    }
+                } else if (filter === 'serum') {
+                    console.log('🧪 Setting as Serum token');
+                    this.selectedSerum = token;
+                    this.selectedERC1155 = [];
+                    this.selectedFloppy = null;
+                    
+                    // Propagate selection to serum module
+                    if (this.modules.serums && this.modules.serums.setSelectedSerum) {
+                        this.modules.serums.setSelectedSerum(token);
+                    }
+                } else if (filter === 'crafting') {
+                    console.log('🔨 Setting as Crafting token');
+                    // For crafting, we treat traits as ingredients
+                    if (token.tokenType === 'ERC1155') {
+                        this.selectedERC1155 = [token];
+                        // Propagate selection to crafting module
+                        if (this.modules.crafting && this.modules.crafting.selectTrait) {
+                            this.modules.crafting.selectTrait(token.tokenId, 1);
+                        }
+                    }
+                } else {
+                    // AdrianLAB - traits
+                    console.log('🎭 Setting as Traits token');
+                    if (token.tokenType === 'ERC721') {
+                        this.selectedERC721 = token;
+                        // Propagar selección al ZeroManager para operaciones on-chain
+                        if (this.modules.zero && this.modules.zero.setSelectedERC721) {
+                            this.modules.zero.setSelectedERC721(token);
+                        }
+                    } else if (token.tokenType === 'ERC1155') {
+                        // Update traits module selection
+                        if (this.modules.traits && this.modules.traits.handleTraitSelection) {
+                            this.modules.traits.handleTraitSelection(token);
+                            this.selectedERC1155 = this.modules.traits.getSelectedTraits();
+                        }
+                    }
+                }
+                
+                console.log('📊 Final selection state:', {
+                    selectedERC721: this.selectedERC721?.tokenId,
+                    selectedFloppy: this.selectedFloppy?.tokenId,
+                    selectedSerum: this.selectedSerum?.tokenId,
+                    selectedERC1155: this.selectedERC1155.map(t => t.tokenId)
+                });
+                
+                this.updateSelectionInfo();
+            }
+
+            /**
+             * Actualizar información de selección
+             */
+            updateSelectionInfo() {
+                const selectionInfo = document.getElementById('selection-info');
+                const selectionText = document.querySelector('.selection-text');
+                
+                if (!selectionInfo || !selectionText) return;
+                
+                // Mostrar la sección de selección
+                selectionInfo.style.display = 'block';
+                
+                let text = '';
+                
+                // Hide all sections by default
+                const sections = [
+                    'erc721-actions-section',
+                    'traits-actions-section',
+                    'use-serum-section',
+                    'open-floppy-section',
+                    'open-pack-section',
+                    'activate-token-section',
+                    'rename-section',
+                    'apply-traits-section',
+                    'refresh-metadata-section'
+                ];
+                
+                sections.forEach(sectionId => {
+                    const section = document.getElementById(sectionId);
+                    if (section) section.style.display = 'none';
+                });
+                
+                if (this.selectedERC721) {
+                    text += `<h3 class="selected-token-title">${this.selectedERC721.title}</h3>`;
+                    
+                    // Show ERC721 actions section
+                    const erc721ActionsSection = document.getElementById('erc721-actions-section');
+                    if (erc721ActionsSection) {
+                        erc721ActionsSection.style.display = 'block';
+                        console.log('✅ Sección ERC721 Actions mostrada');
+                    }
+
+                    // Mostrar imagen base del AdrianZERO cuando no hay traits seleccionados
+                    if (this.selectedERC1155.length === 0) {
+                        const generatedImage = selectionInfo.querySelector('.generated-image img');
+                        const imageLoadingOverlay = selectionInfo.querySelector('.image-loading-overlay');
+                        if (generatedImage && imageLoadingOverlay) {
+                            const baseImageUrl = this.selectedERC721.image || this.selectedERC721.imageUrl || `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
+                            imageLoadingOverlay.style.display = 'flex';
+                            generatedImage.src = baseImageUrl;
+                            generatedImage.style.display = 'block';
+                            generatedImage.onload = function() {
+                                imageLoadingOverlay.style.display = 'none';
+                            };
+                            generatedImage.onerror = function() {
+                                imageLoadingOverlay.style.display = 'none';
+                            };
+                        }
+                    }
+                }
+                
+                if (this.selectedERC1155.length > 0) {
+                    text += `<h4 class="selected-traits-title sticky-hidden">Selected Traits</h4>`;
+                    text += `<div class="traits-container sticky-hidden">`;
+                    this.selectedERC1155.forEach(trait => {
+                        text += `<p class="trait-item">${trait.title}</p>`;
+                    });
+                    text += `</div>`;
+                    
+                    if (this.selectedERC721) {
+                        // Show traits actions section
+                        const traitsActionsSection = document.getElementById('traits-actions-section');
+                        if (traitsActionsSection) {
+                            traitsActionsSection.style.display = 'block';
+                            console.log('✅ Sección Traits Actions mostrada');
+                        }
+                    }
+                }
+                
+                if (this.selectedFloppy) {
+                    // Use hardcoded names for specific floppy discs
+                    let floppyDisplayName = this.selectedFloppy.title;
+                    if (this.selectedFloppy.tokenId === 10003) {
+                        floppyDisplayName = 'GLITCH Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10004) {
+                        floppyDisplayName = 'GF Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10005) {
+                        floppyDisplayName = 'Golden Floppy';
+                    } else if (this.selectedFloppy.tokenId === 10007) {
+                        floppyDisplayName = 'Action Pack 10007';
+                    }
+                    
+                    text += `<h4 class="selected-floppy-title">${floppyDisplayName}</h4>`;
+                    
+                    // Show floppy actions section
+                    const openFloppySection = document.getElementById('open-floppy-section');
+                    if (openFloppySection) {
+                        openFloppySection.style.display = 'block';
+                    }
+                }
+                
+                if (this.selectedSerum) {
+                    text += `<h4 class="selected-serum-title">${this.selectedSerum.title}</h4>`;
+                    
+                    // Show serum actions section
+                    const useSerumSection = document.getElementById('use-serum-section');
+                    if (useSerumSection) {
+                        useSerumSection.style.display = 'block';
+                    }
+                }
+                
+                // Update selection text
+                if (selectionText) {
+                    selectionText.innerHTML = text;
+                }
+                
+                // Update sticky visibility manager
+                if (this.stickyManager) {
+                    const appState = {
+                        selectedERC721: this.selectedERC721,
+                        selectedERC1155: this.selectedERC1155,
+                        selectedFloppy: this.selectedFloppy,
+                        selectedSerum: this.selectedSerum,
+                        currentFilter: this.currentFilter
+                    };
+                    this.stickyManager.update(appState);
+                }
+            }
+
+            /**
+             * Generar imagen combinada
+             */
+            generateCombinedImage() {
+                if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
+                
+                const generatedImage = document.querySelector('.generated-image img');
+                const imageLoadingOverlay = document.querySelector('.image-loading-overlay');
+                
+                if (!generatedImage || !imageLoadingOverlay) return;
+                
+                // Show loading
+                imageLoadingOverlay.style.display = 'flex';
+                
+                // Generate combined image URL
+                const baseTokenId = this.selectedERC721.tokenId;
+                const traitIds = this.selectedERC1155.map(t => t.tokenId).join(',');
+                const combinedImageUrl = `https://adrianlab.vercel.app/api/render/${baseTokenId}?traits=${traitIds}`;
+                
+                // Load combined image
+                generatedImage.src = combinedImageUrl;
+                generatedImage.style.display = 'block';
+                
+                generatedImage.onload = function() {
+                    imageLoadingOverlay.style.display = 'none';
+                };
+                
+                generatedImage.onerror = function() {
+                    imageLoadingOverlay.style.display = 'none';
+                };
+            }
+        }
+
+        // Inicializar aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 TraitLAB v2: DOM listo, inicializando...');
+            
+            // Crear instancia global
+            window.app = new TraitLABv2();
+            
+            // Inicializar
+            await window.app.init();
+        });
+    </script>
+</body>
+</html>
