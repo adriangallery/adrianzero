@@ -105,6 +105,70 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
+        /* Spinner y mensajes de carga */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .loading-message .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #00ff00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .loading-message p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .loading-message p:last-child {
+            font-size: 12px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .error-message button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 14px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .error-message button:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
         .connect-section {
             text-align: center;
             background: rgba(255, 255, 255, 0.1);
@@ -2361,14 +2425,8 @@
 
             onWalletConnected(data) {
                 console.log('🔌 onWalletConnected called with:', data);
-                console.log('🔍 Current app state:', {
-                    modules: Object.keys(this.modules),
-                    zeroModule: this.modules.zero,
-                    currentContract: this.currentContract,
-                    currentFilter: this.currentFilter
-                });
                 
-                // Update UI
+                // ✅ ACTUALIZAR UI INMEDIATAMENTE (sin esperar carga)
                 document.getElementById('connect-section').style.display = 'none';
                 document.getElementById('account-section').style.display = 'block';
                 document.getElementById('walletAddress').textContent = `${data.account.substring(0, 6)}...${data.account.slice(-4)}`;
@@ -2376,28 +2434,63 @@
                 // Show tokens section
                 document.getElementById('tokens-section').style.display = 'block';
                 
-                // Iniciar carga en background del DataManager
-                if (this.modules.dataManager) {
-                    console.log('📊 Iniciando carga en background del DataManager...');
-                    this.modules.dataManager.init().then(() => {
-                        console.log('📊 DataManager cargado en background');
-                        // Mostrar estado del cache
-                        const status = this.modules.dataManager.getStatus();
-                        console.log('📊 Estado del cache:', status);
-                        
-                        // Mostrar sección de debug
-                        const debugSection = document.querySelector('.debug-section');
-                        if (debugSection) {
-                            debugSection.style.display = 'block';
-                        }
-                    }).catch(error => {
-                        console.warn('📊 Error cargando DataManager en background:', error);
-                    });
+                // 🚀 CARGAR DATOS EN BACKGROUND (no bloquea la UI)
+                this.loadDataInBackground(data.account);
+            }
+
+            /**
+             * Cargar datos en background sin bloquear la UI
+             */
+            async loadDataInBackground(userAddress) {
+                console.log('🚀 Iniciando carga en background...');
+                
+                // Mostrar mensaje de "cargando datos" en lugar de spinner bloqueante
+                const tokensGrid = document.getElementById('tokens-grid');
+                if (tokensGrid) {
+                    tokensGrid.innerHTML = `
+                        <div class="loading-message" style="text-align: center; padding: 20px; color: #666;">
+                            <div class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <p>🔄 Cargando tus tokens en background...</p>
+                            <p style="font-size: 12px; color: #999;">Puedes navegar por los tabs mientras se cargan</p>
+                        </div>
+                    `;
                 }
                 
-                // Load tokens for current contract
-                console.log('🚀 Calling loadTokensForTab...');
-                this.loadTokensForTab();
+                try {
+                    // 1. Iniciar DataManager en background
+                    if (this.modules.dataManager) {
+                        console.log('📊 Iniciando DataManager en background...');
+                        this.modules.dataManager.init().then(() => {
+                            console.log('📊 DataManager cargado en background');
+                            const status = this.modules.dataManager.getStatus();
+                            console.log('📊 Estado del cache:', status);
+                        }).catch(error => {
+                            console.warn('📊 Error cargando DataManager en background:', error);
+                        });
+                    }
+                    
+                    // 2. Cargar tokens del contrato actual en background
+                    console.log('🚀 Cargando tokens del contrato actual en background...');
+                    await this.loadTokensForTab();
+                    
+                    // 3. Limpiar mensaje de carga
+                    if (tokensGrid) {
+                        tokensGrid.innerHTML = '';
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error en carga en background:', error);
+                    // Mostrar error pero no bloquear la UI
+                    if (tokensGrid) {
+                        tokensGrid.innerHTML = `
+                            <div class="error-message" style="text-align: center; padding: 20px; color: #e74c3c;">
+                                <p>⚠️ Error cargando tokens</p>
+                                <p style="font-size: 12px;">${error.message}</p>
+                                <button onclick="window.app.loadDataInBackground('${userAddress}')" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Reintentar</button>
+                            </div>
+                        `;
+                    }
+                }
             }
 
             onWalletDisconnected() {
