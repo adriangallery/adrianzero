@@ -47,6 +47,26 @@
             text-shadow: 0 0 10px #00ff00;
         }
 
+        #menu-container .navbar-text {
+            color: #00ff00 !important;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #menu-container .navbar-toggler {
+            border-color: #00ff00;
+        }
+
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .token-symbol {
+            color: #00ff00 !important;
+            font-weight: bold;
+        }
+
         .menu-spacer {
             height: 80px;
         }
@@ -360,26 +380,296 @@
                 gap: 15px;
             }
         }
+
+        /* Selection Info */
+        .selection-info {
+            background: rgba(51, 51, 51, 0.95);
+            border: 2px solid #333333;
+            border-radius: 10px;
+            padding: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            color: white;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .selection-info.with-side-menu {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .selection-info .selection-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .selection-info .generated-image img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+        }
+
+        .selection-info .image-loading-overlay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .selection-info.minimized {
+            max-width: 200px;
+            overflow: hidden;
+        }
+
+        .selection-info.minimized .selection-text {
+            display: none;
+        }
+
+        .selection-info.minimized .generated-image img {
+            max-width: 60px;
+            max-height: 60px;
+        }
+
+        .selection-info.minimized .image-loading-overlay {
+            padding: 10px;
+        }
+
+        .selection-info.sticky .sticky-hidden {
+            display: none;
+        }
+
+        .selection-info.sticky .selected-traits-title,
+        .selection-info.sticky .traits-container {
+            display: none;
+        }
+
+        .selection-info.sticky {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+
+        .selection-info.sticky {
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #00ff00;
+        }
+
+        .selection-info.sticky .selection-text {
+            display: none;
+        }
+
+        .selection-info.sticky .generated-image {
+            text-align: center;
+        }
+
+        .selection-info.sticky .generated-image img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 10px;
+        }
+
+        .selection-info.sticky .traits-actions-section {
+            margin-top: 10px;
+        }
+
+        .selection-info.sticky .action-btn {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .selection-info.sticky .action-btn:hover {
+            background: #00cc00;
+            transform: translateY(-1px);
+        }
+
+        .selection-info.sticky.no-buttons {
+            max-width: 200px;
+        }
+
+        .selection-info.sticky.no-buttons .side-emoji-menu {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+
+        .selection-info.sticky.no-buttons .side-emoji-menu .emoji-btn {
+            background: none;
+            border: none;
+            color: #00ff00;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .selection-info.sticky.no-buttons {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #333;
+        }
+
+        .selection-info.sticky.no-buttons .side-emoji-menu {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+
+        /* Side emoji menu */
+        .side-emoji-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .emoji-btn {
+            background: none;
+            border: none;
+            color: #00ff00;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .emoji-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        /* Action buttons */
+        .action-btn {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #00cc00;
+            transform: translateY(-1px);
+        }
+
+        /* Form controls */
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-family: 'VT323', monospace;
+            margin-bottom: 10px;
+        }
+
+        .form-control::placeholder {
+            color: #888;
+        }
+
+        /* Responsive selection-info */
+        @media (max-width: 767px) {
+            .selection-info.sticky {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Menu -->
     <div id="menu-container">
-        <nav class="navbar navbar-expand-lg">
+        <!-- AdrianLAB Navigation Menu - Always hamburger mode -->
+        <nav class="navbar">
             <div class="container-fluid">
-                <span class="navbar-text">TraitLAB v2</span>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <div class="d-flex align-items-center">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <span class="navbar-text token-symbol ms-2">$ADRIAN</span>
+                </div>
+                
+                <!-- Espacio para mantener el balance visual -->
+                <div class="d-flex align-items-center">
+                    <!-- Espacio reservado para futuras funcionalidades -->
+                </div>
+
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="https://adrianlab.vercel.app" target="_blank">AdrianLAB</a>
+                            <a class="nav-link" href="https://adrianzero.com">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="https://adrianzero.vercel.app" target="_blank">AdrianZERO</a>
+                            <a class="nav-link" href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" target="_blank">Buy $ADRIAN</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/mintwithadrian">Mint with $ADRIAN</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/roadmaps">Roadmap</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/traitlab">TraitLAB</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/ogclaim">OG Claim</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/">Adventure</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/shop">TraitSHOP</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/traitcreator">T-Shit Studio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/patientzero">PatientZERO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adriangallery.com">AdrianGALLERY</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianpunks.com">AdrianPUNKS</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://discord.gg/ZtyBkXGtwd" target="_blank">DISCORD</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://x.com/adriancerda" target="_blank">X</a>
                         </li>
                     </ul>
+                </div>
+
+                <!-- Quitamos el botón desktop pero dejamos un div vacío para mantener el espacio -->
+                <div class="d-none d-lg-flex align-items-center ms-auto desktop-wallet-section">
+                    <!-- Botón de wallet quitado pero dejando el espacio -->
                 </div>
             </div>
         </nav>
@@ -455,6 +745,78 @@
 
             <!-- Tokens Grid -->
             <div id="tokens-grid" class="tokens-grid"></div>
+
+            <!-- Selection Info -->
+            <div id="selection-info" class="selection-info with-side-menu" style="display: none;">
+                <div class="selection-text">
+                    <div class="selected-traits-title">Selected Traits</div>
+                    <div class="traits-container">
+                        <!-- Traits will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="generated-image">
+                    <img src="" alt="Generated Image" style="display: none;">
+                    <div class="image-loading-overlay" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Generating image...</p>
+                    </div>
+                </div>
+
+                <!-- Side Emoji Menu -->
+                <div class="side-emoji-menu">
+                    <button class="emoji-btn" data-action="minimize">📱</button>
+                    <button class="emoji-btn" data-action="expand">📱</button>
+                </div>
+
+                <!-- Actions Sections -->
+                <div class="traits-actions-section">
+                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
+                </div>
+
+                <div id="erc721-actions-section">
+                    <button id="refreshMetadataBtn" class="action-btn">Refresh Metadata</button>
+                    <button id="openFloppyBtn" class="action-btn">Open Floppy</button>
+                    <button id="useSerumBtn" class="action-btn">Use Serum</button>
+                    <button id="activateTokenBtn" class="action-btn">Activate Token</button>
+                    <button id="renameTokenBtn" class="action-btn">Rename Token</button>
+                    <button id="openPackBtn" class="action-btn">Open Pack</button>
+                </div>
+
+                <div id="traits-actions-section">
+                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
+                </div>
+
+                <div id="use-serum-section">
+                    <button id="useSerumBtn" class="action-btn">Use Serum</button>
+                </div>
+
+                <div id="open-floppy-section">
+                    <button id="openFloppyBtn" class="action-btn">Open Floppy</button>
+                </div>
+
+                <div id="open-pack-section">
+                    <button id="openPackBtn" class="action-btn">Open Pack</button>
+                </div>
+
+                <div id="activate-token-section">
+                    <button id="activateTokenBtn" class="action-btn">Activate Token</button>
+                </div>
+
+                <div id="rename-section">
+                    <input type="text" id="newTokenName" placeholder="New token name" class="form-control">
+                    <button id="approveRenameBtn" class="action-btn">Approve</button>
+                    <button id="renameTokenBtn" class="action-btn">Rename</button>
+                </div>
+
+                <div id="apply-traits-section">
+                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
+                </div>
+
+                <div id="refresh-metadata-section">
+                    <button id="refreshMetadataBtn" class="action-btn">Refresh Metadata</button>
+                </div>
+            </div>
         </div>
     </div>
 
