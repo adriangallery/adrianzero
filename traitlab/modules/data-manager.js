@@ -72,7 +72,7 @@ class TraitLABDataManager {
     }
 
     /**
-     * Cargar tokens AdrianLAB (ERC1155)
+     * Cargar tokens AdrianLAB (ERC1155) con rate limiting inteligente
      */
     async loadAdrianLabTokens() {
         if (this.cache.loading.adrianLab || this.cache.ready.adrianLab) return;
@@ -86,19 +86,24 @@ class TraitLABDataManager {
                 const userAddress = window.app.modules.wallet?.getCurrentAccount();
                 if (userAddress) {
                     const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
-                    // Cargar todos los tipos de tokens por separado
-                    console.log('📊 Cargando traits...');
-                    const traits = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
                     
-                    console.log('📊 Cargando floppys...');
-                    const floppys = await window.app.modules.zero.loadTokens(userAddress, contractAddress, 'floppy');
+                    // Cargar traits primero (ya están cargados, usar cache)
+                    console.log('📊 Usando traits del cache...');
+                    const traits = this.cache.adrianLab?.traits || [];
+                    
+                    // Cargar floppys y serums con delay para evitar rate limiting
+                    console.log('📊 Cargando floppys con delay...');
+                    const floppys = await this.loadTokensWithRetry(userAddress, contractAddress, 'floppy');
+                    
+                    console.log('📊 Esperando 3 segundos antes de cargar serums...');
+                    await this.delay(3000);
                     
                     console.log('📊 Cargando serums...');
-                    const serums = await window.app.modules.zero.loadTokens(userAddress, contractAddress, 'serum');
+                    const serums = await this.loadTokensWithRetry(userAddress, contractAddress, 'serum');
                     
                     // Separar por tipo
                     this.cache.adrianLab = {
-                        traits: traits.filter(t => t.tokenType === 'ERC1155'),
+                        traits: traits,
                         floppys: floppys.filter(t => t.tokenType === 'ERC1155'),
                         packs: [], // Por ahora vacío, se puede implementar después
                         serums: serums.filter(t => t.tokenType === 'ERC1155')
@@ -119,6 +124,39 @@ class TraitLABDataManager {
             this.cache.ready.adrianLab = true;
             this.emit('adrianLabReady', { tokens: this.cache.adrianLab });
         }
+    }
+
+    /**
+     * Cargar tokens con reintentos y rate limiting
+     */
+    async loadTokensWithRetry(userAddress, contractAddress, filter, maxRetries = 3) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`📊 Intento ${attempt}/${maxRetries} cargando ${filter}...`);
+                const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress, filter);
+                console.log(`✅ ${filter} cargados exitosamente en intento ${attempt}`);
+                return tokens;
+            } catch (error) {
+                if (error.message.includes('429') && attempt < maxRetries) {
+                    const delayTime = attempt * 5000; // 5s, 10s, 15s
+                    console.log(`⏳ Rate limit (429), esperando ${delayTime/1000}s antes de reintentar...`);
+                    await this.delay(delayTime);
+                } else {
+                    console.warn(`❌ Error cargando ${filter} en intento ${attempt}:`, error.message);
+                    if (attempt === maxRetries) {
+                        return []; // Retornar array vacío en lugar de fallar
+                    }
+                }
+            }
+        }
+        return [];
+    }
+
+    /**
+     * Delay helper
+     */
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     /**
