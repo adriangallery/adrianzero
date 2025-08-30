@@ -1250,17 +1250,32 @@
             position: relative;
         }
 
-        /* Grid separadas para recetas y traits en Crafting (alineadas con tokens-grid) */
-        .recipes-grid, .traits-grid {
+        /* Grid para recetas de crafting - ocupa todo el ancho */
+        .recipes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
             width: 100%;
             margin-top: 20px;
         }
+        
+        @media (max-width: 1200px) {
+            .recipes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+        }
+        
         @media (max-width: 768px) {
-            .recipes-grid, .traits-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            .recipes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .recipes-grid {
+                grid-template-columns: 1fr;
                 gap: 16px;
             }
         }
@@ -1299,6 +1314,113 @@
         .crafting-traits-grid .trait-token-id {
             font-size: 0.8rem;
             color: #999;
+        }
+
+        /* Estilos para las tarjetas de recetas */
+        .recipe-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: #666;
+        }
+
+        .recipe-card.specific-recipe {
+            border-left: 4px solid #00ff88;
+        }
+
+        .recipe-card.any-recipe {
+            border-left: 4px solid #ff8800;
+        }
+
+        .recipe-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #333;
+        }
+
+        .recipe-header h4 {
+            margin: 0 0 8px 0;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .recipe-type {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recipe-ingredients, .recipe-requirement, .recipe-output {
+            margin-bottom: 16px;
+        }
+
+        .recipe-ingredients h5, .recipe-requirement h5, .recipe-output h5 {
+            margin: 0 0 8px 0;
+            color: #ddd;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recipe-ingredient {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .trait-id, .trait-required {
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .requirement-info, .output-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .requirement-info span, .output-info span {
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+
+        /* Responsive para móvil */
+        @media (max-width: 768px) {
+            .recipe-card {
+                padding: 16px;
+            }
+            
+            .recipe-header h4 {
+                font-size: 1.1rem;
+            }
+            
+            .recipe-ingredient, .requirement-info, .output-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -3117,130 +3239,80 @@
                 
                 let html = '';
                 
-                // First, show recipes
+                // Solo mostrar recetas en un grid limpio
                 if (recipes.length > 0) {
-                    html += '<div class="crafting-section"><h3>🔨 Available Recipes</h3><div class="recipes-grid">';
+                    html += '<div class="crafting-section">';
+                    html += '<h3>🔨 Available Recipes</h3>';
+                    html += '<div class="recipes-grid">';
+                    
                     recipes.forEach(recipe => {
                         if (recipe.type === 'specific') {
-                            html += this.renderSpecificRecipeCard(recipe);
+                            html += this.renderSimpleRecipeCard(recipe);
                         } else if (recipe.type === 'any') {
-                            html += this.renderAnyRecipeCard(recipe);
+                            html += this.renderSimpleRecipeCard(recipe);
                         }
                     });
-                    html += '</div></div>';
-                }
-                
-                // Then, show user's traits for selection
-                if (this.traitTokens && this.traitTokens.length > 0) {
-                    html += '<div class="user-traits-section"><h3>🎭 Your Traits (Select for Crafting)</h3>';
-                    html += this.renderUserTraitsForCrafting();
+                    
+                    html += '</div>';
                     html += '</div>';
                 } else {
-                    html += '<div class="no-traits"><p>No traits found. Please visit the Traits tab first to load your traits.</p></div>';
+                    html += '<div class="no-recipes"><p>No recipes available.</p></div>';
                 }
                 
                 grid.innerHTML = html;
-                
-                // Add event listeners to recipe cards
-                this.setupCraftingEventListeners();
             }
 
-            renderUserTraitsForCrafting() {
-                if (!this.traitTokens || this.traitTokens.length === 0) {
-                    return '<p>No traits available</p>';
-                }
-                
-                // Flat grid (no categories) for easy multi-selection, sección separada
-                let html = '<div class="traits-grid">';
-                this.traitTokens.forEach(trait => {
-                    const isSelected = this.modules.crafting.getSelectedTraits().has(trait.tokenId);
-                    const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
-                    const safeTrait = JSON.stringify(trait).replace(/\"/g, '&quot;');
-                    html += `
-                        <div class="trait-token-card ${isSelected ? 'selected' : ''}" 
-                             data-token-id="${trait.tokenId}" 
-                             onclick=\"window.app.handleCraftingTraitSelection(${safeTrait})\">
-                            <img src="${imageUrl}" alt="${trait.title}" class="trait-token-image" 
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'">
-                            <div class="trait-token-name">${trait.title}</div>
-                            <div class="trait-token-id">#${trait.tokenId}</div>
-                            ${isSelected ? `<div class=\\\"selection-indicator\\\">✓</div>` : ''}
+            renderSimpleRecipeCard(recipe) {
+                if (recipe.type === 'specific') {
+                    const burnItems = recipe.burn.map(item => 
+                        `<div class="recipe-ingredient">
+                            <span class="trait-id">ID: ${item.id}</span>
+                            <span class="trait-required">Required: ${item.amount}</span>
+                        </div>`
+                    ).join('');
+                    
+                    return `
+                        <div class="recipe-card specific-recipe" data-recipe-id="${recipe.recipeId}">
+                            <div class="recipe-header">
+                                <h4>Recipe #${recipe.recipeId}</h4>
+                                <span class="recipe-type">Specific Recipe</span>
+                            </div>
+                            <div class="recipe-ingredients">
+                                <h5>Burn Requirements:</h5>
+                                ${burnItems}
+                            </div>
+                            <div class="recipe-output">
+                                <h5>Output:</h5>
+                                <div class="output-info">
+                                    <span>Trait #${recipe.output.id}</span>
+                                    <span>Amount: ${recipe.output.amount}</span>
+                                </div>
+                            </div>
                         </div>
                     `;
-                });
-                html += '</div>';
-                return html;
-            }
-
-            renderSpecificRecipeCard(recipe) {
-                const burnItems = recipe.burn.map(item => 
-                    `<div class="recipe-ingredient ${item.userBalance >= item.amount ? 'eligible' : 'insufficient'}">
-                        <span>ID: ${item.id}</span>
-                        <span>Required: ${item.amount}</span>
-                        <span>Owned: ${item.userBalance}</span>
-                    </div>`
-                ).join('');
-                
-                return `
-                    <div class="recipe-card specific-recipe" data-recipe-id="${recipe.recipeId}">
-                        <h3>Recipe #${recipe.recipeId}</h3>
-                        <div class="recipe-type">Specific Recipe</div>
-                        <div class="recipe-ingredients">
-                            <h4>Burn Requirements:</h4>
-                            ${burnItems}
-                        </div>
-                        <div class="recipe-output">
-                            <h4>Output:</h4>
-                            <div class="output-trait">
-                                <div class="trait-title">${recipe.output.title}</div>
-                                <div class="trait-details">ID: ${recipe.output.id} | Amount: ${recipe.output.amount}</div>
-                                ${recipe.output.image ? `<img src="${recipe.output.image}" alt="Output Trait" class="output-trait-image">` : ''}
+                } else {
+                    return `
+                        <div class="recipe-card any-recipe" data-recipe-id="${recipe.recipeId}">
+                            <div class="recipe-header">
+                                <h4>Recipe #${recipe.recipeId}</h4>
+                                <span class="recipe-type">Any Recipe</span>
+                            </div>
+                            <div class="recipe-requirement">
+                                <h5>Requirement:</h5>
+                                <div class="requirement-info">
+                                    <span>Burn Total: ${recipe.requirement.burnTotal} traits</span>
+                                </div>
+                            </div>
+                            <div class="recipe-output">
+                                <h5>Output:</h5>
+                                <div class="output-info">
+                                    <span>Trait #${recipe.output.id}</span>
+                                    <span>Amount: ${recipe.output.amount}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="recipe-actions">
-                            <button class="craft-btn ${recipe.eligible ? 'enabled' : 'disabled'}" 
-                                    data-recipe-id="${recipe.recipeId}" 
-                                    ${recipe.eligible ? '' : 'disabled'}>
-                                ${recipe.eligible ? '🔨 Craft' : '❌ Insufficient Materials'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            renderAnyRecipeCard(recipe) {
-                const selectedTotal = this.modules.crafting.getSelectedTotal();
-                const meetsRequirement = selectedTotal >= parseInt(recipe.requirement.burnTotal);
-                
-                return `
-                    <div class="recipe-card any-recipe" data-recipe-id="${recipe.recipeId}">
-                        <h3>Recipe #${recipe.recipeId}</h3>
-                        <div class="recipe-type">Any Recipe</div>
-                        <div class="recipe-requirement">
-                            <h4>Burn Requirement:</h4>
-                            <div>Total: ${recipe.requirement.burnTotal} units</div>
-                            <div>Selected: ${selectedTotal} units</div>
-                            <div class="requirement-status ${meetsRequirement ? 'met' : 'not-met'}">
-                                ${meetsRequirement ? '✅ Requirement Met' : '❌ Need More'}
-                            </div>
-                        </div>
-                        <div class="recipe-output">
-                            <h4>Output:</h4>
-                            <div class="output-trait">
-                                <div class="trait-title">${recipe.output.title}</div>
-                                <div class="trait-details">ID: ${recipe.output.id} | Amount: ${recipe.output.amount}</div>
-                                ${recipe.output.image ? `<img src="${recipe.output.image}" alt="Output Trait" class="output-trait-image">` : ''}
-                            </div>
-                        </div>
-                        <div class="recipe-actions">
-                            <button class="craft-btn ${meetsRequirement ? 'enabled' : 'disabled'}" 
-                                    data-recipe-id="${recipe.recipeId}" 
-                                    ${meetsRequirement ? '' : 'disabled'}>
-                                ${meetsRequirement ? '🔨 Craft' : '❌ Insufficient Materials'}
-                            </button>
-                        </div>
-                    </div>
-                `;
+                    `;
+                }
             }
 
             setupCraftingEventListeners() {
