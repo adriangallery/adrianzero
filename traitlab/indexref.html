@@ -3266,8 +3266,8 @@
                 
                 // Solo mostrar recetas en un grid limpio
                 if (recipes && recipes.length > 0) {
-                    html += '<div class="crafting-section">';
-                    html += '<div class="recipes-grid">';
+                    // Cambiar la clase del grid para que use el estilo de recetas
+                    grid.className = 'tokens-grid recipes-grid';
                     
                     recipes.forEach(recipe => {
                         if (recipe.type === 'specific') {
@@ -3276,14 +3276,13 @@
                             html += this.renderSimpleRecipeCard(recipe);
                         }
                     });
-                    
-                    html += '</div>';
-                    html += '</div>';
                 } else if (recipes === null || recipes === undefined) {
                     // Aún no se han cargado las recetas, mostrar loading
+                    grid.className = 'tokens-grid';
                     html += '<div class="loading-recipes"><p>Loading recipes...</p></div>';
                 } else {
                     // Las recetas se cargaron pero están vacías
+                    grid.className = 'tokens-grid';
                     html += '<div class="no-recipes"><p>No recipes available.</p></div>';
                 }
                 
