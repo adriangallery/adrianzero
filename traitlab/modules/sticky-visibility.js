@@ -298,6 +298,32 @@ class StickyVisibilityManager {
         console.log('Elementos mapeados:', this.elements);
         console.log('Estados disponibles:', Object.keys(this.states));
     }
+
+    /**
+     * Deshabilitar sticky-visibility
+     */
+    disable() {
+        console.log('🔧 StickyVisibilityManager: Deshabilitando sticky-visibility');
+        this.disabled = true;
+        // Ocultar el selection-info completamente
+        const selectionInfo = document.getElementById('selection-info');
+        if (selectionInfo) {
+            selectionInfo.style.display = 'none';
+        }
+    }
+
+    /**
+     * Rehabilitar sticky-visibility
+     */
+    enable() {
+        console.log('🔧 StickyVisibilityManager: Rehabilitando sticky-visibility');
+        this.disabled = false;
+        // Mostrar el selection-info si hay selecciones activas
+        const selectionInfo = document.getElementById('selection-info');
+        if (selectionInfo && this.currentState !== 'default') {
+            selectionInfo.style.display = 'block';
+        }
+    }
 }
 
 // Exportar para uso externo
