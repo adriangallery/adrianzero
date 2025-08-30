@@ -8,7 +8,18 @@ class TraitLABCrafting {
         this.recipes = null; // null = no cargado, [] = cargado pero vacío
         this.availableTraits = [];
         this.isLoading = false;
+        this.isLoadingRecipes = false;
+        this.isRecipesLoaded = false;
         console.log('🔨 TraitLABCrafting: Módulo simplificado inicializado');
+    }
+
+    /**
+     * Inicializar módulo
+     */
+    init() {
+        console.log('🔨 TraitLABCrafting: Inicializando módulo...');
+        // No hay inicialización específica necesaria
+        return Promise.resolve();
     }
 
     /**
