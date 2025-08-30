@@ -3210,12 +3210,6 @@
             }
 
             setupCraftingEventListeners() {
-                // Listen for trait selection changes
-                this.modules.crafting.on('traitsSelectionChanged', (data) => {
-                    console.log('🔨 Crafting: Traits selection changed:', data);
-                    this.displayCraftingRecipes(); // Refresh display
-                });
-                
                 // Listen for crafting success
                 this.modules.crafting.on('craftingSuccessful', (data) => {
                     console.log('🔨 Crafting: Success:', data);
@@ -3271,8 +3265,85 @@
                     this.modules.crafting.selectTrait(trait.tokenId, 1);
                 }
                 
-                // Refresh the display to show updated selection
-                this.displayCraftingRecipes();
+                // Update only the visual selection state without re-rendering everything
+                this.updateTraitSelectionVisual(trait.tokenId);
+                
+                // Update recipe eligibility for "any" type recipes
+                this.updateRecipeEligibility();
+            }
+            
+            updateTraitSelectionVisual(traitId) {
+                // Find the trait card and update its visual state
+                const traitCard = document.querySelector(`[data-token-id="${traitId}"]`);
+                if (traitCard) {
+                    const isSelected = this.modules.crafting.getSelectedTraits().has(traitId);
+                    
+                    if (isSelected) {
+                        traitCard.classList.add('selected');
+                        // Add selection indicator if it doesn't exist
+                        if (!traitCard.querySelector('.selection-indicator')) {
+                            const indicator = document.createElement('div');
+                            indicator.className = 'selection-indicator';
+                            indicator.textContent = '✓';
+                            traitCard.appendChild(indicator);
+                        }
+                    } else {
+                        traitCard.classList.remove('selected');
+                        // Remove selection indicator
+                        const indicator = traitCard.querySelector('.selection-indicator');
+                        if (indicator) {
+                            indicator.remove();
+                        }
+                    }
+                }
+            }
+            
+            updateRecipeEligibility() {
+                // Update only the eligibility status for "any" type recipes
+                const anyRecipes = document.querySelectorAll('.any-recipe');
+                anyRecipes.forEach(recipeCard => {
+                    const recipeId = parseInt(recipeCard.dataset.recipeId);
+                    const recipes = this.modules.crafting.getRecipes();
+                    const recipe = recipes.find(r => r.recipeId === recipeId);
+                    
+                    if (recipe && recipe.type === 'any') {
+                        const selectedTotal = this.modules.crafting.getSelectedTotal();
+                        const meetsRequirement = selectedTotal >= parseInt(recipe.requirement.burnTotal);
+                        
+                        // Update recipe card visual state
+                        recipeCard.classList.toggle('eligible', meetsRequirement);
+                        recipeCard.classList.toggle('not-eligible', !meetsRequirement);
+                        
+                        // Update status text
+                        const statusEl = recipeCard.querySelector('.recipe-status');
+                        if (statusEl) {
+                            statusEl.textContent = meetsRequirement ? '🟢 Ready to Craft' : '🔴 Need More Traits';
+                            statusEl.className = `recipe-status ${meetsRequirement ? 'eligible' : 'not-eligible'}`;
+                        }
+                        
+                        // Update requirement status
+                        const reqStatus = recipeCard.querySelector('.requirement-status');
+                        if (reqStatus) {
+                            reqStatus.textContent = meetsRequirement ? '✅ Requirement Met' : '❌ Need More';
+                            reqStatus.className = `requirement-status ${meetsRequirement ? 'met' : 'not-met'}`;
+                        }
+                        
+                        // Update selected count
+                        const selectedEl = recipeCard.querySelector('.requirement-selected .value');
+                        if (selectedEl) {
+                            selectedEl.textContent = `${selectedTotal} units`;
+                            selectedEl.className = `value ${meetsRequirement ? 'sufficient' : 'insufficient'}`;
+                        }
+                        
+                        // Update craft button
+                        const craftBtn = recipeCard.querySelector('.craft-btn');
+                        if (craftBtn) {
+                            craftBtn.disabled = !meetsRequirement;
+                            craftBtn.className = `craft-btn ${meetsRequirement ? 'enabled' : 'disabled'}`;
+                            craftBtn.textContent = meetsRequirement ? '🔨 Craft' : '❌ Need More Traits';
+                        }
+                    }
+                });
             }
 
             // UI Helper Methods
