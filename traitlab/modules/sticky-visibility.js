@@ -182,10 +182,21 @@ class StickyVisibilityManager {
             selectionInfo.classList.remove('adrianzero-only', 'adrianzero-traits', 'adrianzero-serum', 'floppy-pack', 'rename', 'mixed-rename');
             console.log('🔍 DEBUG applyState: Clases después de limpiar:', selectionInfo.className);
             selectionInfo.classList.add(state);
+            
+            // 🎯 CRUCIAL: Aplicar clase .sticky para que funcione como popup superpuesto
+            if (state !== 'default') {
+                selectionInfo.classList.add('sticky');
+                console.log('🎯 DEBUG applyState: Clase .sticky aplicada para popup overlay');
+            } else {
+                selectionInfo.classList.remove('sticky');
+                console.log('🎯 DEBUG applyState: Clase .sticky removida (estado default)');
+            }
+            
             console.log('🔍 DEBUG applyState: Clases después de agregar', state, ':', selectionInfo.className);
             
             // Verificar si la clase se agregó correctamente
             console.log('🔍 DEBUG applyState: selection-info tiene clase', state, '?', selectionInfo.classList.contains(state));
+            console.log('🔍 DEBUG applyState: selection-info tiene clase .sticky?', selectionInfo.classList.contains('sticky'));
         } else {
             console.log('❌ DEBUG applyState: selection-info NO encontrado!');
         }
