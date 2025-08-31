@@ -137,6 +137,7 @@ body {
     border-radius: 15px;
     margin-bottom: 30px;
     border: 1px solid #333;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 .wallet-info {
@@ -147,10 +148,20 @@ body {
     gap: 15px;
 }
 
+.wallet-info strong {
+    color: #fff;
+    font-family: 'VT323', monospace;
+    font-size: 1.1rem;
+}
+
 .wallet-address {
+    background: #2a2a2a;
+    padding: 10px 15px;
+    border-radius: 10px;
     color: #00ff00;
     font-family: monospace;
     font-size: 1.1rem;
+    font-weight: bold;
 }
 
 .disconnect-btn {
@@ -741,5 +752,48 @@ body {
     .traits-grid {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 10px;
+    }
+}
+
+/* Responsive wallet section */
+@media (max-width: 767px) {
+    .connect-section {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .account-section {
+        padding: 20px 15px;
+        margin: 20px;
+    }
+    
+    .wallet-info {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .wallet-info strong {
+        display: block;
+        margin-bottom: 10px;
+    }
+    
+    .wallet-address {
+        text-align: center;
+        word-break: break-all;
+    }
+    
+    .disconnect-btn {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+    }
+    
+    .connect-btn {
+        width: 100%;
+        max-width: 300px;
+        padding: 18px 30px;
+        font-size: 1.3rem;
     }
 }

@@ -105,7 +105,10 @@ class UITemplates {
                 </div>
                 <div id="account-section" class="account-section" style="display: none;">
                     <div class="wallet-info">
-                        <div class="wallet-address" id="walletAddress"></div>
+                        <div>
+                            <strong>Connected Wallet:</strong>
+                            <span id="walletAddress" class="wallet-address"></span>
+                        </div>
                         <button id="disconnectBtn" class="disconnect-btn">Disconnect</button>
                     </div>
                 </div>

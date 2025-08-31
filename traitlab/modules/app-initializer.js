@@ -131,7 +131,8 @@ class AppInitializer {
             
             // Auto-click first tab if wallet is connected
             if (contractBtns.length > 0 && this.app.modules.wallet.getCurrentAccount()) {
-                contractBtns[0].click();
+                // En lugar de hacer click inmediato, cargar en background
+                this.app.loadDataInBackground(this.app.modules.wallet.getCurrentAccount());
             }
             
             console.log('✅ AppInitializer: Tabs configurados');
