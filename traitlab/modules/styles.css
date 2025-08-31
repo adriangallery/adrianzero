@@ -402,6 +402,7 @@ body {
 /* Side emoji menu inside selection-info */
 .selection-info.with-side-menu {
     padding-left: 56px;
+    position: relative;
 }
 
 .side-emoji-menu {
@@ -413,6 +414,61 @@ body {
     flex-direction: column;
     gap: 8px;
     z-index: 101;
+}
+
+/* Optimización para modo sticky */
+.selection-info.sticky.with-side-menu {
+    padding-left: 56px;
+    padding-right: 15px;
+}
+
+/* Mejorar visualización de elementos en modo sticky */
+.selection-info.sticky .side-emoji-menu {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.selection-info.sticky .minimize-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.selection-info.sticky .generated-image {
+    margin: 10px 0;
+    text-align: center;
+}
+
+.selection-info.sticky .actions-grid {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.selection-info.sticky .action-btn {
+    width: 100%;
+    text-align: center;
+}
+
+/* Responsive para móviles */
+@media (max-width: 767px) {
+    .selection-info.sticky {
+        max-width: 90vw;
+        min-width: 280px;
+        right: 5vw;
+        left: 5vw;
+    }
+    
+    .selection-info.sticky .side-emoji-menu {
+        left: 5px;
+    }
+    
+    .selection-info.sticky .minimize-btn {
+        right: 5px;
+    }
 }
 
 .side-emoji-menu .contract-btn {
@@ -516,13 +572,13 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    max-width: 300px;
+    max-width: 350px;
+    min-width: 300px;
     z-index: 1000;
-}
-
-.selection-info.sticky {
     background: rgba(0, 0, 0, 0.95);
     border: 2px solid #00ff00;
+    padding: 15px;
+    box-sizing: border-box;
 }
 
 .selection-info.sticky .selection-text {
@@ -531,6 +587,7 @@ body {
 
 .selection-info.sticky .generated-image {
     text-align: center;
+    margin: 10px 0;
 }
 
 .selection-info.sticky .generated-image img {

@@ -352,10 +352,18 @@ class StickyPopupManager {
             this.elements.imageLoadingOverlay.style.display = 'flex';
         }
 
-        // Generar URL de imagen combinada
+        // Generar URL de imagen combinada usando la misma lógica que indexref.html
         const baseTokenId = this.selectedERC721.tokenId;
         const traitIds = this.selectedERC1155.map(t => t.tokenId).join(',');
+        
+        // Usar la misma URL que en indexref.html
         const combinedImageUrl = `https://adrianlab.vercel.app/api/render/${baseTokenId}?traits=${traitIds}`;
+        
+        console.log('🖼️ StickyPopupManager: Generando imagen combinada:', {
+            baseTokenId,
+            traitIds,
+            url: combinedImageUrl
+        });
 
         // Cargar imagen combinada
         this.elements.combinedImage.src = combinedImageUrl;
@@ -367,14 +375,14 @@ class StickyPopupManager {
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
             }
-            console.log('✅ Imagen combinada generada');
+            console.log('✅ Imagen combinada generada y cargada correctamente');
         };
 
         this.elements.combinedImage.onerror = () => {
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
             }
-            console.error('❌ Error generando imagen combinada');
+            console.error('❌ Error generando imagen combinada:', combinedImageUrl);
         };
     }
 
@@ -532,8 +540,13 @@ class StickyPopupManager {
         
         // Aplicar clase .sticky si hay alguna selección activa
         if (this.selectedERC721 || this.selectedFloppy || this.selectedSerum) {
-            this.elements.selectionInfo.classList.add('sticky');
-            console.log('🎯 StickyPopupManager: Clase .sticky aplicada para popup overlay');
+            // Pequeño delay para asegurar que todos los elementos estén renderizados
+            setTimeout(() => {
+                if (this.elements.selectionInfo) {
+                    this.elements.selectionInfo.classList.add('sticky');
+                    console.log('🎯 StickyPopupManager: Clase .sticky aplicada para popup overlay');
+                }
+            }, 50);
         } else {
             this.elements.selectionInfo.classList.remove('sticky');
             console.log('🎯 StickyPopupManager: Clase .sticky removida (sin selecciones)');
