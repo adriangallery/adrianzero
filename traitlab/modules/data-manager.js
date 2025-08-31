@@ -233,8 +233,8 @@ class TraitLABDataManager {
             );
             
             // Procesar tokens en lotes con delays para evitar rate limiting
-            const batchSize = 5;
-            const delayBetweenBatches = 2000;
+            const batchSize = 3; // Reducir tamaño de lote
+            const delayBetweenBatches = 5000; // Aumentar delay entre lotes
             
             for (let i = 0; i < adrianZeroTokens.length; i += batchSize) {
                 const batch = adrianZeroTokens.slice(i, i + batchSize);
@@ -243,7 +243,7 @@ class TraitLABDataManager {
                 
                 // Procesar lote con delays individuales
                 const batchPromises = batch.map(async (token, index) => {
-                    await this.delay(index * 500); // 500ms entre cada request
+                    await this.delay(index * 1000); // 1 segundo entre cada request
                     
                     try {
                         const customName = await nameRegistryContract.getTokenName(token.tokenId);

@@ -114,12 +114,25 @@ class TokenSelectionManager {
      */
     updateSelectionInfo() {
         const selectionInfo = document.getElementById('selection-info');
-        const selectionText = document.querySelector('.selection-text');
+        const selectionText = document.getElementById('selection-text');
         
-        if (!selectionInfo || !selectionText) return;
+        if (!selectionInfo || !selectionText) {
+            console.warn('⚠️ TokenSelectionManager: selection-info o selection-text no encontrado');
+            return;
+        }
         
         // Mostrar la sección de selección
         selectionInfo.style.display = 'block';
+        console.log('🎯 TokenSelectionManager: selection-info mostrado');
+        
+        // Agregar clase para el tipo de token seleccionado
+        selectionInfo.className = 'selection-info with-side-menu';
+        if (this.selectedERC721 && this.selectedERC1155.length === 0) {
+            selectionInfo.classList.add('adrianzero-only');
+        } else if (this.selectedERC721 && this.selectedERC1155.length > 0) {
+            selectionInfo.classList.add('adrianzero-traits');
+        }
+        console.log('🎯 TokenSelectionManager: Clases CSS aplicadas:', selectionInfo.className);
         
         let text = '';
         
@@ -231,6 +244,7 @@ class TokenSelectionManager {
         // Update selection text
         if (selectionText) {
             selectionText.innerHTML = text;
+            console.log('🎯 TokenSelectionManager: Texto de selección actualizado:', text);
         }
         
         // Update sticky visibility manager
@@ -242,8 +256,13 @@ class TokenSelectionManager {
                 selectedSerum: this.selectedSerum,
                 currentFilter: this.currentFilter
             };
+            console.log('🎯 TokenSelectionManager: Actualizando sticky manager con estado:', appState);
             this.stickyManager.update(appState);
+        } else {
+            console.warn('⚠️ TokenSelectionManager: stickyManager no disponible');
         }
+        
+        console.log('🎯 TokenSelectionManager: updateSelectionInfo completado');
     }
 
     /**
