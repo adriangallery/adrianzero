@@ -1068,3 +1068,36 @@ body {
     color: #ff0000;
     border: 1px solid #ff0000;
 }
+
+/* Animación para nombres actualizados */
+.name-updated {
+    animation: nameUpdate 0.5s ease-in-out;
+}
+
+@keyframes nameUpdate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); background: rgba(0, 255, 0, 0.1); }
+    100% { transform: scale(1); }
+}
+
+/* Indicador de carga progresiva */
+.token-card.loading {
+    opacity: 0.7;
+    position: relative;
+}
+
+.token-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
