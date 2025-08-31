@@ -151,7 +151,7 @@ class UITemplates {
      */
     getSelectionInfoTemplate() {
         return `
-            <div id="selection-info" class="selection-info" style="display: none;">
+            <div id="selection-info" class="selection-info with-side-menu" style="display: none;">
                 <div class="selection-text"></div>
                 
                 <div class="generated-image" style="display: none;">
@@ -163,9 +163,15 @@ class UITemplates {
                 </div>
                 
                 <div class="side-emoji-menu">
-                    <button class="emoji-btn" onclick="window.app.stickyManager.toggleSticky()">📌</button>
-                    <button class="emoji-btn" onclick="window.app.stickyManager.minimize()">➖</button>
+                    <button class="contract-btn active" title="AdrianZERO" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75">🧑‍🔬</button>
+                    <button class="contract-btn" title="Traits" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="traits">🎭</button>
+                    <button class="contract-btn" title="Floppy Discs" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">💾</button>
+                    <button class="contract-btn" title="Serums" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">🧪</button>
+                    <button class="contract-btn" title="Crafting" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">⚒️</button>
+                    <button class="contract-btn" title="Rename" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">✍️</button>
                 </div>
+                
+                <button id="minimizeBtn" class="minimize-btn">Minimize</button>
                 
                 <!-- ERC721 Actions -->
                 <div id="erc721-actions-section" class="traits-actions-section" style="display: none;">
@@ -213,6 +219,16 @@ class UITemplates {
                 <!-- Refresh Metadata -->
                 <div id="refresh-metadata-section" class="traits-actions-section" style="display: none;">
                     <button class="action-btn" onclick="window.app.modules.zero.refreshMetadata()">Refresh Metadata</button>
+                </div>
+                
+                <!-- Rename Section -->
+                <div id="rename-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" id="newTokenName" placeholder="Ingresa el nuevo nombre para tu AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
+                    </div>
+                    <button id="approveRenameBtn" class="apply-traits-btn" style="margin-right: 10px;">Approve $ADRIAN</button>
+                    <button id="renameTokenBtn" class="apply-traits-btn">Rename Token</button>
+                    <div id="rename-status" class="apply-status" style="display: none;"></div>
                 </div>
             </div>
         `;

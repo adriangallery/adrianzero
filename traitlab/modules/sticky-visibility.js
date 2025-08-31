@@ -24,31 +24,27 @@ class StickyVisibilityManager {
         this.states = {
             'default': {
                 show: ['minimize-btn'],
-                hide: ['token-title', 'generated-image', 'selected-traits-list', 'traits-actions', 'serum-actions', 'floppy-actions', 'rename-form', 'rename-buttons']
+                hide: ['selection-text', 'generated-image', 'erc721-actions', 'traits-actions', 'use-serum-section', 'open-floppy-section', 'open-pack-section', 'rename-section']
             },
             'adrianzero-only': {
-                show: ['token-title', 'generated-image', 'minimize-btn', 'erc721-actions'],
-                hide: ['selected-traits-list', 'traits-actions', 'serum-actions', 'floppy-actions', 'rename-form', 'rename-buttons']
+                show: ['selection-text', 'generated-image', 'minimize-btn', 'erc721-actions'],
+                hide: ['traits-actions', 'use-serum-section', 'open-floppy-section', 'open-pack-section', 'rename-section']
             },
             'adrianzero-traits': {
-                show: ['token-title', 'generated-image', 'apply-traits-btn', 'minimize-btn'],
-                hide: ['selected-traits-list', 'serum-actions', 'floppy-actions', 'rename-form', 'rename-buttons']
+                show: ['selection-text', 'generated-image', 'minimize-btn', 'traits-actions'],
+                hide: ['erc721-actions', 'use-serum-section', 'open-floppy-section', 'open-pack-section', 'rename-section']
             },
             'adrianzero-serum': {
-                show: ['token-title', 'serum-btn', 'minimize-btn'],
-                hide: ['generated-image', 'selected-traits-list', 'traits-actions', 'floppy-actions', 'rename-form', 'rename-buttons']
+                show: ['selection-text', 'minimize-btn', 'use-serum-section'],
+                hide: ['generated-image', 'erc721-actions', 'traits-actions', 'open-floppy-section', 'open-pack-section', 'rename-section']
             },
             'floppy-pack': {
-                show: ['floppy-info', 'open-btn', 'minimize-btn'],
-                hide: ['generated-image', 'selected-traits-list', 'traits-actions', 'serum-actions', 'rename-form', 'rename-buttons']
+                show: ['selection-text', 'minimize-btn', 'open-floppy-section'],
+                hide: ['generated-image', 'erc721-actions', 'traits-actions', 'use-serum-section', 'open-pack-section', 'rename-section']
             },
             'rename': {
-                show: ['token-title', 'rename-form', 'rename-buttons', 'minimize-btn'],
-                hide: ['generated-image', 'selected-traits-list', 'traits-actions', 'serum-actions', 'floppy-actions']
-            },
-            'mixed-rename': {
-                show: ['token-title', 'rename-form', 'rename-buttons', 'minimize-btn'],
-                hide: ['generated-image', 'selected-traits-list', 'traits-actions', 'serum-actions', 'floppy-actions']
+                show: ['selection-text', 'minimize-btn', 'rename-section'],
+                hide: ['generated-image', 'erc721-actions', 'traits-actions', 'use-serum-section', 'open-floppy-section', 'open-pack-section']
             }
         };
         
@@ -69,31 +65,41 @@ class StickyVisibilityManager {
 
     mapElements() {
         try {
-            // Elementos principales - usar getElementById de manera segura
+            // Elementos principales del sticky
+            this.elements.set('selection-info', document.getElementById('selection-info'));
             this.elements.set('minimize-btn', document.getElementById('minimizeBtn'));
-            this.elements.set('token-title', document.querySelector('.selected-token-title'));
+            this.elements.set('selection-text', document.getElementById('selection-text'));
             this.elements.set('generated-image', document.getElementById('generated-image'));
-            this.elements.set('selected-traits-list', document.querySelector('.selected-traits-title'));
-            this.elements.set('traits-actions', document.getElementById('traits-actions-section'));
-            this.elements.set('serum-actions', document.getElementById('use-serum-section'));
-            this.elements.set('floppy-actions', document.getElementById('open-floppy-section'));
-            this.elements.set('rename-form', document.getElementById('rename-section'));
-            this.elements.set('rename-buttons', document.querySelectorAll('#rename-section button'));
-            this.elements.set('apply-traits-btn', document.getElementById('traits-actions-section'));
-            this.elements.set('serum-btn', document.getElementById('use-serum-section'));
-            this.elements.set('open-btn', document.getElementById('open-floppy-section') || document.getElementById('open-pack-section'));
-            this.elements.set('erc721-actions', document.getElementById('erc721-actions-section'));
+            this.elements.set('combined-image', document.getElementById('combined-image'));
+            this.elements.set('image-loading-overlay', document.getElementById('image-loading-overlay'));
             
-            // Buscar elementos de floppy de manera más robusta - actualizado para "Floppy Selected"
-            const floppyInfoElement = document.querySelector('h4')?.textContent?.includes('Floppy Selected') 
-                ? document.querySelector('h4') 
-                : null;
-            this.elements.set('floppy-info', floppyInfoElement);
+            // Secciones de acciones
+            this.elements.set('erc721-actions', document.getElementById('erc721-actions-section'));
+            this.elements.set('traits-actions', document.getElementById('traits-actions-section'));
+            this.elements.set('open-floppy-section', document.getElementById('open-floppy-section'));
+            this.elements.set('open-pack-section', document.getElementById('open-pack-section'));
+            this.elements.set('use-serum-section', document.getElementById('use-serum-section'));
+            this.elements.set('rename-section', document.getElementById('rename-section'));
+            
+            // Botones específicos
+            this.elements.set('activate-token-btn', document.getElementById('activateTokenBtn'));
+            this.elements.set('show-rename-section-btn', document.getElementById('showRenameSectionBtn'));
+            this.elements.set('apply-traits-btn', document.getElementById('applyTraitsBtn'));
+            this.elements.set('open-floppy-btn', document.getElementById('openFloppyBtn'));
+            this.elements.set('open-pack-btn', document.getElementById('openPackBtn'));
+            this.elements.set('use-serum-btn', document.getElementById('useSerumBtn'));
+            this.elements.set('approve-rename-btn', document.getElementById('approveRenameBtn'));
+            this.elements.set('rename-token-btn', document.getElementById('renameTokenBtn'));
+            
+            // Status elements
+            this.elements.set('open-floppy-status', document.getElementById('open-floppy-status'));
+            this.elements.set('open-pack-status', document.getElementById('open-pack-status'));
+            this.elements.set('use-serum-status', document.getElementById('use-serum-status'));
+            this.elements.set('rename-status', document.getElementById('rename-status'));
             
             console.log('✅ Elementos mapeados correctamente');
         } catch (error) {
             console.warn('⚠️ StickyVisibilityManager: Error mapeando elementos:', error);
-            // Continuar con elementos básicos
         }
     }
 
@@ -322,6 +328,44 @@ class StickyVisibilityManager {
         const selectionInfo = document.getElementById('selection-info');
         if (selectionInfo && this.currentState !== 'default') {
             selectionInfo.style.display = 'block';
+        }
+    }
+
+    /**
+     * Toggle sticky mode
+     */
+    toggleSticky() {
+        const selectionInfo = this.elements.get('selection-info');
+        if (selectionInfo) {
+            if (selectionInfo.classList.contains('sticky')) {
+                selectionInfo.classList.remove('sticky');
+                console.log('🔧 Sticky mode desactivado');
+            } else {
+                selectionInfo.classList.add('sticky');
+                console.log('🔧 Sticky mode activado');
+            }
+        }
+    }
+
+    /**
+     * Minimize selection info
+     */
+    minimize() {
+        const selectionInfo = this.elements.get('selection-info');
+        if (selectionInfo) {
+            selectionInfo.classList.add('minimized');
+            console.log('🔧 Selection info minimizado');
+        }
+    }
+
+    /**
+     * Expand selection info
+     */
+    expand() {
+        const selectionInfo = this.elements.get('selection-info');
+        if (selectionInfo) {
+            selectionInfo.classList.remove('minimized');
+            console.log('🔧 Selection info expandido');
         }
     }
 }
