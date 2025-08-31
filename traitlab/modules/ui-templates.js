@@ -152,16 +152,6 @@ class UITemplates {
     getSelectionInfoTemplate() {
         return `
             <div id="selection-info" class="selection-info with-side-menu" style="display: none;">
-                <div id="selection-text"></div>
-                
-                <div class="generated-image" style="display: none;">
-                    <div class="image-loading-overlay">
-                        <div class="spinner"></div>
-                        <p>Generating image...</p>
-                    </div>
-                    <img src="" alt="Generated" style="display: none;">
-                </div>
-                
                 <div class="side-emoji-menu">
                     <button class="contract-btn active" title="AdrianZERO" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75">🧑‍🔬</button>
                     <button class="contract-btn" title="Traits" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="traits">🎭</button>
@@ -170,55 +160,60 @@ class UITemplates {
                     <button class="contract-btn" title="Crafting" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">⚒️</button>
                     <button class="contract-btn" title="Rename" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">✍️</button>
                 </div>
-                
                 <button id="minimizeBtn" class="minimize-btn">Minimize</button>
+                <div id="selection-text"></div>
+                <div id="generated-image" class="generated-image" style="display: none;">
+                    <div id="image-loading-overlay" class="image-loading-overlay" style="display: none;">
+                        <div class="pixelated-spinner"></div>
+                        <p>Generating image...</p>
+                    </div>
+                    <img id="combined-image" src="" alt="Generated Image">
+                </div>
                 
                 <!-- ERC721 Actions -->
-                <div id="erc721-actions-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.zero.activateToken()">Activate Token</button>
-                    <button class="action-btn" onclick="window.app.modules.zero.renameToken()">Rename Token</button>
-                    <button class="action-btn" onclick="window.app.modules.zero.openPack()">Open Pack</button>
+                <div id="erc721-actions-section" class="actions-grid sticky-hidden" style="display: none; margin-top: 10px;">
+                    <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
+                    <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
                 </div>
                 
                 <!-- Traits Actions -->
-                <div id="traits-actions-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.zero.applyTraits()">Apply Traits</button>
-                    <button class="action-btn" onclick="window.app.modules.zero.refreshMetadata()">Refresh Metadata</button>
+                <div id="traits-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
+                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
                 </div>
                 
                 <!-- Use Serum -->
-                <div id="use-serum-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.serums.useSerum()">Use Serum</button>
+                <div id="use-serum-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="useSerumBtn" class="apply-traits-btn">🧪 Usar Serum</button>
+                    <div id="use-serum-status" class="apply-status" style="display: none;"></div>
                 </div>
                 
                 <!-- Open Floppy -->
-                <div id="open-floppy-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.floppy.openFloppy()">Open Floppy</button>
+                <div id="open-floppy-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="openFloppyBtn" class="apply-traits-btn">Open Floppy</button>
+                    <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
                 </div>
                 
                 <!-- Open Pack -->
-                <div id="open-pack-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.zero.openPack()">Open Pack</button>
+                <div id="open-pack-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="openPackBtn" class="apply-traits-btn">Open Pack</button>
+                    <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                 </div>
                 
                 <!-- Activate Token -->
-                <div id="activate-token-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.zero.activateToken()">Activate Token</button>
+                <div id="activate-token-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="activateTokenBtn" class="apply-traits-btn">Asignar SKIN</button>
+                    <div id="activate-token-status" class="apply-status" style="display: none;"></div>
                 </div>
                 
-                <!-- Rename -->
-                <div id="rename-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.zero.renameToken()">Rename Token</button>
+                <!-- Apply Traits Section -->
+                <div id="apply-traits-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                    <div id="apply-status" class="apply-status" style="display: none;"></div>
                 </div>
                 
-                <!-- Apply Traits -->
-                <div id="apply-traits-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.zero.applyTraits()">Apply Traits</button>
-                </div>
-                
-                <!-- Refresh Metadata -->
-                <div id="refresh-metadata-section" class="traits-actions-section" style="display: none;">
-                    <button class="action-btn" onclick="window.app.modules.zero.refreshMetadata()">Refresh Metadata</button>
+                <!-- Refresh Metadata Section -->
+                <div id="refresh-metadata-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
+                    <button id="refreshMetadataBtn" class="apply-traits-btn">Refresh Metadata</button>
+                    <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
                 </div>
                 
                 <!-- Rename Section -->
