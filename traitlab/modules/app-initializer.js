@@ -26,11 +26,7 @@ class AppInitializer {
             this.app.modules.zero = new window.TraitLABZero();
             this.app.modules.zero.init();
             
-            // Sticky Visibility Manager
-            this.app.stickyManager = new window.StickyVisibilityManager();
-            this.app.stickyManager.init();
-            
-            // Sticky Popup Manager (nuevo módulo para manejar la lógica del sticky)
+            // Sticky Popup Manager (maneja toda la lógica del sticky popup)
             this.app.stickyPopupManager = new window.StickyPopupManager();
             this.app.stickyPopupManager.init();
             
@@ -45,7 +41,6 @@ class AppInitializer {
             
             // Token Selection Manager
             this.app.modules.tokenSelection = new window.TokenSelectionManager();
-            this.app.modules.tokenSelection.setStickyManager(this.app.stickyManager);
             this.app.modules.tokenSelection.setStickyPopupManager(this.app.stickyPopupManager);
             
             // Traits Manager

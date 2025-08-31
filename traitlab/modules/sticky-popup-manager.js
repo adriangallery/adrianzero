@@ -233,6 +233,9 @@ class StickyPopupManager {
 
         // Actualizar texto de selección
         this.updateSelectionText();
+        
+        // Aplicar clase .sticky para que funcione como popup overlay
+        this.applyStickyClass();
     }
 
     /**
@@ -518,6 +521,22 @@ class StickyPopupManager {
     hideStatus(statusElement) {
         if (statusElement) {
             statusElement.style.display = 'none';
+        }
+    }
+
+    /**
+     * Aplicar clase .sticky para popup overlay
+     */
+    applyStickyClass() {
+        if (!this.elements.selectionInfo) return;
+        
+        // Aplicar clase .sticky si hay alguna selección activa
+        if (this.selectedERC721 || this.selectedFloppy || this.selectedSerum) {
+            this.elements.selectionInfo.classList.add('sticky');
+            console.log('🎯 StickyPopupManager: Clase .sticky aplicada para popup overlay');
+        } else {
+            this.elements.selectionInfo.classList.remove('sticky');
+            console.log('🎯 StickyPopupManager: Clase .sticky removida (sin selecciones)');
         }
     }
 

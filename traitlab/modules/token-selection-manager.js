@@ -9,15 +9,7 @@ class TokenSelectionManager {
         this.selectedFloppy = null;
         this.selectedSerum = null;
         this.currentFilter = null;
-        this.stickyManager = null;
         this.stickyPopupManager = null;
-    }
-
-    /**
-     * Configurar sticky manager
-     */
-    setStickyManager(stickyManager) {
-        this.stickyManager = stickyManager;
     }
 
     /**
@@ -260,21 +252,6 @@ class TokenSelectionManager {
             console.log('🎯 TokenSelectionManager: Texto de selección actualizado:', text);
         }
         
-        // Update sticky visibility manager
-        if (this.stickyManager) {
-            const appState = {
-                selectedERC721: this.selectedERC721,
-                selectedERC1155: this.selectedERC1155,
-                selectedFloppy: this.selectedFloppy,
-                selectedSerum: this.selectedSerum,
-                currentFilter: this.currentFilter
-            };
-            console.log('🎯 TokenSelectionManager: Actualizando sticky manager con estado:', appState);
-            this.stickyManager.update(appState);
-        } else {
-            console.warn('⚠️ TokenSelectionManager: stickyManager no disponible');
-        }
-
         // Update sticky popup manager
         if (this.stickyPopupManager) {
             const selectionData = {
