@@ -194,7 +194,7 @@
             onWalletConnected(data) {
                 console.log('🔌 TraitLAB v2: Wallet conectada:', data);
                 
-                // Update UI
+                // ✅ ACTUALIZAR UI INMEDIATAMENTE (sin esperar carga)
                 document.getElementById('connect-section').style.display = 'none';
                 document.getElementById('account-section').style.display = 'block';
                 document.getElementById('tokens-section').style.display = 'block';
@@ -202,11 +202,64 @@
                 // Update wallet address
                 const walletAddress = document.getElementById('walletAddress');
                 if (walletAddress) {
-                    walletAddress.textContent = data.account;
+                    walletAddress.textContent = `${data.account.substring(0, 6)}...${data.account.slice(-4)}`;
                 }
                 
-                // Clear any previous tokens
-                this.clearTokens();
+                // 🚀 CARGAR DATOS EN BACKGROUND (no bloquea la UI)
+                this.loadDataInBackground(data.account);
+            }
+
+            /**
+             * Cargar datos en background sin bloquear la UI
+             */
+            async loadDataInBackground(userAddress) {
+                console.log('🚀 TraitLAB v2: Iniciando carga en background...');
+                
+                // Mostrar mensaje de "cargando datos" en lugar de spinner bloqueante
+                const tokensGrid = document.getElementById('tokens-grid');
+                if (tokensGrid) {
+                    tokensGrid.innerHTML = `
+                        <div class="loading-message" style="text-align: center; padding: 20px; color: #666;">
+                            <div class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <p>🔄 Cargando tus tokens en background...</p>
+                            <p style="font-size: 12px; color: #999;">Puedes navegar por los tabs mientras se cargan</p>
+                        </div>
+                    `;
+                }
+                
+                try {
+                    // 1. Iniciar DataManager en background
+                    if (this.modules.dataManager) {
+                        console.log('📊 TraitLAB v2: Iniciando DataManager en background...');
+                        this.modules.dataManager.init().then(() => {
+                            console.log('📊 TraitLAB v2: DataManager cargado en background');
+                            const status = this.modules.dataManager.getStatus();
+                            console.log('📊 TraitLAB v2: Estado del cache:', status);
+                        }).catch(error => {
+                            console.warn('📊 TraitLAB v2: Error cargando DataManager en background:', error);
+                        });
+                    }
+                    
+                    // 2. Cargar tokens del contrato actual en background
+                    console.log('🚀 TraitLAB v2: Cargando tokens del contrato actual en background...');
+                    await this.loadTokensForTab();
+                    
+                    // 3. NO limpiar el grid aquí - los tokens ya se mostraron
+                    // El grid se mantiene con el contenido mostrado por displayTokens
+                    
+                } catch (error) {
+                    console.error('❌ TraitLAB v2: Error en carga en background:', error);
+                    // Mostrar error pero no bloquear la UI
+                    if (tokensGrid) {
+                        tokensGrid.innerHTML = `
+                            <div class="error-message" style="text-align: center; padding: 20px; color: #e74c3c;">
+                                <p>⚠️ Error cargando tokens</p>
+                                <p style="font-size: 12px;">${error.message}</p>
+                                <button onclick="window.app.loadDataInBackground('${userAddress}')" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Reintentar</button>
+                            </div>
+                        `;
+                    }
+                }
             }
 
             /**
