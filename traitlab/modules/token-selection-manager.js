@@ -285,10 +285,16 @@ class TokenSelectionManager {
         // Show loading
         imageLoadingOverlay.style.display = 'flex';
         
-        // Generate combined image URL
+        // Generate combined image URL with correct format
         const baseTokenId = this.selectedERC721.tokenId;
-        const traitIds = this.selectedERC1155.map(t => t.tokenId).join(',');
-        const combinedImageUrl = `https://adrianlab.vercel.app/api/render/${baseTokenId}?traits=${traitIds}`;
+        
+        // Build URL with correct format: /custom/{tokenId}?trait={trait1}&trait={trait2}
+        let combinedImageUrl = `https://adrianlab.vercel.app/api/render/custom/${baseTokenId}`;
+        
+        if (this.selectedERC1155.length > 0) {
+            const traitParams = this.selectedERC1155.map(t => `trait=${t.tokenId}`).join('&');
+            combinedImageUrl += `?${traitParams}`;
+        }
         
         // Load combined image
         generatedImage.src = combinedImageUrl;

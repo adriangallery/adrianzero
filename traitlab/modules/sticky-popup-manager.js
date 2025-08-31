@@ -352,16 +352,20 @@ class StickyPopupManager {
             this.elements.imageLoadingOverlay.style.display = 'flex';
         }
 
-        // Generar URL de imagen combinada usando la misma lógica que indexref.html
+        // Generar URL de imagen combinada usando el formato correcto
         const baseTokenId = this.selectedERC721.tokenId;
-        const traitIds = this.selectedERC1155.map(t => t.tokenId).join(',');
         
-        // Usar la misma URL que en indexref.html
-        const combinedImageUrl = `https://adrianlab.vercel.app/api/render/${baseTokenId}?traits=${traitIds}`;
+        // Construir URL con formato correcto: /custom/{tokenId}?trait={trait1}&trait={trait2}
+        let combinedImageUrl = `https://adrianlab.vercel.app/api/render/custom/${baseTokenId}`;
+        
+        if (this.selectedERC1155.length > 0) {
+            const traitParams = this.selectedERC1155.map(t => `trait=${t.tokenId}`).join('&');
+            combinedImageUrl += `?${traitParams}`;
+        }
         
         console.log('🖼️ StickyPopupManager: Generando imagen combinada:', {
             baseTokenId,
-            traitIds,
+            traitIds: this.selectedERC1155.map(t => t.tokenId),
             url: combinedImageUrl
         });
 
