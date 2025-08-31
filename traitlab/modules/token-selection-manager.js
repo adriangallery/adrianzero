@@ -10,6 +10,7 @@ class TokenSelectionManager {
         this.selectedSerum = null;
         this.currentFilter = null;
         this.stickyManager = null;
+        this.stickyPopupManager = null;
     }
 
     /**
@@ -17,6 +18,13 @@ class TokenSelectionManager {
      */
     setStickyManager(stickyManager) {
         this.stickyManager = stickyManager;
+    }
+
+    /**
+     * Configurar sticky popup manager
+     */
+    setStickyPopupManager(stickyPopupManager) {
+        this.stickyPopupManager = stickyPopupManager;
     }
 
     /**
@@ -265,6 +273,22 @@ class TokenSelectionManager {
             this.stickyManager.update(appState);
         } else {
             console.warn('⚠️ TokenSelectionManager: stickyManager no disponible');
+        }
+
+        // Update sticky popup manager
+        if (this.stickyPopupManager) {
+            const selectionData = {
+                selectedERC721: this.selectedERC721,
+                selectedERC1155: this.selectedERC1155,
+                selectedFloppy: this.selectedFloppy,
+                selectedSerum: this.selectedSerum,
+                currentFilter: this.currentFilter,
+                currentTab: this.currentFilter
+            };
+            console.log('🎯 TokenSelectionManager: Actualizando sticky popup manager con estado:', selectionData);
+            this.stickyPopupManager.updateSelectionState(selectionData);
+        } else {
+            console.warn('⚠️ TokenSelectionManager: stickyPopupManager no disponible');
         }
         
         console.log('🎯 TokenSelectionManager: updateSelectionInfo completado');
