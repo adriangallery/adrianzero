@@ -58,14 +58,38 @@ class TokenFilters {
                 return true;
             }
             
-            // Verificar IDs específicos de floppy
+            // Verificar IDs específicos de floppy según index.html
             const tokenId = parseInt(token.tokenId);
+            
+            // Rango principal de floppys: 10000-10007, 15000-15015
             const isFloppyById = (tokenId >= 10000 && tokenId <= 10007) || 
-                   (tokenId >= 15000 && tokenId <= 15015) ||
-                   (tokenId >= 30000 && tokenId <= 30006);
+                                 (tokenId >= 15000 && tokenId <= 15015);
             
             if (isFloppyById) {
                 console.log('💾 Floppy encontrado por ID:', tokenId);
+                
+                // Asignar nombre específico según index.html
+                if (tokenId === 10003) {
+                    token.displayName = 'GLITCH Floppy';
+                    token.targetContract = window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT;
+                    console.log('💾 GLITCH Floppy (10003) - Contrato:', token.targetContract);
+                } else if (tokenId === 10004) {
+                    token.displayName = 'GF Floppy';
+                    token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
+                    console.log('💾 GF Floppy (10004) - Contrato:', token.targetContract);
+                } else if (tokenId === 10005) {
+                    token.displayName = 'Golden Floppy';
+                    token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                    console.log('💾 Golden Floppy (10005) - Contrato:', token.targetContract);
+                } else if (tokenId === 10007) {
+                    token.displayName = 'Action Pack 10007';
+                    token.targetContract = window.TraitLABConfig.ACTION_PACK_10007_CONTRACT;
+                    console.log('💾 Action Pack 10007 - Contrato:', token.targetContract);
+                } else {
+                    // Otros floppys usan PACK_TOKEN_MINTER_CONTRACT
+                    token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
+                    console.log('💾 Floppy estándar - Contrato:', token.targetContract);
+                }
             }
             
             return isFloppyById;
