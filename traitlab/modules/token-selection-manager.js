@@ -132,6 +132,11 @@ class TokenSelectionManager {
         } else if (this.selectedERC721 && this.selectedERC1155.length > 0) {
             selectionInfo.classList.add('adrianzero-traits');
         }
+        
+        // 🎯 CRUCIAL: Aplicar clase .sticky para que funcione como popup superpuesto
+        selectionInfo.classList.add('sticky');
+        console.log('🎯 TokenSelectionManager: Clase .sticky aplicada para popup overlay');
+        
         console.log('🎯 TokenSelectionManager: Clases CSS aplicadas:', selectionInfo.className);
         
         let text = '';
