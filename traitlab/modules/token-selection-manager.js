@@ -24,6 +24,7 @@ class TokenSelectionManager {
      */
     onTokenSelected(token, filter) {
         console.log('🎯 TokenSelectionManager: Token seleccionado:', token.tokenId, 'Filter:', filter);
+        console.log('🎯 Token completo:', token);
         
         this.currentFilter = filter;
         
