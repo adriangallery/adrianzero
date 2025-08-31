@@ -436,13 +436,21 @@ body {
     right: 8px;
 }
 
+/* Contenido principal con margen izquierdo para evitar superposición */
+.selection-info.sticky .selection-text {
+    margin-left: 0;
+    text-align: center;
+}
+
 .selection-info.sticky .generated-image {
     margin: 10px 0;
     text-align: center;
+    margin-left: 0;
 }
 
 .selection-info.sticky .actions-grid {
     margin-top: 15px;
+    margin-left: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -450,6 +458,22 @@ body {
 
 .selection-info.sticky .action-btn {
     width: 100%;
+    text-align: center;
+}
+
+/* Secciones específicas con margen izquierdo */
+.selection-info.sticky .sticky-hidden {
+    margin-left: 0;
+    text-align: center;
+}
+
+.selection-info.sticky .traits-actions-section {
+    margin-left: 0;
+    text-align: center;
+}
+
+.selection-info.sticky .erc721-actions-section {
+    margin-left: 0;
     text-align: center;
 }
 
