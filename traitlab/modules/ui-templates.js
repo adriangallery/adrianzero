@@ -152,7 +152,7 @@ class UITemplates {
     getSelectionInfoTemplate() {
         return `
             <div id="selection-info" class="selection-info with-side-menu" style="display: none;">
-                <div class="selection-text"></div>
+                <div id="selection-text"></div>
                 
                 <div class="generated-image" style="display: none;">
                     <div class="image-loading-overlay">

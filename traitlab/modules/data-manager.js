@@ -43,7 +43,7 @@ class TraitLABDataManager {
     }
 
     /**
-     * Cargar tokens AdrianZERO (ERC721)
+     * Cargar tokens AdrianZERO (ERC721) con carga progresiva
      */
     async loadAdrianZeroTokens() {
         if (this.cache.loading.adrianZero || this.cache.ready.adrianZero) return;
@@ -60,6 +60,12 @@ class TraitLABDataManager {
                     const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
                     this.cache.adrianZero = tokens;
                     console.log('📊 AdrianZERO tokens cargados:', tokens.length);
+                    
+                    // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con nombres de Alchemy
+                    this.displayTokensImmediately(tokens, 'adrianzero');
+                    
+                    // 🔄 LUEGO MEJORAR nombres personalizados en background
+                    this.improveTokenNamesInBackground(tokens);
                 }
             }
         } catch (error) {
@@ -157,6 +163,177 @@ class TraitLABDataManager {
      */
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * 🚀 Mostrar tokens inmediatamente con nombres de Alchemy
+     */
+    displayTokensImmediately(tokens, filter) {
+        console.log('🚀 Mostrando tokens inmediatamente con nombres de Alchemy...');
+        
+        if (window.app && window.app.modules.ui) {
+            // Mostrar tokens inmediatamente sin esperar mejoras
+            window.app.modules.ui.displayTokens(tokens, filter);
+            
+            // Actualizar el estado de la aplicación
+            if (window.app.onTokensLoaded) {
+                window.app.onTokensLoaded({ tokens, filter });
+            }
+        }
+    }
+
+    /**
+     * 🔄 Mejorar nombres de tokens en background
+     */
+    async improveTokenNamesInBackground(tokens) {
+        console.log('🔄 Iniciando mejora de nombres en background...');
+        
+        // Solo procesar tokens AdrianZERO (ERC721)
+        const adrianZeroTokens = tokens.filter(token => 
+            token.tokenType === 'ERC721' && 
+            token.contract?.toLowerCase() === "0x6e369bf0e4e0c106192d606fb6d85836d684da75".toLowerCase()
+        );
+        
+        if (adrianZeroTokens.length === 0) {
+            console.log('No hay tokens AdrianZERO para mejorar nombres');
+            return;
+        }
+        
+        try {
+            // Cargar ethers si no está disponible
+            let ethers = window.ethers;
+            if (typeof ethers === 'undefined') {
+                console.log('Ethers no disponible, cargando dinámicamente...');
+                await this.loadEthersDynamically();
+                ethers = window.ethers;
+            }
+            
+            if (!ethers || !window.ethereum) {
+                console.log('Ethers o wallet no disponible, saltando mejora de nombres');
+                return;
+            }
+            
+            // Verificar red Base
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                console.log('No estamos en Base network, saltando mejora de nombres');
+                return;
+            }
+            
+            // Cargar ABI del contrato de nombres
+            const contractABI = await this.loadNameRegistryABI();
+            if (!contractABI) return;
+            
+            // Crear instancia del contrato
+            const nameRegistryContract = new ethers.Contract(
+                "0x90546848474fb3c9fda3fdad887969bb244e7e58", // ADRIAN_NAME_REGISTRY_CONTRACT
+                contractABI, 
+                provider
+            );
+            
+            // Procesar tokens en lotes con delays para evitar rate limiting
+            const batchSize = 5;
+            const delayBetweenBatches = 2000;
+            
+            for (let i = 0; i < adrianZeroTokens.length; i += batchSize) {
+                const batch = adrianZeroTokens.slice(i, i + batchSize);
+                
+                console.log(`📦 Procesando lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(adrianZeroTokens.length/batchSize)} (${batch.length} tokens)`);
+                
+                // Procesar lote con delays individuales
+                const batchPromises = batch.map(async (token, index) => {
+                    await this.delay(index * 500); // 500ms entre cada request
+                    
+                    try {
+                        const customName = await nameRegistryContract.getTokenName(token.tokenId);
+                        if (customName && customName.trim()) {
+                            // Actualizar token con nombre personalizado
+                            token.title = customName.trim();
+                            token.customName = customName.trim();
+                            console.log(`✅ Nombre personalizado encontrado para token ${token.tokenId}: "${customName.trim()}"`);
+                            
+                            // Actualizar UI en tiempo real
+                            this.updateTokenInUI(token);
+                        }
+                    } catch (error) {
+                        console.log(`⚠️ Error obteniendo nombre para token ${token.tokenId}:`, error.message);
+                    }
+                });
+                
+                await Promise.allSettled(batchPromises);
+                
+                // Esperar entre lotes
+                if (i + batchSize < adrianZeroTokens.length) {
+                    console.log(`⏳ Esperando ${delayBetweenBatches}ms antes del siguiente lote...`);
+                    await this.delay(delayBetweenBatches);
+                }
+            }
+            
+            console.log('✅ Mejora de nombres completada');
+            
+        } catch (error) {
+            console.warn('⚠️ Error en mejora de nombres:', error);
+        }
+    }
+
+    /**
+     * Cargar ethers dinámicamente
+     */
+    async loadEthersDynamically() {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+            script.onload = () => {
+                console.log('✅ Ethers cargado dinámicamente');
+                resolve();
+            };
+            script.onerror = () => {
+                console.log('❌ Error cargando ethers dinámicamente');
+                resolve();
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    /**
+     * Cargar ABI del contrato de nombres
+     */
+    async loadNameRegistryABI() {
+        try {
+            const response = await fetch('./adrian-name-registry-abi.json');
+            if (!response.ok) {
+                console.log('❌ Error cargando ABI del contrato de nombres');
+                return null;
+            }
+            return await response.json();
+        } catch (error) {
+            console.log('❌ Error cargando ABI:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Actualizar token en la UI en tiempo real
+     */
+    updateTokenInUI(token) {
+        // Buscar el elemento del token en el DOM
+        const tokenElement = document.querySelector(`[data-token-id="${token.tokenId}"]`);
+        if (tokenElement) {
+            // Actualizar el título del token
+            const titleElement = tokenElement.querySelector('.token-title');
+            if (titleElement) {
+                titleElement.textContent = token.title;
+            }
+            
+            // Agregar indicador visual de que se actualizó
+            tokenElement.classList.add('name-updated');
+            
+            // Remover la clase después de un tiempo
+            setTimeout(() => {
+                tokenElement.classList.remove('name-updated');
+            }, 3000);
+        }
     }
 
     /**
