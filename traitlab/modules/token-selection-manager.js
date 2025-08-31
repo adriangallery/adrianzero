@@ -149,11 +149,30 @@ class TokenSelectionManager {
             if (erc721ActionsSection) {
                 erc721ActionsSection.style.display = 'block';
             }
-            
-            // Show generated image section
-            const generatedImage = document.querySelector('.generated-image');
-            if (generatedImage) {
-                generatedImage.style.display = 'block';
+
+            // Mostrar imagen base del AdrianZERO cuando no hay traits seleccionados
+            if (this.selectedERC1155.length === 0) {
+                const generatedImage = document.getElementById('generated-image');
+                const combinedImage = document.getElementById('combined-image');
+                const imageLoadingOverlay = document.getElementById('image-loading-overlay');
+                
+                if (generatedImage && combinedImage) {
+                    const baseImageUrl = this.selectedERC721.image || this.selectedERC721.imageUrl || `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
+                    
+                    if (imageLoadingOverlay) imageLoadingOverlay.style.display = 'flex';
+                    
+                    combinedImage.src = baseImageUrl;
+                    generatedImage.style.display = 'block';
+                    combinedImage.style.display = 'block';
+                    
+                    combinedImage.onload = function() {
+                        if (imageLoadingOverlay) imageLoadingOverlay.style.display = 'none';
+                    };
+                    
+                    combinedImage.onerror = function() {
+                        if (imageLoadingOverlay) imageLoadingOverlay.style.display = 'none';
+                    };
+                }
             }
             
             // Generate combined image if we have traits
