@@ -38,22 +38,37 @@ class TokenFilters {
      * Filtrar tokens floppy
      */
     filterFloppyTokens(tokens) {
+        console.log('🔍 Debug: Tokens para filtrar floppy:', tokens.slice(0, 3).map(t => ({
+            id: t.tokenId,
+            name: t.name,
+            title: t.title,
+            tokenType: t.tokenType
+        })));
+        
         const floppyTokens = tokens.filter(token => {
             // Verificar si el nombre contiene "FLOPPY"
             if (token.name && token.name.includes('FLOPPY')) {
+                console.log('💾 Floppy encontrado por nombre:', token.name);
                 return true;
             }
             
             // Verificar si el título contiene "FLOPPY"
             if (token.title && token.title.includes('FLOPPY')) {
+                console.log('💾 Floppy encontrado por título:', token.title);
                 return true;
             }
             
             // Verificar IDs específicos de floppy
             const tokenId = parseInt(token.tokenId);
-            return (tokenId >= 10000 && tokenId <= 10007) || 
+            const isFloppyById = (tokenId >= 10000 && tokenId <= 10007) || 
                    (tokenId >= 15000 && tokenId <= 15015) ||
                    (tokenId >= 30000 && tokenId <= 30006);
+            
+            if (isFloppyById) {
+                console.log('💾 Floppy encontrado por ID:', tokenId);
+            }
+            
+            return isFloppyById;
         });
 
         console.log(`💾 Floppy tokens encontrados: ${floppyTokens.length}`);
