@@ -265,8 +265,11 @@ class UITemplates {
             // Cerrar contenedor principal
             container.innerHTML += '</div>';
             
-            // Renderizar información de selección FUERA del contenedor principal para que flote
+            // Renderizar información de selección INMEDIATAMENTE después del container (como en indexref.html)
             container.innerHTML += this.getSelectionInfoTemplate();
+            
+            // Agregar footer
+            container.innerHTML += '<div class="footer">Powered by $ADRIAN</div>';
             
             console.log('✅ UITemplates: Todos los templates renderizados correctamente');
             
