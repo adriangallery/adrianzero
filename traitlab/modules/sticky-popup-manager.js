@@ -136,9 +136,9 @@ class StickyPopupManager {
      * Configurar botones del side menu (emoji buttons)
      */
     setupSideMenuButtons() {
-        const sideMenu = document.querySelector('.side-emoji-menu');
+        const sideMenu = document.querySelector('.sticky-side-menu-popup .side-emoji-menu');
         if (!sideMenu) {
-            console.warn('⚠️ StickyPopupManager: Side menu no encontrado');
+            console.warn('⚠️ StickyPopupManager: Side menu no encontrado (nueva estructura)');
             return;
         }
 

@@ -416,13 +416,112 @@ body {
     justify-self: start;
 }
 
-/* Optimización para modo sticky */
+/* MODAL PRINCIPAL CON DOS POPUPS LADO A LADO */
+.sticky-modal-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+/* POPUP IZQUIERDO: Menú lateral */
+.sticky-side-menu-popup {
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #00ff00;
+    border-radius: 12px;
+    padding: 15px;
+    min-height: 400px;
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* POPUP DERECHO: Contenido principal */
+.sticky-content-popup {
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #00ff00;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 400px;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* Optimización para modo sticky (mantener compatibilidad) */
 .selection-info.sticky.with-side-menu {
     display: grid;
     grid-template-columns: 48px 1fr;
     gap: 12px;
     padding: 15px 20px 15px 15px;
     min-height: 400px; /* Altura fija para evitar saltos */
+}
+
+/* ESTILOS PARA NUEVA ESTRUCTURA DE DOS POPUPS */
+/* Contenido principal del sticky popup (nueva estructura) */
+.sticky-content-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-height: 350px; /* Altura fija para evitar saltos */
+    padding: 0;
+    margin: 0;
+}
+
+/* Sección de texto (nueva estructura) */
+.sticky-text {
+    text-align: center;
+    min-height: 60px; /* Altura fija */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Sección de imagen (nueva estructura) */
+.sticky-image {
+    min-height: 200px; /* Altura fija */
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Imagen dentro de sticky-image (nueva estructura) */
+.sticky-image img {
+    max-width: 100%;
+    max-height: 180px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+/* Sección de acciones (nueva estructura) */
+.sticky-actions {
+    min-height: 80px; /* Altura fija */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+}
+
+/* Secciones de acción individuales (nueva estructura) */
+.action-section {
+    min-height: 40px; /* Altura fija */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+    border-radius: 6px;
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid rgba(0, 255, 0, 0.2);
 }
 
 /* Mejorar visualización de elementos en modo sticky */
@@ -530,6 +629,54 @@ body {
         min-height: 35px;
         padding: 6px 0;
     }
+
+    /* RESPONSIVE PARA NUEVA ESTRUCTURA DE DOS POPUPS */
+    .sticky-modal-container {
+        flex-direction: column;
+        gap: 10px;
+        right: 5vw;
+        left: 5vw;
+    }
+    
+    .sticky-side-menu-popup {
+        width: auto;
+        min-height: auto;
+        flex-direction: row;
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .sticky-content-popup {
+        width: auto;
+        min-height: 300px;
+        padding: 15px;
+    }
+    
+    /* Ajustes para sticky-content-popup en móviles */
+    .sticky-content-popup {
+        min-height: 300px;
+        gap: 12px;
+    }
+    
+    /* Ajustes para sticky-image en móviles */
+    .sticky-image {
+        min-height: 160px;
+    }
+    
+    .sticky-image img {
+        max-height: 140px;
+    }
+    
+    /* Ajustes para sticky-actions en móviles */
+    .sticky-actions {
+        min-height: 60px;
+        gap: 8px;
+    }
+    
+    .action-section {
+        min-height: 35px;
+        padding: 6px 0;
+    }
 }
 
 .side-emoji-menu .contract-btn {
@@ -603,7 +750,17 @@ body {
     font-family: 'VT323', monospace;
 }
 
-/* Contenido principal del sticky popup */
+/* Contenido principal del sticky popup (nueva estructura) */
+.sticky-content-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-height: 350px; /* Altura fija para evitar saltos */
+    padding: 0;
+    margin: 0;
+}
+
+/* Contenido principal del sticky popup (compatibilidad) */
 .selection-info.sticky .sticky-content {
     grid-column: 2;
     display: flex;
