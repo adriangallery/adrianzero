@@ -151,19 +151,22 @@ class UITemplates {
      */
     getSelectionInfoTemplate() {
         return `
-            <div id="selection-info" class="selection-info with-side-menu sticky" style="display: none;">
-                <!-- COLUMNA 1: Botonera lateral -->
-                <div class="side-emoji-menu">
-                    <button class="contract-btn active" data-filter="adrianzero">🧑‍🔬</button>
-                    <button class="contract-btn" data-filter="traits">🎭</button>
-                    <button class="contract-btn" data-filter="floppy">💾</button>
-                    <button class="contract-btn" data-filter="serum">🧪</button>
-                    <button class="contract-btn" data-filter="crafting">⚒️</button>
-                    <button class="contract-btn" data-filter="rename">✍️</button>
+            <!-- MODAL PRINCIPAL CON DOS POPUPS LADO A LADO -->
+            <div id="selection-info" class="sticky-modal-container" style="display: none;">
+                <!-- POPUP IZQUIERDO: Menú lateral -->
+                <div class="sticky-side-menu-popup">
+                    <div class="side-emoji-menu">
+                        <button class="contract-btn active" data-filter="adrianzero">🧑‍🔬</button>
+                        <button class="contract-btn" data-filter="traits">🎭</button>
+                        <button class="contract-btn" data-filter="floppy">💾</button>
+                        <button class="contract-btn" data-filter="serum">🧪</button>
+                        <button class="contract-btn" data-filter="crafting">⚒️</button>
+                        <button class="contract-btn" data-filter="rename">✍️</button>
+                    </div>
                 </div>
                 
-                <!-- COLUMNA 2: Contenido principal -->
-                <div class="sticky-content">
+                <!-- POPUP DERECHO: Contenido principal -->
+                <div class="sticky-content-popup">
                     <!-- Sección de texto -->
                     <div id="selection-text" class="sticky-text"></div>
                     
@@ -179,7 +182,6 @@ class UITemplates {
                     
                     <!-- Sección de acciones (con espacio fijo) -->
                     <div class="sticky-actions">
-                
                         <!-- ERC721 Actions -->
                         <div id="erc721-actions-section" class="action-section" style="display: none;">
                             <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
@@ -206,7 +208,7 @@ class UITemplates {
                         <!-- Open Pack -->
                         <div id="open-pack-section" class="action-section" style="display: none;">
                             <button id="openPackBtn" class="action-btn">Open Pack</button>
-                            <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
+                            <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                         </div>
                         
                         <!-- Activate Token -->
@@ -223,7 +225,7 @@ class UITemplates {
                         <!-- Refresh Metadata Section -->
                         <div id="refresh-metadata-section" class="action-section" style="display: none;">
                             <button id="refreshMetadataBtn" class="action-btn">Refresh Metadata</button>
-                            <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
+                            <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                         </div>
                         
                         <!-- Rename Section -->
