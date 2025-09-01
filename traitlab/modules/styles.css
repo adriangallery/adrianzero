@@ -422,6 +422,7 @@ body {
     grid-template-columns: 48px 1fr;
     gap: 12px;
     padding: 15px 20px 15px 15px;
+    min-height: 400px; /* Altura fija para evitar saltos */
 }
 
 /* Mejorar visualización de elementos en modo sticky */
@@ -436,12 +437,21 @@ body {
 .selection-info.sticky .selection-text {
     grid-column: 2;
     text-align: center;
+    min-height: 60px; /* Altura fija */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .selection-info.sticky .generated-image {
     grid-column: 2;
     margin: 10px 0;
     text-align: center;
+    min-height: 200px; /* Altura fija */
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .selection-info.sticky .actions-grid {
@@ -450,6 +460,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-height: 80px; /* Altura fija */
 }
 
 .selection-info.sticky .action-btn {
@@ -494,7 +505,31 @@ body {
         font-size: 16px;
     }
     
-
+    /* Ajustes para sticky-content en móviles */
+    .selection-info.sticky .sticky-content {
+        min-height: 300px;
+        gap: 12px;
+    }
+    
+    /* Ajustes para sticky-image en móviles */
+    .selection-info.sticky .sticky-image {
+        min-height: 160px;
+    }
+    
+    .selection-info.sticky .sticky-image img {
+        max-height: 140px;
+    }
+    
+    /* Ajustes para sticky-actions en móviles */
+    .selection-info.sticky .sticky-actions {
+        min-height: 60px;
+        gap: 8px;
+    }
+    
+    .selection-info.sticky .action-section {
+        min-height: 35px;
+        padding: 6px 0;
+    }
 }
 
 .side-emoji-menu .contract-btn {
@@ -551,6 +586,83 @@ body {
     padding: 20px;
 }
 
+/* Loading overlay con posición absoluta para no mover elementos */
+.sticky-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'VT323', monospace;
+}
+
+/* Contenido principal del sticky popup */
+.selection-info.sticky .sticky-content {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-height: 350px; /* Altura fija para evitar saltos */
+    padding: 0;
+    margin: 0;
+}
+
+/* Sección de texto */
+.selection-info.sticky .sticky-text {
+    min-height: 60px; /* Altura fija */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Sección de imagen */
+.selection-info.sticky .sticky-image {
+    min-height: 200px; /* Altura fija */
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Imagen dentro de sticky-image */
+.selection-info.sticky .sticky-image img {
+    max-width: 100%;
+    max-height: 180px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+/* Sección de acciones */
+.selection-info.sticky .sticky-actions {
+    min-height: 80px; /* Altura fija */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+}
+
+/* Secciones de acción individuales */
+.selection-info.sticky .action-section {
+    min-height: 40px; /* Altura fija */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+    border-radius: 6px;
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
 
 
 .selection-info.sticky .sticky-hidden {
@@ -571,7 +683,6 @@ body {
     z-index: 1000;
     background: rgba(0, 0, 0, 0.95);
     border: 2px solid #00ff00;
-    padding: 15px;
     box-sizing: border-box;
 }
 
@@ -612,76 +723,11 @@ body {
     transform: translateY(-1px);
 }
 
-.selection-info.sticky.no-buttons {
-    max-width: 200px;
-}
 
-.selection-info.sticky.no-buttons .side-emoji-menu {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-}
 
-.selection-info.sticky.no-buttons .side-emoji-menu .emoji-btn {
-    background: none;
-    border: none;
-    color: #00ff00;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 2px;
-}
 
-.selection-info.sticky.no-buttons {
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid #333;
-}
 
-.selection-info.sticky.no-buttons .side-emoji-menu {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-}
 
-/* Side emoji menu */
-.side-emoji-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.emoji-btn {
-    background: none;
-    border: none;
-    color: #00ff00;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
-
-.emoji-btn:hover {
-    background: rgba(0, 255, 0, 0.1);
-}
-
-/* Action buttons */
-.action-btn {
-    background: #00ff00;
-    color: #000;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    font-family: 'VT323', monospace;
-    font-size: 0.9rem;
-    cursor: pointer;
-    margin: 2px;
-    transition: all 0.3s ease;
-}
-
-.action-btn:hover {
-    background: #00cc00;
-    transform: translateY(-1px);
-}
 
 /* Form controls */
 .form-control {
