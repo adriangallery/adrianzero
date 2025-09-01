@@ -8,8 +8,8 @@ class StickyPopupManager {
         this.selectedERC1155 = [];
         this.selectedFloppy = null;
         this.selectedSerum = null;
-        this.currentFilter = null;
-        this.currentTab = null;
+        this.currentFilter = 'adrianzero';
+        this.currentTab = 'adrianzero';
         this.isInitialized = false;
     }
 
@@ -145,20 +145,18 @@ class StickyPopupManager {
         const contractBtns = sideMenu.querySelectorAll('.contract-btn');
         contractBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // Remover clase active de todos los botones
-                contractBtns.forEach(b => b.classList.remove('active'));
-                
-                // Agregar clase active al botón clickeado
-                e.target.classList.add('active');
-                
                 // Obtener datos del botón
-                const contract = e.target.dataset.contract;
                 const filter = e.target.dataset.filter;
                 
-                console.log('🎯 StickyPopupManager: Botón del side menu clickeado:', { contract, filter });
+                if (filter) {
+                    // Cambiar filter y actualizar estados
+                    this.changeFilter(filter);
+                    
+                    // Actualizar UI según el filter
+                    this.updateUIForFilter(filter);
+                }
                 
-                // Emitir evento para que la app principal maneje el cambio
-                this.emitSideMenuChange({ contract, filter });
+                console.log('🎯 StickyPopupManager: Botón del side menu clickeado:', { filter });
             });
         });
 
@@ -174,6 +172,53 @@ class StickyPopupManager {
             detail: data 
         });
         document.dispatchEvent(event);
+    }
+
+    /**
+     * Actualizar UI según el filter seleccionado
+     */
+    updateUIForFilter(filter) {
+        // Ocultar todas las secciones
+        this.hideAllSections();
+        
+        // Mostrar secciones según el filter
+        switch (filter) {
+            case 'adrianzero':
+                if (this.selectedERC721) {
+                    this.showERC721Actions();
+                    this.showBaseAdrianZeroImage();
+                }
+                break;
+            case 'traits':
+                if (this.selectedERC721 && this.selectedERC1155.length > 0) {
+                    this.showTraitsActions();
+                    this.generateCombinedImage();
+                }
+                break;
+            case 'floppy':
+                if (this.selectedFloppy) {
+                    this.showFloppyActions();
+                }
+                break;
+            case 'serum':
+                if (this.selectedSerum) {
+                    this.showSerumActions();
+                }
+                break;
+            case 'crafting':
+                // Mostrar sección de crafting si está disponible
+                break;
+            case 'rename':
+                if (this.selectedERC721) {
+                    this.showRenameSection();
+                }
+                break;
+        }
+        
+        // Actualizar texto de selección
+        this.updateSelectionText();
+        
+        console.log('🎯 StickyPopupManager: UI actualizada para filter:', filter);
     }
 
     /**
@@ -304,17 +349,16 @@ class StickyPopupManager {
                            this.selectedERC721.imageUrl || 
                            `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
 
-        // Mostrar loading overlay
+        // MOSTRAR loading overlay SIN mover elementos
         if (this.elements.imageLoadingOverlay) {
             this.elements.imageLoadingOverlay.style.display = 'flex';
+            // NO cambiar display de otros elementos
         }
 
-        // Cargar imagen
+        // Cargar imagen (mantener loading overlay visible)
         this.elements.combinedImage.src = baseImageUrl;
-        this.elements.generatedImage.style.display = 'block';
-        this.elements.combinedImage.style.display = 'block';
-
-        // Manejar eventos de carga
+        
+        // Solo ocultar loading cuando la imagen esté lista
         this.elements.combinedImage.onload = () => {
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
@@ -344,9 +388,10 @@ class StickyPopupManager {
 
         if (!this.elements.generatedImage || !this.elements.combinedImage) return;
 
-        // Mostrar loading overlay
+        // MOSTRAR loading overlay SIN mover elementos
         if (this.elements.imageLoadingOverlay) {
             this.elements.imageLoadingOverlay.style.display = 'flex';
+            // NO cambiar display de otros elementos
         }
 
         // Generar URL de imagen combinada usando el formato correcto
@@ -366,12 +411,10 @@ class StickyPopupManager {
             url: combinedImageUrl
         });
 
-        // Cargar imagen combinada
+        // Cargar imagen combinada (mantener loading overlay visible)
         this.elements.combinedImage.src = combinedImageUrl;
-        this.elements.generatedImage.style.display = 'block';
-        this.elements.combinedImage.style.display = 'block';
-
-        // Manejar eventos de carga
+        
+        // Solo ocultar loading cuando la imagen esté lista
         this.elements.combinedImage.onload = () => {
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
@@ -531,12 +574,54 @@ class StickyPopupManager {
                 if (this.elements.selectionInfo) {
                     this.elements.selectionInfo.classList.add('sticky');
                     console.log('🎯 StickyPopupManager: Clase .sticky aplicada para popup overlay');
+                    
+                    // Actualizar estados de botones
+                    this.updateButtonStates();
                 }
             }, 50);
         } else {
             this.elements.selectionInfo.classList.remove('sticky');
             console.log('🎯 StickyPopupManager: Clase .sticky removida (sin selecciones)');
         }
+    }
+
+    /**
+     * Actualizar estados de botones de la botonera lateral
+     */
+    updateButtonStates() {
+        if (!this.elements.sideEmojiMenu) return;
+        
+        const buttons = this.elements.sideEmojiMenu.querySelectorAll('.contract-btn');
+        buttons.forEach(button => {
+            const filter = button.getAttribute('data-filter');
+            if (filter === this.currentFilter) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+        
+        console.log('🎯 StickyPopupManager: Estados de botones actualizados para filter:', this.currentFilter);
+    }
+
+    /**
+     * Cambiar filter actual
+     */
+    changeFilter(newFilter) {
+        if (this.currentFilter === newFilter) return;
+        
+        this.currentFilter = newFilter;
+        this.currentTab = newFilter;
+        
+        // Actualizar estados de botones
+        this.updateButtonStates();
+        
+        // Emitir evento para otros módulos
+        window.dispatchEvent(new CustomEvent('filterChanged', {
+            detail: { filter: newFilter }
+        }));
+        
+        console.log('🎯 StickyPopupManager: Filter cambiado a:', newFilter);
     }
 
     /**

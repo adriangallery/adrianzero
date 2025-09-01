@@ -151,79 +151,91 @@ class UITemplates {
      */
     getSelectionInfoTemplate() {
         return `
-            <div id="selection-info" class="selection-info with-side-menu" style="display: none;">
+            <div id="selection-info" class="selection-info with-side-menu sticky" style="display: none;">
+                <!-- COLUMNA 1: Botonera lateral -->
                 <div class="side-emoji-menu">
-                    <button class="contract-btn active" title="AdrianZERO" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75">🧑‍🔬</button>
-                    <button class="contract-btn" title="Traits" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="traits">🎭</button>
-                    <button class="contract-btn" title="Floppy Discs" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">💾</button>
-                    <button class="contract-btn" title="Serums" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">🧪</button>
-                    <button class="contract-btn" title="Crafting" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">⚒️</button>
-                    <button class="contract-btn" title="Rename" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">✍️</button>
+                    <button class="contract-btn active" data-filter="adrianzero">🧑‍🔬</button>
+                    <button class="contract-btn" data-filter="traits">🎭</button>
+                    <button class="contract-btn" data-filter="floppy">💾</button>
+                    <button class="contract-btn" data-filter="serum">🧪</button>
+                    <button class="contract-btn" data-filter="crafting">⚒️</button>
+                    <button class="contract-btn" data-filter="rename">✍️</button>
                 </div>
-
-                <div id="selection-text"></div>
-                <div id="generated-image" class="generated-image" style="display: none;">
-                    <div id="image-loading-overlay" class="image-loading-overlay" style="display: none;">
-                        <div class="pixelated-spinner"></div>
-                        <p>Generating image...</p>
+                
+                <!-- COLUMNA 2: Contenido principal -->
+                <div class="sticky-content">
+                    <!-- Sección de texto -->
+                    <div id="selection-text" class="sticky-text"></div>
+                    
+                    <!-- Sección de imagen (con espacio fijo) -->
+                    <div id="generated-image" class="sticky-image">
+                        <img id="combined-image" src="" alt="Generated Image">
+                        <!-- Loading overlay con posición absoluta para no mover elementos -->
+                        <div id="image-loading-overlay" class="sticky-loading-overlay">
+                            <div class="pixelated-spinner"></div>
+                            <p>Generating image...</p>
+                        </div>
                     </div>
-                    <img id="combined-image" src="" alt="Generated Image">
-                </div>
+                    
+                    <!-- Sección de acciones (con espacio fijo) -->
+                    <div class="sticky-actions">
                 
-                <!-- ERC721 Actions -->
-                <div id="erc721-actions-section" class="actions-grid sticky-hidden" style="display: none; margin-top: 10px;">
-                    <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
-                    <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
-                </div>
-                
-                <!-- Traits Actions -->
-                <div id="traits-actions-section" class="actions-grid" style="display: none; margin-top: 10px;">
-                    <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
-                </div>
-                
-                <!-- Use Serum -->
-                <div id="use-serum-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="useSerumBtn" class="apply-traits-btn">🧪 Usar Serum</button>
-                    <div id="use-serum-status" class="apply-status" style="display: none;"></div>
-                </div>
-                
-                <!-- Open Floppy -->
-                <div id="open-floppy-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="openFloppyBtn" class="apply-traits-btn">Open Floppy</button>
-                    <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
-                </div>
-                
-                <!-- Open Pack -->
-                <div id="open-pack-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="openPackBtn" class="apply-traits-btn">Open Pack</button>
-                    <div id="open-pack-status" class="apply-status" style="display: none;"></div>
-                </div>
-                
-                <!-- Activate Token -->
-                <div id="activate-token-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="activateTokenBtn" class="apply-traits-btn">Asignar SKIN</button>
-                    <div id="activate-token-status" class="apply-status" style="display: none;"></div>
-                </div>
-                
-                <!-- Apply Traits Section -->
-                <div id="apply-traits-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <div id="apply-status" class="apply-status" style="display: none;"></div>
-                </div>
-                
-                <!-- Refresh Metadata Section -->
-                <div id="refresh-metadata-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <button id="refreshMetadataBtn" class="apply-traits-btn">Refresh Metadata</button>
-                    <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
-                </div>
-                
-                <!-- Rename Section -->
-                <div id="rename-section" class="sticky-hidden" style="display: none; margin-top: 10px; text-align: center;">
-                    <div style="margin-bottom: 8px;">
-                        <input type="text" id="newTokenName" placeholder="Ingresa el nuevo nombre para tu AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
+                        <!-- ERC721 Actions -->
+                        <div id="erc721-actions-section" class="action-section" style="display: none;">
+                            <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
+                            <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
+                        </div>
+                        
+                        <!-- Traits Actions -->
+                        <div id="traits-actions-section" class="action-section" style="display: none;">
+                            <button id="applyTraitsBtn" class="action-btn">Apply Traits</button>
+                        </div>
+                        
+                        <!-- Use Serum -->
+                        <div id="use-serum-section" class="action-section" style="display: none;">
+                            <button id="useSerumBtn" class="action-btn">🧪 Usar Serum</button>
+                            <div id="use-serum-status" class="apply-status" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Open Floppy -->
+                        <div id="open-floppy-section" class="action-section" style="display: none;">
+                            <button id="openFloppyBtn" class="action-btn">Open Floppy</button>
+                            <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Open Pack -->
+                        <div id="open-pack-section" class="action-section" style="display: none;">
+                            <button id="openPackBtn" class="action-btn">Open Pack</button>
+                            <div id="open-floppy-status" class="apply-status" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Activate Token -->
+                        <div id="activate-token-section" class="action-section" style="display: none;">
+                            <button id="activateTokenBtn" class="action-btn">Asignar SKIN</button>
+                            <div id="activate-token-status" class="apply-status" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Apply Traits Section -->
+                        <div id="apply-traits-section" class="action-section" style="display: none;">
+                            <div id="apply-status" class="apply-status" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Refresh Metadata Section -->
+                        <div id="refresh-metadata-section" class="action-section" style="display: none;">
+                            <button id="refreshMetadataBtn" class="action-btn">Refresh Metadata</button>
+                            <div id="refresh-metadata-status" class="apply-status" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Rename Section -->
+                        <div id="rename-section" class="action-section" style="display: none;">
+                            <div style="margin-bottom: 8px;">
+                                <input type="text" id="newTokenName" placeholder="Ingresa el nuevo nombre para tu AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
+                            </div>
+                            <button id="approveRenameBtn" class="action-btn" style="margin-right: 10px;">Approve $ADRIAN</button>
+                            <button id="renameTokenBtn" class="action-btn">Rename Token</button>
+                            <div id="rename-status" class="apply-status" style="display: none;"></div>
+                        </div>
                     </div>
-                    <button id="approveRenameBtn" class="apply-traits-btn" style="margin-right: 10px;">Approve $ADRIAN</button>
-                    <button id="renameTokenBtn" class="apply-traits-btn">Rename Token</button>
-                    <div id="rename-status" class="apply-status" style="display: none;"></div>
                 </div>
             </div>
         `;
