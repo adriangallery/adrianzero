@@ -160,7 +160,7 @@ class UITemplates {
                     <button class="contract-btn" title="Crafting" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">⚒️</button>
                     <button class="contract-btn" title="Rename" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="rename">✍️</button>
                 </div>
-                <button id="minimizeBtn" class="minimize-btn">Minimize</button>
+
                 <div id="selection-text"></div>
                 <div id="generated-image" class="generated-image" style="display: none;">
                     <div id="image-loading-overlay" class="image-loading-overlay" style="display: none;">

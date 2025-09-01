@@ -25,9 +25,7 @@ class UIManager {
         this.showSuccess = this.showSuccess.bind(this);
         this.hideMessages = this.hideMessages.bind(this);
         this.showNoTokens = this.showNoTokens.bind(this);
-        this.minimizeSelectionInfo = this.minimizeSelectionInfo.bind(this);
-        this.expandSelectionInfo = this.expandSelectionInfo.bind(this);
-        this.toggleSelectionInfo = this.toggleSelectionInfo.bind(this);
+
         this.refreshAdrianZeroToken = this.refreshAdrianZeroToken.bind(this);
         
         // Status functions
@@ -60,7 +58,7 @@ class UIManager {
             'connectBtn', 'disconnectBtn', 'walletAddress',
             'loading', 'error', 'success', 'no-tokens',
             'tokens-grid', 'contract-btn', 'selection-info',
-            'selection-text', 'minimizeBtn', 'generated-image',
+            'selection-text', 'generated-image',
             'combined-image', 'image-loading-overlay',
             'apply-traits-section', 'applyTraitsBtn', 'apply-status',
             'refresh-metadata-section', 'refreshMetadataBtn', 'refresh-metadata-status',
@@ -443,35 +441,7 @@ class UIManager {
         }
     }
 
-    /**
-     * Selection info management
-     */
-    minimizeSelectionInfo() {
-        const selectionInfo = this.domElements.get('selection-info');
-        const minimizeBtn = this.domElements.get('minimizeBtn');
-        if (selectionInfo && minimizeBtn) {
-            selectionInfo.classList.add('minimized');
-            minimizeBtn.textContent = 'Expand';
-        }
-    }
 
-    expandSelectionInfo() {
-        const selectionInfo = this.domElements.get('selection-info');
-        const minimizeBtn = this.domElements.get('minimizeBtn');
-        if (selectionInfo && minimizeBtn) {
-            selectionInfo.classList.remove('minimized');
-            minimizeBtn.textContent = 'Minimize';
-        }
-    }
-
-    toggleSelectionInfo() {
-        const selectionInfo = this.domElements.get('selection-info');
-        if (selectionInfo && selectionInfo.classList.contains('minimized')) {
-            this.expandSelectionInfo();
-        } else {
-            this.minimizeSelectionInfo();
-        }
-    }
 
     /**
      * Refresh AdrianZERO token image
