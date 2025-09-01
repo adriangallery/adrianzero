@@ -125,17 +125,10 @@ class TokenSelectionManager {
         selectionInfo.style.display = 'block';
         console.log('🎯 TokenSelectionManager: selection-info mostrado');
         
-        // Agregar clase para el tipo de token seleccionado
-        selectionInfo.className = 'selection-info with-side-menu';
-        if (this.selectedERC721 && this.selectedERC1155.length === 0) {
-            selectionInfo.classList.add('adrianzero-only');
-        } else if (this.selectedERC721 && this.selectedERC1155.length > 0) {
-            selectionInfo.classList.add('adrianzero-traits');
-        }
-        
-        // 🎯 CRUCIAL: Aplicar clase .sticky para que funcione como popup superpuesto
-        selectionInfo.classList.add('sticky');
-        console.log('🎯 TokenSelectionManager: Clase .sticky aplicada para popup overlay');
+        // 🎯 CRUCIAL: Mantener la nueva estructura de modal con dos popups
+        // NO aplicar clases que interfieran con la nueva estructura
+        selectionInfo.className = 'sticky-modal-container';
+        console.log('🎯 TokenSelectionManager: Estructura de modal con dos popups mantenida');
         
         console.log('🎯 TokenSelectionManager: Clases CSS aplicadas:', selectionInfo.className);
         
