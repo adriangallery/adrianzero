@@ -67,7 +67,7 @@ class StickyVisibilityManager {
         try {
             // Elementos principales del sticky
             this.elements.set('selection-info', document.getElementById('selection-info'));
-            this.elements.set('minimize-btn', document.getElementById('minimizeBtn'));
+
             this.elements.set('selection-text', document.getElementById('selection-text'));
             this.elements.set('generated-image', document.getElementById('generated-image'));
             this.elements.set('combined-image', document.getElementById('combined-image'));
@@ -299,8 +299,8 @@ class StickyVisibilityManager {
      */
     remapElementsIfNeeded() {
         // Verificar si los elementos principales existen
-        const minimizeBtn = document.getElementById('minimizeBtn');
-        if (!minimizeBtn) {
+        const selectionInfo = document.getElementById('selection-info');
+        if (!selectionInfo) {
             console.log('🔄 Re-mapeando elementos del DOM...');
             this.mapElements();
         }
@@ -358,27 +358,7 @@ class StickyVisibilityManager {
         }
     }
 
-    /**
-     * Minimize selection info
-     */
-    minimize() {
-        const selectionInfo = this.elements.get('selection-info');
-        if (selectionInfo) {
-            selectionInfo.classList.add('minimized');
-            console.log('🔧 Selection info minimizado');
-        }
-    }
 
-    /**
-     * Expand selection info
-     */
-    expand() {
-        const selectionInfo = this.elements.get('selection-info');
-        if (selectionInfo) {
-            selectionInfo.classList.remove('minimized');
-            console.log('🔧 Selection info expandido');
-        }
-    }
 }
 
 // Exportar para uso externo

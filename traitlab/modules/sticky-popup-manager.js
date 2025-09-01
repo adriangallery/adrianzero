@@ -47,7 +47,7 @@ class StickyPopupManager {
         this.elements = {
             selectionInfo: document.getElementById('selection-info'),
             selectionText: document.getElementById('selection-text'),
-            minimizeBtn: document.getElementById('minimizeBtn'),
+
             generatedImage: document.getElementById('generated-image'),
             combinedImage: document.getElementById('combined-image'),
             imageLoadingOverlay: document.getElementById('image-loading-overlay'),
@@ -93,10 +93,7 @@ class StickyPopupManager {
      * Configurar event listeners para botones de acción
      */
     setupEventListeners() {
-        // Botón minimize
-        if (this.elements.minimizeBtn) {
-            this.elements.minimizeBtn.addEventListener('click', () => this.toggleMinimize());
-        }
+
 
         // Botones de acción principales
         if (this.elements.activateTokenBtn) {
@@ -433,22 +430,7 @@ class StickyPopupManager {
         console.log('✅ StickyPopupManager: Texto de selección actualizado');
     }
 
-    /**
-     * Toggle minimize/expand
-     */
-    toggleMinimize() {
-        if (!this.elements.selectionInfo || !this.elements.minimizeBtn) return;
 
-        const isMinimized = this.elements.selectionInfo.classList.contains('minimized');
-        
-        if (isMinimized) {
-            this.elements.selectionInfo.classList.remove('minimized');
-            this.elements.minimizeBtn.textContent = 'Minimize';
-        } else {
-            this.elements.selectionInfo.classList.add('minimized');
-            this.elements.minimizeBtn.textContent = 'Expand';
-        }
-    }
 
     /**
      * Métodos de acción (delegados a módulos específicos)
