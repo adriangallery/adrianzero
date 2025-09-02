@@ -127,8 +127,8 @@ class TokenSelectionManager {
         
         // 🎯 CRUCIAL: Mantener la nueva estructura de modal con dos popups
         // NO aplicar clases que interfieran con la nueva estructura
-        selectionInfo.className = 'sticky-modal-container';
-        console.log('🎯 TokenSelectionManager: Estructura de modal con dos popups mantenida');
+        selectionInfo.className = 'sticky-modal-container show';
+        console.log('🎯 TokenSelectionManager: Estructura de modal con dos popups mantenida y clase .show agregada');
         
         console.log('🎯 TokenSelectionManager: Clases CSS aplicadas:', selectionInfo.className);
         

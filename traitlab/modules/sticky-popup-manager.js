@@ -572,16 +572,16 @@ class StickyPopupManager {
             // Pequeño delay para asegurar que todos los elementos estén renderizados
             setTimeout(() => {
                 if (this.elements.selectionInfo) {
-                    this.elements.selectionInfo.classList.add('sticky');
-                    console.log('🎯 StickyPopupManager: Clase .sticky aplicada para popup overlay');
+                    this.elements.selectionInfo.classList.add('sticky', 'show');
+                    console.log('🎯 StickyPopupManager: Clases .sticky y .show aplicadas para popup overlay');
                     
                     // Actualizar estados de botones
                     this.updateButtonStates();
                 }
             }, 50);
         } else {
-            this.elements.selectionInfo.classList.remove('sticky');
-            console.log('🎯 StickyPopupManager: Clase .sticky removida (sin selecciones)');
+            this.elements.selectionInfo.classList.remove('sticky', 'show');
+            console.log('🎯 StickyPopupManager: Clases .sticky y .show removidas (sin selecciones)');
         }
     }
 
