@@ -407,9 +407,19 @@ class StickyPopupManager {
         
         console.log('🖼️ StickyPopupManager: Generando imagen combinada:', {
             baseTokenId,
+            selectedERC1155: this.selectedERC1155,
             traitIds: this.selectedERC1155.map(t => t.tokenId),
             url: combinedImageUrl
         });
+        
+        // Debug: verificar que no haya traits duplicados o incorrectos
+        const uniqueTraitIds = [...new Set(this.selectedERC1155.map(t => t.tokenId))];
+        if (uniqueTraitIds.length !== this.selectedERC1155.length) {
+            console.warn('⚠️ Traits duplicados detectados:', {
+                original: this.selectedERC1155.map(t => t.tokenId),
+                unique: uniqueTraitIds
+            });
+        }
 
         // Cargar imagen combinada (mantener loading overlay visible)
         this.elements.combinedImage.src = combinedImageUrl;

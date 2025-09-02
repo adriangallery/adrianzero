@@ -186,10 +186,8 @@ class TokenSelectionManager {
                 }
             }
             
-            // Generate combined image if we have traits
-            if (this.selectedERC1155.length > 0) {
-                this.generateCombinedImage();
-            }
+            // La generación de imagen se maneja en sticky-popup-manager.js
+            // No generar imagen aquí para evitar duplicación
         }
         
         if (this.selectedERC1155.length > 0) {
@@ -257,43 +255,7 @@ class TokenSelectionManager {
         console.log('🎯 TokenSelectionManager: updateSelectionInfo completado');
     }
 
-    /**
-     * Generar imagen combinada
-     */
-    generateCombinedImage() {
-        if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
-        
-        const generatedImage = document.querySelector('.generated-image img');
-        const imageLoadingOverlay = document.querySelector('.image-loading-overlay');
-        
-        if (!generatedImage || !imageLoadingOverlay) return;
-        
-        // Show loading
-        imageLoadingOverlay.style.display = 'flex';
-        
-        // Generate combined image URL with correct format
-        const baseTokenId = this.selectedERC721.tokenId;
-        
-        // Build URL with correct format: /custom/{tokenId}?trait={trait1}&trait={trait2}
-        let combinedImageUrl = `https://adrianlab.vercel.app/api/render/custom/${baseTokenId}`;
-        
-        if (this.selectedERC1155.length > 0) {
-            const traitParams = this.selectedERC1155.map(t => `trait=${t.tokenId}`).join('&');
-            combinedImageUrl += `?${traitParams}`;
-        }
-        
-        // Load combined image
-        generatedImage.src = combinedImageUrl;
-        generatedImage.style.display = 'block';
-        
-        generatedImage.onload = function() {
-            imageLoadingOverlay.style.display = 'none';
-        };
-        
-        generatedImage.onerror = function() {
-            imageLoadingOverlay.style.display = 'none';
-        };
-    }
+    // Método generateCombinedImage eliminado - se maneja en sticky-popup-manager.js
 
     /**
      * Obtener estado de selección
