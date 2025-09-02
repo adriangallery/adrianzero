@@ -416,6 +416,48 @@ body {
     justify-self: start;
 }
 
+/* ========================================
+   MEDIDAS CENTRALIZADAS - STICKY POPUP
+   ======================================== */
+
+/* Variables CSS para medidas centralizadas */
+:root {
+    /* Popup Botonera Lateral */
+    --popup-botonera-width: 80px;
+    --popup-botonera-height: 400px;
+    --popup-botonera-padding: 15px;
+    
+    /* Popup Principal */
+    --popup-principal-width: 400px;
+    --popup-principal-height: 400px;
+    --popup-principal-padding: 20px;
+    
+    /* Botones de Botonera */
+    --boton-botonera-width: 40px;
+    --boton-botonera-height: 40px;
+    --boton-botonera-font-size: 20px;
+    
+    /* Botones en Móvil */
+    --boton-mobile-width: 28px;
+    --boton-mobile-height: 28px;
+    --boton-mobile-font-size: 16px;
+    
+    /* Imágenes Generadas */
+    --imagen-max-height: 180px;
+    --imagen-max-width: 100%;
+    
+    /* Secciones Internas */
+    --seccion-texto-height: 60px;
+    --seccion-imagen-height: 200px;
+    --seccion-acciones-height: 80px;
+    --seccion-accion-individual-height: 40px;
+    
+    /* Gap y Espaciado */
+    --gap-popups: 15px;
+    --gap-botones: 8px;
+    --gap-secciones: 15px;
+}
+
 /* MODAL PRINCIPAL CON DOS POPUPS LADO A LADO */
 .sticky-modal-container {
     position: fixed !important;
@@ -423,7 +465,7 @@ body {
     right: 20px !important;
     z-index: 1000 !important;
     display: flex !important;
-    gap: 15px !important;
+    gap: var(--gap-popups) !important;
     align-items: flex-start !important;
     background: none !important;
     border: none !important;
@@ -438,9 +480,9 @@ body {
     background: rgba(0, 0, 0, 0.95) !important;
     border: 2px solid #00ff00 !important;
     border-radius: 12px !important;
-    padding: 15px !important;
-    min-height: 400px !important;
-    width: 80px !important;
+    padding: var(--popup-botonera-padding) !important;
+    min-height: var(--popup-botonera-height) !important;
+    width: var(--popup-botonera-width) !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -453,9 +495,9 @@ body {
     background: rgba(0, 0, 0, 0.95) !important;
     border: 2px solid #00ff00 !important;
     border-radius: 12px !important;
-    padding: 20px !important;
-    min-height: 400px !important;
-    width: 400px !important;
+    padding: var(--popup-principal-padding) !important;
+    min-height: var(--popup-principal-height) !important;
+    width: var(--popup-principal-width) !important;
     display: flex !important;
     flex-direction: column !important;
     box-sizing: border-box !important;
@@ -476,8 +518,8 @@ body {
 .sticky-content-popup {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    min-height: 350px; /* Altura fija para evitar saltos */
+    gap: var(--gap-secciones);
+    min-height: calc(var(--popup-principal-height) - 40px); /* Altura fija para evitar saltos */
     padding: 0;
     margin: 0;
 }
@@ -485,7 +527,7 @@ body {
 /* Sección de texto (nueva estructura) */
 .sticky-text {
     text-align: center;
-    min-height: 60px; /* Altura fija */
+    min-height: var(--seccion-texto-height);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -493,7 +535,7 @@ body {
 
 /* Sección de imagen (nueva estructura) */
 .sticky-image {
-    min-height: 200px; /* Altura fija */
+    min-height: var(--seccion-imagen-height);
     position: relative;
     display: flex;
     align-items: center;
@@ -504,15 +546,15 @@ body {
 
 /* Imagen dentro de sticky-image (nueva estructura) */
 .sticky-image img {
-    max-width: 100%;
-    max-height: 180px;
+    max-width: var(--imagen-max-width);
+    max-height: var(--imagen-max-height);
     border-radius: 8px;
     object-fit: contain;
 }
 
 /* Sección de acciones (nueva estructura) */
 .sticky-actions {
-    min-height: 80px; /* Altura fija */
+    min-height: var(--seccion-acciones-height);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -522,7 +564,7 @@ body {
 
 /* Secciones de acción individuales (nueva estructura) */
 .action-section {
-    min-height: 40px; /* Altura fija */
+    min-height: var(--seccion-accion-individual-height);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -607,9 +649,9 @@ body {
     }
     
     .selection-info.sticky .side-emoji-menu .contract-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 16px;
+        width: var(--boton-mobile-width);
+        height: var(--boton-mobile-height);
+        font-size: var(--boton-mobile-font-size);
     }
     
     /* Ajustes para sticky-content en móviles */
@@ -687,6 +729,7 @@ body {
     }
 }
 
+/* Botones generales - usar variables CSS */
 .side-emoji-menu .contract-btn {
     width: 32px;
     height: 32px;
@@ -706,15 +749,15 @@ body {
 .sticky-side-menu-popup .side-emoji-menu {
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
+    gap: var(--gap-botones) !important;
     width: 100% !important;
     align-items: center !important;
 }
 
 .sticky-side-menu-popup .side-emoji-menu .contract-btn {
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 20px !important;
+    width: var(--boton-botonera-width) !important;
+    height: var(--boton-botonera-height) !important;
+    font-size: var(--boton-botonera-font-size) !important;
     border-radius: 8px !important;
     border: 2px solid #333 !important;
     background: #333 !important;
@@ -760,6 +803,7 @@ body {
     text-align: left;
 }
 
+/* Imagen generada antigua - usar variables CSS */
 .selection-info .generated-image img {
     max-width: 100px;
     max-height: 100px;
@@ -803,28 +847,26 @@ body {
     margin: 0;
 }
 
-/* Contenido principal del sticky popup (compatibilidad) */
+/* COMPATIBILIDAD: Usar variables CSS centralizadas */
 .selection-info.sticky .sticky-content {
     grid-column: 2;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    min-height: 350px; /* Altura fija para evitar saltos */
+    gap: var(--gap-secciones);
+    min-height: calc(var(--popup-principal-height) - 40px);
     padding: 0;
     margin: 0;
 }
 
-/* Sección de texto */
 .selection-info.sticky .sticky-text {
-    min-height: 60px; /* Altura fija */
+    min-height: var(--seccion-texto-height);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* Sección de imagen */
 .selection-info.sticky .sticky-image {
-    min-height: 200px; /* Altura fija */
+    min-height: var(--seccion-imagen-height);
     position: relative;
     display: flex;
     align-items: center;
@@ -833,17 +875,15 @@ body {
     overflow: hidden;
 }
 
-/* Imagen dentro de sticky-image */
 .selection-info.sticky .sticky-image img {
-    max-width: 100%;
-    max-height: 180px;
+    max-width: var(--imagen-max-width);
+    max-height: var(--imagen-max-height);
     border-radius: 8px;
     object-fit: contain;
 }
 
-/* Sección de acciones */
 .selection-info.sticky .sticky-actions {
-    min-height: 80px; /* Altura fija */
+    min-height: var(--seccion-acciones-height);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -851,9 +891,8 @@ body {
     margin: 0;
 }
 
-/* Secciones de acción individuales */
 .selection-info.sticky .action-section {
-    min-height: 40px; /* Altura fija */
+    min-height: var(--seccion-accion-individual-height);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -895,6 +934,7 @@ body {
     margin: 10px 0;
 }
 
+/* Imagen sticky antigua - usar variables CSS */
 .selection-info.sticky .generated-image img {
     max-width: 150px;
     max-height: 150px;
