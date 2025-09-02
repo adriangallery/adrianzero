@@ -500,7 +500,7 @@ body {
     position: relative !important;
 }
 
-/* POPUP DERECHO: Contenido principal */
+/* POPUP DERECHO: Contenido principal - CONSOLIDADO */
 .sticky-content-popup {
     background: rgba(0, 0, 0, 0.95) !important;
     border: 2px solid #00ff00 !important;
@@ -510,8 +510,10 @@ body {
     width: var(--popup-principal-width) !important;
     display: flex !important;
     flex-direction: column !important;
+    gap: var(--gap-secciones) !important;
     box-sizing: border-box !important;
     position: relative !important;
+    margin: 0 !important;
 }
 
 /* Optimización para modo sticky (mantener compatibilidad) */
@@ -521,17 +523,6 @@ body {
     gap: 12px;
     padding: 15px 20px 15px 15px;
     min-height: 400px; /* Altura fija para evitar saltos */
-}
-
-/* ESTILOS PARA NUEVA ESTRUCTURA DE DOS POPUPS */
-/* Contenido principal del sticky popup (nueva estructura) - CONSOLIDADO */
-.sticky-content-popup {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: var(--gap-secciones) !important;
-    min-height: var(--popup-principal-height) !important; /* Usar altura completa */
-    padding: 0 !important;
-    margin: 0 !important;
 }
 
 /* Sección de texto (nueva estructura) */
@@ -710,11 +701,6 @@ body {
         width: var(--popup-principal-width) !important; /* Mantener ancho fijo en móvil */
         min-height: var(--popup-principal-height) !important; /* Usar altura de variable CSS */
         padding: 15px;
-    }
-    
-    /* Ajustes para sticky-content-popup en móviles */
-    .sticky-content-popup {
-        min-height: var(--popup-principal-height) !important; /* Usar altura de variable CSS */
         gap: 12px;
     }
     
@@ -739,7 +725,7 @@ body {
     }
 }
 
-/* Botones generales - usar variables CSS */
+/* Botones generales del side-emoji-menu (NO del popup) */
 .side-emoji-menu .contract-btn {
     width: 32px;
     height: 32px;
@@ -764,6 +750,7 @@ body {
     align-items: center !important;
 }
 
+/* Botones emoji específicos del popup lateral - ALTA ESPECIFICIDAD */
 .sticky-side-menu-popup .side-emoji-menu .contract-btn {
     width: var(--boton-emoji-width) !important;
     height: var(--boton-emoji-height) !important;
@@ -773,7 +760,9 @@ body {
     background: #333 !important;
     color: #fff !important;
     margin: 0 !important;
+    padding: 0 !important;
     transition: all 0.3s ease !important;
+    min-width: unset !important; /* Anular min-width del estilo general */
 }
 
 .sticky-side-menu-popup .side-emoji-menu .contract-btn:hover {
