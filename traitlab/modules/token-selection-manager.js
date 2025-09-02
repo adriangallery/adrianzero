@@ -193,13 +193,6 @@ class TokenSelectionManager {
         }
         
         if (this.selectedERC1155.length > 0) {
-            text += `<h4 class="selected-traits-title">Selected Traits:</h4>`;
-            text += `<div class="traits-container">`;
-            this.selectedERC1155.forEach(trait => {
-                text += `<span class="trait-tag">${trait.title}</span>`;
-            });
-            text += `</div>`;
-            
             // Show traits actions section
             const traitsActionsSection = document.getElementById('traits-actions-section');
             if (traitsActionsSection) {
