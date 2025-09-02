@@ -442,14 +442,7 @@ class StickyPopupManager {
             text += `<h3 class="selected-token-title">${this.selectedERC721.title}</h3>`;
         }
 
-        if (this.selectedERC1155.length > 0) {
-            text += `<h4 class="selected-traits-title">Selected Traits:</h4>`;
-            text += `<div class="traits-container">`;
-            this.selectedERC1155.forEach(trait => {
-                text += `<span class="trait-tag">${trait.title}</span>`;
-            });
-            text += `</div>`;
-        }
+        // Traits no se muestran en el popup - solo se usan para generar imagen combinada
 
         if (this.selectedFloppy) {
             let floppyDisplayName = this.selectedFloppy.title;
