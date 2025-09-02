@@ -456,16 +456,16 @@ body {
     --imagen-max-height: 180px;
     --imagen-max-width: 100%;
     
-    /* Secciones Internas */
-    --seccion-texto-height: 60px;
-    --seccion-imagen-height: 200px;
-    --seccion-acciones-height: 80px;
-    --seccion-accion-individual-height: 40px;
+    /* Secciones Internas - OPTIMIZADAS PARA 380px TOTAL */
+    --seccion-texto-height: 40px;
+    --seccion-imagen-height: 180px;
+    --seccion-acciones-height: 120px;
+    --seccion-accion-individual-height: 35px;
     
-    /* Gap y Espaciado */
+    /* Gap y Espaciado - REDUCIDOS */
     --gap-popups: 15px;
     --gap-botones: 8px;
-    --gap-secciones: 15px;
+    --gap-secciones: 8px;
 }
 
 /* MODAL PRINCIPAL CON DOS POPUPS LADO A LADO */
@@ -500,13 +500,13 @@ body {
     position: relative !important;
 }
 
-/* POPUP DERECHO: Contenido principal - CONSOLIDADO */
+/* POPUP DERECHO: Contenido principal - ALTURA FIJA 380px */
 .sticky-content-popup {
     background: rgba(0, 0, 0, 0.95) !important;
     border: 2px solid #00ff00 !important;
     border-radius: 12px !important;
-    padding: var(--popup-principal-padding) !important;
-    min-height: var(--popup-principal-height) !important;
+    padding: 12px !important; /* Padding reducido */
+    height: var(--popup-principal-height) !important; /* Altura fija, no min-height */
     width: var(--popup-principal-width) !important;
     display: flex !important;
     flex-direction: column !important;
@@ -514,6 +514,7 @@ body {
     box-sizing: border-box !important;
     position: relative !important;
     margin: 0 !important;
+    overflow: hidden !important; /* Evitar desbordamiento */
 }
 
 /* Optimización para modo sticky (mantener compatibilidad) */
@@ -525,24 +526,26 @@ body {
     min-height: 400px; /* Altura fija para evitar saltos */
 }
 
-/* Sección de texto (nueva estructura) */
+/* Sección de texto (nueva estructura) - ALTURA FIJA */
 .sticky-text {
     text-align: center;
-    min-height: var(--seccion-texto-height);
+    height: var(--seccion-texto-height);
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0; /* No se reduce */
 }
 
-/* Sección de imagen (nueva estructura) */
+/* Sección de imagen (nueva estructura) - ALTURA FIJA */
 .sticky-image {
-    min-height: var(--seccion-imagen-height);
+    height: var(--seccion-imagen-height);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     overflow: hidden;
+    flex-shrink: 0; /* No se reduce */
 }
 
 /* Imagen dentro de sticky-image (nueva estructura) */
@@ -553,26 +556,29 @@ body {
     object-fit: contain;
 }
 
-/* Sección de acciones (nueva estructura) */
+/* Sección de acciones (nueva estructura) - ALTURA FIJA */
 .sticky-actions {
-    min-height: var(--seccion-acciones-height);
+    height: var(--seccion-acciones-height);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px; /* Gap reducido */
     padding: 0;
     margin: 0;
+    overflow-y: auto; /* Scroll si es necesario */
+    flex-shrink: 0; /* No se reduce */
 }
 
-/* Secciones de acción individuales (nueva estructura) */
+/* Secciones de acción individuales (nueva estructura) - ALTURA FIJA */
 .action-section {
     min-height: var(--seccion-accion-individual-height);
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px 0;
+    gap: 4px; /* Gap reducido */
+    padding: 4px 0; /* Padding reducido */
     border-radius: 6px;
     background: rgba(0, 255, 0, 0.05);
     border: none; /* Sin borde como solicitado */
+    flex-shrink: 0; /* No se reduce */
 }
 
 /* Mejorar visualización de elementos en modo sticky */
@@ -699,9 +705,9 @@ body {
     
     .sticky-content-popup {
         width: var(--popup-principal-width) !important; /* Mantener ancho fijo en móvil */
-        min-height: var(--popup-principal-height) !important; /* Usar altura de variable CSS */
-        padding: 15px;
-        gap: 12px;
+        height: var(--popup-principal-height) !important; /* Altura fija, no min-height */
+        padding: 12px; /* Padding reducido */
+        gap: 8px; /* Gap reducido */
     }
     
     /* Ajustes para sticky-image en móviles */
