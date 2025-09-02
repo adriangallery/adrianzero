@@ -560,6 +560,7 @@ body {
 /* Sección de acciones (nueva estructura) - ALTURA FIJA */
 .sticky-actions {
     height: var(--seccion-acciones-height);
+    width: 180px; /* Ancho fijo de 180px */
     display: flex;
     flex-direction: column;
     gap: 6px; /* Gap reducido */
