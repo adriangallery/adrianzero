@@ -668,23 +668,23 @@ body {
     }
     
     /* Ajustes para sticky-image en móviles */
-    .sticky-image {
-        height: var(--seccion-imagen-height) !important; /* Usar altura fija */
+    .selection-info.sticky .sticky-image {
+        min-height: 160px;
     }
     
-    .sticky-image img {
+    .selection-info.sticky .sticky-image img {
         max-height: 140px;
     }
     
     /* Ajustes para sticky-actions en móviles */
-    .sticky-actions {
-        height: var(--seccion-acciones-height) !important; /* Usar altura fija */
-        gap: 6px;
+    .selection-info.sticky .sticky-actions {
+        min-height: 60px;
+        gap: 8px;
     }
     
-    .action-section {
-        min-height: var(--seccion-accion-individual-height) !important; /* Usar altura fija */
-        padding: 4px 0;
+    .selection-info.sticky .action-section {
+        min-height: 35px;
+        padding: 6px 0;
     }
 
     /* RESPONSIVE PARA NUEVA ESTRUCTURA DE DOS POPUPS */
@@ -710,7 +710,25 @@ body {
         gap: 8px; /* Gap reducido */
     }
     
-    /* ESTILOS RESPONSIVE DUPLICADOS ELIMINADOS - Usar los consolidados arriba */
+    /* Ajustes para sticky-image en móviles */
+    .sticky-image {
+        min-height: 160px;
+    }
+    
+    .sticky-image img {
+        max-height: 140px;
+    }
+    
+    /* Ajustes para sticky-actions en móviles */
+    .sticky-actions {
+        min-height: 60px;
+        gap: 8px;
+    }
+    
+    .action-section {
+        min-height: 35px;
+        padding: 6px 0;
+    }
 }
 
 /* Botones generales del side-emoji-menu (NO del popup) */
@@ -837,7 +855,49 @@ body {
     margin: 0;
 }
 
-/* ESTILOS DUPLICADOS ELIMINADOS - Usar los consolidados arriba */
+.selection-info.sticky .sticky-text {
+    min-height: var(--seccion-texto-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.selection-info.sticky .sticky-image {
+    min-height: var(--seccion-imagen-height);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    overflow: hidden;
+}
+
+.selection-info.sticky .sticky-image img {
+    max-width: var(--imagen-max-width);
+    max-height: var(--imagen-max-height);
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.selection-info.sticky .sticky-actions {
+    min-height: var(--seccion-acciones-height);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+}
+
+.selection-info.sticky .action-section {
+    min-height: var(--seccion-accion-individual-height);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+    border-radius: 6px;
+    background: rgba(0, 255, 0, 0.05);
+    border: none; /* Sin borde como solicitado */
+}
 
 
 
