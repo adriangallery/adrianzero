@@ -530,6 +530,7 @@ body {
 .sticky-text {
     text-align: center;
     height: var(--seccion-texto-height);
+    width: 180px; /* Ancho fijo de 180px */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -539,11 +540,11 @@ body {
 /* Sección de imagen (nueva estructura) - ALTURA FIJA */
 .sticky-image {
     height: var(--seccion-imagen-height);
+    width: 180px; /* Ancho fijo de 180px */
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
     overflow: hidden;
     flex-shrink: 0; /* No se reduce */
 }
@@ -571,6 +572,7 @@ body {
 /* Secciones de acción individuales (nueva estructura) - ALTURA FIJA */
 .action-section {
     min-height: var(--seccion-accion-individual-height);
+    width: 180px; /* Ancho fijo de 180px */
     display: flex;
     flex-direction: column;
     gap: 4px; /* Gap reducido */
