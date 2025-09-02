@@ -44,8 +44,8 @@ class FloppyManager {
             // Local development - use relative path from current directory
             return `../components/images/${assetId}${extension}`;
         } else {
-            // Production - use Vercel CDN
-            return `https://adrianlab.vercel.app/images/${assetId}${extension}`;
+            // Production - use adrianzero.com CDN
+            return `https://adrianzero.com/components/images/${assetId}${extension}`;
         }
     }
 
