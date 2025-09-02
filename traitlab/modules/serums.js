@@ -25,6 +25,37 @@ class SerumsManager {
     }
 
     /**
+     * Get correct image path based on environment
+     * Based on getImagePath() from index.html
+     */
+    getImagePath(assetId, extension) {
+        // Check if we're running locally (localhost) or online
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        if (isLocal) {
+            // Local development - use relative path from current directory
+            return `../components/images/${assetId}${extension}`;
+        } else {
+            // Production - use Vercel CDN
+            return `https://adrianlab.vercel.app/images/${assetId}${extension}`;
+        }
+    }
+
+    /**
+     * Get serum image URL with local image support
+     * Based on serum image logic from index.html
+     */
+    getSerumImageUrl(tokenId) {
+        // Use local images for serums (tokens 262144-262147)
+        if (tokenId >= 262144 && tokenId <= 262147) {
+            return this.getImagePath(tokenId, '.gif');
+        }
+        
+        // Fallback to default image
+        return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+    }
+
+    /**
      * Set selected serum
      */
     setSelectedSerum(serum) {

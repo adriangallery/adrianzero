@@ -33,6 +33,81 @@ class FloppyManager {
     }
 
     /**
+     * Get correct image path based on environment
+     * Based on getImagePath() from index.html
+     */
+    getImagePath(assetId, extension) {
+        // Check if we're running locally (localhost) or online
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        if (isLocal) {
+            // Local development - use relative path from current directory
+            return `../components/images/${assetId}${extension}`;
+        } else {
+            // Production - use Vercel CDN
+            return `https://adrianlab.vercel.app/images/${assetId}${extension}`;
+        }
+    }
+
+    /**
+     * Get floppy image URL with local image support
+     * Based on floppy image logic from index.html
+     */
+    getFloppyImageUrl(tokenId) {
+        // Use local images for floppy discs
+        if (tokenId === 10000) {
+            return this.getImagePath(10000, '.gif');
+        } else if (tokenId === 10001) {
+            return this.getImagePath(10001, '.gif');
+        } else if (tokenId === 10002) {
+            return this.getImagePath(10002, '.gif');
+        } else if (tokenId === 10003) {
+            return this.getImagePath(10003, '.gif');
+        } else if (tokenId === 10004) {
+            return this.getImagePath(10004, '.gif');
+        } else if (tokenId === 10005) {
+            return this.getImagePath(10005, '.gif');
+        } else if (tokenId === 10007) {
+            return this.getImagePath(10007, '.png');
+        } else if (tokenId === 15000) {
+            return this.getImagePath(15000, '.gif');
+        } else if (tokenId === 15001) {
+            return this.getImagePath(15001, '.gif');
+        } else if (tokenId === 15002) {
+            return this.getImagePath(15002, '.gif');
+        } else if (tokenId === 15003) {
+            return this.getImagePath(15003, '.gif');
+        } else if (tokenId === 15004) {
+            return this.getImagePath(15004, '.gif');
+        } else if (tokenId === 15005) {
+            return this.getImagePath(15005, '.gif');
+        } else if (tokenId === 15006) {
+            return this.getImagePath(15006, '.gif');
+        } else if (tokenId === 15007) {
+            return this.getImagePath(15007, '.gif');
+        } else if (tokenId === 15008) {
+            return this.getImagePath(15008, '.png');
+        } else if (tokenId === 15009) {
+            return this.getImagePath(15009, '.png');
+        } else if (tokenId === 15010) {
+            return this.getImagePath(15010, '.png');
+        } else if (tokenId === 15011) {
+            return this.getImagePath(15011, '.png');
+        } else if (tokenId === 15012) {
+            return this.getImagePath(15012, '.png');
+        } else if (tokenId === 15013) {
+            return this.getImagePath(15013, '.png');
+        } else if (tokenId === 15014) {
+            return this.getImagePath(15014, '.png');
+        } else if (tokenId === 15015) {
+            return this.getImagePath(15015, '.png');
+        }
+        
+        // Fallback to default image
+        return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+    }
+
+    /**
      * Set selected floppy
      */
     setSelectedFloppy(floppy) {

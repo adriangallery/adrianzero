@@ -65,6 +65,21 @@ class ZeroManager {
     }
 
     /**
+     * Check if token ID is a floppy token
+     */
+    isFloppyToken(tokenId) {
+        return (tokenId >= 10000 && tokenId <= 10007) || 
+               (tokenId >= 15000 && tokenId <= 15015);
+    }
+
+    /**
+     * Check if token ID is a serum token
+     */
+    isSerumToken(tokenId) {
+        return tokenId >= 262144 && tokenId <= 262147;
+    }
+
+    /**
      * Load tokens for specific contract using direct API calls with pagination
      */
     async loadTokens(userAddress, contractAddress, filter = null) {
@@ -184,14 +199,33 @@ class ZeroManager {
                             // Use the working format for AdrianZERO tokens
                             mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
                         } else {
-                            // For ERC1155 tokens, use the original logic
-                            // Try multiple locations for image URL
-                            if (nft.raw && nft.raw.metadata && nft.raw.metadata.image) {
-                                mediaUrl = nft.raw.metadata.image;
-                            } else if (nft.media && Array.isArray(nft.media) && nft.media.length > 0) {
-                                mediaUrl = nft.media[0].gateway || nft.media[0].raw || '';
-                            } else if (nft.metadata && nft.metadata.image) {
-                                mediaUrl = nft.metadata.image;
+                            // For ERC1155 tokens, check if it's a floppy disc or serum first
+                            if (this.isFloppyToken(tokenIdInt)) {
+                                // Use floppy manager for local images
+                                if (window.app && window.app.modules.floppy) {
+                                    mediaUrl = window.app.modules.floppy.getFloppyImageUrl(tokenIdInt);
+                                } else {
+                                    // Fallback to default floppy image
+                                    mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
+                                }
+                            } else if (this.isSerumToken(tokenIdInt)) {
+                                // Use serum manager for local images
+                                if (window.app && window.app.modules.serums) {
+                                    mediaUrl = window.app.modules.serums.getSerumImageUrl(tokenIdInt);
+                                } else {
+                                    // Fallback to default serum image
+                                    mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
+                                }
+                            } else {
+                                // For other ERC1155 tokens, use the original logic
+                                // Try multiple locations for image URL
+                                if (nft.raw && nft.raw.metadata && nft.raw.metadata.image) {
+                                    mediaUrl = nft.raw.metadata.image;
+                                } else if (nft.media && Array.isArray(nft.media) && nft.media.length > 0) {
+                                    mediaUrl = nft.media[0].gateway || nft.media[0].raw || '';
+                                } else if (nft.metadata && nft.metadata.image) {
+                                    mediaUrl = nft.metadata.image;
+                                }
                             }
                         }
                         
