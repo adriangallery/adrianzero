@@ -572,7 +572,9 @@ class StickyPopupManager {
             // Pequeño delay para asegurar que todos los elementos estén renderizados
             setTimeout(() => {
                 if (this.elements.selectionInfo) {
+                    console.log('🎯 StickyPopupManager: ANTES de aplicar clases:', this.elements.selectionInfo.className);
                     this.elements.selectionInfo.classList.add('sticky', 'show');
+                    console.log('🎯 StickyPopupManager: DESPUÉS de aplicar clases:', this.elements.selectionInfo.className);
                     console.log('🎯 StickyPopupManager: Clases .sticky y .show aplicadas para popup overlay');
                     
                     // Actualizar estados de botones
