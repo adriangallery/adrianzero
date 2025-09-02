@@ -82,8 +82,8 @@ class ZeroManager {
     /**
      * Load tokens for specific contract using direct API calls with pagination
      */
-    async loadTokens(userAddress, contractAddress, filter = null) {
-        console.log('loadTokens called with:', { userAddress, contractAddress, filter });
+    async loadTokens(userAddress, contractAddress, filter = null, skipIndividualMetadata = false) {
+        console.log('loadTokens called with:', { userAddress, contractAddress, filter, skipIndividualMetadata });
         
         if (!userAddress) {
             throw new Error('User address is required');
@@ -270,54 +270,64 @@ class ZeroManager {
             
             console.log('Processed tokens:', filteredTokens);
             
-            // For ERC1155 tokens, fetch individual metadata if it's empty
+            // For ERC1155 tokens, fetch individual metadata if it's empty (unless skipped)
             if (tokenType === 'ERC1155') {
-                const tokensWithMetadata = await Promise.all(
-                    filteredTokens.map(async (token) => {
-                        if (!token.metadata || Object.keys(token.metadata).length === 0) {
-                            console.log(`Fetching individual metadata for token ${token.tokenId}`);
-                            try {
-                                const metadataUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=ERC1155`;
-                                const metadataResponse = await fetch(metadataUrl);
-                                
-                                if (metadataResponse.ok) {
-                                    const metadataData = await metadataResponse.json();
-                                    console.log(`Metadata for token ${token.tokenId}:`, metadataData);
+                if (skipIndividualMetadata) {
+                    console.log('🚀 Saltando metadata individual para carga rápida');
+                    // Return tokens with basic info only
+                    filteredTokens.forEach(token => {
+                        console.log(`Returning basic token ${token.tokenId} with balance: ${token.balance}`);
+                    });
+                    this.emit('tokensLoaded', { tokens: filteredTokens, contractAddress, tokenType });
+                    return filteredTokens;
+                } else {
+                    const tokensWithMetadata = await Promise.all(
+                        filteredTokens.map(async (token) => {
+                            if (!token.metadata || Object.keys(token.metadata).length === 0) {
+                                console.log(`Fetching individual metadata for token ${token.tokenId}`);
+                                try {
+                                    const metadataUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=ERC1155`;
+                                    const metadataResponse = await fetch(metadataUrl);
                                     
-                                    // Extract category from the new metadata
-                                    let category = '';
-                                    if (metadataData.metadata) {
-                                        category = metadataData.metadata.category || metadataData.metadata.Category || '';
+                                    if (metadataResponse.ok) {
+                                        const metadataData = await metadataResponse.json();
+                                        console.log(`Metadata for token ${token.tokenId}:`, metadataData);
                                         
-                                        if (!category && metadataData.metadata.attributes) {
-                                            const categoryAttr = metadataData.metadata.attributes.find(attr => 
-                                                attr.trait_type && attr.trait_type.toLowerCase() === 'category'
-                                            );
-                                            if (categoryAttr) {
-                                                category = categoryAttr.value.toLowerCase();
+                                        // Extract category from the new metadata
+                                        let category = '';
+                                        if (metadataData.metadata) {
+                                            category = metadataData.metadata.category || metadataData.metadata.Category || '';
+                                            
+                                            if (!category && metadataData.metadata.attributes) {
+                                                const categoryAttr = metadataData.metadata.attributes.find(attr => 
+                                                    attr.trait_type && attr.trait_type.toLowerCase() === 'category'
+                                                );
+                                                if (categoryAttr) {
+                                                    category = categoryAttr.value.toLowerCase();
+                                                }
                                             }
                                         }
+                                        
+                                        return {
+                                            ...token,
+                                            metadata: metadataData.metadata || {},
+                                            category: category
+                                        };
                                     }
-                                    
-                                    return {
-                                        ...token,
-                                        metadata: metadataData.metadata || {},
-                                        category: category
-                                    };
+                                } catch (error) {
+                                    console.error(`Error fetching metadata for token ${token.tokenId}:`, error);
                                 }
-                            } catch (error) {
-                                console.error(`Error fetching metadata for token ${token.tokenId}:`, error);
                             }
-                        }
-                        // Return the token as is, preserving the balance
-                        console.log(`Returning token ${token.tokenId} with balance: ${token.balance}`);
-                        return token;
-                    })
-                );
-                
-                console.log(`Tokens with metadata:`, tokensWithMetadata);
-                this.emit('tokensLoaded', { tokens: tokensWithMetadata, contractAddress, tokenType });
-                return tokensWithMetadata;
+                            // Return the token as is, preserving the balance
+                            console.log(`Returning token ${token.tokenId} with balance: ${token.balance}`);
+                            return token;
+                        })
+                    );
+                    
+                    console.log(`Tokens with metadata:`, tokensWithMetadata);
+                    this.emit('tokensLoaded', { tokens: tokensWithMetadata, contractAddress, tokenType });
+                    return tokensWithMetadata;
+                }
             } else {
                 // For ERC721 tokens, load custom names
                 const customNamesResult = await this.loadCustomNames(tokens);
