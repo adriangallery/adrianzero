@@ -428,12 +428,12 @@ body {
     --popup-botonera-padding: 15px;
     
     /* Popup Principal */
-    --popup-principal-width: 400px;
+    --popup-principal-width: 220px; /* Imagen (180px) + padding (40px) */
     --popup-principal-height: 400px;
     --popup-principal-padding: 20px;
     
     /* Botones de Botonera */
-    --boton-botonera-width: 40px;
+    --boton-botonera-width: 80px; /* Mismo ancho que popup botonera */
     --boton-botonera-height: 40px;
     --boton-botonera-font-size: 20px;
     
@@ -514,7 +514,7 @@ body {
 }
 
 /* ESTILOS PARA NUEVA ESTRUCTURA DE DOS POPUPS */
-/* Contenido principal del sticky popup (nueva estructura) */
+/* Contenido principal del sticky popup (nueva estructura) - CONSOLIDADO */
 .sticky-content-popup {
     display: flex;
     flex-direction: column;
@@ -689,7 +689,7 @@ body {
     }
     
     .sticky-side-menu-popup {
-        width: auto;
+        width: var(--popup-botonera-width) !important; /* Mantener ancho fijo en móvil */
         min-height: auto;
         flex-direction: row;
         gap: 8px;
@@ -697,7 +697,7 @@ body {
     }
     
     .sticky-content-popup {
-        width: auto;
+        width: var(--popup-principal-width) !important; /* Mantener ancho fijo en móvil */
         min-height: 300px;
         padding: 15px;
     }
@@ -837,15 +837,7 @@ body {
     font-family: 'VT323', monospace;
 }
 
-/* Contenido principal del sticky popup (nueva estructura) */
-.sticky-content-popup {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    min-height: 350px; /* Altura fija para evitar saltos */
-    padding: 0;
-    margin: 0;
-}
+/* ESTILO DUPLICADO ELIMINADO - Usar el consolidado arriba */
 
 /* COMPATIBILIDAD: Usar variables CSS centralizadas */
 .selection-info.sticky .sticky-content {
