@@ -207,17 +207,7 @@
             async loadDataInBackground(userAddress) {
                 console.log('🚀 TraitLAB v2: Iniciando carga en background...');
                 
-                // Mostrar mensaje de "cargando datos" en lugar de spinner bloqueante
-                const tokensGrid = document.getElementById('tokens-grid');
-                if (tokensGrid) {
-                    tokensGrid.innerHTML = `
-                        <div class="loading-message" style="text-align: center; padding: 20px; color: #666;">
-                            <div class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            <p>🔄 Cargando tus tokens en background...</p>
-                            <p style="font-size: 12px; color: #999;">Puedes navegar por los tabs mientras se cargan</p>
-                        </div>
-                    `;
-                }
+                // NO mostrar mensaje de carga aquí - se maneja en loadTokensForTab
                 
                 try {
                     // 1. Iniciar DataManager en background
