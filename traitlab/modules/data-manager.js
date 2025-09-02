@@ -146,6 +146,14 @@ class TraitLABDataManager {
      */
     displayTokensImmediately(tokens, filter) {
         console.log('🚀 Mostrando tokens inmediatamente con nombres de Alchemy...');
+        console.log(`📊 Tokens a mostrar: ${tokens.length}, Filter: ${filter}`);
+        
+        // 🚨 VERIFICACIÓN: Solo mostrar tokens AdrianZERO inmediatamente
+        // Los tokens ERC1155 se mostrarán cuando el usuario cambie de tab
+        if (filter !== 'adrianzero') {
+            console.log(`⚠️ Saltando displayTokensImmediately - Solo AdrianZERO se muestra inmediatamente. Filter: ${filter}`);
+            return;
+        }
         
         if (window.app && window.app.modules.ui) {
             // Mostrar tokens inmediatamente sin esperar mejoras
