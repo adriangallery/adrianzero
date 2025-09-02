@@ -328,6 +328,9 @@ class StickyPopupManager {
         if (this.elements.openFloppySection) {
             this.elements.openFloppySection.style.display = 'block';
         }
+        
+        // Mostrar imagen del floppy en lugar de la imagen del AdrianZERO
+        this.showFloppyImage();
     }
 
     /**
@@ -337,6 +340,97 @@ class StickyPopupManager {
         if (this.elements.useSerumSection) {
             this.elements.useSerumSection.style.display = 'block';
         }
+        
+        // Mostrar imagen del serum en lugar de la imagen del AdrianZERO
+        this.showSerumImage();
+    }
+
+    /**
+     * Mostrar imagen del floppy seleccionado
+     */
+    showFloppyImage() {
+        if (!this.elements.generatedImage || !this.elements.combinedImage || !this.selectedFloppy) return;
+
+        // Obtener URL de imagen del floppy usando el módulo floppy
+        let floppyImageUrl;
+        if (window.app && window.app.modules.floppy) {
+            floppyImageUrl = window.app.modules.floppy.getFloppyImageUrl(parseInt(this.selectedFloppy.tokenId));
+        } else {
+            // Fallback si no hay módulo floppy
+            floppyImageUrl = `https://adrianlab.vercel.app/api/render/${this.selectedFloppy.tokenId}.png`;
+        }
+
+        console.log('💾 Mostrando imagen de floppy:', {
+            tokenId: this.selectedFloppy.tokenId,
+            imageUrl: floppyImageUrl
+        });
+
+        // MOSTRAR loading overlay
+        if (this.elements.imageLoadingOverlay) {
+            this.elements.imageLoadingOverlay.style.display = 'flex';
+        }
+
+        // Cargar imagen del floppy
+        this.elements.combinedImage.src = floppyImageUrl;
+        
+        // Ocultar loading cuando la imagen esté lista
+        this.elements.combinedImage.onload = () => {
+            if (this.elements.imageLoadingOverlay) {
+                this.elements.imageLoadingOverlay.style.display = 'none';
+            }
+            console.log('✅ Imagen de floppy cargada');
+        };
+        
+        this.elements.combinedImage.onerror = () => {
+            if (this.elements.imageLoadingOverlay) {
+                this.elements.imageLoadingOverlay.style.display = 'none';
+            }
+            console.error('❌ Error cargando imagen de floppy');
+        };
+    }
+
+    /**
+     * Mostrar imagen del serum seleccionado
+     */
+    showSerumImage() {
+        if (!this.elements.generatedImage || !this.elements.combinedImage || !this.selectedSerum) return;
+
+        // Obtener URL de imagen del serum usando el módulo serums
+        let serumImageUrl;
+        if (window.app && window.app.modules.serums) {
+            serumImageUrl = window.app.modules.serums.getSerumImageUrl(parseInt(this.selectedSerum.tokenId));
+        } else {
+            // Fallback si no hay módulo serums
+            serumImageUrl = `https://adrianlab.vercel.app/api/render/${this.selectedSerum.tokenId}.png`;
+        }
+
+        console.log('🧪 Mostrando imagen de serum:', {
+            tokenId: this.selectedSerum.tokenId,
+            imageUrl: serumImageUrl
+        });
+
+        // MOSTRAR loading overlay
+        if (this.elements.imageLoadingOverlay) {
+            this.elements.imageLoadingOverlay.style.display = 'flex';
+        }
+
+        // Cargar imagen del serum
+        this.elements.combinedImage.src = serumImageUrl;
+        
+        // Ocultar loading cuando la imagen esté lista
+        this.elements.combinedImage.onload = () => {
+            if (this.elements.imageLoadingOverlay) {
+                this.elements.imageLoadingOverlay.style.display = 'none';
+            }
+            console.log('✅ Imagen de serum cargada');
+        };
+        
+        this.elements.combinedImage.onerror = () => {
+            if (this.elements.imageLoadingOverlay) {
+                this.elements.imageLoadingOverlay.style.display = 'none';
+            }
+            console.error('❌ Error cargando imagen de serum');
+        };
     }
 
     /**
