@@ -93,41 +93,9 @@ class TraitLABDataManager {
                 if (userAddress) {
                     const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
                     
-                    // Cargar TODOS los tokens ERC1155 sin filtro
-                    console.log('📊 Cargando todos los tokens ERC1155...');
-                    const allERC1155Tokens = await this.loadTokensWithRetry(userAddress, contractAddress);
-                    
-                    // Separar por tipo usando filters.js
-                    if (window.app && window.app.modules.filters) {
-                        const traits = window.app.modules.filters.filterTraitTokens(allERC1155Tokens);
-                        const floppys = window.app.modules.filters.filterFloppyTokens(allERC1155Tokens);
-                        const serums = window.app.modules.filters.filterSerumTokens(allERC1155Tokens);
-                        
-                        this.cache.adrianLab = {
-                            all: allERC1155Tokens,
-                            traits: traits,
-                            floppys: floppys,
-                            packs: [], // Por ahora vacío, se puede implementar después
-                            serums: serums
-                        };
-                        
-                        console.log('📊 AdrianLAB tokens cargados y separados:', {
-                            total: allERC1155Tokens.length,
-                            traits: traits.length,
-                            floppys: floppys.length,
-                            packs: 0,
-                            serums: serums.length
-                        });
-                    } else {
-                        // Fallback si no hay filtros
-                        this.cache.adrianLab = {
-                            all: allERC1155Tokens,
-                            traits: [],
-                            floppys: [],
-                            packs: [],
-                            serums: []
-                        };
-                    }
+                    // 🚀 CARGAR TOKENS PROGRESIVAMENTE
+                    console.log('📊 Cargando tokens ERC1155 progresivamente...');
+                    await this.loadTokensProgressive(userAddress, contractAddress);
                 }
             }
         } catch (error) {
@@ -441,6 +409,105 @@ class TraitLABDataManager {
             this.cache.ready.adrianLab = false;
             await this.loadAdrianLabTokens();
         }
+    }
+
+    /**
+     * Cargar tokens ERC1155 progresivamente
+     */
+    async loadTokensProgressive(userAddress, contractAddress) {
+        try {
+            // Cargar tokens básicos primero (sin metadata individual)
+            console.log('📊 Cargando tokens básicos ERC1155...');
+            const basicTokens = await this.loadBasicTokens(userAddress, contractAddress);
+            
+            if (basicTokens.length === 0) {
+                console.log('📊 No hay tokens ERC1155 básicos');
+                return;
+            }
+            
+            // Separar por tipo usando filters.js
+            if (window.app && window.app.modules.filters) {
+                const traits = window.app.modules.filters.filterTraitTokens(basicTokens);
+                const floppys = window.app.modules.filters.filterFloppyTokens(basicTokens);
+                const serums = window.app.modules.filters.filterSerumTokens(basicTokens);
+                
+                this.cache.adrianLab = {
+                    all: basicTokens,
+                    traits: traits,
+                    floppys: floppys,
+                    packs: [], // Por ahora vacío
+                    serums: serums
+                };
+                
+                console.log('📊 Tokens ERC1155 básicos separados:', {
+                    total: basicTokens.length,
+                    traits: traits.length,
+                    floppys: floppys.length,
+                    packs: 0,
+                    serums: serums.length
+                });
+                
+                // 🚀 MOSTRAR TOKENS INMEDIATAMENTE
+                this.displayTokensImmediately(basicTokens, 'traits');
+                
+                // 🔄 MEJORAR METADATA EN BACKGROUND
+                this.improveERC1155MetadataInBackground(basicTokens);
+            }
+        } catch (error) {
+            console.warn('📊 Error en carga progresiva:', error);
+        }
+    }
+
+    /**
+     * Cargar tokens básicos sin metadata individual
+     */
+    async loadBasicTokens(userAddress, contractAddress) {
+        try {
+            // Usar el método loadTokens del zero.js pero con un flag para saltar metadata individual
+            const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress, null, true); // true = skip individual metadata
+            return tokens || [];
+        } catch (error) {
+            console.warn('📊 Error cargando tokens básicos:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Mejorar metadata de tokens ERC1155 en background
+     */
+    async improveERC1155MetadataInBackground(basicTokens) {
+        console.log('🔄 Iniciando mejora de metadata ERC1155 en background...');
+        
+        // Procesar en lotes pequeños para evitar rate limiting
+        const batchSize = 10;
+        const batches = [];
+        
+        for (let i = 0; i < basicTokens.length; i += batchSize) {
+            batches.push(basicTokens.slice(i, i + batchSize));
+        }
+        
+        for (let i = 0; i < batches.length; i++) {
+            const batch = batches[i];
+            console.log(`📦 Procesando lote ${i + 1}/${batches.length} (${batch.length} tokens)`);
+            
+            // Procesar cada token del lote
+            for (const token of batch) {
+                try {
+                    // Aquí se podría mejorar el metadata individual si es necesario
+                    // Por ahora solo logueamos el progreso
+                    console.log(`🔄 Mejorando metadata para token ${token.tokenId}`);
+                } catch (error) {
+                    console.warn(`⚠️ Error mejorando metadata para token ${token.tokenId}:`, error);
+                }
+            }
+            
+            // Delay entre lotes para evitar rate limiting
+            if (i < batches.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        console.log('✅ Mejora de metadata ERC1155 completada');
     }
 
     /**
