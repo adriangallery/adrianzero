@@ -432,6 +432,12 @@ body {
     --popup-principal-height: 380px;
     --popup-principal-padding: 20px;
     
+    /* Tamaños móviles (30% más pequeños) */
+    --popup-botonera-width-mobile: 56px; /* 80px * 0.7 */
+    --popup-botonera-height-mobile: 266px; /* 380px * 0.7 */
+    --popup-principal-width-mobile: 154px; /* 220px * 0.7 */
+    --popup-principal-height-mobile: 266px; /* 380px * 0.7 */
+    
     /* Botones de Botonera */
     --boton-botonera-width: 80px; /* Mismo ancho que popup botonera */
     --boton-botonera-height: 40px;
@@ -462,6 +468,12 @@ body {
     --seccion-acciones-height: 120px;
     --seccion-accion-individual-height: 35px;
     
+    /* Secciones móviles (30% más pequeñas) */
+    --seccion-texto-height-mobile: 28px; /* 40px * 0.7 */
+    --seccion-imagen-height-mobile: 126px; /* 180px * 0.7 */
+    --seccion-acciones-height-mobile: 84px; /* 120px * 0.7 */
+    --seccion-accion-individual-height-mobile: 25px; /* 35px * 0.7 */
+    
     /* Gap y Espaciado - REDUCIDOS */
     --gap-popups: 15px;
     --gap-botones: 8px;
@@ -471,10 +483,10 @@ body {
 /* MODAL PRINCIPAL CON DOS POPUPS LADO A LADO */
 .sticky-modal-container {
     position: fixed !important;
-    top: 20px !important;
+    top: 100px !important; /* Padding superior para evitar solapamiento con menú */
     right: 20px !important;
     z-index: 1000 !important;
-    display: flex !important;
+    display: none !important; /* Oculto por defecto, se muestra al hacer click */
     gap: var(--gap-popups) !important;
     align-items: flex-start !important;
     background: none !important;
@@ -483,6 +495,11 @@ body {
     margin: 0 !important;
     width: auto !important;
     height: auto !important;
+}
+
+/* Mostrar popup cuando se selecciona un token */
+.sticky-modal-container.show {
+    display: flex !important;
 }
 
 /* POPUP IZQUIERDO: Menú lateral */
@@ -664,6 +681,13 @@ body {
         font-size: var(--boton-mobile-font-size);
     }
     
+    /* Botones emoji del popup en móvil (30% más pequeños) */
+    .sticky-side-menu-popup .side-emoji-menu .contract-btn {
+        width: 28px !important; /* 40px * 0.7 */
+        height: 28px !important; /* 40px * 0.7 */
+        font-size: 14px !important; /* 20px * 0.7 */
+    }
+    
     /* Ajustes para sticky-content en móviles */
     .selection-info.sticky .sticky-content {
         min-height: 300px;
@@ -690,47 +714,56 @@ body {
         padding: 6px 0;
     }
 
-    /* RESPONSIVE PARA NUEVA ESTRUCTURA DE DOS POPUPS */
+    /* RESPONSIVE PARA NUEVA ESTRUCTURA DE DOS POPUPS - MÓVIL */
     .sticky-modal-container {
-        flex-direction: column;
-        gap: 10px;
-        right: 5vw;
-        left: 5vw;
+        flex-direction: row; /* Mantener lado a lado en móvil */
+        gap: 8px; /* Gap reducido */
+        top: 80px; /* Menos padding superior en móvil */
+        right: 10px;
+        left: 10px;
+        justify-content: center; /* Centrar los popups */
     }
     
     .sticky-side-menu-popup {
-        width: var(--popup-botonera-width) !important; /* Mantener ancho fijo en móvil */
-        min-height: auto;
-        flex-direction: row;
-        gap: 8px;
-        padding: 12px;
+        width: var(--popup-botonera-width-mobile) !important; /* 30% más pequeño */
+        height: var(--popup-botonera-height-mobile) !important; /* 30% más pequeño */
+        flex-direction: column; /* Mantener vertical en móvil */
+        gap: 6px; /* Gap reducido */
+        padding: 8px; /* Padding reducido */
     }
     
     .sticky-content-popup {
-        width: var(--popup-principal-width) !important; /* Mantener ancho fijo en móvil */
-        height: var(--popup-principal-height) !important; /* Altura fija, no min-height */
-        padding: 12px; /* Padding reducido */
-        gap: 8px; /* Gap reducido */
+        width: var(--popup-principal-width-mobile) !important; /* 30% más pequeño */
+        height: var(--popup-principal-height-mobile) !important; /* 30% más pequeño */
+        padding: 8px; /* Padding reducido */
+        gap: 6px; /* Gap reducido */
     }
     
-    /* Ajustes para sticky-image en móviles */
+    /* Ajustes para elementos internos en móviles (30% más pequeños) */
+    .sticky-text {
+        height: var(--seccion-texto-height-mobile) !important;
+        width: 126px !important; /* 180px * 0.7 */
+    }
+    
     .sticky-image {
-        min-height: 160px;
+        height: var(--seccion-imagen-height-mobile) !important;
+        width: 126px !important; /* 180px * 0.7 */
     }
     
     .sticky-image img {
-        max-height: 140px;
+        max-height: 88px; /* 126px * 0.7 */
     }
     
-    /* Ajustes para sticky-actions en móviles */
     .sticky-actions {
-        min-height: 60px;
-        gap: 8px;
+        height: var(--seccion-acciones-height-mobile) !important;
+        width: 126px !important; /* 180px * 0.7 */
+        gap: 4px; /* Gap reducido */
     }
     
     .action-section {
-        min-height: 35px;
-        padding: 6px 0;
+        min-height: var(--seccion-accion-individual-height-mobile) !important;
+        width: 126px !important; /* 180px * 0.7 */
+        padding: 3px 0; /* Padding reducido */
     }
 }
 
