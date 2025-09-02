@@ -173,19 +173,100 @@ class DisplayManager {
     }
 
     /**
-     * Mostrar mensaje de no tokens
+     * Mostrar mensaje de no tokens con estilo pixelado
      */
-    showNoTokens(grid, message = 'No tokens found') {
+    showNoTokens(grid, filterType = 'tokens') {
         if (!grid) return;
-        grid.innerHTML = `<div class="no-tokens"><p>${message}</p></div>`;
+        
+        const messages = {
+            adrianzero: {
+                title: 'NO ADRIANZEROS FOUND',
+                subtitle: 'Connect your wallet to see your collection',
+                emoji: '🤖'
+            },
+            traits: {
+                title: 'NO TRAITS AVAILABLE',
+                subtitle: 'Your trait collection is empty',
+                emoji: '🎭'
+            },
+            floppy: {
+                title: 'NO FLOPPY DISCS',
+                subtitle: 'No floppy discs in your inventory',
+                emoji: '💾'
+            },
+            serum: {
+                title: 'NO SERUMS FOUND',
+                subtitle: 'Your serum collection is empty',
+                emoji: '🧪'
+            },
+            crafting: {
+                title: 'NO RECIPES AVAILABLE',
+                subtitle: 'No crafting recipes found',
+                emoji: '🔨'
+            }
+        };
+        
+        const msg = messages[filterType] || messages.traits;
+        
+        grid.innerHTML = `
+            <div class="no-tokens pixelated">
+                <div class="pixel-icon">${msg.emoji}</div>
+                <h2 class="pixel-title">${msg.title}</h2>
+                <p class="pixel-subtitle">${msg.subtitle}</p>
+                <div class="pixel-border"></div>
+            </div>
+        `;
     }
 
     /**
-     * Mostrar mensaje de loading
+     * Mostrar mensaje de loading con estilo pixelado
      */
-    showLoading(grid, message = 'Loading tokens...') {
+    showLoading(grid, filterType = 'tokens') {
         if (!grid) return;
-        grid.innerHTML = `<div class="loading-message"><p>${message}</p></div>`;
+        
+        const messages = {
+            adrianzero: {
+                title: 'SCANNING BLOCKCHAIN...',
+                subtitle: 'Loading your AdrianZERO collection',
+                emoji: '🔍'
+            },
+            traits: {
+                title: 'LOADING TRAITS...',
+                subtitle: 'Fetching your trait collection',
+                emoji: '🎭'
+            },
+            floppy: {
+                title: 'LOADING FLOPPY DISCS...',
+                subtitle: 'Scanning your floppy inventory',
+                emoji: '💾'
+            },
+            serum: {
+                title: 'LOADING SERUMS...',
+                subtitle: 'Analyzing your serum collection',
+                emoji: '🧪'
+            },
+            crafting: {
+                title: 'LOADING RECIPES...',
+                subtitle: 'Preparing crafting recipes',
+                emoji: '🔨'
+            }
+        };
+        
+        const msg = messages[filterType] || messages.traits;
+        
+        grid.innerHTML = `
+            <div class="loading-message pixelated">
+                <div class="pixel-spinner">
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                </div>
+                <div class="pixel-icon">${msg.emoji}</div>
+                <h2 class="pixel-title">${msg.title}</h2>
+                <p class="pixel-subtitle">${msg.subtitle}</p>
+                <div class="pixel-border"></div>
+            </div>
+        `;
     }
 }
 
