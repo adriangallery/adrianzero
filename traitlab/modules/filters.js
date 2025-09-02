@@ -35,15 +35,10 @@ class TokenFilters {
     }
 
     /**
-     * Filtrar tokens floppy
+     * Filtrar tokens floppy - SOLO POR ID como en index.html
      */
     filterFloppyTokens(tokens) {
-        console.log('🔍 Debug: Tokens para filtrar floppy:', tokens.slice(0, 3).map(t => ({
-            id: t.tokenId,
-            name: t.name,
-            title: t.title,
-            tokenType: t.tokenType
-        })));
+        console.log('🔍 Filtrando floppy tokens por ID...');
         
         const floppyTokens = tokens.filter(token => {
             const tokenId = parseInt(token.tokenId);
@@ -53,65 +48,27 @@ class TokenFilters {
                                  (tokenId >= 15000 && tokenId <= 15015);
             
             if (isFloppyById) {
-                // Verificar si el nombre contiene "FLOPPY"
-                if (token.name && token.name.includes('FLOPPY')) {
-                    console.log('💾 Floppy encontrado por nombre:', token.name);
-                    
-                    // Asignar nombre específico según index.html
-                    if (tokenId === 10003) {
-                        token.displayName = 'GLITCH Floppy';
-                        token.targetContract = window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT;
-                        console.log('💾 GLITCH Floppy (10003) - Contrato:', token.targetContract);
-                    } else if (tokenId === 10004) {
-                        token.displayName = 'GF Floppy';
-                        token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
-                        console.log('💾 GF Floppy (10004) - Contrato:', token.targetContract);
-                    } else if (tokenId === 10005) {
-                        token.displayName = 'Golden Floppy';
-                        token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
-                        console.log('💾 Golden Floppy (10005) - Contrato:', token.targetContract);
-                    } else if (tokenId === 10007) {
-                        token.displayName = 'Action Pack 10007';
-                        token.targetContract = window.TraitLABConfig.ACTION_PACK_10007_CONTRACT;
-                        console.log('💾 Action Pack 10007 - Contrato:', token.targetContract);
-                    } else {
-                        // Otros floppys usan PACK_TOKEN_MINTER_CONTRACT
-                        token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
-                        console.log('💾 Floppy estándar - Contrato:', token.targetContract);
-                    }
-                    
-                    return true;
+                console.log(`💾 Floppy encontrado por ID: ${tokenId}`);
+                
+                // Asignar nombre específico según index.html
+                if (tokenId === 10003) {
+                    token.displayName = 'GLITCH Floppy';
+                    token.targetContract = window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT;
+                } else if (tokenId === 10004) {
+                    token.displayName = 'GF Floppy';
+                    token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
+                } else if (tokenId === 10005) {
+                    token.displayName = 'Golden Floppy';
+                    token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                } else if (tokenId === 10007) {
+                    token.displayName = 'Action Pack 10007';
+                    token.targetContract = window.TraitLABConfig.ACTION_PACK_10007_CONTRACT;
+                } else {
+                    // Otros floppys usan PACK_TOKEN_MINTER_CONTRACT
+                    token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
                 }
                 
-                // Verificar si el título contiene "FLOPPY"
-                if (token.title && token.title.includes('FLOPPY')) {
-                    console.log('💾 Floppy encontrado por título:', token.title);
-                    
-                    // Asignar nombre específico según index.html
-                    if (tokenId === 10003) {
-                        token.displayName = 'GLITCH Floppy';
-                        token.targetContract = window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT;
-                        console.log('💾 GLITCH Floppy (10003) - Contrato:', token.targetContract);
-                    } else if (tokenId === 10004) {
-                        token.displayName = 'GF Floppy';
-                        token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
-                        console.log('💾 GF Floppy (10004) - Contrato:', token.targetContract);
-                    } else if (tokenId === 10005) {
-                        token.displayName = 'Golden Floppy';
-                        token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
-                        console.log('💾 Golden Floppy (10005) - Contrato:', token.targetContract);
-                    } else if (tokenId === 10007) {
-                        token.displayName = 'Action Pack 10007';
-                        token.targetContract = window.TraitLABConfig.ACTION_PACK_10007_CONTRACT;
-                        console.log('💾 Action Pack 10007 - Contrato:', token.targetContract);
-                    } else {
-                        // Otros floppys usan PACK_TOKEN_MINTER_CONTRACT
-                        token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
-                        console.log('💾 Floppy estándar - Contrato:', token.targetContract);
-                    }
-                    
-                    return true;
-                }
+                return true;
             }
             
             return false;
@@ -122,23 +79,23 @@ class TokenFilters {
     }
 
     /**
-     * Filtrar tokens serum
+     * Filtrar tokens serum - SOLO POR ID como en index.html
      */
     filterSerumTokens(tokens) {
+        console.log('🔍 Filtrando serum tokens por ID...');
+        
         const serumTokens = tokens.filter(token => {
-            // Verificar si el nombre contiene "SERUM" o "Serum"
-            if (token.name && (token.name.includes('SERUM') || token.name.includes('Serum'))) {
-                return true;
-            }
-            
-            // Verificar si el título contiene "SERUM" o "Serum"
-            if (token.title && (token.title.includes('SERUM') || token.title.includes('Serum'))) {
-                return true;
-            }
-            
-            // Verificar IDs específicos de serum
             const tokenId = parseInt(token.tokenId);
-            return tokenId >= 262144 && tokenId <= 262147;
+            
+            // Solo usar rango específico de index.html: 262144-262147
+            const isSerumById = tokenId >= 262144 && tokenId <= 262147;
+            
+            if (isSerumById) {
+                console.log(`🧪 Serum encontrado por ID: ${tokenId}`);
+                return true;
+            }
+            
+            return false;
         });
 
         console.log(`🧪 Serum tokens encontrados: ${serumTokens.length}`);
@@ -180,40 +137,23 @@ class TokenFilters {
     }
 
     /**
-     * Verificar si un token es floppy
+     * Verificar si un token es floppy - SOLO POR ID
      */
     isFloppyToken(token) {
         const tokenId = parseInt(token.tokenId);
         
         // Solo usar rangos específicos de index.html: 10000-10007, 15000-15015
-        const isFloppyById = (tokenId >= 10000 && tokenId <= 10007) || 
-                            (tokenId >= 15000 && tokenId <= 15015);
-        
-        // Solo considerar floppy si está en los rangos correctos Y tiene "FLOPPY" en el nombre
-        if (isFloppyById) {
-            if (token.name && token.name.includes('FLOPPY')) {
-                return true;
-            }
-            if (token.title && token.title.includes('FLOPPY')) {
-                return true;
-            }
-        }
-        
-        return false;
+        return (tokenId >= 10000 && tokenId <= 10007) || 
+               (tokenId >= 15000 && tokenId <= 15015);
     }
 
     /**
-     * Verificar si un token es serum
+     * Verificar si un token es serum - SOLO POR ID
      */
     isSerumToken(token) {
-        if (token.name && (token.name.includes('SERUM') || token.name.includes('Serum'))) {
-            return true;
-        }
-        if (token.title && (token.title.includes('SERUM') || token.title.includes('Serum'))) {
-            return true;
-        }
-        
         const tokenId = parseInt(token.tokenId);
+        
+        // Solo usar rango específico de index.html: 262144-262147
         return tokenId >= 262144 && tokenId <= 262147;
     }
 

@@ -264,50 +264,9 @@ class ZeroManager {
                     }
                 }).filter(token => token !== null);
 
-                // Apply filtering based on filter parameter or current filter
+                // zero.js solo maneja ERC721 (AdrianZERO) - sin filtrado
+                // El filtrado se hace en filters.js
                 let filteredTokens = tokens;
-                const activeFilter = filter || this.currentFilter;
-                
-                if (activeFilter) {
-                    console.log(`Applying filter: ${activeFilter}`);
-                    filteredTokens = tokens.filter(token => {
-                        if (token.tokenType === 'ERC1155') {
-                            if (activeFilter === 'floppy') {
-                                // Floppy discs filter: show only tokens 10000-10007, 15000-15015
-                                const isFloppy = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
-                                               (token.tokenId >= 15000 && token.tokenId <= 15015);
-                                console.log(`Token ${token.tokenId} floppy filter: ${isFloppy}`);
-                                return isFloppy;
-                            } else if (activeFilter === 'serum') {
-                                // Serums filter: show tokens 262144-262147
-                                const isSerum = token.tokenId >= 262144 && token.tokenId <= 262147;
-                                console.log(`Token ${token.tokenId} serum filter: ${isSerum}`);
-                                return isSerum;
-                            } else if (activeFilter === 'traits' || !activeFilter) {
-                                // Normal filter: exclude floppy & serum tokens
-                                const isExcluded = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
-                                                 (token.tokenId >= 15000 && token.tokenId <= 15015) ||
-                                                 (token.tokenId >= 262144 && token.tokenId <= 262147);
-                                console.log(`Token ${token.tokenId} normal filter: ${!isExcluded}`);
-                                return !isExcluded;
-                            }
-                        }
-                        return true; // Keep all ERC721 tokens
-                    });
-                } else {
-                    // Default filter: exclude floppy & serum tokens
-                    console.log('No filter specified, applying default filter');
-                    filteredTokens = tokens.filter(token => {
-                        if (token.tokenType === 'ERC1155') {
-                            const isExcluded = (token.tokenId >= 10000 && token.tokenId <= 10007) || 
-                                             (token.tokenId >= 15000 && token.tokenId <= 15015) ||
-                                             (token.tokenId >= 262144 && token.tokenId <= 262147);
-                            console.log(`Token ${token.tokenId} default filter: ${!isExcluded}`);
-                            return !isExcluded;
-                        }
-                        return true;
-                    });
-                }
             
             console.log('Processed tokens:', filteredTokens);
             

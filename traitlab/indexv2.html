@@ -91,46 +91,37 @@
                         throw new Error('No hay wallet conectada');
                     }
                     
-                    // Cargar tokens base según el contrato
-                    if (!this.modules.zero || !this.currentContract) {
-                        throw new Error('Módulo zero o contrato no disponible');
+                    // Usar data-manager para obtener tokens ya filtrados
+                    if (!this.modules.dataManager) {
+                        throw new Error('Módulo data-manager no disponible');
                     }
                     
-                    const allTokens = await this.modules.zero.loadTokens(userAddress, this.currentContract);
-                    console.log(`📊 Tokens cargados: ${allTokens.length}`);
-                    
-                    // Usar módulo de filtros para procesar tokens
-                    if (this.modules.filters) {
-                        let filteredTokens;
-                        
-                        if (this.currentFilter === 'crafting') {
-                            // Mostrar contenido de crafting
-                            if (this.modules.crafting) {
-                                await this.modules.crafting.loadRecipes();
-                                this.modules.displayManager.displayCraftingContent(
-                                    document.getElementById('tokens-grid'),
-                                    this.modules.crafting,
-                                    this.modules.dataManager
-                                );
-                            } else {
-                                throw new Error('Módulo de crafting no disponible');
-                            }
+                    if (this.currentFilter === 'crafting') {
+                        // Mostrar contenido de crafting
+                        if (this.modules.crafting) {
+                            await this.modules.crafting.loadRecipes();
+                            this.modules.displayManager.displayCraftingContent(
+                                document.getElementById('tokens-grid'),
+                                this.modules.crafting,
+                                this.modules.dataManager
+                            );
                         } else {
-                            // Filtrar tokens por tipo
-                            filteredTokens = this.modules.filters.filterTokensByType(allTokens, this.currentFilter || 'adrianzero');
-                            
-                            // Mostrar tokens filtrados
-                            if (filteredTokens.length > 0) {
-                                this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
-                            } else {
-                                this.modules.displayManager.showNoTokens(
-                                    document.getElementById('tokens-grid'),
-                                    `No ${this.currentFilter || 'adrianzero'} tokens found`
-                                );
-                            }
+                            throw new Error('Módulo de crafting no disponible');
                         }
-                    } else {
-                        throw new Error('Módulo de filtros no disponible');
+                        } else {
+                        // Obtener tokens filtrados del data-manager
+                        const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
+                        console.log(`📊 Tokens filtrados obtenidos: ${filteredTokens.length}`);
+                        
+                        // Mostrar tokens filtrados
+                        if (filteredTokens.length > 0) {
+                            this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
+                        } else {
+                            this.modules.displayManager.showNoTokens(
+                                document.getElementById('tokens-grid'),
+                                `No ${this.currentFilter || 'adrianzero'} tokens found`
+                            );
+                        }
                     }
                     
                     this.hideLoading();
