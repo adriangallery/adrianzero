@@ -507,6 +507,13 @@ class StickyPopupManager {
         }
     }
 
+    showRenameSection() {
+        console.log('🎯 StickyPopupManager: Mostrar sección de rename');
+        if (this.elements.renameSection) {
+            this.elements.renameSection.style.display = 'block';
+        }
+    }
+
     openPack() {
         console.log('🎯 StickyPopupManager: Abrir pack');
         if (window.app && window.app.modules.zero && window.app.modules.zero.openPack) {
