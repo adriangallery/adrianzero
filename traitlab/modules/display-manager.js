@@ -55,12 +55,15 @@ class DisplayManager {
         `;
         grid.appendChild(recipesSection);
         
-        // Llenar el grid de recetas
+        // Llenar el grid de recetas (igual que indexref.html)
         const recipesGrid = document.getElementById('recipes-grid');
         if (recipesGrid) {
             recipes.forEach(recipe => {
-                const recipeCard = this.renderRecipeCard(recipe);
-                recipesGrid.appendChild(recipeCard);
+                if (recipe.type === 'specific') {
+                    recipesGrid.innerHTML += this.renderSimpleRecipeCard(recipe);
+                } else if (recipe.type === 'any') {
+                    recipesGrid.innerHTML += this.renderSimpleRecipeCard(recipe);
+                }
             });
         }
     }
@@ -85,66 +88,132 @@ class DisplayManager {
     }
 
     /**
-     * Renderizar tarjeta de receta
+     * Renderizar tarjeta de receta (compatible con indexref.html)
      */
     renderRecipeCard(recipe) {
-        const recipeCard = document.createElement('div');
-        recipeCard.className = 'recipe-card';
-        recipeCard.setAttribute('data-recipe-id', recipe.recipeId);
-        
-        let burnItems = '';
-        if (recipe.burn && Array.isArray(recipe.burn)) {
-            burnItems = recipe.burn.map(item => 
+        return this.renderSimpleRecipeCard(recipe);
+    }
+
+    /**
+     * Renderizar tarjeta de receta simple (igual que indexref.html)
+     */
+    renderSimpleRecipeCard(recipe) {
+        if (recipe.type === 'specific') {
+            const burnItems = recipe.burn.map(item => 
                 `<div class="recipe-ingredient">
                     <span class="trait-id">ID: ${item.id}</span>
                     <span class="trait-required">Required: ${item.amount}</span>
                 </div>`
             ).join('');
+            
+            return `
+                <div class="recipe-card specific-recipe" data-recipe-id="${recipe.recipeId}">
+                    <div class="recipe-header">
+                        <h4>Recipe #${recipe.recipeId}</h4>
+                        <span class="recipe-type">Specific Recipe</span>
+                    </div>
+                    <div class="recipe-ingredients">
+                        <h5>Burn Requirements:</h5>
+                        ${burnItems}
+                    </div>
+                    <div class="recipe-output">
+                        <h5>Output:</h5>
+                        <div class="output-info">
+                            <span>Trait #${recipe.output.id}</span>
+                            <span>Amount: ${recipe.output.amount}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="recipe-card any-recipe" data-recipe-id="${recipe.recipeId}">
+                    <div class="recipe-header">
+                        <h4>Recipe #${recipe.recipeId}</h4>
+                        <span class="recipe-type">Any Recipe</span>
+                    </div>
+                    <div class="recipe-ingredients">
+                        <h5>Burn Requirements:</h5>
+                        <div class="recipe-ingredient">
+                            <span class="trait-id">Any Traits</span>
+                            <span class="trait-required">Total: ${recipe.requirement.burnTotal}</span>
+                        </div>
+                    </div>
+                    <div class="recipe-output">
+                        <h5>Output:</h5>
+                        <div class="output-info">
+                            <span>Trait #${recipe.output.id}</span>
+                            <span>Amount: ${recipe.output.amount}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Cargar traits en el grid de crafting (igual que indexref.html)
+     */
+    loadTraitsInCraftingGrid(dataManager) {
+        console.log('🔨 loadTraitsInCraftingGrid: Cargando traits para crafting...');
+        
+        const traitsGrid = document.getElementById('traits-grid');
+        if (!traitsGrid) {
+            console.warn('🔨 Traits grid no encontrado');
+            return;
         }
         
-        recipeCard.innerHTML = `
-            <div class="recipe-header">
-                <h4>Recipe #${recipe.recipeId}</h4>
-                <span class="recipe-type">${recipe.type || 'Standard'} Recipe</span>
+        // Verificar si el DataManager está disponible y tiene traits
+        if (dataManager && dataManager.isReady && dataManager.isReady('adrianLab')) {
+            const traits = dataManager.getTokens('adrianLab', 'traits');
+            console.log('🔨 Traits disponibles en DataManager:', traits.length);
+            
+            if (traits && traits.length > 0) {
+                // Limpiar placeholder y mostrar traits
+                traitsGrid.innerHTML = '';
+                
+                // Crear grid de traits similar al tab traits
+                traits.forEach(trait => {
+                    const traitCard = this.createTraitCardForCrafting(trait);
+                    traitsGrid.appendChild(traitCard);
+                });
+                
+                console.log('🔨 Traits cargados en grid de crafting:', traits.length);
+            } else {
+                traitsGrid.innerHTML = '<div class="no-traits"><p>No traits available. Please visit the Traits tab first to load your traits.</p></div>';
+            }
+        } else {
+            // Si el DataManager no está listo, mostrar mensaje
+            console.log('🔨 DataManager no está listo, mostrando mensaje...');
+            traitsGrid.innerHTML = '<div class="loading-traits"><p>Loading traits...</p></div>';
+        }
+    }
+
+    /**
+     * Crear tarjeta de trait para el grid de crafting (igual que indexref.html)
+     */
+    createTraitCardForCrafting(trait) {
+        const traitCard = document.createElement('div');
+        traitCard.className = 'trait-card crafting-trait';
+        traitCard.setAttribute('data-trait-id', trait.tokenId);
+        traitCard.setAttribute('data-trait-balance', trait.balance);
+        
+        traitCard.innerHTML = `
+            <div class="trait-image">
+                <img src="${trait.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JDt0cmFpdC50b2tlbklkPC90ZXh0Pjwvc3ZnPg=='}" alt="Trait #${trait.tokenId}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JCB7dHJhaXQudG9rZW5JZH08L3RleHQ+PC9zdmc+'">
             </div>
-            <div class="recipe-ingredients">
-                <h5>Burn Requirements:</h5>
-                ${burnItems || '<p>No requirements</p>'}
-            </div>
-            <div class="recipe-output">
-                <h5>Output:</h5>
-                <div class="output-info">
-                    <span>Trait #${recipe.output?.id || 'Unknown'}</span>
-                    <span>Amount: ${recipe.output?.amount || 1}</span>
-                </div>
+            <div class="trait-info">
+                <h4>Trait #${trait.tokenId}</h4>
+                <p class="trait-title">${trait.title || `Trait #${trait.tokenId}`}</p>
+                <p class="trait-balance">Balance: ${trait.balance}</p>
             </div>
         `;
         
-        return recipeCard;
+        return traitCard;
     }
 
     /**
-     * Cargar traits en el grid de crafting
-     */
-    loadTraitsInCraftingGrid(dataManager) {
-        const traitsGrid = document.getElementById('traits-grid');
-        if (!traitsGrid) return;
-        
-        // Verificar si tenemos traits disponibles
-        if (dataManager && dataManager.getAdrianLabTokens) {
-            const traits = dataManager.getAdrianLabTokens();
-            if (traits && traits.length > 0) {
-                this.displayTraitsInCraftingGrid(traits);
-            } else {
-                traitsGrid.innerHTML = '<div class="no-traits"><p>No traits available for crafting</p></div>';
-            }
-        } else {
-            traitsGrid.innerHTML = '<div class="no-traits"><p>DataManager not available</p></div>';
-        }
-    }
-
-    /**
-     * Mostrar traits en el grid de crafting
+     * Mostrar traits en el grid de crafting (método legacy)
      */
     displayTraitsInCraftingGrid(traits) {
         const traitsGrid = document.getElementById('traits-grid');
@@ -153,21 +222,7 @@ class DisplayManager {
         traitsGrid.innerHTML = '';
         
         traits.forEach(trait => {
-            const traitCard = document.createElement('div');
-            traitCard.className = 'trait-card';
-            traitCard.setAttribute('data-token-id', trait.tokenId);
-            
-            const imageUrl = trait.image || trait.imageUrl || `https://adrianlab.vercel.app/labmetadata/images/${trait.tokenId}.png`;
-            
-            traitCard.innerHTML = `
-                <img src="${imageUrl}" alt="${trait.title}" class="trait-image" 
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjMzMzIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0NSIgZm9udC1mYW1pbHk9IjEwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFpdDwvdGV4dD4KPC9zdmc+'>
-                <div class="trait-info">
-                    <div class="trait-title">${trait.title}</div>
-                    <div class="trait-id">#${trait.tokenId}</div>
-                </div>
-            `;
-            
+            const traitCard = this.createTraitCardForCrafting(trait);
             traitsGrid.appendChild(traitCard);
         });
     }
