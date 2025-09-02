@@ -424,12 +424,12 @@ body {
 :root {
     /* Popup Botonera Lateral */
     --popup-botonera-width: 80px;
-    --popup-botonera-height: 400px;
+    --popup-botonera-height: 380px;
     --popup-botonera-padding: 15px;
     
     /* Popup Principal */
     --popup-principal-width: 220px; /* Imagen (180px) + padding (40px) */
-    --popup-principal-height: 400px;
+    --popup-principal-height: 380px;
     --popup-principal-padding: 20px;
     
     /* Botones de Botonera */
@@ -441,7 +441,7 @@ body {
     --boton-accion-width: 176px;
     
     /* Botones Contract */
-    --boton-contract-width: 80px;
+    --boton-contract-width: 60px;
     
     /* Botones en Móvil */
     --boton-mobile-width: 28px;
@@ -662,7 +662,7 @@ body {
     
     /* Ajustes para sticky-content en móviles */
     .selection-info.sticky .sticky-content {
-        min-height: 300px;
+        min-height: var(--popup-principal-height) !important; /* Usar altura de variable CSS */
         gap: 12px;
     }
     
@@ -704,13 +704,13 @@ body {
     
     .sticky-content-popup {
         width: var(--popup-principal-width) !important; /* Mantener ancho fijo en móvil */
-        min-height: 300px;
+        min-height: var(--popup-principal-height) !important; /* Usar altura de variable CSS */
         padding: 15px;
     }
     
     /* Ajustes para sticky-content-popup en móviles */
     .sticky-content-popup {
-        min-height: 300px;
+        min-height: var(--popup-principal-height) !important; /* Usar altura de variable CSS */
         gap: 12px;
     }
     
