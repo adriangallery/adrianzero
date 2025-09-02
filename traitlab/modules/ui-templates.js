@@ -135,10 +135,7 @@ class UITemplates {
                 
                 <div id="tokens-grid" class="tokens-grid"></div>
                 
-                <div id="loading" class="loading" style="display: none;">
-                    <div class="spinner"></div>
-                    <p>Loading tokens...</p>
-                </div>
+                <!-- Loading element removed - using background loading message instead -->
                 
                 <div id="error" class="error" style="display: none;"></div>
                 <div id="success" class="success" style="display: none;"></div>

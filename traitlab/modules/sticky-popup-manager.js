@@ -480,8 +480,23 @@ class StickyPopupManager {
 
     applyTraits() {
         console.log('🎯 StickyPopupManager: Aplicar traits');
-        if (window.app && window.app.modules.zero && window.app.modules.zero.applyTraits) {
-            window.app.modules.zero.applyTraits();
+        if (window.app && window.app.modules.traits && window.app.modules.traits.applyTraitsToNFT) {
+            const selectedERC721 = this.selectedERC721;
+            const currentAccount = window.app.modules.wallet ? window.app.modules.wallet.getCurrentAccount() : null;
+            
+            if (selectedERC721 && currentAccount) {
+                window.app.modules.traits.applyTraitsToNFT(selectedERC721, currentAccount)
+                    .then(() => {
+                        console.log('✅ Traits aplicados correctamente');
+                        this.showStatus('✅ Traits aplicados correctamente!', 'success', this.elements.applyStatus);
+                    })
+                    .catch((error) => {
+                        console.error('❌ Error aplicando traits:', error);
+                        this.showStatus(error.message, 'error', this.elements.applyStatus);
+                    });
+            } else {
+                this.showStatus('❌ Selecciona un AdrianZERO y conecta tu wallet', 'error', this.elements.applyStatus);
+            }
         }
     }
 
