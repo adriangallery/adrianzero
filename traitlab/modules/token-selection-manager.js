@@ -35,6 +35,12 @@ class TokenSelectionManager {
             this.selectedFloppy = null;
             this.selectedSerum = null;
             
+            // Limpiar selección de traits cuando se selecciona un nuevo AdrianZERO
+            if (window.app && window.app.modules.traits && window.app.modules.traits.clearTraitsSelection) {
+                console.log('🧹 Limpiando selección de traits para nuevo AdrianZERO');
+                window.app.modules.traits.clearTraitsSelection();
+            }
+            
             // Propagar selección al ZeroManager para operaciones on-chain
             if (window.app && window.app.modules.zero && window.app.modules.zero.setSelectedERC721) {
                 window.app.modules.zero.setSelectedERC721(token);
@@ -43,6 +49,14 @@ class TokenSelectionManager {
             console.log('🎨 Setting as Traits token');
             if (token.tokenType === 'ERC721') {
                 this.selectedERC721 = token;
+                
+                // Limpiar selección de traits cuando se selecciona un nuevo AdrianZERO desde traits
+                if (window.app && window.app.modules.traits && window.app.modules.traits.clearTraitsSelection) {
+                    console.log('🧹 Limpiando selección de traits para nuevo AdrianZERO desde traits');
+                    window.app.modules.traits.clearTraitsSelection();
+                    this.selectedERC1155 = []; // También limpiar el array local
+                }
+                
                 if (window.app && window.app.modules.zero && window.app.modules.zero.setSelectedERC721) {
                     window.app.modules.zero.setSelectedERC721(token);
                 }
