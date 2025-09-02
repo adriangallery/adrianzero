@@ -447,8 +447,8 @@ class TraitLABDataManager {
                     serums: serums.length
                 });
                 
-                // 🚀 MOSTRAR TOKENS INMEDIATAMENTE
-                this.displayTokensImmediately(basicTokens, 'traits');
+                // 🚀 NO MOSTRAR TOKENS AQUÍ - se mostrarán cuando el usuario cambie de tab
+                // Los tokens se mostrarán automáticamente via getFilteredTokens() cuando sea necesario
                 
                 // 🔄 MEJORAR METADATA EN BACKGROUND
                 this.improveERC1155MetadataInBackground(basicTokens);
