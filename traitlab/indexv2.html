@@ -109,22 +109,23 @@
                             throw new Error('Módulo de crafting no disponible');
                         }
                         } else {
-                        // Obtener tokens filtrados del data-manager
+                        // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE
                         const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
                         console.log(`📊 Tokens filtrados obtenidos: ${filteredTokens.length}`);
                         
-                        // Mostrar tokens filtrados
                         if (filteredTokens.length > 0) {
+                            // Mostrar tokens disponibles inmediatamente
+                            console.log('✅ Mostrando tokens disponibles inmediatamente');
                             this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
+                            this.hideLoading();
                         } else {
-                            this.modules.displayManager.showNoTokens(
-                                document.getElementById('tokens-grid'),
-                                this.currentFilter || 'adrianzero'
-                            );
+                            // Mostrar loading mientras se cargan los tokens
+                            console.log('⏳ Mostrando loading mientras se cargan tokens...');
+                            // El loading ya se mostró al inicio del método
+                            // Los tokens se mostrarán automáticamente cuando estén listos
+                            // a través del callback onTokensLoaded
                         }
                     }
-                    
-                    this.hideLoading();
                     
                 } catch (error) {
                     console.error('❌ Error cargando tokens:', error);
@@ -266,6 +267,23 @@
                 
                 // Clear tokens
                 this.clearTokens();
+            }
+
+            /**
+             * Callback para cuando se cargan tokens progresivamente
+             */
+            onTokensLoaded({ tokens, filter }) {
+                console.log('🚀 TraitLAB v2: Tokens cargados progresivamente:', { 
+                    count: tokens.length, 
+                    filter 
+                });
+                
+                // Si estamos en el tab correcto, mostrar los tokens inmediatamente
+                if (this.currentFilter === filter) {
+                    console.log('✅ Mostrando tokens cargados progresivamente para tab:', filter);
+                    this.modules.ui.displayTokens(tokens, filter);
+                    this.hideLoading();
+                }
             }
         }
 
