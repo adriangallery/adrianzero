@@ -443,6 +443,10 @@ body {
     /* Botones Contract */
     --boton-contract-width: 60px;
     
+    /* Botones Emoji del Popup Lateral */
+    --boton-emoji-width: 60px;
+    --boton-emoji-height: 40px;
+    
     /* Botones en Móvil */
     --boton-mobile-width: 28px;
     --boton-mobile-height: 28px;
@@ -522,12 +526,12 @@ body {
 /* ESTILOS PARA NUEVA ESTRUCTURA DE DOS POPUPS */
 /* Contenido principal del sticky popup (nueva estructura) - CONSOLIDADO */
 .sticky-content-popup {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap-secciones);
-    min-height: calc(var(--popup-principal-height) - 40px); /* Altura fija para evitar saltos */
-    padding: 0;
-    margin: 0;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--gap-secciones) !important;
+    min-height: var(--popup-principal-height) !important; /* Usar altura completa */
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 /* Sección de texto (nueva estructura) */
@@ -704,13 +708,13 @@ body {
     
     .sticky-content-popup {
         width: var(--popup-principal-width) !important; /* Mantener ancho fijo en móvil */
-        min-height: 300px;
+        min-height: var(--popup-principal-height) !important; /* Usar altura de variable CSS */
         padding: 15px;
     }
     
     /* Ajustes para sticky-content-popup en móviles */
     .sticky-content-popup {
-        min-height: 300px;
+        min-height: var(--popup-principal-height) !important; /* Usar altura de variable CSS */
         gap: 12px;
     }
     
@@ -761,8 +765,8 @@ body {
 }
 
 .sticky-side-menu-popup .side-emoji-menu .contract-btn {
-    width: var(--boton-botonera-width) !important;
-    height: var(--boton-botonera-height) !important;
+    width: var(--boton-emoji-width) !important;
+    height: var(--boton-emoji-height) !important;
     font-size: var(--boton-botonera-font-size) !important;
     border-radius: 8px !important;
     border: 2px solid #333 !important;
