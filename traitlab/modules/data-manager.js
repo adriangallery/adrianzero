@@ -78,13 +78,13 @@ class TraitLABDataManager {
     }
 
     /**
-     * Cargar tokens AdrianLAB (ERC1155) con rate limiting inteligente
+     * Cargar tokens AdrianLAB (ERC1155) - TODOS LOS TOKENS SIN FILTRAR
      */
     async loadAdrianLabTokens() {
         if (this.cache.loading.adrianLab || this.cache.ready.adrianLab) return;
         
         this.cache.loading.adrianLab = true;
-        console.log('📊 Cargando tokens AdrianLAB...');
+        console.log('📊 Cargando tokens AdrianLAB (ERC1155)...');
         
         try {
             // Usar el módulo zero existente si está disponible
@@ -93,34 +93,41 @@ class TraitLABDataManager {
                 if (userAddress) {
                     const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
                     
-                    // Cargar traits primero (ya están cargados, usar cache)
-                    console.log('📊 Usando traits del cache...');
-                    const traits = this.cache.adrianLab?.traits || [];
+                    // Cargar TODOS los tokens ERC1155 sin filtro
+                    console.log('📊 Cargando todos los tokens ERC1155...');
+                    const allERC1155Tokens = await this.loadTokensWithRetry(userAddress, contractAddress);
                     
-                    // Cargar floppys y serums con delay para evitar rate limiting
-                    console.log('📊 Cargando floppys con delay...');
-                    const floppys = await this.loadTokensWithRetry(userAddress, contractAddress, 'floppy');
-                    
-                    console.log('📊 Esperando 3 segundos antes de cargar serums...');
-                    await this.delay(3000);
-                    
-                    console.log('📊 Cargando serums...');
-                    const serums = await this.loadTokensWithRetry(userAddress, contractAddress, 'serum');
-                    
-                    // Separar por tipo
-                    this.cache.adrianLab = {
-                        traits: traits,
-                        floppys: floppys.filter(t => t.tokenType === 'ERC1155'),
-                        packs: [], // Por ahora vacío, se puede implementar después
-                        serums: serums.filter(t => t.tokenType === 'ERC1155')
-                    };
-                    
-                    console.log('📊 AdrianLAB tokens cargados:', {
-                        traits: this.cache.adrianLab.traits.length,
-                        floppys: this.cache.adrianLab.floppys.length,
-                        packs: this.cache.adrianLab.packs.length,
-                        serums: this.cache.adrianLab.serums.length
-                    });
+                    // Separar por tipo usando filters.js
+                    if (window.app && window.app.modules.filters) {
+                        const traits = window.app.modules.filters.filterTraitTokens(allERC1155Tokens);
+                        const floppys = window.app.modules.filters.filterFloppyTokens(allERC1155Tokens);
+                        const serums = window.app.modules.filters.filterSerumTokens(allERC1155Tokens);
+                        
+                        this.cache.adrianLab = {
+                            all: allERC1155Tokens,
+                            traits: traits,
+                            floppys: floppys,
+                            packs: [], // Por ahora vacío, se puede implementar después
+                            serums: serums
+                        };
+                        
+                        console.log('📊 AdrianLAB tokens cargados y separados:', {
+                            total: allERC1155Tokens.length,
+                            traits: traits.length,
+                            floppys: floppys.length,
+                            packs: 0,
+                            serums: serums.length
+                        });
+                    } else {
+                        // Fallback si no hay filtros
+                        this.cache.adrianLab = {
+                            all: allERC1155Tokens,
+                            traits: [],
+                            floppys: [],
+                            packs: [],
+                            serums: []
+                        };
+                    }
                 }
             }
         } catch (error) {
@@ -133,14 +140,15 @@ class TraitLABDataManager {
     }
 
     /**
-     * Cargar tokens con reintentos y rate limiting
+     * Cargar tokens con reintentos y rate limiting - SIN FILTRO
      */
-    async loadTokensWithRetry(userAddress, contractAddress, filter, maxRetries = 3) {
+    async loadTokensWithRetry(userAddress, contractAddress, maxRetries = 3) {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                console.log(`📊 Intento ${attempt}/${maxRetries} cargando ${filter}...`);
-                const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress, filter);
-                console.log(`✅ ${filter} cargados exitosamente en intento ${attempt}`);
+                console.log(`📊 Intento ${attempt}/${maxRetries} cargando tokens ERC1155...`);
+                // NO pasar filtro - zero.js ya no filtra
+                const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
+                console.log(`✅ Tokens ERC1155 cargados exitosamente en intento ${attempt}: ${tokens.length}`);
                 return tokens;
             } catch (error) {
                 if (error.message.includes('429') && attempt < maxRetries) {
@@ -148,7 +156,7 @@ class TraitLABDataManager {
                     console.log(`⏳ Rate limit (429), esperando ${delayTime/1000}s antes de reintentar...`);
                     await this.delay(delayTime);
                 } else {
-                    console.warn(`❌ Error cargando ${filter} en intento ${attempt}:`, error.message);
+                    console.warn(`❌ Error cargando tokens ERC1155 en intento ${attempt}:`, error.message);
                     if (attempt === maxRetries) {
                         return []; // Retornar array vacío en lugar de fallar
                     }
@@ -347,6 +355,24 @@ class TraitLABDataManager {
                 return this.cache.adrianLab?.[category] || [];
             }
             return this.cache.adrianLab || {};
+        }
+        return [];
+    }
+
+    /**
+     * Obtener tokens filtrados por tipo (floppy, serum, traits, adrianzero)
+     */
+    getFilteredTokens(filterType) {
+        if (filterType === 'adrianzero') {
+            return this.getTokens('adrianZero');
+        } else if (filterType === 'floppy') {
+            return this.getTokens('adrianLab', 'floppys');
+        } else if (filterType === 'serum') {
+            return this.getTokens('adrianLab', 'serums');
+        } else if (filterType === 'traits') {
+            return this.getTokens('adrianLab', 'traits');
+        } else if (filterType === 'crafting') {
+            return this.getTokens('adrianLab', 'traits'); // Crafting usa traits
         }
         return [];
     }
