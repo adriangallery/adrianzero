@@ -12,31 +12,50 @@ class DisplayManager {
      * Mostrar contenido de crafting
      */
     displayCraftingContent(grid, craftingModule, dataManager) {
-        if (!grid) return;
+        console.log('🔨 displayCraftingContent: Iniciando...');
+        if (!grid) {
+            console.warn('🔨 displayCraftingContent: Grid no disponible');
+            return;
+        }
         
         // Limpiar el grid
         grid.innerHTML = '';
         grid.className = 'crafting-container';
+        console.log('🔨 displayCraftingContent: Grid limpiado y clase establecida');
         
         // Verificar si el módulo de crafting está disponible
         if (!craftingModule) {
+            console.warn('🔨 displayCraftingContent: Módulo de crafting no disponible');
             grid.innerHTML = '<div class="no-recipes"><p>Módulo de crafting no disponible</p></div>';
             return;
         }
         
+        // Debug: Verificar estado del módulo
+        console.log('🔨 displayCraftingContent: Estado del módulo:', {
+            isLoadingRecipes: craftingModule.isLoadingRecipes ? craftingModule.isLoadingRecipes() : 'método no existe',
+            isRecipesLoaded: craftingModule.isRecipesLoaded ? craftingModule.isRecipesLoaded() : 'método no existe',
+            getRecipes: craftingModule.getRecipes ? 'método existe' : 'método no existe'
+        });
+        
         // Verificar el estado de carga de las recetas
         if (craftingModule.isLoadingRecipes && craftingModule.isLoadingRecipes()) {
+            console.log('🔨 displayCraftingContent: Mostrando loading...');
             grid.innerHTML = '<div class="loading-recipes"><p>Loading recipes...</p></div>';
         } else if (craftingModule.isRecipesLoaded && craftingModule.isRecipesLoaded()) {
+            console.log('🔨 displayCraftingContent: Recetas cargadas, obteniendo recetas...');
             // Las recetas se cargaron, verificar si hay contenido
             const recipes = craftingModule.getRecipes ? craftingModule.getRecipes() : [];
+            console.log('🔨 displayCraftingContent: Recetas obtenidas:', recipes.length);
             if (recipes && recipes.length > 0) {
+                console.log('🔨 displayCraftingContent: Mostrando recetas y traits...');
                 this.displayCraftingRecipes(grid, recipes);
                 this.displayCraftingTraits(grid, dataManager);
             } else {
+                console.log('🔨 displayCraftingContent: No hay recetas disponibles');
                 grid.innerHTML = '<div class="no-recipes"><p>No recipes available.</p></div>';
             }
         } else {
+            console.log('🔨 displayCraftingContent: Recetas no cargadas, mostrando loading...');
             // Aún no se han cargado las recetas, mostrar loading
             grid.innerHTML = '<div class="loading-recipes"><p>Loading recipes...</p></div>';
         }
