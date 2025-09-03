@@ -97,15 +97,24 @@
                     }
                     
                     if (this.currentFilter === 'crafting') {
+                        console.log('🔨 CRAFTING: Iniciando carga de crafting...');
+                        console.log('🔨 CRAFTING: this.modules.crafting disponible:', !!this.modules.crafting);
+                        console.log('🔨 CRAFTING: this.modules.displayManager disponible:', !!this.modules.displayManager);
+                        console.log('🔨 CRAFTING: tokens-grid disponible:', !!document.getElementById('tokens-grid'));
+                        
                         // Mostrar contenido de crafting
                         if (this.modules.crafting) {
+                            console.log('🔨 CRAFTING: Cargando recetas...');
                             await this.modules.crafting.loadRecipes();
+                            console.log('🔨 CRAFTING: Recetas cargadas, llamando displayCraftingContent...');
                             this.modules.displayManager.displayCraftingContent(
                                 document.getElementById('tokens-grid'),
                                 this.modules.crafting,
                                 this.modules.dataManager
                             );
+                            console.log('🔨 CRAFTING: displayCraftingContent llamado');
                         } else {
+                            console.error('🔨 CRAFTING: Módulo de crafting no disponible');
                             throw new Error('Módulo de crafting no disponible');
                         }
                     } else {
