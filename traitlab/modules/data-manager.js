@@ -30,16 +30,19 @@ class TraitLABDataManager {
     async init() {
         if (this.isInitialized) return;
         
-        console.log('📊 TraitLABDataManager: Iniciando carga en background...');
+        console.log('📊 TraitLABDataManager: Iniciando carga secuencial...');
         this.isInitialized = true;
         
-        // Cargar todo en paralelo
-        await Promise.allSettled([
-            this.loadAdrianZeroTokens(),
-            this.loadAdrianLabTokens()
-        ]);
+        // 1. Cargar AdrianZERO primero
+        await this.loadAdrianZeroTokens();
         
-        console.log('📊 TraitLABDataManager: Carga en background completada');
+        // 2. Esperar a que se complete la mejora de nombres
+        await this.waitForAdrianZeroImprovement();
+        
+        // 3. Luego cargar AdrianLAB
+        await this.loadAdrianLabTokens();
+        
+        console.log('📊 TraitLABDataManager: Carga secuencial completada');
     }
 
     /**
@@ -64,8 +67,8 @@ class TraitLABDataManager {
                     // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con nombres de Alchemy
                     this.displayTokensImmediately(tokens, 'adrianzero');
                     
-                    // 🔄 LUEGO MEJORAR nombres personalizados en background
-                    this.improveTokenNamesInBackground(tokens);
+                                    // 🔄 MEJORAR nombres personalizados ANTES de continuar
+                await this.improveTokenNamesInBackground(tokens);
                 }
             }
         } catch (error) {
@@ -259,6 +262,20 @@ class TraitLABDataManager {
         } catch (error) {
             console.warn('⚠️ Error en mejora de nombres:', error);
         }
+    }
+
+    /**
+     * Esperar a que se complete la mejora de nombres de AdrianZERO
+     */
+    async waitForAdrianZeroImprovement() {
+        console.log('⏳ Esperando a que se complete la mejora de nombres AdrianZERO...');
+        
+        // Esperar hasta que la mejora esté completa
+        while (this.cache.loading.adrianZero) {
+            await this.delay(1000); // Esperar 1 segundo
+        }
+        
+        console.log('✅ Mejora de nombres AdrianZERO completada');
     }
 
     /**
