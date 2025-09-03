@@ -64,11 +64,16 @@ class TraitLABDataManager {
                     this.cache.adrianZero = tokens;
                     console.log('📊 AdrianZERO tokens cargados:', tokens.length);
                     
-                    // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con nombres de Alchemy
-                    this.displayTokensImmediately(tokens, 'adrianzero');
+                    // 🚀 MOSTRAR PLACEHOLDERS INMEDIATAMENTE para dar sensación de carga
+                    this.displayPlaceholdersImmediately(tokens, 'adrianzero');
                     
-                                    // 🔄 MEJORAR nombres personalizados ANTES de continuar
-                await this.improveTokenNamesInBackground(tokens);
+                    // 🔄 MEJORAR nombres personalizados EN BACKGROUND (no bloquea)
+                    this.improveTokenNamesInBackground(tokens);
+                    
+                    // Marcar como listo para continuar con AdrianLAB
+                    this.cache.loading.adrianZero = false;
+                    this.cache.ready.adrianZero = true;
+                    this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
                 }
             }
         } catch (error) {
@@ -143,6 +148,33 @@ class TraitLABDataManager {
      */
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * 🚀 Mostrar placeholders inmediatamente para dar sensación de carga
+     */
+    displayPlaceholdersImmediately(tokens, filter) {
+        console.log('🚀 Mostrando placeholders inmediatamente para dar sensación de carga...');
+        console.log(`📊 Placeholders a mostrar: ${tokens.length}, Filter: ${filter}`);
+        
+        // 🚨 VERIFICACIÓN: Solo mostrar placeholders AdrianZERO inmediatamente
+        if (filter !== 'adrianzero') {
+            console.log(`⚠️ Saltando displayPlaceholdersImmediately - Solo AdrianZERO se muestra inmediatamente. Filter: ${filter}`);
+            return;
+        }
+        
+        if (window.app && window.app.modules.ui) {
+            // Mostrar placeholders inmediatamente
+            console.log('🎯 Mostrando placeholders AdrianZERO inmediatamente en la UI...');
+            window.app.modules.ui.displayPlaceholders(tokens, filter);
+            
+            // Ocultar loading si está visible
+            if (window.app.hideLoading) {
+                window.app.hideLoading();
+            }
+        } else {
+            console.warn('⚠️ UI module no disponible para mostrar placeholders');
+        }
     }
 
     /**
@@ -272,10 +304,7 @@ class TraitLABDataManager {
             console.warn('⚠️ Error en mejora de nombres:', error);
         } finally {
             // Marcar que la mejora de nombres está completa
-            console.log('✅ Mejora de nombres AdrianZERO completada - marcando como no cargando');
-            this.cache.loading.adrianZero = false;
-            this.cache.ready.adrianZero = true;
-            this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
+            console.log('✅ Mejora de nombres AdrianZERO completada');
         }
     }
 
@@ -283,14 +312,12 @@ class TraitLABDataManager {
      * Esperar a que se complete la mejora de nombres de AdrianZERO
      */
     async waitForAdrianZeroImprovement() {
-        console.log('⏳ Esperando a que se complete la mejora de nombres AdrianZERO...');
+        console.log('⏳ AdrianZERO ya está listo - continuando con AdrianLAB...');
         
-        // Esperar hasta que la mejora esté completa
-        while (this.cache.loading.adrianZero) {
-            await this.delay(1000); // Esperar 1 segundo
-        }
+        // No esperar - AdrianZERO ya está listo y mostrado
+        // La mejora de nombres se ejecuta en background sin bloquear
         
-        console.log('✅ Mejora de nombres AdrianZERO completada');
+        console.log('✅ Continuando con carga de AdrianLAB');
     }
 
     /**

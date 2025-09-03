@@ -1539,3 +1539,67 @@ body {
         font-size: 36px;
     }
 }
+
+/* Placeholder Styles for Loading Sensation */
+.token-card.placeholder {
+    opacity: 0.7;
+    animation: placeholder-pulse 2s ease-in-out infinite;
+}
+
+.placeholder-image {
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(45deg, #2a2a2a, #3a3a3a);
+    border: 2px solid #00ff00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.placeholder-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.2), transparent);
+    animation: shimmer 2s infinite;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #333;
+    border-top: 3px solid #00ff00;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.placeholder-text {
+    color: #888;
+    font-style: italic;
+    animation: placeholder-text-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes placeholder-pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes placeholder-text-pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
