@@ -1603,3 +1603,23 @@ body {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
 }
+
+/* Name Update Animation */
+.token-card.name-updated {
+    animation: name-update-glow 1s ease-in-out;
+}
+
+@keyframes name-update-glow {
+    0% { 
+        box-shadow: 0 0 0 rgba(0, 255, 0, 0);
+        border-color: #00ff00;
+    }
+    50% { 
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        border-color: #00ff00;
+    }
+    100% { 
+        box-shadow: 0 0 0 rgba(0, 255, 0, 0);
+        border-color: #00ff00;
+    }
+}

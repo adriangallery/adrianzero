@@ -64,8 +64,8 @@ class TraitLABDataManager {
                     this.cache.adrianZero = tokens;
                     console.log('📊 AdrianZERO tokens cargados:', tokens.length);
                     
-                    // 🚀 MOSTRAR PLACEHOLDERS INMEDIATAMENTE para dar sensación de carga
-                    this.displayPlaceholdersImmediately(tokens, 'adrianzero');
+                    // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con nombres de Alchemy
+                    this.displayTokensImmediately(tokens, 'adrianzero');
                     
                     // 🔄 MEJORAR nombres personalizados EN BACKGROUND (no bloquea)
                     this.improveTokenNamesInBackground(tokens);
@@ -261,35 +261,37 @@ class TraitLABDataManager {
             );
             
             // Procesar tokens en lotes con delays para evitar rate limiting
-            const batchSize = 3; // Reducir tamaño de lote
-            const delayBetweenBatches = 5000; // Aumentar delay entre lotes
+            const batchSize = 5; // Procesar 5 tokens a la vez
+            const delayBetweenBatches = 2000; // 2 segundos entre lotes
+            const nameMap = new Map();
+            let processedCount = 0;
             
             for (let i = 0; i < adrianZeroTokens.length; i += batchSize) {
                 const batch = adrianZeroTokens.slice(i, i + batchSize);
-                
                 console.log(`📦 Procesando lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(adrianZeroTokens.length/batchSize)} (${batch.length} tokens)`);
                 
-                // Procesar lote con delays individuales
-                const batchPromises = batch.map(async (token, index) => {
-                    await this.delay(index * 1000); // 1 segundo entre cada request
-                    
+                const batchPromises = batch.map(async (token) => {
                     try {
                         const customName = await nameRegistryContract.getTokenName(token.tokenId);
                         if (customName && customName.trim()) {
-                            // Actualizar token con nombre personalizado
-                            token.title = customName.trim();
-                            token.customName = customName.trim();
+                            nameMap.set(token.tokenId, customName.trim());
                             console.log(`✅ Nombre personalizado encontrado para token ${token.tokenId}: "${customName.trim()}"`);
-                            
-                            // Actualizar UI en tiempo real
-                            this.updateTokenInUI(token);
                         }
                     } catch (error) {
                         console.log(`⚠️ Error obteniendo nombre para token ${token.tokenId}:`, error.message);
                     }
+                    
+                    processedCount++;
+                    console.log(`📊 Progreso: ${processedCount}/${adrianZeroTokens.length} tokens procesados`);
                 });
                 
-                await Promise.allSettled(batchPromises);
+                await Promise.all(batchPromises);
+                
+                // Actualizar display con nombres encontrados hasta ahora
+                if (nameMap.size > 0) {
+                    console.log(`🔄 Actualizando display con ${nameMap.size} nombres personalizados encontrados...`);
+                    this.updateTokenNamesOnly(nameMap);
+                }
                 
                 // Esperar entre lotes
                 if (i + batchSize < adrianZeroTokens.length) {
@@ -359,6 +361,51 @@ class TraitLABDataManager {
     /**
      * Actualizar token en la UI en tiempo real
      */
+    /**
+     * Actualizar solo los nombres de tokens sin recargar todo el grid
+     * Basado en la lógica de index.html
+     */
+    updateTokenNamesOnly(nameMap) {
+        console.log(`🔄 Iniciando actualización de nombres para ${nameMap.size} tokens...`);
+        
+        // Usar requestAnimationFrame para actualizaciones suaves
+        requestAnimationFrame(() => {
+            nameMap.forEach((customName, tokenId) => {
+                // Buscar el token card por token ID
+                const selector = `[data-token-id="${tokenId}"][data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75"]`;
+                const tokenCard = document.querySelector(selector);
+                
+                if (tokenCard) {
+                    // Buscar el elemento de título dentro del card
+                    const titleElement = tokenCard.querySelector('.token-title');
+                    if (titleElement) {
+                        const oldName = titleElement.textContent;
+                        // Solo actualizar si el nombre es realmente diferente
+                        if (oldName !== customName) {
+                            titleElement.textContent = customName;
+                            console.log(`✨ Nombre actualizado para token ${tokenId}: "${oldName}" → "${customName}"`);
+                            
+                            // Agregar efecto visual de actualización
+                            titleElement.style.transition = 'color 0.3s ease';
+                            titleElement.style.color = '#00ff00';
+                            setTimeout(() => {
+                                titleElement.style.color = '';
+                            }, 1000);
+                        } else {
+                            console.log(`ℹ️ Nombre ya actualizado para token ${tokenId}: "${customName}"`);
+                        }
+                    } else {
+                        console.log(`⚠️ Elemento de título no encontrado para token ${tokenId}`);
+                    }
+                } else {
+                    console.log(`⚠️ Token card no encontrado para token ${tokenId} con selector: ${selector}`);
+                }
+            });
+            
+            console.log(`✅ Actualización de nombres completada para ${nameMap.size} tokens`);
+        });
+    }
+
     updateTokenInUI(token) {
         // Buscar el elemento del token en el DOM
         const tokenElement = document.querySelector(`[data-token-id="${token.tokenId}"]`);
