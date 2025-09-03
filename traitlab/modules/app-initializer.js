@@ -124,6 +124,10 @@ class AppInitializer {
                     this.app.currentContract = e.target.dataset.contract;
                     this.app.currentFilter = e.target.dataset.filter;
                     
+                    // 🚨 NUEVO: Reset flag cuando cambia de tab
+                    this.app.tokensAlreadyDisplayed = false;
+                    console.log('🔄 Flag tokensAlreadyDisplayed reseteado por cambio de tab');
+                    
                     // Load tokens for the selected tab
                     this.app.loadTokensForTab();
                 });

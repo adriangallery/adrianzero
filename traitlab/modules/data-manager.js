@@ -196,6 +196,10 @@ class TraitLABDataManager {
             console.log('🎯 Mostrando AdrianZERO tokens inmediatamente en la UI...');
             window.app.modules.ui.displayTokens(tokens, filter);
             
+            // 🚨 NUEVO: Marcar que los tokens ya fueron mostrados
+            window.app.tokensAlreadyDisplayed = true;
+            console.log('🚩 Flag tokensAlreadyDisplayed establecido a true');
+            
             // Actualizar el estado de la aplicación
             if (window.app.onTokensLoaded) {
                 window.app.onTokensLoaded({ tokens, filter });
