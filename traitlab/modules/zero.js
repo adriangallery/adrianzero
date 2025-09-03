@@ -281,6 +281,15 @@ class ZeroManager {
                     this.emit('tokensLoaded', { tokens: filteredTokens, contractAddress, tokenType });
                     return filteredTokens;
                 } else {
+                    // 🚨 NUEVO: Emitir tokens listos para mostrar inmediatamente (con loading wheels)
+                    console.log('🎯 Emitiendo tokens listos para mostrar inmediatamente...');
+                    this.emit('tokensReadyForDisplay', { 
+                        tokens: filteredTokens, 
+                        contractAddress, 
+                        tokenType,
+                        hasLoadingWheels: true 
+                    });
+                    
                     const tokensWithMetadata = await Promise.all(
                         filteredTokens.map(async (token) => {
                             if (!token.metadata || Object.keys(token.metadata).length === 0) {
