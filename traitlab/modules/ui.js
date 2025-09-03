@@ -133,7 +133,7 @@ class UIManager {
     /**
      * Display tokens in grid
      */
-    displayTokens(tokens, skipSelectionUpdate = false) {
+    displayTokens(tokens, skipSelectionUpdate = false, hasLoadingWheels = false) {
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid) return;
 
@@ -147,6 +147,11 @@ class UIManager {
         });
 
         tokensGrid.innerHTML = "";
+        
+        // 🚨 NUEVO: Mostrar loading wheel si se especifica
+        if (hasLoadingWheels) {
+            console.log('🔄 Mostrando tokens con loading wheels...');
+        }
         
         tokens.forEach(token => {
             const tokenCard = document.createElement('div');
@@ -233,10 +238,18 @@ class UIManager {
             const categoryDisplay = token.tokenType === 'ERC1155' && token.category ? 
                 `<div class="token-category">${token.category}</div>` : '';
             
+            // 🚨 NUEVO: Agregar loading wheel si se especifica
+            const loadingWheel = hasLoadingWheels ? 
+                `<div class="token-loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Cargando...</div>
+                </div>` : '';
+            
             tokenCard.innerHTML = `
                 <div style="position: relative;">
                     <img src="${imageUrl}" alt="${displayTitle}" class="token-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'>
                     ${quantityTag}
+                    ${loadingWheel}
                 </div>
                 <div class="token-info">
                     <div class="token-title">${displayTitle}</div>
@@ -447,6 +460,45 @@ class UIManager {
     hideLoading() {
         const loading = this.domElements.get('loading');
         if (loading) loading.style.display = 'none';
+    }
+
+    /**
+     * 🚨 NUEVO: Actualizar solo los nombres de los tokens sin re-renderizar todo
+     */
+    updateTokenNamesOnly(nameMap) {
+        console.log('📝 Actualizando nombres de tokens progresivamente...');
+        
+        Object.entries(nameMap).forEach(([tokenId, customName]) => {
+            const tokenCard = document.querySelector(`[data-token-id="${tokenId}"]`);
+            if (tokenCard) {
+                const titleElement = tokenCard.querySelector('.token-title');
+                if (titleElement && customName) {
+                    // Agregar animación de actualización
+                    titleElement.classList.add('name-update-glow');
+                    titleElement.textContent = customName;
+                    
+                    // Remover animación después de un tiempo
+                    setTimeout(() => {
+                        titleElement.classList.remove('name-update-glow');
+                    }, 1000);
+                }
+            }
+        });
+    }
+
+    /**
+     * 🚨 NUEVO: Finalizar carga progresiva removiendo loading wheels
+     */
+    finalizeProgressiveLoading() {
+        console.log('✅ Finalizando carga progresiva...');
+        
+        const loadingOverlays = document.querySelectorAll('.token-loading-overlay');
+        loadingOverlays.forEach(overlay => {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.remove();
+            }, 500);
+        });
     }
 
     /**

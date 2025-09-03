@@ -54,6 +54,9 @@
                     const initializer = new window.AppInitializer(this);
                     await initializer.initialize();
                     
+                    // 🚨 NUEVO: Configurar carga progresiva después de inicializar módulos
+                    this.setupProgressiveLoading();
+                    
                     console.log('✅ TraitLAB v2: Inicializada correctamente');
                     
                 } catch (error) {
@@ -69,6 +72,35 @@
                 if (container) {
                     const templates = new window.UITemplates();
                     templates.renderAllTemplates(container);
+                }
+            }
+
+            /**
+             * 🚨 NUEVO: Configurar carga progresiva
+             */
+            setupProgressiveLoading() {
+                console.log('🔄 Configurando carga progresiva...');
+                
+                // Suscribirse a eventos del módulo zero para actualizaciones progresivas
+                if (this.modules.zero) {
+                    // Mostrar tokens inmediatamente cuando estén listos
+                    this.modules.zero.on('tokensReadyForDisplay', (data) => {
+                        console.log('🎯 Tokens listos para mostrar inmediatamente:', data.tokens.length);
+                        this.modules.ui.displayTokens(data.tokens, 'adrianzero');
+                        this.hideLoading();
+                    });
+                    
+                    // Actualizar nombres progresivamente sin re-renderizar todo
+                    this.modules.zero.on('customNamesProgressUpdate', (data) => {
+                        console.log('📝 Actualizando nombres progresivamente:', data.updatedCount, '/', data.totalCount);
+                        this.modules.ui.updateTokenNamesOnly(data.nameMap);
+                    });
+                    
+                    // Finalizar carga progresiva
+                    this.modules.zero.on('customNamesLoaded', (data) => {
+                        console.log('✅ Nombres personalizados cargados completamente');
+                        this.modules.ui.finalizeProgressiveLoading();
+                    });
                 }
             }
 

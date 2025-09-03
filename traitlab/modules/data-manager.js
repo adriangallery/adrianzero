@@ -63,17 +63,20 @@ class TraitLABDataManager {
                     const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
                     this.cache.adrianZero = tokens;
                     console.log('📊 AdrianZERO tokens cargados:', tokens.length);
+                    console.log('🔍 DEBUG: tokens type:', typeof tokens, 'isArray:', Array.isArray(tokens));
                     
-                    // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con nombres de Alchemy
+                    // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con loading wheels
                     this.displayTokensImmediately(tokens, 'adrianzero');
                     
                     // 🔄 MEJORAR nombres personalizados EN BACKGROUND (no bloquea)
+                    console.log('🔍 DEBUG: Iniciando mejora de nombres en background...');
                     this.improveTokenNamesInBackground(tokens);
                     
                     // Marcar como listo para continuar con AdrianLAB
                     this.cache.loading.adrianZero = false;
                     this.cache.ready.adrianZero = true;
                     this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
+                    console.log('🔍 DEBUG: AdrianZERO marcado como listo');
                 }
             }
         } catch (error) {
@@ -182,6 +185,13 @@ class TraitLABDataManager {
      */
     displayTokensImmediately(tokens, filter) {
         console.log('🚀 Mostrando tokens inmediatamente con nombres de Alchemy...');
+        
+        // 🚨 VERIFICACIÓN: Validar que tokens existe y es un array
+        if (!tokens || !Array.isArray(tokens)) {
+            console.warn('⚠️ displayTokensImmediately: tokens es undefined, null o no es un array:', tokens);
+            return;
+        }
+        
         console.log(`📊 Tokens a mostrar: ${tokens.length}, Filter: ${filter}`);
         
         // 🚨 VERIFICACIÓN: Solo mostrar tokens AdrianZERO inmediatamente
@@ -194,7 +204,15 @@ class TraitLABDataManager {
         if (window.app && window.app.modules.ui) {
             // Mostrar tokens inmediatamente sin esperar mejoras
             console.log('🎯 Mostrando AdrianZERO tokens inmediatamente en la UI...');
-            window.app.modules.ui.displayTokens(tokens, filter);
+            console.log('🔍 DEBUG: Llamando a window.app.modules.ui.displayTokens con:', { tokensCount: tokens.length, filter });
+            
+            try {
+                // 🚨 NUEVO: Pasar hasLoadingWheels=true para mostrar loading wheels
+                window.app.modules.ui.displayTokens(tokens, false, true);
+                console.log('✅ displayTokens ejecutado exitosamente con loading wheels');
+            } catch (error) {
+                console.error('❌ Error en displayTokens:', error);
+            }
             
             // 🚨 NUEVO: Marcar que los tokens ya fueron mostrados
             window.app.tokensAlreadyDisplayed = true;
@@ -202,15 +220,20 @@ class TraitLABDataManager {
             
             // Actualizar el estado de la aplicación
             if (window.app.onTokensLoaded) {
+                console.log('🔍 DEBUG: Llamando a onTokensLoaded...');
                 window.app.onTokensLoaded({ tokens, filter });
             }
             
             // Ocultar loading si está visible
             if (window.app.hideLoading) {
+                console.log('🔍 DEBUG: Llamando a hideLoading...');
                 window.app.hideLoading();
             }
         } else {
             console.warn('⚠️ UI module no disponible para mostrar tokens');
+            console.log('🔍 DEBUG: window.app:', !!window.app);
+            console.log('🔍 DEBUG: window.app.modules:', !!window.app?.modules);
+            console.log('🔍 DEBUG: window.app.modules.ui:', !!window.app?.modules?.ui);
         }
     }
 
