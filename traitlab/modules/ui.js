@@ -17,6 +17,7 @@ class UIManager {
         
         // Bind methods
         this.displayTokens = this.displayTokens.bind(this);
+        this.displayPlaceholders = this.displayPlaceholders.bind(this);
         this.updateSelectionInfo = this.updateSelectionInfo.bind(this);
         this.getImagePath = this.getImagePath.bind(this);
         this.showLoading = this.showLoading.bind(this);
@@ -260,6 +261,51 @@ class UIManager {
         if (!skipSelectionUpdate) {
             this.updateSelectionInfo();
         }
+    }
+
+    /**
+     * Display placeholders for tokens to give loading sensation
+     */
+    displayPlaceholders(tokens, filter) {
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid) return;
+
+        // Clear existing content
+        tokensGrid.innerHTML = "";
+        tokensGrid.className = ""; // Clear any specific classes
+
+        console.log(`🎯 Mostrando ${tokens.length} placeholders para ${filter}...`);
+
+        tokens.forEach((token, index) => {
+            const placeholderCard = document.createElement('div');
+            placeholderCard.className = 'token-card placeholder';
+            placeholderCard.setAttribute('data-token-id', token.tokenId);
+            placeholderCard.setAttribute('data-contract', token.contract.toLowerCase());
+
+            // Create placeholder content
+            placeholderCard.innerHTML = `
+                <div class="token-image-container">
+                    <div class="placeholder-image">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+                <div class="token-info">
+                    <div class="token-name placeholder-text">Loading...</div>
+                    <div class="token-id placeholder-text">ID: ${token.tokenId}</div>
+                </div>
+            `;
+
+            // Add click handler for selection
+            const clickHandler = () => {
+                this.handleTokenSelection(placeholderCard, token);
+            };
+            placeholderCard.addEventListener('click', clickHandler);
+            placeholderCard._clickHandler = clickHandler;
+
+            tokensGrid.appendChild(placeholderCard);
+        });
+
+        console.log(`✅ ${tokens.length} placeholders mostrados para ${filter}`);
     }
 
     /**
