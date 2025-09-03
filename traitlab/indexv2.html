@@ -219,19 +219,16 @@
                 // NO mostrar mensaje de carga aquí - se maneja en loadTokensForTab
                 
                 try {
-                    // 1. Iniciar DataManager en background
+                    // 1. Iniciar DataManager en background (SECUENCIAL)
                     if (this.modules.dataManager) {
                         console.log('📊 TraitLAB v2: Iniciando DataManager en background...');
-                        this.modules.dataManager.init().then(() => {
-                            console.log('📊 TraitLAB v2: DataManager cargado en background');
-                            const status = this.modules.dataManager.getStatus();
-                            console.log('📊 TraitLAB v2: Estado del cache:', status);
-                        }).catch(error => {
-                            console.warn('📊 TraitLAB v2: Error cargando DataManager en background:', error);
-                        });
+                        await this.modules.dataManager.init();
+                        console.log('📊 TraitLAB v2: DataManager cargado en background');
+                        const status = this.modules.dataManager.getStatus();
+                        console.log('📊 TraitLAB v2: Estado del cache:', status);
                     }
                     
-                    // 2. Cargar tokens del contrato actual en background
+                    // 2. Cargar tokens del contrato actual en background (DESPUÉS de DataManager)
                     console.log('🚀 TraitLAB v2: Cargando tokens del contrato actual en background...');
                     await this.loadTokensForTab();
                     

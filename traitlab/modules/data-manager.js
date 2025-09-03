@@ -73,11 +73,12 @@ class TraitLABDataManager {
             }
         } catch (error) {
             console.warn('📊 Error cargando AdrianZERO tokens:', error);
-        } finally {
+            // En caso de error, marcar como no cargando
             this.cache.loading.adrianZero = false;
             this.cache.ready.adrianZero = true;
             this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
         }
+        // NO marcar como completo aquí - se hará al final de improveTokenNamesInBackground
     }
 
     /**
@@ -160,12 +161,20 @@ class TraitLABDataManager {
         
         if (window.app && window.app.modules.ui) {
             // Mostrar tokens inmediatamente sin esperar mejoras
+            console.log('🎯 Mostrando AdrianZERO tokens inmediatamente en la UI...');
             window.app.modules.ui.displayTokens(tokens, filter);
             
             // Actualizar el estado de la aplicación
             if (window.app.onTokensLoaded) {
                 window.app.onTokensLoaded({ tokens, filter });
             }
+            
+            // Ocultar loading si está visible
+            if (window.app.hideLoading) {
+                window.app.hideLoading();
+            }
+        } else {
+            console.warn('⚠️ UI module no disponible para mostrar tokens');
         }
     }
 
@@ -261,6 +270,12 @@ class TraitLABDataManager {
             
         } catch (error) {
             console.warn('⚠️ Error en mejora de nombres:', error);
+        } finally {
+            // Marcar que la mejora de nombres está completa
+            console.log('✅ Mejora de nombres AdrianZERO completada - marcando como no cargando');
+            this.cache.loading.adrianZero = false;
+            this.cache.ready.adrianZero = true;
+            this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
         }
     }
 
