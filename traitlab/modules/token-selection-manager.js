@@ -71,9 +71,8 @@ class TokenSelectionManager {
         } else if (filter === 'floppy') {
             console.log('💾 Setting as Floppy token');
             this.selectedFloppy = token;
-            if (this.currentFilter !== 'floppy') {
-                this.selectedERC721 = null;
-            }
+            // 🚨 NUEVO: Siempre deseleccionar AdrianZERO cuando se selecciona floppy
+            this.selectedERC721 = null;
             this.selectedERC1155 = [];
             this.selectedSerum = null;
             

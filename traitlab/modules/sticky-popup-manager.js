@@ -201,7 +201,8 @@ class StickyPopupManager {
                 break;
             case 'floppy':
                 if (this.selectedFloppy) {
-                    this.showFloppyActions();
+                    // 🚨 NUEVO: Solo mostrar acciones de floppy, ocultar Assign SKIN y Rename
+                    this.showFloppyActionsOnly();
                 }
                 break;
             case 'serum':
@@ -282,7 +283,12 @@ class StickyPopupManager {
         }
 
         if (this.selectedFloppy) {
-            this.showFloppyActions();
+            // 🚨 NUEVO: Verificar si estamos en tab floppy para mostrar botones correctos
+            if (this.currentFilter === 'floppy') {
+                this.showFloppyActionsOnly();
+            } else {
+                this.showFloppyActions();
+            }
         }
 
         if (this.selectedSerum) {
@@ -352,6 +358,23 @@ class StickyPopupManager {
         }
         
         console.log('🎯 Mostrando solo Apply Traits (ocultando Assign SKIN y Rename)');
+    }
+
+    /**
+     * 🚨 NUEVO: Mostrar solo acciones de floppy (sin Assign SKIN ni Rename)
+     */
+    showFloppyActionsOnly() {
+        // Ocultar botones de ERC721 (Assign SKIN y Rename)
+        if (this.elements.erc721ActionsSection) {
+            this.elements.erc721ActionsSection.style.display = 'none';
+        }
+        
+        // Mostrar solo acciones de floppy
+        if (this.elements.floppyActionsSection) {
+            this.elements.floppyActionsSection.style.display = 'block';
+        }
+        
+        console.log('🎯 Mostrando solo Floppy Actions (ocultando Assign SKIN y Rename)');
     }
 
     /**
