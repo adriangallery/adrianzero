@@ -38,6 +38,8 @@
                 this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
                 this.currentFilter = null;
                 this.tokensAlreadyDisplayed = false; // 🚨 NUEVO: Flag para evitar sobrescrituras
+                this.currentLoadingOperation = null; // 🚨 NUEVO: Referencia a operación de carga actual
+                this.loadingCancelled = false; // 🚨 NUEVO: Flag de cancelación
             }
 
             /**
@@ -112,6 +114,13 @@
                     console.log('🚀 TraitLAB v2: Cargando tokens para tab:', this.currentFilter);
                     console.log('🔍 Contrato actual:', this.currentContract);
                     
+                    // 🚨 NUEVO: Cancelar carga anterior si existe
+                    if (this.currentLoadingOperation) {
+                        console.log('🛑 Cancelando carga anterior...');
+                        this.loadingCancelled = true;
+                        this.currentLoadingOperation = null;
+                    }
+                    
                     this.showLoading();
                     
                     // Verificar que tengamos los módulos necesarios
@@ -151,20 +160,24 @@
                             throw new Error('Módulo de crafting no disponible');
                         }
                     } else {
+                        // 🚨 NUEVO: Priorizar carga del tab actual
+                        this.currentLoadingOperation = this.currentFilter;
+                        this.loadingCancelled = false;
+                        
                         // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE
                         const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
                         console.log(`📊 Tokens filtrados obtenidos: ${filteredTokens.length}`);
                         
                         if (filteredTokens.length > 0) {
-                            // 🚨 VERIFICAR: Solo mostrar si no hay tokens ya mostrados por DataManager
-                            if (!this.tokensAlreadyDisplayed || this.currentFilter !== 'adrianzero') {
-                                console.log('✅ Mostrando tokens disponibles inmediatamente');
-                                this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
-                                this.hideLoading();
-                            } else {
-                                console.log('⚠️ Saltando displayTokens - Ya mostrados por DataManager');
-                                this.hideLoading();
+                            // 🚨 NUEVO: Verificar si la carga fue cancelada
+                            if (this.loadingCancelled || this.currentLoadingOperation !== this.currentFilter) {
+                                console.log('🛑 Carga cancelada - no mostrando tokens');
+                                return;
                             }
+                            
+                            console.log('✅ Mostrando tokens disponibles inmediatamente');
+                            this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
+                            this.hideLoading();
                         } else {
                             // Mostrar loading mientras se cargan los tokens
                             console.log('⏳ Mostrando loading mientras se cargan tokens...');
@@ -312,17 +325,19 @@
                     filter 
                 });
                 
+                // 🚨 NUEVO: Verificar si la carga fue cancelada
+                if (this.loadingCancelled || this.currentLoadingOperation !== filter) {
+                    console.log('🛑 onTokensLoaded cancelado - no mostrando tokens para filter:', filter);
+                    return;
+                }
+                
                 // Si estamos en el tab correcto, mostrar los tokens inmediatamente
                 if (this.currentFilter === filter) {
-                    // 🚨 VERIFICAR: Solo mostrar si no hay tokens ya mostrados por DataManager
-                    if (!this.tokensAlreadyDisplayed || filter !== 'adrianzero') {
-                        console.log('✅ Mostrando tokens cargados progresivamente para tab:', filter);
-                        this.modules.ui.displayTokens(tokens, filter);
-                        this.hideLoading();
-                    } else {
-                        console.log('⚠️ Saltando onTokensLoaded - Ya mostrados por DataManager');
-                        this.hideLoading();
-                    }
+                    console.log('✅ Mostrando tokens cargados progresivamente para tab:', filter);
+                    this.modules.ui.displayTokens(tokens, filter);
+                    this.hideLoading();
+                } else {
+                    console.log('⚠️ Saltando onTokensLoaded - Tab actual no coincide:', this.currentFilter, 'vs', filter);
                 }
             }
         }
