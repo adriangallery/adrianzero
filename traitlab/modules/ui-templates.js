@@ -192,7 +192,7 @@ class UITemplates {
                         
                         <!-- Use Serum -->
                         <div id="use-serum-section" class="action-section" style="display: none;">
-                            <button id="useSerumBtn" class="action-btn">🧪 Usar Serum</button>
+                            <button id="useSerumBtn" class="action-btn">🧪 Drink Serum</button>
                             <div id="use-serum-status" class="apply-status" style="display: none;"></div>
                         </div>
                         
