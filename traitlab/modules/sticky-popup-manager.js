@@ -203,6 +203,7 @@ class StickyPopupManager {
                 if (this.selectedFloppy) {
                     // 🚨 NUEVO: Solo mostrar acciones de floppy, ocultar Assign SKIN y Rename
                     this.showFloppyActionsOnly();
+                    this.showFloppyImage();
                 }
                 break;
             case 'serum':
@@ -286,8 +287,10 @@ class StickyPopupManager {
             // 🚨 NUEVO: Verificar si estamos en tab floppy para mostrar botones correctos
             if (this.currentFilter === 'floppy') {
                 this.showFloppyActionsOnly();
+                this.showFloppyImage();
             } else {
                 this.showFloppyActions();
+                this.showFloppyImage();
             }
         }
 
