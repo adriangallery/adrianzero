@@ -207,8 +207,12 @@ class StickyPopupManager {
                 }
                 break;
             case 'serum':
-                if (this.selectedSerum) {
+                if (this.selectedSerum && this.selectedERC721) {
+                    // 🚨 NUEVO: Solo mostrar acciones si hay AdrianZERO y Serum seleccionados
                     this.showSerumActions();
+                } else if (this.selectedSerum && !this.selectedERC721) {
+                    // 🚨 NUEVO: Mostrar mensaje de error si solo hay Serum
+                    this.showSerumError();
                 }
                 break;
             case 'crafting':
@@ -295,7 +299,12 @@ class StickyPopupManager {
         }
 
         if (this.selectedSerum) {
-            this.showSerumActions();
+            // 🚨 NUEVO: Verificar si hay AdrianZERO seleccionado para serum
+            if (this.selectedERC721) {
+                this.showSerumActions();
+            } else {
+                this.showSerumError();
+            }
         }
 
         // Actualizar texto de selección
@@ -449,8 +458,31 @@ class StickyPopupManager {
             this.elements.useSerumSection.style.display = 'block';
         }
         
-        // Mostrar imagen del serum en lugar de la imagen del AdrianZERO
-        this.showSerumImage();
+        // 🚨 NUEVO: Mostrar imagen del AdrianZERO seleccionado (no del serum)
+        this.showBaseAdrianZeroImage();
+    }
+
+    /**
+     * 🚨 NUEVO: Mostrar error cuando se selecciona serum sin AdrianZERO
+     */
+    showSerumError() {
+        // Ocultar sección de serum
+        if (this.elements.useSerumSection) {
+            this.elements.useSerumSection.style.display = 'none';
+        }
+        
+        // Mostrar mensaje de error
+        if (this.elements.generatedImage && this.elements.combinedImage) {
+            this.elements.generatedImage.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #ff6b6b;">
+                    <div style="font-size: 2rem; margin-bottom: 20px;">⚠️</div>
+                    <div style="font-size: 1.2rem; margin-bottom: 10px;">Select an AdrianZERO first</div>
+                    <div style="font-size: 1rem; color: #888;">Choose an AdrianZERO token to use this serum</div>
+                </div>
+            `;
+        }
+        
+        console.log('⚠️ Serum seleccionado sin AdrianZERO - mostrando mensaje de error');
     }
 
     /**
