@@ -33,16 +33,66 @@ class TraitLABDataManager {
         console.log('📊 TraitLABDataManager: Iniciando carga secuencial...');
         this.isInitialized = true;
         
-        // 1. Cargar AdrianZERO primero
-        await this.loadAdrianZeroTokens();
+        // 1. Cargar AdrianZERO primero (solo carga básica)
+        await this.loadAdrianZeroTokensBasic();
         
-        // 2. Esperar a que se complete la mejora de nombres
-        await this.waitForAdrianZeroImprovement();
-        
-        // 3. Luego cargar AdrianLAB
+        // 2. Cargar AdrianLAB (ERC1155) inmediatamente después
         await this.loadAdrianLabTokens();
         
+        // 3. Mejorar nombres AdrianZERO en background (no bloquea)
+        this.improveAdrianZeroNamesInBackground();
+        
         console.log('📊 TraitLABDataManager: Carga secuencial completada');
+    }
+
+    /**
+     * Cargar tokens AdrianZERO básicos (sin mejoras en background)
+     */
+    async loadAdrianZeroTokensBasic() {
+        if (this.cache.loading.adrianZero || this.cache.ready.adrianZero) return;
+        
+        this.cache.loading.adrianZero = true;
+        console.log('📊 Cargando tokens AdrianZERO básicos...');
+        
+        try {
+            if (window.app && window.app.modules.zero) {
+                const userAddress = window.app.modules.wallet?.getCurrentAccount();
+                if (userAddress) {
+                    const contractAddress = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+                    const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
+                    this.cache.adrianZero = tokens;
+                    console.log('📊 AdrianZERO tokens básicos cargados:', tokens.length);
+                    
+                    // Mostrar tokens inmediatamente
+                    this.displayTokensImmediately(tokens, 'adrianzero');
+                    
+                    this.cache.loading.adrianZero = false;
+                    this.cache.ready.adrianZero = true;
+                    this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
+                }
+            }
+        } catch (error) {
+            console.warn('📊 Error cargando AdrianZERO tokens básicos:', error);
+            this.cache.loading.adrianZero = false;
+            this.cache.ready.adrianZero = true;
+        }
+    }
+
+    /**
+     * Mejorar nombres AdrianZERO en background (no bloquea)
+     */
+    async improveAdrianZeroNamesInBackground() {
+        console.log('🔄 Iniciando mejora de nombres AdrianZERO en background...');
+        
+        if (!this.cache.adrianZero || this.cache.adrianZero.length === 0) {
+            console.log('No hay tokens AdrianZERO para mejorar nombres');
+            return;
+        }
+        
+        // Ejecutar en background sin bloquear
+        setTimeout(() => {
+            this.improveTokenNamesInBackground(this.cache.adrianZero);
+        }, 100);
     }
 
     /**
@@ -487,21 +537,9 @@ class TraitLABDataManager {
         if (filterType === 'adrianzero') {
             return this.getTokens('adrianZero');
         } else if (filterType === 'floppy') {
-            const floppyTokens = this.getTokens('adrianLab', 'floppys');
-            // 🚨 NUEVO: Si no hay tokens y no está cargando, iniciar carga inmediata
-            if (floppyTokens.length === 0 && !this.cache.loading.adrianLab) {
-                console.log('🚀 Iniciando carga inmediata de floppy tokens...');
-                this.loadAdrianLabTokensImmediately();
-            }
-            return floppyTokens;
+            return this.getTokens('adrianLab', 'floppys');
         } else if (filterType === 'serum') {
-            const serumTokens = this.getTokens('adrianLab', 'serums');
-            // 🚨 NUEVO: Si no hay tokens y no está cargando, iniciar carga inmediata
-            if (serumTokens.length === 0 && !this.cache.loading.adrianLab) {
-                console.log('🚀 Iniciando carga inmediata de serum tokens...');
-                this.loadAdrianLabTokensImmediately();
-            }
-            return serumTokens;
+            return this.getTokens('adrianLab', 'serums');
         } else if (filterType === 'traits') {
             return this.getTokens('adrianLab', 'traits');
         } else if (filterType === 'crafting') {
@@ -510,29 +548,6 @@ class TraitLABDataManager {
         return [];
     }
 
-    /**
-     * 🚀 Cargar tokens AdrianLAB inmediatamente (para priorización)
-     */
-    async loadAdrianLabTokensImmediately() {
-        if (this.cache.loading.adrianLab || this.cache.ready.adrianLab) return;
-        
-        console.log('🚀 Carga inmediata de AdrianLAB tokens iniciada...');
-        this.cache.loading.adrianLab = true;
-        
-        try {
-            const userAddress = window.app?.modules.wallet?.getCurrentAccount();
-            if (userAddress) {
-                const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
-                await this.loadTokensProgressive(userAddress, contractAddress);
-            }
-        } catch (error) {
-            console.warn('📊 Error en carga inmediata AdrianLAB:', error);
-        } finally {
-            this.cache.loading.adrianLab = false;
-            this.cache.ready.adrianLab = true;
-            this.emit('adrianLabReady', { tokens: this.cache.adrianLab });
-        }
-    }
 
     /**
      * Verificar si un tipo está listo

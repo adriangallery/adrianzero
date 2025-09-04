@@ -38,8 +38,6 @@
                 this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
                 this.currentFilter = null;
                 this.tokensAlreadyDisplayed = false; // 🚨 NUEVO: Flag para evitar sobrescrituras
-                this.currentLoadingOperation = null; // 🚨 NUEVO: Referencia a operación de carga actual
-                this.loadingCancelled = false; // 🚨 NUEVO: Flag de cancelación
             }
 
             /**
@@ -136,13 +134,6 @@
                     console.log('🚀 TraitLAB v2: Cargando tokens para tab:', this.currentFilter);
                     console.log('🔍 Contrato actual:', this.currentContract);
                     
-                    // 🚨 NUEVO: Cancelar carga anterior si existe
-                    if (this.currentLoadingOperation) {
-                        console.log('🛑 Cancelando carga anterior...');
-                        this.loadingCancelled = true;
-                        this.currentLoadingOperation = null;
-                    }
-                    
                     this.showLoading();
                     
                     // Verificar que tengamos los módulos necesarios
@@ -182,21 +173,11 @@
                             throw new Error('Módulo de crafting no disponible');
                         }
                     } else {
-                        // 🚨 NUEVO: Priorizar carga del tab actual
-                        this.currentLoadingOperation = this.currentFilter;
-                        this.loadingCancelled = false;
-                        
                         // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE
                         const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
                         console.log(`📊 Tokens filtrados obtenidos: ${filteredTokens.length}`);
                         
                         if (filteredTokens.length > 0) {
-                            // 🚨 NUEVO: Verificar si la carga fue cancelada
-                            if (this.loadingCancelled || this.currentLoadingOperation !== this.currentFilter) {
-                                console.log('🛑 Carga cancelada - no mostrando tokens');
-                                return;
-                            }
-                            
                             console.log('✅ Mostrando tokens disponibles inmediatamente');
                             this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
                             this.hideLoading();
@@ -346,12 +327,6 @@
                     count: tokens.length, 
                     filter 
                 });
-                
-                // 🚨 NUEVO: Verificar si la carga fue cancelada
-                if (this.loadingCancelled || this.currentLoadingOperation !== filter) {
-                    console.log('🛑 onTokensLoaded cancelado - no mostrando tokens para filter:', filter);
-                    return;
-                }
                 
                 // Si estamos en el tab correcto, mostrar los tokens inmediatamente
                 if (this.currentFilter === filter) {
