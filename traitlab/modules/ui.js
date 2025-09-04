@@ -173,6 +173,9 @@ class UIManager {
                     displayTitle = 'Golden Floppy';
                 } else if (token.tokenId === 10007) {
                     displayTitle = 'Action Pack 10007';
+                } else {
+                    // 🚨 NUEVO: Limpiar el título quitando números al inicio
+                    displayTitle = token.title.replace(/^\d+\s*/, '');
                 }
             }
             
@@ -232,7 +235,7 @@ class UIManager {
             
             // Create quantity tag for ERC1155 tokens with balance > 1
             const quantityTag = token.tokenType === 'ERC1155' && token.balance > 1 ? 
-                `<div class="token-quantity-tag">${token.balance}</div>` : '';
+                `<div class="token-quantity-tag">x${token.balance}</div>` : '';
             
             // Create category display for ERC1155 tokens
             const categoryDisplay = token.tokenType === 'ERC1155' && token.category ? 
