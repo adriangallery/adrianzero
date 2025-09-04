@@ -178,6 +178,9 @@ class StickyPopupManager {
      * Actualizar UI según el filter seleccionado
      */
     updateUIForFilter(filter) {
+        // 🚨 NUEVO: Guardar el filter actual para uso en updateUI()
+        this.currentFilter = filter;
+        
         // Ocultar todas las secciones
         this.hideAllSections();
         
@@ -191,7 +194,8 @@ class StickyPopupManager {
                 break;
             case 'traits':
                 if (this.selectedERC721 && this.selectedERC1155.length > 0) {
-                    this.showTraitsActions();
+                    // 🚨 NUEVO: Solo mostrar Apply Traits, ocultar Assign SKIN y Rename
+                    this.showTraitsActionsOnly();
                     this.generateCombinedImage();
                 }
                 break;
@@ -254,14 +258,26 @@ class StickyPopupManager {
 
         // Mostrar secciones según el estado
         if (this.selectedERC721) {
-            this.showERC721Actions();
-            
-            // Si no hay traits seleccionados, mostrar imagen base del AdrianZERO
-            if (this.selectedERC1155.length === 0) {
-                this.showBaseAdrianZeroImage();
+            // 🚨 NUEVO: Verificar si estamos en tab traits para mostrar botones correctos
+            if (this.currentFilter === 'traits') {
+                // En tab traits, solo mostrar Apply Traits si hay traits seleccionados
+                if (this.selectedERC1155.length > 0) {
+                    this.showTraitsActionsOnly();
+                    this.generateCombinedImage();
+                } else {
+                    this.showBaseAdrianZeroImage();
+                }
             } else {
-                this.showTraitsActions();
-                this.generateCombinedImage();
+                // En otros tabs, mostrar botones normales de ERC721
+                this.showERC721Actions();
+                
+                // Si no hay traits seleccionados, mostrar imagen base del AdrianZERO
+                if (this.selectedERC1155.length === 0) {
+                    this.showBaseAdrianZeroImage();
+                } else {
+                    this.showTraitsActions();
+                    this.generateCombinedImage();
+                }
             }
         }
 
@@ -319,6 +335,23 @@ class StickyPopupManager {
         if (this.elements.traitsActionsSection) {
             this.elements.traitsActionsSection.style.display = 'block';
         }
+    }
+
+    /**
+     * 🚨 NUEVO: Mostrar solo acciones de traits (sin Assign SKIN ni Rename)
+     */
+    showTraitsActionsOnly() {
+        // Ocultar botones de ERC721 (Assign SKIN y Rename)
+        if (this.elements.erc721ActionsSection) {
+            this.elements.erc721ActionsSection.style.display = 'none';
+        }
+        
+        // Mostrar solo Apply Traits
+        if (this.elements.traitsActionsSection) {
+            this.elements.traitsActionsSection.style.display = 'block';
+        }
+        
+        console.log('🎯 Mostrando solo Apply Traits (ocultando Assign SKIN y Rename)');
     }
 
     /**
