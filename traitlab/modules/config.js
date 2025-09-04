@@ -12,7 +12,7 @@ class TraitLABConfig {
         
         // Contratos adicionales
         this.ADRIAN_LAB_CORE_CONTRACT = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO (usado para activateToken)
-        this.TRAITS_EXTENSIONS_CONTRACT = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO (usado para applyTraits)
+        this.TRAITS_EXTENSIONS_CONTRACT = "0x0995c0dA1ca071b792E852b6Ec531b7cD7d1F8D6"; // AdrianTraitsExtensions (usado para applyTraits)
         this.ADRIAN_CRAFTING_CONTRACT = "0x9ab651F50ac78A13a1612CCDDF5a074B2e570829";
         this.ADRIAN_NAME_REGISTRY_CONTRACT = "0xaeC5ED33c88c1943BB7452aC4B571ad0b4c4068C";
         this.ACTION_PACKS_CONTRACT = "0xa7e2ae50e7f15d220cd3f61728e52d0e6e1b2e36";
