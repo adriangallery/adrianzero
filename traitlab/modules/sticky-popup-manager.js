@@ -325,8 +325,31 @@ class StickyPopupManager {
      * Mostrar acciones de floppy
      */
     showFloppyActions() {
-        if (this.elements.openFloppySection) {
-            this.elements.openFloppySection.style.display = 'block';
+        // 🚨 NUEVO: Determinar qué botón mostrar según el tipo de floppy
+        if (this.selectedFloppy) {
+            const contractInfo = window.app?.modules?.floppy?.getContractForFloppy?.(this.selectedFloppy.tokenId);
+            
+            if (contractInfo) {
+                if (contractInfo.type === 'pack') {
+                    // Mostrar botón "Open Pack"
+                    if (this.elements.openPackSection) {
+                        this.elements.openPackSection.style.display = 'block';
+                    }
+                    console.log('🎯 Mostrando botón Open Pack para floppy tipo pack:', this.selectedFloppy.tokenId);
+                } else {
+                    // Mostrar botón "Open Floppy"
+                    if (this.elements.openFloppySection) {
+                        this.elements.openFloppySection.style.display = 'block';
+                    }
+                    console.log('🎯 Mostrando botón Open Floppy para floppy tipo floppy:', this.selectedFloppy.tokenId);
+                }
+            } else {
+                // Fallback: mostrar Open Floppy por defecto
+                if (this.elements.openFloppySection) {
+                    this.elements.openFloppySection.style.display = 'block';
+                }
+                console.log('🎯 Mostrando botón Open Floppy por defecto');
+            }
         }
         
         // Mostrar imagen del floppy en lugar de la imagen del AdrianZERO
@@ -620,8 +643,10 @@ class StickyPopupManager {
 
     openPack() {
         console.log('🎯 StickyPopupManager: Abrir pack');
-        if (window.app && window.app.modules.zero && window.app.modules.zero.openPack) {
-            window.app.modules.zero.openPack();
+        if (window.app && window.app.modules.floppy && window.app.modules.floppy.openPack) {
+            window.app.modules.floppy.openPack();
+        } else {
+            console.error('❌ Módulo floppy no disponible para openPack');
         }
     }
 
@@ -648,8 +673,20 @@ class StickyPopupManager {
 
     renameToken() {
         console.log('🎯 StickyPopupManager: Renombrar token');
+        
+        // Obtener el nombre del input
+        const newName = this.elements.newTokenName?.value?.trim();
+        if (!newName) {
+            console.error('❌ No se proporcionó un nombre para el token');
+            this.showError('Por favor ingresa un nombre para el token');
+            return;
+        }
+        
         if (window.app && window.app.modules.zero && window.app.modules.zero.renameToken) {
-            window.app.modules.zero.renameToken();
+            console.log('🔍 Llamando a zero.renameToken con nombre:', newName);
+            window.app.modules.zero.renameToken(newName);
+        } else {
+            console.error('❌ Módulo zero no disponible para renameToken');
         }
     }
 
