@@ -377,14 +377,16 @@ class StickyPopupManager {
             this.elements.floppyActionsSection.style.display = 'block';
         }
         
+        // 🚨 NUEVO: Configurar botones específicos (Open Pack/Open Floppy)
+        this.configureFloppyButtons();
+        
         console.log('🎯 Mostrando solo Floppy Actions (ocultando Assign SKIN y Rename)');
     }
 
     /**
-     * Mostrar acciones de floppy
+     * 🚨 NUEVO: Configurar botones específicos de floppy (Open Pack/Open Floppy)
      */
-    showFloppyActions() {
-        // 🚨 NUEVO: Determinar qué botón mostrar según el tipo de floppy
+    configureFloppyButtons() {
         if (this.selectedFloppy) {
             const contractInfo = window.app?.modules?.floppy?.getContractForFloppy?.(this.selectedFloppy.tokenId);
             
@@ -394,11 +396,19 @@ class StickyPopupManager {
                     if (this.elements.openPackSection) {
                         this.elements.openPackSection.style.display = 'block';
                     }
+                    // Ocultar botón "Open Floppy"
+                    if (this.elements.openFloppySection) {
+                        this.elements.openFloppySection.style.display = 'none';
+                    }
                     console.log('🎯 Mostrando botón Open Pack para floppy tipo pack:', this.selectedFloppy.tokenId);
                 } else {
                     // Mostrar botón "Open Floppy"
                     if (this.elements.openFloppySection) {
                         this.elements.openFloppySection.style.display = 'block';
+                    }
+                    // Ocultar botón "Open Pack"
+                    if (this.elements.openPackSection) {
+                        this.elements.openPackSection.style.display = 'none';
                     }
                     console.log('🎯 Mostrando botón Open Floppy para floppy tipo floppy:', this.selectedFloppy.tokenId);
                 }
@@ -407,9 +417,25 @@ class StickyPopupManager {
                 if (this.elements.openFloppySection) {
                     this.elements.openFloppySection.style.display = 'block';
                 }
+                if (this.elements.openPackSection) {
+                    this.elements.openPackSection.style.display = 'none';
+                }
                 console.log('🎯 Mostrando botón Open Floppy por defecto');
             }
         }
+    }
+
+    /**
+     * Mostrar acciones de floppy
+     */
+    showFloppyActions() {
+        // Mostrar sección de floppy
+        if (this.elements.floppyActionsSection) {
+            this.elements.floppyActionsSection.style.display = 'block';
+        }
+        
+        // Configurar botones específicos
+        this.configureFloppyButtons();
         
         // Mostrar imagen del floppy en lugar de la imagen del AdrianZERO
         this.showFloppyImage();
