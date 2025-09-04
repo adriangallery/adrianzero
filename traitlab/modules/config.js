@@ -66,3 +66,9 @@ class TraitLABConfig {
 
 // Crear instancia global
 window.TraitLABConfig = new TraitLABConfig();
+
+// 🚨 DEBUG: Verificar que el módulo se está cargando correctamente
+console.log('🔧 DEBUG Config: Módulo config.js cargado');
+console.log('🔧 DEBUG Config: window.TraitLABConfig:', window.TraitLABConfig);
+console.log('🔧 DEBUG Config: ADRIAN_LAB_CORE_CONTRACT:', window.TraitLABConfig?.ADRIAN_LAB_CORE_CONTRACT);
+console.log('🔧 DEBUG Config: TRAITS_EXTENSIONS_CONTRACT:', window.TraitLABConfig?.TRAITS_EXTENSIONS_CONTRACT);

@@ -611,7 +611,9 @@ class ZeroManager {
         console.log('🔍 DEBUG ZeroManager.activateToken: window.TraitLABWallet existe?', !!window.TraitLABWallet);
         console.log('🔍 DEBUG ZeroManager.activateToken: window.TraitLABWallet.isWalletConnected():', window.TraitLABWallet?.isWalletConnected());
         console.log('🔍 DEBUG ZeroManager.activateToken: window.TraitLABConfig existe?', !!window.TraitLABConfig);
+        console.log('🔍 DEBUG ZeroManager.activateToken: window.TraitLABConfig keys:', window.TraitLABConfig ? Object.keys(window.TraitLABConfig) : 'undefined');
         console.log('🔍 DEBUG ZeroManager.activateToken: ADRIAN_LAB_CORE_CONTRACT:', window.TraitLABConfig?.ADRIAN_LAB_CORE_CONTRACT);
+        console.log('🔍 DEBUG ZeroManager.activateToken: CONTRACTS:', window.TraitLABConfig?.CONTRACTS);
         
         if (!this.selectedERC721) {
             throw new Error('Please select an AdrianZERO token first.');
