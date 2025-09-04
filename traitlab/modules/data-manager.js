@@ -314,6 +314,12 @@ class TraitLABDataManager {
                 
                 await Promise.all(batchPromises);
                 
+                // 🚨 NUEVO: Verificar cancelación antes de actualizar
+                if (window.app && window.app.loadingCancelled) {
+                    console.log('🛑 Mejora de nombres cancelada - no actualizando display');
+                    return;
+                }
+                
                 // Actualizar display con nombres encontrados hasta ahora
                 if (nameMap.size > 0) {
                     console.log(`🔄 Actualizando display con ${nameMap.size} nombres personalizados encontrados...`);
@@ -395,6 +401,12 @@ class TraitLABDataManager {
     updateTokenNamesOnly(nameMap) {
         console.log(`🔄 Iniciando actualización de nombres para ${nameMap.size} tokens...`);
         
+        // 🚨 NUEVO: Verificar si estamos en el tab correcto
+        if (window.app && window.app.currentFilter !== 'adrianzero') {
+            console.log('🛑 Saltando actualización de nombres - no estamos en tab AdrianZERO');
+            return;
+        }
+        
         // Usar requestAnimationFrame para actualizaciones suaves
         requestAnimationFrame(() => {
             nameMap.forEach((customName, tokenId) => {
@@ -475,15 +487,51 @@ class TraitLABDataManager {
         if (filterType === 'adrianzero') {
             return this.getTokens('adrianZero');
         } else if (filterType === 'floppy') {
-            return this.getTokens('adrianLab', 'floppys');
+            const floppyTokens = this.getTokens('adrianLab', 'floppys');
+            // 🚨 NUEVO: Si no hay tokens y no está cargando, iniciar carga inmediata
+            if (floppyTokens.length === 0 && !this.cache.loading.adrianLab) {
+                console.log('🚀 Iniciando carga inmediata de floppy tokens...');
+                this.loadAdrianLabTokensImmediately();
+            }
+            return floppyTokens;
         } else if (filterType === 'serum') {
-            return this.getTokens('adrianLab', 'serums');
+            const serumTokens = this.getTokens('adrianLab', 'serums');
+            // 🚨 NUEVO: Si no hay tokens y no está cargando, iniciar carga inmediata
+            if (serumTokens.length === 0 && !this.cache.loading.adrianLab) {
+                console.log('🚀 Iniciando carga inmediata de serum tokens...');
+                this.loadAdrianLabTokensImmediately();
+            }
+            return serumTokens;
         } else if (filterType === 'traits') {
             return this.getTokens('adrianLab', 'traits');
         } else if (filterType === 'crafting') {
             return this.getTokens('adrianLab', 'traits'); // Crafting usa traits
         }
         return [];
+    }
+
+    /**
+     * 🚀 Cargar tokens AdrianLAB inmediatamente (para priorización)
+     */
+    async loadAdrianLabTokensImmediately() {
+        if (this.cache.loading.adrianLab || this.cache.ready.adrianLab) return;
+        
+        console.log('🚀 Carga inmediata de AdrianLAB tokens iniciada...');
+        this.cache.loading.adrianLab = true;
+        
+        try {
+            const userAddress = window.app?.modules.wallet?.getCurrentAccount();
+            if (userAddress) {
+                const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                await this.loadTokensProgressive(userAddress, contractAddress);
+            }
+        } catch (error) {
+            console.warn('📊 Error en carga inmediata AdrianLAB:', error);
+        } finally {
+            this.cache.loading.adrianLab = false;
+            this.cache.ready.adrianLab = true;
+            this.emit('adrianLabReady', { tokens: this.cache.adrianLab });
+        }
     }
 
     /**
@@ -590,6 +638,13 @@ class TraitLABDataManager {
                 
                 // 🚀 NO MOSTRAR TOKENS AQUÍ - se mostrarán cuando el usuario cambie de tab
                 // Los tokens se mostrarán automáticamente via getFilteredTokens() cuando sea necesario
+                
+                // 🚨 NUEVO: Emitir evento para notificar que los tokens están listos
+                this.emit('adrianLabTokensReady', {
+                    floppys: floppys,
+                    serums: serums,
+                    traits: traits
+                });
                 
                 // 🔄 MEJORAR METADATA EN BACKGROUND
                 this.improveERC1155MetadataInBackground(basicTokens);
