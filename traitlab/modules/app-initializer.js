@@ -174,3 +174,7 @@ class AppInitializer {
 
 // Exportar para uso global
 window.AppInitializer = AppInitializer;
+
+// Debug: Verificar que el módulo se carga
+console.log('🔧 AppInitializer: Módulo cargado correctamente');
+console.log('🔧 AppInitializer: window.AppInitializer disponible:', !!window.AppInitializer);
