@@ -384,6 +384,12 @@
             <!-- Traits will be loaded here -->
         </div>
 
+        <!-- Loading More Indicator -->
+        <div id="loadingMore" class="text-center mt-4" style="display: none;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading more traits...</div>
+        </div>
+
         <!-- Pagination -->
         <div class="pagination-section">
             <div class="pagination-info">
@@ -414,6 +420,7 @@
         let filteredTraits = [];
         let currentPage = 1;
         const traitsPerPage = 24;
+        let isLoadingMore = false;
 
         // Contract configuration
         window.TRAITS_CONTRACT = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianLAB Core contract
@@ -439,22 +446,18 @@
                 // Initialize gallery manager
                 galleryManager = new GalleryManager();
                 
-                // Try to connect wallet first
-                if (window.ethereum) {
-                    console.log('Using MetaMask provider...');
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    const signer = provider.getSigner();
-                    await galleryManager.initialize(provider, signer);
-                } else {
-                    console.log('Using read-only provider...');
-                    // Use read-only provider
-                    const provider = new ethers.providers.JsonRpcProvider('https://mainnet.base.org');
-                    await galleryManager.initialize(provider, null);
-                }
+                // Use Alchemy RPC for better performance
+                console.log('Using Alchemy RPC...');
+                const alchemyRpcUrl = `https://base-mainnet.g.alchemy.com/v2/${galleryManager.alchemyApiKey}`;
+                const provider = new ethers.providers.JsonRpcProvider(alchemyRpcUrl);
+                await galleryManager.initialize(provider, null);
 
                 console.log('Gallery manager initialized, loading traits...');
-                // Load traits
+                // Load initial traits
                 await loadTraits();
+                
+                // Set up scroll listener for infinite loading
+                setupInfiniteScroll();
                 
             } catch (error) {
                 console.error('Error initializing gallery:', error);
@@ -474,16 +477,13 @@
 
         async function loadTraits() {
             try {
-                console.log('Loading traits...');
-                updateProgress(0, 'Initializing...');
+                console.log('Loading initial traits...');
+                updateProgress(0, 'Loading traits from Alchemy...');
                 
                 if (galleryManager) {
-                    // Set up progress tracking
-                    setupProgressTracking();
-                    
-                    // Load from contract (cache disabled)
-                    console.log('Loading from contract (cache disabled)...');
+                    // Load initial batch from Alchemy
                     allTraits = await galleryManager.loadTraits();
+                    updateProgress(100, `Loaded ${allTraits.length} traits!`);
                 } else {
                     console.log('No gallery manager, using demo mode');
                     await loadDemoTraits();
@@ -496,6 +496,39 @@
                 updateProgress(0, 'Error loading traits, switching to demo mode...');
                 // Fallback to demo mode
                 await loadDemoTraits();
+            }
+        }
+
+        async function loadMoreTraits() {
+            if (isLoadingMore || !galleryManager || !galleryManager.hasMore()) {
+                return;
+            }
+
+            isLoadingMore = true;
+            console.log('Loading more traits...');
+            
+            // Show loading indicator
+            const loadingMore = document.getElementById('loadingMore');
+            if (loadingMore) {
+                loadingMore.style.display = 'block';
+            }
+
+            try {
+                const newTraits = await galleryManager.loadMoreTraits();
+                allTraits = newTraits;
+                
+                // Update display with new traits
+                displayMoreTraits();
+                
+            } catch (error) {
+                console.error('Error loading more traits:', error);
+            } finally {
+                isLoadingMore = false;
+                
+                // Hide loading indicator
+                if (loadingMore) {
+                    loadingMore.style.display = 'none';
+                }
             }
         }
 
@@ -628,6 +661,39 @@
             
             // Filter traits
             filterTraits();
+        }
+
+        function displayMoreTraits() {
+            // Update stats
+            document.getElementById('totalTraits').textContent = allTraits.length;
+            document.getElementById('loadedTraits').textContent = allTraits.length;
+            
+            // Update category filter
+            populateCategoryFilter();
+            
+            // Re-filter and display
+            filterTraits();
+        }
+
+        function setupInfiniteScroll() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            
+            // Add scroll listener
+            window.addEventListener('scroll', () => {
+                if (isLoadingMore || !galleryManager || !galleryManager.hasMore()) {
+                    return;
+                }
+
+                // Check if user is near bottom of page
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const windowHeight = window.innerHeight;
+                const documentHeight = document.documentElement.scrollHeight;
+
+                // Load more when user is 200px from bottom
+                if (scrollTop + windowHeight >= documentHeight - 200) {
+                    loadMoreTraits();
+                }
+            });
         }
 
         function filterTraits() {
