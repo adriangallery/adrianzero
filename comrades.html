@@ -1063,7 +1063,7 @@
             showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
             // For FREE claim, use mint with ETH since priceWei = 0
             // This allows free claims for allowlisted users
-            const tx = await comradesContract.mint(PACK_ID, currentQuantity, proof, { value: 0 });
+            const tx = await comradesContract.functions['mint(uint256,uint256,bytes32[])'](PACK_ID, currentQuantity, proof, { value: 0 });
             await tx.wait();
             
         } else { // ADRIAN
@@ -1081,11 +1081,11 @@
             const proof = getProofForAddress(userAddress);
             if (proof && isAllowlisted) {
                 showStatus(`Minting ${currentQuantity} Comrades with $ADRIAN (Allowlisted)...`, 'loading');
-                const tx = await comradesContract.mintWithToken(PACK_ID, currentQuantity, proof);
+                const tx = await comradesContract.functions['mintWithToken(uint256,uint256,bytes32[])'](PACK_ID, currentQuantity, proof);
                 await tx.wait();
             } else {
                 showStatus(`Minting ${currentQuantity} Comrades with $ADRIAN...`, 'loading');
-                const tx = await comradesContract.mintWithToken(PACK_ID, currentQuantity);
+                const tx = await comradesContract.functions['mintWithToken(uint256,uint256)'](PACK_ID, currentQuantity);
                 await tx.wait();
             }
         }
