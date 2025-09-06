@@ -348,9 +348,14 @@
                 <div class="col-md-3">
                     <div class="filter-group">
                         <label class="filter-label">&nbsp;</label>
-                        <button onclick="refreshTraits()" class="filter-input form-control" style="background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; color: #00ff00; cursor: pointer;">
-                            🔄 Refresh
-                        </button>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="refreshTraits()" class="filter-input form-control" style="background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; color: #00ff00; cursor: pointer; flex: 1;">
+                                🔄 Refresh
+                            </button>
+                            <button onclick="loadDemoMode()" class="filter-input form-control" style="background: rgba(255, 165, 0, 0.1); border: 1px solid #ffa500; color: #ffa500; cursor: pointer; flex: 1;">
+                                🎮 Demo
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -360,6 +365,12 @@
         <div id="loadingState" class="text-center">
             <div class="loading-spinner"></div>
             <div class="loading-text">Loading traits...</div>
+            <div id="loadingProgress" class="mt-3">
+                <div class="progress" style="background: rgba(0, 0, 0, 0.3); height: 20px; border-radius: 10px;">
+                    <div id="progressBar" class="progress-bar" style="background: linear-gradient(90deg, #00ff00, #00cc00); width: 0%; transition: width 0.3s ease;"></div>
+                </div>
+                <div id="progressText" class="mt-2" style="color: #00ff00;">Starting...</div>
+            </div>
         </div>
 
         <!-- Gallery Grid -->
@@ -446,8 +457,11 @@
         async function loadTraits() {
             try {
                 console.log('Loading traits...');
+                updateProgress(0, 'Initializing...');
                 
                 if (galleryManager) {
+                    // Set up progress tracking
+                    setupProgressTracking();
                     allTraits = await galleryManager.loadTraits();
                 } else {
                     await loadDemoTraits();
@@ -457,8 +471,60 @@
                 
             } catch (error) {
                 console.error('Error loading traits:', error);
+                updateProgress(0, 'Error loading traits, switching to demo mode...');
                 // Fallback to demo mode
                 await loadDemoTraits();
+            }
+        }
+
+        function setupProgressTracking() {
+            if (!galleryManager) return;
+            
+            // Override the loadTraitsFromContract method to track progress
+            const originalMethod = galleryManager.loadTraitsFromContract.bind(galleryManager);
+            galleryManager.loadTraitsFromContract = async function() {
+                const traits = [];
+                const maxId = 1000;
+                const totalBatches = Math.ceil(maxId / this.batchSize);
+                
+                for (let startId = 1; startId <= maxId; startId += this.batchSize) {
+                    const endId = Math.min(startId + this.batchSize - 1, maxId);
+                    const currentBatch = Math.ceil(startId / this.batchSize);
+                    const progress = (currentBatch / totalBatches) * 100;
+                    
+                    console.log(`Loading traits ${startId}-${endId}... (${currentBatch}/${totalBatches})`);
+                    updateProgress(progress, `Loading batch ${currentBatch}/${totalBatches} (${startId}-${endId})`);
+                    
+                    try {
+                        const batchTraits = await this.loadBatchTraitsWithRetry(startId, endId);
+                        traits.push(...batchTraits);
+                        
+                        // Longer delay to avoid rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                    } catch (error) {
+                        console.warn(`Error loading batch ${startId}-${endId}:`, error);
+                        updateProgress(progress, `Error in batch ${currentBatch}, retrying...`);
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                    }
+                }
+
+                this.allTraits = traits.filter(trait => trait !== null);
+                console.log(`Loaded ${this.allTraits.length} traits`);
+                updateProgress(100, `Loaded ${this.allTraits.length} traits successfully!`);
+            };
+        }
+
+        function updateProgress(percentage, text) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            if (progressBar) {
+                progressBar.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
+            }
+            
+            if (progressText) {
+                progressText.textContent = text;
             }
         }
 
@@ -663,6 +729,17 @@
             localStorage.removeItem('adrianzero_traits_cache');
             localStorage.removeItem('adrianzero_traits_cache_time');
             location.reload();
+        }
+
+        // Load demo mode immediately
+        function loadDemoMode() {
+            console.log('Switching to demo mode...');
+            updateProgress(0, 'Loading demo mode...');
+            
+            // Hide loading state and show demo traits
+            setTimeout(async () => {
+                await loadDemoTraits();
+            }, 1000);
         }
     </script>
 </body>
