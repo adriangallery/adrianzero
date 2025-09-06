@@ -47,15 +47,8 @@ class GalleryManager {
         this.isLoading = true;
 
         try {
-            // Check cache first
-            if (!forceRefresh && this.isCacheValid()) {
-                console.log('Loading traits from cache...');
-                this.allTraits = this.getCachedTraits();
-                this.isLoading = false;
-                return this.allTraits;
-            }
-
-            console.log('Loading traits from contract...');
+            // Always load from contract, ignore cache for now
+            console.log('Loading traits from contract (cache disabled)...');
             await this.loadTraitsFromContract();
             
             // Cache the results

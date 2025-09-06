@@ -431,6 +431,11 @@
                 console.log('Initializing gallery...');
                 updateProgress(0, 'Initializing gallery...');
                 
+                // Clear any existing cache
+                console.log('Clearing cache...');
+                localStorage.removeItem('adrianzero_traits_cache');
+                localStorage.removeItem('adrianzero_traits_cache_time');
+                
                 // Initialize gallery manager
                 galleryManager = new GalleryManager();
                 
@@ -476,9 +481,9 @@
                     // Set up progress tracking
                     setupProgressTracking();
                     
-                    // Force refresh from contract (ignore cache)
-                    console.log('Forcing contract load (ignoring cache)...');
-                    allTraits = await galleryManager.loadTraits(true); // forceRefresh = true
+                    // Load from contract (cache disabled)
+                    console.log('Loading from contract (cache disabled)...');
+                    allTraits = await galleryManager.loadTraits();
                 } else {
                     console.log('No gallery manager, using demo mode');
                     await loadDemoTraits();
