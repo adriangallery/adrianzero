@@ -1051,11 +1051,9 @@
             }
 
             showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
-            // For FREE claim, we need to use mintWithToken with priceToken = 0
-            // But since priceToken = 5000, we need to use the ETH function with minimal payment
-            // or the batch needs to be reconfigured with priceToken = 0
-            // For now, use mintWithToken with the current price (not truly free)
-            const tx = await comradesContract.mintWithToken(PACK_ID, currentQuantity, proof);
+            // For FREE claim, use mint with ETH since priceWei = 0
+            // This allows free claims for allowlisted users
+            const tx = await comradesContract.mint(PACK_ID, currentQuantity, proof, { value: 0 });
             await tx.wait();
             
         } else { // ADRIAN
