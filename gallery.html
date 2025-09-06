@@ -167,6 +167,44 @@
             margin-top: 5px;
         }
 
+        /* Placeholder Styles for Loading Sensation */
+        .trait-card .placeholder-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(45deg, #1a1a1a 25%, #2a2a2a 25%, #2a2a2a 50%, #1a1a1a 50%, #1a1a1a 75%, #2a2a2a 75%);
+            background-size: 20px 20px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            position: relative;
+            animation: placeholder-pulse 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00ff00;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .trait-card .placeholder-image::before {
+            content: "Trait " attr(data-trait-id);
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        @keyframes placeholder-pulse {
+            0% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+            100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+        }
+
         /* Loading States */
         #loadingState {
             transition: opacity 0.5s ease;
@@ -621,7 +659,7 @@
                     id: i,
                     name: traitName,
                     category: category,
-                    image: `https://via.placeholder.com/200x200/00ff00/000000?text=${encodeURIComponent(traitName)}`,
+                    image: null, // Will use CSS placeholder
                     totalSupply: Math.floor(Math.random() * 1000) + 1,
                     maxSupply: Math.floor(Math.random() * 10000) + 1000,
                     description: `A unique ${category.toLowerCase()} trait for AdrianZERO characters.`
@@ -751,8 +789,14 @@
         function createTraitCard(trait) {
             const card = document.createElement('div');
             card.className = 'trait-card';
+            
+            // Handle image or placeholder
+            const imageHtml = trait.image ? 
+                `<img src="${trait.image}" alt="${trait.name}" class="trait-image">` :
+                `<div class="trait-image placeholder-image" data-trait-id="${trait.id}"></div>`;
+            
             card.innerHTML = `
-                <img src="${trait.image}" alt="${trait.name}" class="trait-image" onerror="this.src='https://via.placeholder.com/200x200/333333/ffffff?text=No+Image'">
+                ${imageHtml}
                 <div class="trait-name">${trait.name}</div>
                 <div class="trait-id">ID: ${trait.id}</div>
                 <div class="trait-supply">Supply: ${trait.totalSupply}/${trait.maxSupply}</div>
@@ -780,9 +824,14 @@
                 z-index: 2000;
             `;
             
+            // Handle image or placeholder
+            const imageHtml = trait.image ? 
+                `<img src="${trait.image}" alt="${trait.name}" style="width: 200px; height: 200px; object-fit: contain; margin-bottom: 15px;">` :
+                `<div class="placeholder-image" data-trait-id="${trait.id}" style="width: 200px; height: 200px; margin: 0 auto 15px auto;"></div>`;
+            
             modal.innerHTML = `
                 <div style="background: #1a1a1a; border: 2px solid #00ff00; border-radius: 10px; padding: 20px; max-width: 400px; text-align: center;">
-                    <img src="${trait.image}" alt="${trait.name}" style="width: 200px; height: 200px; object-fit: contain; margin-bottom: 15px;">
+                    ${imageHtml}
                     <h3 style="color: #00ff00; margin-bottom: 10px;">${trait.name}</h3>
                     <p style="color: #ccc; margin-bottom: 10px;">ID: ${trait.id}</p>
                     <p style="color: #ccc; margin-bottom: 10px;">Category: ${trait.category}</p>

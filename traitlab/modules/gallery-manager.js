@@ -154,8 +154,8 @@ class GalleryManager {
             return imageUrl;
         }
         
-        // Fallback to placeholder
-        return `https://via.placeholder.com/200x200/00ff00/000000?text=Trait+${tokenId}`;
+        // Return null for placeholder - will be handled by CSS
+        return null;
     }
 
     async loadBatchTraitsWithRetry(startId, endId, maxRetries = 3) {
