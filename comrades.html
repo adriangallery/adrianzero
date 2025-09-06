@@ -893,6 +893,14 @@
                 console.log('Comrades contract methods:', Object.getOwnPropertyNames(comradesContract));
                 console.log('Has mint method:', typeof comradesContract.mint);
                 console.log('Has mintWithToken method:', typeof comradesContract.mintWithToken);
+                
+                // Check if contract is authorized (this might fail if TraitsCore doesn't expose this)
+                try {
+                    // We can't directly call this from the frontend, but we can try to get the traitsCore address
+                    console.log('Contract address:', COMRADES_CONTRACT);
+                } catch (error) {
+                    console.log('Could not check authorization:', error.message);
+                }
 
                 updateUI();
                 await loadComradesInfo();
@@ -982,6 +990,14 @@
                         if (proof) {
                             isAllowlisted = await comradesContract.verifyAllowlist(PACK_ID, userAddress, proof);
                             console.log('User allowlist status:', isAllowlisted);
+                            
+                            // Additional debugging
+                            console.log('Batch active:', active);
+                            console.log('Price Wei:', ethers.utils.formatEther(priceWei));
+                            console.log('Price Token:', ethers.utils.formatEther(priceToken));
+                            console.log('Start Time:', startTime.toString());
+                            console.log('End Time:', endTime.toString());
+                            console.log('Current timestamp:', Math.floor(Date.now() / 1000));
                         } else {
                             isAllowlisted = false;
                             console.log('No proof found for user address');
@@ -1063,8 +1079,22 @@
             showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
             // For FREE claim, use mint with ETH since priceWei = 0
             // This allows free claims for allowlisted users
-            const tx = await comradesContract.functions['mint(uint256,uint256,bytes32[])'](PACK_ID, currentQuantity, proof, { value: 0 });
-            await tx.wait();
+            try {
+                const tx = await comradesContract.functions['mint(uint256,uint256,bytes32[])'](PACK_ID, currentQuantity, proof, { value: 0 });
+                await tx.wait();
+            } catch (error) {
+                console.error('Mint transaction failed:', error);
+                // Try to decode the error
+                if (error.data && error.data.data) {
+                    const errorCode = error.data.data;
+                    console.log('Error code:', errorCode);
+                    if (errorCode === '0xa2f8a81d') {
+                        showStatus('Error: Contract not authorized to mint. Please contact admin.', 'error');
+                        return;
+                    }
+                }
+                throw error;
+            }
             
         } else { // ADRIAN
             const totalToken = comradesPriceAdrian.mul(currentQuantity);
