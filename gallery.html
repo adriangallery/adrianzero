@@ -119,6 +119,8 @@
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 40px;
+            opacity: 1;
+            transition: opacity 0.5s ease;
         }
 
         .trait-card {
@@ -166,6 +168,10 @@
         }
 
         /* Loading States */
+        #loadingState {
+            transition: opacity 0.5s ease;
+        }
+
         .loading-spinner {
             display: inline-block;
             width: 40px;
@@ -410,7 +416,7 @@
         const traitsPerPage = 24;
 
         // Contract configuration
-        window.TRAITS_CONTRACT = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea"; // AdrianZERO contract
+        window.TRAITS_CONTRACT = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianLAB Core contract
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
 
@@ -422,25 +428,32 @@
 
         async function initializeGallery() {
             try {
+                console.log('Initializing gallery...');
+                updateProgress(0, 'Initializing gallery...');
+                
                 // Initialize gallery manager
                 galleryManager = new GalleryManager();
                 
                 // Try to connect wallet first
                 if (window.ethereum) {
+                    console.log('Using MetaMask provider...');
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
                     const signer = provider.getSigner();
                     await galleryManager.initialize(provider, signer);
                 } else {
+                    console.log('Using read-only provider...');
                     // Use read-only provider
                     const provider = new ethers.providers.JsonRpcProvider('https://mainnet.base.org');
                     await galleryManager.initialize(provider, null);
                 }
 
+                console.log('Gallery manager initialized, loading traits...');
                 // Load traits
                 await loadTraits();
                 
             } catch (error) {
                 console.error('Error initializing gallery:', error);
+                updateProgress(0, 'Error initializing, switching to demo mode...');
                 // Fallback to demo mode
                 await loadDemoTraits();
             }
@@ -462,8 +475,12 @@
                 if (galleryManager) {
                     // Set up progress tracking
                     setupProgressTracking();
-                    allTraits = await galleryManager.loadTraits();
+                    
+                    // Force refresh from contract (ignore cache)
+                    console.log('Forcing contract load (ignoring cache)...');
+                    allTraits = await galleryManager.loadTraits(true); // forceRefresh = true
                 } else {
+                    console.log('No gallery manager, using demo mode');
                     await loadDemoTraits();
                 }
                 
@@ -530,12 +547,20 @@
 
         async function loadDemoTraits() {
             console.log('Loading demo traits...');
+            updateProgress(0, 'Generating demo traits...');
             
-            // Simulate loading with a delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Simulate loading with progress
+            for (let i = 0; i <= 100; i += 10) {
+                updateProgress(i, `Generating demo traits... ${i}%`);
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
             
             // Generate demo traits
             allTraits = generateDemoTraits();
+            updateProgress(100, 'Demo traits loaded!');
+            
+            // Small delay before showing
+            await new Promise(resolve => setTimeout(resolve, 500));
             displayTraits();
         }
 
@@ -569,8 +594,25 @@
         }
 
         function displayTraits() {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('galleryGrid').style.display = 'grid';
+            // Hide loading state smoothly
+            const loadingState = document.getElementById('loadingState');
+            const galleryGrid = document.getElementById('galleryGrid');
+            
+            // Fade out loading state
+            loadingState.style.opacity = '0';
+            loadingState.style.transition = 'opacity 0.5s ease';
+            
+            setTimeout(() => {
+                loadingState.style.display = 'none';
+                galleryGrid.style.display = 'grid';
+                galleryGrid.style.opacity = '0';
+                galleryGrid.style.transition = 'opacity 0.5s ease';
+                
+                // Fade in gallery
+                setTimeout(() => {
+                    galleryGrid.style.opacity = '1';
+                }, 100);
+            }, 500);
             
             // Update stats
             document.getElementById('totalTraits').textContent = allTraits.length;
