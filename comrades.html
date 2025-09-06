@@ -36,7 +36,7 @@
         .navbar {
             background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 20, 147, 0.3);
+            border-bottom: 1px solid rgba(255, 0, 255, 0.5);
             padding: 15px 0;
             position: fixed;
             top: 0;
@@ -46,7 +46,7 @@
         }
 
         .navbar-brand {
-            color: #ff1493 !important;
+            color: #ff00ff !important;
             font-weight: bold;
             font-size: 1.5rem;
         }
@@ -69,12 +69,12 @@
         }
 
         .navbar-toggler {
-            border: 1px solid rgba(255, 20, 147, 0.5);
-            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid rgba(255, 0, 255, 0.5);
+            background: rgba(255, 0, 255, 0.1);
         }
 
         .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 20, 147, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 0, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
 
         /* Hero Section */
@@ -87,7 +87,7 @@
             text-align: center;
             padding: 20px;
             position: relative;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 20, 147, 0.1) 0%, transparent 50%);
+            background: radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
             margin-top: 80px; /* Space for fixed navbar */
         }
 
@@ -99,7 +99,7 @@
             right: 0;
             bottom: 0;
             background-image: 
-                linear-gradient(rgba(255, 20, 147, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(255, 0, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 0, 0.03) 1px, transparent 1px);
             background-size: 20px 20px;
             opacity: 0.5;
@@ -110,7 +110,7 @@
             font-family: 'ADRIAN_ZERO', 'VT323', monospace;
             font-size: 4rem;
             margin-bottom: 20px;
-            background: linear-gradient(45deg, #ff1493, #ffff00, #ff69b4);
+            background: linear-gradient(45deg, #ff00ff, #ffff00, #ff1493);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -120,10 +120,10 @@
 
         @keyframes neonGlow {
             from { 
-                filter: drop-shadow(0 0 20px rgba(255, 20, 147, 0.5));
+                filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8));
             }
             to { 
-                filter: drop-shadow(0 0 40px rgba(255, 255, 0, 0.8));
+                filter: drop-shadow(0 0 40px rgba(255, 255, 0, 1));
             }
         }
 
@@ -151,7 +151,7 @@
         }
 
         .connect-btn {
-            background: linear-gradient(45deg, #ff1493, #ffff00);
+            background: linear-gradient(45deg, #ff00ff, #ffff00);
             color: #000;
             border: none;
             padding: 20px 40px;
@@ -160,13 +160,13 @@
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+            box-shadow: 0 10px 30px rgba(255, 0, 255, 0.4);
             font-family: 'VT323', monospace;
         }
 
         .connect-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 255, 0, 0.4);
+            box-shadow: 0 15px 40px rgba(255, 255, 0, 0.6);
         }
 
         .wallet-info {
@@ -175,7 +175,7 @@
             padding: 20px;
             border-radius: 15px;
             margin-bottom: 30px;
-            border: 1px solid rgba(255, 20, 147, 0.3);
+            border: 1px solid rgba(255, 0, 255, 0.3);
         }
 
         .wallet-address {
@@ -199,7 +199,7 @@
         /* Comrades Card */
         .comrades-card {
             background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 20, 147, 0.3);
+            border: 2px solid rgba(255, 0, 255, 0.3);
             border-radius: 20px;
             padding: 40px;
             margin: 20px auto;
@@ -218,16 +218,16 @@
             max-width: 400px;
             height: auto;
             border-radius: 15px;
-            border: 3px solid rgba(255, 20, 147, 0.5);
-            box-shadow: 0 10px 30px rgba(255, 255, 0, 0.3);
+            border: 3px solid rgba(255, 0, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(255, 255, 0, 0.4);
         }
 
         .step-title {
             font-size: 2.5rem;
-            color: #ff1493;
+            color: #ff00ff;
             text-align: center;
             margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(255, 20, 147, 0.5);
+            text-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
         }
 
         .step-description {
@@ -239,8 +239,8 @@
         }
 
         .price-tag {
-            background: rgba(255, 20, 147, 0.1);
-            border: 1px solid rgba(255, 20, 147, 0.3);
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid rgba(255, 0, 255, 0.3);
             border-radius: 10px;
             padding: 15px;
             text-align: center;
@@ -263,7 +263,7 @@
         /* Mint Interface */
         .mint-interface {
             background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 20, 147, 0.2);
+            border: 1px solid rgba(255, 0, 255, 0.2);
             border-radius: 15px;
             padding: 30px;
             margin-top: 20px;
@@ -282,7 +282,7 @@
 
         .payment-method input[type="radio"] {
             margin-right: 8px;
-            accent-color: #ff1493;
+            accent-color: #ff00ff;
         }
 
         .quantity-controls {
@@ -294,8 +294,8 @@
         }
 
         .quantity-btn {
-            background: rgba(255, 20, 147, 0.2);
-            border: 1px solid rgba(255, 20, 147, 0.5);
+            background: rgba(255, 0, 255, 0.2);
+            border: 1px solid rgba(255, 0, 255, 0.5);
             color: #ffff00;
             width: 50px;
             height: 50px;
@@ -307,7 +307,7 @@
         }
 
         .quantity-btn:hover:not(:disabled) {
-            background: rgba(255, 255, 0, 0.3);
+            background: rgba(255, 255, 0, 0.4);
             transform: scale(1.1);
         }
 
@@ -325,8 +325,8 @@
         }
 
         .total-cost {
-            background: rgba(255, 20, 147, 0.1);
-            border: 1px solid rgba(255, 20, 147, 0.3);
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid rgba(255, 0, 255, 0.3);
             border-radius: 10px;
             padding: 15px;
             text-align: center;
@@ -354,13 +354,13 @@
         }
 
         .btn-mint {
-            background: linear-gradient(45deg, #ff1493, #ffff00);
+            background: linear-gradient(45deg, #ff00ff, #ffff00);
             color: #000;
         }
 
         .btn-mint:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            box-shadow: 0 10px 30px rgba(255, 0, 255, 0.6);
         }
 
         .btn-mint:disabled {
@@ -383,8 +383,8 @@
         }
 
         .status-message.loading {
-            background: rgba(255, 20, 147, 0.1);
-            border: 1px solid rgba(255, 20, 147, 0.3);
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid rgba(255, 0, 255, 0.3);
             color: #ffff00;
             display: block;
         }
@@ -453,7 +453,7 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255, 20, 147, 0.3);
+            border: 3px solid rgba(255, 0, 255, 0.3);
             border-radius: 50%;
             border-top-color: #ffff00;
             animation: spin 1s ease-in-out infinite;
@@ -709,7 +709,8 @@
                     "function totalSupply() external view returns (uint256)",
                     "function maxSupply() external view returns (uint256)",
                     "function isAllowlisted(address account) external view returns (bool)",
-                    "function hasClaimed(address account) external view returns (bool)"
+                    "function hasClaimed(address account) external view returns (bool)",
+                    "function tokenId() external view returns (uint256)"
                 ];
 
                 adrianToken = new ethers.Contract(ADRIAN_TOKEN, adrianTokenABI, signer);
@@ -759,14 +760,17 @@
                 console.log('Loading Comrades info...');
                 
                 // Get contract info
-                const [priceAdrian, totalSupply, maxSupply] = await Promise.all([
+                const [priceAdrian, totalSupply, maxSupply, tokenId] = await Promise.all([
                     comradesContract.priceAdrian(),
                     comradesContract.totalSupply(),
-                    comradesContract.maxSupply()
+                    comradesContract.maxSupply(),
+                    comradesContract.tokenId()
                 ]);
                 
                 comradesPriceAdrian = priceAdrian;
-                comradesSummary = { totalSupply, maxSupply };
+                comradesSummary = { totalSupply, maxSupply, tokenId };
+                
+                console.log('Comrades Token ID:', tokenId.toString());
                 
                 // Check if user is allowlisted (if connected)
                 if (userAddress) {
