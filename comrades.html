@@ -961,6 +961,9 @@
         console.log('Max Supply:', maxSupply.toString());
         console.log('Minted:', minted.toString());
         console.log('Price (ADRIAN):', ethers.utils.formatEther(priceToken));
+        console.log('Price (ETH):', ethers.utils.formatEther(priceWei));
+        console.log('Active:', active);
+        console.log('Batch Name:', name);
                 
                 // Check if user is allowlisted (if connected)
                 if (userAddress) {
@@ -1048,8 +1051,9 @@
             }
 
             showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
-            // Use mint with ETH but value 0 (free claim with allowlist)
-            const tx = await comradesContract.mint(PACK_ID, currentQuantity, proof, { value: 0 });
+            // For FREE claim, we need to use mintWithToken with priceToken = 0
+            // The batch must be configured with priceToken = 0 for free claims
+            const tx = await comradesContract.mintWithToken(PACK_ID, currentQuantity, proof);
             await tx.wait();
             
         } else { // ADRIAN
