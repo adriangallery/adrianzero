@@ -765,7 +765,7 @@
         const COMRADES_CONTRACT = "0x0f874ad7287ac71fbf8b6846666925eab46b10d1"; // Comrades Contract (Merkle)
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
-        const PACK_ID = 10010; // Comrades pack ID
+        const PACK_ID = 1; // Batch ID (no el token ID)
 
         // App state
         let userAddress = null;
@@ -951,10 +951,11 @@
                     packId: PACK_ID
                 };
                 
-                console.log('Comrades Batch ID:', PACK_ID);
-                console.log('Max Supply:', maxSupply.toString());
-                console.log('Minted:', minted.toString());
-                console.log('Price (ADRIAN):', ethers.utils.formatEther(priceToken));
+        console.log('Comrades Batch ID:', PACK_ID);
+        console.log('Floppy Token ID:', floppyTokenId.toString());
+        console.log('Max Supply:', maxSupply.toString());
+        console.log('Minted:', minted.toString());
+        console.log('Price (ADRIAN):', ethers.utils.formatEther(priceToken));
                 
                 // Check if user is allowlisted (if connected)
                 if (userAddress) {
