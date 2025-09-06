@@ -1033,47 +1033,48 @@
 
                 const method = document.querySelector('input[name="comradesPay"]:checked').value;
 
-                if (method === 'FREE') {
-                    // Check if user is allowlisted
-                    if (!isAllowlisted) {
-                        showStatus('You are not allowlisted for free claim!', 'error');
-                        return;
-                    }
+        if (method === 'FREE') {
+            // Check if user is allowlisted
+            if (!isAllowlisted) {
+                showStatus('You are not allowlisted for free claim!', 'error');
+                return;
+            }
 
-                    // Get proof for user
-                    const proof = getProofForAddress(userAddress);
-                    if (!proof) {
-                        showStatus('No allowlist proof found for your address!', 'error');
-                        return;
-                    }
+            // Get proof for user
+            const proof = getProofForAddress(userAddress);
+            if (!proof) {
+                showStatus('No allowlist proof found for your address!', 'error');
+                return;
+            }
 
-                    showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
-                    const tx = await comradesContract.mint(PACK_ID, currentQuantity, proof, { value: 0 });
-                    await tx.wait();
-                    
-                } else { // ADRIAN
-                    const totalToken = comradesPriceAdrian.mul(currentQuantity);
-                    const allowWei = await adrianToken.allowance(userAddress, COMRADES_CONTRACT);
-                    
-                    if (allowWei.lt(totalToken)) {
-                        const human = parseFloat(ethers.utils.formatEther(totalToken)).toFixed(6);
-                        showStatus(`Approving ${human} $ADRIAN...`, 'loading');
-                        const approveTx = await adrianToken.approve(COMRADES_CONTRACT, totalToken);
-                        await approveTx.wait();
-                    }
-                    
-                    // Get proof for user (if allowlisted)
-                    const proof = getProofForAddress(userAddress);
-                    if (proof && isAllowlisted) {
-                        showStatus(`Minting ${currentQuantity} Comrades with $ADRIAN (Allowlisted)...`, 'loading');
-                        const tx = await comradesContract.mintWithToken(PACK_ID, currentQuantity, proof);
-                        await tx.wait();
-                    } else {
-                        showStatus(`Minting ${currentQuantity} Comrades with $ADRIAN...`, 'loading');
-                        const tx = await comradesContract.mintWithToken(PACK_ID, currentQuantity);
-                        await tx.wait();
-                    }
-                }
+            showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
+            // Use mint with ETH but value 0 (free claim with allowlist)
+            const tx = await comradesContract.mint(PACK_ID, currentQuantity, proof, { value: 0 });
+            await tx.wait();
+            
+        } else { // ADRIAN
+            const totalToken = comradesPriceAdrian.mul(currentQuantity);
+            const allowWei = await adrianToken.allowance(userAddress, COMRADES_CONTRACT);
+            
+            if (allowWei.lt(totalToken)) {
+                const human = parseFloat(ethers.utils.formatEther(totalToken)).toFixed(6);
+                showStatus(`Approving ${human} $ADRIAN...`, 'loading');
+                const approveTx = await adrianToken.approve(COMRADES_CONTRACT, totalToken);
+                await approveTx.wait();
+            }
+            
+            // Get proof for user (if allowlisted)
+            const proof = getProofForAddress(userAddress);
+            if (proof && isAllowlisted) {
+                showStatus(`Minting ${currentQuantity} Comrades with $ADRIAN (Allowlisted)...`, 'loading');
+                const tx = await comradesContract.mintWithToken(PACK_ID, currentQuantity, proof);
+                await tx.wait();
+            } else {
+                showStatus(`Minting ${currentQuantity} Comrades with $ADRIAN...`, 'loading');
+                const tx = await comradesContract.mintWithToken(PACK_ID, currentQuantity);
+                await tx.wait();
+            }
+        }
 
                 showStatus(`🎉 Successfully claimed/minted ${currentQuantity} Comrades!`, 'success');
                 await loadComradesInfo();
