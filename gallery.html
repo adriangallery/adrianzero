@@ -444,11 +444,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- TraitLAB Modules -->
-    <script src="traitlab/modules/config.js"></script>
-    <script src="traitlab/modules/wallet.js"></script>
-    <script src="traitlab/modules/ui.js"></script>
-    <script src="traitlab/modules/traits.js"></script>
-    <script src="traitlab/modules/gallery-manager.js"></script>
+    <script src="traitlab/modules/config.js?v=2"></script>
+    <script src="traitlab/modules/wallet.js?v=2"></script>
+    <script src="traitlab/modules/ui.js?v=2"></script>
+    <script src="traitlab/modules/traits.js?v=2"></script>
+    <script src="traitlab/modules/gallery-manager.js?v=2"></script>
     
     <!-- Gallery Script -->
     <script>
@@ -792,11 +792,12 @@
             
             // Handle image or placeholder
             const imageHtml = trait.image ? 
-                `<img src="${trait.image}" alt="${trait.name}" class="trait-image">` :
+                `<img src="${trait.image}" alt="${trait.name}" class="trait-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` :
                 `<div class="trait-image placeholder-image" data-trait-id="${trait.id}"></div>`;
             
             card.innerHTML = `
                 ${imageHtml}
+                <div class="trait-image placeholder-image" data-trait-id="${trait.id}" style="display: none;"></div>
                 <div class="trait-name">${trait.name}</div>
                 <div class="trait-id">ID: ${trait.id}</div>
                 <div class="trait-supply">Supply: ${trait.totalSupply}/${trait.maxSupply}</div>
