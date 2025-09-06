@@ -703,14 +703,11 @@
                 ];
 
                 const comradesABI = [
-                    "function claim() external",
-                    "function mintWithAdrian(uint256 quantity) external",
-                    "function priceAdrian() external view returns (uint256)",
-                    "function totalSupply() external view returns (uint256)",
-                    "function maxSupply() external view returns (uint256)",
-                    "function isAllowlisted(address account) external view returns (bool)",
-                    "function hasClaimed(address account) external view returns (bool)",
-                    "function tokenId() external view returns (uint256)"
+                    "function purchasePack(uint256 packId, uint256 quantity, bool useAllowlist) external",
+                    "function purchasePackWithAdrian(uint256 packId, uint256 quantity, bool useAllowlist) external",
+                    "function canPurchasePack(address user, uint256 packId, uint256 quantity, bool useAllowlist) external view returns (bool, string memory)",
+                    "function getPackConfig(uint256 packId) external view returns (tuple(uint256 id, uint256 publicPrice, uint256 maxSupply, uint256 minted, uint256 itemsPerPack, uint256 maxPerWallet, uint256 startTime, uint256 endTime, bool active, uint256 allowlistFreeAmount, uint256 allowlistPrice, bool hasPublicSale, bool hasAllowlist))",
+                    "function getUserAllowlistStatus(address user, uint256 packId) external view returns (uint256 freeMinted, uint256 paidMinted, uint256 freeAmount, uint256 maxPerWallet, bool isAllowlisted)"
                 ];
 
                 adrianToken = new ethers.Contract(ADRIAN_TOKEN, adrianTokenABI, signer);
@@ -759,24 +756,59 @@
             try {
                 console.log('Loading Comrades info...');
                 
-                // Get contract info
-                const [priceAdrian, totalSupply, maxSupply, tokenId] = await Promise.all([
-                    comradesContract.priceAdrian(),
-                    comradesContract.totalSupply(),
-                    comradesContract.maxSupply(),
-                    comradesContract.tokenId()
-                ]);
+                const PACK_ID = 10010; // Comrades pack ID
                 
-                comradesPriceAdrian = priceAdrian;
-                comradesSummary = { totalSupply, maxSupply, tokenId };
+                // Get pack configuration
+                const packConfig = await comradesContract.getPackConfig(PACK_ID);
+                console.log('Pack config:', packConfig);
                 
-                console.log('Comrades Token ID:', tokenId.toString());
+                const {
+                    id,
+                    publicPrice,
+                    maxSupply,
+                    minted,
+                    itemsPerPack,
+                    maxPerWallet,
+                    startTime,
+                    endTime,
+                    active,
+                    allowlistFreeAmount,
+                    allowlistPrice,
+                    hasPublicSale,
+                    hasAllowlist
+                } = packConfig;
+                
+                comradesPriceAdrian = allowlistPrice; // Use allowlist price for $ADRIAN
+                comradesSummary = { 
+                    maxSupply, 
+                    minted, 
+                    maxPerWallet, 
+                    allowlistFreeAmount,
+                    active,
+                    hasAllowlist,
+                    packId: PACK_ID
+                };
+                
+                console.log('Comrades Pack ID:', PACK_ID);
+                console.log('Max Supply:', maxSupply.toString());
+                console.log('Minted:', minted.toString());
+                console.log('Allowlist Free Amount:', allowlistFreeAmount.toString());
+                console.log('Allowlist Price (ADRIAN):', ethers.utils.formatEther(allowlistPrice));
                 
                 // Check if user is allowlisted (if connected)
                 if (userAddress) {
                     try {
-                        isAllowlisted = await comradesContract.isAllowlisted(userAddress);
-                        console.log('User allowlisted:', isAllowlisted);
+                        const userStatus = await comradesContract.getUserAllowlistStatus(userAddress, PACK_ID);
+                        const [freeMinted, paidMinted, freeAmount, maxPerWalletUser, isAllowlistedUser] = userStatus;
+                        
+                        isAllowlisted = isAllowlistedUser;
+                        console.log('User allowlist status:', {
+                            isAllowlisted: isAllowlistedUser,
+                            freeMinted: freeMinted.toString(),
+                            paidMinted: paidMinted.toString(),
+                            freeAmount: freeAmount.toString(),
+                            maxPerWallet: maxPerWalletUser.toString()
+                        });
                     } catch (error) {
                         console.log('Could not check allowlist status:', error.message);
                         isAllowlisted = false;
@@ -784,10 +816,10 @@
                 }
                 
                 // Update UI
-                const adrianPriceFormatted = parseFloat(ethers.utils.formatEther(priceAdrian)).toFixed(6);
+                const adrianPriceFormatted = parseFloat(ethers.utils.formatEther(allowlistPrice)).toFixed(6);
                 
                 document.getElementById('comradesAdrianPrice').textContent = adrianPriceFormatted;
-                document.getElementById('comradesMinted').textContent = totalSupply.toString();
+                document.getElementById('comradesMinted').textContent = minted.toString();
                 document.getElementById('comradesTotal').textContent = maxSupply.toString();
                 
                 updatePaymentDisplay();
@@ -836,6 +868,16 @@
                 button.classList.add('btn-loading');
 
                 const method = document.querySelector('input[name="comradesPay"]:checked').value;
+                const PACK_ID = 10010; // Comrades pack ID
+
+                // Check if user can purchase
+                const canPurchase = await comradesContract.canPurchasePack(userAddress, PACK_ID, currentQuantity, method === 'FREE');
+                console.log('Can purchase:', canPurchase);
+
+                if (!canPurchase[0]) {
+                    showStatus(`Cannot purchase: ${canPurchase[1]}`, 'error');
+                    return;
+                }
 
                 if (method === 'FREE') {
                     // Check if user is allowlisted
@@ -844,19 +886,8 @@
                         return;
                     }
 
-                    // Check if already claimed
-                    try {
-                        const hasClaimed = await comradesContract.hasClaimed(userAddress);
-                        if (hasClaimed) {
-                            showStatus('You have already claimed your free Comrades!', 'error');
-                            return;
-                        }
-                    } catch (error) {
-                        console.log('Could not check claim status:', error.message);
-                    }
-
-                    showStatus(`Claiming Comrades (FREE)...`, 'loading');
-                    const tx = await comradesContract.claim();
+                    showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
+                    const tx = await comradesContract.purchasePack(PACK_ID, currentQuantity, true);
                     await tx.wait();
                     
                 } else { // ADRIAN
@@ -871,7 +902,7 @@
                     }
                     
                     showStatus(`Minting ${currentQuantity} Comrades with $ADRIAN...`, 'loading');
-                    const tx = await comradesContract.mintWithAdrian(currentQuantity);
+                    const tx = await comradesContract.purchasePackWithAdrian(PACK_ID, currentQuantity, false);
                     await tx.wait();
                 }
 
