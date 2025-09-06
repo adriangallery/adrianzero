@@ -9,8 +9,12 @@ class GalleryManager {
         this.allTraits = [];
         this.cache = new Map();
         this.cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
-        this.batchSize = 10; // Smaller batches to avoid rate limiting
+        this.batchSize = 20; // Initial load size
         this.isLoading = false;
+        this.currentPage = 0;
+        this.hasMoreTraits = true;
+        this.alchemyApiKey = "5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot";
+        this.alchemyBaseUrl = "https://base-mainnet.g.alchemy.com/nft/v3";
     }
 
     async initialize(provider, signer) {
@@ -41,18 +45,15 @@ class GalleryManager {
     async loadTraits(forceRefresh = false) {
         if (this.isLoading) {
             console.log('Already loading traits...');
-            return;
+            return this.allTraits;
         }
 
         this.isLoading = true;
 
         try {
-            // Always load from contract, ignore cache for now
-            console.log('Loading traits from contract (cache disabled)...');
-            await this.loadTraitsFromContract();
-            
-            // Cache the results
-            this.cacheTraits();
+            // Load initial batch from Alchemy
+            console.log('Loading initial traits from Alchemy...');
+            await this.loadTraitsFromAlchemy();
             
             this.isLoading = false;
             return this.allTraits;
@@ -64,31 +65,97 @@ class GalleryManager {
         }
     }
 
-    async loadTraitsFromContract() {
-        const traits = [];
-        const maxId = 1000; // Adjust based on your collection size
-        
-        // Load traits in smaller batches with longer delays to avoid rate limiting
-        for (let startId = 1; startId <= maxId; startId += this.batchSize) {
-            const endId = Math.min(startId + this.batchSize - 1, maxId);
-            console.log(`Loading traits ${startId}-${endId}...`);
-            
-            try {
-                const batchTraits = await this.loadBatchTraitsWithRetry(startId, endId);
-                traits.push(...batchTraits);
-                
-                // Longer delay to avoid rate limiting (similar to TraitLAB)
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-            } catch (error) {
-                console.warn(`Error loading batch ${startId}-${endId}:`, error);
-                // Continue with next batch even if one fails
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait longer on error
-            }
+    async loadMoreTraits() {
+        if (this.isLoading || !this.hasMoreTraits) {
+            return this.allTraits;
         }
 
-        this.allTraits = traits.filter(trait => trait !== null);
-        console.log(`Loaded ${this.allTraits.length} traits`);
+        this.isLoading = true;
+
+        try {
+            console.log(`Loading more traits from Alchemy (page ${this.currentPage + 1})...`);
+            await this.loadTraitsFromAlchemy();
+            
+            this.isLoading = false;
+            return this.allTraits;
+
+        } catch (error) {
+            console.error('Error loading more traits:', error);
+            this.isLoading = false;
+            throw error;
+        }
+    }
+
+    async loadTraitsFromAlchemy() {
+        try {
+            const contractAddress = window.TRAITS_CONTRACT || "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+            const pageKey = this.currentPage > 0 ? this.pageKey : null;
+            
+            let alchemyUrl = `${this.alchemyBaseUrl}/${this.alchemyApiKey}/getNFTsForCollection?contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC1155`;
+            
+            if (pageKey) {
+                alchemyUrl += `&pageKey=${pageKey}`;
+            }
+
+            console.log(`Requesting traits from Alchemy: ${alchemyUrl}`);
+            
+            const response = await fetch(alchemyUrl);
+            if (!response.ok) {
+                throw new Error(`Alchemy API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`Alchemy response:`, data);
+
+            // Check if there are more pages
+            this.pageKey = data.pageKey || null;
+            this.hasMoreTraits = !!this.pageKey;
+
+            // Process the NFTs
+            const newTraits = data.nfts ? data.nfts.map(nft => this.processAlchemyNFT(nft)) : [];
+            
+            // Add to existing traits
+            this.allTraits.push(...newTraits);
+            this.currentPage++;
+
+            console.log(`Loaded ${newTraits.length} new traits (total: ${this.allTraits.length})`);
+            return this.allTraits;
+
+        } catch (error) {
+            console.error('Error loading traits from Alchemy:', error);
+            throw error;
+        }
+    }
+
+    processAlchemyNFT(nft) {
+        const metadata = nft.metadata || {};
+        const tokenId = parseInt(nft.tokenId);
+        
+        return {
+            id: tokenId,
+            name: metadata.name || `Trait ${tokenId}`,
+            description: metadata.description || '',
+            image: this.getImageUrl(metadata.image, tokenId),
+            category: this.categorizeTrait(metadata.name || `Trait ${tokenId}`),
+            totalSupply: nft.totalSupply || '0',
+            maxSupply: nft.maxSupply || '1000',
+            uri: nft.tokenUri?.raw || '',
+            metadata: metadata,
+            contractAddress: nft.contract?.address || window.TRAITS_CONTRACT
+        };
+    }
+
+    getImageUrl(imageUrl, tokenId) {
+        if (imageUrl) {
+            // Handle different URL formats
+            if (imageUrl.startsWith('ipfs://')) {
+                return imageUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+            }
+            return imageUrl;
+        }
+        
+        // Fallback to placeholder
+        return `https://via.placeholder.com/200x200/00ff00/000000?text=Trait+${tokenId}`;
     }
 
     async loadBatchTraitsWithRetry(startId, endId, maxRetries = 3) {
@@ -284,6 +351,22 @@ class GalleryManager {
     getCategories() {
         const categories = [...new Set(this.allTraits.map(trait => trait.category))];
         return categories.sort();
+    }
+
+    hasMore() {
+        return this.hasMoreTraits;
+    }
+
+    isLoadingMore() {
+        return this.isLoading;
+    }
+
+    reset() {
+        this.allTraits = [];
+        this.currentPage = 0;
+        this.hasMoreTraits = true;
+        this.pageKey = null;
+        this.isLoading = false;
     }
 
     sortTraits(traits, sortBy) {
