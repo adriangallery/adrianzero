@@ -792,6 +792,8 @@
                 const response = await fetch('components/allowlist_proofs.json');
                 allowlistProofs = await response.json();
                 console.log('Allowlist proofs loaded:', allowlistProofs.leaves, 'leaves');
+                console.log('Proofs object keys count:', Object.keys(allowlistProofs.proofs).length);
+                console.log('Sample address:', Object.keys(allowlistProofs.proofs)[0]);
             } catch (error) {
                 console.error('Error loading allowlist proofs:', error);
             }
@@ -799,9 +801,17 @@
 
         // Get proof for user address
         function getProofForAddress(address) {
-            if (!allowlistProofs || !allowlistProofs.proofs) return null;
+            if (!allowlistProofs || !allowlistProofs.proofs) {
+                console.log('Allowlist proofs not loaded or no proofs object');
+                return null;
+            }
             const addressLower = address.toLowerCase();
-            return allowlistProofs.proofs[addressLower] || null;
+            console.log('Looking for address:', addressLower);
+            console.log('Available addresses count:', Object.keys(allowlistProofs.proofs).length);
+            console.log('Address exists:', addressLower in allowlistProofs.proofs);
+            const proof = allowlistProofs.proofs[addressLower] || null;
+            console.log('Proof found:', proof);
+            return proof;
         }
 
         function setupEventListeners() {
