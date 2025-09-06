@@ -9,7 +9,7 @@ class GalleryManager {
         this.allTraits = [];
         this.cache = new Map();
         this.cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
-        this.batchSize = 50; // Load traits in batches
+        this.batchSize = 10; // Smaller batches to avoid rate limiting
         this.isLoading = false;
     }
 
@@ -75,27 +75,54 @@ class GalleryManager {
         const traits = [];
         const maxId = 1000; // Adjust based on your collection size
         
-        // Load traits in batches to avoid overwhelming the contract
+        // Load traits in smaller batches with longer delays to avoid rate limiting
         for (let startId = 1; startId <= maxId; startId += this.batchSize) {
             const endId = Math.min(startId + this.batchSize - 1, maxId);
             console.log(`Loading traits ${startId}-${endId}...`);
             
-            const batchTraits = await this.loadBatchTraits(startId, endId);
-            traits.push(...batchTraits);
-            
-            // Small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 100));
+            try {
+                const batchTraits = await this.loadBatchTraitsWithRetry(startId, endId);
+                traits.push(...batchTraits);
+                
+                // Longer delay to avoid rate limiting (similar to TraitLAB)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+            } catch (error) {
+                console.warn(`Error loading batch ${startId}-${endId}:`, error);
+                // Continue with next batch even if one fails
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait longer on error
+            }
         }
 
         this.allTraits = traits.filter(trait => trait !== null);
         console.log(`Loaded ${this.allTraits.length} traits`);
     }
 
+    async loadBatchTraitsWithRetry(startId, endId, maxRetries = 3) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return await this.loadBatchTraits(startId, endId);
+            } catch (error) {
+                console.warn(`Attempt ${attempt} failed for batch ${startId}-${endId}:`, error.message);
+                
+                if (attempt === maxRetries) {
+                    throw error;
+                }
+                
+                // Exponential backoff: wait longer each retry
+                const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+                console.log(`Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+
     async loadBatchTraits(startId, endId) {
         const batchPromises = [];
         
+        // Load traits sequentially to avoid rate limiting
         for (let id = startId; id <= endId; id++) {
-            batchPromises.push(this.loadSingleTrait(id));
+            batchPromises.push(this.loadSingleTraitWithDelay(id));
         }
 
         try {
@@ -106,6 +133,23 @@ class GalleryManager {
         } catch (error) {
             console.error(`Error loading batch ${startId}-${endId}:`, error);
             return [];
+        }
+    }
+
+    async loadSingleTraitWithDelay(id) {
+        try {
+            const trait = await this.loadSingleTrait(id);
+            // Small delay between each trait to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 100));
+            return trait;
+        } catch (error) {
+            // If rate limited, wait longer
+            if (error.message.includes('rate limit') || error.message.includes('429')) {
+                console.warn(`Rate limited for trait ${id}, waiting...`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return null;
+            }
+            throw error;
         }
     }
 
