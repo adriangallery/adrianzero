@@ -255,9 +255,52 @@
             border-radius: 10px;
             padding: 15px;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 1.1rem;
             color: #cccccc;
+        }
+
+        .allowlist-status {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+        }
+
+        .status-text {
+            font-weight: bold;
+        }
+
+        .allowlist-status.allowlisted {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .allowlist-status.not-allowlisted {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+
+        .allowlist-status.checking {
+            background: rgba(255, 255, 0, 0.1);
+            border-color: #ffff00;
+            color: #ffff00;
         }
 
         /* Mint Interface */
@@ -726,6 +769,14 @@
                     </span>
             </div>
 
+                <!-- Allowlist Status Indicator -->
+                <div class="allowlist-status" id="allowlistStatus" style="display: none;">
+                    <div class="status-indicator">
+                        <span class="status-icon" id="allowlistIcon">⏳</span>
+                        <span class="status-text" id="allowlistText">Checking allowlist status...</span>
+                    </div>
+                </div>
+
                 <div class="mint-interface" id="comradesMint">
                     <div class="payment-method">
                         <label>
@@ -943,18 +994,41 @@
             const walletSection = document.getElementById('walletSection');
             const walletInfo = document.getElementById('walletInfo');
             const mintBtn = document.getElementById('mintComrades');
+            const allowlistStatus = document.getElementById('allowlistStatus');
+            const allowlistIcon = document.getElementById('allowlistIcon');
+            const allowlistText = document.getElementById('allowlistText');
 
             if (userAddress) {
                 walletSection.style.display = 'none';
                 walletInfo.style.display = 'block';
                 mintBtn.disabled = false;
-                mintBtn.textContent = isAllowlisted ? 'Claim Comrades (FREE)' : 'Mint Comrades with $ADRIAN';
+                
+                // Show allowlist status
+                allowlistStatus.style.display = 'block';
+                
+                if (isAllowlisted === true) {
+                    allowlistStatus.className = 'allowlist-status allowlisted';
+                    allowlistIcon.textContent = '✅';
+                    allowlistText.textContent = 'You are allowlisted! You can claim 1 FREE Comrades + mint 9 more with $ADRIAN';
+                    mintBtn.textContent = 'Claim Comrades (FREE)';
+                } else if (isAllowlisted === false) {
+                    allowlistStatus.className = 'allowlist-status not-allowlisted';
+                    allowlistIcon.textContent = '❌';
+                    allowlistText.textContent = 'You are NOT allowlisted. You can only mint with $ADRIAN (no free claim)';
+                    mintBtn.textContent = 'Mint Comrades with $ADRIAN';
+                } else {
+                    allowlistStatus.className = 'allowlist-status checking';
+                    allowlistIcon.textContent = '⏳';
+                    allowlistText.textContent = 'Checking allowlist status...';
+                    mintBtn.textContent = 'Checking Status...';
+                }
                 
                 document.getElementById('walletAddress').textContent = 
                     `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
             } else {
                 walletSection.style.display = 'block';
                 walletInfo.style.display = 'none';
+                allowlistStatus.style.display = 'none';
                 mintBtn.disabled = true;
                 mintBtn.textContent = 'Connect Wallet to Claim';
             }
@@ -1124,20 +1198,20 @@
             try {
                 const hasUsedFree = await comradesContract.hasUsedFreeMint(PACK_ID, userAddress);
                 if (hasUsedFree) {
-                    showStatus('You have already used your free mint. Please use paid mint for additional Comrades.', 'error');
+                    showStatus('❌ FREE MINT ALREADY USED: You have already claimed your free Comrades. You can mint up to 9 more with $ADRIAN payment.', 'error');
                     return;
                 }
                 
                 // Only allow 1 free mint
                 if (currentQuantity !== 1) {
-                    showStatus('Free mint is limited to 1 Comrades per wallet. Please adjust quantity.', 'error');
+                    showStatus('❌ INVALID QUANTITY: Free mint is limited to exactly 1 Comrades. Please set quantity to 1 for free claim.', 'error');
                     return;
                 }
                 
                 console.log('Attempting free mint with Merkle...');
                 const tx = await comradesContract.functions['mintFreeWithMerkle(uint256,uint256,bytes32[])'](PACK_ID, currentQuantity, proof);
                 await tx.wait();
-                showStatus('Successfully claimed your free Comrades!', 'success');
+                showStatus('🎉 SUCCESS! You have claimed your free Comrades! You can now mint up to 9 more with $ADRIAN payment.', 'success');
                 return;
             } catch (error) {
                 console.error('Free mint failed:', error);
@@ -1148,24 +1222,48 @@
                     console.log('Error code:', errorCode);
                     console.log('Full error data:', error.data);
                     
-                    // Check for specific error codes
+                    // Check for specific error codes with clear user messages
                     if (errorCode === '0x6b178fa7') {
-                        showStatus('Error: AdrianTraitsCore rejected the mint. The Comrades contract is not authorized in AdrianTraitsCore. Contact admin to authorize the contract.', 'error');
+                        showStatus('❌ CONTRACT NOT AUTHORIZED: The Comrades contract needs to be authorized in AdrianTraitsCore. This is an admin configuration issue. Please contact the admin or try again later.', 'error');
                         return;
                     } else if (errorCode === '0xa2f8a81d') {
-                        showStatus('Error: AdrianTraitsCore rejected the mint. The Comrades contract may not be authorized in AdrianTraitsCore. Contact admin to authorize the contract.', 'error');
+                        showStatus('❌ CONTRACT AUTHORIZATION ERROR: The Comrades contract may not be properly configured. Please contact the admin or try again later.', 'error');
                         return;
                     } else if (errorCode === '0x1ee749bf') {
-                        showStatus('Error: Contract not authorized to mint. Please contact admin.', 'error');
+                        showStatus('❌ CONTRACT NOT AUTHORIZED: The Comrades contract is not authorized to mint. Please contact the admin to fix this issue.', 'error');
                         return;
                     } else if (errorCode === '0x7bbd28d0') {
-                        showStatus('Error: Invalid batch ID.', 'error');
+                        showStatus('❌ INVALID BATCH: The batch ID is invalid. Please refresh the page and try again.', 'error');
                         return;
                     } else if (errorCode === '0x1c1f1c87') {
-                        showStatus('Error: ETH payment disabled for this batch. Free claims not supported with ETH.', 'error');
+                        showStatus('❌ ETH PAYMENT DISABLED: Free ETH mint is not supported for this batch. Please use $ADRIAN payment instead.', 'error');
                         return;
                     } else if (errorCode === '0xaf6c6082') {
-                        showStatus('Error: Invalid quantity. Free mint is limited to 1 Comrades.', 'error');
+                        showStatus('❌ INVALID QUANTITY: Free mint is limited to exactly 1 Comrades. Please adjust your quantity.', 'error');
+                        return;
+                    } else if (errorCode === '0x7ffe52a8') {
+                        showStatus('❌ FREE MINT ALREADY USED: You have already used your free mint. Please use $ADRIAN payment for additional Comrades.', 'error');
+                        return;
+                    } else if (errorCode === '0x85c966a2') {
+                        showStatus('❌ NOT ALLOWLISTED: Your wallet is not in the allowlist. You can only mint with $ADRIAN payment.', 'error');
+                        return;
+                    } else if (errorCode === '0xaceaf104') {
+                        showStatus('❌ EXCEEDS WALLET LIMIT: You have reached the maximum number of mints allowed for your wallet.', 'error');
+                        return;
+                    } else if (errorCode === '0x80e18394') {
+                        showStatus('❌ EXCEEDS TRANSACTION LIMIT: The quantity you selected exceeds the maximum allowed per transaction.', 'error');
+                        return;
+                    } else if (errorCode === '0x04f0e1fb') {
+                        showStatus('❌ SOLD OUT: All Comrades have been minted. No more are available.', 'error');
+                        return;
+                    } else if (errorCode === '0x3bf4867f') {
+                        showStatus('❌ BATCH INACTIVE: This batch is currently inactive. Please try again later.', 'error');
+                        return;
+                    } else if (errorCode === '0x858d103f') {
+                        showStatus('❌ MINTING PAUSED: Minting is currently paused. Please try again later.', 'error');
+                        return;
+                    } else if (errorCode === '0xcd25fc30') {
+                        showStatus('❌ OUTSIDE TIME WINDOW: Minting is not available at this time. Please check the start/end times.', 'error');
                         return;
                     }
                 }
@@ -1199,7 +1297,7 @@
             }
         }
 
-                showStatus(`🎉 Successfully claimed/minted ${currentQuantity} Comrades!`, 'success');
+                showStatus(`🎉 SUCCESS! You have minted ${currentQuantity} Comrades with $ADRIAN!`, 'success');
                 await loadComradesInfo();
                 
                 } catch (error) {
