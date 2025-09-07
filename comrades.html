@@ -1083,8 +1083,23 @@
             console.log('PACK_ID:', PACK_ID);
             console.log('currentQuantity:', currentQuantity);
             console.log('proof length:', proof.length);
+            console.log('proof array:', proof);
             console.log('userAddress:', userAddress);
             console.log('isAllowlisted:', isAllowlisted);
+            
+            // Verify allowlist before attempting mint
+            try {
+                const isVerified = await comradesContract.verifyAllowlist(PACK_ID, userAddress, proof);
+                console.log('Allowlist verification result:', isVerified);
+                if (!isVerified) {
+                    showStatus('Error: Allowlist verification failed. Your address is not in the allowlist for this batch.', 'error');
+                    return;
+                }
+            } catch (verifyError) {
+                console.error('Allowlist verification error:', verifyError);
+                showStatus('Error: Could not verify allowlist status.', 'error');
+                return;
+            }
             
             // For FREE claim, use mint with ETH since priceWei = 0
             // This allows free claims for allowlisted users
