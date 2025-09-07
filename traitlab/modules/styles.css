@@ -563,7 +563,10 @@ body {
 .sticky-side-menu-popup .side-emoji-menu * { pointer-events: auto !important; }
 
 /* Hacer click-through zonas transparentes del área de acciones del popup derecho */
-.sticky-actions { pointer-events: none !important; }
+.sticky-actions { pointer-events: none !important; width: 100% !important; }
+.sticky-actions .action-btn,
+.sticky-actions button,
+.sticky-actions a { width: 100% !important; }
 .sticky-actions .action-btn,
 .sticky-actions button,
 .sticky-actions a,
@@ -733,11 +736,15 @@ body {
     
     /* Ajustes para sticky-image en móviles */
     .selection-info.sticky .sticky-image {
-        min-height: 160px;
+        width: 100% !important;
+        min-height: 140px !important;
     }
     
     .selection-info.sticky .sticky-image img {
-        max-height: 140px;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        max-width: 100% !important;
     }
     
     /* Ajustes para sticky-actions en móviles */
@@ -783,24 +790,28 @@ body {
     }
     
     .sticky-image {
-        height: var(--seccion-imagen-height-mobile) !important;
-        width: 126px !important; /* 180px * 0.7 */
+        height: auto !important;
+        width: 100% !important; /* Ocupa todo el ancho del popup */
+        min-height: 140px !important;
     }
     
     .sticky-image img {
-        max-height: 88px; /* 126px * 0.7 */
+        width: 100% !important; /* Misma anchura que el popup */
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
     }
     
     .sticky-actions {
-        height: var(--seccion-acciones-height-mobile) !important;
-        width: 126px !important; /* 180px * 0.7 */
-        gap: 4px; /* Gap reducido */
+        height: auto !important;
+        width: 100% !important; /* Ajustar al popup */
+        gap: 6px !important;
     }
     
     .action-section {
         min-height: var(--seccion-accion-individual-height-mobile) !important;
-        width: 126px !important; /* 180px * 0.7 */
-        padding: 3px 0; /* Padding reducido */
+        width: 100% !important;
+        padding: 4px 0; /* Padding reducido */
     }
 }
 
