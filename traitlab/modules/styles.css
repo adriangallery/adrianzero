@@ -519,8 +519,8 @@ body {
 
 /* POPUP IZQUIERDO: Menú lateral */
 .sticky-side-menu-popup {
-    background: transparent !important; /* Hacer fondo transparente como el popup principal */
-    border: 2px solid #00ff00 !important;
+    background: transparent !important; /* Fondo transparente */
+    border: none !important; /* Quitar reborde */
     border-radius: 12px !important;
     padding: var(--popup-botonera-padding) !important;
     min-height: var(--popup-botonera-height) !important;
@@ -548,6 +548,20 @@ body {
     margin: 0 !important;
     overflow: hidden !important; /* Evitar desbordamiento */
 }
+
+/* Hacer click-through el área transparente del popup lateral */
+.sticky-side-menu-popup { pointer-events: none !important; }
+.sticky-side-menu-popup .side-emoji-menu,
+.sticky-side-menu-popup .side-emoji-menu * { pointer-events: auto !important; }
+
+/* Hacer click-through zonas transparentes del área de acciones del popup derecho */
+.sticky-actions { pointer-events: none !important; }
+.sticky-actions .action-btn,
+.sticky-actions button,
+.sticky-actions a,
+.sticky-actions input,
+.sticky-actions select,
+.sticky-actions textarea { pointer-events: auto !important; }
 
 /* Optimización para modo sticky (mantener compatibilidad) */
 .selection-info.sticky.with-side-menu {
