@@ -424,7 +424,7 @@
         </div>
 
         <!-- Loading More Indicator -->
-        <div id="loadingMore" class="text-center mt-4" style="display: none;">
+        <div id="loadingMore" class="text-center mt-4" style="display: none; background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; border-radius: 10px; padding: 2rem; margin: 2rem 0;">
             <div class="loading-spinner"></div>
             <div class="loading-text">Loading more traits...</div>
         </div>
@@ -539,7 +539,7 @@
         }
 
         async function loadMoreTraits() {
-            if (isLoadingMore || !galleryManager || !galleryManager.hasMore()) {
+            if (isLoadingMore || !galleryManager || !galleryManager.hasMoreTraits()) {
                 return;
             }
 
@@ -559,8 +559,11 @@
                 // Update display with new traits
                 displayMoreTraits();
                 
+                console.log(`Loaded more traits. Total: ${allTraits.length}`);
+                
             } catch (error) {
                 console.error('Error loading more traits:', error);
+                showError('Failed to load more traits. Please try again.');
             } finally {
                 isLoadingMore = false;
                 
@@ -719,7 +722,7 @@
             
             // Add scroll listener
             window.addEventListener('scroll', () => {
-                if (isLoadingMore || !galleryManager || !galleryManager.hasMore()) {
+                if (isLoadingMore || !galleryManager || !galleryManager.hasMoreTraits()) {
                     return;
                 }
 
@@ -801,7 +804,7 @@
                 <div class="trait-image placeholder-image" data-trait-id="${trait.id}" style="display: none;"></div>
                 <div class="trait-name">${trait.name}</div>
                 <div class="trait-id">ID: ${trait.id}</div>
-                <div class="trait-supply">Supply: ${trait.totalSupply}/${trait.maxSupply}</div>
+                <div class="trait-supply">MaxSupply: ${trait.maxSupply}</div>
             `;
             
             // Add click handler for trait details
@@ -837,7 +840,7 @@
                     <h3 style="color: #00ff00; margin-bottom: 10px;">${trait.name}</h3>
                     <p style="color: #ccc; margin-bottom: 10px;">ID: ${trait.id}</p>
                     <p style="color: #ccc; margin-bottom: 10px;">Category: ${trait.category}</p>
-                    <p style="color: #ccc; margin-bottom: 10px;">Supply: ${trait.totalSupply}/${trait.maxSupply}</p>
+                    <p style="color: #ccc; margin-bottom: 10px;">MaxSupply: ${trait.maxSupply}</p>
                     <p style="color: #ccc; margin-bottom: 15px;">${trait.description}</p>
                     <button onclick="this.parentElement.parentElement.remove()" style="background: #00ff00; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Close</button>
                 </div>
