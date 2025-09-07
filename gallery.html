@@ -109,9 +109,19 @@
         
         @media (max-width: 768px) {
             .filters-section {
-                position: static;
+                position: static !important;
                 padding: 15px;
                 margin-bottom: 20px;
+                top: auto !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .filters-section {
+                position: static !important;
+                padding: 10px;
+                margin-bottom: 15px;
+                top: auto !important;
             }
         }
 
