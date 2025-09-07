@@ -787,6 +787,14 @@ class StickyPopupManager {
         if (this.elements.renameSection) {
             this.elements.renameSection.style.display = 'block';
         }
+        // Ocultar botón de approve si existe, ya que haremos la cascada en Rename
+        if (this.elements.approveRenameBtn) {
+            this.elements.approveRenameBtn.style.display = 'none';
+        }
+        // Asegurar que el botón de rename esté visible
+        if (this.elements.renameTokenBtn) {
+            this.elements.renameTokenBtn.style.display = 'inline-block';
+        }
     }
 
     openPack() {
@@ -827,8 +835,8 @@ class StickyPopupManager {
         }
     }
 
-    renameToken() {
-        console.log('🎯 StickyPopupManager: Renombrar token');
+    async renameToken() {
+        console.log('🎯 StickyPopupManager: Renombrar token (cascada approve → rename)');
         
         // Obtener el nombre del input
         const newName = this.elements.newTokenName?.value?.trim();
@@ -838,11 +846,37 @@ class StickyPopupManager {
             return;
         }
         
-        if (window.app && window.app.modules.zero && window.app.modules.zero.renameToken) {
-            console.log('🔍 Llamando a zero.renameToken con nombre:', newName);
-            window.app.modules.zero.renameToken(newName);
-        } else {
+        const zero = window.app?.modules?.zero;
+        if (!zero) {
             console.error('❌ Módulo zero no disponible para renameToken');
+            return;
+        }
+        
+        try {
+            // Deshabilitar botón para evitar dobles clics
+            if (this.elements.renameTokenBtn) this.elements.renameTokenBtn.disabled = true;
+            
+            // Asegurar precio cargado
+            if (!zero.namePrice && zero.loadNamePrice) {
+                this.showStatus('⏳ Cargando precio de nombre...', 'success', this.elements.renameStatus);
+                try { await zero.loadNamePrice(); } catch (e) { /* continuar */ }
+            }
+            
+            // Paso 1: Approve si es necesario
+            this.showStatus('🪙 Aprobando gasto de ADRIAN...', 'success', this.elements.renameStatus);
+            await zero.approveRename();
+            
+            // Paso 2: Ejecutar rename
+            this.showStatus('✍️ Ejecutando rename en blockchain...', 'success', this.elements.renameStatus);
+            const receipt = await zero.renameToken(newName);
+            
+            // Éxito
+            this.showStatus(`✅ Rename completado! TX: ${receipt?.transactionHash || ''}`, 'success', this.elements.renameStatus);
+        } catch (error) {
+            console.error('❌ Error en cascada de rename:', error);
+            this.showStatus(error?.message || '❌ Error en rename', 'error', this.elements.renameStatus);
+        } finally {
+            if (this.elements.renameTokenBtn) this.elements.renameTokenBtn.disabled = false;
         }
     }
 
