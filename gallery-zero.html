@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdrianZERO Gallery - AdrianLAB</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.9) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #333;
+        }
+
+        .navbar-brand {
+            color: #00ff00 !important;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            color: #ffffff !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #00ff00 !important;
+        }
+
+        .gallery-container {
+            padding: 2rem 0;
+        }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .gallery-title {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        .gallery-subtitle {
+            font-size: 1.2rem;
+            color: #cccccc;
+            margin-bottom: 2rem;
+        }
+
+        .stats-container {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .stat-label {
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        .filters-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-label {
+            color: #00ff00;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: #ffffff;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(0, 0, 0, 0.7);
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            color: #ffffff;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .nft-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nft-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff00;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2);
+        }
+
+        .nft-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #333, #555);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .nft-image.placeholder-image {
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+            background-size: 20px 20px;
+            animation: placeholder-pulse 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .nft-image.placeholder-image::before {
+            content: "AdrianZERO " attr(data-token-id);
+        }
+
+        @keyframes placeholder-pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .nft-info {
+            padding: 1rem;
+        }
+
+        .nft-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .nft-id {
+            color: #00ff00;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nft-attributes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .attribute {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 15px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            color: #00ff00;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            color: #00ff00;
+        }
+
+        .loading-spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #00ff00;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress {
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #00ff00, #00cc00);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            color: #00ff00;
+        }
+
+        .loading-more {
+            text-align: center;
+            padding: 2rem;
+            color: #00ff00;
+            display: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #00cc00, #009900);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-primary {
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .btn-outline-primary:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .modal-content {
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #333;
+            color: #ffffff;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #333;
+        }
+
+        .modal-title {
+            color: #00ff00;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        .nft-detail-image {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .nft-detail-image.placeholder-image {
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+            background-size: 20px 20px;
+            animation: placeholder-pulse 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.2rem;
+            font-weight: bold;
+            height: 400px;
+            border-radius: 10px;
+        }
+
+        .nft-detail-image.placeholder-image::before {
+            content: "AdrianZERO " attr(data-token-id);
+        }
+
+        .attribute-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .attribute-list li {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .attribute-trait {
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .attribute-value {
+            color: #ffffff;
+        }
+
+        .transition-fade {
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">AdrianLAB</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">TraitLAB</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="gallery.html">Traits Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="gallery-zero.html">AdrianZERO Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="comrades.html">Comrades</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container gallery-container" style="margin-top: 80px;">
+        <!-- Header -->
+        <div class="gallery-header">
+            <h1 class="gallery-title">AdrianZERO Gallery</h1>
+            <p class="gallery-subtitle">Explore the complete collection of AdrianZERO NFTs</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalNfts">0</div>
+                    <div class="stat-label">Total NFTs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="filteredNfts">0</div>
+                    <div class="stat-label">Showing</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalPages">0</div>
+                    <div class="stat-label">Pages</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="progressText">Loading AdrianZERO NFTs...</div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search by name or ID...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="filter-group">
+                        <label class="filter-label">Sort By</label>
+                        <select class="form-select" id="sortSelect">
+                            <option value="id">Token ID</option>
+                            <option value="name">Name</option>
+                            <option value="rarity">Rarity</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="filter-group">
+                        <label class="filter-label">Order</label>
+                        <select class="form-select" id="orderSelect">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loadingState">
+            <div class="loading-spinner"></div>
+            <div>Loading AdrianZERO NFTs...</div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="gallery-grid" id="galleryGrid" style="display: none;"></div>
+
+        <!-- Loading More -->
+        <div class="loading-more" id="loadingMore">
+            <div class="loading-spinner"></div>
+            <div>Loading more NFTs...</div>
+        </div>
+
+        <!-- Demo Button -->
+        <div class="text-center mt-4">
+            <button class="btn btn-outline-primary" onclick="loadDemoMode()">Load Demo Mode</button>
+        </div>
+    </div>
+
+    <!-- NFT Detail Modal -->
+    <div class="modal fade" id="nftDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nftDetailTitle">NFT Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img id="nftDetailImage" class="nft-detail-image" alt="NFT">
+                        </div>
+                        <div class="col-md-6">
+                            <h4 id="nftDetailName">NFT Name</h4>
+                            <p id="nftDetailId" class="text-muted">Token ID: #0</p>
+                            <p id="nftDetailDescription">Description</p>
+                            <h5>Attributes</h5>
+                            <ul class="attribute-list" id="nftDetailAttributes">
+                                <!-- Attributes will be populated here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- TraitLAB Modules -->
+    <script src="traitlab/modules/config.js?v=3"></script>
+    <script src="traitlab/modules/wallet.js?v=2"></script>
+    <script src="traitlab/modules/ui.js?v=2"></script>
+    <script src="traitlab/modules/traits.js?v=2"></script>
+    <script src="traitlab/modules/gallery-manager.js?v=5"></script>
+    
+    <!-- Gallery Script -->
+    <script>
+        // Gallery state
+        let galleryManager = null;
+        let allNfts = [];
+        let filteredNfts = [];
+        let currentPage = 1;
+        const nftsPerPage = 24;
+        let isLoadingMore = false;
+
+        // Contract configuration
+        window.ADRIANZERO_CONTRACT = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianZERO contract
+        const BASE_CHAIN_ID = 8453;
+        const BASE_CHAIN_ID_HEX = "0x2105";
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing AdrianZERO gallery...');
+            initializeGallery();
+        });
+
+        async function initializeGallery() {
+            try {
+                // Clear any existing cache
+                console.log('Clearing cache...');
+                localStorage.removeItem('adrianzero_nfts_cache');
+                localStorage.removeItem('adrianzero_nfts_cache_time');
+
+                // Initialize gallery manager
+                console.log('Using Alchemy RPC...');
+                galleryManager = new GalleryManager();
+                await galleryManager.init();
+
+                console.log('Gallery manager initialized, loading NFTs...');
+                await loadNfts();
+                
+                setupEventListeners();
+                
+            } catch (error) {
+                console.error('Error initializing gallery:', error);
+                showError('Failed to initialize gallery. Please try again.');
+            }
+        }
+
+        async function loadNfts() {
+            try {
+                console.log('Loading initial NFTs...');
+                updateProgress(0, 'Loading AdrianZERO NFTs from Alchemy...');
+                
+                if (galleryManager) {
+                    // Load initial batch from Alchemy
+                    allNfts = await galleryManager.loadNfts();
+                    updateProgress(100, `Loaded ${allNfts.length} NFTs!`);
+                } else {
+                    console.log('No gallery manager, using demo mode');
+                    await loadDemoNfts();
+                }
+                
+                displayNfts();
+                
+            } catch (error) {
+                console.error('Error loading NFTs:', error);
+                showError('Failed to load NFTs. Please try again.');
+            }
+        }
+
+        async function loadMoreNfts() {
+            if (isLoadingMore || !galleryManager || !galleryManager.hasMoreNfts()) {
+                return;
+            }
+
+            try {
+                isLoadingMore = true;
+                document.getElementById('loadingMore').style.display = 'block';
+                
+                console.log('Loading more NFTs...');
+                const newNfts = await galleryManager.loadMoreNfts();
+                allNfts.push(...newNfts);
+                
+                displayMoreNfts();
+                
+            } catch (error) {
+                console.error('Error loading more NFTs:', error);
+                showError('Failed to load more NFTs. Please try again.');
+            } finally {
+                isLoadingMore = false;
+                document.getElementById('loadingMore').style.display = 'none';
+            }
+        }
+
+        function displayNfts() {
+            const loadingState = document.getElementById('loadingState');
+            const galleryGrid = document.getElementById('galleryGrid');
+            
+            // Smooth transition
+            loadingState.style.opacity = '0';
+            setTimeout(() => {
+                loadingState.style.display = 'none';
+                galleryGrid.style.display = 'grid';
+                galleryGrid.style.opacity = '0';
+                setTimeout(() => {
+                    galleryGrid.style.opacity = '1';
+                }, 50);
+            }, 500);
+
+            // Apply filters and display
+            applyFilters();
+        }
+
+        function displayMoreNfts() {
+            updateStats();
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sortBy = document.getElementById('sortSelect').value;
+            const order = document.getElementById('orderSelect').value;
+
+            // Filter NFTs
+            filteredNfts = allNfts.filter(nft => {
+                const matchesSearch = nft.name.toLowerCase().includes(searchTerm) || 
+                                    nft.id.toString().includes(searchTerm);
+                return matchesSearch;
+            });
+
+            // Sort NFTs
+            filteredNfts.sort((a, b) => {
+                let aVal, bVal;
+                
+                switch (sortBy) {
+                    case 'id':
+                        aVal = a.id;
+                        bVal = b.id;
+                        break;
+                    case 'name':
+                        aVal = a.name.toLowerCase();
+                        bVal = b.name.toLowerCase();
+                        break;
+                    case 'rarity':
+                        aVal = a.rarity || 0;
+                        bVal = b.rarity || 0;
+                        break;
+                    default:
+                        aVal = a.id;
+                        bVal = b.id;
+                }
+
+                if (order === 'desc') {
+                    return bVal > aVal ? 1 : -1;
+                } else {
+                    return aVal > bVal ? 1 : -1;
+                }
+            });
+
+            // Display NFTs
+            renderNfts();
+            updateStats();
+        }
+
+        function renderNfts() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            galleryGrid.innerHTML = '';
+
+            filteredNfts.forEach(nft => {
+                const nftCard = createNftCard(nft);
+                galleryGrid.appendChild(nftCard);
+            });
+        }
+
+        function createNftCard(nft) {
+            const card = document.createElement('div');
+            card.className = 'nft-card';
+            card.onclick = () => showNftDetails(nft);
+
+            const imageHtml = nft.image ? 
+                `<img src="${nft.image}" class="nft-image" alt="${nft.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div class="nft-image placeholder-image" data-token-id="${nft.id}" style="display: none;"></div>` :
+                `<div class="nft-image placeholder-image" data-token-id="${nft.id}"></div>`;
+
+            card.innerHTML = `
+                ${imageHtml}
+                <div class="nft-info">
+                    <div class="nft-name">${nft.name}</div>
+                    <div class="nft-id">#${nft.id}</div>
+                    ${nft.attributes ? nft.attributes.slice(0, 3).map(attr => 
+                        `<span class="attribute">${attr.trait_type}: ${attr.value}</span>`
+                    ).join('') : ''}
+                </div>
+            `;
+
+            return card;
+        }
+
+        function showNftDetails(nft) {
+            document.getElementById('nftDetailTitle').textContent = nft.name;
+            document.getElementById('nftDetailName').textContent = nft.name;
+            document.getElementById('nftDetailId').textContent = `Token ID: #${nft.id}`;
+            document.getElementById('nftDetailDescription').textContent = nft.description || 'No description available.';
+
+            const imageElement = document.getElementById('nftDetailImage');
+            if (nft.image) {
+                imageElement.src = nft.image;
+                imageElement.className = 'nft-detail-image';
+                imageElement.onerror = function() {
+                    this.style.display = 'none';
+                    this.nextElementSibling.style.display = 'flex';
+                };
+                
+                // Add placeholder as fallback
+                if (!imageElement.nextElementSibling) {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'nft-detail-image placeholder-image';
+                    placeholder.setAttribute('data-token-id', nft.id);
+                    placeholder.style.display = 'none';
+                    imageElement.parentNode.insertBefore(placeholder, imageElement.nextSibling);
+                }
+            } else {
+                imageElement.style.display = 'none';
+                const placeholder = imageElement.nextElementSibling || document.createElement('div');
+                placeholder.className = 'nft-detail-image placeholder-image';
+                placeholder.setAttribute('data-token-id', nft.id);
+                placeholder.style.display = 'flex';
+                if (!imageElement.nextElementSibling) {
+                    imageElement.parentNode.insertBefore(placeholder, imageElement.nextSibling);
+                }
+            }
+
+            // Populate attributes
+            const attributesList = document.getElementById('nftDetailAttributes');
+            if (nft.attributes && nft.attributes.length > 0) {
+                attributesList.innerHTML = nft.attributes.map(attr => 
+                    `<li>
+                        <span class="attribute-trait">${attr.trait_type}</span>
+                        <span class="attribute-value">${attr.value}</span>
+                    </li>`
+                ).join('');
+            } else {
+                attributesList.innerHTML = '<li>No attributes available</li>';
+            }
+
+            new bootstrap.Modal(document.getElementById('nftDetailModal')).show();
+        }
+
+        function updateStats() {
+            document.getElementById('totalNfts').textContent = allNfts.length;
+            document.getElementById('filteredNfts').textContent = filteredNfts.length;
+            document.getElementById('totalPages').textContent = Math.ceil(filteredNfts.length / nftsPerPage);
+        }
+
+        function updateProgress(percentage, text) {
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function setupEventListeners() {
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            
+            // Sort and order selects
+            document.getElementById('sortSelect').addEventListener('change', applyFilters);
+            document.getElementById('orderSelect').addEventListener('change', applyFilters);
+
+            // Infinite scroll
+            setupInfiniteScroll();
+        }
+
+        function setupInfiniteScroll() {
+            window.addEventListener('scroll', () => {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+                    loadMoreNfts();
+                }
+            });
+        }
+
+        // Demo mode
+        async function loadDemoNfts() {
+            console.log('Loading demo NFTs...');
+            updateProgress(0, 'Loading demo data...');
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            updateProgress(50, 'Generating demo NFTs...');
+            
+            allNfts = generateDemoNfts();
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            updateProgress(100, `Loaded ${allNfts.length} demo NFTs!`);
+        }
+
+        function generateDemoNfts() {
+            const nfts = [];
+            for (let i = 1; i <= 50; i++) {
+                nfts.push({
+                    id: i,
+                    name: `AdrianZERO #${i}`,
+                    description: `This is AdrianZERO NFT #${i}`,
+                    image: null, // Will use CSS placeholder
+                    attributes: [
+                        { trait_type: 'Background', value: 'Dark' },
+                        { trait_type: 'Body', value: 'Classic' },
+                        { trait_type: 'Eyes', value: 'Normal' }
+                    ],
+                    rarity: Math.floor(Math.random() * 100)
+                });
+            }
+            return nfts;
+        }
+
+        function loadDemoMode() {
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('galleryGrid').style.display = 'none';
+            
+            loadDemoNfts().then(() => {
+                displayNfts();
+            });
+        }
+
+        function showError(message) {
+            alert('Error: ' + message);
+        }
+    </script>
+</body>
+</html>

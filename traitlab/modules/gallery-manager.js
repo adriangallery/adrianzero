@@ -86,6 +86,95 @@ class GalleryManager {
         }
     }
 
+    // AdrianZERO NFT methods
+    async loadNfts() {
+        if (this.isLoading) {
+            return this.allTraits;
+        }
+
+        this.isLoading = true;
+
+        try {
+            // Load initial batch from Alchemy
+            console.log('Loading initial AdrianZERO NFTs from Alchemy...');
+            await this.loadNftsFromAlchemy();
+            
+            this.isLoading = false;
+            return this.allTraits;
+
+        } catch (error) {
+            console.error('Error loading NFTs:', error);
+            this.isLoading = false;
+            throw error;
+        }
+    }
+
+    async loadMoreNfts() {
+        if (this.isLoading || !this.hasMoreNfts()) {
+            return this.allTraits;
+        }
+
+        this.isLoading = true;
+
+        try {
+            console.log(`Loading more AdrianZERO NFTs from Alchemy (page ${this.currentPage + 1})...`);
+            await this.loadNftsFromAlchemy();
+            
+            this.isLoading = false;
+            return this.allTraits;
+
+        } catch (error) {
+            console.error('Error loading more NFTs:', error);
+            this.isLoading = false;
+            throw error;
+        }
+    }
+
+    async loadNftsFromAlchemy() {
+        try {
+            const contractAddress = window.ADRIANZERO_CONTRACT || "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+            const pageKey = this.currentPage > 0 ? this.pageKey : null;
+            
+            let alchemyUrl = `${this.alchemyBaseUrl}/${this.alchemyApiKey}/getNFTsForCollection?contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC721`;
+            
+            if (pageKey) {
+                alchemyUrl += `&pageKey=${pageKey}`;
+            }
+
+            console.log(`Requesting AdrianZERO NFTs from Alchemy: ${alchemyUrl}`);
+            
+            const response = await fetch(alchemyUrl);
+            if (!response.ok) {
+                throw new Error(`Alchemy API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`Alchemy response:`, data);
+
+            // Check if there are more pages
+            this.pageKey = data.pageKey || null;
+            this.hasMoreTraits = !!this.pageKey;
+
+            // Process the NFTs
+            const newNfts = data.nfts ? data.nfts.map(nft => this.processAlchemyNFT(nft)) : [];
+            
+            // Add to existing NFTs
+            this.allTraits.push(...newNfts);
+            this.currentPage++;
+
+            console.log(`Loaded ${newNfts.length} new AdrianZERO NFTs (total: ${this.allTraits.length})`);
+            return this.allTraits;
+
+        } catch (error) {
+            console.error('Error loading AdrianZERO NFTs from Alchemy:', error);
+            throw error;
+        }
+    }
+
+    hasMoreNfts() {
+        return this.hasMoreTraits;
+    }
+
     async loadTraitsFromDatabase() {
         try {
             console.log('Loading traits from local database...');
@@ -135,8 +224,8 @@ class GalleryManager {
     processDatabaseTraitWithAlchemy(trait) {
         const tokenId = parseInt(trait.tokenId);
         
-        // Use the same image URL format as TraitLAB
-        const imageUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+        // Use the same image URL format as TraitLAB for traits
+        const imageUrl = `https://adrianlab.vercel.app/labmetadata/traits/${trait.fileName}.png`;
         
         return {
             id: tokenId,
@@ -181,18 +270,57 @@ class GalleryManager {
         const metadata = nft.metadata || {};
         const tokenId = parseInt(nft.tokenId);
         
-        return {
-            id: tokenId,
-            name: metadata.name || `Trait ${tokenId}`,
-            description: metadata.description || '',
-            image: this.getImageUrl(metadata.image, tokenId),
-            category: this.categorizeTrait(metadata.name || `Trait ${tokenId}`),
-            totalSupply: nft.totalSupply || '0',
-            maxSupply: nft.maxSupply || '1000',
-            uri: nft.tokenUri?.raw || '',
-            metadata: metadata,
-            contractAddress: nft.contract?.address || window.TRAITS_CONTRACT
-        };
+        // Check if this is an AdrianZERO NFT or a trait
+        const isAdrianZERO = window.ADRIANZERO_CONTRACT && nft.contract?.address?.toLowerCase() === window.ADRIANZERO_CONTRACT.toLowerCase();
+        
+        if (isAdrianZERO) {
+            // Process as AdrianZERO NFT
+            return {
+                id: tokenId,
+                name: metadata.name || `AdrianZERO #${tokenId}`,
+                description: metadata.description || '',
+                image: this.getAdrianZEROImageUrl(tokenId),
+                attributes: metadata.attributes || [],
+                rarity: this.calculateRarity(metadata.attributes || []),
+                totalSupply: nft.totalSupply || '0',
+                maxSupply: nft.maxSupply || '1000',
+                uri: nft.tokenUri?.raw || '',
+                metadata: metadata,
+                contractAddress: nft.contract?.address || window.ADRIANZERO_CONTRACT
+            };
+        } else {
+            // Process as trait
+            return {
+                id: tokenId,
+                name: metadata.name || `Trait ${tokenId}`,
+                description: metadata.description || '',
+                image: this.getImageUrl(metadata.image, tokenId),
+                category: this.categorizeTrait(metadata.name || `Trait ${tokenId}`),
+                totalSupply: nft.totalSupply || '0',
+                maxSupply: nft.maxSupply || '1000',
+                uri: nft.tokenUri?.raw || '',
+                metadata: metadata,
+                contractAddress: nft.contract?.address || window.TRAITS_CONTRACT
+            };
+        }
+    }
+
+    getAdrianZEROImageUrl(tokenId) {
+        // Use the same image URL format as TraitLAB for AdrianZERO NFTs
+        return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+    }
+
+    calculateRarity(attributes) {
+        // Simple rarity calculation based on attributes
+        if (!attributes || attributes.length === 0) return 0;
+        
+        let rarity = 0;
+        attributes.forEach(attr => {
+            // Add points based on trait value uniqueness
+            rarity += Math.random() * 10; // Placeholder calculation
+        });
+        
+        return Math.floor(rarity);
     }
 
     getImageUrl(imageUrl, tokenId) {
