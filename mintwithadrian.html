@@ -1020,6 +1020,7 @@
         let adrianZeroContract;
         let packMinterContract;
         let adrianEthContract;
+        let goldenFloppyPriceToken = ethers.BigNumber.from(0); // Dynamic price from batch
         // Estado global adicional (igual que SHOP/)
         let approvedAmountZero = 0; // Allowance para ADRIAN_ZERO_MINT
         let approvedAmountPack = 0; // Allowance para PACK_MINTER
@@ -1305,7 +1306,7 @@
                     price = OG_FLOPPY_PRICE;
                     break;
                 case 'goldenFloppy':
-                    price = GOLDEN_FLOPPY_PRICE;
+                    price = goldenFloppyPriceToken.isZero() ? GOLDEN_FLOPPY_PRICE : goldenFloppyPriceToken;
                     break;
             }
             
@@ -1761,9 +1762,20 @@
                 const priceInToken = parseFloat(ethers.utils.formatEther(priceToken)).toFixed(6);
                 
                 // Update the price display in UI
-                const priceElement = document.querySelector('#goldenFloppyMint .price-tag');
+                const priceElement = document.querySelector('.price-tag');
                 if (priceElement) {
                     priceElement.textContent = `Price: ${priceInEth} ETH / ${priceInToken} $ADRIAN`;
+                }
+                
+                // Store price for updateTotal function
+                goldenFloppyPriceToken = priceToken;
+                
+                // Update total cost display
+                const totalCostElement = document.getElementById('goldenFloppyCostTotal');
+                if (totalCostElement) {
+                    const totalCost = priceToken.mul(quantities.goldenFloppy);
+                    const totalCostFormatted = parseFloat(ethers.utils.formatEther(totalCost)).toFixed(6);
+                    totalCostElement.textContent = `${totalCostFormatted} $ADRIAN`;
                 }
                 
                 // Enable/disable mint button based on active status
@@ -1849,7 +1861,19 @@
                     }
 
                     showStatus('goldenFloppy', `Minting ${quantity} Golden Floppy with ETH...`, 'loading');
-                    const tx = await adrianEthContract.mintWithETH(GOLDEN_ETH_BATCH_ID, quantity, { value: total });
+                    
+                    console.log('Minting with ETH:', {
+                        batchId: GOLDEN_ETH_BATCH_ID,
+                        quantity: quantity,
+                        value: total.toString(),
+                        valueEth: ethers.utils.formatEther(total)
+                    });
+                    
+                    // Use manual gas limit to avoid estimation issues
+                    const tx = await adrianEthContract.mintWithETH(GOLDEN_ETH_BATCH_ID, quantity, { 
+                        value: total,
+                        gasLimit: gasLimit
+                    });
                     await tx.wait();
                 } else {
                     // Use token payment
