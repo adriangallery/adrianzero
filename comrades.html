@@ -1128,13 +1128,16 @@
                         
                         // Check for specific error codes
                         if (errorCode === '0xa2f8a81d') {
-                            showStatus('Error: NotInAllowlist - You are not in the allowlist for this batch.', 'error');
+                            showStatus('Error: AdrianTraitsCore rejected the mint. The Comrades contract may not be authorized in AdrianTraitsCore. Contact admin to authorize the contract.', 'error');
                             return;
                         } else if (errorCode === '0x1ee749bf') {
                             showStatus('Error: Contract not authorized to mint. Please contact admin.', 'error');
                             return;
-                        } else if (errorCode === '0x33b094a1') {
+                        } else if (errorCode === '0x7bbd28d0') {
                             showStatus('Error: Invalid batch ID.', 'error');
+                            return;
+                        } else if (errorCode === '0x1c1f1c87') {
+                            showStatus('Error: ETH payment disabled for this batch. Free claims not supported with ETH.', 'error');
                             return;
                         }
                     }
