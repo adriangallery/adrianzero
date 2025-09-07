@@ -96,7 +96,7 @@
 
         /* Filters */
         .filters-section {
-            background: rgba(0, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.85);
             border: 1px solid #00ffff;
             border-radius: 10px;
             padding: 20px;
@@ -104,6 +104,15 @@
             position: sticky;
             top: 100px;
             z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        @media (max-width: 768px) {
+            .filters-section {
+                padding: 15px;
+                margin-bottom: 20px;
+                top: 80px;
+            }
         }
 
         .filter-group {
@@ -930,6 +939,7 @@
         function showTraitDetails(trait) {
             // Simple modal for trait details
             const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
             modal.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -958,10 +968,17 @@
                     <p style="color: #ccc; margin-bottom: 12px; font-size: 0.85rem;">${trait.description}</p>
                     <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;">
                         <button onclick="window.open('https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/${trait.id}', '_blank')" style="background: #ff00ff; color: #000; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; font-weight: bold;">See on OpenSea</button>
-                        <button onclick="this.parentElement.parentElement.remove()" style="background: #00ffff; color: #000; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Close</button>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: #00ffff; color: #000; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Close</button>
                     </div>
                 </div>
             `;
+            
+            // Close modal when clicking on background
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
             
             document.body.appendChild(modal);
         }
