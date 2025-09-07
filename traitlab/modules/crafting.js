@@ -194,6 +194,49 @@ class TraitLABCrafting {
         this.availableTraits = traits || [];
         console.log('🔨 TraitLABCrafting: Traits establecidos:', this.availableTraits.length);
     }
+
+    /**
+     * Mapa de traits seleccionados para crafting
+     */
+    selectedTraits = new Map();
+
+    /**
+     * Seleccionar trait para crafting
+     */
+    selectTrait(traitId, amount = 1) {
+        this.selectedTraits.set(traitId, amount);
+        console.log('🔨 Trait seleccionado:', traitId, 'cantidad:', amount);
+    }
+
+    /**
+     * Deseleccionar trait para crafting
+     */
+    deselectTrait(traitId) {
+        this.selectedTraits.delete(traitId);
+        console.log('🔨 Trait deseleccionado:', traitId);
+    }
+
+    /**
+     * Obtener traits seleccionados
+     */
+    getSelectedTraits() {
+        return this.selectedTraits;
+    }
+
+    /**
+     * Obtener total de traits seleccionados
+     */
+    getSelectedTotal() {
+        return Array.from(this.selectedTraits.values()).reduce((sum, amount) => sum + amount, 0);
+    }
+
+    /**
+     * Limpiar selección de traits
+     */
+    clearSelectedTraits() {
+        this.selectedTraits.clear();
+        console.log('🔨 Selección de traits limpiada');
+    }
 }
 
 // Exportar la clase al scope global

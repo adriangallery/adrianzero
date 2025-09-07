@@ -228,6 +228,11 @@ class DisplayManager {
             </div>
         `;
         
+        // Agregar event listener para selección
+        traitCard.addEventListener('click', () => {
+            this.handleCraftingTraitSelection(trait);
+        });
+        
         return traitCard;
     }
 
@@ -243,6 +248,75 @@ class DisplayManager {
         traits.forEach(trait => {
             const traitCard = this.createTraitCardForCrafting(trait);
             traitsGrid.appendChild(traitCard);
+        });
+    }
+
+    /**
+     * Manejar selección de trait para crafting
+     */
+    handleCraftingTraitSelection(trait) {
+        console.log('🔨 handleCraftingTraitSelection:', trait);
+        
+        // Obtener el módulo de crafting
+        const craftingModule = window.app?.modules?.crafting;
+        if (!craftingModule) {
+            console.warn('🔨 Módulo de crafting no disponible');
+            return;
+        }
+        
+        // Toggle selection en el módulo de crafting
+        const selectedTraits = craftingModule.getSelectedTraits ? craftingModule.getSelectedTraits() : new Map();
+        if (selectedTraits.has(trait.tokenId)) {
+            craftingModule.deselectTrait ? craftingModule.deselectTrait(trait.tokenId) : null;
+        } else {
+            craftingModule.selectTrait ? craftingModule.selectTrait(trait.tokenId, 1) : null;
+        }
+        
+        // Actualizar solo el estado visual sin re-renderizar todo
+        this.updateTraitSelectionVisual(trait.tokenId);
+        
+        // Actualizar elegibilidad de recetas para recetas tipo "any"
+        this.updateRecipeEligibility();
+    }
+    
+    /**
+     * Actualizar estado visual de selección de trait
+     */
+    updateTraitSelectionVisual(traitId) {
+        const traitCard = document.querySelector(`[data-trait-id="${traitId}"]`);
+        if (!traitCard) return;
+        
+        const craftingModule = window.app?.modules?.crafting;
+        if (!craftingModule) return;
+        
+        const selectedTraits = craftingModule.getSelectedTraits ? craftingModule.getSelectedTraits() : new Map();
+        const isSelected = selectedTraits.has(traitId);
+        
+        traitCard.classList.toggle('selected', isSelected);
+    }
+    
+    /**
+     * Actualizar elegibilidad de recetas
+     */
+    updateRecipeEligibility() {
+        const craftingModule = window.app?.modules?.crafting;
+        if (!craftingModule) return;
+        
+        const recipes = craftingModule.getRecipes ? craftingModule.getRecipes() : [];
+        const selectedTraits = craftingModule.getSelectedTraits ? craftingModule.getSelectedTraits() : new Map();
+        
+        recipes.forEach(recipe => {
+            const recipeCard = document.querySelector(`[data-recipe-id="${recipe.recipeId}"]`);
+            if (!recipeCard) return;
+            
+            if (recipe.type === 'any') {
+                const selectedTotal = Array.from(selectedTraits.values()).reduce((sum, amount) => sum + amount, 0);
+                const meetsRequirement = selectedTotal >= parseInt(recipe.requirement.burnTotal);
+                
+                // Actualizar estado visual de la receta
+                recipeCard.classList.toggle('eligible', meetsRequirement);
+                recipeCard.classList.toggle('not-eligible', !meetsRequirement);
+            }
         });
     }
 
