@@ -956,7 +956,10 @@
                     <p style="color: #ccc; margin-bottom: 6px; font-size: 0.9rem;">Category: ${trait.category}</p>
                     <p style="color: #ccc; margin-bottom: 6px; font-size: 0.9rem;">MaxSupply: ${trait.maxSupply}</p>
                     <p style="color: #ccc; margin-bottom: 12px; font-size: 0.85rem;">${trait.description}</p>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background: #00ffff; color: #000; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Close</button>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;">
+                        <button onclick="window.open('https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/${trait.id}', '_blank')" style="background: #ff00ff; color: #000; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; font-weight: bold;">See on OpenSea</button>
+                        <button onclick="this.parentElement.parentElement.remove()" style="background: #00ffff; color: #000; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Close</button>
+                    </div>
                 </div>
             `;
             
