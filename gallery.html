@@ -116,8 +116,8 @@
         /* Gallery Grid */
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
             margin-bottom: 40px;
             opacity: 1;
             transition: opacity 0.5s ease;
@@ -126,8 +126,8 @@
         .trait-card {
             background: rgba(0, 255, 0, 0.05);
             border: 1px solid #00ff00;
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 10px;
+            padding: 10px;
             text-align: center;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -866,18 +866,18 @@
             
             // Handle image or placeholder
             const imageHtml = trait.image ? 
-                `<img src="${trait.image}" alt="${trait.name}" style="width: 200px; height: 200px; object-fit: contain; margin-bottom: 15px;">` :
-                `<div class="placeholder-image" data-trait-id="${trait.id}" style="width: 200px; height: 200px; margin: 0 auto 15px auto;"></div>`;
+                `<img src="${trait.image}" alt="${trait.name}" style="width: 200px; height: 200px; object-fit: contain; margin-bottom: 10px;">` :
+                `<div class="placeholder-image" data-trait-id="${trait.id}" style="width: 200px; height: 200px; margin: 0 auto 10px auto;"></div>`;
             
             modal.innerHTML = `
-                <div style="background: #1a1a1a; border: 2px solid #00ff00; border-radius: 10px; padding: 20px; max-width: 400px; text-align: center;">
+                <div style="background: #1a1a1a; border: 2px solid #00ff00; border-radius: 10px; padding: 15px; max-width: 350px; text-align: center;">
                     ${imageHtml}
-                    <h3 style="color: #00ff00; margin-bottom: 10px;">${trait.name}</h3>
-                    <p style="color: #ccc; margin-bottom: 10px;">ID: ${trait.id}</p>
-                    <p style="color: #ccc; margin-bottom: 10px;">Category: ${trait.category}</p>
-                    <p style="color: #ccc; margin-bottom: 10px;">MaxSupply: ${trait.maxSupply}</p>
-                    <p style="color: #ccc; margin-bottom: 15px;">${trait.description}</p>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background: #00ff00; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Close</button>
+                    <h3 style="color: #00ff00; margin-bottom: 8px; font-size: 1.1rem;">${trait.name}</h3>
+                    <p style="color: #ccc; margin-bottom: 6px; font-size: 0.9rem;">ID: ${trait.id}</p>
+                    <p style="color: #ccc; margin-bottom: 6px; font-size: 0.9rem;">Category: ${trait.category}</p>
+                    <p style="color: #ccc; margin-bottom: 6px; font-size: 0.9rem;">MaxSupply: ${trait.maxSupply}</p>
+                    <p style="color: #ccc; margin-bottom: 12px; font-size: 0.85rem;">${trait.description}</p>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: #00ff00; color: #000; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Close</button>
                 </div>
             `;
             
