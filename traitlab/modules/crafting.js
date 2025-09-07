@@ -234,6 +234,139 @@ class TraitLABCrafting {
         this.selectedTraits.clear();
         console.log('🔨 Selección de traits limpiada');
     }
+
+    /**
+     * Asegurar aprobación del contrato de crafting para mover ERC1155
+     */
+    async ensureERC1155Approval() {
+        try {
+            if (typeof window.ethers === 'undefined') {
+                throw new Error('Ethers library not available');
+            }
+
+            const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const userAddress = await signer.getAddress();
+
+            const erc1155Address = window.TraitLABConfig.CONTRACTS.ERC1155;
+            const craftingAddress = window.TraitLABConfig.ADRIAN_CRAFTING_CONTRACT;
+
+            const erc1155Abi = [
+                "function isApprovedForAll(address account, address operator) view returns (bool)",
+                "function setApprovalForAll(address operator, bool approved)"
+            ];
+
+            const erc1155 = new window.ethers.Contract(erc1155Address, erc1155Abi, signer);
+
+            const isApproved = await erc1155.isApprovedForAll(userAddress, craftingAddress);
+            console.log('🔨 Crafting: isApprovedForAll =', isApproved);
+
+            if (!isApproved) {
+                console.log('🔨 Crafting: Solicitando setApprovalForAll al contrato de crafting...');
+                const tx = await erc1155.setApprovalForAll(craftingAddress, true);
+                await tx.wait();
+                console.log('✅ Crafting: setApprovalForAll confirmado:', tx.hash);
+            }
+        } catch (error) {
+            console.error('❌ Crafting: Error al asegurar aprobación ERC1155:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Intentar ejecutar un método del contrato de crafting (con estimateGas para validar)
+     */
+    async tryCraftMethod(contract, methodName, args) {
+        try {
+            if (!contract[methodName]) return null;
+            // Validar con estimateGas para evitar fallos predecibles
+            await contract.estimateGas[methodName](...args);
+            const tx = await contract[methodName](...args);
+            console.log(`🧪 Crafting: Método ${methodName} enviado:`, tx.hash);
+            const receipt = await tx.wait();
+            console.log(`✅ Crafting: Método ${methodName} confirmado:`, receipt.transactionHash);
+            return receipt;
+        } catch (error) {
+            console.warn(`⚠️ Crafting: Método ${methodName} falló:`, error?.reason || error?.message || error);
+            return null;
+        }
+    }
+
+    /**
+     * Ejecutar crafting para receta específica
+     */
+    async craftSpecific(recipeId) {
+        console.log('🔨 Crafting: craftSpecific para receta:', recipeId);
+        await this.ensureERC1155Approval();
+
+        const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const craftingAddress = window.TraitLABConfig.ADRIAN_CRAFTING_CONTRACT;
+
+        // ABI con posibles variantes de función
+        const craftingAbi = [
+            "function craftSpecific(uint256 recipeId)",
+            "function useSpecificRecipe(uint256 recipeId)",
+            // fallback genérico por si el contrato usa un nombre común
+            "function craft(uint256 recipeId)"
+        ];
+
+        const crafting = new window.ethers.Contract(craftingAddress, craftingAbi, signer);
+
+        const candidates = [
+            ['useSpecificRecipe', [window.parseInt ? window.parseInt(recipeId) : Number(recipeId)]],
+            ['craftSpecific', [window.parseInt ? window.parseInt(recipeId) : Number(recipeId)]],
+            ['craft', [window.parseInt ? window.parseInt(recipeId) : Number(recipeId)]]
+        ];
+
+        for (const [method, args] of candidates) {
+            const receipt = await this.tryCraftMethod(crafting, method, args);
+            if (receipt) {
+                return receipt;
+            }
+        }
+        throw new Error('No se pudo ejecutar craftSpecific: ninguna variante de método funcionó');
+    }
+
+    /**
+     * Ejecutar crafting para receta "any" con arrays de burn
+     */
+    async craftAny(recipeId, burnIds, burnAmounts) {
+        console.log('🔨 Crafting: craftAny para receta:', recipeId, 'burnIds:', burnIds, 'burnAmounts:', burnAmounts);
+        await this.ensureERC1155Approval();
+
+        const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        const craftingAddress = window.TraitLABConfig.ADRIAN_CRAFTING_CONTRACT;
+
+        // ABI con posibles variantes de función
+        const craftingAbi = [
+            "function craftAny(uint256 recipeId, uint256[] burnIds, uint256[] burnAmounts)",
+            "function useAnyRecipe(uint256 recipeId, uint256[] burnIds, uint256[] burnAmounts)",
+            // fallback genérico por si el contrato usa un nombre común
+            "function craft(uint256 recipeId, uint256[] burnIds, uint256[] burnAmounts)"
+        ];
+
+        const crafting = new window.ethers.Contract(craftingAddress, craftingAbi, signer);
+
+        const rid = window.parseInt ? window.parseInt(recipeId) : Number(recipeId);
+        const ids = burnIds.map(id => window.parseInt ? window.parseInt(id) : Number(id));
+        const amts = burnAmounts.map(a => window.parseInt ? window.parseInt(a) : Number(a));
+
+        const candidates = [
+            ['useAnyRecipe', [rid, ids, amts]],
+            ['craftAny', [rid, ids, amts]],
+            ['craft', [rid, ids, amts]]
+        ];
+
+        for (const [method, args] of candidates) {
+            const receipt = await this.tryCraftMethod(crafting, method, args);
+            if (receipt) {
+                return receipt;
+            }
+        }
+        throw new Error('No se pudo ejecutar craftAny: ninguna variante de método funcionó');
+    }
 }
 
 // Exportar la clase al scope global
