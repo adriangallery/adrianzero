@@ -415,6 +415,12 @@
                                 this.modules.dataManager
                             );
                             console.log('🔨 CRAFTING: displayCraftingContent llamado');
+                        } else if (this.currentFilter === 'rename') {
+                            // Mostrar inmediatamente AdrianZERO (ERC721) y habilitar rename en popup
+                            const erc721 = this.modules.dataManager.getFilteredTokens('rename');
+                            console.log('✍️ RENAME: Mostrando AdrianZERO para renombrar:', erc721.length);
+                            this.modules.ui.displayTokens(erc721, 'adrianzero');
+                            this.hideLoading();
                         } else {
                             console.error('🔨 CRAFTING: Módulo de crafting no disponible');
                             throw new Error('Módulo de crafting no disponible');
