@@ -901,7 +901,7 @@ class ZeroManager {
     /**
      * Execute rename transaction
      */
-    async executeRename(userAddress, tokenId, newName) {
+    async executeRename(ethers, newName) {
         console.log('Executing rename transaction...');
         
         try {
@@ -913,6 +913,11 @@ class ZeroManager {
                 window.TraitLABConfig.ADRIAN_NAME_REGISTRY_ABI,
                 signer
             );
+            
+            const tokenId = this.selectedERC721?.tokenId;
+            if (typeof tokenId === 'undefined') {
+                throw new Error('No AdrianZERO token selected');
+            }
             
             console.log('Contract address:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
             console.log('Token ID:', tokenId);
