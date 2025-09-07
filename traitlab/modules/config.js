@@ -31,6 +31,21 @@ class TraitLABConfig {
             chainId: 8453,
             rpcUrl: "https://mainnet.base.org"
         };
+
+        // ABI mínimos necesarios
+        this.ERC20_ABI = [
+            "function approve(address spender, uint256 amount) returns (bool)",
+            "function allowance(address owner, address spender) view returns (uint256)",
+            "function balanceOf(address owner) view returns (uint256)"
+        ];
+
+        // ABI del Name Registry (métodos usados)
+        this.ADRIAN_NAME_REGISTRY_ABI = [
+            "function setTokenName(uint256 tokenId, string newName)",
+            "function getTokenName(uint256 tokenId) view returns (string)",
+            "function namePrice() view returns (uint256)",
+            "function getCoreContract() view returns (address)"
+        ];
         
         console.log('⚙️ TraitLABConfig: Configuración inicializada');
     }
