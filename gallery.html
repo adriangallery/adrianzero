@@ -862,29 +862,36 @@
             document.body.appendChild(modal);
         }
 
-        function updatePagination() {
-            const totalPages = Math.ceil(filteredTraits.length / traitsPerPage);
-            const startIndex = (currentPage - 1) * traitsPerPage + 1;
-            const endIndex = Math.min(currentPage * traitsPerPage, filteredTraits.length);
-
-            document.getElementById('showingStart').textContent = startIndex;
-            document.getElementById('showingEnd').textContent = endIndex;
-            document.getElementById('showingTotal').textContent = filteredTraits.length;
-            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
-
-            document.getElementById('prevPage').disabled = currentPage === 1;
-            document.getElementById('nextPage').disabled = currentPage === totalPages;
-        }
-
-        function changePage(direction) {
-            const totalPages = Math.ceil(filteredTraits.length / traitsPerPage);
-            const newPage = currentPage + direction;
+        function getFilteredTraits() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
             
-            if (newPage >= 1 && newPage <= totalPages) {
-                currentPage = newPage;
-                displayPage();
-            }
+            return allTraits.filter(trait => {
+                const matchesSearch = trait.name.toLowerCase().includes(searchTerm) || 
+                                    trait.id.toString().includes(searchTerm);
+                const matchesCategory = category === 'all' || trait.category === category;
+                return matchesSearch && matchesCategory;
+            }).sort((a, b) => {
+                switch (sortBy) {
+                    case 'id': return a.id - b.id;
+                    case 'name': return a.name.localeCompare(b.name);
+                    case 'category': return a.category.localeCompare(b.category);
+                    default: return 0;
+                }
+            });
         }
+
+        function updateStats() {
+            const totalTraits = allTraits.length;
+            const filteredTraits = getFilteredTraits();
+            
+            document.getElementById('showingStart').textContent = 1;
+            document.getElementById('showingEnd').textContent = filteredTraits.length;
+            document.getElementById('showingTotal').textContent = totalTraits;
+        }
+
+        // Pagination functions removed - using infinite scroll instead
 
         function populateCategoryFilter() {
             const categories = [...new Set(allTraits.map(trait => trait.category))];
