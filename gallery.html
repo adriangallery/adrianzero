@@ -338,29 +338,76 @@
 <body>
     <!-- Navigation Menu -->
     <div id="menu-container">
-        <nav class="navbar navbar-expand-lg">
+        <nav class="navbar">
             <div class="container-fluid">
-                <a class="navbar-brand" href="https://adrianzero.com">AdrianZERO</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <div class="d-flex align-items-center">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <span class="navbar-text token-symbol ms-2">$ADRIAN</span>
+                </div>
+                
+                <!-- Espacio para mantener el balance visual -->
+                <div class="d-flex align-items-center">
+                    <!-- Espacio reservado para futuras funcionalidades -->
+                </div>
+
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="https://adrianzero.com">Home</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" target="_blank">Buy $ADRIAN</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/mintwithadrian">Mint with $ADRIAN</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/roadmaps">Roadmap</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="https://adrianzero.com/traitlab">TraitLAB</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/ogclaim">OG Claim</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/">Adventure</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/shop">TraitSHOP</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/traitcreator">T-Shit Studio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianzero.com/patientzero">PatientZERO</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adriangallery.com">AdrianGALLERY</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://adrianpunks.com">AdrianPUNKS</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link active" href="gallery.html">Traits Gallery</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="gallery-zero.html">AdrianZERO Gallery</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="https://adrianzero.com/traitcreator">Trait Creator</a>
+                            <a class="nav-link" href="https://discord.gg/ZtyBkXGtwd" target="_blank">DISCORD</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://x.com/adriancerda" target="_blank">X</a>
                         </li>
                     </ul>
-                    <span class="navbar-text">Gallery</span>
+                </div>
+
+                <!-- Quitamos el botón desktop pero dejamos un div vacío para mantener el espacio -->
+                <div class="d-none d-lg-flex align-items-center ms-auto desktop-wallet-section">
+                    <!-- Botón de wallet quitado pero dejando el espacio -->
                 </div>
             </div>
         </nav>
@@ -954,12 +1001,15 @@
             // Clear existing options except "All Categories"
             categoryFilter.innerHTML = '<option value="">All Categories</option>';
             
+            // Sort categories alphabetically
             categories.sort().forEach(category => {
                 const option = document.createElement('option');
                 option.value = category;
                 option.textContent = category;
                 categoryFilter.appendChild(option);
             });
+            
+            console.log('Categories loaded:', categories);
         }
 
 
