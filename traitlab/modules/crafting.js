@@ -297,7 +297,6 @@ class TraitLABCrafting {
      */
     async craftSpecific(recipeId) {
         console.log('🔨 Crafting: craftSpecific para receta:', recipeId);
-        await this.ensureERC1155Approval();
 
         const provider = new window.ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
@@ -333,7 +332,6 @@ class TraitLABCrafting {
      */
     async craftAny(recipeId, burnIds, burnAmounts) {
         console.log('🔨 Crafting: craftAny para receta:', recipeId, 'burnIds:', burnIds, 'burnAmounts:', burnAmounts);
-        await this.ensureERC1155Approval();
 
         const provider = new window.ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
