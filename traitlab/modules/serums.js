@@ -121,6 +121,15 @@ class SerumsManager {
             throw new Error('Please connect your wallet first.');
         }
 
+        // 🚨 NUEVO: Verificar si el token está activado antes de usar el serum
+        console.log('🔍 SerumsManager: Verificando si el token está activado...');
+        try {
+            await this.checkTokenActivationStatus(selectedERC721);
+        } catch (activationError) {
+            console.warn('⚠️ SerumsManager: Error verificando activación del token:', activationError.message);
+            // Continuar con la transacción - el contrato verificará la elegibilidad
+        }
+
         try {
             // Load ethers dynamically only when needed
             let ethers;
@@ -247,6 +256,8 @@ class SerumsManager {
                     errorMessage = '❌ You are not authorized to use this serum.';
                 } else if (error.reason && error.reason.includes('serum not found')) {
                     errorMessage = '❌ Serum not found.';
+                } else if (error.reason && error.reason.includes('Token not eligible for mutation')) {
+                    errorMessage = '❌ This AdrianZERO token needs to be activated first! Please use "Assign SKIN" button to activate the token before using a serum.';
                 } else {
                     errorMessage = `❌ Transaction failed: ${error.reason}`;
                 }
@@ -328,6 +339,34 @@ class SerumsManager {
             { tokenId: 262146, name: 'Serum 262146', balance: 2, available: true },
             { tokenId: 262147, name: 'Serum 262147', balance: 1, available: true }
         ].filter(serum => serum.available);
+    }
+
+    /**
+     * Check if token is activated (has SKIN assigned)
+     */
+    async checkTokenActivationStatus(token) {
+        try {
+            // Load ethers dynamically if not available
+            let ethers = window.ethers;
+            if (typeof ethers === 'undefined') {
+                console.log('Ethers not available for activation check');
+                return false;
+            }
+
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            
+            // Check if token has SKIN assigned by calling a view function
+            // This would need to be implemented based on the actual contract
+            // For now, we'll just log and return true to continue with the transaction
+            console.log('🔍 SerumsManager: Checking activation status for token:', token.tokenId);
+            
+            // TODO: Implement actual activation check when contract view function is available
+            return true;
+            
+        } catch (error) {
+            console.error('Error checking token activation status:', error);
+            throw error;
+        }
     }
 
     /**
