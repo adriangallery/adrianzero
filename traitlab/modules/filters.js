@@ -61,7 +61,7 @@ class TokenFilters {
                     token.displayName = 'Golden Floppy';
                     token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
                 } else if (tokenId === 10007) {
-                    token.displayName = 'Action Pack 10007';
+                    token.displayName = 'NEONpack';
                     token.targetContract = window.TraitLABConfig.ACTION_PACK_10007_CONTRACT;
                 } else if (tokenId === 10008) {
                     token.displayName = 'OPTICALpack';

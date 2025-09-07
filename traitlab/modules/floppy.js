@@ -156,7 +156,7 @@ class FloppyManager {
             case 10005:
                 return 'Golden Floppy';
             case 10007:
-                return 'Action Pack 10007';
+                return 'NEONpack';
             case 10008:
                 return 'OPTICALpack';
             case 10009:
