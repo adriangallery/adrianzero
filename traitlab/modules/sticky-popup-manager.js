@@ -712,7 +712,7 @@ class StickyPopupManager {
             } else if (this.selectedFloppy.tokenId === 10005) {
                 floppyDisplayName = 'Golden Floppy';
             } else if (this.selectedFloppy.tokenId === 10007) {
-                floppyDisplayName = 'Action Pack 10007';
+                floppyDisplayName = 'NEONpack';
             }
             text += `<h4 class="selected-floppy-title">${floppyDisplayName}</h4>`;
         }
@@ -775,10 +775,10 @@ class StickyPopupManager {
 
     openPack() {
         console.log('🎯 StickyPopupManager: Abrir pack');
-        if (window.app && window.app.modules.floppy && window.app.modules.floppy.openPack) {
-            window.app.modules.floppy.openPack();
+        if (window.app && window.app.modules.floppy && window.app.modules.floppy.openSelectedPack) {
+            window.app.modules.floppy.openSelectedPack();
         } else {
-            console.error('❌ Módulo floppy no disponible para openPack');
+            console.error('❌ Módulo floppy no disponible para openSelectedPack');
         }
     }
 
