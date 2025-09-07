@@ -231,6 +231,14 @@ class StickyPopupManager {
                     if (this.elements.erc721ActionsSection) this.elements.erc721ActionsSection.style.display = 'none';
                     this.showRenameSection();
                     if (this.elements.showRenameSectionBtn) this.elements.showRenameSectionBtn.style.display = 'none';
+                    // Limpiar selección y UI de floppy/serum/traits
+                    this.selectedFloppy = null;
+                    this.selectedSerum = null;
+                    this.selectedERC1155 = [];
+                    if (this.elements.openFloppySection) this.elements.openFloppySection.style.display = 'none';
+                    if (this.elements.openPackSection) this.elements.openPackSection.style.display = 'none';
+                    // Mostrar imagen del AdrianZERO
+                    this.showBaseAdrianZeroImage();
                     // Precargar precio del nombre
                     if (window.app?.modules?.zero?.loadNamePrice) {
                         window.app.modules.zero.loadNamePrice().catch(() => {});
@@ -287,6 +295,13 @@ class StickyPopupManager {
             if (this.currentFilter === 'rename') {
                 if (this.elements.erc721ActionsSection) this.elements.erc721ActionsSection.style.display = 'none';
                 this.showRenameSection();
+                // Asegurar que no aparezca info de floppy/serum y la imagen sea la del AdrianZERO
+                this.selectedFloppy = null;
+                this.selectedSerum = null;
+                this.selectedERC1155 = [];
+                if (this.elements.openFloppySection) this.elements.openFloppySection.style.display = 'none';
+                if (this.elements.openPackSection) this.elements.openPackSection.style.display = 'none';
+                this.showBaseAdrianZeroImage();
                 // No continuar con flujo normal
             } else
             // 🚨 NUEVO: Verificar si estamos en tab traits para mostrar botones correctos
@@ -722,9 +737,10 @@ class StickyPopupManager {
             text += `<h3 class="selected-token-title">${this.selectedERC721.title}</h3>`;
         }
 
-        // Traits no se muestran en el popup - solo se usan para generar imagen combinada
+        // En tab rename, no mostrar info de floppy/serum
+        const hideOtherInfo = this.currentFilter === 'rename';
 
-        if (this.selectedFloppy) {
+        if (!hideOtherInfo && this.selectedFloppy) {
             let floppyDisplayName = this.selectedFloppy.title;
             if (this.selectedFloppy.tokenId === 10003) {
                 floppyDisplayName = 'GLITCH Floppy';
@@ -738,7 +754,7 @@ class StickyPopupManager {
             text += `<h4 class="selected-floppy-title">${floppyDisplayName}</h4>`;
         }
 
-        if (this.selectedSerum) {
+        if (!hideOtherInfo && this.selectedSerum) {
             text += `<h4 class="selected-serum-title">${this.selectedSerum.title}</h4>`;
         }
 
