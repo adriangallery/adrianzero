@@ -813,11 +813,23 @@
             // Update category filter
             await populateCategoryFilter();
             
-            // Re-filter and display
+            // Re-filter traits
             filterTraits();
             
-            // Display the updated traits
-            displayPage();
+            // Add only new traits to the grid (infinite scroll)
+            const galleryGrid = document.getElementById('galleryGrid');
+            const currentCount = galleryGrid.children.length;
+            
+            // Get only the new traits that haven't been displayed yet
+            const newTraits = filteredTraits.slice(currentCount);
+            
+            newTraits.forEach(trait => {
+                const traitCard = createTraitCard(trait);
+                galleryGrid.appendChild(traitCard);
+            });
+
+            // Update stats
+            updateStats();
         }
 
         function setupInfiniteScroll() {
