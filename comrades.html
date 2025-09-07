@@ -883,6 +883,7 @@
                     "function mintWithToken(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof) external",
                     "function mintFreeWithMerkle(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof) external",
                     "function verifyAllowlist(uint256 batchId, address wallet, bytes32[] calldata merkleProof) external view returns (bool)",
+                    "function hasUsedFreeMint(uint256 batchId, address user) external view returns (bool)",
                     "function getBatchSummary(uint256 batchId) external view returns (uint256 id, string memory name, uint256 floppyTokenId, uint256 priceWei, uint256 priceToken, uint256 startTime, uint256 endTime, bool active, uint256 minted, uint256 maxSupply, uint256 remaining, uint256 maxPerWallet, uint256 maxPerTx)",
                     "function getUserAllowanceLeft(uint256 batchId, address user) external view returns (uint256 left)"
                 ];
@@ -1102,12 +1103,24 @@
                 return;
             }
             
-            // For FREE claim with Merkle, use the new mintFreeWithMerkle function
+            // For FREE claim with Merkle, check if user already used free mint
             try {
+                const hasUsedFree = await comradesContract.hasUsedFreeMint(PACK_ID, userAddress);
+                if (hasUsedFree) {
+                    showStatus('You have already used your free mint. Please use paid mint for additional Comrades.', 'error');
+                    return;
+                }
+                
+                // Only allow 1 free mint
+                if (currentQuantity !== 1) {
+                    showStatus('Free mint is limited to 1 Comrades per wallet. Please adjust quantity.', 'error');
+                    return;
+                }
+                
                 console.log('Attempting free mint with Merkle...');
                 const tx = await comradesContract.functions['mintFreeWithMerkle(uint256,uint256,bytes32[])'](PACK_ID, currentQuantity, proof);
                 await tx.wait();
-                showStatus('Successfully claimed Comrades!', 'success');
+                showStatus('Successfully claimed your free Comrades!', 'success');
                 return;
             } catch (error) {
                 console.error('Free mint failed:', error);
@@ -1130,6 +1143,9 @@
                         return;
                     } else if (errorCode === '0x1c1f1c87') {
                         showStatus('Error: ETH payment disabled for this batch. Free claims not supported with ETH.', 'error');
+                        return;
+                    } else if (errorCode === '0xaf6c6082') {
+                        showStatus('Error: Invalid quantity. Free mint is limited to 1 Comrades.', 'error');
                         return;
                     }
                 }
