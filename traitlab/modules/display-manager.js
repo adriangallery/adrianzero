@@ -23,6 +23,8 @@ class DisplayManager {
         const craftingContainer = document.createElement('div');
         craftingContainer.className = 'crafting-container';
         console.log('🔨 displayCraftingContent: Grid limpiado y contenedor creado');
+        // Adjuntar el contenedor primero para que los queries por ID funcionen
+        grid.appendChild(craftingContainer);
         
         // Verificar si el módulo de crafting está disponible
         if (!craftingModule) {
@@ -51,7 +53,6 @@ class DisplayManager {
                 console.log('🔨 displayCraftingContent: Mostrando recetas y traits...');
                 this.displayCraftingRecipes(craftingContainer, recipes);
                 this.displayCraftingTraits(craftingContainer, dataManager);
-                grid.appendChild(craftingContainer);
             } else {
                 console.log('🔨 displayCraftingContent: No hay recetas disponibles');
                 grid.innerHTML = '<div class="no-recipes"><p>No recipes available.</p></div>';
