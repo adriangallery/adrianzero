@@ -101,6 +101,12 @@ class FloppyManager {
             return this.getImagePath(15014, '.png');
         } else if (tokenId === 15015) {
             return this.getImagePath(15015, '.png');
+        } else if (tokenId === 10008) {
+            return this.getImagePath(10008, '.gif');
+        } else if (tokenId === 10009) {
+            return this.getImagePath(10009, '.gif');
+        } else if (tokenId === 10010) {
+            return this.getImagePath(10010, '.gif');
         }
         
         // Fallback to default image
@@ -134,7 +140,7 @@ class FloppyManager {
      * Check if token is a floppy token
      */
     isFloppyToken(tokenId) {
-        return (tokenId >= 10000 && tokenId <= 10007) || 
+        return (tokenId >= 10000 && tokenId <= 10010) || 
                (tokenId >= 15000 && tokenId <= 15015);
     }
 
@@ -151,6 +157,12 @@ class FloppyManager {
                 return 'Golden Floppy';
             case 10007:
                 return 'Action Pack 10007';
+            case 10008:
+                return 'OPTICALpack';
+            case 10009:
+                return 'PUNKSfloppy';
+            case 10010:
+                return 'ComradesUSB';
             default:
                 return `Floppy ${tokenId}`;
         }
@@ -161,6 +173,7 @@ class FloppyManager {
      */
     shouldShowOpenPack(tokenId) {
         return tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || tokenId === 10003 || tokenId === 10004 || tokenId === 10007 || 
+               tokenId === 10008 || tokenId === 10009 || tokenId === 10010 ||
                (tokenId >= 15008 && tokenId <= 15015);
     }
 
@@ -196,6 +209,27 @@ class FloppyManager {
                 address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
                 type: 'pack',
                 name: 'Action Pack'
+            };
+        } else if (tokenId === 10008) {
+            // OPTICALpack - ActionPack contract
+            return {
+                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
+                type: 'pack',
+                name: 'OPTICALpack'
+            };
+        } else if (tokenId === 10009) {
+            // PUNKSfloppy - floppynuevo contract
+            return {
+                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
+                type: 'floppy',
+                name: 'PUNKSfloppy'
+            };
+        } else if (tokenId === 10010) {
+            // ComradesUSB - floppynuevo contract
+            return {
+                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
+                type: 'floppy',
+                name: 'ComradesUSB'
             };
         } else if (tokenId === 10005) {
             // Golden Floppy - ADRIAN_FLOPPY_DISCS_CONTRACT
@@ -238,9 +272,15 @@ class FloppyManager {
         } else if (this.selectedFloppy.tokenId === 10007) {
             console.log('Redirecting to openActionPack10007() for token', this.selectedFloppy.tokenId);
             return await this.openActionPack10007();
+        } else if (this.selectedFloppy.tokenId === 10008) {
+            console.log('Redirecting to openActionPack() for OPTICALpack', this.selectedFloppy.tokenId);
+            return await this.openActionPack();
         } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015) {
             console.log('Redirecting to openActionPack() for token', this.selectedFloppy.tokenId);
             return await this.openActionPack();
+        } else if (this.selectedFloppy.tokenId === 10009 || this.selectedFloppy.tokenId === 10010) {
+            console.log('Redirecting to openFloppy() for floppy token', this.selectedFloppy.tokenId);
+            return await this.openFloppy();
         } else {
             console.log('Redirecting to openPack() for token', this.selectedFloppy.tokenId);
             return await this.openPack();

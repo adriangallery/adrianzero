@@ -173,6 +173,12 @@ class UIManager {
                     displayTitle = 'Golden Floppy';
                 } else if (token.tokenId === 10007) {
                     displayTitle = 'Action Pack 10007';
+                } else if (token.tokenId === 10008) {
+                    displayTitle = 'OPTICALpack';
+                } else if (token.tokenId === 10009) {
+                    displayTitle = 'PUNKSfloppy';
+                } else if (token.tokenId === 10010) {
+                    displayTitle = 'ComradesUSB';
                 } else {
                     // 🚨 NUEVO: Limpiar el título quitando números al inicio
                     displayTitle = token.title.replace(/^\d+\s*/, '');
@@ -230,6 +236,12 @@ class UIManager {
                     imageUrl = this.getImagePath(15014, '.png');
                 } else if (token.tokenId === 15015) {
                     imageUrl = this.getImagePath(15015, '.png');
+                } else if (token.tokenId === 10008) {
+                    imageUrl = this.getImagePath(10008, '.gif');
+                } else if (token.tokenId === 10009) {
+                    imageUrl = this.getImagePath(10009, '.gif');
+                } else if (token.tokenId === 10010) {
+                    imageUrl = this.getImagePath(10010, '.gif');
                 }
             }
             
