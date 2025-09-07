@@ -301,6 +301,11 @@ class StickyPopupManager {
             } else {
                 // En otros tabs, mostrar botones normales de ERC721
                 this.showERC721Actions();
+                // Si estamos en AdrianZERO, ocultar el botón de Rename
+                if (this.currentFilter === 'adrianzero') {
+                    if (this.elements.showRenameSectionBtn) this.elements.showRenameSectionBtn.style.display = 'none';
+                    if (this.elements.renameSection) this.elements.renameSection.style.display = 'none';
+                }
                 
                 // Si no hay traits seleccionados, mostrar imagen base del AdrianZERO
                 if (this.selectedERC1155.length === 0) {
