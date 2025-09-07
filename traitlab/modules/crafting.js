@@ -10,6 +10,7 @@ class TraitLABCrafting {
         this.isLoading = false;
         this.isLoadingRecipes = false;
         this.recipesLoaded = false;
+        this.selectedTraits = new Map();
         console.log('🔨 TraitLABCrafting: Módulo simplificado inicializado');
     }
 
@@ -195,10 +196,6 @@ class TraitLABCrafting {
         console.log('🔨 TraitLABCrafting: Traits establecidos:', this.availableTraits.length);
     }
 
-    /**
-     * Mapa de traits seleccionados para crafting
-     */
-    selectedTraits = new Map();
 
     /**
      * Seleccionar trait para crafting
