@@ -429,14 +429,14 @@
             <div class="loading-text">Loading more traits...</div>
         </div>
 
-        <!-- Pagination -->
+        <!-- Stats -->
         <div class="pagination-section">
             <div class="pagination-info">
                 Showing <span id="showingStart">0</span> - <span id="showingEnd">0</span> of <span id="showingTotal">0</span> traits
             </div>
-            <button id="prevPage" class="pagination-btn" disabled>Previous</button>
-            <span id="pageInfo">Page 1 of 1</span>
-            <button id="nextPage" class="pagination-btn" disabled>Next</button>
+            <div class="pagination-controls">
+                <span id="pageInfo">Scroll down to load more traits automatically</span>
+            </div>
         </div>
     </div>
 
@@ -510,8 +510,7 @@
             document.getElementById('searchInput').addEventListener('input', filterTraits);
             document.getElementById('categoryFilter').addEventListener('change', filterTraits);
             document.getElementById('sortBy').addEventListener('change', filterTraits);
-            document.getElementById('prevPage').addEventListener('click', () => changePage(-1));
-            document.getElementById('nextPage').addEventListener('click', () => changePage(1));
+            // Pagination removed - using infinite scroll instead
         }
 
         async function loadTraits() {
@@ -722,6 +721,12 @@
             
             // Add scroll listener
             window.addEventListener('scroll', () => {
+                console.log('Scroll detected:', {
+                    isLoadingMore,
+                    hasGalleryManager: !!galleryManager,
+                    hasMoreTraits: galleryManager ? galleryManager.hasMoreTraits() : false
+                });
+
                 if (isLoadingMore || !galleryManager || !galleryManager.hasMoreTraits()) {
                     return;
                 }
@@ -731,8 +736,16 @@
                 const windowHeight = window.innerHeight;
                 const documentHeight = document.documentElement.scrollHeight;
 
+                console.log('Scroll position:', {
+                    scrollTop,
+                    windowHeight,
+                    documentHeight,
+                    distanceFromBottom: documentHeight - (scrollTop + windowHeight)
+                });
+
                 // Load more when user is 200px from bottom
                 if (scrollTop + windowHeight >= documentHeight - 200) {
+                    console.log('Triggering loadMoreTraits...');
                     loadMoreTraits();
                 }
             });
@@ -786,8 +799,8 @@
                 galleryGrid.appendChild(traitCard);
             });
 
-            // Update pagination
-            updatePagination();
+            // Update stats only
+            updateStats();
         }
 
         function createTraitCard(trait) {
