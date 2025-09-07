@@ -209,10 +209,14 @@ class StickyPopupManager {
             case 'serum':
                 if (this.selectedSerum && this.selectedERC721) {
                     // 🚨 NUEVO: Solo mostrar acciones si hay AdrianZERO y Serum seleccionados
+                    console.log('🎯 StickyPopupManager: Filter serum - mostrando acciones con ambos tokens seleccionados');
                     this.showSerumActions();
                 } else if (this.selectedSerum && !this.selectedERC721) {
                     // 🚨 NUEVO: Mostrar mensaje de error si solo hay Serum
+                    console.log('⚠️ StickyPopupManager: Filter serum - mostrando error sin AdrianZERO');
                     this.showSerumError();
+                } else {
+                    console.log('ℹ️ StickyPopupManager: Filter serum - no hay serum seleccionado');
                 }
                 break;
             case 'crafting':
@@ -250,6 +254,11 @@ class StickyPopupManager {
             currentFilter: this.currentFilter,
             currentTab: this.currentTab
         });
+
+        // 🚨 NUEVO: Verificar si tenemos tanto AdrianZERO como serum seleccionados
+        if (this.selectedERC721 && this.selectedSerum) {
+            console.log('🎯 StickyPopupManager: Ambos tokens seleccionados - AdrianZERO y Serum');
+        }
 
         // Actualizar UI basado en el nuevo estado
         this.updateUI();
@@ -301,8 +310,10 @@ class StickyPopupManager {
         if (this.selectedSerum) {
             // 🚨 NUEVO: Verificar si hay AdrianZERO seleccionado para serum
             if (this.selectedERC721) {
+                console.log('🎯 StickyPopupManager: Mostrando acciones de serum con AdrianZERO seleccionado');
                 this.showSerumActions();
             } else {
+                console.log('⚠️ StickyPopupManager: Mostrando error de serum sin AdrianZERO');
                 this.showSerumError();
             }
         }
@@ -459,7 +470,11 @@ class StickyPopupManager {
         }
         
         // 🚨 NUEVO: Mostrar imagen del AdrianZERO seleccionado (no del serum)
-        this.showBaseAdrianZeroImage();
+        if (this.selectedERC721) {
+            this.showBaseAdrianZeroImage();
+        } else {
+            console.warn('⚠️ StickyPopupManager: Intentando mostrar acciones de serum sin AdrianZERO seleccionado');
+        }
     }
 
     /**
@@ -770,7 +785,15 @@ class StickyPopupManager {
     useSerum() {
         console.log('🎯 StickyPopupManager: Usar serum');
         if (window.app && window.app.modules.serums && window.app.modules.serums.useSerum) {
-            window.app.modules.serums.useSerum();
+            // Pasar el AdrianZERO seleccionado como parámetro
+            const selectedERC721 = this.selectedERC721;
+            if (selectedERC721) {
+                console.log('🎯 StickyPopupManager: Usando serum en AdrianZERO:', selectedERC721.tokenId);
+                window.app.modules.serums.useSerum(selectedERC721);
+            } else {
+                console.error('❌ StickyPopupManager: No hay AdrianZERO seleccionado para usar el serum');
+                this.showStatus('❌ Selecciona un AdrianZERO primero', 'error', this.elements.useSerumStatus);
+            }
         }
     }
 

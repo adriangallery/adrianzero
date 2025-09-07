@@ -84,6 +84,8 @@ class TokenSelectionManager {
             this.selectedSerum = token;
             this.selectedERC1155 = [];
             this.selectedFloppy = null;
+            // 🚨 NUEVO: NO deseleccionar AdrianZERO cuando se selecciona serum
+            // this.selectedERC721 se mantiene para permitir uso del serum
             
             if (window.app && window.app.modules.serums && window.app.modules.serums.setSelectedSerum) {
                 window.app.modules.serums.setSelectedSerum(token);
