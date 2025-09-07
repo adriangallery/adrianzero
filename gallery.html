@@ -815,6 +815,9 @@
             
             // Re-filter and display
             filterTraits();
+            
+            // Display the updated traits
+            displayPage();
         }
 
         function setupInfiniteScroll() {
@@ -868,7 +871,7 @@
             filteredTraits = allTraits.filter(trait => {
                 const matchesSearch = trait.name.toLowerCase().includes(searchTerm) ||
                                    trait.description.toLowerCase().includes(searchTerm);
-                const matchesCategory = !category || trait.category === category;
+                const matchesCategory = category === 'all' || trait.category === category;
                 return matchesSearch && matchesCategory;
             });
 
