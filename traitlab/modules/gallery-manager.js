@@ -51,9 +51,9 @@ class GalleryManager {
         this.isLoading = true;
 
         try {
-            // Load initial batch from Alchemy
-            console.log('Loading initial traits from Alchemy...');
-            await this.loadTraitsFromAlchemy();
+            // Load initial batch from database
+            console.log('Loading initial traits from database...');
+            await this.loadTraitsFromDatabase();
             
             this.isLoading = false;
             return this.allTraits;
@@ -73,8 +73,8 @@ class GalleryManager {
         this.isLoading = true;
 
         try {
-            console.log(`Loading more traits from Alchemy (page ${this.currentPage + 1})...`);
-            await this.loadTraitsFromAlchemy();
+            console.log(`Loading more traits from database (page ${this.currentPage + 1})...`);
+            await this.loadTraitsFromDatabase();
             
             this.isLoading = false;
             return this.allTraits;
@@ -265,8 +265,8 @@ class GalleryManager {
     processDatabaseTraitWithAlchemy(trait) {
         const tokenId = parseInt(trait.tokenId);
         
-        // Use the same image URL format as TraitLAB for traits
-        const imageUrl = `https://adrianlab.vercel.app/labmetadata/traits/${trait.fileName}.png`;
+        // Use Alchemy-style URL with tokenId
+        const imageUrl = `https://adrianlab-exzt7o3dy-adrianlab.vercel.app/api/render/floppy/${tokenId}.png`;
         
         return {
             id: tokenId,
