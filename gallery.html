@@ -539,6 +539,11 @@
 
         async function loadMoreTraits() {
             if (isLoadingMore || !galleryManager || !galleryManager.hasMoreTraits()) {
+                console.log('Skipping loadMoreTraits:', {
+                    isLoadingMore,
+                    hasGalleryManager: !!galleryManager,
+                    hasMoreTraits: galleryManager ? galleryManager.hasMoreTraits() : false
+                });
                 return;
             }
 
@@ -555,8 +560,8 @@
                 const newTraits = await galleryManager.loadMoreTraits();
                 allTraits = newTraits;
                 
-                // Update display with new traits
-                displayMoreTraits();
+                // Update filtered traits and display
+                filterTraits();
                 
                 console.log(`Loaded more traits. Total: ${allTraits.length}`);
                 
@@ -787,19 +792,16 @@
         }
 
         function displayPage() {
-            const startIndex = (currentPage - 1) * traitsPerPage;
-            const endIndex = startIndex + traitsPerPage;
-            const pageTraits = filteredTraits.slice(startIndex, endIndex);
-
+            // For infinite scroll, show all filtered traits
             const galleryGrid = document.getElementById('galleryGrid');
             galleryGrid.innerHTML = '';
 
-            pageTraits.forEach(trait => {
+            filteredTraits.forEach(trait => {
                 const traitCard = createTraitCard(trait);
                 galleryGrid.appendChild(traitCard);
             });
 
-            // Update stats only
+            // Update stats
             updateStats();
         }
 
@@ -927,6 +929,12 @@
             setTimeout(async () => {
                 await loadDemoTraits();
             }, 1000);
+        }
+
+        function showError(message) {
+            console.error(message);
+            // Simple error display - could be enhanced with a modal
+            alert(message);
         }
     </script>
 </body>
