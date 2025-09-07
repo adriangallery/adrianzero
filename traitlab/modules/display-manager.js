@@ -22,6 +22,8 @@ class DisplayManager {
         grid.innerHTML = '';
         const craftingContainer = document.createElement('div');
         craftingContainer.className = 'crafting-container';
+        // Asegurar que ocupa todo el ancho del grid padre (.tokens-grid)
+        craftingContainer.style.gridColumn = '1 / -1';
         console.log('🔨 displayCraftingContent: Grid limpiado y contenedor creado');
         // Adjuntar el contenedor primero para que los queries por ID funcionen
         grid.appendChild(craftingContainer);
