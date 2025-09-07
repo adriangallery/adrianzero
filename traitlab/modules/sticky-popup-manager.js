@@ -190,6 +190,9 @@ class StickyPopupManager {
                 if (this.selectedERC721) {
                     this.showERC721Actions();
                     this.showBaseAdrianZeroImage();
+                    // En tab AdrianZERO: ocultar UI de rename
+                    if (this.elements.renameSection) this.elements.renameSection.style.display = 'none';
+                    if (this.elements.showRenameSectionBtn) this.elements.showRenameSectionBtn.style.display = 'none';
                 }
                 break;
             case 'traits':
@@ -224,7 +227,14 @@ class StickyPopupManager {
                 break;
             case 'rename':
                 if (this.selectedERC721) {
+                    // En tab Rename: ocultar acciones ERC721 (Assign SKIN) y mostrar rename
+                    if (this.elements.erc721ActionsSection) this.elements.erc721ActionsSection.style.display = 'none';
                     this.showRenameSection();
+                    if (this.elements.showRenameSectionBtn) this.elements.showRenameSectionBtn.style.display = 'none';
+                    // Precargar precio del nombre
+                    if (window.app?.modules?.zero?.loadNamePrice) {
+                        window.app.modules.zero.loadNamePrice().catch(() => {});
+                    }
                 }
                 break;
         }
@@ -273,6 +283,12 @@ class StickyPopupManager {
 
         // Mostrar secciones según el estado
         if (this.selectedERC721) {
+            // Si estamos en tab rename, solo mostrar rename y ocultar acciones ERC721
+            if (this.currentFilter === 'rename') {
+                if (this.elements.erc721ActionsSection) this.elements.erc721ActionsSection.style.display = 'none';
+                this.showRenameSection();
+                // No continuar con flujo normal
+            } else
             // 🚨 NUEVO: Verificar si estamos en tab traits para mostrar botones correctos
             if (this.currentFilter === 'traits') {
                 // En tab traits, solo mostrar Apply Traits si hay traits seleccionados
