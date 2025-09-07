@@ -89,7 +89,7 @@ class UITemplates {
                 <h1>
                     <span class="trait">TRAIT</span><span class="lab">LAB</span>
                 </h1>
-                <div class="subtitle">Modular & Clean Architecture</div>
+                <div class="subtitle">by HalfXTiger</div>
             </div>
         `;
     }
