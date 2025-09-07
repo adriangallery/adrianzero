@@ -872,6 +872,12 @@ class StickyPopupManager {
             console.error('❌ Módulo zero no disponible para renameToken');
             return;
         }
+
+        // 🎯 Asegurar que zero tenga el token seleccionado
+        if (this.state.selectedERC721 && zero.setSelectedERC721) {
+            console.log('🎯 StickyPopupManager: Sincronizando selectedERC721 con zero module');
+            zero.setSelectedERC721(this.state.selectedERC721);
+        }
         
         try {
             // Deshabilitar botón para evitar dobles clics

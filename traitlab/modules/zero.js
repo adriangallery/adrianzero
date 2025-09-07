@@ -914,9 +914,16 @@ class ZeroManager {
                 signer
             );
             
-            const tokenId = this.selectedERC721?.tokenId;
+            // 🎯 Fallback defensivo para obtener tokenId
+            let tokenId = this.selectedERC721?.tokenId;
             if (typeof tokenId === 'undefined') {
-                throw new Error('No AdrianZERO token selected');
+                // Intentar obtener desde tokenSelectionManager como fallback
+                tokenId = window.app?.modules?.tokenSelectionManager?.selectedERC721?.tokenId;
+                console.log('🎯 Fallback: tokenId obtenido desde tokenSelectionManager:', tokenId);
+            }
+            
+            if (typeof tokenId === 'undefined') {
+                throw new Error('No AdrianZERO token selected - tokenId no disponible');
             }
             
             console.log('Contract address:', window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);

@@ -98,6 +98,18 @@ class TokenSelectionManager {
                     window.app.modules.crafting.selectTrait(token.tokenId, 1);
                 }
             }
+        } else if (filter === 'rename') {
+            console.log('✍️ Setting as Rename token (AdrianZERO)');
+            this.selectedERC721 = token;
+            this.selectedERC1155 = [];
+            this.selectedFloppy = null;
+            this.selectedSerum = null;
+            
+            // Propagar selección al ZeroManager para operaciones de rename
+            if (window.app && window.app.modules.zero && window.app.modules.zero.setSelectedERC721) {
+                console.log('🎯 TokenSelectionManager: Sincronizando selectedERC721 con zero module para rename');
+                window.app.modules.zero.setSelectedERC721(token);
+            }
         } else {
             // AdrianLAB - traits
             console.log('🎭 Setting as Traits token');
