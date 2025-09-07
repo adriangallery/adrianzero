@@ -107,7 +107,7 @@ class SerumsManager {
      * Use Serum function
      */
     async useSerum(selectedERC721) {
-        console.log('useSerum called');
+        console.log('🧪 SerumsManager: useSerum called with AdrianZERO:', selectedERC721?.tokenId);
         
         if (!this.selectedSerum) {
             throw new Error('Please select a serum first.');
