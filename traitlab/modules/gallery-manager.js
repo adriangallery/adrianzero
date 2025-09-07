@@ -116,8 +116,8 @@ class GalleryManager {
             // Check if there are more traits
             this.hasMoreTraits = endIndex < data.traits.length;
 
-            // Process the traits
-            const newTraits = traitsSlice.map(trait => this.processDatabaseTrait(trait));
+            // Process the traits with Alchemy metadata
+            const newTraits = await Promise.all(traitsSlice.map(trait => this.processDatabaseTraitWithAlchemy(trait)));
             
             // Add to existing traits
             this.allTraits.push(...newTraits);
@@ -132,6 +132,39 @@ class GalleryManager {
         }
     }
 
+    async processDatabaseTraitWithAlchemy(trait) {
+        const tokenId = parseInt(trait.tokenId);
+        
+        try {
+            // Get metadata from Alchemy for the image
+            const alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${this.alchemyApiKey}/getNFTMetadata?contractAddress=${window.TRAITS_CONTRACT}&tokenId=${tokenId}&tokenType=ERC1155&refreshCache=false`;
+            const response = await fetch(alchemyUrl);
+            
+            let imageUrl = null;
+            if (response.ok) {
+                const alchemyData = await response.json();
+                imageUrl = this.getImageUrl(alchemyData.image, tokenId);
+            }
+            
+            return {
+                id: tokenId,
+                name: trait.name || `Trait ${tokenId}`,
+                description: trait.description || '',
+                image: imageUrl,
+                category: trait.category || 'Other',
+                totalSupply: '0', // Not available in database
+                maxSupply: trait.maxSupply || '1000',
+                uri: '',
+                metadata: trait,
+                contractAddress: window.TRAITS_CONTRACT || "0x0995c0dA1ca071b792E852b6Ec531b7cD7d1F8D6"
+            };
+        } catch (error) {
+            console.warn(`Failed to load Alchemy metadata for trait ${tokenId}:`, error);
+            // Fallback to database only
+            return this.processDatabaseTrait(trait);
+        }
+    }
+
     processDatabaseTrait(trait) {
         const tokenId = parseInt(trait.tokenId);
         
@@ -139,7 +172,7 @@ class GalleryManager {
             id: tokenId,
             name: trait.name || `Trait ${tokenId}`,
             description: trait.description || '',
-            image: this.getTraitImageUrl(trait.fileName, tokenId),
+            image: null, // Will use CSS placeholder
             category: trait.category || 'Other',
             totalSupply: '0', // Not available in database
             maxSupply: trait.maxSupply || '1000',
@@ -150,9 +183,9 @@ class GalleryManager {
     }
 
     getTraitImageUrl(fileName, tokenId) {
-        if (fileName) {
-            // Use the same image path as TraitLAB
-            return `https://adrianlab.vercel.app/labmetadata/traits/${fileName}.png`;
+        if (tokenId) {
+            // Use Alchemy's cached image API
+            return `https://base-mainnet.g.alchemy.com/nft/v3/${this.alchemyApiKey}/getNFTMetadata?contractAddress=${window.TRAITS_CONTRACT}&tokenId=${tokenId}&tokenType=ERC1155&refreshCache=false`;
         }
         return null; // Will use CSS placeholder
     }
