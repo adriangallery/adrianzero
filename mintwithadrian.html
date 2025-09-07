@@ -1757,14 +1757,13 @@
                 document.getElementById('goldenFloppyMinted').textContent = minted.toNumber().toLocaleString();
                 document.getElementById('goldenFloppyTotal').textContent = maxSupply.toNumber().toLocaleString();
                 
-                // Update price display
-                const priceInEth = parseFloat(ethers.utils.formatEther(priceWei)).toFixed(6);
+                // Update price display (only $ADRIAN)
                 const priceInToken = parseFloat(ethers.utils.formatEther(priceToken)).toFixed(6);
                 
                 // Update the price display in UI
                 const priceElement = document.querySelector('.price-tag');
                 if (priceElement) {
-                    priceElement.textContent = `Price: ${priceInEth} ETH / ${priceInToken} $ADRIAN`;
+                    priceElement.textContent = `Price: ${priceInToken} $ADRIAN`;
                 }
                 
                 // Store price for updateTotal function
@@ -1845,61 +1844,36 @@
                     return;
                 }
 
-                // Try ETH payment first, then fallback to token
-                if (!priceWei.isZero()) {
-                    const total = priceWei.mul(quantity);
-                    
-                    // Check ETH balance
-                    const balanceWei = await signer.getBalance();
-                    const gasPrice = await provider.getGasPrice();
-                    const gasLimit = ethers.BigNumber.from('500000');
-                    const fee = gasPrice.mul(gasLimit);
-                    
-                    if (balanceWei.lt(total.add(fee))) {
-                        showStatus('goldenFloppy', 'Insufficient ETH balance', 'error');
-                        return;
-                    }
-
-                    showStatus('goldenFloppy', `Minting ${quantity} Golden Floppy with ETH...`, 'loading');
-                    
-                    console.log('Minting with ETH:', {
-                        batchId: GOLDEN_ETH_BATCH_ID,
-                        quantity: quantity,
-                        value: total.toString(),
-                        valueEth: ethers.utils.formatEther(total)
-                    });
-                    
-                    // Use manual gas limit to avoid estimation issues
-                    const tx = await adrianEthContract.mintWithETH(GOLDEN_ETH_BATCH_ID, quantity, { 
-                        value: total,
-                        gasLimit: gasLimit
-                    });
-                    await tx.wait();
-                } else {
-                    // Use token payment
-                    const totalToken = priceToken.mul(quantity);
-                    
-                    // Check token balance
-                    const tokenBalance = await adrianToken.balanceOf(userAddress);
-                    if (tokenBalance.lt(totalToken)) {
-                        showStatus('goldenFloppy', 'Insufficient $ADRIAN balance', 'error');
-                        return;
-                    }
-
-                    // Check allowance
-                    const allowWei = await adrianToken.allowance(userAddress, ADRIAN_ETH_MINTER);
-                    
-                    if (allowWei.lt(totalToken)) {
-                        const human = parseFloat(ethers.utils.formatEther(totalToken)).toFixed(6);
-                        showStatus('goldenFloppy', `Approving ${human} $ADRIAN...`, 'loading');
-                        const approveTx = await adrianToken.approve(ADRIAN_ETH_MINTER, totalToken);
-                        await approveTx.wait();
-                    }
-                    
-                    showStatus('goldenFloppy', `Minting ${quantity} Golden Floppy with $ADRIAN...`, 'loading');
-                    const tx2 = await adrianEthContract.mintWithToken(GOLDEN_ETH_BATCH_ID, quantity);
-                    await tx2.wait();
+                // Use only $ADRIAN token payment for Golden Floppy
+                const totalToken = priceToken.mul(quantity);
+                
+                // Check token balance
+                const tokenBalance = await adrianToken.balanceOf(userAddress);
+                if (tokenBalance.lt(totalToken)) {
+                    showStatus('goldenFloppy', 'Insufficient $ADRIAN balance', 'error');
+                    return;
                 }
+
+                // Check allowance
+                const allowWei = await adrianToken.allowance(userAddress, ADRIAN_ETH_MINTER);
+                
+                if (allowWei.lt(totalToken)) {
+                    const human = parseFloat(ethers.utils.formatEther(totalToken)).toFixed(6);
+                    showStatus('goldenFloppy', `Approving ${human} $ADRIAN...`, 'loading');
+                    const approveTx = await adrianToken.approve(ADRIAN_ETH_MINTER, totalToken);
+                    await approveTx.wait();
+                }
+                
+                console.log('Minting Golden Floppy with $ADRIAN:', {
+                    batchId: GOLDEN_ETH_BATCH_ID,
+                    quantity: quantity,
+                    totalToken: totalToken.toString(),
+                    totalTokenFormatted: ethers.utils.formatEther(totalToken)
+                });
+                
+                showStatus('goldenFloppy', `Minting ${quantity} Golden Floppy with $ADRIAN...`, 'loading');
+                const tx = await adrianEthContract.mintWithToken(GOLDEN_ETH_BATCH_ID, quantity);
+                await tx.wait();
 
                 showStatus('goldenFloppy', `🎉 Successfully minted ${quantity} Golden Floppy!`, 'success');
                 await loadGoldenFloppyBatch();
