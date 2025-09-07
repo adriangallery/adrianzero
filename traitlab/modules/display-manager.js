@@ -331,9 +331,10 @@ class DisplayManager {
                 console.log(`🔨 Recipe ${recipe.recipeId} (specific) - Burn requirements:`, recipe.burn);
                 
                 meetsRequirement = recipe.burn.every(requirement => {
-                    const traitId = requirement.id;
+                    const traitId = parseInt(requirement.id);
                     const requiredAmount = parseInt(requirement.amount);
-                    const selectedAmount = selectedTraits.get(traitId) || 0;
+                    // Normalizar a número la key usada en el Map
+                    const selectedAmount = selectedTraits.get(traitId) || selectedTraits.get(String(traitId)) || 0;
                     const meets = selectedAmount >= requiredAmount;
                     console.log(`🔨   - Trait ${traitId}: required=${requiredAmount}, selected=${selectedAmount}, meets=${meets}`);
                     return meets;
