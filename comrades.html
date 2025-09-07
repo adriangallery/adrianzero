@@ -1077,6 +1077,15 @@
             }
 
             showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
+            
+            // Debug: Check batch info before minting
+            console.log('Debug info before minting:');
+            console.log('PACK_ID:', PACK_ID);
+            console.log('currentQuantity:', currentQuantity);
+            console.log('proof length:', proof.length);
+            console.log('userAddress:', userAddress);
+            console.log('isAllowlisted:', isAllowlisted);
+            
             // For FREE claim, use mint with ETH since priceWei = 0
             // This allows free claims for allowlisted users
             try {
@@ -1088,11 +1097,23 @@
                 if (error.data && error.data.data) {
                     const errorCode = error.data.data;
                     console.log('Error code:', errorCode);
+                    console.log('Full error data:', error.data);
+                    
+                    // Check for specific error codes
                     if (errorCode === '0xa2f8a81d') {
+                        showStatus('Error: NotInAllowlist - You are not in the allowlist for this batch.', 'error');
+                        return;
+                    } else if (errorCode === '0x1ee749bf') {
                         showStatus('Error: Contract not authorized to mint. Please contact admin.', 'error');
+                        return;
+                    } else if (errorCode === '0x33b094a1') {
+                        showStatus('Error: Invalid batch ID.', 'error');
                         return;
                     }
                 }
+                
+                // Show more detailed error information
+                showStatus(`Mint failed: ${error.reason || error.message || 'Unknown error'}`, 'error');
                 throw error;
             }
             
