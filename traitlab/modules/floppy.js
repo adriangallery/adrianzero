@@ -231,8 +231,8 @@ class FloppyManager {
                 type: 'floppy',
                 name: 'ComradesUSB'
             };
-        } else if (tokenId === 10005) {
-            // Golden Floppy - ADRIAN_FLOPPY_DISCS_CONTRACT
+        } else if (tokenId === 10005 || tokenId === 10006) {
+            // Golden Floppy y otros floppies - ADRIAN_FLOPPY_DISCS_CONTRACT
             return {
                 address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
                 type: 'floppy',
@@ -278,7 +278,7 @@ class FloppyManager {
         } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015) {
             console.log('Redirecting to openActionPack() for token', this.selectedFloppy.tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId === 10009 || this.selectedFloppy.tokenId === 10010) {
+        } else if (this.selectedFloppy.tokenId === 10005 || this.selectedFloppy.tokenId === 10006 || this.selectedFloppy.tokenId === 10009 || this.selectedFloppy.tokenId === 10010) {
             console.log('Redirecting to openFloppy() for floppy token', this.selectedFloppy.tokenId);
             return await this.openFloppy();
         } else {
