@@ -7,6 +7,221 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="modules/styles.css" rel="stylesheet">
+    
+    <style>
+        /* Crafting Container Styles */
+        .crafting-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .crafting-section {
+            width: 100%;
+        }
+
+        .recipes-section h3,
+        .traits-section h3 {
+            color: #00ff00;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /* Recipe Card Styles */
+        .recipe-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recipe-card.eligible {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .recipe-card.not-eligible {
+            border-color: #ff4444;
+            background: rgba(255, 68, 68, 0.05);
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .recipe-card.specific-recipe {
+            border-left: 4px solid #00ff88;
+        }
+
+        .recipe-card.any-recipe {
+            border-left: 4px solid #ff8800;
+        }
+
+        .recipe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .recipe-header h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .recipe-type {
+            background: #333;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .recipe-ingredients h5,
+        .recipe-output h5 {
+            color: #00ff00;
+            margin: 10px 0 5px 0;
+            font-size: 1rem;
+        }
+
+        .recipe-ingredient {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .trait-id {
+            color: #ccc;
+            font-weight: bold;
+        }
+
+        .trait-required {
+            color: #ff8800;
+            font-weight: bold;
+        }
+
+        .output-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        /* Trait Card Styles for Crafting */
+        .trait-card.crafting-trait {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .trait-card.crafting-trait:hover {
+            transform: translateY(-2px);
+            border-color: #00ff00;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .trait-card.crafting-trait.selected {
+            border-color: #00ff00;
+            box-shadow: 0 0 0 2px rgba(0,255,0,0.25);
+            background: rgba(0,255,0,0.08);
+        }
+
+        .trait-card.crafting-trait .trait-image {
+            margin-bottom: 10px;
+        }
+
+        .trait-card.crafting-trait .trait-image img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #444;
+        }
+
+        .trait-card.crafting-trait .trait-info h4 {
+            font-size: 14px;
+            margin: 5px 0;
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .trait-card.crafting-trait .trait-title {
+            font-size: 12px;
+            color: #ccc;
+            margin: 3px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .trait-card.crafting-trait .trait-balance {
+            font-size: 11px;
+            color: #999;
+            margin: 3px 0;
+            font-weight: bold;
+        }
+
+        /* Loading and No Content States */
+        .loading-recipes,
+        .no-recipes,
+        .loading-traits,
+        .no-traits {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .loading-recipes p,
+        .no-recipes p,
+        .loading-traits p,
+        .no-traits p {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .recipes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .traits-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .recipe-card {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Contenedor principal para la aplicación -->
