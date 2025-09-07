@@ -881,6 +881,7 @@
                     "function mintWithToken(uint256 batchId, uint256 quantity) external",
                     "function mint(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof) external payable",
                     "function mintWithToken(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof) external",
+                    "function mintFreeWithMerkle(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof) external",
                     "function verifyAllowlist(uint256 batchId, address wallet, bytes32[] calldata merkleProof) external view returns (bool)",
                     "function getBatchSummary(uint256 batchId) external view returns (uint256 id, string memory name, uint256 floppyTokenId, uint256 priceWei, uint256 priceToken, uint256 startTime, uint256 endTime, bool active, uint256 minted, uint256 maxSupply, uint256 remaining, uint256 maxPerWallet, uint256 maxPerTx)",
                     "function getUserAllowanceLeft(uint256 batchId, address user) external view returns (uint256 left)"
@@ -1101,11 +1102,10 @@
                 return;
             }
             
-            // For FREE claim, the contract does NOT support free ETH mint with Merkle
-            // We must use ETH mint WITHOUT Merkle for free claims
+            // For FREE claim with Merkle, use the new mintFreeWithMerkle function
             try {
-                console.log('Attempting free ETH mint without Merkle...');
-                const tx = await comradesContract.functions['mint(uint256,uint256)'](PACK_ID, currentQuantity, { value: 0 });
+                console.log('Attempting free mint with Merkle...');
+                const tx = await comradesContract.functions['mintFreeWithMerkle(uint256,uint256,bytes32[])'](PACK_ID, currentQuantity, proof);
                 await tx.wait();
                 showStatus('Successfully claimed Comrades!', 'success');
                 return;
