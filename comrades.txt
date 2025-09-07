@@ -54,6 +54,7 @@ contract AdrianFloppyETH is Ownable, ReentrancyGuard {
     uint256 public nextBatchId = 1; // first batch id = 1
     mapping(uint256 => Batch) public batches; // batchId => Batch
     mapping(uint256 => mapping(address => uint256)) public mintedPerWallet; // batchId => wallet => minted
+    mapping(uint256 => mapping(address => uint256)) public freeMintedPerWallet; // batchId => wallet => freeMinted
 
     // ✅ Merkle allowlist por batch
     mapping(uint256 => bytes32) public batchMerkleRoot;
@@ -92,6 +93,7 @@ contract AdrianFloppyETH is Ownable, ReentrancyGuard {
     error TokenTransferFailed();
     error AllowlistDisabled();
     error NotInAllowlist();
+    error AlreadyUsedFreeMint();
 
     // =============== MODIFIERS ===============
     modifier notPaused() {
@@ -311,14 +313,25 @@ contract AdrianFloppyETH is Ownable, ReentrancyGuard {
         emit MintedToken(msg.sender, batchId, quantity, totalCost);
     }
 
-    /// @notice Free mint con allowlist Merkle (solo para usuarios en allowlist)
+    /// @notice Free mint con allowlist Merkle (solo 1 free mint por wallet)
     function mintFreeWithMerkle(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof)
         external
         notPaused
         nonReentrant
     {
         _requireAllowlisted(batchId, msg.sender, merkleProof);
+        
+        // Solo permitir 1 free mint por wallet
+        if (quantity != 1) revert InvalidQuantity();
+        
+        // Verificar que no haya usado su free mint
+        if (freeMintedPerWallet[batchId][msg.sender] > 0) revert AlreadyUsedFreeMint();
+        
         _mintCore(batchId, msg.sender, quantity, false /*admin*/);
+        
+        // Marcar como usado el free mint
+        freeMintedPerWallet[batchId][msg.sender] = 1;
+        
         emit MintedFree(msg.sender, batchId, quantity);
     }
 
@@ -452,6 +465,11 @@ contract AdrianFloppyETH is Ownable, ReentrancyGuard {
         uint256 mintedByUser = mintedPerWallet[batchId][user];
         if (mintedByUser >= b.maxPerWallet) return 0;
         return b.maxPerWallet - mintedByUser;
+    }
+
+    /// @notice Verificar si el usuario ya usó su free mint
+    function hasUsedFreeMint(uint256 batchId, address user) external view returns (bool) {
+        return freeMintedPerWallet[batchId][user] > 0;
     }
 
     /// @notice Intenta leer supply global del TraitsCore (si implementa vistas). Devuelve el mínimo efectivo
