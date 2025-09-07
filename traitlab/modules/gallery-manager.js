@@ -594,6 +594,10 @@ class GalleryManager {
         return this.hasMoreTraits;
     }
 
+    hasMoreTraits() {
+        return this.hasMoreTraits;
+    }
+
     isLoadingMore() {
         return this.isLoading;
     }
