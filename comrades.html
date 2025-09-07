@@ -1028,7 +1028,7 @@
                 }
                 
                 // Update UI
-                const adrianPriceFormatted = parseFloat(ethers.utils.formatEther(priceToken)).toFixed(6);
+                const adrianPriceFormatted = parseFloat(ethers.utils.formatEther(priceToken)).toFixed(0);
                 
                 document.getElementById('comradesAdrianPrice').textContent = adrianPriceFormatted;
                 document.getElementById('comradesMinted').textContent = minted.toString();
@@ -1063,7 +1063,7 @@
             } else {
                 currencySpan.textContent = '$ADRIAN';
                 const total = comradesPriceAdrian.mul(currentQuantity);
-                const formattedTotal = parseFloat(ethers.utils.formatEther(total)).toFixed(6);
+                const formattedTotal = parseFloat(ethers.utils.formatEther(total)).toFixed(0);
                 totalSpan.textContent = formattedTotal;
             }
         }
@@ -1180,7 +1180,7 @@
             const allowWei = await adrianToken.allowance(userAddress, COMRADES_CONTRACT);
             
             if (allowWei.lt(totalToken)) {
-                const human = parseFloat(ethers.utils.formatEther(totalToken)).toFixed(6);
+                const human = parseFloat(ethers.utils.formatEther(totalToken)).toFixed(0);
                 showStatus(`Approving ${human} $ADRIAN...`, 'loading');
                 const approveTx = await adrianToken.approve(COMRADES_CONTRACT, totalToken);
                 await approveTx.wait();
