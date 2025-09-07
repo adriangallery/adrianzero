@@ -534,7 +534,7 @@ class TraitLABDataManager {
      * Obtener tokens filtrados por tipo (floppy, serum, traits, adrianzero)
      */
     getFilteredTokens(filterType) {
-        if (filterType === 'adrianzero') {
+        if (filterType === 'adrianzero' || filterType === 'rename') {
             return this.getTokens('adrianZero');
         } else if (filterType === 'floppy') {
             return this.getTokens('adrianLab', 'floppys');

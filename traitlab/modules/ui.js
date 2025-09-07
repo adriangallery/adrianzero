@@ -418,6 +418,13 @@ class UIManager {
         console.log('📤 Emitting tokenSelected event with:', { token, filter: this.currentFilter });
         // Emit tokenSelected event for main app to handle
         this.emit('tokenSelected', { token, filter: this.currentFilter });
+        
+        // Si estamos en tab rename y se selecciona un ERC721, mostrar sección de rename
+        if (this.currentFilter === 'rename' && token.tokenType === 'ERC721') {
+            if (window.app && window.app.modules.stickyPopupManager && window.app.modules.stickyPopupManager.showRenameSection) {
+                window.app.modules.stickyPopupManager.showRenameSection();
+            }
+        }
     }
 
     /**
