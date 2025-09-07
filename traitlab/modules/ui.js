@@ -172,7 +172,7 @@ class UIManager {
                 } else if (token.tokenId === 10005) {
                     displayTitle = 'Golden Floppy';
                 } else if (token.tokenId === 10007) {
-                    displayTitle = 'Action Pack 10007';
+                    displayTitle = 'NEONpack';
                 } else if (token.tokenId === 10008) {
                     displayTitle = 'OPTICALpack';
                 } else if (token.tokenId === 10009) {
