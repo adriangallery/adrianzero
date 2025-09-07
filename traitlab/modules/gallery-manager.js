@@ -51,9 +51,9 @@ class GalleryManager {
         this.isLoading = true;
 
         try {
-            // Load initial batch from database
-            console.log('Loading initial traits from database...');
-            await this.loadTraitsFromDatabase();
+            // Load initial batch from Alchemy
+            console.log('Loading initial traits from Alchemy...');
+            await this.loadTraitsFromAlchemy();
             
             this.isLoading = false;
             return this.allTraits;
@@ -73,8 +73,8 @@ class GalleryManager {
         this.isLoading = true;
 
         try {
-            console.log(`Loading more traits from database (page ${this.currentPage + 1})...`);
-            await this.loadTraitsFromDatabase();
+            console.log(`Loading more traits from Alchemy (page ${this.currentPage + 1})...`);
+            await this.loadTraitsFromAlchemy();
             
             this.isLoading = false;
             return this.allTraits;
@@ -175,6 +175,47 @@ class GalleryManager {
         return this.hasMoreTraits;
     }
 
+    async loadTraitsFromAlchemy() {
+        try {
+            const contractAddress = window.TRAITS_CONTRACT || "0x90546848474FB3c9fda3fdAd887969bB244E7e58";
+            const pageKey = this.currentPage > 0 ? this.pageKey : null;
+            
+            let alchemyUrl = `${this.alchemyBaseUrl}/${this.alchemyApiKey}/getNFTsForCollection?contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC1155`;
+            
+            if (pageKey) {
+                alchemyUrl += `&pageKey=${pageKey}`;
+            }
+
+            console.log(`Requesting traits from Alchemy: ${alchemyUrl}`);
+            
+            const response = await fetch(alchemyUrl);
+            if (!response.ok) {
+                throw new Error(`Alchemy API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(`Alchemy response:`, data);
+
+            // Check if there are more pages
+            this.pageKey = data.pageKey || null;
+            this.hasMoreTraits = !!this.pageKey;
+
+            // Process the NFTs
+            const newTraits = data.nfts ? data.nfts.map(nft => this.processAlchemyTrait(nft)) : [];
+            
+            // Add to existing traits
+            this.allTraits.push(...newTraits);
+            this.currentPage++;
+
+            console.log(`Loaded ${newTraits.length} new traits (total: ${this.allTraits.length})`);
+            return this.allTraits;
+
+        } catch (error) {
+            console.error('Error loading traits from Alchemy:', error);
+            throw error;
+        }
+    }
+
     async loadTraitsFromDatabase() {
         try {
             console.log('Loading traits from local database...');
@@ -264,6 +305,24 @@ class GalleryManager {
             return `https://adrianlab.vercel.app/labmetadata/traits/${fileName}.png`;
         }
         return null; // Will use CSS placeholder
+    }
+
+    processAlchemyTrait(nft) {
+        const metadata = nft.metadata || {};
+        const tokenId = parseInt(nft.tokenId);
+        
+        return {
+            id: tokenId,
+            name: metadata.name || `Trait ${tokenId}`,
+            description: metadata.description || '',
+            image: this.getImageUrl(metadata.image, tokenId),
+            category: this.categorizeTrait(metadata.name || `Trait ${tokenId}`),
+            totalSupply: nft.totalSupply || '0',
+            maxSupply: nft.maxSupply || '1000',
+            uri: nft.tokenUri?.raw || '',
+            metadata: metadata,
+            contractAddress: nft.contract?.address || window.TRAITS_CONTRACT
+        };
     }
 
     processAlchemyNFT(nft) {
