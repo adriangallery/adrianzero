@@ -18,10 +18,11 @@ class DisplayManager {
             return;
         }
         
-        // Limpiar el grid
+        // Limpiar el grid y usar un contenedor interno para no afectar otras vistas
         grid.innerHTML = '';
-        grid.className = 'crafting-container';
-        console.log('🔨 displayCraftingContent: Grid limpiado y clase establecida');
+        const craftingContainer = document.createElement('div');
+        craftingContainer.className = 'crafting-container';
+        console.log('🔨 displayCraftingContent: Grid limpiado y contenedor creado');
         
         // Verificar si el módulo de crafting está disponible
         if (!craftingModule) {
@@ -48,8 +49,9 @@ class DisplayManager {
             console.log('🔨 displayCraftingContent: Recetas obtenidas:', recipes.length);
             if (recipes && recipes.length > 0) {
                 console.log('🔨 displayCraftingContent: Mostrando recetas y traits...');
-                this.displayCraftingRecipes(grid, recipes);
-                this.displayCraftingTraits(grid, dataManager);
+                this.displayCraftingRecipes(craftingContainer, recipes);
+                this.displayCraftingTraits(craftingContainer, dataManager);
+                grid.appendChild(craftingContainer);
             } else {
                 console.log('🔨 displayCraftingContent: No hay recetas disponibles');
                 grid.innerHTML = '<div class="no-recipes"><p>No recipes available.</p></div>';
