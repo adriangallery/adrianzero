@@ -896,10 +896,27 @@
                 console.log('Has mint method:', typeof comradesContract.mint);
                 console.log('Has mintWithToken method:', typeof comradesContract.mintWithToken);
                 
-                // Check if contract is authorized (this might fail if TraitsCore doesn't expose this)
+                // Check if contract is authorized in AdrianTraitsCore
                 try {
-                    // We can't directly call this from the frontend, but we can try to get the traitsCore address
                     console.log('Contract address:', COMRADES_CONTRACT);
+                    console.log('Checking authorization in AdrianTraitsCore...');
+                    
+                    // Try to call authorizedExtensions on AdrianTraitsCore
+                    const traitsCoreABI = [
+                        "function authorizedExtensions(address extension) external view returns (bool)"
+                    ];
+                    const traitsCoreAddress = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+                    const traitsCoreContract = new ethers.Contract(traitsCoreAddress, traitsCoreABI, signer);
+                    
+                    const isAuthorized = await traitsCoreContract.authorizedExtensions(COMRADES_CONTRACT);
+                    console.log('Comrades contract authorized in AdrianTraitsCore:', isAuthorized);
+                    
+                    if (!isAuthorized) {
+                        console.error('❌ Comrades contract is NOT authorized in AdrianTraitsCore!');
+                        console.error('Admin needs to call: AdrianTraitsCore.setAuthorizedExtension(' + COMRADES_CONTRACT + ', true)');
+                    } else {
+                        console.log('✅ Comrades contract is authorized in AdrianTraitsCore');
+                    }
                 } catch (error) {
                     console.log('Could not check authorization:', error.message);
                 }
@@ -1132,7 +1149,10 @@
                     console.log('Full error data:', error.data);
                     
                     // Check for specific error codes
-                    if (errorCode === '0xa2f8a81d') {
+                    if (errorCode === '0x6b178fa7') {
+                        showStatus('Error: AdrianTraitsCore rejected the mint. The Comrades contract is not authorized in AdrianTraitsCore. Contact admin to authorize the contract.', 'error');
+                        return;
+                    } else if (errorCode === '0xa2f8a81d') {
                         showStatus('Error: AdrianTraitsCore rejected the mint. The Comrades contract may not be authorized in AdrianTraitsCore. Contact admin to authorize the contract.', 'error');
                         return;
                     } else if (errorCode === '0x1ee749bf') {
