@@ -9,7 +9,7 @@ class TraitLABCrafting {
         this.availableTraits = [];
         this.isLoading = false;
         this.isLoadingRecipes = false;
-        this.isRecipesLoaded = false;
+        this.recipesLoaded = false;
         console.log('🔨 TraitLABCrafting: Módulo simplificado inicializado');
     }
 
@@ -115,6 +115,7 @@ class TraitLABCrafting {
             
             this.recipes = recipes;
             this.isLoading = false;
+            this.recipesLoaded = true;
             console.log('🔨 TraitLABCrafting: Recetas cargadas:', recipes);
             
             return recipes;
@@ -125,6 +126,7 @@ class TraitLABCrafting {
             // Crear recetas de ejemplo si falla
             this.recipes = this.createExampleRecipes();
             this.isLoading = false;
+            this.recipesLoaded = true;
             console.log('🔨 TraitLABCrafting: Usando recetas de ejemplo:', this.recipes);
             
             return this.recipes;
@@ -175,7 +177,7 @@ class TraitLABCrafting {
      * Verificar si las recetas están cargadas
      */
     isRecipesLoaded() {
-        return this.recipes !== null;
+        return this.recipesLoaded === true;
     }
 
     /**
