@@ -310,23 +310,36 @@ class DisplayManager {
         const recipes = craftingModule.getRecipes ? craftingModule.getRecipes() : [];
         const selectedTraits = craftingModule.getSelectedTraits ? craftingModule.getSelectedTraits() : new Map();
         
+        console.log('🔨 updateRecipeEligibility - Recetas:', recipes.length);
+        console.log('🔨 updateRecipeEligibility - Traits seleccionados:', Array.from(selectedTraits.entries()));
+        
         recipes.forEach(recipe => {
             const recipeCard = document.querySelector(`[data-recipe-id="${recipe.recipeId}"]`);
-            if (!recipeCard) return;
+            if (!recipeCard) {
+                console.warn('🔨 Recipe card no encontrada para recipeId:', recipe.recipeId);
+                return;
+            }
             
             let meetsRequirement = false;
             
             if (recipe.type === 'any') {
                 const selectedTotal = Array.from(selectedTraits.values()).reduce((sum, amount) => sum + amount, 0);
                 meetsRequirement = selectedTotal >= parseInt(recipe.requirement.burnTotal);
+                console.log(`🔨 Recipe ${recipe.recipeId} (any): selectedTotal=${selectedTotal}, required=${recipe.requirement.burnTotal}, meets=${meetsRequirement}`);
             } else if (recipe.type === 'specific') {
                 // Verificar que todos los traits requeridos estén seleccionados
+                console.log(`🔨 Recipe ${recipe.recipeId} (specific) - Burn requirements:`, recipe.burn);
+                
                 meetsRequirement = recipe.burn.every(requirement => {
                     const traitId = requirement.id;
                     const requiredAmount = parseInt(requirement.amount);
                     const selectedAmount = selectedTraits.get(traitId) || 0;
-                    return selectedAmount >= requiredAmount;
+                    const meets = selectedAmount >= requiredAmount;
+                    console.log(`🔨   - Trait ${traitId}: required=${requiredAmount}, selected=${selectedAmount}, meets=${meets}`);
+                    return meets;
                 });
+                
+                console.log(`🔨 Recipe ${recipe.recipeId} (specific): meetsRequirement=${meetsRequirement}`);
             }
             
             // Actualizar estado visual de la receta
