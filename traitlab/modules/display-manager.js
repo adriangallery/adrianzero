@@ -84,6 +84,11 @@ class DisplayManager {
                     recipesGrid.innerHTML += this.renderSimpleRecipeCard(recipe);
                 }
             });
+            
+            // Verificar elegibilidad inicial después de renderizar
+            setTimeout(() => {
+                this.updateRecipeEligibility();
+            }, 100);
         }
     }
 
@@ -309,15 +314,113 @@ class DisplayManager {
             const recipeCard = document.querySelector(`[data-recipe-id="${recipe.recipeId}"]`);
             if (!recipeCard) return;
             
+            let meetsRequirement = false;
+            
             if (recipe.type === 'any') {
                 const selectedTotal = Array.from(selectedTraits.values()).reduce((sum, amount) => sum + amount, 0);
-                const meetsRequirement = selectedTotal >= parseInt(recipe.requirement.burnTotal);
-                
-                // Actualizar estado visual de la receta
-                recipeCard.classList.toggle('eligible', meetsRequirement);
-                recipeCard.classList.toggle('not-eligible', !meetsRequirement);
+                meetsRequirement = selectedTotal >= parseInt(recipe.requirement.burnTotal);
+            } else if (recipe.type === 'specific') {
+                // Verificar que todos los traits requeridos estén seleccionados
+                meetsRequirement = recipe.burn.every(requirement => {
+                    const traitId = requirement.id;
+                    const requiredAmount = parseInt(requirement.amount);
+                    const selectedAmount = selectedTraits.get(traitId) || 0;
+                    return selectedAmount >= requiredAmount;
+                });
             }
+            
+            // Actualizar estado visual de la receta
+            recipeCard.classList.toggle('eligible', meetsRequirement);
+            recipeCard.classList.toggle('not-eligible', !meetsRequirement);
+            
+            // Actualizar botón de crafting
+            this.updateCraftButton(recipeCard, meetsRequirement);
         });
+    }
+    
+    /**
+     * Actualizar botón de crafting en la receta
+     */
+    updateCraftButton(recipeCard, isEligible) {
+        let craftButton = recipeCard.querySelector('.craft-btn');
+        
+        if (!craftButton) {
+            // Crear botón si no existe
+            craftButton = document.createElement('button');
+            craftButton.className = 'craft-btn';
+            craftButton.textContent = 'Craft';
+            craftButton.style.cssText = `
+                background: #00ff00;
+                color: #000;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                font-weight: bold;
+                cursor: pointer;
+                margin-top: 15px;
+                width: 100%;
+                transition: all 0.3s ease;
+            `;
+            
+            // Agregar event listener
+            craftButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.executeCrafting(recipeCard.dataset.recipeId);
+            });
+            
+            recipeCard.appendChild(craftButton);
+        }
+        
+        // Actualizar estado del botón
+        if (isEligible) {
+            craftButton.disabled = false;
+            craftButton.classList.add('enabled');
+            craftButton.style.background = '#00ff00';
+            craftButton.style.cursor = 'pointer';
+            craftButton.textContent = 'Craft';
+        } else {
+            craftButton.disabled = true;
+            craftButton.classList.remove('enabled');
+            craftButton.style.background = '#666';
+            craftButton.style.cursor = 'not-allowed';
+            craftButton.textContent = 'Select Required Traits';
+        }
+    }
+    
+    /**
+     * Ejecutar crafting
+     */
+    executeCrafting(recipeId) {
+        console.log('🔨 Ejecutando crafting para receta:', recipeId);
+        
+        const craftingModule = window.app?.modules?.crafting;
+        if (!craftingModule) {
+            console.error('🔨 Módulo de crafting no disponible');
+            return;
+        }
+        
+        const recipes = craftingModule.getRecipes ? craftingModule.getRecipes() : [];
+        const recipe = recipes.find(r => r.recipeId == recipeId);
+        
+        if (!recipe) {
+            console.error('🔨 Receta no encontrada:', recipeId);
+            return;
+        }
+        
+        if (recipe.type === 'specific') {
+            // Para recetas específicas, usar los traits exactos requeridos
+            const burnIds = recipe.burn.map(item => parseInt(item.id));
+            const burnAmounts = recipe.burn.map(item => parseInt(item.amount));
+            console.log('🔨 Crafting específico - IDs:', burnIds, 'Cantidades:', burnAmounts);
+            // TODO: Implementar craftSpecific
+        } else if (recipe.type === 'any') {
+            // Para recetas generales, usar traits seleccionados
+            const selectedTraits = craftingModule.getSelectedTraits ? craftingModule.getSelectedTraits() : new Map();
+            const burnIds = Array.from(selectedTraits.keys()).map(id => parseInt(id));
+            const burnAmounts = Array.from(selectedTraits.values());
+            console.log('🔨 Crafting general - IDs:', burnIds, 'Cantidades:', burnAmounts);
+            // TODO: Implementar craftAny
+        }
     }
 
     /**
