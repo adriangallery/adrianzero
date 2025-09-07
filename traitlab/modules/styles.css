@@ -502,9 +502,24 @@ body {
     display: flex !important;
 }
 
+/* Permitir clics a través de zonas transparentes del overlay (click-through) */
+.sticky-modal-container {
+    pointer-events: none !important; /* Overlay no captura eventos por defecto */
+}
+
+/* Mantener clicables los elementos interactivos dentro del overlay */
+.sticky-side-menu-popup,
+.sticky-content-popup,
+.visntent-popup,
+.sticky-side-menu-popup *,
+.sticky-content-popup *,
+.visntent-popup * {
+    pointer-events: auto !important;
+}
+
 /* POPUP IZQUIERDO: Menú lateral */
 .sticky-side-menu-popup {
-    background: rgba(0, 0, 0, 0.95) !important;
+    background: transparent !important; /* Hacer fondo transparente como el popup principal */
     border: 2px solid #00ff00 !important;
     border-radius: 12px !important;
     padding: var(--popup-botonera-padding) !important;
