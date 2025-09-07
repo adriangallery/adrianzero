@@ -449,7 +449,7 @@
     <script src="traitlab/modules/wallet.js?v=2"></script>
     <script src="traitlab/modules/ui.js?v=2"></script>
     <script src="traitlab/modules/traits.js?v=2"></script>
-    <script src="traitlab/modules/gallery-manager.js?v=7"></script>
+    <script src="traitlab/modules/gallery-manager.js?v=8"></script>
     
     <!-- Gallery Script -->
     <script>
@@ -517,10 +517,10 @@
         async function loadTraits() {
             try {
                 console.log('Loading initial traits...');
-                updateProgress(0, 'Loading traits from Alchemy...');
+                updateProgress(0, 'Loading traits from database...');
                 
                 if (galleryManager) {
-                    // Load initial batch from Alchemy
+                    // Load initial batch from database
                     allTraits = await galleryManager.loadTraits();
                     updateProgress(100, `Loaded ${allTraits.length} traits!`);
                 } else {
