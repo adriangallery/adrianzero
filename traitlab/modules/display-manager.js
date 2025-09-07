@@ -386,6 +386,7 @@ class DisplayManager {
         }
         
         // Actualizar estado del botón
+        craftButton.dataset.recipeId = String(recipeCard.dataset.recipeId || '');
         if (isEligible) {
             craftButton.disabled = false;
             craftButton.classList.add('enabled');
@@ -422,18 +423,32 @@ class DisplayManager {
         }
         
         if (recipe.type === 'specific') {
-            // Para recetas específicas, usar los traits exactos requeridos
-            const burnIds = recipe.burn.map(item => parseInt(item.id));
-            const burnAmounts = recipe.burn.map(item => parseInt(item.amount));
-            console.log('🔨 Crafting específico - IDs:', burnIds, 'Cantidades:', burnAmounts);
-            // TODO: Implementar craftSpecific
+            // Para recetas específicas, invocar craftSpecific en el módulo
+            console.log('🔨 Crafting específico - IDs:', recipe.burn.map(i => parseInt(i.id)), 'Cantidades:', recipe.burn.map(i => parseInt(i.amount)));
+            window.app.modules.crafting.craftSpecific(Number(recipeId))
+                .then((receipt) => {
+                    console.log('✅ Crafting específico confirmado:', receipt?.transactionHash);
+                    this.showToast && this.showToast('✅ Crafting successful');
+                })
+                .catch((error) => {
+                    console.error('❌ Error en crafting específico:', error?.reason || error?.message || error);
+                    this.showToast && this.showToast('❌ Crafting failed');
+                });
         } else if (recipe.type === 'any') {
             // Para recetas generales, usar traits seleccionados
             const selectedTraits = craftingModule.getSelectedTraits ? craftingModule.getSelectedTraits() : new Map();
             const burnIds = Array.from(selectedTraits.keys()).map(id => parseInt(id));
             const burnAmounts = Array.from(selectedTraits.values());
             console.log('🔨 Crafting general - IDs:', burnIds, 'Cantidades:', burnAmounts);
-            // TODO: Implementar craftAny
+            window.app.modules.crafting.craftAny(Number(recipeId), burnIds, burnAmounts)
+                .then((receipt) => {
+                    console.log('✅ Crafting any confirmado:', receipt?.transactionHash);
+                    this.showToast && this.showToast('✅ Crafting successful');
+                })
+                .catch((error) => {
+                    console.error('❌ Error en crafting any:', error?.reason || error?.message || error);
+                    this.showToast && this.showToast('❌ Crafting failed');
+                });
         }
     }
 
