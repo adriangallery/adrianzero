@@ -237,7 +237,7 @@ class GalleryManager {
             maxSupply: trait.maxSupply || '1000',
             uri: '',
             metadata: trait,
-            contractAddress: window.TRAITS_CONTRACT || "0x0995c0dA1ca071b792E852b6Ec531b7cD7d1F8D6"
+            contractAddress: window.TRAITS_CONTRACT || "0x90546848474FB3c9fda3fdAd887969bB244E7e58"
         };
     }
 
@@ -254,14 +254,14 @@ class GalleryManager {
             maxSupply: trait.maxSupply || '1000',
             uri: '',
             metadata: trait,
-            contractAddress: window.TRAITS_CONTRACT || "0x0995c0dA1ca071b792E852b6Ec531b7cD7d1F8D6"
+            contractAddress: window.TRAITS_CONTRACT || "0x90546848474FB3c9fda3fdAd887969bB244E7e58"
         };
     }
 
     getTraitImageUrl(fileName, tokenId) {
-        if (tokenId) {
-            // Use Alchemy's cached image API
-            return `https://base-mainnet.g.alchemy.com/nft/v3/${this.alchemyApiKey}/getNFTMetadata?contractAddress=${window.TRAITS_CONTRACT}&tokenId=${tokenId}&tokenType=ERC1155&refreshCache=false`;
+        if (fileName) {
+            // Use the same image URL format as TraitLAB for traits
+            return `https://adrianlab.vercel.app/labmetadata/traits/${fileName}.png`;
         }
         return null; // Will use CSS placeholder
     }
