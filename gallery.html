@@ -638,7 +638,7 @@
                 allTraits = newTraits;
                 
                 // Update filtered traits and display
-                filterTraits();
+                await displayMoreTraits();
                 
                 console.log(`Loaded more traits. Total: ${allTraits.length}`);
                 
@@ -780,19 +780,19 @@
             document.getElementById('loadedTraits').textContent = allTraits.length;
             
             // Populate category filter
-            populateCategoryFilter();
+            await populateCategoryFilter();
             
             // Filter traits
             filterTraits();
         }
 
-        function displayMoreTraits() {
+        async function displayMoreTraits() {
             // Update stats
             document.getElementById('totalTraits').textContent = allTraits.length;
             document.getElementById('loadedTraits').textContent = allTraits.length;
             
             // Update category filter
-            populateCategoryFilter();
+            await populateCategoryFilter();
             
             // Re-filter and display
             filterTraits();
@@ -994,22 +994,41 @@
 
         // Pagination functions removed - using infinite scroll instead
 
-        function populateCategoryFilter() {
-            const categories = [...new Set(allTraits.map(trait => trait.category))];
-            const categoryFilter = document.getElementById('categoryFilter');
-            
-            // Clear existing options except "All Categories"
-            categoryFilter.innerHTML = '<option value="">All Categories</option>';
-            
-            // Sort categories alphabetically
-            categories.sort().forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                categoryFilter.appendChild(option);
-            });
-            
-            console.log('Categories loaded:', categories);
+        async function populateCategoryFilter() {
+            try {
+                // Load all categories from the complete JSON file
+                const response = await fetch('./traitlab/json/traits.json');
+                const data = await response.json();
+                const allCategories = [...new Set(data.traits.map(trait => trait.category))];
+                
+                const categoryFilter = document.getElementById('categoryFilter');
+                
+                // Clear existing options except "All Categories"
+                categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                
+                // Sort categories alphabetically
+                allCategories.sort().forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categoryFilter.appendChild(option);
+                });
+                
+                console.log('All categories loaded:', allCategories);
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                // Fallback to loaded traits categories
+                const categories = [...new Set(allTraits.map(trait => trait.category))];
+                const categoryFilter = document.getElementById('categoryFilter');
+                
+                categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                categories.sort().forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categoryFilter.appendChild(option);
+                });
+            }
         }
 
 
