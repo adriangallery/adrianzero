@@ -51,9 +51,9 @@ class GalleryManager {
         this.isLoading = true;
 
         try {
-            // Load initial batch from Alchemy
-            console.log('Loading initial traits from Alchemy...');
-            await this.loadTraitsFromAlchemy();
+            // Load initial batch from database
+            console.log('Loading initial traits from database...');
+            await this.loadTraitsFromDatabase();
             
             this.isLoading = false;
             return this.allTraits;
@@ -73,8 +73,8 @@ class GalleryManager {
         this.isLoading = true;
 
         try {
-            console.log(`Loading more traits from Alchemy (page ${this.currentPage + 1})...`);
-            await this.loadTraitsFromAlchemy();
+            console.log(`Loading more traits from database (page ${this.currentPage + 1})...`);
+            await this.loadTraitsFromDatabase();
             
             this.isLoading = false;
             return this.allTraits;
@@ -86,33 +86,38 @@ class GalleryManager {
         }
     }
 
-    async loadTraitsFromAlchemy() {
+    async loadTraitsFromDatabase() {
         try {
-            const contractAddress = window.TRAITS_CONTRACT || "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
-            const pageKey = this.currentPage > 0 ? this.pageKey : null;
+            console.log('Loading traits from local database...');
             
-            let alchemyUrl = `${this.alchemyBaseUrl}/${this.alchemyApiKey}/getNFTsForCollection?contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC1155`;
-            
-            if (pageKey) {
-                alchemyUrl += `&pageKey=${pageKey}`;
-            }
-
-            console.log(`Requesting traits from Alchemy: ${alchemyUrl}`);
-            
-            const response = await fetch(alchemyUrl);
-            if (!response.ok) {
-                throw new Error(`Alchemy API error: ${response.status}`);
+            // Load traits database from JSON (same as TraitLAB)
+            let response;
+            try {
+                response = await fetch('./traitlab/json/traits.json');
+                if (!response.ok) {
+                    throw new Error(`Local file not found: ${response.status}`);
+                }
+            } catch (localError) {
+                console.log('Local file failed, trying Vercel...');
+                response = await fetch('https://adrianlab.vercel.app/labmetadata/traits.json');
+                if (!response.ok) {
+                    throw new Error(`Vercel file not found: ${response.status}`);
+                }
             }
 
             const data = await response.json();
-            console.log(`Alchemy response:`, data);
+            console.log(`Traits database loaded:`, data);
 
-            // Check if there are more pages
-            this.pageKey = data.pageKey || null;
-            this.hasMoreTraits = !!this.pageKey;
+            // Process traits with pagination
+            const startIndex = this.currentPage * this.batchSize;
+            const endIndex = startIndex + this.batchSize;
+            const traitsSlice = data.traits.slice(startIndex, endIndex);
+            
+            // Check if there are more traits
+            this.hasMoreTraits = endIndex < data.traits.length;
 
-            // Process the NFTs
-            const newTraits = data.nfts ? data.nfts.map(nft => this.processAlchemyNFT(nft)) : [];
+            // Process the traits
+            const newTraits = traitsSlice.map(trait => this.processDatabaseTrait(trait));
             
             // Add to existing traits
             this.allTraits.push(...newTraits);
@@ -122,9 +127,34 @@ class GalleryManager {
             return this.allTraits;
 
         } catch (error) {
-            console.error('Error loading traits from Alchemy:', error);
+            console.error('Error loading traits from database:', error);
             throw error;
         }
+    }
+
+    processDatabaseTrait(trait) {
+        const tokenId = parseInt(trait.tokenId);
+        
+        return {
+            id: tokenId,
+            name: trait.name || `Trait ${tokenId}`,
+            description: trait.description || '',
+            image: this.getTraitImageUrl(trait.fileName, tokenId),
+            category: trait.category || 'Other',
+            totalSupply: '0', // Not available in database
+            maxSupply: trait.maxSupply || '1000',
+            uri: '',
+            metadata: trait,
+            contractAddress: window.TRAITS_CONTRACT || "0x0995c0dA1ca071b792E852b6Ec531b7cD7d1F8D6"
+        };
+    }
+
+    getTraitImageUrl(fileName, tokenId) {
+        if (fileName) {
+            // Use the same image path as TraitLAB
+            return `https://adrianlab.vercel.app/labmetadata/traits/${fileName}.png`;
+        }
+        return null; // Will use CSS placeholder
     }
 
     processAlchemyNFT(nft) {

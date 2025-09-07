@@ -461,7 +461,7 @@
         let isLoadingMore = false;
 
         // Contract configuration
-        window.TRAITS_CONTRACT = "0x6e369bf0e4e0c106192d606fb6d85836d684da75"; // AdrianLAB Core contract
+        window.TRAITS_CONTRACT = "0x0995c0dA1ca071b792E852b6Ec531b7cD7d1F8D6"; // Traits Extensions contract
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
 
@@ -516,10 +516,10 @@
         async function loadTraits() {
             try {
                 console.log('Loading initial traits...');
-                updateProgress(0, 'Loading traits from Alchemy...');
+                updateProgress(0, 'Loading traits from database...');
                 
                 if (galleryManager) {
-                    // Load initial batch from Alchemy
+                    // Load initial batch from database
                     allTraits = await galleryManager.loadTraits();
                     updateProgress(100, `Loaded ${allTraits.length} traits!`);
                 } else {
