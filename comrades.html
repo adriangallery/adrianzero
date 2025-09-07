@@ -1101,35 +1101,48 @@
                 return;
             }
             
-            // For FREE claim, use mint with ETH since priceWei = 0
-            // This allows free claims for allowlisted users
+            // For FREE claim, try different approaches
+            // Since priceWei = 0, we should use ETH mint but the contract might not support free ETH with Merkle
             try {
+                // First try: ETH mint with Merkle (should work if contract supports free ETH)
                 const tx = await comradesContract.functions['mint(uint256,uint256,bytes32[])'](PACK_ID, currentQuantity, proof, { value: 0 });
                 await tx.wait();
             } catch (error) {
-                console.error('Mint transaction failed:', error);
-                // Try to decode the error
-                if (error.data && error.data.data) {
-                    const errorCode = error.data.data;
-                    console.log('Error code:', errorCode);
-                    console.log('Full error data:', error.data);
-                    
-                    // Check for specific error codes
-                    if (errorCode === '0xa2f8a81d') {
-                        showStatus('Error: NotInAllowlist - You are not in the allowlist for this batch.', 'error');
-                        return;
-                    } else if (errorCode === '0x1ee749bf') {
-                        showStatus('Error: Contract not authorized to mint. Please contact admin.', 'error');
-                        return;
-                    } else if (errorCode === '0x33b094a1') {
-                        showStatus('Error: Invalid batch ID.', 'error');
-                        return;
-                    }
-                }
+                console.error('Mint with Merkle failed, trying without Merkle...', error);
                 
-                // Show more detailed error information
-                showStatus(`Mint failed: ${error.reason || error.message || 'Unknown error'}`, 'error');
-                throw error;
+                // Fallback: Try ETH mint without Merkle (if contract allows)
+                try {
+                    console.log('Attempting ETH mint without Merkle...');
+                    const tx = await comradesContract.functions['mint(uint256,uint256)'](PACK_ID, currentQuantity, { value: 0 });
+                    await tx.wait();
+                    showStatus('Successfully claimed Comrades!', 'success');
+                    return;
+                } catch (fallbackError) {
+                    console.error('Fallback mint also failed:', fallbackError);
+                    
+                    // Try to decode the original error
+                    if (error.data && error.data.data) {
+                        const errorCode = error.data.data;
+                        console.log('Error code:', errorCode);
+                        console.log('Full error data:', error.data);
+                        
+                        // Check for specific error codes
+                        if (errorCode === '0xa2f8a81d') {
+                            showStatus('Error: NotInAllowlist - You are not in the allowlist for this batch.', 'error');
+                            return;
+                        } else if (errorCode === '0x1ee749bf') {
+                            showStatus('Error: Contract not authorized to mint. Please contact admin.', 'error');
+                            return;
+                        } else if (errorCode === '0x33b094a1') {
+                            showStatus('Error: Invalid batch ID.', 'error');
+                            return;
+                        }
+                    }
+                    
+                    // Show more detailed error information
+                    showStatus(`Mint failed: ${error.reason || error.message || 'Unknown error'}`, 'error');
+                    throw error;
+                }
             }
             
         } else { // ADRIAN
