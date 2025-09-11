@@ -16,6 +16,9 @@
     <!-- WalletConnect Fallback -->
     <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js" onload="console.log('✅ WalletConnect script loaded')" onerror="console.error('❌ WalletConnect script failed to load')"></script>
     
+    <!-- WalletConnect v2 -->
+    <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.9.0/dist/umd/index.min.js" onload="console.log('✅ WalletConnect v2 script loaded')" onerror="console.error('❌ WalletConnect v2 script failed to load')"></script>
+    
     <style>
         * {
             margin: 0;
@@ -236,6 +239,8 @@
                 addDebugLog(`🔍 window.ReownAppKit: ${typeof window.ReownAppKit}`, 'info');
                 addDebugLog(`🔍 window.WalletConnect: ${typeof window.WalletConnect}`, 'info');
                 addDebugLog(`🔍 window.WalletConnectProvider: ${typeof window.WalletConnectProvider}`, 'info');
+                addDebugLog(`🔍 window.EthereumProvider: ${typeof window.EthereumProvider}`, 'info');
+                addDebugLog(`🔍 window.WalletConnectEthereumProvider: ${typeof window.WalletConnectEthereumProvider}`, 'info');
                 
                 // Wait for Reown AppKit to be available
                 let createAppKitFunction = null;
@@ -288,6 +293,12 @@
                     } else if (window.WalletConnectProvider) {
                         addDebugLog('✅ Found WalletConnectProvider, using as fallback', 'success');
                         return initWalletConnectFallback();
+                    } else if (window.EthereumProvider) {
+                        addDebugLog('✅ Found EthereumProvider (WalletConnect v2), using as fallback', 'success');
+                        return initWalletConnectV2Fallback();
+                    } else if (window.WalletConnectEthereumProvider) {
+                        addDebugLog('✅ Found WalletConnectEthereumProvider, using as fallback', 'success');
+                        return initWalletConnectV2Fallback();
                     } else {
                         addDebugLog('❌ No wallet connection method found', 'error');
                         throw new Error('createAppKit function not found after 10 seconds');
@@ -357,7 +368,97 @@
                 const projectId = '6afed75f72df7cefde4d998c2da4b041';
                 
                 // Create WalletConnect provider
-                const WalletConnectProvider = window.WalletConnect?.WalletConnectProvider || window.WalletConnectProvider;
+                let WalletConnectProvider = window.WalletConnect?.WalletConnectProvider || window.WalletConnectProvider;
+                
+                // Check if it's a constructor or has a default export
+                if (WalletConnectProvider && typeof WalletConnectProvider === 'object' && WalletConnectProvider.default) {
+                    WalletConnectProvider = WalletConnectProvider.default;
+                }
+                
+                addDebugLog(`🔍 WalletConnectProvider type: ${typeof WalletConnectProvider}`, 'info');
+                addDebugLog(`🔍 WalletConnectProvider constructor: ${typeof WalletConnectProvider === 'function'}`, 'info');
+                addDebugLog(`🔍 WalletConnectProvider keys: ${Object.keys(WalletConnectProvider || {}).join(', ')}`, 'info');
+                
+                // Try to find the correct constructor
+                if (typeof WalletConnectProvider !== 'function') {
+                    if (WalletConnectProvider.WalletConnectProvider && typeof WalletConnectProvider.WalletConnectProvider === 'function') {
+                        WalletConnectProvider = WalletConnectProvider.WalletConnectProvider;
+                        addDebugLog('✅ Found WalletConnectProvider.WalletConnectProvider', 'success');
+                    } else if (WalletConnectProvider.default && typeof WalletConnectProvider.default === 'function') {
+                        WalletConnectProvider = WalletConnectProvider.default;
+                        addDebugLog('✅ Found WalletConnectProvider.default', 'success');
+                    } else {
+                        addDebugLog(`🔍 Available methods: ${Object.getOwnPropertyNames(WalletConnectProvider || {}).join(', ')}`, 'info');
+                    }
+                }
+                
+                if (typeof WalletConnectProvider !== 'function') {
+                    addDebugLog('❌ WalletConnectProvider is not a constructor, trying alternative approach...', 'warning');
+                    
+                    // Try using the object directly as a provider
+                    if (WalletConnectProvider && typeof WalletConnectProvider === 'object') {
+                        addDebugLog('✅ Using WalletConnectProvider as object', 'success');
+                        const walletConnectProvider = WalletConnectProvider;
+                        
+                        // Initialize the provider
+                        if (typeof walletConnectProvider.init === 'function') {
+                            await walletConnectProvider.init({
+                                projectId: projectId,
+                                chains: [1, 8453],
+                                showQrModal: true,
+                                qrModalOptions: {
+                                    themeMode: 'light'
+                                }
+                            });
+                        }
+                        
+                        // Set up event listeners
+                        walletConnectProvider.on('connect', (error, payload) => {
+                            if (error) {
+                                addDebugLog(`❌ WalletConnect error: ${error.message}`, 'error');
+                                return;
+                            }
+                            addDebugLog('✅ WalletConnect connected', 'success');
+                            handleWalletConnectConnection(payload);
+                        });
+                        
+                        walletConnectProvider.on('disconnect', (error, payload) => {
+                            if (error) {
+                                addDebugLog(`❌ WalletConnect disconnect error: ${error.message}`, 'error');
+                                return;
+                            }
+                            addDebugLog('✅ WalletConnect disconnected', 'info');
+                            handleDisconnection();
+                        });
+                        
+                        // Create ethers provider
+                        provider = new ethers.providers.Web3Provider(walletConnectProvider);
+                        signer = provider.getSigner();
+                        
+                        // Store provider for connection
+                        reownModal = {
+                            open: async () => {
+                                await walletConnectProvider.enable();
+                            },
+                            close: async () => {
+                                await walletConnectProvider.disconnect();
+                            },
+                            getAccount: () => {
+                                return walletConnectProvider.accounts?.[0] ? { address: walletConnectProvider.accounts[0] } : null;
+                            },
+                            getIsConnected: () => walletConnectProvider.connected,
+                            getWalletProvider: () => walletConnectProvider
+                        };
+                        
+                        addDebugLog('✅ WalletConnect fallback initialized (object mode)', 'success');
+                        showStatus('WalletConnect fallback initialized!', 'success');
+                        document.getElementById('connectBtn').disabled = false;
+                        return;
+                    } else {
+                        throw new Error('WalletConnectProvider is not a constructor and not a usable object');
+                    }
+                }
+                
                 const walletConnectProvider = new WalletConnectProvider({
                     projectId: projectId,
                     chains: [1, 8453], // Ethereum and Base
@@ -429,6 +530,83 @@
             } catch (error) {
                 addDebugLog(`❌ WalletConnect connection handling error: ${error.message}`, 'error');
                 console.error('WalletConnect connection handling error:', error);
+            }
+        }
+        
+        // WalletConnect v2 fallback implementation
+        async function initWalletConnectV2Fallback() {
+            try {
+                addDebugLog('🔍 Initializing WalletConnect v2 fallback...', 'info');
+                
+                const projectId = '6afed75f72df7cefde4d998c2da4b041';
+                
+                // Get the EthereumProvider
+                const EthereumProvider = window.EthereumProvider || window.WalletConnectEthereumProvider;
+                
+                if (!EthereumProvider) {
+                    throw new Error('EthereumProvider not found');
+                }
+                
+                addDebugLog(`🔍 EthereumProvider type: ${typeof EthereumProvider}`, 'info');
+                
+                // Initialize the provider
+                const walletConnectProvider = await EthereumProvider.init({
+                    projectId: projectId,
+                    chains: [1, 8453], // Ethereum and Base
+                    showQrModal: true,
+                    qrModalOptions: {
+                        themeMode: 'light'
+                    }
+                });
+                
+                addDebugLog('✅ WalletConnect v2 provider initialized', 'success');
+                
+                // Create ethers provider
+                provider = new ethers.providers.Web3Provider(walletConnectProvider);
+                signer = provider.getSigner();
+                
+                // Set up event listeners
+                walletConnectProvider.on('connect', (error, payload) => {
+                    if (error) {
+                        addDebugLog(`❌ WalletConnect v2 error: ${error.message}`, 'error');
+                        return;
+                    }
+                    addDebugLog('✅ WalletConnect v2 connected', 'success');
+                    handleWalletConnectConnection(payload);
+                });
+                
+                walletConnectProvider.on('disconnect', (error, payload) => {
+                    if (error) {
+                        addDebugLog(`❌ WalletConnect v2 disconnect error: ${error.message}`, 'error');
+                        return;
+                    }
+                    addDebugLog('✅ WalletConnect v2 disconnected', 'info');
+                    handleDisconnection();
+                });
+                
+                // Store provider for connection
+                reownModal = {
+                    open: async () => {
+                        await walletConnectProvider.enable();
+                    },
+                    close: async () => {
+                        await walletConnectProvider.disconnect();
+                    },
+                    getAccount: () => {
+                        return walletConnectProvider.accounts?.[0] ? { address: walletConnectProvider.accounts[0] } : null;
+                    },
+                    getIsConnected: () => walletConnectProvider.connected,
+                    getWalletProvider: () => walletConnectProvider
+                };
+                
+                addDebugLog('✅ WalletConnect v2 fallback initialized', 'success');
+                showStatus('WalletConnect v2 fallback initialized!', 'success');
+                document.getElementById('connectBtn').disabled = false;
+                
+            } catch (error) {
+                addDebugLog(`❌ WalletConnect v2 fallback failed: ${error.message}`, 'error');
+                showStatus('Failed to initialize WalletConnect v2 fallback', 'error');
+                console.error('WalletConnect v2 fallback error:', error);
             }
         }
         
