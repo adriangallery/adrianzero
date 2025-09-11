@@ -1019,6 +1019,9 @@
 
                 console.log('✅ WalletConnect SDK loaded successfully');
                 console.log('🔍 WalletConnectProvider:', window.WalletConnectProvider);
+                console.log('🔍 WalletConnectProvider type:', typeof window.WalletConnectProvider);
+                console.log('🔍 WalletConnectProvider constructor:', window.WalletConnectProvider?.constructor);
+                console.log('🔍 All WalletConnect methods:', Object.getOwnPropertyNames(window.WalletConnectProvider || {}));
                 
             } catch (error) {
                 console.error('❌ Failed to load WalletConnect:', error);
@@ -1040,18 +1043,41 @@
                 // Your Project ID from https://cloud.walletconnect.com/
                 const projectId = '6afed75f72df7cefde4d998c2da4b041';
 
-                // Create WalletConnect provider
-                walletConnectProvider = new window.WalletConnectProvider({
-                    projectId: projectId,
-                    chains: [8453, 1], // Base and Ethereum
-                    showQrModal: true,
-                    qrModalOptions: {
-                        themeMode: 'dark',
-                        themeVariables: {
-                            '--wcm-z-index': '1000'
+                console.log('🔍 Creating WalletConnect provider...');
+                console.log('🔍 WalletConnectProvider methods:', Object.getOwnPropertyNames(window.WalletConnectProvider));
+
+                // Try different ways to create the provider
+                if (typeof window.WalletConnectProvider === 'function') {
+                    // It's a constructor
+                    walletConnectProvider = new window.WalletConnectProvider({
+                        projectId: projectId,
+                        chains: [8453, 1], // Base and Ethereum
+                        showQrModal: true,
+                        qrModalOptions: {
+                            themeMode: 'dark',
+                            themeVariables: {
+                                '--wcm-z-index': '1000'
+                            }
                         }
-                    }
-                });
+                    });
+                } else if (window.WalletConnectProvider.init) {
+                    // It has an init method
+                    walletConnectProvider = window.WalletConnectProvider.init({
+                        projectId: projectId,
+                        chains: [8453, 1], // Base and Ethereum
+                        showQrModal: true,
+                        qrModalOptions: {
+                            themeMode: 'dark',
+                            themeVariables: {
+                                '--wcm-z-index': '1000'
+                            }
+                        }
+                    });
+                } else {
+                    throw new Error('WalletConnectProvider is not a constructor and has no init method');
+                }
+
+                console.log('🔍 WalletConnect provider created:', walletConnectProvider);
 
                 // Enable session (triggers QR Code modal)
                 await walletConnectProvider.enable();
