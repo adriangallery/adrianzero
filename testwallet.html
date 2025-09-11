@@ -10,6 +10,12 @@
     <script src="https://unpkg.com/@reown/appkit@1.0.0/dist/index.umd.js" onload="console.log('✅ Reown AppKit script loaded')" onerror="console.error('❌ Reown AppKit script failed to load')"></script>
     <link rel="stylesheet" href="https://unpkg.com/@reown/appkit@1.0.0/dist/index.css">
     
+    <!-- Alternative CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@reown/appkit@1.0.0/dist/index.umd.js" onload="console.log('✅ Reown AppKit script loaded (jsdelivr)')" onerror="console.error('❌ Reown AppKit script failed to load (jsdelivr)')"></script>
+    
+    <!-- WalletConnect Fallback -->
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js" onload="console.log('✅ WalletConnect script loaded')" onerror="console.error('❌ WalletConnect script failed to load')"></script>
+    
     <style>
         * {
             margin: 0;
@@ -216,9 +222,20 @@
                 const reownObjects = Object.keys(window).filter(key => 
                     key.toLowerCase().includes('reown') || 
                     key.toLowerCase().includes('appkit') ||
-                    key.toLowerCase().includes('wallet')
+                    key.toLowerCase().includes('wallet') ||
+                    key.toLowerCase().includes('create')
                 );
                 addDebugLog(`🔍 Available Reown objects: ${reownObjects.join(', ')}`, 'info');
+                
+                // Log all window objects for debugging
+                const allObjects = Object.keys(window).slice(0, 50); // First 50 objects
+                addDebugLog(`🔍 First 50 window objects: ${allObjects.join(', ')}`, 'info');
+                
+                // Check for specific objects
+                addDebugLog(`🔍 window.createAppKit: ${typeof window.createAppKit}`, 'info');
+                addDebugLog(`🔍 window.ReownAppKit: ${typeof window.ReownAppKit}`, 'info');
+                addDebugLog(`🔍 window.WalletConnect: ${typeof window.WalletConnect}`, 'info');
+                addDebugLog(`🔍 window.WalletConnectProvider: ${typeof window.WalletConnectProvider}`, 'info');
                 
                 // Wait for Reown AppKit to be available
                 let createAppKitFunction = null;
@@ -242,6 +259,18 @@
                     } else if (window.AppKit && typeof window.AppKit.createAppKit === 'function') {
                         createAppKitFunction = window.AppKit.createAppKit;
                         addDebugLog('✅ Found window.AppKit.createAppKit', 'success');
+                    } else if (window.Reown && typeof window.Reown.createAppKit === 'function') {
+                        createAppKitFunction = window.Reown.createAppKit;
+                        addDebugLog('✅ Found window.Reown.createAppKit', 'success');
+                    } else if (window.Reown && window.Reown.default && typeof window.Reown.default.createAppKit === 'function') {
+                        createAppKitFunction = window.Reown.default.createAppKit;
+                        addDebugLog('✅ Found window.Reown.default.createAppKit', 'success');
+                    } else if (window.WalletConnect && typeof window.WalletConnect.createAppKit === 'function') {
+                        createAppKitFunction = window.WalletConnect.createAppKit;
+                        addDebugLog('✅ Found window.WalletConnect.createAppKit', 'success');
+                    } else if (window.WC && typeof window.WC.createAppKit === 'function') {
+                        createAppKitFunction = window.WC.createAppKit;
+                        addDebugLog('✅ Found window.WC.createAppKit', 'success');
                     }
                     
                     if (!createAppKitFunction) {
@@ -250,7 +279,19 @@
                 }
                 
                 if (!createAppKitFunction) {
-                    throw new Error('createAppKit function not found after 10 seconds');
+                    addDebugLog('❌ createAppKit not found, trying WalletConnect fallback...', 'warning');
+                    
+                    // Try WalletConnect as fallback
+                    if (window.WalletConnect && window.WalletConnect.WalletConnectProvider) {
+                        addDebugLog('✅ Found WalletConnect, using as fallback', 'success');
+                        return initWalletConnectFallback();
+                    } else if (window.WalletConnectProvider) {
+                        addDebugLog('✅ Found WalletConnectProvider, using as fallback', 'success');
+                        return initWalletConnectFallback();
+                    } else {
+                        addDebugLog('❌ No wallet connection method found', 'error');
+                        throw new Error('createAppKit function not found after 10 seconds');
+                    }
                 }
                 
                 addDebugLog('✅ Reown AppKit SDK loaded successfully', 'success');
@@ -305,6 +346,89 @@
                 addDebugLog(`❌ Failed to initialize Reown AppKit: ${error.message}`, 'error');
                 showStatus('Failed to initialize Reown AppKit', 'error');
                 console.error('Reown AppKit initialization error:', error);
+            }
+        }
+        
+        // WalletConnect fallback implementation
+        async function initWalletConnectFallback() {
+            try {
+                addDebugLog('🔍 Initializing WalletConnect fallback...', 'info');
+                
+                const projectId = '6afed75f72df7cefde4d998c2da4b041';
+                
+                // Create WalletConnect provider
+                const WalletConnectProvider = window.WalletConnect?.WalletConnectProvider || window.WalletConnectProvider;
+                const walletConnectProvider = new WalletConnectProvider({
+                    projectId: projectId,
+                    chains: [1, 8453], // Ethereum and Base
+                    showQrModal: true,
+                    qrModalOptions: {
+                        themeMode: 'light'
+                    }
+                });
+                
+                // Create ethers provider
+                provider = new ethers.providers.Web3Provider(walletConnectProvider);
+                signer = provider.getSigner();
+                
+                // Set up event listeners
+                walletConnectProvider.on('connect', (error, payload) => {
+                    if (error) {
+                        addDebugLog(`❌ WalletConnect error: ${error.message}`, 'error');
+                        return;
+                    }
+                    addDebugLog('✅ WalletConnect connected', 'success');
+                    handleWalletConnectConnection(payload);
+                });
+                
+                walletConnectProvider.on('disconnect', (error, payload) => {
+                    if (error) {
+                        addDebugLog(`❌ WalletConnect disconnect error: ${error.message}`, 'error');
+                        return;
+                    }
+                    addDebugLog('✅ WalletConnect disconnected', 'info');
+                    handleDisconnection();
+                });
+                
+                // Store provider for connection
+                reownModal = {
+                    open: async () => {
+                        await walletConnectProvider.enable();
+                    },
+                    close: async () => {
+                        await walletConnectProvider.disconnect();
+                    },
+                    getAccount: () => {
+                        return walletConnectProvider.accounts?.[0] ? { address: walletConnectProvider.accounts[0] } : null;
+                    },
+                    getIsConnected: () => walletConnectProvider.connected,
+                    getWalletProvider: () => walletConnectProvider
+                };
+                
+                addDebugLog('✅ WalletConnect fallback initialized', 'success');
+                showStatus('WalletConnect fallback initialized!', 'success');
+                document.getElementById('connectBtn').disabled = false;
+                
+            } catch (error) {
+                addDebugLog(`❌ WalletConnect fallback failed: ${error.message}`, 'error');
+                showStatus('Failed to initialize WalletConnect fallback', 'error');
+                console.error('WalletConnect fallback error:', error);
+            }
+        }
+        
+        function handleWalletConnectConnection(payload) {
+            try {
+                if (payload && payload.accounts && payload.accounts.length > 0) {
+                    userAddress = payload.accounts[0];
+                    isConnected = true;
+                    
+                    addDebugLog(`✅ WalletConnect connected: ${userAddress}`, 'success');
+                    updateWalletUI();
+                    showStatus('Wallet connected successfully!', 'success');
+                }
+            } catch (error) {
+                addDebugLog(`❌ WalletConnect connection handling error: ${error.message}`, 'error');
+                console.error('WalletConnect connection handling error:', error);
             }
         }
         
