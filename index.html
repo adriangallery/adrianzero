@@ -995,16 +995,16 @@
                 console.log('🔍 All window objects:', Object.keys(window).filter(key => key.toLowerCase().includes('wallet') || key.toLowerCase().includes('connect')));
                 
                 // Wait for WalletConnect to be available globally
-                if (typeof window.WalletConnectWeb3Provider === 'undefined') {
+                if (typeof window.WalletConnectProvider === 'undefined') {
                     console.log('⏳ Waiting for WalletConnect to load...');
                     let attempts = 0;
                     await new Promise((resolve, reject) => {
                         const checkWalletConnect = () => {
                             attempts++;
-                            console.log(`🔍 Attempt ${attempts}: Checking for WalletConnectWeb3Provider...`);
+                            console.log(`🔍 Attempt ${attempts}: Checking for WalletConnectProvider...`);
                             
-                            if (typeof window.WalletConnectWeb3Provider !== 'undefined') {
-                                console.log('✅ WalletConnectWeb3Provider found!');
+                            if (typeof window.WalletConnectProvider !== 'undefined') {
+                                console.log('✅ WalletConnectProvider found!');
                                 resolve();
                             } else if (attempts > 50) { // 5 seconds timeout
                                 console.error('❌ Timeout waiting for WalletConnect after 5 seconds');
@@ -1018,7 +1018,7 @@
                 }
 
                 console.log('✅ WalletConnect SDK loaded successfully');
-                console.log('🔍 WalletConnectWeb3Provider:', window.WalletConnectWeb3Provider);
+                console.log('🔍 WalletConnectProvider:', window.WalletConnectProvider);
                 
             } catch (error) {
                 console.error('❌ Failed to load WalletConnect:', error);
@@ -1030,7 +1030,7 @@
         // Connect with WalletConnect
         async function connectWithReown() {
             try {
-                if (typeof window.WalletConnectWeb3Provider === 'undefined') {
+                if (typeof window.WalletConnectProvider === 'undefined') {
                     showStatus('WalletConnect not loaded', 'error');
                     return;
                 }
@@ -1041,7 +1041,7 @@
                 const projectId = '6afed75f72df7cefde4d998c2da4b041';
 
                 // Create WalletConnect provider
-                walletConnectProvider = new window.WalletConnectWeb3Provider({
+                walletConnectProvider = new window.WalletConnectProvider({
                     projectId: projectId,
                     chains: [8453, 1], // Base and Ethereum
                     showQrModal: true,
