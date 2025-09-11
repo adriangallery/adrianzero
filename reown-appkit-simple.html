@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reown AppKit Simple Test</title>
+    
+    <!-- Reown AppKit -->
+    <script type="module">
+        import { createAppKit } from 'https://unpkg.com/@reown/appkit@1.8.2/dist/index.js'
+        import { EthersAdapter } from 'https://unpkg.com/@reown/appkit-adapter-ethers@1.8.2/dist/index.js'
+        import { mainnet, polygon, sepolia } from 'https://unpkg.com/@reown/appkit/networks@1.8.2/dist/index.js'
+        
+        const projectId = '6afed75f72df7cefde4d998c2da4b041'
+        
+        const appKit = createAppKit({
+            adapters: [new EthersAdapter()],
+            networks: [mainnet, polygon, sepolia],
+            projectId,
+            themeMode: 'light',
+            themeVariables: {
+                '--w3m-accent': '#00ff88',
+            },
+            features: {
+                analytics: true,
+            },
+        })
+        
+        // Make appKit globally available
+        window.appKit = appKit
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ Reown AppKit initialized')
+            document.getElementById('status').textContent = 'Reown AppKit initialized!'
+            document.getElementById('status').className = 'status success'
+        })
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: #cccccc;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .status.info {
+            background: rgba(0, 204, 255, 0.2);
+            border: 1px solid #00ccff;
+            color: #00ccff;
+        }
+
+        .wallet-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .debug-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .debug-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+
+        .debug-log {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .debug-log.success { color: #00ff88; }
+        .debug-log.error { color: #ff0000; }
+        .debug-log.info { color: #00ccff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reown AppKit Test</h1>
+        <p class="subtitle">Official Implementation - JavaScript + Ethers</p>
+        
+        <div id="status" class="status info">
+            Initializing Reown AppKit...
+        </div>
+        
+        <div class="button-group">
+            <appkit-button></appkit-button>
+        </div>
+        
+        <div class="button-group">
+            <button id="open-connect-modal" class="button">Open Connect Modal</button>
+            <button id="disconnect" class="button">Disconnect</button>
+            <button id="switch-network" class="button">Switch Network</button>
+            <button id="sign-message" class="button">Sign Message</button>
+            <button id="get-balance" class="button">Get Balance</button>
+        </div>
+        
+        <div class="wallet-info" id="walletInfo" style="display: none;">
+            <h3>Wallet Connected</h3>
+            <div class="wallet-address" id="walletAddress"></div>
+            <div id="walletType"></div>
+        </div>
+        
+        <div class="debug-panel">
+            <div class="debug-title">Debug Log</div>
+            <div id="debugLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // Debug utilities
+        function addDebugLog(message, type = 'info') {
+            const debugLog = document.getElementById('debugLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `debug-log ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        // Wait for appKit to be available
+        function waitForAppKit() {
+            if (window.appKit) {
+                addDebugLog('✅ AppKit available', 'success');
+                setupEventListeners();
+            } else {
+                addDebugLog('⏳ Waiting for AppKit...', 'info');
+                setTimeout(waitForAppKit, 100);
+            }
+        }
+
+        function setupEventListeners() {
+            const appKit = window.appKit;
+            
+            // AppKit events
+            appKit.subscribeEvents((event) => {
+                addDebugLog(`🔍 AppKit event: ${JSON.stringify(event)}`, 'info');
+            });
+            
+            // Button event listeners
+            document.getElementById('open-connect-modal')?.addEventListener('click', () => {
+                addDebugLog('🔍 Opening connect modal...', 'info');
+                appKit.open();
+            });
+            
+            document.getElementById('disconnect')?.addEventListener('click', () => {
+                addDebugLog('🔍 Disconnecting...', 'info');
+                appKit.disconnect();
+            });
+            
+            document.getElementById('switch-network')?.addEventListener('click', () => {
+                addDebugLog('🔍 Switching network...', 'info');
+                // This would need network switching logic
+            });
+            
+            document.getElementById('sign-message')?.addEventListener('click', async () => {
+                addDebugLog('🔍 Signing message...', 'info');
+                // This would need message signing logic
+            });
+            
+            document.getElementById('get-balance')?.addEventListener('click', async () => {
+                addDebugLog('🔍 Getting balance...', 'info');
+                // This would need balance fetching logic
+            });
+            
+            addDebugLog('✅ Event listeners set up', 'success');
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugLog('🔍 DOM loaded, waiting for AppKit...', 'info');
+            waitForAppKit();
+        });
+    </script>
+</body>
+</html>
