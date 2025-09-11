@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- WalletConnect v2 SDK -->
-    <script src="https://unpkg.com/@walletconnect/ethereum-provider@1.7.8/dist/index.umd.js"></script>
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js" onload="console.log('✅ WalletConnect script loaded')" onerror="console.error('❌ WalletConnect script failed to load')"></script>
     <style>
         * {
             margin: 0;
@@ -990,13 +990,25 @@
         // Initialize WalletConnect
         async function initWalletConnect() {
             try {
+                console.log('🔍 Starting WalletConnect initialization...');
+                console.log('🔍 Script loading status:', document.readyState);
+                console.log('🔍 All window objects:', Object.keys(window).filter(key => key.toLowerCase().includes('wallet') || key.toLowerCase().includes('connect')));
+                
                 // Wait for WalletConnect to be available globally
-                if (typeof window.WalletConnectEthereumProvider === 'undefined') {
+                if (typeof window.WalletConnectWeb3Provider === 'undefined') {
                     console.log('⏳ Waiting for WalletConnect to load...');
-                    await new Promise(resolve => {
+                    let attempts = 0;
+                    await new Promise((resolve, reject) => {
                         const checkWalletConnect = () => {
-                            if (typeof window.WalletConnectEthereumProvider !== 'undefined') {
+                            attempts++;
+                            console.log(`🔍 Attempt ${attempts}: Checking for WalletConnectWeb3Provider...`);
+                            
+                            if (typeof window.WalletConnectWeb3Provider !== 'undefined') {
+                                console.log('✅ WalletConnectWeb3Provider found!');
                                 resolve();
+                            } else if (attempts > 50) { // 5 seconds timeout
+                                console.error('❌ Timeout waiting for WalletConnect after 5 seconds');
+                                reject(new Error('WalletConnect load timeout'));
                             } else {
                                 setTimeout(checkWalletConnect, 100);
                             }
@@ -1006,10 +1018,11 @@
                 }
 
                 console.log('✅ WalletConnect SDK loaded successfully');
-                console.log('🔍 Available WalletConnect objects:', Object.keys(window).filter(key => key.toLowerCase().includes('wallet')));
+                console.log('🔍 WalletConnectWeb3Provider:', window.WalletConnectWeb3Provider);
                 
             } catch (error) {
                 console.error('❌ Failed to load WalletConnect:', error);
+                console.log('🔍 Available window objects:', Object.keys(window).filter(key => key.toLowerCase().includes('wallet') || key.toLowerCase().includes('connect')));
                 document.getElementById('reownConnectBtn').style.display = 'none';
             }
         }
@@ -1017,7 +1030,7 @@
         // Connect with WalletConnect
         async function connectWithReown() {
             try {
-                if (typeof window.WalletConnectEthereumProvider === 'undefined') {
+                if (typeof window.WalletConnectWeb3Provider === 'undefined') {
                     showStatus('WalletConnect not loaded', 'error');
                     return;
                 }
@@ -1028,7 +1041,7 @@
                 const projectId = '6afed75f72df7cefde4d998c2da4b041';
 
                 // Create WalletConnect provider
-                walletConnectProvider = window.WalletConnectEthereumProvider.init({
+                walletConnectProvider = new window.WalletConnectWeb3Provider({
                     projectId: projectId,
                     chains: [8453, 1], // Base and Ethereum
                     showQrModal: true,
