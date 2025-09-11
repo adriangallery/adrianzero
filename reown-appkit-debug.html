@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reown AppKit Debug - Check Available Objects</title>
+    
+    <!-- Ethers.js -->
+    <script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- Reown AppKit UMD -->
+    <script src="https://unpkg.com/@reown/appkit@1.8.2/dist/index.umd.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@reown/appkit@1.8.2/dist/index.css">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .debug-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        .debug-title {
+            color: #00ff88;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .debug-content {
+            font-family: monospace;
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #00ff88; }
+        .error { color: #ff0000; }
+        .info { color: #00ccff; }
+    </style>
+</head>
+<body>
+    <h1>Reown AppKit Debug - Available Objects</h1>
+    
+    <div class="debug-section">
+        <div class="debug-title">Window Objects</div>
+        <div class="debug-content" id="windowObjects"></div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">Reown Objects</div>
+        <div class="debug-content" id="reownObjects"></div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">Ethers Objects</div>
+        <div class="debug-content" id="ethersObjects"></div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">AppKit Test</div>
+        <div class="debug-content" id="appkitTest"></div>
+    </div>
+
+    <script>
+        function addDebugLog(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            element.innerHTML += `<span class="${className}">[${new Date().toLocaleTimeString()}] ${message}</span>\n`;
+        }
+
+        function debugWindowObjects() {
+            addDebugLog('windowObjects', '🔍 Scanning window objects...', 'info');
+            
+            const reownKeys = [];
+            const ethersKeys = [];
+            const otherKeys = [];
+            
+            for (let key in window) {
+                if (key.toLowerCase().includes('reown') || key.toLowerCase().includes('appkit')) {
+                    reownKeys.push(key);
+                } else if (key.toLowerCase().includes('ethers')) {
+                    ethersKeys.push(key);
+                } else if (key.toLowerCase().includes('create') || key.toLowerCase().includes('appkit')) {
+                    otherKeys.push(key);
+                }
+            }
+            
+            addDebugLog('windowObjects', `Reown/AppKit related: ${reownKeys.join(', ')}`, 'info');
+            addDebugLog('windowObjects', `Ethers related: ${ethersKeys.join(', ')}`, 'info');
+            addDebugLog('windowObjects', `Other relevant: ${otherKeys.join(', ')}`, 'info');
+            
+            // Check specific objects
+            addDebugLog('windowObjects', `window.createAppKit: ${typeof window.createAppKit}`, 'info');
+            addDebugLog('windowObjects', `window.ReownAppKit: ${typeof window.ReownAppKit}`, 'info');
+            addDebugLog('windowObjects', `window.AppKit: ${typeof window.AppKit}`, 'info');
+            addDebugLog('windowObjects', `window.ethers: ${typeof window.ethers}`, 'info');
+        }
+
+        function debugReownObjects() {
+            addDebugLog('reownObjects', '🔍 Checking Reown objects...', 'info');
+            
+            if (window.ReownAppKit) {
+                addDebugLog('reownObjects', '✅ ReownAppKit found', 'success');
+                addDebugLog('reownObjects', `ReownAppKit keys: ${Object.keys(window.ReownAppKit).join(', ')}`, 'info');
+                
+                if (window.ReownAppKit.createAppKit) {
+                    addDebugLog('reownObjects', '✅ ReownAppKit.createAppKit found', 'success');
+                } else {
+                    addDebugLog('reownObjects', '❌ ReownAppKit.createAppKit not found', 'error');
+                }
+            } else {
+                addDebugLog('reownObjects', '❌ ReownAppKit not found', 'error');
+            }
+            
+            if (window.AppKit) {
+                addDebugLog('reownObjects', '✅ AppKit found', 'success');
+                addDebugLog('reownObjects', `AppKit keys: ${Object.keys(window.AppKit).join(', ')}`, 'info');
+            } else {
+                addDebugLog('reownObjects', '❌ AppKit not found', 'error');
+            }
+        }
+
+        function debugEthersObjects() {
+            addDebugLog('ethersObjects', '🔍 Checking Ethers objects...', 'info');
+            
+            if (window.ethers) {
+                addDebugLog('ethersObjects', '✅ ethers found', 'success');
+                addDebugLog('ethersObjects', `ethers keys: ${Object.keys(window.ethers).join(', ')}`, 'info');
+                
+                if (window.ethers.BrowserProvider) {
+                    addDebugLog('ethersObjects', '✅ ethers.BrowserProvider found', 'success');
+                } else {
+                    addDebugLog('ethersObjects', '❌ ethers.BrowserProvider not found', 'error');
+                }
+            } else {
+                addDebugLog('ethersObjects', '❌ ethers not found', 'error');
+            }
+        }
+
+        function testAppKitCreation() {
+            addDebugLog('appkitTest', '🔍 Testing AppKit creation...', 'info');
+            
+            try {
+                // Try different ways to create AppKit
+                if (window.ReownAppKit && window.ReownAppKit.createAppKit) {
+                    addDebugLog('appkitTest', '✅ Trying ReownAppKit.createAppKit...', 'info');
+                    const appKit = window.ReownAppKit.createAppKit({
+                        projectId: '6afed75f72df7cefde4d998c2da4b041',
+                        networks: [
+                            { id: 1, name: 'Ethereum', currency: 'ETH' }
+                        ]
+                    });
+                    addDebugLog('appkitTest', '✅ AppKit created successfully via ReownAppKit.createAppKit', 'success');
+                } else if (window.createAppKit) {
+                    addDebugLog('appkitTest', '✅ Trying window.createAppKit...', 'info');
+                    const appKit = window.createAppKit({
+                        projectId: '6afed75f72df7cefde4d998c2da4b041',
+                        networks: [
+                            { id: 1, name: 'Ethereum', currency: 'ETH' }
+                        ]
+                    });
+                    addDebugLog('appkitTest', '✅ AppKit created successfully via window.createAppKit', 'success');
+                } else {
+                    addDebugLog('appkitTest', '❌ No createAppKit function found', 'error');
+                }
+            } catch (error) {
+                addDebugLog('appkitTest', `❌ AppKit creation error: ${error.message}`, 'error');
+            }
+        }
+
+        // Run debug when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugLog('windowObjects', '🔍 Starting debug...', 'info');
+            
+            setTimeout(() => {
+                debugWindowObjects();
+                debugReownObjects();
+                debugEthersObjects();
+                testAppKitCreation();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
