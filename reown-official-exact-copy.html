@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML Ethers Example - Exact Copy</title>
+    
+    <!-- Ethers.js -->
+    <script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+    
+    <style>
+      :root {
+        --background: #ffffff;
+        --foreground: #171717;
+      }
+
+      html,
+      body {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+
+      body {
+        color: var(--foreground);
+        background: var(--background);
+        font-family: Arial, Helvetica, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        html {
+          color-scheme: dark;
+        }
+      }
+
+      section {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px;
+        background-color: #f9f9f9;
+        padding: 13px;
+        margin: 10px;
+        width: 90%;
+        text-align: left;
+      }
+
+      .pages {
+        align-items: center;
+        justify-items: center;
+        text-align: center;
+        display: grid;
+      }
+
+      .state-container {
+        align-items: center;
+        justify-items: center;
+        text-align: center;
+      }
+
+      button {
+        padding: 10px 15px;
+        background-color: white;
+        color: black;
+        border: 2px solid black;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 15px; /* Space between buttons */
+      }
+
+      button:hover {
+        background-color: black;
+        color: white;
+      }
+
+      button:active {
+        background-color: #333; /* Dark gray on click */
+        color: white;
+      }
+
+      h1 {
+        margin: 20px;
+      }
+
+      h2 {
+        padding-bottom: 6px;
+      }
+
+      pre {
+        white-space: pre-wrap; /* Wraps long lines inside <pre> */
+        word-break: break-all;
+      }
+
+      .link-button {
+        background-color: black;
+        color: white;
+        padding: 5px 10px;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+
+      .link-button:hover {
+        background-color: #333;  /* Darken the background on hover */
+      }
+
+      .link-button:hover {
+        background-color: white;  /* Change background to white on hover */
+        color: black;  /* Change text color to black on hover */
+      }
+
+      .advice {
+        text-align: 'center';
+        margin-bottom: 10px;
+        line-height: 25px;
+      }
+
+      /* AppKit Button Styles */
+      appkit-button {
+        --w3m-accent: #000000;
+        --w3m-border-radius-master: 8px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="pages" id="app">
+      <div style="width: 150px; height: 150px; background: linear-gradient(45deg, #00ff88, #00ccff); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; color: #000; margin: 0 auto 20px;">R</div>
+      <h1>AppKit Ethers VanillaJS dApp Example</h1>
+
+      <!-- AppKit UI Components -->
+      <div class="button-group">
+        <appkit-button></appkit-button>
+      </div>
+
+      <!-- Modal Controls -->
+      <div class="button-group">
+        <button id="open-connect-modal" data-connected-only>Open Connect Modal</button>
+        <button id="disconnect" data-connected-only>Disconnect</button>
+        <button id="switch-network" data-connected-only>Switch Network</button>
+        <button id="sign-message" data-connected-only>Sign Message</button>
+        <button id="send-tx" data-connected-only>Send tx</button>
+        <button id="get-balance" data-connected-only>Get Balance</button>  
+      </div>
+
+      <!-- State Displays -->
+      <section id="balanceSection" style="display: none;">
+        <h2>Balance</h2>
+        <pre id="balanceState"></pre>
+      </section>
+
+      <section id="txSection" style="display: none;">
+        <h2>Tx</h2>
+        <pre id="txState"></pre>
+      </section>
+
+      <section id="signatureSection" style="display: none;">
+        <h2>Signature</h2>
+        <pre id="signatureState"></pre>
+      </section>
+
+      <section>
+        <h2>Account</h2>
+        <pre id="accountState"></pre>
+      </section>
+
+      <section>
+        <h2>Network</h2>
+        <pre id="networkState"></pre>
+      </section>
+
+      <section>
+        <h2>Modal State</h2>
+        <pre id="appKitState"></pre>
+      </section>
+
+      <section>
+        <h2>Theme</h2>
+        <pre id="themeState"></pre>
+      </section>
+
+      <section>
+        <h2>Events</h2>
+        <pre id="events"></pre>
+      </section>
+
+      <section>
+        <h2>Wallet Info</h2>
+        <pre id="walletInfo"></pre>
+      </section>
+    </div>
+
+    <script type="module">
+      // Store - exact copy from official
+      const store = {
+        accountState: {},
+        networkState: {},
+        appKitState: {},
+        themeState: { themeMode: 'light', themeVariables: {} },
+        events: [],
+        walletInfo: {},
+        eip155Provider: null
+      }
+      
+      const updateStore = (key, value) => {
+        store[key] = value
+      }
+
+      // Networks - exact copy from official
+      const polygon = { id: 137, name: 'Polygon', currency: 'MATIC', explorerUrl: 'https://polygonscan.com' };
+      const mainnet = { id: 1, name: 'Ethereum', currency: 'ETH', explorerUrl: 'https://etherscan.io' };
+
+      // DOM utilities - exact copy from official
+      const updateStateDisplay = (elementId, state) => {
+        const element = document.getElementById(elementId)
+        if (element) {
+          element.innerHTML = JSON.stringify(state, null, 2)
+        }
+      }
+      
+      const updateTheme = mode => {
+        document.documentElement.setAttribute('data-theme', mode)
+        document.body.className = mode
+      }
+
+      const updateButtonVisibility = (isConnected) => {
+        const connectedOnlyButtons = document.querySelectorAll('[data-connected-only]')
+        connectedOnlyButtons.forEach(button => {
+          if (!isConnected) button.style.display = 'none'
+          else button.style.display = ''
+        })
+      }
+
+      // Wallet services - exact copy from official
+      const signMessage = (provider, address) => {
+        if (!provider) return Promise.reject('No provider available')
+        
+        return provider.request({
+          method: 'personal_sign',
+          params: ['Hello from AppKit!', address]
+        })
+      }
+
+      const sendTx = async (provider, address) => {
+        if (!provider) return Promise.reject('No provider available')
+
+        const tx = {
+          from: address,
+          to: address, // same address just for testing
+          value: ethers.parseEther("0.0001")
+        }
+        const ethersProvider = new ethers.BrowserProvider(provider);
+        const signer = await ethersProvider.getSigner()
+        return await signer.sendTransaction(tx)
+      }
+
+      const getBalance = async (provider, address) => {
+        if (!provider) return Promise.reject('No provider available')
+        
+        const balance = await provider.request({
+          method: 'eth_getBalance',
+          params: [address, 'latest']
+        })
+        return ethers.formatUnits(balance, 'ether')
+      }
+
+      // Subscribers - exact copy from official
+      const initializeSubscribers = (modal) => {
+        modal.subscribeProviders(state => {
+          updateStore('eip155Provider', state['eip155'])
+        })
+
+        modal.subscribeAccount(state => {
+          updateStore('accountState', state)
+          updateStateDisplay('accountState', state)
+        })
+
+        modal.subscribeNetwork(state => {
+          updateStore('networkState', state)
+          updateStateDisplay('networkState', state)
+          
+          const switchNetworkBtn = document.getElementById('switch-network')
+          if (switchNetworkBtn) {
+            switchNetworkBtn.textContent = `Switch to ${
+              state?.chainId === polygon.id ? 'Mainnet' : 'Polygon'
+            }`
+          }
+        })
+
+        modal.subscribeState(state => {
+          store.appKitState = state
+          updateButtonVisibility(modal.getIsConnectedState())
+        })
+      }
+
+      // AppKit initialization
+      let appKit = null;
+
+      async function initAppKit() {
+        try {
+          console.log('🔍 Starting AppKit initialization...');
+          
+          // Import modules
+          const { createAppKit } = await import('https://unpkg.com/@reown/appkit@1.8.2/dist/index.js');
+          const { EthersAdapter } = await import('https://unpkg.com/@reown/appkit-adapter-ethers@1.8.2/dist/index.js');
+          const { arbitrum, mainnet: mainnetNetwork, optimism, polygon: polygonNetwork, sepolia } = await import('https://unpkg.com/@reown/appkit/networks@1.8.2/dist/index.js');
+          
+          console.log('✅ Modules imported successfully');
+          
+          // Your Project ID
+          const projectId = '6afed75f72df7cefde4d998c2da4b041';
+          console.log(`🔍 Using Project ID: ${projectId}`);
+          
+          // Create AppKit - exact copy from official
+          appKit = createAppKit({
+            adapters: [new EthersAdapter()],
+            networks: [arbitrum, mainnetNetwork, optimism, polygonNetwork, sepolia],
+            projectId,
+            themeMode: 'light',
+            themeVariables: {
+              '--w3m-accent': '#000000',
+            },
+            features: {
+              analytics: true,
+            },
+          });
+          
+          console.log('✅ AppKit created successfully');
+          
+          // Initialize subscribers
+          initializeSubscribers(appKit);
+          
+          // Initial check
+          updateButtonVisibility(appKit.getIsConnectedState());
+          
+          // Set initial theme
+          updateTheme(store.themeState.themeMode);
+          
+        } catch (error) {
+          console.error('❌ Failed to initialize AppKit:', error);
+        }
+      }
+
+      // Button event listeners - exact copy from official
+      document.getElementById('open-connect-modal')?.addEventListener(
+        'click', () => appKit.open()
+      )
+
+      document.getElementById('disconnect')?.addEventListener(
+        'click', () => {
+          appKit.disconnect()
+        }
+      )
+
+      document.getElementById('switch-network')?.addEventListener(
+        'click', () => {
+          const currentChainId = store.networkState?.chainId
+          appKit.switchNetwork(currentChainId === polygon.id ? mainnet : polygon)
+        }
+      )
+
+      document.getElementById('sign-message')?.addEventListener(
+        'click', async () => {
+          const signature = await signMessage(store.eip155Provider, store.accountState.address)
+          document.getElementById('signatureState').innerHTML = signature
+          document.getElementById('signatureSection').style.display = ''
+        }
+      )
+
+      document.getElementById('send-tx')?.addEventListener(
+        'click', async () => {
+          console.log(store.eip155Provider, store.accountState.address)
+          const tx = await sendTx(store.eip155Provider, store.accountState.address)
+          console.log('Tx:', tx)
+          document.getElementById('txState').innerHTML = JSON.stringify(tx, null, 2)
+          document.getElementById('txSection').style.display = ''
+        }
+      )
+
+      document.getElementById('get-balance')?.addEventListener(
+        'click', async () => {
+          const balance = await getBalance(store.eip155Provider, store.accountState.address)
+          document.getElementById('balanceState').innerHTML = balance + ' ETH'
+          document.getElementById('balanceSection').style.display = ''
+        }
+      )
+
+      // Initialize when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('🔍 DOM loaded, initializing AppKit...');
+        initAppKit();
+      });
+    </script>
+  </body>
+</html>
