@@ -8,9 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Reown AppKit SDK -->
-    <script src="https://unpkg.com/@reown/appkit@1.0.0/dist/index.umd.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@reown/appkit@1.0.0/dist/index.css">
+    <!-- WalletConnect v2 SDK -->
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <script src="https://unpkg.com/@walletconnect/modal@2.6.0/dist/index.umd.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@walletconnect/modal@2.6.0/dist/index.css">
     <style>
         * {
             margin: 0;
@@ -869,7 +870,7 @@
                 <!-- Wallet Connection -->
                 <div class="wallet-section">
                     <button id="connectBtn" class="connect-btn">Connect Wallet (MetaMask)</button>
-                    <button id="reownConnectBtn" class="connect-btn reown-btn">Connect with Reown</button>
+                    <button id="reownConnectBtn" class="connect-btn reown-btn">Connect with WalletConnect</button>
                     <div id="walletInfo" class="wallet-info">
                         <div class="wallet-address" id="walletAddress"></div>
                         <div class="wallet-type" id="walletType"></div>
@@ -957,9 +958,9 @@
         let maxKitsPerTransaction = 10;
         let ethPriceUSD = 0;
 
-        // ===== REOWN INTEGRATION =====
-        let reownModal = null;
-        let isReownConnected = false;
+        // ===== WALLETCONNECT INTEGRATION =====
+        let walletConnectProvider = null;
+        let isWalletConnectConnected = false;
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -969,8 +970,8 @@
             setupFadeInAnimations();
             fetchETHPrice(); // Get ETH price on page load
             
-            // Initialize Reown
-            initReown();
+            // Initialize WalletConnect
+            initWalletConnect();
         });
 
         async function checkConnection() {
@@ -986,127 +987,107 @@
             }
         }
 
-        // ===== REOWN FUNCTIONS =====
+        // ===== WALLETCONNECT FUNCTIONS =====
         
-        // Initialize Reown
-        async function initReown() {
+        // Initialize WalletConnect
+        async function initWalletConnect() {
             try {
-                // Wait for Reown to be available globally
-                if (typeof window.ReownAppKit === 'undefined') {
-                    console.log('⏳ Waiting for Reown to load...');
+                // Wait for WalletConnect to be available globally
+                if (typeof window.WalletConnectWeb3Provider === 'undefined') {
+                    console.log('⏳ Waiting for WalletConnect to load...');
                     await new Promise(resolve => {
-                        const checkReown = () => {
-                            if (typeof window.ReownAppKit !== 'undefined') {
+                        const checkWalletConnect = () => {
+                            if (typeof window.WalletConnectWeb3Provider !== 'undefined') {
                                 resolve();
                             } else {
-                                setTimeout(checkReown, 100);
+                                setTimeout(checkWalletConnect, 100);
                             }
                         };
-                        checkReown();
+                        checkWalletConnect();
                     });
                 }
 
-                // Your Project ID from https://cloud.walletconnect.com/
-                const projectId = '6afed75f72df7cefde4d998c2da4b041';
-
-                // Create Reown AppKit using global object
-                reownModal = window.ReownAppKit.createAppKit({
-                    projectId,
-                    metadata: {
-                        name: 'AdrianLAB Kit Sale',
-                        description: 'Get Everything in One Purchase',
-                        url: 'https://adrianzero.com',
-                        icons: ['https://adrianzero.com/components/images/adrianzero.png']
-                    },
-                    features: {
-                        analytics: true,
-                        email: false,
-                        socials: false
-                    }
-                });
-
-                // Listen for connection events
-                reownModal.subscribeEvents((event) => {
-                    console.log('Reown event:', event);
-                    
-                    if (event.type === 'track' && event.event === 'CONNECT_SUCCESS') {
-                        handleReownConnection();
-                    }
-                    
-                    if (event.type === 'track' && event.event === 'DISCONNECT_SUCCESS') {
-                        handleReownDisconnection();
-                    }
-                });
-
-                console.log('✅ Reown initialized successfully');
+                console.log('✅ WalletConnect SDK loaded successfully');
                 
             } catch (error) {
-                console.error('❌ Failed to initialize Reown:', error);
+                console.error('❌ Failed to load WalletConnect:', error);
                 document.getElementById('reownConnectBtn').style.display = 'none';
             }
         }
 
-        // Connect with Reown
+        // Connect with WalletConnect
         async function connectWithReown() {
             try {
-                if (!reownModal) {
-                    showStatus('Reown not initialized', 'error');
+                if (typeof window.WalletConnectWeb3Provider === 'undefined') {
+                    showStatus('WalletConnect not loaded', 'error');
                     return;
                 }
 
-                showStatus('Opening Reown modal...', 'info');
-                await reownModal.open();
+                showStatus('Opening WalletConnect modal...', 'info');
+
+                // Your Project ID from https://cloud.walletconnect.com/
+                const projectId = '6afed75f72df7cefde4d998c2da4b041';
+
+                // Create WalletConnect provider
+                walletConnectProvider = new window.WalletConnectWeb3Provider({
+                    projectId: projectId,
+                    chains: [8453, 1], // Base and Ethereum
+                    showQrModal: true,
+                    qrModalOptions: {
+                        themeMode: 'dark',
+                        themeVariables: {
+                            '--wcm-z-index': '1000'
+                        }
+                    }
+                });
+
+                // Enable session (triggers QR Code modal)
+                await walletConnectProvider.enable();
+
+                // Get accounts
+                const accounts = await walletConnectProvider.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                isWalletConnectConnected = true;
+
+                // Create ethers provider
+                provider = new ethers.providers.Web3Provider(walletConnectProvider);
+                signer = provider.getSigner();
+
+                console.log('✅ WalletConnect connected:', userAddress);
+
+                // Check network
+                await ensureCorrectNetwork();
+
+                // Initialize contract
+                kitSaleContract = new ethers.Contract(KIT_SALE_CONTRACT, KIT_SALE_ABI, signer);
+
+                // Update UI
+                updateWalletUI('WalletConnect');
+                await loadContractData();
+
+                showStatus('WalletConnect connected successfully!', 'success');
+
+                // Listen for disconnect
+                walletConnectProvider.on('disconnect', () => {
+                    handleWalletConnectDisconnection();
+                });
                 
             } catch (error) {
-                console.error('Reown connection error:', error);
-                showStatus('Failed to connect with Reown', 'error');
-            }
-        }
-
-        // Handle successful Reown connection
-        async function handleReownConnection() {
-            try {
-                if (!reownModal) return;
-
-                // Get account info
-                const account = reownModal.getAccount();
-                const isConnected = reownModal.getIsConnected();
-
-                if (isConnected && account) {
-                    userAddress = account.address;
-                    isReownConnected = true;
-
-                    // Create provider from Reown
-                    const walletProvider = reownModal.getWalletProvider();
-                    provider = new ethers.providers.Web3Provider(walletProvider);
-                    signer = provider.getSigner();
-
-                    console.log('✅ Reown connected:', userAddress);
-
-                    // Check network
-                    await ensureCorrectNetwork();
-
-                    // Initialize contract
-                    kitSaleContract = new ethers.Contract(KIT_SALE_CONTRACT, KIT_SALE_ABI, signer);
-
-                    // Update UI
-                    updateWalletUI('Reown');
-                    await loadContractData();
-
-                    showStatus('Reown wallet connected successfully!', 'success');
+                console.error('WalletConnect connection error:', error);
+                if (error.message.includes('User rejected')) {
+                    showStatus('Connection cancelled by user', 'info');
+                } else {
+                    showStatus('Failed to connect with WalletConnect', 'error');
                 }
-
-            } catch (error) {
-                console.error('Reown connection handling error:', error);
-                showStatus('Failed to handle Reown connection', 'error');
             }
         }
 
-        // Handle Reown disconnection
-        function handleReownDisconnection() {
-            isReownConnected = false;
+        // Handle WalletConnect disconnection
+        function handleWalletConnectDisconnection() {
+            isWalletConnectConnected = false;
+            walletConnectProvider = null;
             resetWalletUI();
-            showStatus('Reown wallet disconnected', 'info');
+            showStatus('WalletConnect disconnected', 'info');
         }
 
         // Update wallet UI
