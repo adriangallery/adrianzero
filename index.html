@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- WalletConnect v2 SDK -->
-    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js" onload="console.log('✅ WalletConnect script loaded')" onerror="console.error('❌ WalletConnect script failed to load')"></script>
+    <script src="https://unpkg.com/@walletconnect/ethereum-provider@1.7.8/dist/index.umd.js" onload="console.log('✅ WalletConnect script loaded')" onerror="console.error('❌ WalletConnect script failed to load')"></script>
     <style>
         * {
             margin: 0;
@@ -995,16 +995,16 @@
                 console.log('🔍 All window objects:', Object.keys(window).filter(key => key.toLowerCase().includes('wallet') || key.toLowerCase().includes('connect')));
                 
                 // Wait for WalletConnect to be available globally
-                if (typeof window.WalletConnectProvider === 'undefined') {
+                if (typeof window.WalletConnectEthereumProvider === 'undefined') {
                     console.log('⏳ Waiting for WalletConnect to load...');
                     let attempts = 0;
                     await new Promise((resolve, reject) => {
                         const checkWalletConnect = () => {
                             attempts++;
-                            console.log(`🔍 Attempt ${attempts}: Checking for WalletConnectProvider...`);
+                            console.log(`🔍 Attempt ${attempts}: Checking for WalletConnectEthereumProvider...`);
                             
-                            if (typeof window.WalletConnectProvider !== 'undefined') {
-                                console.log('✅ WalletConnectProvider found!');
+                            if (typeof window.WalletConnectEthereumProvider !== 'undefined') {
+                                console.log('✅ WalletConnectEthereumProvider found!');
                                 resolve();
                             } else if (attempts > 50) { // 5 seconds timeout
                                 console.error('❌ Timeout waiting for WalletConnect after 5 seconds');
@@ -1018,10 +1018,7 @@
                 }
 
                 console.log('✅ WalletConnect SDK loaded successfully');
-                console.log('🔍 WalletConnectProvider:', window.WalletConnectProvider);
-                console.log('🔍 WalletConnectProvider type:', typeof window.WalletConnectProvider);
-                console.log('🔍 WalletConnectProvider constructor:', window.WalletConnectProvider?.constructor);
-                console.log('🔍 All WalletConnect methods:', Object.getOwnPropertyNames(window.WalletConnectProvider || {}));
+                console.log('🔍 WalletConnectEthereumProvider:', window.WalletConnectEthereumProvider);
                 
             } catch (error) {
                 console.error('❌ Failed to load WalletConnect:', error);
@@ -1033,7 +1030,7 @@
         // Connect with WalletConnect
         async function connectWithReown() {
             try {
-                if (typeof window.WalletConnectProvider === 'undefined') {
+                if (typeof window.WalletConnectEthereumProvider === 'undefined') {
                     showStatus('WalletConnect not loaded', 'error');
                     return;
                 }
@@ -1044,51 +1041,19 @@
                 const projectId = '6afed75f72df7cefde4d998c2da4b041';
 
                 console.log('🔍 Creating WalletConnect provider...');
-                console.log('🔍 WalletConnectProvider methods:', Object.getOwnPropertyNames(window.WalletConnectProvider));
 
-                // Try different ways to create the provider
-                let WalletConnectClass = null;
-                
-                if (typeof window.WalletConnectProvider === 'function') {
-                    // It's a constructor
-                    WalletConnectClass = window.WalletConnectProvider;
-                } else if (window.WalletConnectProvider.default) {
-                    // It's an ES6 module with default export
-                    WalletConnectClass = window.WalletConnectProvider.default;
-                    console.log('🔍 Using WalletConnectProvider.default');
-                } else if (window.WalletConnectProvider.init) {
-                    // It has an init method
-                    walletConnectProvider = window.WalletConnectProvider.init({
-                        projectId: projectId,
-                        chains: [8453, 1], // Base and Ethereum
-                        showQrModal: true,
-                        qrModalOptions: {
-                            themeMode: 'dark',
-                            themeVariables: {
-                                '--wcm-z-index': '1000'
-                            }
+                // Create WalletConnect provider using the correct v2 API
+                walletConnectProvider = window.WalletConnectEthereumProvider.init({
+                    projectId: projectId,
+                    chains: [8453, 1], // Base and Ethereum
+                    showQrModal: true,
+                    qrModalOptions: {
+                        themeMode: 'dark',
+                        themeVariables: {
+                            '--wcm-z-index': '1000'
                         }
-                    });
-                } else {
-                    throw new Error('WalletConnectProvider is not a constructor and has no init method');
-                }
-
-                if (WalletConnectClass) {
-                    console.log('🔍 WalletConnectClass type:', typeof WalletConnectClass);
-                    console.log('🔍 WalletConnectClass methods:', Object.getOwnPropertyNames(WalletConnectClass));
-                    
-                    walletConnectProvider = new WalletConnectClass({
-                        projectId: projectId,
-                        chains: [8453, 1], // Base and Ethereum
-                        showQrModal: true,
-                        qrModalOptions: {
-                            themeMode: 'dark',
-                            themeVariables: {
-                                '--wcm-z-index': '1000'
-                            }
-                        }
-                    });
-                }
+                    }
+                });
 
                 console.log('🔍 WalletConnect provider created:', walletConnectProvider);
 
