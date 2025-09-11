@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reown AppKit Test - Wallet Connection</title>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- Reown AppKit SDK -->
+    <script src="https://unpkg.com/@reown/appkit@1.0.0/dist/index.umd.js" onload="console.log('✅ Reown AppKit script loaded')" onerror="console.error('❌ Reown AppKit script failed to load')"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@reown/appkit@1.0.0/dist/index.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: #cccccc;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .status.info {
+            background: rgba(0, 204, 255, 0.2);
+            border: 1px solid #00ccff;
+            color: #00ccff;
+        }
+
+        .wallet-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .debug-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .debug-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+
+        .debug-log {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .debug-log.success { color: #00ff88; }
+        .debug-log.error { color: #ff0000; }
+        .debug-log.info { color: #00ccff; }
+        .debug-log.warning { color: #ffaa00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reown AppKit Test</h1>
+        <p class="subtitle">Testing Wallet Connection Implementation</p>
+        
+        <div id="status" class="status info" style="display: none;">
+            Initializing Reown AppKit...
+        </div>
+        
+        <div id="buttonContainer">
+            <button id="connectBtn" class="button" disabled>
+                Connect Wallet
+            </button>
+            <button id="disconnectBtn" class="button" style="display: none;">
+                Disconnect Wallet
+            </button>
+        </div>
+        
+        <div id="walletInfo" class="wallet-info" style="display: none;">
+            <h3>Wallet Connected</h3>
+            <div class="wallet-address" id="walletAddress"></div>
+            <div id="walletType"></div>
+        </div>
+        
+        <div class="debug-panel">
+            <div class="debug-title">Debug Log</div>
+            <div id="debugLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DEBUGGING UTILITIES =====
+        function addDebugLog(message, type = 'info') {
+            const debugLog = document.getElementById('debugLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `debug-log ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            addDebugLog(`Status: ${message}`, type);
+        }
+
+        // ===== GLOBAL VARIABLES =====
+        let reownModal = null;
+        let isConnected = false;
+        let userAddress = null;
+        let provider = null;
+        let signer = null;
+
+        // ===== REOWN APPKIT IMPLEMENTATION =====
+        
+        async function initReownAppKit() {
+            try {
+                addDebugLog('🔍 Starting Reown AppKit initialization...', 'info');
+                
+                // Log all available window objects
+                const reownObjects = Object.keys(window).filter(key => 
+                    key.toLowerCase().includes('reown') || 
+                    key.toLowerCase().includes('appkit') ||
+                    key.toLowerCase().includes('wallet')
+                );
+                addDebugLog(`🔍 Available Reown objects: ${reownObjects.join(', ')}`, 'info');
+                
+                // Wait for Reown AppKit to be available
+                let createAppKitFunction = null;
+                let attempts = 0;
+                const maxAttempts = 100; // 10 seconds
+                
+                while (!createAppKitFunction && attempts < maxAttempts) {
+                    attempts++;
+                    addDebugLog(`🔍 Attempt ${attempts}: Looking for createAppKit...`, 'info');
+                    
+                    // Check different possible locations
+                    if (typeof window.createAppKit === 'function') {
+                        createAppKitFunction = window.createAppKit;
+                        addDebugLog('✅ Found window.createAppKit', 'success');
+                    } else if (window.ReownAppKit && typeof window.ReownAppKit.createAppKit === 'function') {
+                        createAppKitFunction = window.ReownAppKit.createAppKit;
+                        addDebugLog('✅ Found window.ReownAppKit.createAppKit', 'success');
+                    } else if (window.ReownAppKit && window.ReownAppKit.default && typeof window.ReownAppKit.default.createAppKit === 'function') {
+                        createAppKitFunction = window.ReownAppKit.default.createAppKit;
+                        addDebugLog('✅ Found window.ReownAppKit.default.createAppKit', 'success');
+                    } else if (window.AppKit && typeof window.AppKit.createAppKit === 'function') {
+                        createAppKitFunction = window.AppKit.createAppKit;
+                        addDebugLog('✅ Found window.AppKit.createAppKit', 'success');
+                    }
+                    
+                    if (!createAppKitFunction) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+                
+                if (!createAppKitFunction) {
+                    throw new Error('createAppKit function not found after 10 seconds');
+                }
+                
+                addDebugLog('✅ Reown AppKit SDK loaded successfully', 'success');
+                
+                // Project ID from Reown Dashboard
+                const projectId = '6afed75f72df7cefde4d998c2da4b041';
+                addDebugLog(`🔍 Using Project ID: ${projectId}`, 'info');
+                
+                // Create Reown AppKit modal
+                addDebugLog('🔍 Creating Reown AppKit modal...', 'info');
+                
+                reownModal = createAppKitFunction({
+                    projectId: projectId,
+                    networks: [
+                        { 
+                            id: 1, 
+                            name: 'Ethereum', 
+                            currency: 'ETH', 
+                            explorerUrl: 'https://etherscan.io',
+                            rpcUrl: 'https://eth.llamarpc.com'
+                        },
+                        { 
+                            id: 8453, 
+                            name: 'Base', 
+                            currency: 'ETH', 
+                            explorerUrl: 'https://basescan.org',
+                            rpcUrl: 'https://mainnet.base.org'
+                        }
+                    ],
+                    metadata: {
+                        name: 'Reown AppKit Test',
+                        description: 'Testing Reown AppKit Implementation',
+                        url: window.location.origin,
+                        icons: ['https://avatars.githubusercontent.com/u/179229932']
+                    },
+                    features: {
+                        analytics: true,
+                        email: false,
+                        socials: false
+                    }
+                });
+                
+                addDebugLog('✅ Reown AppKit modal created successfully', 'success');
+                
+                // Set up event listeners
+                setupEventListeners();
+                
+                showStatus('Reown AppKit initialized successfully!', 'success');
+                document.getElementById('connectBtn').disabled = false;
+                
+            } catch (error) {
+                addDebugLog(`❌ Failed to initialize Reown AppKit: ${error.message}`, 'error');
+                showStatus('Failed to initialize Reown AppKit', 'error');
+                console.error('Reown AppKit initialization error:', error);
+            }
+        }
+        
+        function setupEventListeners() {
+            if (!reownModal) return;
+            
+            addDebugLog('🔍 Setting up event listeners...', 'info');
+            
+            // Listen for connection events
+            reownModal.subscribeEvents((event) => {
+                addDebugLog(`🔍 Reown event received: ${JSON.stringify(event)}`, 'info');
+                
+                if (event.type === 'track') {
+                    switch (event.event) {
+                        case 'CONNECT_SUCCESS':
+                            addDebugLog('✅ Connection successful event received', 'success');
+                            handleConnectionSuccess();
+                            break;
+                        case 'DISCONNECT_SUCCESS':
+                            addDebugLog('✅ Disconnection event received', 'info');
+                            handleDisconnection();
+                            break;
+                        case 'CONNECT_ERROR':
+                            addDebugLog(`❌ Connection error: ${event.data?.message || 'Unknown error'}`, 'error');
+                            showStatus('Connection failed', 'error');
+                            break;
+                        default:
+                            addDebugLog(`🔍 Other event: ${event.event}`, 'info');
+                    }
+                }
+            });
+            
+            addDebugLog('✅ Event listeners set up successfully', 'success');
+        }
+        
+        async function connectWallet() {
+            try {
+                if (!reownModal) {
+                    showStatus('Reown AppKit not initialized', 'error');
+                    return;
+                }
+                
+                addDebugLog('🔍 Opening Reown modal...', 'info');
+                showStatus('Opening wallet connection modal...', 'info');
+                
+                // Open the Reown modal
+                await reownModal.open();
+                
+                addDebugLog('✅ Reown modal opened successfully', 'success');
+                
+            } catch (error) {
+                addDebugLog(`❌ Connection error: ${error.message}`, 'error');
+                showStatus('Failed to open wallet modal', 'error');
+                console.error('Connection error:', error);
+            }
+        }
+        
+        async function handleConnectionSuccess() {
+            try {
+                addDebugLog('🔍 Handling connection success...', 'info');
+                
+                if (!reownModal) {
+                    addDebugLog('❌ Reown modal not available', 'error');
+                    return;
+                }
+                
+                // Get account info
+                const account = reownModal.getAccount();
+                const isConnected = reownModal.getIsConnected();
+                
+                addDebugLog(`🔍 Account: ${JSON.stringify(account)}`, 'info');
+                addDebugLog(`🔍 Is connected: ${isConnected}`, 'info');
+                
+                if (isConnected && account) {
+                    userAddress = account.address;
+                    isConnected = true;
+                    
+                    addDebugLog(`✅ Wallet connected: ${userAddress}`, 'success');
+                    
+                    // Create provider from Reown
+                    const walletProvider = reownModal.getWalletProvider();
+                    addDebugLog(`🔍 Wallet provider: ${typeof walletProvider}`, 'info');
+                    
+                    if (walletProvider) {
+                        provider = new ethers.providers.Web3Provider(walletProvider);
+                        signer = provider.getSigner();
+                        addDebugLog('✅ Ethers provider and signer created', 'success');
+                    }
+                    
+                    // Update UI
+                    updateWalletUI();
+                    showStatus('Wallet connected successfully!', 'success');
+                    
+                } else {
+                    addDebugLog('❌ No account or not connected', 'error');
+                    showStatus('Connection failed - no account', 'error');
+                }
+                
+            } catch (error) {
+                addDebugLog(`❌ Connection handling error: ${error.message}`, 'error');
+                showStatus('Failed to handle connection', 'error');
+                console.error('Connection handling error:', error);
+            }
+        }
+        
+        function handleDisconnection() {
+            addDebugLog('🔍 Handling disconnection...', 'info');
+            isConnected = false;
+            userAddress = null;
+            provider = null;
+            signer = null;
+            
+            updateWalletUI();
+            showStatus('Wallet disconnected', 'info');
+        }
+        
+        function updateWalletUI() {
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const walletInfo = document.getElementById('walletInfo');
+            const walletAddress = document.getElementById('walletAddress');
+            const walletType = document.getElementById('walletType');
+            
+            if (isConnected && userAddress) {
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'inline-block';
+                walletInfo.style.display = 'block';
+                walletAddress.textContent = userAddress;
+                walletType.textContent = 'Connected via Reown AppKit';
+                addDebugLog('✅ UI updated for connected state', 'success');
+            } else {
+                connectBtn.style.display = 'inline-block';
+                disconnectBtn.style.display = 'none';
+                walletInfo.style.display = 'none';
+                addDebugLog('✅ UI updated for disconnected state', 'success');
+            }
+        }
+        
+        async function disconnectWallet() {
+            try {
+                addDebugLog('🔍 Disconnecting wallet...', 'info');
+                
+                if (reownModal) {
+                    await reownModal.close();
+                    addDebugLog('✅ Reown modal closed', 'success');
+                }
+                
+                handleDisconnection();
+                
+            } catch (error) {
+                addDebugLog(`❌ Disconnection error: ${error.message}`, 'error');
+                console.error('Disconnection error:', error);
+            }
+        }
+        
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugLog('🔍 DOM loaded, initializing Reown AppKit...', 'info');
+            
+            // Set up button event listeners
+            document.getElementById('connectBtn').addEventListener('click', connectWallet);
+            document.getElementById('disconnectBtn').addEventListener('click', disconnectWallet);
+            
+            // Initialize Reown AppKit
+            initReownAppKit();
+        });
+    </script>
+</body>
+</html>

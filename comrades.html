@@ -1095,7 +1095,7 @@
                             isAllowlisted = false;
                             console.log('No proof found for user address');
                         }
-                    } catch (error) {
+            } catch (error) {
                         console.log('Could not check allowlist status:', error.message);
                         isAllowlisted = false;
                     }
@@ -1159,15 +1159,15 @@
             // Check if user is allowlisted
             if (!isAllowlisted) {
                 showStatus('You are not allowlisted for free claim!', 'error');
-                return;
-            }
+                        return;
+                    }
 
             // Get proof for user
             const proof = getProofForAddress(userAddress);
             if (!proof) {
                 showStatus('No allowlist proof found for your address!', 'error');
-                return;
-            }
+                        return;
+                    }
 
             showStatus(`Claiming ${currentQuantity} Comrades (FREE)...`, 'loading');
             
@@ -1186,14 +1186,14 @@
                 console.log('Allowlist verification result:', isVerified);
                 if (!isVerified) {
                     showStatus('Error: Allowlist verification failed. Your address is not in the allowlist for this batch.', 'error');
-                    return;
-                }
+                return;
+            }
             } catch (verifyError) {
                 console.error('Allowlist verification error:', verifyError);
                 showStatus('Error: Could not verify allowlist status.', 'error');
-                return;
-            }
-            
+                        return;
+                    }
+
             // For FREE claim with Merkle, check if user already used free mint
             try {
                 const hasUsedFree = await comradesContract.hasUsedFreeMint(PACK_ID, userAddress);
@@ -1272,18 +1272,18 @@
                 showStatus(`Mint failed: ${error.reason || error.message || 'Unknown error'}`, 'error');
                 throw error;
             }
-            
-        } else { // ADRIAN
+                    
+                } else { // ADRIAN
             const totalToken = comradesPriceAdrian.mul(currentQuantity);
             const allowWei = await adrianToken.allowance(userAddress, COMRADES_CONTRACT);
-            
-            if (allowWei.lt(totalToken)) {
+                    
+                    if (allowWei.lt(totalToken)) {
                 const human = parseFloat(ethers.utils.formatEther(totalToken)).toFixed(0);
-                showStatus(`Approving ${human} $ADRIAN...`, 'loading');
+                        showStatus(`Approving ${human} $ADRIAN...`, 'loading');
                 const approveTx = await adrianToken.approve(COMRADES_CONTRACT, totalToken);
-                await approveTx.wait();
-            }
-            
+                        await approveTx.wait();
+                    }
+                    
             // Get proof for user (if allowlisted)
             const proof = getProofForAddress(userAddress);
             if (proof && isAllowlisted) {
