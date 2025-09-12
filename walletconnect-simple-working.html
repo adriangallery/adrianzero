@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WalletConnect Simple - Working</title>
+    
+    <!-- Ethers.js -->
+    <script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- WalletConnect v2 -->
+    <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.9.0/dist/index.umd.js"></script>
+    
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        color: #ffffff;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 600px;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, #00ff88, #00ccff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .button {
+        background: linear-gradient(45deg, #00ff88, #00ccff);
+        color: #000;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        border-radius: 10px;
+        cursor: pointer;
+        margin: 10px;
+        transition: all 0.3s ease;
+        font-weight: bold;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+      }
+
+      .button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .status {
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: bold;
+      }
+
+      .status.success {
+        background: rgba(0, 255, 136, 0.2);
+        border: 1px solid #00ff88;
+        color: #00ff88;
+      }
+
+      .status.error {
+        background: rgba(255, 0, 0, 0.2);
+        border: 1px solid #ff0000;
+        color: #ff0000;
+      }
+
+      .status.info {
+        background: rgba(0, 204, 255, 0.2);
+        border: 1px solid #00ccff;
+        color: #00ccff;
+      }
+
+      .wallet-info {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .wallet-address {
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        margin: 10px 0;
+        word-break: break-all;
+      }
+
+      pre {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+        text-align: left;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>WalletConnect Simple</h1>
+      
+      <div id="status" class="status info">
+        Initializing WalletConnect...
+      </div>
+      
+      <div class="button-group">
+        <button id="connectBtn" class="button" disabled>Connect Wallet</button>
+        <button id="disconnectBtn" class="button" style="display: none;">Disconnect</button>
+      </div>
+      
+      <div class="wallet-info" id="walletInfo" style="display: none;">
+        <h3>Wallet Connected</h3>
+        <div class="wallet-address" id="walletAddress"></div>
+        <div id="walletType"></div>
+      </div>
+      
+      <div class="button-group">
+        <button id="signBtn" class="button" style="display: none;">Sign Message</button>
+        <button id="balanceBtn" class="button" style="display: none;">Get Balance</button>
+      </div>
+      
+      <div id="result" style="display: none;">
+        <h3>Result</h3>
+        <pre id="resultContent"></pre>
+      </div>
+    </div>
+
+    <script>
+      // Debug utilities
+      function addDebugLog(message, type = 'info') {
+        console.log(`[DEBUG] ${message}`);
+      }
+
+      // Global variables
+      let provider = null;
+      let signer = null;
+      let userAddress = null;
+      let isConnected = false;
+
+      // Initialize WalletConnect
+      async function initWalletConnect() {
+        try {
+          addDebugLog('🔍 Starting WalletConnect initialization...', 'info');
+          
+          // Check if WalletConnect is available
+          if (typeof window.EthereumProvider === 'undefined') {
+            throw new Error('EthereumProvider not found');
+          }
+          
+          addDebugLog('✅ EthereumProvider found', 'success');
+          
+          // Your Project ID
+          const projectId = '6afed75f72df7cefde4d998c2da4b041';
+          addDebugLog(`🔍 Using Project ID: ${projectId}`, 'info');
+          
+          // Create WalletConnect provider
+          provider = await window.EthereumProvider.init({
+            projectId: projectId,
+            chains: [1, 137], // Ethereum and Polygon
+            showQrModal: true,
+            metadata: {
+              name: 'WalletConnect Test',
+              description: 'Testing WalletConnect Implementation',
+              url: window.location.origin,
+              icons: ['https://avatars.githubusercontent.com/u/179229932']
+            }
+          });
+          
+          addDebugLog('✅ WalletConnect provider created successfully', 'success');
+          
+          // Set up event listeners
+          setupEventListeners();
+          
+          // Update UI
+          document.getElementById('status').textContent = 'WalletConnect ready!';
+          document.getElementById('status').className = 'status success';
+          document.getElementById('connectBtn').disabled = false;
+          
+        } catch (error) {
+          addDebugLog(`❌ Failed to initialize WalletConnect: ${error.message}`, 'error');
+          document.getElementById('status').textContent = 'Failed to initialize WalletConnect';
+          document.getElementById('status').className = 'status error';
+          console.error('WalletConnect initialization error:', error);
+        }
+      }
+
+      function setupEventListeners() {
+        if (!provider) return;
+        
+        addDebugLog('🔍 Setting up event listeners...', 'info');
+        
+        // Listen for connection events
+        provider.on('connect', (connectInfo) => {
+          addDebugLog(`✅ Connected: ${JSON.stringify(connectInfo)}`, 'success');
+          handleConnection(connectInfo);
+        });
+
+        provider.on('disconnect', (error) => {
+          addDebugLog(`✅ Disconnected: ${JSON.stringify(error)}`, 'info');
+          handleDisconnection();
+        });
+
+        provider.on('accountsChanged', (accounts) => {
+          addDebugLog(`🔍 Accounts changed: ${JSON.stringify(accounts)}`, 'info');
+          if (accounts.length > 0) {
+            userAddress = accounts[0];
+            updateWalletUI();
+          }
+        });
+
+        provider.on('chainChanged', (chainId) => {
+          addDebugLog(`🔍 Chain changed: ${chainId}`, 'info');
+        });
+        
+        // Button event listeners
+        document.getElementById('connectBtn').addEventListener('click', async () => {
+          try {
+            addDebugLog('🔍 Connecting to WalletConnect...', 'info');
+            await provider.connect();
+          } catch (error) {
+            addDebugLog(`❌ Connection error: ${error.message}`, 'error');
+          }
+        });
+        
+        document.getElementById('disconnectBtn').addEventListener('click', async () => {
+          try {
+            addDebugLog('🔍 Disconnecting...', 'info');
+            await provider.disconnect();
+          } catch (error) {
+            addDebugLog(`❌ Disconnection error: ${error.message}`, 'error');
+          }
+        });
+
+        document.getElementById('signBtn').addEventListener('click', async () => {
+          try {
+            await signMessage();
+          } catch (error) {
+            addDebugLog(`❌ Sign message error: ${error.message}`, 'error');
+          }
+        });
+
+        document.getElementById('balanceBtn').addEventListener('click', async () => {
+          try {
+            await getBalance();
+          } catch (error) {
+            addDebugLog(`❌ Get balance error: ${error.message}`, 'error');
+          }
+        });
+        
+        addDebugLog('✅ Event listeners set up', 'success');
+      }
+
+      async function handleConnection(connectInfo) {
+        try {
+          if (connectInfo.accounts && connectInfo.accounts.length > 0) {
+            userAddress = connectInfo.accounts[0];
+            isConnected = true;
+            
+            // Create ethers provider
+            signer = new ethers.BrowserProvider(provider);
+            
+            updateWalletUI();
+            addDebugLog(`✅ Wallet connected: ${userAddress}`, 'success');
+          }
+        } catch (error) {
+          addDebugLog(`❌ Connection handling error: ${error.message}`, 'error');
+        }
+      }
+
+      function handleDisconnection() {
+        addDebugLog('🔍 Handling disconnection...', 'info');
+        isConnected = false;
+        userAddress = null;
+        provider = null;
+        signer = null;
+        
+        updateWalletUI();
+      }
+
+      function updateWalletUI() {
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const walletInfo = document.getElementById('walletInfo');
+        const walletAddress = document.getElementById('walletAddress');
+        const walletType = document.getElementById('walletType');
+        const signBtn = document.getElementById('signBtn');
+        const balanceBtn = document.getElementById('balanceBtn');
+        
+        if (isConnected && userAddress) {
+          connectBtn.style.display = 'none';
+          disconnectBtn.style.display = 'inline-block';
+          walletInfo.style.display = 'block';
+          signBtn.style.display = 'inline-block';
+          balanceBtn.style.display = 'inline-block';
+          walletAddress.textContent = userAddress;
+          walletType.textContent = 'Connected via WalletConnect';
+          addDebugLog('✅ UI updated for connected state', 'success');
+        } else {
+          connectBtn.style.display = 'inline-block';
+          disconnectBtn.style.display = 'none';
+          walletInfo.style.display = 'none';
+          signBtn.style.display = 'none';
+          balanceBtn.style.display = 'none';
+          addDebugLog('✅ UI updated for disconnected state', 'success');
+        }
+      }
+
+      async function signMessage() {
+        try {
+          const message = 'Hello from WalletConnect!';
+          const signature = await provider.request({
+            method: 'personal_sign',
+            params: [message, userAddress]
+          });
+          
+          showResult(`Message: ${message}\nSignature: ${signature}`);
+          addDebugLog(`✅ Message signed: ${signature}`, 'success');
+        } catch (error) {
+          addDebugLog(`❌ Sign message error: ${error.message}`, 'error');
+          showResult(`Error: ${error.message}`);
+        }
+      }
+
+      async function getBalance() {
+        try {
+          const balance = await provider.request({
+            method: 'eth_getBalance',
+            params: [userAddress, 'latest']
+          });
+          
+          const balanceInEth = ethers.formatEther(balance);
+          showResult(`Balance: ${balanceInEth} ETH`);
+          addDebugLog(`✅ Balance retrieved: ${balanceInEth} ETH`, 'success');
+        } catch (error) {
+          addDebugLog(`❌ Get balance error: ${error.message}`, 'error');
+          showResult(`Error: ${error.message}`);
+        }
+      }
+
+      function showResult(content) {
+        const result = document.getElementById('result');
+        const resultContent = document.getElementById('resultContent');
+        result.style.display = 'block';
+        resultContent.textContent = content;
+      }
+
+      // Initialize when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        addDebugLog('🔍 DOM loaded, initializing WalletConnect...', 'info');
+        
+        // Wait for scripts to load
+        setTimeout(() => {
+          initWalletConnect();
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
