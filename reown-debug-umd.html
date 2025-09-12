@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reown UMD Debug</title>
+    
+    <!-- Reown AppKit UMD -->
+    <script src="https://unpkg.com/@reown/appkit@1.8.2/dist/index.umd.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@reown/appkit@1.8.2/dist/index.css">
+    
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #1a1a1a;
+        color: #fff;
+        padding: 20px;
+      }
+      .debug-section {
+        background: #2a2a2a;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 10px;
+        border: 1px solid #444;
+      }
+      .debug-title {
+        color: #00ff88;
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+      }
+      .debug-content {
+        font-family: monospace;
+        background: #000;
+        padding: 10px;
+        border-radius: 5px;
+        white-space: pre-wrap;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .success { color: #00ff88; }
+      .error { color: #ff0000; }
+      .info { color: #00ccff; }
+    </style>
+  </head>
+
+  <body>
+    <h1>Reown UMD Debug - What's Available?</h1>
+    
+    <div class="debug-section">
+      <div class="debug-title">All Window Objects</div>
+      <div class="debug-content" id="allObjects"></div>
+    </div>
+    
+    <div class="debug-section">
+      <div class="debug-title">Reown/AppKit Objects</div>
+      <div class="debug-content" id="reownObjects"></div>
+    </div>
+    
+    <div class="debug-section">
+      <div class="debug-title">Object Inspection</div>
+      <div class="debug-content" id="objectInspection"></div>
+    </div>
+
+    <script>
+      function addDebugLog(elementId, message, type = 'info') {
+        const element = document.getElementById(elementId);
+        const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+        element.innerHTML += `<span class="${className}">[${new Date().toLocaleTimeString()}] ${message}</span>\n`;
+      }
+
+      function debugAllObjects() {
+        addDebugLog('allObjects', '🔍 All window objects:', 'info');
+        const allKeys = Object.keys(window);
+        addDebugLog('allObjects', `Total objects: ${allKeys.length}`, 'info');
+        addDebugLog('allObjects', `First 50: ${allKeys.slice(0, 50).join(', ')}`, 'info');
+      }
+
+      function debugReownObjects() {
+        addDebugLog('reownObjects', '🔍 Reown/AppKit related objects:', 'info');
+        
+        const reownKeys = Object.keys(window).filter(key => 
+          key.toLowerCase().includes('reown') || 
+          key.toLowerCase().includes('appkit') ||
+          key.toLowerCase().includes('w3m') ||
+          key.toLowerCase().includes('web3modal')
+        );
+        
+        addDebugLog('reownObjects', `Found ${reownKeys.length} related objects: ${reownKeys.join(', ')}`, 'info');
+        
+        reownKeys.forEach(key => {
+          const obj = window[key];
+          addDebugLog('reownObjects', `\n${key}: ${typeof obj}`, 'info');
+          if (typeof obj === 'object' && obj !== null) {
+            const objKeys = Object.keys(obj);
+            addDebugLog('reownObjects', `  Keys: ${objKeys.slice(0, 20).join(', ')}${objKeys.length > 20 ? '...' : ''}`, 'info');
+            
+            // Look for createAppKit
+            if (obj.createAppKit) {
+              addDebugLog('reownObjects', `  ✅ Found createAppKit in ${key}!`, 'success');
+            }
+            if (obj.default && obj.default.createAppKit) {
+              addDebugLog('reownObjects', `  ✅ Found createAppKit in ${key}.default!`, 'success');
+            }
+          }
+        });
+      }
+
+      function debugObjectInspection() {
+        addDebugLog('objectInspection', '🔍 Deep inspection of potential objects:', 'info');
+        
+        // Check common UMD patterns
+        const potentialObjects = [
+          'ReownAppKit',
+          'AppKit', 
+          'Web3Modal',
+          'W3M',
+          'createAppKit',
+          'default'
+        ];
+        
+        potentialObjects.forEach(key => {
+          if (window[key]) {
+            addDebugLog('objectInspection', `\n${key}: ${typeof window[key]}`, 'info');
+            if (typeof window[key] === 'object' && window[key] !== null) {
+              const keys = Object.keys(window[key]);
+              addDebugLog('objectInspection', `  Keys: ${keys.join(', ')}`, 'info');
+            }
+          } else {
+            addDebugLog('objectInspection', `\n${key}: undefined`, 'error');
+          }
+        });
+        
+        // Check if there's a default export
+        if (window.default) {
+          addDebugLog('objectInspection', `\nwindow.default: ${typeof window.default}`, 'info');
+          if (typeof window.default === 'object' && window.default !== null) {
+            const keys = Object.keys(window.default);
+            addDebugLog('objectInspection', `  Keys: ${keys.join(', ')}`, 'info');
+          }
+        }
+      }
+
+      // Run debug when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        addDebugLog('allObjects', '🔍 Starting UMD debug...', 'info');
+        
+        setTimeout(() => {
+          debugAllObjects();
+          debugReownObjects();
+          debugObjectInspection();
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
