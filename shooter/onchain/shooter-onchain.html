@@ -360,6 +360,11 @@
                 // Load background images
                 this.loadBackgroundImages();
                 
+                // Initialize image loading system
+                this.loadedImages = [];
+                this.selectRandomImages();
+                this.loadImages();
+                
                 // Game timing
                 this.lastTime = 0;
                 this.timer = null;
@@ -398,11 +403,11 @@
             loadBackgroundImages() {
                 // Load background images for parallax effect
                 const backgroundImages = [
-                    '../Images/level1.png', // Layer 0 (back)
-                    '../Images/level1.png', // Layer 1
-                    '../Images/level1.png', // Layer 2
-                    '../Images/level1.png', // Layer 3
-                    '../Images/level1.png'  // Layer 4 (front)
+                    '../level1.png', // Layer 0 (back)
+                    '../level1.png', // Layer 1
+                    '../level1.png', // Layer 2
+                    '../level1.png', // Layer 3
+                    '../level1.png'  // Layer 4 (front)
                 ];
                 
                 backgroundImages.forEach((src, index) => {
@@ -412,6 +417,89 @@
                         this.backgroundLayers[index].image = img;
                     };
                 });
+            }
+            
+            selectRandomImages() {
+                const totalImages = 4200;
+                const imagesToSelect = 20;
+                const selectedNumbers = new Set();
+                
+                // Keep selecting random numbers until we have 20 unique ones
+                while(selectedNumbers.size < imagesToSelect) {
+                    const randomNumber = Math.floor(Math.random() * totalImages) + 1;
+                    selectedNumbers.add(randomNumber);
+                }
+                
+                // Convert the Set to an Array and return it
+                this.selectedImageNumbers = Array.from(selectedNumbers);
+                console.log("Selected 20 random images:", this.selectedImageNumbers);
+            }
+            
+            loadImages() {
+                const imagePromises = this.selectedImageNumbers.map((imageNumber, index) => {
+                    const imagePath = `../Images/filthyfeetsecrets${imageNumber}.png`;
+                    const img = new Image();
+                    
+                    // Store metadata with the image
+                    img.metadata = {
+                        footType: this.getFootTypeFromNumber(imageNumber),
+                        points: this.getPointsFromNumber(imageNumber),
+                        speed: this.getSpeedFromNumber(imageNumber),
+                        imageNumber: imageNumber
+                    };
+                    
+                    const promise = new Promise((resolve, reject) => {
+                        img.onload = () => {
+                            console.log(`Loaded image ${index + 1}/20: ${imagePath}`);
+                            resolve(img);
+                        };
+                        img.onerror = () => {
+                            console.warn(`Failed to load image: ${imagePath}`);
+                            resolve(null); // Resolve with null to continue loading other images
+                        };
+                        img.src = imagePath;
+                    });
+                    
+                    return promise;
+                });
+                
+                // Wait for all images to load
+                Promise.all(imagePromises)
+                    .then(images => {
+                        // Filter out any null images (failed to load)
+                        this.loadedImages = images.filter(img => img !== null);
+                        console.log(`Successfully loaded ${this.loadedImages.length} out of 20 images`);
+                    })
+                    .catch(error => {
+                        console.error('Error loading feet images:', error);
+                    });
+            }
+            
+            getFootTypeFromNumber(imageNumber) {
+                if (imageNumber >= 3500) return 'Gold';
+                if (imageNumber >= 2800) return 'Zombie';
+                if (imageNumber >= 2100) return 'Alien';
+                if (imageNumber >= 1400) return 'Ape';
+                if (imageNumber >= 700) return 'Light';
+                return 'Default';
+            }
+            
+            getPointsFromNumber(imageNumber) {
+                if (imageNumber >= 3500) return 200;
+                if (imageNumber >= 2800) return 100;
+                if (imageNumber >= 2100) return 50;
+                if (imageNumber >= 1400) return 30;
+                if (imageNumber >= 700) return 20;
+                return 10;
+            }
+            
+            getSpeedFromNumber(imageNumber) {
+                if (imageNumber >= 3500) return 1;
+                if (imageNumber >= 2800) return 1.5;
+                if (imageNumber >= 2100) return 2;
+                if (imageNumber >= 1400) return 2.5;
+                if (imageNumber >= 700) return 3;
+                return 3.5;
             }
             
             createCleanedVersion(originalImage) {
@@ -591,39 +679,65 @@
                 const typeIndex = Math.floor(Math.random() * this.feetTypes.length);
                 const type = this.feetTypes[typeIndex];
                 
-                // Generate random image number (1-4200)
-                const imageNumber = Math.floor(Math.random() * 4200) + 1;
-                const imagePath = `../Images/filthyfeetsecrets${imageNumber}.png`;
-                
-                const foot = {
-                    x: Math.random() * (this.canvas.width - type.width),
-                    y: this.canvas.height,
-                    width: type.width,
-                    height: type.height,
-                    type: type.name,
-                    points: type.points,
-                    speed: type.speed,
-                    cleaned: false,
-                    visible: true,
-                    movementState: this.footMovementStates.RISING,
-                    targetY: type.yPosition,
-                    waitTime: 1000 + Math.random() * 3000,
-                    waitStart: 0,
-                    image: null,
-                    cleanImage: null,
-                    imagePath: imagePath
-                };
-                
-                // Load foot image
-                const footImage = new Image();
-                footImage.src = imagePath;
-                footImage.onload = () => {
-                    foot.image = footImage;
-                    // Create cleaned version
-                    foot.cleanImage = this.createCleanedVersion(footImage);
-                };
-                
-                this.feet.push(foot);
+                // Use a random loaded image if available
+                if (this.loadedImages && this.loadedImages.length > 0) {
+                    const randomImageIndex = Math.floor(Math.random() * this.loadedImages.length);
+                    const randomImage = this.loadedImages[randomImageIndex];
+                    
+                    // Use the metadata stored with the image
+                    const metadata = randomImage.metadata || {
+                        footType: 'Default',
+                        points: type.points,
+                        speed: type.speed,
+                        imageNumber: 0
+                    };
+                    
+                    // Create a cleaned version of the image
+                    const cleanedImage = this.createCleanedVersion(randomImage);
+                    
+                    // Create the foot object with metadata from the image
+                    const foot = {
+                        x: Math.random() * (this.canvas.width - type.width),
+                        y: this.canvas.height,
+                        width: type.width,
+                        height: type.height,
+                        type: type.name,
+                        points: metadata.points,
+                        speed: metadata.speed,
+                        footType: metadata.footType,
+                        cleaned: false,
+                        visible: true,
+                        image: randomImage,
+                        cleanImage: cleanedImage,
+                        movementState: this.footMovementStates.RISING,
+                        targetY: type.yPosition,
+                        waitTime: 1000 + Math.random() * 3000,
+                        waitStart: 0
+                    };
+                    
+                    this.feet.push(foot);
+                } else {
+                    // Fallback to basic foot if no images loaded
+                    const foot = {
+                        x: Math.random() * (this.canvas.width - type.width),
+                        y: this.canvas.height,
+                        width: type.width,
+                        height: type.height,
+                        type: type.name,
+                        points: type.points,
+                        speed: type.speed,
+                        cleaned: false,
+                        visible: true,
+                        image: null,
+                        cleanImage: null,
+                        movementState: this.footMovementStates.RISING,
+                        targetY: type.yPosition,
+                        waitTime: 1000 + Math.random() * 3000,
+                        waitStart: 0
+                    };
+                    
+                    this.feet.push(foot);
+                }
             }
             
             handleClick(event) {
@@ -934,17 +1048,22 @@
                     const imageWidth = layer.image.width * 0.5;
                     const xPosition = (this.canvas.width - imageWidth) / 2 + parallaxX;
                     
-                    // Calculate vertical position to center the image
-                    const imageHeight = layer.image.height * 0.5;
-                    const yPosition = (this.canvas.height - imageHeight) / 2;
-                    
-                    this.ctx.drawImage(
-                        layer.image,
-                        xPosition, 
-                        yPosition,
-                        imageWidth, 
-                        imageHeight
-                    );
+                    // Use different positioning for different layers like in original
+                    if (layerIndex === 0) {
+                        // Layer 0: centered
+                        const imageHeight = layer.image.height * 0.5;
+                        const yPosition = (this.canvas.height - imageHeight) / 2;
+                        this.ctx.drawImage(layer.image, xPosition, yPosition, imageWidth, imageHeight);
+                    } else {
+                        // Other layers: positioned at bottom
+                        this.ctx.drawImage(
+                            layer.image,
+                            xPosition, 
+                            this.canvas.height - (layer.image.height * 0.5),
+                            imageWidth, 
+                            layer.image.height * 0.5
+                        );
+                    }
                 }
             }
             
