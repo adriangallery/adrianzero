@@ -280,6 +280,7 @@
         // Standalone Game Class
         class ShooterGame {
             constructor() {
+                console.log('🎮 [DEBUG] ShooterGame constructor called');
                 // Initialize canvas and context
                 this.canvas = document.getElementById('gameCanvas');
                 if (!this.canvas) {
@@ -306,6 +307,7 @@
                 this.score = 0;
                 this.timeLeft = 60;
                 this.highScore = localStorage.getItem('shooterHighScore') || 0;
+                console.log('🎮 [DEBUG] ShooterGame initialized with gameState:', this.gameState);
                 
                 // Game objects
                 this.player = {
@@ -431,7 +433,9 @@
             }
             
             start() {
+                console.log('🎮 [DEBUG] ShooterGame.start() called, current gameState:', this.gameState);
                 if (this.gameState === 'start') {
+                    console.log('🎮 [DEBUG] Starting game...');
                     this.gameState = 'playing';
                     this.score = 0;
                     this.timeLeft = 60;
@@ -462,6 +466,7 @@
             }
             
             endGame() {
+                console.log('🎮 [DEBUG] ShooterGame.endGame() called, current gameState:', this.gameState);
                 this.gameState = 'gameOver';
                 
                 // Clear timers
@@ -968,11 +973,17 @@
             }
 
             initializeGame() {
+                console.log('🎮 [DEBUG] initializeGame() called');
                 // Initialize the game
                 this.game = new ShooterGame();
+                console.log('🎮 [DEBUG] ShooterGame created, gameState:', this.game.gameState);
                 this.game.onScoreUpdate = (score) => this.updateScore(score);
-                this.game.onGameOver = (finalScore) => this.handleGameOver(finalScore);
+                this.game.onGameOver = (finalScore) => {
+                    console.log('🎮 [DEBUG] onGameOver callback triggered with score:', finalScore);
+                    this.handleGameOver(finalScore);
+                };
                 // Don't start the game immediately - wait for user to click start
+                console.log('🎮 [DEBUG] Game initialized, waiting for user to start');
             }
 
             updateScore(score) {
@@ -981,6 +992,7 @@
             }
 
             handleGameOver(finalScore) {
+                console.log('🎮 [DEBUG] OnchainShooterGame.handleGameOver() called with score:', finalScore);
                 this.currentScore = finalScore;
                 
                 // Update high score
