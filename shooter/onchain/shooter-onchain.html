@@ -346,6 +346,20 @@
                 this.mouseX = this.canvas.width / 2;
                 this.mouseY = this.canvas.height / 2;
                 
+                // Crosshair/cursor
+                this.crosshair = new Image();
+                this.crosshair.src = '../Images/crosshair.png';
+                this.crosshairLoaded = false;
+                this.crosshair.onload = () => {
+                    this.crosshairLoaded = true;
+                };
+                
+                // Hide default cursor
+                this.canvas.style.cursor = 'none';
+                
+                // Load background images
+                this.loadBackgroundImages();
+                
                 // Game timing
                 this.lastTime = 0;
                 this.timer = null;
@@ -379,6 +393,54 @@
                     ];
                 };
                 bgImage.src = '../level1.png';
+            }
+            
+            loadBackgroundImages() {
+                // Load background images for parallax effect
+                const backgroundImages = [
+                    '../Images/level1.png', // Layer 0 (back)
+                    '../Images/level1.png', // Layer 1
+                    '../Images/level1.png', // Layer 2
+                    '../Images/level1.png', // Layer 3
+                    '../Images/level1.png'  // Layer 4 (front)
+                ];
+                
+                backgroundImages.forEach((src, index) => {
+                    const img = new Image();
+                    img.src = src;
+                    img.onload = () => {
+                        this.backgroundLayers[index].image = img;
+                    };
+                });
+            }
+            
+            createCleanedVersion(originalImage) {
+                // Create a cleaned version of the image
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = originalImage.width;
+                canvas.height = originalImage.height;
+                
+                // Draw the original image
+                ctx.drawImage(originalImage, 0, 0);
+                
+                // Apply cleaning effect (lighten the image)
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    // Lighten the image by increasing brightness
+                    data[i] = Math.min(255, data[i] + 50);     // Red
+                    data[i + 1] = Math.min(255, data[i + 1] + 50); // Green
+                    data[i + 2] = Math.min(255, data[i + 2] + 50); // Blue
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                
+                // Convert canvas to image
+                const cleanedImage = new Image();
+                cleanedImage.src = canvas.toDataURL();
+                return cleanedImage;
             }
             
             setupEventListeners() {
@@ -529,6 +591,10 @@
                 const typeIndex = Math.floor(Math.random() * this.feetTypes.length);
                 const type = this.feetTypes[typeIndex];
                 
+                // Generate random image number (1-4200)
+                const imageNumber = Math.floor(Math.random() * 4200) + 1;
+                const imagePath = `../Images/filthyfeetsecrets${imageNumber}.png`;
+                
                 const foot = {
                     x: Math.random() * (this.canvas.width - type.width),
                     y: this.canvas.height,
@@ -542,7 +608,19 @@
                     movementState: this.footMovementStates.RISING,
                     targetY: type.yPosition,
                     waitTime: 1000 + Math.random() * 3000,
-                    waitStart: 0
+                    waitStart: 0,
+                    image: null,
+                    cleanImage: null,
+                    imagePath: imagePath
+                };
+                
+                // Load foot image
+                const footImage = new Image();
+                footImage.src = imagePath;
+                footImage.onload = () => {
+                    foot.image = footImage;
+                    // Create cleaned version
+                    foot.cleanImage = this.createCleanedVersion(footImage);
                 };
                 
                 this.feet.push(foot);
@@ -829,6 +907,18 @@
                 // Draw cleaning effects
                 this.drawCleaningEffects();
                 
+                // Draw crosshair at mouse position
+                if (this.crosshairLoaded) {
+                    const crosshairSize = 40;
+                    this.ctx.drawImage(
+                        this.crosshair,
+                        this.mouseX - crosshairSize/2,
+                        this.mouseY - crosshairSize/2,
+                        crosshairSize,
+                        crosshairSize
+                    );
+                }
+                
                 // Draw UI elements on canvas
                 this.drawUI();
             }
@@ -861,27 +951,47 @@
             renderFoot(foot) {
                 if (!foot.visible) return;
                 
-                // Draw foot based on type
-                this.ctx.fillStyle = foot.cleaned ? '#90EE90' : '#8B4513'; // Green if cleaned, brown if dirty
-                this.ctx.fillRect(foot.x, foot.y, foot.width, foot.height);
-                
-                // Draw foot outline
-                this.ctx.strokeStyle = '#000000';
-                this.ctx.lineWidth = 2;
-                this.ctx.strokeRect(foot.x, foot.y, foot.width, foot.height);
+                if (foot.image && foot.cleanImage) {
+                    // Use the loaded image
+                    const img = foot.cleaned ? foot.cleanImage : foot.image;
+                    this.ctx.drawImage(img, foot.x, foot.y, foot.width, foot.height);
+                } else {
+                    // Fallback to colored rectangle while image loads
+                    this.ctx.fillStyle = foot.cleaned ? '#90EE90' : '#8B4513';
+                    this.ctx.fillRect(foot.x, foot.y, foot.width, foot.height);
+                    
+                    // Draw foot outline
+                    this.ctx.strokeStyle = '#000000';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(foot.x, foot.y, foot.width, foot.height);
+                }
                 
                 // Draw points
                 this.ctx.fillStyle = '#FFFFFF';
-                this.ctx.font = '12px Arial';
-                this.ctx.fillText(foot.points.toString(), foot.x + 5, foot.y + 15);
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeText(foot.points.toString(), foot.x + 5, foot.y + 20);
+                this.ctx.fillText(foot.points.toString(), foot.x + 5, foot.y + 20);
             }
             
             drawUI() {
-                // Draw score and time on canvas
-                this.ctx.fillStyle = '#FFFFFF';
-                this.ctx.font = '20px Arial';
-                this.ctx.fillText(`Score: ${this.score}`, this.canvas.width - 160, 30);
-                this.ctx.fillText(`Time: ${this.timeLeft}`, this.canvas.width - 160, 60);
+                // Draw score panel with better visibility
+                this.ctx.save();
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                this.ctx.fillRect(this.canvas.width - 180, 10, 160, 100);
+                this.ctx.strokeStyle = 'white';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(this.canvas.width - 180, 10, 160, 100);
+                
+                // Draw score text with improved styling
+                this.ctx.font = 'bold 20px "Pixelify Sans", sans-serif';
+                this.ctx.fillStyle = 'white';
+                this.ctx.textAlign = 'left';
+                this.ctx.textBaseline = 'top';
+                this.ctx.fillText(`Score: ${this.score}`, this.canvas.width - 160, 20);
+                this.ctx.fillText(`Time: ${this.timeLeft}`, this.canvas.width - 160, 50);
+                this.ctx.restore();
                 
                 // Draw game over screen if needed
                 if (this.gameState === 'gameOver') {
@@ -889,11 +999,12 @@
                     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                     
                     this.ctx.fillStyle = '#FFFFFF';
-                    this.ctx.font = '48px Arial';
+                    this.ctx.font = 'bold 48px "Pixelify Sans", sans-serif';
                     this.ctx.textAlign = 'center';
-                    this.ctx.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2 - 50);
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText('GAME OVER!', this.canvas.width / 2, this.canvas.height / 2 - 60);
                     
-                    this.ctx.font = '24px Arial';
+                    this.ctx.font = 'bold 24px "Pixelify Sans", sans-serif';
                     this.ctx.fillText(`Your score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2);
                     this.ctx.fillText(`High score: ${this.highScore || this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50);
                     
