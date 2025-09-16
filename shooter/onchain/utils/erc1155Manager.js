@@ -78,21 +78,40 @@ class ERC1155Manager {
 
     // Check if player has enough tokens to play (burn requirement)
     async canPlay(burnTokens) {
-        if (!this.contract || !this.signer) return false;
+        console.log('🔍 ERC1155Manager.canPlay called with:', burnTokens);
+        console.log('Contract:', this.contract);
+        console.log('Signer:', this.signer);
+        
+        if (!this.contract || !this.signer) {
+            console.log('❌ Missing contract or signer');
+            return false;
+        }
+        
         try {
             const account = await this.signer.getAddress();
+            console.log('Account address:', account);
+            
             const tokenIds = burnTokens.map(token => token.id);
             const amounts = burnTokens.map(token => token.amount);
+            
+            console.log('Token IDs to check:', tokenIds);
+            console.log('Required amounts:', amounts);
             
             const balances = await this.contract.balanceOfBatch(
                 new Array(tokenIds.length).fill(account),
                 tokenIds
             );
             
+            console.log('Token balances:', balances.map(b => b.toString()));
+            
             // Check if player has enough of each required token
-            return balances.every((balance, index) => 
+            const canPlay = balances.every((balance, index) => 
                 balance.gte(amounts[index])
             );
+            
+            console.log('Can play result:', canPlay);
+            
+            return canPlay;
         } catch (error) {
             console.error('Error checking play eligibility:', error);
             return false;
