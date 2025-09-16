@@ -785,7 +785,7 @@
             async initializeWallet() {
                 try {
                     if (typeof window.ethereum !== 'undefined') {
-                        this.walletManager = new ethers.providers.Web3Provider(window.ethereum);
+                        this.walletManager = new ethers.BrowserProvider(window.ethereum);
                         
                         // Check if already connected
                         const accounts = await this.walletManager.listAccounts();
@@ -809,12 +809,12 @@
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
                     
                     // Get signer
-                    const signer = this.walletManager.getSigner();
+                    const signer = await this.walletManager.getSigner();
                     const address = await signer.getAddress();
                     
                     // Check network
                     const network = await this.walletManager.getNetwork();
-                    if (network.chainId !== SHOOTER_CONFIG.CHAIN_ID) {
+                    if (Number(network.chainId) !== SHOOTER_CONFIG.CHAIN_ID) {
                         await this.switchNetwork();
                     }
                     
@@ -890,7 +890,7 @@
                     const erc1155Manager = new ERC1155Manager(
                         SHOOTER_CONFIG.ERC1155_CONTRACT, 
                         this.walletManager, 
-                        this.walletManager.getSigner()
+                        await this.walletManager.getSigner()
                     );
                     
                     // Test connection first
@@ -1043,7 +1043,7 @@
                     const shooterContract = new ethers.Contract(
                         SHOOTER_CONFIG.SHOOTER_CONTRACT,
                         SHOOTER_CONFIG.SHOOTER_ABI,
-                        this.walletManager.getSigner()
+                        await this.walletManager.getSigner()
                     );
                     
                     const tx = await shooterContract.claimReward(
