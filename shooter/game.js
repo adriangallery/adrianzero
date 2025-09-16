@@ -249,11 +249,11 @@ class FilthyFeetGame {
             const randomFootType = footTypes[Math.floor(Math.random() * footTypes.length)];
             
             collection.push({
-                name: `FilthyFeetSecrets${i}`,
-                image: `filthyfeetsecrets${i}.png`,
+                name: `Enemy${i}`,
+                image: `enemy${i}.png`,
                 attributes: [
                     {
-                        trait_type: "Foot",
+                        trait_type: "Type",
                         value: randomFootType.type
                     }
                 ],
@@ -339,11 +339,11 @@ class FilthyFeetGame {
         const randomFootType = footTypes[Math.floor(Math.random() * footTypes.length)];
         
         return {
-            name: `FilthyFeetSecrets${imageNumber}`,
-            image: `filthyfeetsecrets${imageNumber}.png`,
+            name: `Enemy${imageNumber}`,
+            image: `enemy${imageNumber}.png`,
             attributes: [
                 {
-                    trait_type: "Foot",
+                    trait_type: "Type",
                     value: randomFootType.type
                 }
             ],
@@ -395,7 +395,7 @@ class FilthyFeetGame {
                 }
                 
                 // Fix the path to use correct capitalization and file extension
-                const imagePath = `./Images/filthyfeetsecrets${imageNumber}.${fileExtension}`;
+                const imagePath = `./Images/enemy${imageNumber}.${fileExtension}`;
                 
                 // Rest of your code for determining foot type, points, etc.
                 let footType = 'Light';
