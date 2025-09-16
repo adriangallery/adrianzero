@@ -959,6 +959,7 @@
             startGame() {
                 this.hideWalletOverlay();
                 this.initializeGame();
+                this.game.start();
             }
 
             hideWalletOverlay() {
@@ -970,7 +971,7 @@
                 this.game = new ShooterGame();
                 this.game.onScoreUpdate = (score) => this.updateScore(score);
                 this.game.onGameOver = (finalScore) => this.handleGameOver(finalScore);
-                this.game.start();
+                // Don't start the game immediately - wait for user to click start
             }
 
             updateScore(score) {
