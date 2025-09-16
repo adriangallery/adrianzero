@@ -53,7 +53,7 @@ class ERC1155Manager {
             const balance = await this.contract.balanceOf(account, tokenId);
             console.log(`💰 [ERC1155] Balance result: ${balance.toString()}`);
             
-            const hasToken = balance.gt(0);
+            const hasToken = balance > 0;
             console.log(`✅ [ERC1155] Has token: ${hasToken}`);
             
             return hasToken;
@@ -92,7 +92,7 @@ class ERC1155Manager {
             const balances = await this.contract.balanceOfBatch(accounts, tokenIds);
             console.log(`💰 [ERC1155] Balance results:`, balances.map(b => b.toString()));
             
-            const hasAny = balances.some(balance => balance.gt(0));
+            const hasAny = balances.some(balance => balance > 0);
             console.log(`✅ [ERC1155] Has any token: ${hasAny}`);
             
             return hasAny;
@@ -127,7 +127,7 @@ class ERC1155Manager {
             const balance = await this.contract.balanceOf(account, tokenId);
             console.log(`💰 [ERC1155] Balance result: ${balance.toString()}`);
             
-            const balanceNumber = balance.toNumber();
+            const balanceNumber = Number(balance);
             console.log(`✅ [ERC1155] Balance as number: ${balanceNumber}`);
             
             return balanceNumber;
@@ -166,7 +166,7 @@ class ERC1155Manager {
             const balances = await this.contract.balanceOfBatch(accounts, tokenIds);
             console.log(`💰 [ERC1155] Balance results:`, balances.map(b => b.toString()));
             
-            const balanceNumbers = balances.map(balance => balance.toNumber());
+            const balanceNumbers = balances.map(balance => Number(balance));
             console.log(`✅ [ERC1155] Balances as numbers:`, balanceNumbers);
             
             return balanceNumbers;
@@ -223,7 +223,7 @@ class ERC1155Manager {
                 const tokenId = tokenIds[i];
                 const required = amounts[i];
                 const balance = balances[i];
-                const hasEnough = balance.gte(required);
+                const hasEnough = balance >= required;
                 const tokenName = burnTokens[i].name;
                 
                 console.log(`   Token ${i + 1}: ${tokenName} (ID: ${tokenId})`);
@@ -234,7 +234,7 @@ class ERC1155Manager {
             
             // FIXED: Check if player has enough of ANY required token (OR logic instead of AND)
             const canPlay = balances.some((balance, index) => 
-                balance.gte(amounts[index])
+                balance >= amounts[index]
             );
             
             console.log(`✅ [ERC1155] Final canPlay result: ${canPlay}`);
@@ -302,7 +302,7 @@ class ERC1155Manager {
             burnTokens.forEach((token, index) => {
                 const balance = balances[index];
                 const required = amounts[index];
-                const isPlayable = balance.gte(required);
+                const isPlayable = balance >= required;
                 
                 console.log(`   Token ${index + 1}: ${token.name} (ID: ${token.id})`);
                 console.log(`     Required: ${required}`);
@@ -312,7 +312,7 @@ class ERC1155Manager {
                 if (isPlayable) {
                     const playableToken = {
                         ...token,
-                        availableBalance: balance.toNumber()
+                        availableBalance: Number(balance)
                     };
                     playableTokens.push(playableToken);
                     console.log(`     ✅ Added to playable tokens`);
