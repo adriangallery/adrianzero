@@ -271,14 +271,17 @@
     <!-- Load ethers.js from reliable CDN -->
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     
+    <!-- Load configuration -->
+    <script src="../config.js"></script>
+    
     <!-- Load admin config -->
     <script src="config.js"></script>
     
     <script>
         class SimpleAdminPanel {
             constructor() {
-                this.contractAddress = '0x...'; // Replace with actual contract address
-                this.adminWallet = '0x4943407105999e3E97EFA2035F5cbC64D72581C6';
+                this.contractAddress = SHOOTER_CONFIG.CONTRACT_ADDRESS;
+                this.adminWallet = SHOOTER_CONFIG.ADMIN_WALLET;
                 this.isConnected = false;
                 this.config = new AdminConfig();
                 this.init();
