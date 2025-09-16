@@ -216,6 +216,9 @@
     <!-- Load configuration -->
     <script src="config.js"></script>
     
+    <!-- Load ERC1155 Manager -->
+    <script src="utils/erc1155Manager.js"></script>
+    
     <!-- Simple wallet connection script -->
     <script>
         class SimpleWalletManager {
@@ -224,7 +227,8 @@
                 this.signer = null;
                 this.account = null;
                 this.contract = null;
-                this.contractAddress = SHOOTER_CONFIG.CONTRACT_ADDRESS;
+                this.erc1155Address = SHOOTER_CONFIG.ERC1155_CONTRACT;
+                this.shooterAddress = SHOOTER_CONFIG.SHOOTER_CONTRACT;
                 this.chainId = SHOOTER_CONFIG.CHAIN_ID;
                 this.isConnected = false;
                 this.hasKey = false;
@@ -331,16 +335,37 @@
                 this.isConnected = false;
             }
 
-            async hasKey() {
+            async hasRequiredTokens() {
                 if (!this.account) return false;
-                // For now, simulate having a key
-                return true;
+                
+                // Get burn tokens from admin config
+                const adminConfig = new AdminConfig();
+                const burnTokens = adminConfig.getActiveBurnTokens();
+                
+                if (burnTokens.length === 0) {
+                    // No burn tokens required, allow play
+                    return true;
+                }
+                
+                // Check if player has required tokens
+                const erc1155Manager = new ERC1155Manager(this.erc1155Address, this.provider, this.signer);
+                return await erc1155Manager.canPlay(burnTokens);
             }
 
-            async getPlayerKeyId() {
-                if (!this.account) return null;
-                // For now, simulate having a key ID
-                return "1";
+            async getPlayableTokens() {
+                if (!this.account) return [];
+                
+                // Get burn tokens from admin config
+                const adminConfig = new AdminConfig();
+                const burnTokens = adminConfig.getActiveBurnTokens();
+                
+                if (burnTokens.length === 0) {
+                    return [];
+                }
+                
+                // Get playable tokens
+                const erc1155Manager = new ERC1155Manager(this.erc1155Address, this.provider, this.signer);
+                return await erc1155Manager.getPlayableTokens(burnTokens);
             }
         }
 
@@ -392,23 +417,24 @@
                 if (!this.isConnected) return;
 
                 try {
-                    this.hasKey = await this.walletManager.hasKey();
-                    this.keyId = await this.walletManager.getPlayerKeyId();
+                    this.hasKey = await this.walletManager.hasRequiredTokens();
+                    const playableTokens = await this.walletManager.getPlayableTokens();
 
                     const keyStatus = document.getElementById('keyStatus');
                     const mintButton = document.getElementById('mintKey');
 
                     if (this.hasKey) {
-                        keyStatus.innerHTML = `✅ Key NFT Found (ID: ${this.keyId})`;
+                        const tokenNames = playableTokens.map(token => token.name).join(', ');
+                        keyStatus.innerHTML = `✅ Required tokens found: ${tokenNames}`;
                         mintButton.classList.add('hidden');
                         this.hideWalletOverlay();
                         this.startGame();
                     } else {
-                        keyStatus.innerHTML = '❌ No Key NFT found';
+                        keyStatus.innerHTML = '❌ Required tokens not found. Check admin panel for required tokens.';
                         mintButton.classList.remove('hidden');
                     }
                 } catch (error) {
-                    this.showStatus('Error checking key status: ' + error.message, 'error');
+                    this.showStatus('Error checking token status: ' + error.message, 'error');
                 }
             }
 
