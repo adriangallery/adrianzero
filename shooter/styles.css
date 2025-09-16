@@ -1,0 +1,17 @@
+/* Import Pixelify Sans font */
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap');
+
+/* Apply font to all elements */
+* {
+    font-family: 'Pixelify Sans', cursive;
+}
+
+/* Game-specific text styles */
+.score-display, .time-display, .title, .button, .game-over-text, .high-score {
+    font-family: 'Pixelify Sans', cursive;
+}
+
+/* Ensure canvas text uses the font */
+canvas {
+    font-family: 'Pixelify Sans', cursive;
+}
