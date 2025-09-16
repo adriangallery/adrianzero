@@ -114,9 +114,35 @@ export function createUIElements() {
 export function updateGameOverScreen(score, highScore) {
     console.log(`Updating game over screen: score=${score}, highScore=${highScore}`);
     
-    const finalScoreElement = document.getElementById('finalScore');
-    const highScoreElement = document.getElementById('highScore');
+    // Find the game over screen
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    if (!gameOverScreen) {
+        console.error('Game over screen not found');
+        return;
+    }
     
+    // Find or create the score elements within the game over screen
+    let finalScoreElement = gameOverScreen.querySelector('#finalScore');
+    let highScoreElement = gameOverScreen.querySelector('#highScore');
+    
+    // If elements don't exist, create them
+    if (!finalScoreElement) {
+        const scoreText = gameOverScreen.querySelector('p');
+        if (scoreText) {
+            scoreText.innerHTML = `Your Score: <span id="finalScore">${score}</span>`;
+            finalScoreElement = gameOverScreen.querySelector('#finalScore');
+        }
+    }
+    
+    if (!highScoreElement) {
+        const highScoreText = gameOverScreen.querySelectorAll('p')[1];
+        if (highScoreText) {
+            highScoreText.innerHTML = `High Score: <span id="highScore">${highScore}</span>`;
+            highScoreElement = gameOverScreen.querySelector('#highScore');
+        }
+    }
+    
+    // Update the elements
     if (finalScoreElement) {
         finalScoreElement.textContent = score;
         console.log('Updated finalScore element');
