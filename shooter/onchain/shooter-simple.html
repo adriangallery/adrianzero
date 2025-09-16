@@ -329,11 +329,13 @@
             }
 
             async hasKey() {
+                if (!this.account) return false;
                 // For now, simulate having a key
                 return true;
             }
 
             async getPlayerKeyId() {
+                if (!this.account) return null;
                 // For now, simulate having a key ID
                 return "1";
             }
