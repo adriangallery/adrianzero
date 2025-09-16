@@ -423,34 +423,56 @@
             async hasRequiredTokens() {
                 if (!this.account) return false;
                 
+                console.log('🔍 Checking required tokens...');
+                console.log('Account:', this.account);
+                console.log('ERC1155 Address:', this.erc1155Address);
+                console.log('Provider:', this.provider);
+                console.log('Signer:', this.signer);
+                
                 // Get burn tokens from admin config
                 const adminConfig = new AdminConfig();
                 const burnTokens = adminConfig.getActiveBurnTokens();
                 
+                console.log('Burn tokens from config:', burnTokens);
+                
                 if (burnTokens.length === 0) {
-                    // No burn tokens required, allow play
+                    console.log('✅ No burn tokens required, allowing play');
                     return true;
                 }
                 
                 // Check if player has required tokens
                 const erc1155Manager = new ERC1155Manager(this.erc1155Address, this.provider, this.signer);
-                return await erc1155Manager.canPlay(burnTokens);
+                console.log('ERC1155Manager created:', erc1155Manager);
+                
+                const canPlay = await erc1155Manager.canPlay(burnTokens);
+                console.log('Can play result:', canPlay);
+                
+                return canPlay;
             }
 
             async getPlayableTokens() {
                 if (!this.account) return [];
                 
+                console.log('🎮 Getting playable tokens...');
+                
                 // Get burn tokens from admin config
                 const adminConfig = new AdminConfig();
                 const burnTokens = adminConfig.getActiveBurnTokens();
                 
+                console.log('Burn tokens for playable check:', burnTokens);
+                
                 if (burnTokens.length === 0) {
+                    console.log('No burn tokens configured');
                     return [];
                 }
                 
                 // Get playable tokens
                 const erc1155Manager = new ERC1155Manager(this.erc1155Address, this.provider, this.signer);
-                return await erc1155Manager.getPlayableTokens(burnTokens);
+                const playableTokens = await erc1155Manager.getPlayableTokens(burnTokens);
+                
+                console.log('Playable tokens result:', playableTokens);
+                
+                return playableTokens;
             }
         }
 
