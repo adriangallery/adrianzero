@@ -232,12 +232,13 @@ class ERC1155Manager {
                 console.log(`     Has enough: ${hasEnough}`);
             }
             
-            // Check if player has enough of each required token
-            const canPlay = balances.every((balance, index) => 
+            // FIXED: Check if player has enough of ANY required token (OR logic instead of AND)
+            const canPlay = balances.some((balance, index) => 
                 balance.gte(amounts[index])
             );
             
             console.log(`✅ [ERC1155] Final canPlay result: ${canPlay}`);
+            console.log(`🔧 [ERC1155] Using OR logic: player needs ANY token, not ALL tokens`);
             
             return canPlay;
         } catch (error) {
