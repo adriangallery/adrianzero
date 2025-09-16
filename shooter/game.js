@@ -671,6 +671,14 @@ class FilthyFeetGame {
     }
     
     startGame() {
+        // Clear any existing timers first
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
+        if (this.spawnTimer) {
+            clearInterval(this.spawnTimer);
+        }
+        
         // Reset game state
         this.score = 0;
         this.timeLeft = 60;
@@ -820,6 +828,14 @@ class FilthyFeetGame {
 
     // Add resetGame method inside the class
     resetGame() {
+        // Clear any existing timers first
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
+        if (this.spawnTimer) {
+            clearInterval(this.spawnTimer);
+        }
+        
         this.score = 0;
         this.timeLeft = 60;
         this.feet = [];
