@@ -2,7 +2,7 @@
 const SHOOTER_CONFIG = {
     // Contract Addresses
     ERC1155_CONTRACT: '0x90546848474fb3c9fda3fdad887969bb244e7e58', // AdrianLAB ERC1155 for asset verification
-    SHOOTER_CONTRACT: '0x...', // Shooter Game Contract (to be deployed)
+    SHOOTER_CONTRACT: '0xea1d57fa135b661dd77fb7187e6b366c25fd085f', // Shooter Game Contract (to be deployed)
     PROXY_ADDRESS: '0x...', // ShooterGameProxy address (to be deployed)
     
     // Network Configuration
