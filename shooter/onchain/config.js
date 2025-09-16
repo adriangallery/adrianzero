@@ -3,6 +3,7 @@ const SHOOTER_CONFIG = {
     // Contract Addresses
     ERC1155_CONTRACT: '0x90546848474fb3c9fda3fdad887969bb244e7e58', // AdrianLAB ERC1155 for asset verification
     SHOOTER_CONTRACT: '0x...', // Shooter Game Contract (to be deployed)
+    PROXY_ADDRESS: '0x...', // ShooterGameProxy address (to be deployed)
     
     // Network Configuration
     CHAIN_ID: 8453, // Base mainnet
@@ -28,7 +29,7 @@ const SHOOTER_CONFIG = {
             }
         ],
         
-        // Default rewards (can be overridden by admin)
+        // Default score rewards (can be overridden by admin)
         DEFAULT_REWARDS: [
             {
                 score: 100,
@@ -78,6 +79,14 @@ const SHOOTER_CONFIG = {
         // Events
         "event KeyMinted(address indexed user, uint256 keyId)",
         "event RewardClaimed(address indexed user, uint256 keyId, uint256 score, uint256 rewardTokenId, uint256 amount)"
+    ],
+    
+    PROXY_ABI: [
+        // ShooterGameProxy functions
+        "function nonces(address) view returns (uint256)",
+        "function executePlay(uint256[] burnIds, uint256[] burnAmts, uint256[] mintIds, uint256[] mintAmts, uint256 nonce, uint256 expiry, bytes signature)",
+        // Events
+        "event PlayExecuted(address indexed user, uint256[] burnIds, uint256[] burnAmts, uint256[] mintIds, uint256[] mintAmts, uint256 nonce)"
     ]
 };
 
