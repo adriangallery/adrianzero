@@ -14,16 +14,16 @@ app.use(express.json());
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0x90546848474fb3c9fda3fdad887969bb244e7e58';
 const ADMIN_WALLET = process.env.ADMIN_WALLET || '0x4943407105999e3E97EFA2035F5cbC64D72581C6';
 const RPC_URL = process.env.RPC_URL || 'https://mainnet.base.org';
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const PRIVATE_KEY = process.env.BACKEND_SIGNER_KEY;
 
 // Initialize provider and signer
 let provider, signer;
 if (PRIVATE_KEY) {
-    provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+    provider = new ethers.JsonRpcProvider(RPC_URL);
     signer = new ethers.Wallet(PRIVATE_KEY, provider);
     console.log('✅ Backend signer initialized:', signer.address);
 } else {
-    console.log('⚠️  No private key provided. Backend signing disabled.');
+    console.log('⚠️  No BACKEND_SIGNER_KEY provided. Backend signing disabled.');
 }
 
 // Nonce tracking

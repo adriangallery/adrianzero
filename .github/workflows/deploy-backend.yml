@@ -1,0 +1,45 @@
+name: Deploy Shooter Game Backend
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'shooter/onchain/backend/**' ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'shooter/onchain/backend/package-lock.json'
+        
+    - name: Install dependencies
+      run: |
+        cd shooter/onchain/backend
+        npm ci
+        
+    - name: Run tests
+      run: |
+        cd shooter/onchain/backend
+        npm test
+        
+    - name: Deploy to production
+      env:
+        BACKEND_SIGNER_KEY: ${{ secrets.BACKEND_SIGNER_KEY }}
+        CONTRACT_ADDRESS: '0x90546848474fb3c9fda3fdad887969bb244e7e58'
+        ADMIN_WALLET: '0x4943407105999e3E97EFA2035F5cbC64D72581C6'
+        RPC_URL: 'https://mainnet.base.org'
+        PORT: '3001'
+        NODE_ENV: 'production'
+        CORS_ORIGIN: 'https://adrianzero.com'
+      run: |
+        cd shooter/onchain/backend
+        npm start
