@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shooter Game - Onchain Rewards</title>
+    <title>Shooter Game - Complete Onchain Integration</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap">
     <link rel="stylesheet" href="../styles.css">
     <style>
@@ -27,8 +27,10 @@
             border-radius: 20px;
             text-align: center;
             color: white;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .wallet-modal h2 {
@@ -66,12 +68,20 @@
             border-left: 4px solid #ffd700;
         }
 
-        .token-list {
+        .approval-status {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+        }
+
+        .token-list, .approval-list {
             text-align: left;
             margin: 10px 0;
         }
 
-        .token-item {
+        .token-item, .approval-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -79,14 +89,18 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        .token-name {
+        .token-name, .approval-name {
             font-weight: bold;
             color: #ffd700;
         }
 
-        .token-balance {
+        .token-balance, .approval-status-text {
             color: #4CAF50;
             font-family: 'Courier New', monospace;
+        }
+
+        .approval-status-text.not-approved {
+            color: #f44336;
         }
 
         .btn {
@@ -119,6 +133,10 @@
 
         .btn-warning {
             background: linear-gradient(45deg, #ff9800, #f57c00);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
         }
 
         .hidden {
@@ -217,6 +235,45 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Progress steps */
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #666;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .step.active .step-number {
+            background: #ffd700;
+            color: #1a1a2e;
+        }
+
+        .step.completed .step-number {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .step-text {
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -225,17 +282,45 @@
         <div class="wallet-modal">
             <h2>🎮 Connect Wallet to Play</h2>
             <img src="../Zombie_Adrian.gif" alt="Zombie Adrian" class="zombie-image">
-            <p>You need to connect your wallet and own required tokens to play this game.</p>
+            <p>Complete the setup to start playing with onchain rewards!</p>
+            
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="step" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Connect Wallet</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Check Tokens</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Approve Contract</div>
+                </div>
+                <div class="step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-text">Start Game</div>
+                </div>
+            </div>
             
             <div id="walletInfo" class="wallet-info hidden">
                 <p><strong>Connected:</strong> <span id="walletAddress" class="wallet-address"></span></p>
+                
                 <div id="tokenStatus" class="token-status">
                     <p><strong>Token Status:</strong></p>
                     <div id="tokenList" class="token-list"></div>
                 </div>
+                
+                <div id="approvalStatus" class="approval-status">
+                    <p><strong>Contract Approval:</strong></p>
+                    <div id="approvalList" class="approval-list"></div>
+                </div>
             </div>
             
             <button id="connectWallet" class="btn">Connect Wallet</button>
+            <button id="checkTokens" class="btn btn-info hidden">Check Tokens</button>
+            <button id="approveContract" class="btn btn-warning hidden">Approve Shooter Contract</button>
             <button id="mintKey" class="btn btn-warning hidden">Mint Required Tokens</button>
             <button id="startGame" class="btn btn-success hidden">Start Game</button>
             
@@ -279,15 +364,17 @@
     
     <!-- Main game script -->
     <script>
-        class OnchainShooterGame {
+        class CompleteOnchainShooterGame {
             constructor() {
                 this.walletManager = null;
                 this.game = null;
                 this.isConnected = false;
                 this.hasRequiredTokens = false;
                 this.playableTokens = [];
+                this.isContractApproved = false;
                 this.currentScore = 0;
                 this.highScore = localStorage.getItem('shooterHighScore') || 0;
+                this.erc1155Manager = null;
                 
                 this.init();
             }
@@ -299,6 +386,8 @@
 
             setupEventListeners() {
                 document.getElementById('connectWallet').addEventListener('click', () => this.connectWallet());
+                document.getElementById('checkTokens').addEventListener('click', () => this.checkRequiredTokens());
+                document.getElementById('approveContract').addEventListener('click', () => this.approveShooterContract());
                 document.getElementById('mintKey').addEventListener('click', () => this.mintRequiredTokens());
                 document.getElementById('startGame').addEventListener('click', () => this.startGame());
                 document.getElementById('playAgain').addEventListener('click', () => this.playAgain());
@@ -343,8 +432,16 @@
                     
                     this.isConnected = true;
                     this.updateWalletUI(address);
+                    this.updateStep(1, true);
                     
-                    // Check for required tokens
+                    // Initialize ERC1155 Manager
+                    this.erc1155Manager = new ERC1155Manager(
+                        SHOOTER_CONFIG.ERC1155_CONTRACT, 
+                        this.walletManager, 
+                        signer
+                    );
+                    
+                    // Auto-check tokens
                     await this.checkRequiredTokens();
                     
                 } catch (error) {
@@ -361,7 +458,6 @@
                     });
                 } catch (error) {
                     if (error.code === 4902) {
-                        // Network doesn't exist, add it
                         await this.addNetwork();
                     } else {
                         throw error;
@@ -390,11 +486,22 @@
                 document.getElementById('walletAddress').textContent = address;
                 document.getElementById('walletInfo').classList.remove('hidden');
                 document.getElementById('connectWallet').classList.add('hidden');
+                document.getElementById('checkTokens').classList.remove('hidden');
+            }
+
+            updateStep(stepNumber, completed = false) {
+                const step = document.getElementById(`step${stepNumber}`);
+                if (completed) {
+                    step.classList.add('completed');
+                } else {
+                    step.classList.add('active');
+                }
             }
 
             async checkRequiredTokens() {
                 try {
                     this.showStatus('Checking required tokens...', 'info');
+                    this.updateStep(2, false);
                     
                     // Get burn tokens from admin config
                     const adminConfig = new AdminConfig();
@@ -405,32 +512,27 @@
                     if (burnTokens.length === 0) {
                         this.showStatus('No tokens required. You can play!', 'success');
                         this.hasRequiredTokens = true;
-                        this.showStartButton();
+                        this.updateStep(2, true);
+                        await this.checkContractApproval();
                         return;
                     }
                     
-                    // Check if player has required tokens
-                    const erc1155Manager = new ERC1155Manager(
-                        SHOOTER_CONFIG.ERC1155_CONTRACT, 
-                        this.walletManager, 
-                        this.walletManager.getSigner()
-                    );
-                    
                     // Test connection first
-                    const connectionTest = await erc1155Manager.testConnection();
+                    const connectionTest = await this.erc1155Manager.testConnection();
                     if (!connectionTest) {
                         this.showStatus('Failed to connect to token contract', 'error');
                         return;
                     }
                     
-                    this.hasRequiredTokens = await erc1155Manager.canPlay(burnTokens);
-                    this.playableTokens = await erc1155Manager.getPlayableTokens(burnTokens);
+                    this.hasRequiredTokens = await this.erc1155Manager.canPlay(burnTokens);
+                    this.playableTokens = await this.erc1155Manager.getPlayableTokens(burnTokens);
                     
                     this.updateTokenStatus(burnTokens, this.playableTokens);
                     
                     if (this.hasRequiredTokens) {
-                        this.showStatus('Required tokens found! You can play!', 'success');
-                        this.showStartButton();
+                        this.showStatus('Required tokens found!', 'success');
+                        this.updateStep(2, true);
+                        await this.checkContractApproval();
                     } else {
                         this.showStatus('Required tokens not found. Check admin panel for required tokens.', 'error');
                         this.showMintButton();
@@ -439,6 +541,63 @@
                 } catch (error) {
                     console.error('Error checking required tokens:', error);
                     this.showStatus('Error checking tokens: ' + error.message, 'error');
+                }
+            }
+
+            async checkContractApproval() {
+                try {
+                    this.showStatus('Checking contract approval...', 'info');
+                    this.updateStep(3, false);
+                    
+                    if (!this.erc1155Manager) {
+                        this.showStatus('ERC1155 Manager not initialized', 'error');
+                        return;
+                    }
+                    
+                    // Check if shooter contract is approved
+                    this.isContractApproved = await this.erc1155Manager.isShooterApproved(SHOOTER_CONFIG.SHOOTER_CONTRACT);
+                    
+                    this.updateApprovalStatus();
+                    
+                    if (this.isContractApproved) {
+                        this.showStatus('Contract already approved!', 'success');
+                        this.updateStep(3, true);
+                        this.showStartButton();
+                    } else {
+                        this.showStatus('Contract approval required', 'info');
+                        this.showApproveButton();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error checking contract approval:', error);
+                    this.showStatus('Error checking approval: ' + error.message, 'error');
+                }
+            }
+
+            async approveShooterContract() {
+                try {
+                    this.showStatus('Approving shooter contract...', 'info');
+                    
+                    if (!this.erc1155Manager) {
+                        this.showStatus('ERC1155 Manager not initialized', 'error');
+                        return;
+                    }
+                    
+                    const success = await this.erc1155Manager.setApprovalForShooter(SHOOTER_CONFIG.SHOOTER_CONTRACT);
+                    
+                    if (success) {
+                        this.isContractApproved = true;
+                        this.showStatus('Contract approved successfully!', 'success');
+                        this.updateStep(3, true);
+                        this.updateApprovalStatus();
+                        this.showStartButton();
+                    } else {
+                        this.showStatus('Failed to approve contract', 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error approving contract:', error);
+                    this.showStatus('Error approving contract: ' + error.message, 'error');
                 }
             }
 
@@ -462,26 +621,50 @@
                 });
             }
 
+            updateApprovalStatus() {
+                const approvalList = document.getElementById('approvalList');
+                approvalList.innerHTML = '';
+                
+                const approvalItem = document.createElement('div');
+                approvalItem.className = 'approval-item';
+                approvalItem.innerHTML = `
+                    <span class="approval-name">Shooter Contract</span>
+                    <span class="approval-status-text ${this.isContractApproved ? '' : 'not-approved'}">
+                        ${this.isContractApproved ? 'Approved' : 'Not Approved'}
+                    </span>
+                `;
+                approvalList.appendChild(approvalItem);
+            }
+
             showStartButton() {
                 document.getElementById('startGame').classList.remove('hidden');
                 document.getElementById('mintKey').classList.add('hidden');
+                document.getElementById('approveContract').classList.add('hidden');
+                this.updateStep(4, false);
+            }
+
+            showApproveButton() {
+                document.getElementById('approveContract').classList.remove('hidden');
+                document.getElementById('mintKey').classList.add('hidden');
+                document.getElementById('startGame').classList.add('hidden');
             }
 
             showMintButton() {
                 document.getElementById('mintKey').classList.remove('hidden');
+                document.getElementById('approveContract').classList.add('hidden');
                 document.getElementById('startGame').classList.add('hidden');
             }
 
             async mintRequiredTokens() {
                 this.showStatus('Minting required tokens...', 'info');
                 // This would integrate with the minting contract
-                // For now, just show a message
                 this.showStatus('Token minting not implemented yet. Please get tokens from admin panel.', 'error');
             }
 
             startGame() {
                 this.hideWalletOverlay();
                 this.initializeGame();
+                this.updateStep(4, true);
             }
 
             hideWalletOverlay() {
@@ -695,7 +878,7 @@
 
         // Initialize game when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            new OnchainShooterGame();
+            new CompleteOnchainShooterGame();
         });
     </script>
 </body>
