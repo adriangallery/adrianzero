@@ -763,6 +763,7 @@
 
         class OnchainShooterGame {
             constructor() {
+                console.log('🎮 [DEBUG] OnchainShooterGame constructor called');
                 this.walletManager = null;
                 this.game = null;
                 this.isConnected = false;
@@ -775,12 +776,16 @@
                 const gameOverScreen = document.getElementById('gameOverScreen');
                 if (gameOverScreen) {
                     gameOverScreen.classList.add('hidden');
+                    console.log('🎮 [DEBUG] Game over screen hidden on constructor');
+                } else {
+                    console.log('🎮 [DEBUG] Game over screen not found!');
                 }
                 
                 this.init();
             }
 
             init() {
+                console.log('🎮 [DEBUG] OnchainShooterGame.init() called');
                 this.setupEventListeners();
                 this.initializeWallet();
             }
@@ -1186,12 +1191,17 @@
 
         // Initialize game when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎮 [DEBUG] DOMContentLoaded event fired');
             // Ensure game over screen is hidden on page load
             const gameOverScreen = document.getElementById('gameOverScreen');
             if (gameOverScreen) {
                 gameOverScreen.classList.add('hidden');
+                console.log('🎮 [DEBUG] Game over screen hidden on DOMContentLoaded');
+            } else {
+                console.log('🎮 [DEBUG] Game over screen not found on DOMContentLoaded!');
             }
             
+            console.log('🎮 [DEBUG] Creating OnchainShooterGame instance...');
             new OnchainShooterGame();
         });
     </script>
