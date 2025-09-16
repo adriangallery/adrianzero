@@ -7,15 +7,18 @@ export class WalletManager {
         this.provider = null;
         this.signer = null;
         this.account = null;
-        this.contract = null;
-        this.contractAddress = null;
+        this.erc1155Manager = null;
+        this.shooterContract = null;
+        this.erc1155Address = null;
+        this.shooterAddress = null;
         this.chainId = 8453; // Base mainnet
         this.isConnected = false;
     }
 
     // Initialize wallet connection
-    async init(contractAddress, contractABI) {
-        this.contractAddress = contractAddress;
+    async init(erc1155Address, shooterAddress) {
+        this.erc1155Address = erc1155Address;
+        this.shooterAddress = shooterAddress;
         
         // Check if MetaMask is installed
         if (typeof window.ethereum !== 'undefined') {
@@ -48,8 +51,11 @@ export class WalletManager {
                 await this.switchNetwork();
             }
             
-            // Initialize contract
-            this.contract = new ethers.Contract(this.contractAddress, this.contractABI, this.signer);
+            // Initialize contracts
+            this.erc1155Manager = new ERC1155Manager(this.erc1155Address, this.provider, this.signer);
+            if (this.shooterAddress) {
+                this.shooterContract = new ethers.Contract(this.shooterAddress, SHOOTER_CONFIG.SHOOTER_ABI, this.signer);
+            }
             
             this.isConnected = true;
             
@@ -126,14 +132,25 @@ export class WalletManager {
         this.isConnected = false;
     }
 
-    // Check if player has a key
-    async hasKey() {
-        if (!this.contract || !this.account) return false;
+    // Check if player has required tokens to play
+    async hasRequiredTokens(burnTokens) {
+        if (!this.erc1155Manager) return false;
         try {
-            return await this.contract.hasKey(this.account);
+            return await this.erc1155Manager.canPlay(burnTokens);
         } catch (error) {
-            console.error('Error checking key ownership:', error);
+            console.error('Error checking required tokens:', error);
             return false;
+        }
+    }
+
+    // Get playable tokens
+    async getPlayableTokens(burnTokens) {
+        if (!this.erc1155Manager) return [];
+        try {
+            return await this.erc1155Manager.getPlayableTokens(burnTokens);
+        } catch (error) {
+            console.error('Error getting playable tokens:', error);
+            return [];
         }
     }
 
