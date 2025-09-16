@@ -30,6 +30,15 @@ export function createUIElements() {
         startScreen.style.color = 'white';
         startScreen.style.pointerEvents = 'auto';
    
+        // Add Zombie Adrian image
+        const zombieImage = document.createElement('img');
+        zombieImage.src = './Zombie_Adrian.gif';
+        zombieImage.style.width = '200px';
+        zombieImage.style.height = '200px';
+        zombieImage.style.marginBottom = '20px';
+        zombieImage.style.borderRadius = '10px';
+        startScreen.appendChild(zombieImage);
+        
         const startButton = document.createElement('button');
         startButton.id = 'startButton';
         startButton.textContent = 'Start Game';

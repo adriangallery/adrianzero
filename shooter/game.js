@@ -801,21 +801,29 @@ class FilthyFeetGame {
     // Add these methods inside the class
     // In the loadBackgroundImages method
     loadBackgroundImages() {
-        // Load 5 background layers (0.png through 4.png)
-        for (let i = 0; i <= 4; i++) {
+        // Load main background as level1.png
+        const mainBg = new Image();
+        mainBg.src = './level1.png';
+        mainBg.onerror = () => {
+            console.error('Failed to load main background level1.png');
+        };
+        mainBg.onload = () => {
+            console.log(`Loaded main background: ${mainBg.width}x${mainBg.height}`);
+            // Set the main background as layer 0
+            this.backgroundLayers[0].image = mainBg;
+            this.render();
+        };
+        
+        // Load additional background layers (1.png through 4.png) if they exist
+        for (let i = 1; i <= 4; i++) {
             const img = new Image();
             img.src = `./Images/${i}.png`;
             img.onerror = () => {
-                console.error(`Failed to load background layer ${i}`);
+                console.log(`Background layer ${i} not found, skipping`);
             };
             img.onload = () => {
                 console.log(`Loaded background layer ${i}: ${img.width}x${img.height}`);
                 this.backgroundLayers[i].image = img;
-                
-                // Force a render after all images are loaded
-                if (i === 4) {
-                    this.render();
-                }
             };
         }
     }
