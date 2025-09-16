@@ -128,7 +128,7 @@ export class WalletManager {
 
     // Check if player has a key
     async hasKey() {
-        if (!this.contract) return false;
+        if (!this.contract || !this.account) return false;
         try {
             return await this.contract.hasKey(this.account);
         } catch (error) {

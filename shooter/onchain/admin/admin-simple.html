@@ -141,7 +141,7 @@
             backdrop-filter: blur(10px);
         }
 
-        .reward-item {
+        .reward-item, .burn-token-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -151,9 +151,26 @@
             margin-bottom: 10px;
         }
 
-        .reward-item input {
+        .reward-item input, .burn-token-item input {
             width: 100px;
             margin: 0 10px;
+        }
+
+        .burn-token-item {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .reward-item {
+            border-left: 4px solid #00b894;
+        }
+
+        .token-active {
+            background: rgba(0,184,148,0.1);
+        }
+
+        .token-inactive {
+            background: rgba(214,48,49,0.1);
+            opacity: 0.7;
         }
 
         .status {
@@ -222,20 +239,17 @@
             <div id="walletStatus" class="status hidden"></div>
         </div>
 
-        <!-- Game Configuration Section -->
+        <!-- Burn Tokens Configuration Section -->
         <div class="config-section">
-            <h3>🎯 Game Configuration</h3>
-            <div class="config-grid">
-                <div class="form-group">
-                    <label for="burnTokenId">Burn Token ID (ERC1155)</label>
-                    <input type="number" id="burnTokenId" placeholder="Token ID to burn for playing">
-                </div>
-                <div class="form-group">
-                    <label for="playCost">Play Cost (ETH)</label>
-                    <input type="number" id="playCost" step="0.001" placeholder="Cost in ETH to play">
-                </div>
+            <h3>🔥 Burn Tokens Configuration</h3>
+            <p>Configure which tokens players need to burn to play the game</p>
+            <div id="burnTokensList">
+                <!-- Dynamic burn tokens will be added here -->
             </div>
-            <button id="updateConfig" class="btn btn-success">Update Configuration</button>
+            <div style="margin-top: 20px;">
+                <button id="addBurnToken" class="btn">Add Burn Token</button>
+                <button id="saveBurnTokens" class="btn btn-success">Save Burn Tokens</button>
+            </div>
         </div>
 
         <!-- Score Rewards Section -->
@@ -257,13 +271,16 @@
     <!-- Load ethers.js from reliable CDN -->
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     
+    <!-- Load admin config -->
+    <script src="config.js"></script>
+    
     <script>
         class SimpleAdminPanel {
             constructor() {
                 this.contractAddress = '0x...'; // Replace with actual contract address
                 this.adminWallet = '0x4943407105999e3E97EFA2035F5cbC64D72581C6';
-                this.rewards = [];
                 this.isConnected = false;
+                this.config = new AdminConfig();
                 this.init();
             }
 
@@ -274,7 +291,8 @@
 
             setupEventListeners() {
                 document.getElementById('connectWallet').addEventListener('click', () => this.connectWallet());
-                document.getElementById('updateConfig').addEventListener('click', () => this.updateConfiguration());
+                document.getElementById('addBurnToken').addEventListener('click', () => this.addBurnToken());
+                document.getElementById('saveBurnTokens').addEventListener('click', () => this.saveBurnTokens());
                 document.getElementById('addReward').addEventListener('click', () => this.addReward());
                 document.getElementById('saveRewards').addEventListener('click', () => this.saveRewards());
             }
@@ -314,37 +332,114 @@
             }
 
             async loadConfiguration() {
-                if (!this.isConnected) return;
-
                 try {
-                    // Simulate loading configuration
-                    document.getElementById('burnTokenId').value = '1';
-                    document.getElementById('playCost').value = '0.001';
-                    this.showStatus('Configuration loaded', 'success');
+                    this.loadBurnTokens();
+                    this.loadRewards();
+                    this.showStatus('Configuration loaded from storage', 'success');
                 } catch (error) {
                     this.showStatus('Error loading configuration: ' + error.message, 'error');
                 }
             }
 
-            async updateConfiguration() {
-                if (!this.isConnected) {
-                    this.showStatus('Please connect wallet first', 'error');
-                    return;
-                }
+            loadBurnTokens() {
+                const burnTokens = this.config.getBurnTokens();
+                const container = document.getElementById('burnTokensList');
+                container.innerHTML = '';
 
+                burnTokens.forEach(token => {
+                    const tokenItem = document.createElement('div');
+                    tokenItem.className = `burn-token-item ${token.active ? 'token-active' : 'token-inactive'}`;
+                    tokenItem.innerHTML = `
+                        <span>Token ID:</span>
+                        <input type="number" value="${token.id}" class="token-id-input" ${!token.active ? 'disabled' : ''}>
+                        <span>Name:</span>
+                        <input type="text" value="${token.name}" class="token-name-input" ${!token.active ? 'disabled' : ''}>
+                        <span>Amount:</span>
+                        <input type="number" value="${token.amount}" class="token-amount-input" ${!token.active ? 'disabled' : ''}>
+                        <label>
+                            <input type="checkbox" ${token.active ? 'checked' : ''} class="token-active-checkbox"> Active
+                        </label>
+                        <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+                    `;
+                    container.appendChild(tokenItem);
+                });
+            }
+
+            loadRewards() {
+                const rewards = this.config.getRewards();
+                const container = document.getElementById('rewardsList');
+                container.innerHTML = '';
+
+                rewards.forEach(reward => {
+                    const rewardItem = document.createElement('div');
+                    rewardItem.className = 'reward-item';
+                    rewardItem.innerHTML = `
+                        <span>Score:</span>
+                        <input type="number" value="${reward.score}" class="score-input">
+                        <span>Token ID:</span>
+                        <input type="number" value="${reward.tokenId}" class="token-input">
+                        <span>Amount:</span>
+                        <input type="number" value="${reward.amount}" class="amount-input">
+                        <span>Name:</span>
+                        <input type="text" value="${reward.name}" class="reward-name-input">
+                        <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+                    `;
+                    container.appendChild(rewardItem);
+                });
+            }
+
+            addBurnToken() {
+                const container = document.getElementById('burnTokensList');
+                const tokenItem = document.createElement('div');
+                tokenItem.className = 'burn-token-item token-active';
+                tokenItem.innerHTML = `
+                    <span>Token ID:</span>
+                    <input type="number" placeholder="Token ID" class="token-id-input">
+                    <span>Name:</span>
+                    <input type="text" placeholder="Token Name" class="token-name-input">
+                    <span>Amount:</span>
+                    <input type="number" placeholder="1" value="1" class="token-amount-input">
+                    <label>
+                        <input type="checkbox" checked class="token-active-checkbox"> Active
+                    </label>
+                    <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+                `;
+                container.appendChild(tokenItem);
+            }
+
+            async saveBurnTokens() {
                 try {
-                    const burnTokenId = document.getElementById('burnTokenId').value;
-                    const playCost = document.getElementById('playCost').value;
+                    const tokenItems = document.querySelectorAll('.burn-token-item');
+                    const burnTokens = [];
 
-                    if (!burnTokenId || !playCost) {
-                        this.showStatus('Please fill in all fields', 'error');
-                        return;
+                    for (const item of tokenItems) {
+                        const id = item.querySelector('.token-id-input').value;
+                        const name = item.querySelector('.token-name-input').value;
+                        const amount = item.querySelector('.token-amount-input').value;
+                        const active = item.querySelector('.token-active-checkbox').checked;
+
+                        if (id && name && amount) {
+                            burnTokens.push({
+                                id: parseInt(id),
+                                name: name,
+                                amount: parseInt(amount),
+                                active: active
+                            });
+                        }
                     }
 
-                    // Simulate updating configuration
-                    this.showStatus('Configuration updated successfully!', 'success');
+                    // Clear existing burn tokens
+                    this.config.config.burnTokens = [];
+                    
+                    // Add new burn tokens
+                    burnTokens.forEach(token => {
+                        this.config.addBurnToken(token);
+                    });
+
+                    this.showStatus('Burn tokens saved successfully!', 'success');
+                    this.loadBurnTokens();
                 } catch (error) {
-                    this.showStatus('Error updating configuration: ' + error.message, 'error');
+                    this.showStatus('Error saving burn tokens: ' + error.message, 'error');
                 }
             }
 
@@ -365,36 +460,41 @@
             }
 
             async saveRewards() {
-                if (!this.isConnected) {
-                    this.showStatus('Please connect wallet first', 'error');
-                    return;
-                }
-
                 try {
                     const rewardItems = document.querySelectorAll('.reward-item');
-                    const scores = [];
-                    const tokenIds = [];
-                    const amounts = [];
+                    const rewards = [];
 
                     for (const item of rewardItems) {
                         const score = item.querySelector('.score-input').value;
                         const tokenId = item.querySelector('.token-input').value;
                         const amount = item.querySelector('.amount-input').value;
+                        const name = item.querySelector('.reward-name-input').value;
 
                         if (score && tokenId && amount) {
-                            scores.push(score);
-                            tokenIds.push(tokenId);
-                            amounts.push(amount);
+                            rewards.push({
+                                score: parseInt(score),
+                                tokenId: parseInt(tokenId),
+                                amount: parseInt(amount),
+                                name: name || `Reward for ${score}+ points`
+                            });
                         }
                     }
 
-                    if (scores.length === 0) {
+                    if (rewards.length === 0) {
                         this.showStatus('Please add at least one reward', 'error');
                         return;
                     }
 
-                    // Simulate saving rewards
-                    this.showStatus('Rewards updated successfully!', 'success');
+                    // Clear existing rewards
+                    this.config.config.rewards = [];
+                    
+                    // Add new rewards
+                    rewards.forEach(reward => {
+                        this.config.addReward(reward);
+                    });
+
+                    this.showStatus('Rewards saved successfully!', 'success');
+                    this.loadRewards();
                 } catch (error) {
                     this.showStatus('Error saving rewards: ' + error.message, 'error');
                 }
