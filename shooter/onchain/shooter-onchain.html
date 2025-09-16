@@ -766,6 +766,12 @@
                 this.currentScore = 0;
                 this.highScore = localStorage.getItem('shooterHighScore') || 0;
                 
+                // Ensure game over screen is hidden
+                const gameOverScreen = document.getElementById('gameOverScreen');
+                if (gameOverScreen) {
+                    gameOverScreen.classList.add('hidden');
+                }
+                
                 this.init();
             }
 
@@ -786,12 +792,7 @@
                 try {
                     if (typeof window.ethereum !== 'undefined') {
                         this.walletManager = new ethers.BrowserProvider(window.ethereum);
-                        
-                        // Check if already connected
-                        const accounts = await this.walletManager.listAccounts();
-                        if (accounts.length > 0) {
-                            await this.connectWallet();
-                        }
+                        console.log('Wallet manager initialized, waiting for user to connect');
                     } else {
                         this.showStatus('MetaMask not installed. Please install MetaMask to play.', 'error');
                     }
@@ -1173,6 +1174,12 @@
 
         // Initialize game when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            // Ensure game over screen is hidden on page load
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            if (gameOverScreen) {
+                gameOverScreen.classList.add('hidden');
+            }
+            
             new OnchainShooterGame();
         });
     </script>
