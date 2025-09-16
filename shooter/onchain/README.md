@@ -51,7 +51,7 @@ cp env.example .env
 Editar `.env`:
 ```env
 BACKEND_PRIVATE_KEY=tu_private_key_aqui
-CONTRACT_ADDRESS=0x... # Dirección del contrato desplegado
+CONTRACT_ADDRESS=0x90546848474fb3c9fda3fdad887969bb244e7e58 # AdrianLAB Contract Address
 ADMIN_WALLET=0x4943407105999e3E97EFA2035F5cbC64D72581C6
 ```
 
@@ -64,7 +64,7 @@ npm start
 
 Editar `shooter-onchain.html`:
 ```javascript
-this.contractAddress = '0x...'; // Dirección del contrato
+this.contractAddress = '0x90546848474fb3c9fda3fdad887969bb244e7e58'; // AdrianLAB Contract Address
 this.backendUrl = 'https://tu-backend.com'; // URL del backend
 ```
 

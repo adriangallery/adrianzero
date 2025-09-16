@@ -213,6 +213,9 @@
     <!-- Load ethers.js from reliable CDN -->
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     
+    <!-- Load configuration -->
+    <script src="config.js"></script>
+    
     <!-- Simple wallet connection script -->
     <script>
         class SimpleWalletManager {
@@ -221,8 +224,8 @@
                 this.signer = null;
                 this.account = null;
                 this.contract = null;
-                this.contractAddress = '0x...'; // Replace with actual contract address
-                this.chainId = 8453; // Base mainnet
+                this.contractAddress = SHOOTER_CONFIG.CONTRACT_ADDRESS;
+                this.chainId = SHOOTER_CONFIG.CHAIN_ID;
                 this.isConnected = false;
                 this.hasKey = false;
                 this.keyId = null;
