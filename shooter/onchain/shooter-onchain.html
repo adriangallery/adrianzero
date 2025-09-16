@@ -244,7 +244,7 @@
     </div>
 
     <!-- Game Canvas -->
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="920" height="540"></canvas>
     
     <!-- Game UI -->
     <div class="game-ui">
@@ -313,9 +313,10 @@
                 this.feet = [];
                 this.cleaningEffects = [];
                 this.feetTypes = [
-                    { name: 'small', width: 60, height: 60, points: 10, speed: 2, yPosition: 200 },
-                    { name: 'medium', width: 80, height: 80, points: 20, speed: 1.5, yPosition: 150 },
-                    { name: 'large', width: 100, height: 100, points: 30, speed: 1, yPosition: 100 }
+                    { name: 'small', points: 10, width: 60, height: 60, speed: 3, yPosition: 112 },
+                    { name: 'medium', points: 20, width: 80, height: 80, speed: 2, yPosition: 205 },
+                    { name: 'large', points: 30, width: 100, height: 100, speed: 1, yPosition: 275 },
+                    { name: 'Xlarge', points: 40, width: 120, height: 120, speed: 0.5, yPosition: 350 }
                 ];
                 
                 this.footMovementStates = {
@@ -323,6 +324,27 @@
                     WAITING: 'waiting',
                     FALLING: 'falling'
                 };
+                
+                // Add background layers for parallax effect
+                this.backgroundLayers = [
+                    { image: null, speed: 0.1, x: 0 },   // Layer 0 (back)
+                    { image: null, speed: 0.3, x: 0 },   // Layer 1
+                    { image: null, speed: 0.5, x: 0 },   // Layer 2
+                    { image: null, speed: 0.7, x: 0 },   // Layer 3 (front)
+                    { image: null, speed: 0.9, x: 0 }    // Layer 4 (very front)
+                ];
+                
+                // Define which layer each foot type appears in
+                this.footLayerMapping = {
+                    'small': 0,    // Small feet appear after layer 0
+                    'medium': 1,   // Medium feet appear after layer 1
+                    'large': 2,    // Large feet appear after layer 2
+                    'Xlarge': 3    // Xlarge feet appear after layer 3
+                };
+                
+                // Track mouse position for parallax
+                this.mouseX = this.canvas.width / 2;
+                this.mouseY = this.canvas.height / 2;
                 
                 // Game timing
                 this.lastTime = 0;
@@ -458,7 +480,7 @@
                     // Start foot spawning
                     this.spawnTimer = setInterval(() => {
                         this.spawnFoot();
-                    }, 2000);
+                    }, 1500); // Slightly faster spawning
                     
                     // Start game loop
                     this.gameLoop();
@@ -532,6 +554,10 @@
                 const rect = this.canvas.getBoundingClientRect();
                 const clickX = event.clientX - rect.left;
                 const clickY = event.clientY - rect.top;
+                
+                // Update mouse position for parallax
+                this.mouseX = clickX;
+                this.mouseY = clickY;
                 
                 // Check if click hit any foot
                 for (let i = this.feet.length - 1; i >= 0; i--) {
@@ -738,13 +764,7 @@
             }
             
             updateUI() {
-                const scoreDisplay = document.getElementById('scoreDisplay');
-                const timeDisplay = document.getElementById('timeDisplay');
-                
-                if (scoreDisplay) scoreDisplay.textContent = `Score: ${this.score}`;
-                if (timeDisplay) timeDisplay.textContent = `Time: ${this.timeLeft}`;
-                
-                // Update score in game UI
+                // Update score in game UI (for onchain functionality)
                 const scoreElement = document.getElementById('score');
                 const timeElement = document.getElementById('time');
                 
@@ -756,44 +776,134 @@
             }
             
             render() {
+                // Ensure canvas has the correct 16:9 dimensions (920x540)
+                if (this.canvas.width !== 920 || this.canvas.height !== 540) {
+                    this.canvas.width = 920;
+                    this.canvas.height = 540;
+                }
+                
                 // Clear canvas
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 
-                // Draw background
-                this.drawBackground();
+                // Create a sorted array of feet by layer
+                const feetByLayer = {
+                    0: [], // Small feet (after layer 0)
+                    1: [], // Medium feet (after layer 1)
+                    2: [], // Large feet (after layer 2)
+                    3: []  // Xlarge feet (after layer 3)
+                };
                 
-                // Draw game objects
-                this.drawFeet();
+                // Sort feet into their respective layers
+                this.feet.forEach(foot => {
+                    const layer = this.footLayerMapping[foot.type] || 0;
+                    feetByLayer[layer].push(foot);
+                });
+                
+                // Render background layer 0 (back)
+                this.drawBackgroundLayer(0);
+                
+                // Render small feet (layer 0)
+                feetByLayer[0].forEach(foot => this.renderFoot(foot));
+                
+                // Render background layer 1
+                this.drawBackgroundLayer(1);
+                
+                // Render medium feet (layer 1)
+                feetByLayer[1].forEach(foot => this.renderFoot(foot));
+                
+                // Render background layer 2
+                this.drawBackgroundLayer(2);
+                
+                // Render large feet (layer 2)
+                feetByLayer[2].forEach(foot => this.renderFoot(foot));
+                
+                // Render background layer 3
+                this.drawBackgroundLayer(3);
+                
+                // Render Xlarge feet (layer 3)
+                feetByLayer[3].forEach(foot => this.renderFoot(foot));
+                
+                // Render background layer 4 (front)
+                this.drawBackgroundLayer(4);
+                
+                // Draw cleaning effects
                 this.drawCleaningEffects();
+                
+                // Draw UI elements on canvas
+                this.drawUI();
             }
             
-            drawBackground() {
-                if (this.backgroundLayers && this.backgroundLayers[0] && this.backgroundLayers[0].image) {
+            drawBackgroundLayer(layerIndex) {
+                if (this.backgroundLayers && this.backgroundLayers[layerIndex] && this.backgroundLayers[layerIndex].image) {
+                    const layer = this.backgroundLayers[layerIndex];
+                    
+                    // Calculate parallax offset based on mouse position with reduced effect
+                    const parallaxX = (this.mouseX - (this.canvas.width / 2)) * layer.speed * 0.6;
+                    
+                    // Calculate horizontal position to center the image
+                    const imageWidth = layer.image.width * 0.5;
+                    const xPosition = (this.canvas.width - imageWidth) / 2 + parallaxX;
+                    
+                    // Calculate vertical position to center the image
+                    const imageHeight = layer.image.height * 0.5;
+                    const yPosition = (this.canvas.height - imageHeight) / 2;
+                    
                     this.ctx.drawImage(
-                        this.backgroundLayers[0].image,
-                        0, 0, this.canvas.width, this.canvas.height
+                        layer.image,
+                        xPosition, 
+                        yPosition,
+                        imageWidth, 
+                        imageHeight
                     );
                 }
             }
             
-            drawFeet() {
-                this.feet.forEach(foot => {
-                    if (!foot.visible) return;
+            renderFoot(foot) {
+                if (!foot.visible) return;
+                
+                // Draw foot based on type
+                this.ctx.fillStyle = foot.cleaned ? '#90EE90' : '#8B4513'; // Green if cleaned, brown if dirty
+                this.ctx.fillRect(foot.x, foot.y, foot.width, foot.height);
+                
+                // Draw foot outline
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(foot.x, foot.y, foot.width, foot.height);
+                
+                // Draw points
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = '12px Arial';
+                this.ctx.fillText(foot.points.toString(), foot.x + 5, foot.y + 15);
+            }
+            
+            drawUI() {
+                // Draw score and time on canvas
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = '20px Arial';
+                this.ctx.fillText(`Score: ${this.score}`, this.canvas.width - 160, 30);
+                this.ctx.fillText(`Time: ${this.timeLeft}`, this.canvas.width - 160, 60);
+                
+                // Draw game over screen if needed
+                if (this.gameState === 'gameOver') {
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                     
-                    // Draw foot based on type
-                    this.ctx.fillStyle = foot.cleaned ? '#90EE90' : '#8B4513'; // Green if cleaned, brown if dirty
-                    this.ctx.fillRect(foot.x, foot.y, foot.width, foot.height);
-                    
-                    // Draw foot outline
-                    this.ctx.strokeStyle = '#000000';
-                    this.ctx.lineWidth = 2;
-                    this.ctx.strokeRect(foot.x, foot.y, foot.width, foot.height);
-                    
-                    // Draw points
                     this.ctx.fillStyle = '#FFFFFF';
-                    this.ctx.font = '12px Arial';
-                    this.ctx.fillText(foot.points.toString(), foot.x + 5, foot.y + 15);
-                });
+                    this.ctx.font = '48px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2 - 50);
+                    
+                    this.ctx.font = '24px Arial';
+                    this.ctx.fillText(`Your score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2);
+                    this.ctx.fillText(`High score: ${this.highScore || this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50);
+                    
+                    this.ctx.textAlign = 'left'; // Reset text alignment
+                }
+            }
+            
+            drawFeet() {
+                // This function is now handled by renderFoot in the main render function
+                // Keep for compatibility but it's not used in the new rendering system
             }
             
             drawCleaningEffects() {
