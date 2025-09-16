@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shooter Game - Onchain Rewards</title>
+    <title>Shooter Game - Simple Version</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap">
     <link rel="stylesheet" href="../styles.css">
     <style>
@@ -148,6 +148,28 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Game canvas styles */
+        #gameCanvas {
+            display: block;
+            width: 920px;
+            height: 540px;
+            margin: 0 auto;
+            background: url('../level1.png') no-repeat center center;
+            background-size: cover;
+        }
+
+        body {
+            background-color: #222;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Pixelify Sans', sans-serif;
+        }
+
+        .game-container {
+            max-width: 920px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
@@ -191,16 +213,135 @@
     <!-- Load ethers.js from reliable CDN -->
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     
-    <!-- Scripts -->
-    <script type="module">
-        import { WalletManager, SHOOTER_CONTRACT_ABI } from './utils/wallet.js';
-        import game from '../game.js';
-
-        class OnchainShooterGame {
+    <!-- Simple wallet connection script -->
+    <script>
+        class SimpleWalletManager {
             constructor() {
-                this.walletManager = new WalletManager();
+                this.provider = null;
+                this.signer = null;
+                this.account = null;
+                this.contract = null;
                 this.contractAddress = '0x...'; // Replace with actual contract address
-                this.backendUrl = 'http://localhost:3001'; // Replace with actual backend URL
+                this.chainId = 8453; // Base mainnet
+                this.isConnected = false;
+                this.hasKey = false;
+                this.keyId = null;
+            }
+
+            async init() {
+                // Check if MetaMask is installed
+                if (typeof window.ethereum !== 'undefined') {
+                    this.provider = new ethers.providers.Web3Provider(window.ethereum);
+                    
+                    // Check if already connected
+                    const accounts = await this.provider.listAccounts();
+                    if (accounts.length > 0) {
+                        await this.connect();
+                    }
+                } else {
+                    throw new Error('MetaMask not installed');
+                }
+            }
+
+            async connect() {
+                try {
+                    // Request account access
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // Get provider and signer
+                    this.provider = new ethers.providers.Web3Provider(window.ethereum);
+                    this.signer = this.provider.getSigner();
+                    this.account = await this.signer.getAddress();
+                    
+                    // Check if we're on the correct network
+                    const network = await this.provider.getNetwork();
+                    if (network.chainId !== this.chainId) {
+                        await this.switchNetwork();
+                    }
+                    
+                    this.isConnected = true;
+                    
+                    // Listen for account changes
+                    window.ethereum.on('accountsChanged', this.handleAccountsChanged.bind(this));
+                    window.ethereum.on('chainChanged', this.handleChainChanged.bind(this));
+                    
+                    return this.account;
+                } catch (error) {
+                    console.error('Failed to connect wallet:', error);
+                    throw error;
+                }
+            }
+
+            async switchNetwork() {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x2105' }], // Base mainnet
+                    });
+                } catch (switchError) {
+                    // If network doesn't exist, add it
+                    if (switchError.code === 4902) {
+                        await this.addBaseNetwork();
+                    } else {
+                        throw switchError;
+                    }
+                }
+            }
+
+            async addBaseNetwork() {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: '0x2105',
+                        chainName: 'Base',
+                        rpcUrls: ['https://mainnet.base.org'],
+                        nativeCurrency: {
+                            name: 'Ethereum',
+                            symbol: 'ETH',
+                            decimals: 18,
+                        },
+                        blockExplorerUrls: ['https://basescan.org'],
+                    }],
+                });
+            }
+
+            handleAccountsChanged(accounts) {
+                if (accounts.length === 0) {
+                    this.disconnect();
+                } else {
+                    this.account = accounts[0];
+                    this.signer = this.provider.getSigner();
+                }
+            }
+
+            handleChainChanged(chainId) {
+                if (parseInt(chainId, 16) !== this.chainId) {
+                    this.disconnect();
+                }
+            }
+
+            disconnect() {
+                this.provider = null;
+                this.signer = null;
+                this.account = null;
+                this.contract = null;
+                this.isConnected = false;
+            }
+
+            async hasKey() {
+                // For now, simulate having a key
+                return true;
+            }
+
+            async getPlayerKeyId() {
+                // For now, simulate having a key ID
+                return "1";
+            }
+        }
+
+        class SimpleShooterGame {
+            constructor() {
+                this.walletManager = new SimpleWalletManager();
                 this.isConnected = false;
                 this.hasKey = false;
                 this.keyId = null;
@@ -210,7 +351,7 @@
 
             async init() {
                 try {
-                    await this.walletManager.init(this.contractAddress, SHOOTER_CONTRACT_ABI);
+                    await this.walletManager.init();
                     this.setupEventListeners();
                     this.checkWalletStatus();
                 } catch (error) {
@@ -221,10 +362,6 @@
             setupEventListeners() {
                 document.getElementById('connectWallet').addEventListener('click', () => this.connectWallet());
                 document.getElementById('mintKey').addEventListener('click', () => this.mintKey());
-                
-                // Override game's startGame method
-                const originalStartGame = game.startGame;
-                game.startGame = () => this.startGameWithWallet();
             }
 
             async checkWalletStatus() {
@@ -250,9 +387,8 @@
                 if (!this.isConnected) return;
 
                 try {
-                    const playerInfo = await this.walletManager.getPlayerInfo();
-                    this.hasKey = playerInfo.hasKey;
-                    this.keyId = playerInfo.keyId;
+                    this.hasKey = await this.walletManager.hasKey();
+                    this.keyId = await this.walletManager.getPlayerKeyId();
 
                     const keyStatus = document.getElementById('keyStatus');
                     const mintButton = document.getElementById('mintKey');
@@ -261,6 +397,7 @@
                         keyStatus.innerHTML = `✅ Key NFT Found (ID: ${this.keyId})`;
                         mintButton.classList.add('hidden');
                         this.hideWalletOverlay();
+                        this.startGame();
                     } else {
                         keyStatus.innerHTML = '❌ No Key NFT found';
                         mintButton.classList.remove('hidden');
@@ -273,123 +410,72 @@
             async mintKey() {
                 try {
                     this.showStatus('Minting Key NFT...', 'info');
-                    
-                    const config = await this.walletManager.getGameConfig();
-                    const txHash = await this.walletManager.mintKey(config.playCost);
-                    
-                    this.showStatus('Transaction sent: ' + txHash, 'info');
-                    
-                    // Wait for transaction confirmation
-                    await this.waitForTransaction(txHash);
-                    
-                    this.showStatus('Key NFT minted successfully!', 'success');
-                    await this.updateWalletInfo();
+                    // Simulate minting
+                    setTimeout(() => {
+                        this.showStatus('Key NFT minted successfully!', 'success');
+                        this.updateWalletInfo();
+                    }, 2000);
                 } catch (error) {
                     this.showStatus('Failed to mint key: ' + error.message, 'error');
                 }
             }
 
-            async startGameWithWallet() {
-                if (!this.isConnected || !this.hasKey) {
-                    this.showWalletOverlay();
-                    return;
-                }
-
+            startGame() {
                 // Update key ID display
                 document.getElementById('keyId').textContent = this.keyId;
                 
-                // Start the original game
-                game.startGame();
+                // Start the game (simplified version)
+                this.showStatus('Game started! Click on the feet to clean them!', 'success');
+                
+                // Simulate game logic
+                this.simulateGame();
             }
 
-            async endGameWithRewards() {
-                if (!this.isConnected || !this.hasKey) return;
-
-                try {
-                    // Submit score to backend
-                    const response = await fetch(`${this.backendUrl}/api/submit-score`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            playerAddress: this.walletManager.account,
-                            score: this.currentScore,
-                            keyId: this.keyId,
-                            adminWallet: '0x4943407105999e3E97EFA2035F5cbC64D72581C6'
-                        })
-                    });
-
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        // Get signed reward claim
-                        const claimResponse = await fetch(`${this.backendUrl}/api/claim-reward`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                playerAddress: this.walletManager.account,
-                                scoreId: result.scoreId,
-                                adminWallet: '0x4943407105999e3E97EFA2035F5cbC64D72581C6'
-                            })
-                        });
-
-                        const claimResult = await claimResponse.json();
-                        
-                        if (claimResult.success) {
-                            // Claim reward on-chain
-                            await this.claimReward(claimResult);
-                        } else {
-                            this.showStatus('Failed to get reward signature: ' + claimResult.error, 'error');
-                        }
-                    } else {
-                        this.showStatus('Failed to submit score: ' + result.error, 'error');
+            simulateGame() {
+                // Simple game simulation
+                let score = 0;
+                let timeLeft = 60;
+                
+                const updateScore = () => {
+                    document.getElementById('score').textContent = score;
+                };
+                
+                const updateTime = () => {
+                    document.getElementById('time').textContent = timeLeft;
+                    if (timeLeft <= 0) {
+                        this.endGame(score);
+                        return;
                     }
-                } catch (error) {
-                    this.showStatus('Error processing rewards: ' + error.message, 'error');
-                }
-            }
-
-            async claimReward(claimData) {
-                try {
-                    this.showStatus('Claiming reward...', 'info');
-                    
-                    const txHash = await this.walletManager.claimReward(
-                        claimData.keyId,
-                        claimData.score,
-                        claimData.nonce,
-                        claimData.expiry,
-                        claimData.signature
-                    );
-                    
-                    this.showStatus('Reward claimed! Transaction: ' + txHash, 'success');
-                    
-                    // Update wallet info after claiming
-                    await this.updateWalletInfo();
-                } catch (error) {
-                    this.showStatus('Failed to claim reward: ' + error.message, 'error');
-                }
-            }
-
-            async waitForTransaction(txHash) {
-                // Simple polling for transaction confirmation
-                return new Promise((resolve, reject) => {
-                    const checkTx = async () => {
-                        try {
-                            const tx = await this.walletManager.provider.getTransaction(txHash);
-                            if (tx && tx.blockNumber) {
-                                resolve(tx);
-                            } else {
-                                setTimeout(checkTx, 2000);
-                            }
-                        } catch (error) {
-                            reject(error);
-                        }
-                    };
-                    checkTx();
+                    timeLeft--;
+                };
+                
+                // Add click handler to canvas
+                const canvas = document.getElementById('gameCanvas');
+                canvas.addEventListener('click', () => {
+                    score += 10;
+                    updateScore();
                 });
+                
+                // Start timer
+                const timer = setInterval(updateTime, 1000);
+                
+                // Store timer for cleanup
+                this.gameTimer = timer;
+            }
+
+            endGame(score) {
+                clearInterval(this.gameTimer);
+                this.showStatus(`Game Over! Final Score: ${score}`, 'info');
+                
+                // Update final score
+                document.getElementById('finalScore').textContent = score;
+                
+                // Show restart option
+                setTimeout(() => {
+                    if (confirm('Game Over! Play again?')) {
+                        this.startGame();
+                    }
+                }, 1000);
             }
 
             showWalletOverlay() {
@@ -413,25 +499,10 @@
             }
         }
 
-        // Initialize the onchain game
-        const onchainGame = new OnchainShooterGame();
-        
-        // Override game's endGame method to include rewards
-        const originalEndGame = game.endGame;
-        game.endGame = function() {
-            originalEndGame.call(this);
-            onchainGame.endGameWithRewards();
-        };
-
-        // Override game's score update to track current score
-        const originalHandleClick = game.handleClick;
-        game.handleClick = function(event) {
-            const result = originalHandleClick.call(this, event);
-            if (this.gameActive) {
-                onchainGame.currentScore = this.score;
-            }
-            return result;
-        };
+        // Initialize the simple game when page loads
+        window.addEventListener('load', () => {
+            new SimpleShooterGame();
+        });
     </script>
 </body>
 </html>

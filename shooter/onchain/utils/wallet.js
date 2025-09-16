@@ -1,5 +1,6 @@
 // Wallet connection utilities for Shooter Game
-import { ethers } from 'https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js';
+// Using unpkg CDN for ethers.js
+const ethers = window.ethers;
 
 export class WalletManager {
     constructor() {
