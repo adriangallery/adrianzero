@@ -23,7 +23,9 @@ class ERC1155Manager {
                     this.signer || this.provider
                 );
                 console.log(`✅ [ERC1155] Contract instance created successfully`);
-                console.log(`📋 [ERC1155] Contract methods:`, Object.keys(this.contract.functions));
+                if (this.contract && this.contract.functions) {
+                    console.log(`📋 [ERC1155] Contract methods:`, Object.keys(this.contract.functions));
+                }
             } catch (error) {
                 console.error(`❌ [ERC1155] Error creating contract instance:`, error);
             }
