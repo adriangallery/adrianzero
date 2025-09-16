@@ -603,17 +603,7 @@ class FilthyFeetGame {
             localStorage.setItem('filthyFeetHighScore', this.highScore);
         }
         
-        // Update the hidden elements that store the values
-        const finalScoreElement = document.getElementById('finalScore');
-        const highScoreElement = document.getElementById('highScore');
-        
-        if (finalScoreElement) {
-            finalScoreElement.textContent = this.score;
-        }
-        
-        if (highScoreElement) {
-            highScoreElement.textContent = this.highScore;
-        }
+        console.log(`Game Over - Score: ${this.score}, High Score: ${this.highScore}`);
         
         // Update and show game over screen
         updateGameOverScreen(this.score, this.highScore);
@@ -704,7 +694,7 @@ class FilthyFeetGame {
             this.spawnFoot();
         }, 1000);
         
-        // Start countdown timer
+        // Start countdown timer - use 1000ms for exact 60 seconds
         this.timer = setInterval(() => {
             this.timeLeft--;
             document.getElementById('time').textContent = this.timeLeft;
@@ -712,7 +702,7 @@ class FilthyFeetGame {
             if (this.timeLeft <= 0) {
                 this.endGame();
             }
-        }, 1000);
+        }, 1000); // 1000ms = 1 second exactly
     }
     
     // Inside the FilthyFeetGame class
