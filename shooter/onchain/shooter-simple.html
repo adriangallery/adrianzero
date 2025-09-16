@@ -444,6 +444,16 @@
                 const erc1155Manager = new ERC1155Manager(this.erc1155Address, this.provider, this.signer);
                 console.log('ERC1155Manager created:', erc1155Manager);
                 
+                // Test contract connection first
+                console.log('🧪 Testing contract connection...');
+                const connectionTest = await erc1155Manager.testConnection();
+                console.log('Contract connection test result:', connectionTest);
+                
+                if (!connectionTest) {
+                    console.log('❌ Contract connection test failed, cannot verify tokens');
+                    return false;
+                }
+                
                 const canPlay = await erc1155Manager.canPlay(burnTokens);
                 console.log('Can play result:', canPlay);
                 
