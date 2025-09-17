@@ -31,7 +31,7 @@ const nonces = new Map();
 
 // Generate unique nonce
 function generateNonce() {
-    return Date.now() + Math.random().toString(36).substr(2, 9);
+    return Math.floor(Math.random() * 1000000000).toString();
 }
 
 // Validate admin wallet
@@ -126,14 +126,16 @@ app.post('/sign-reward', async (req, res) => {
             timestamp: Date.now()
         });
         
-        // Create message hash
-        const messageHash = ethers.utils.solidityKeccak256(
+        // Create message hash using ethers v6
+        const abiCoder = new AbiCoder();
+        const encodedData = abiCoder.encode(
             ['address', 'uint256', 'uint256', 'uint256', 'uint256'],
             [playerAddress, 1, score, nonce, expiry] // keyId = 1 for now
         );
+        const messageHash = keccak256(encodedData);
         
         // Sign the message
-        const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
+        const signature = await signer.signMessage(getBytes(messageHash));
         
         console.log('✅ Reward signed:', {
             keyId: 1,
