@@ -15,7 +15,7 @@ const SHOOTER_CONFIG = {
     ADMIN_WALLET: '0x4943407105999e3E97EFA2035F5cbC64D72581C6',
     
     // Backend Configuration
-    BACKEND_URL: 'https://shooter-game-backend.vercel.app', // Production backend URL
+    BACKEND_URL: 'https://shooter-game-backend.onrender.com', // Production backend URL (temporary)
     
     // Game Configuration
     GAME_CONFIG: {

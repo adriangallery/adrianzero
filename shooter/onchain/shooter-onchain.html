@@ -1506,24 +1506,25 @@
                     }
                     
                     // Send score to backend for signing
-                    const response = await fetch(`${SHOOTER_CONFIG.BACKEND_URL}/sign-reward`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            playerAddress: await this.walletManager.getSigner().address,
-                            score: this.currentScore,
-                            rewardTokenId: reward.tokenId,
-                            rewardAmount: reward.amount
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to get signed reward');
-                    }
-                    
-                    const signedData = await response.json();
+                    try {
+                        const response = await fetch(`${SHOOTER_CONFIG.BACKEND_URL}/sign-reward`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                playerAddress: await this.walletManager.getSigner().address,
+                                score: this.currentScore,
+                                rewardTokenId: reward.tokenId,
+                                rewardAmount: reward.amount
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Backend not available');
+                        }
+                        
+                        const signedData = await response.json();
                     
                     // Call executePlay on shooter contract (new proxy contract)
                     const shooterContract = new ethers.Contract(
@@ -1549,8 +1550,14 @@
                     
                     await tx.wait();
                     
-                    this.showRewardNotification(`Reward claimed! ${reward.amount} x ${reward.name}`);
-                    this.showStatus('Reward claimed successfully!', 'success');
+                        this.showRewardNotification(`Reward claimed! ${reward.amount} x ${reward.name}`);
+                        this.showStatus('Reward claimed successfully!', 'success');
+                        
+                    } catch (error) {
+                        console.log('Backend not available, showing demo reward:', error.message);
+                        this.showRewardNotification(`Demo Reward: ${reward.amount} x ${reward.name} (Backend offline)`);
+                        this.showStatus('Demo reward shown (Backend offline - rewards not claimed onchain)', 'info');
+                    }
                     
                 } catch (error) {
                     console.error('Error claiming reward:', error);
