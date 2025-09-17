@@ -146,13 +146,13 @@ app.post('/sign-reward', async (req, res) => {
             ]
         };
         
-        const abiCoder = new AbiCoder();
+        const abiCoder = new ethers.AbiCoder();
         const value = {
             user: playerAddress,
-            burnIds: keccak256(abiCoder.encode(['uint256[]'], [[rewardTokenId]])),
-            burnAmts: keccak256(abiCoder.encode(['uint256[]'], [[rewardAmount]])),
-            mintIds: keccak256(abiCoder.encode(['uint256[]'], [[rewardTokenId]])),
-            mintAmts: keccak256(abiCoder.encode(['uint256[]'], [[rewardAmount]])),
+            burnIds: ethers.keccak256(abiCoder.encode(['uint256[]'], [[rewardTokenId]])),
+            burnAmts: ethers.keccak256(abiCoder.encode(['uint256[]'], [[rewardAmount]])),
+            mintIds: ethers.keccak256(abiCoder.encode(['uint256[]'], [[rewardTokenId]])),
+            mintAmts: ethers.keccak256(abiCoder.encode(['uint256[]'], [[rewardAmount]])),
             nonce: nonce,
             expiry: expiry
         };

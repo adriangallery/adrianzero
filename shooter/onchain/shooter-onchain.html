@@ -1505,51 +1505,67 @@
                         return;
                     }
                     
-                    // Generate signature locally (demo mode)
+                    // Send score to backend for signing
                     try {
-                        const playerAddress = await this.walletManager.getSigner().address;
+                        const response = await fetch(`${SHOOTER_CONFIG.BACKEND_URL}/sign-reward`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                playerAddress: await this.walletManager.getSigner().address,
+                                score: this.currentScore,
+                                rewardTokenId: reward.tokenId,
+                                rewardAmount: reward.amount
+                            })
+                        });
                         
-                        // Generate nonce and expiry
-                        const nonce = Math.floor(Math.random() * 1000000000).toString();
-                        const expiry = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
+                        if (!response.ok) {
+                            throw new Error('Backend not available');
+                        }
                         
-                        // Create demo signature (in production, this should come from backend)
-                        const signedData = {
-                            score: this.currentScore,
-                            nonce: nonce,
-                            expiry: expiry,
-                            signature: '0x' + '0'.repeat(130), // Demo signature
-                            burnIds: [reward.tokenId],
-                            burnAmts: [reward.amount],
-                            mintIds: [reward.tokenId],
-                            mintAmts: [reward.amount]
-                        };
+                        const signedData = await response.json();
                         
-                        console.log('🎮 Demo signature generated:', {
-                            playerAddress,
+                        console.log('🎮 Backend signature received:', {
+                            playerAddress: await this.walletManager.getSigner().address,
                             score: this.currentScore,
                             rewardTokenId: reward.tokenId,
                             rewardAmount: reward.amount,
-                            nonce,
-                            expiry
+                            nonce: signedData.nonce,
+                            expiry: signedData.expiry
                         });
                     
                     // Call executePlay on shooter contract (new proxy contract)
-                    // Demo mode - skip contract call
-                    console.log('🎮 Demo mode: Skipping contract call');
+                    const shooterContract = new ethers.Contract(
+                        SHOOTER_CONFIG.SHOOTER_CONTRACT,
+                        SHOOTER_CONFIG.PROXY_ABI,
+                        await this.walletManager.getSigner()
+                    );
                     
-                    // In production, this would call the contract:
-                    // const shooterContract = new ethers.Contract(
-                    //     SHOOTER_CONFIG.SHOOTER_CONTRACT,
-                    //     SHOOTER_CONFIG.PROXY_ABI,
-                    //     await this.walletManager.getSigner()
-                    // );
-                    // const playParams = { ... };
-                    // const tx = await shooterContract.executePlay(playParams, signedData.signature);
-                    // await tx.wait();
+                    // Prepare PlayParams struct using data from backend
+                    const playParams = {
+                        burnIds: signedData.burnIds,
+                        burnAmts: signedData.burnAmts,
+                        mintIds: signedData.mintIds,
+                        mintAmts: signedData.mintAmts,
+                        nonce: signedData.nonce,
+                        expiry: signedData.expiry
+                    };
                     
-                        this.showRewardNotification(`Demo Reward: ${reward.amount} x ${reward.name} (Demo Mode)`);
-                        this.showStatus('Demo reward generated (Demo Mode - not claimed onchain)', 'info');
+                    console.log('🎮 Calling executePlay with params:', playParams);
+                    
+                    const tx = await shooterContract.executePlay(
+                        playParams,
+                        signedData.signature
+                    );
+                    
+                    console.log('🎮 Transaction sent:', tx.hash);
+                    await tx.wait();
+                    
+                    console.log('🎮 Transaction confirmed!');
+                    
+                        this.showRewardNotification(`Reward claimed! ${reward.amount} x ${reward.name}`);
+                        this.showStatus('Reward claimed successfully onchain!', 'success');
                         
                     } catch (error) {
                         console.log('Backend not available, showing demo reward:', error.message);
