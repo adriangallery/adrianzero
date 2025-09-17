@@ -252,7 +252,7 @@
     
     <!-- Background Music -->
     <audio id="backgroundMusic" loop>
-        <source src="/shooter/music/Dead of Night.mp3" type="audio/mpeg">
+        <source src="/shooter/music/Dead%20of%20Night.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
     
@@ -438,13 +438,15 @@
             }
             
             selectRandomImages() {
-                const totalImages = 25; // Only use available images (1-25)
+                // Only use images that actually exist: 1-20, 23, 24, 25
+                const availableImages = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,24,25];
                 const imagesToSelect = 20;
                 const selectedNumbers = new Set();
                 
                 // Keep selecting random numbers until we have 20 unique ones
                 while(selectedNumbers.size < imagesToSelect) {
-                    const randomNumber = Math.floor(Math.random() * totalImages) + 1;
+                    const randomIndex = Math.floor(Math.random() * availableImages.length);
+                    const randomNumber = availableImages[randomIndex];
                     selectedNumbers.add(randomNumber);
                 }
                 
