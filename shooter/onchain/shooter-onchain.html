@@ -1525,18 +1525,25 @@
                     
                     const signedData = await response.json();
                     
-                    // Call claimReward on shooter contract
+                    // Call executePlay on shooter contract (new proxy contract)
                     const shooterContract = new ethers.Contract(
                         SHOOTER_CONFIG.SHOOTER_CONTRACT,
-                        SHOOTER_CONFIG.SHOOTER_ABI,
+                        SHOOTER_CONFIG.PROXY_ABI,
                         await this.walletManager.getSigner()
                     );
                     
-                    const tx = await shooterContract.claimReward(
-                        signedData.keyId,
-                        signedData.score,
-                        signedData.nonce,
-                        signedData.expiry,
+                    // Prepare PlayParams struct using data from backend
+                    const playParams = {
+                        burnIds: signedData.burnIds,
+                        burnAmts: signedData.burnAmts,
+                        mintIds: signedData.mintIds,
+                        mintAmts: signedData.mintAmts,
+                        nonce: signedData.nonce,
+                        expiry: signedData.expiry
+                    };
+                    
+                    const tx = await shooterContract.executePlay(
+                        playParams,
                         signedData.signature
                     );
                     

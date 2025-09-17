@@ -126,16 +126,38 @@ app.post('/sign-reward', async (req, res) => {
             timestamp: Date.now()
         });
         
-        // Create message hash using ethers v6
-        const abiCoder = new AbiCoder();
-        const encodedData = abiCoder.encode(
-            ['address', 'uint256', 'uint256', 'uint256', 'uint256'],
-            [playerAddress, 1, score, nonce, expiry] // keyId = 1 for now
-        );
-        const messageHash = keccak256(encodedData);
+        // Create EIP-712 signature for the new proxy contract
+        const domain = {
+            name: 'ShooterGame',
+            version: '1',
+            chainId: 8453, // Base mainnet
+            verifyingContract: '0xea1d57fa135b661dd77fb7187e6b366c25fd085f' // Shooter contract address
+        };
         
-        // Sign the message
-        const signature = await signer.signMessage(getBytes(messageHash));
+        const types = {
+            Play: [
+                { name: 'user', type: 'address' },
+                { name: 'burnIds', type: 'bytes32' },
+                { name: 'burnAmts', type: 'bytes32' },
+                { name: 'mintIds', type: 'bytes32' },
+                { name: 'mintAmts', type: 'bytes32' },
+                { name: 'nonce', type: 'uint256' },
+                { name: 'expiry', type: 'uint256' }
+            ]
+        };
+        
+        const value = {
+            user: playerAddress,
+            burnIds: keccak256(abiCoder.encode(['uint256[]'], [[rewardTokenId]])),
+            burnAmts: keccak256(abiCoder.encode(['uint256[]'], [[rewardAmount]])),
+            mintIds: keccak256(abiCoder.encode(['uint256[]'], [[rewardTokenId]])),
+            mintAmts: keccak256(abiCoder.encode(['uint256[]'], [[rewardAmount]])),
+            nonce: nonce,
+            expiry: expiry
+        };
+        
+        // Sign the typed data
+        const signature = await signer.signTypedData(domain, types, value);
         
         console.log('✅ Reward signed:', {
             keyId: 1,
@@ -146,11 +168,14 @@ app.post('/sign-reward', async (req, res) => {
         });
         
         res.json({
-            keyId: 1,
             score,
             nonce,
             expiry,
-            signature
+            signature,
+            burnIds: [rewardTokenId],
+            burnAmts: [rewardAmount],
+            mintIds: [rewardTokenId],
+            mintAmts: [rewardAmount]
         });
         
     } catch (error) {
