@@ -239,12 +239,22 @@
             <button id="mintKey" class="btn btn-warning hidden">Mint Required Tokens</button>
             <button id="startGame" class="btn btn-success hidden">Start Game</button>
             
+            <button id="musicToggle" class="btn btn-secondary hidden" style="margin-left: 10px;">
+                <span id="musicIcon">🔊</span> Music
+            </button>
+            
             <div id="statusMessage" class="status-message hidden"></div>
         </div>
     </div>
 
     <!-- Game Canvas -->
     <canvas id="gameCanvas" width="920" height="540"></canvas>
+    
+    <!-- Background Music -->
+    <audio id="backgroundMusic" loop>
+        <source src="../music/Dead of Night.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
     
     <!-- Game UI -->
     <div class="game-ui">
@@ -428,7 +438,7 @@
             }
             
             selectRandomImages() {
-                const totalImages = 4200;
+                const totalImages = 25; // Only use available images (1-25)
                 const imagesToSelect = 20;
                 const selectedNumbers = new Set();
                 
@@ -1215,6 +1225,7 @@
                 document.getElementById('startGame').addEventListener('click', () => this.startGame());
                 document.getElementById('playAgain').addEventListener('click', () => this.playAgain());
                 document.getElementById('claimReward').addEventListener('click', () => this.claimReward());
+                document.getElementById('musicToggle').addEventListener('click', () => this.toggleMusic());
             }
 
             async initializeWallet() {
@@ -1371,12 +1382,14 @@
 
             showStartButton() {
                 document.getElementById('startGame').classList.remove('hidden');
+                document.getElementById('musicToggle').classList.remove('hidden');
                 document.getElementById('mintKey').classList.add('hidden');
             }
 
             showMintButton() {
                 document.getElementById('mintKey').classList.remove('hidden');
                 document.getElementById('startGame').classList.add('hidden');
+                document.getElementById('musicToggle').classList.add('hidden');
             }
 
             async mintRequiredTokens() {
@@ -1390,10 +1403,39 @@
                 this.hideWalletOverlay();
                 this.initializeGame();
                 this.game.start();
+                this.playBackgroundMusic();
             }
 
             hideWalletOverlay() {
                 document.getElementById('walletOverlay').style.display = 'none';
+            }
+
+            playBackgroundMusic() {
+                const music = document.getElementById('backgroundMusic');
+                if (music) {
+                    music.volume = 0.3; // Set volume to 30%
+                    music.play().catch(error => {
+                        console.log('Could not play background music:', error);
+                        // Music might not play due to browser autoplay policies
+                    });
+                }
+            }
+
+            toggleMusic() {
+                const music = document.getElementById('backgroundMusic');
+                const musicIcon = document.getElementById('musicIcon');
+                
+                if (music) {
+                    if (music.paused) {
+                        music.play().catch(error => {
+                            console.log('Could not play music:', error);
+                        });
+                        musicIcon.textContent = '🔊';
+                    } else {
+                        music.pause();
+                        musicIcon.textContent = '🔇';
+                    }
+                }
             }
 
             initializeGame() {
