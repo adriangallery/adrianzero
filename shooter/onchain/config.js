@@ -15,7 +15,7 @@ const SHOOTER_CONFIG = {
     ADMIN_WALLET: '0x4943407105999e3E97EFA2035F5cbC64D72581C6',
     
     // Backend Configuration
-    BACKEND_URL: 'https://shooter-game-backend.glitch.me', // Production backend URL (temporary)
+    BACKEND_URL: 'https://shooter-game-backend-production.up.railway.app', // Production backend URL
     
     // Game Configuration
     GAME_CONFIG: {
