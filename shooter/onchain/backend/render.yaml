@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: shooter-game-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: CORS_ORIGIN
+        value: https://adrianzero.com
+      - key: CONTRACT_ADDRESS
+        value: 0x90546848474fb3c9fda3fdad887969bb244e7e58
+      - key: ADMIN_WALLET
+        value: 0x4943407105999e3E97EFA2035F5cbC64D72581C6
+      - key: RPC_URL
+        value: https://mainnet.base.org
+      - key: CHAIN_ID
+        value: 8453

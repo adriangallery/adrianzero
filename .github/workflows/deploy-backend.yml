@@ -31,14 +31,12 @@ jobs:
         cd shooter/onchain/backend
         npm test
         
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v20
+    - name: Deploy to Railway
+      uses: railwayapp/railway-deploy@v1
       with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        railway-token: ${{ secrets.RAILWAY_TOKEN }}
+        service: shooter-game-backend
         working-directory: ./shooter/onchain/backend
-        vercel-args: '--prod'
       env:
         BACKEND_SIGNER_KEY: ${{ secrets.BACKEND_SIGNER_KEY }}
         CONTRACT_ADDRESS: '0x90546848474fb3c9fda3fdad887969bb244e7e58'
