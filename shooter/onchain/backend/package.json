@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "static": "node static-server.js",
     "dev": "nodemon server.js",
     "test": "echo \"Backend tests not implemented yet\" && exit 0"
   },
