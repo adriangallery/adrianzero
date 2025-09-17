@@ -146,6 +146,7 @@ app.post('/sign-reward', async (req, res) => {
             ]
         };
         
+        const abiCoder = new AbiCoder();
         const value = {
             user: playerAddress,
             burnIds: keccak256(abiCoder.encode(['uint256[]'], [[rewardTokenId]])),
