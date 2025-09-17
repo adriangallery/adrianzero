@@ -358,7 +358,7 @@
                 
                 // Crosshair/cursor
                 this.crosshair = new Image();
-                this.crosshair.src = '../Images/crosshair.png';
+                this.crosshair.src = './Images/crosshair.png';
                 this.crosshairLoaded = false;
                 this.crosshair.onload = () => {
                     this.crosshairLoaded = true;
@@ -413,7 +413,7 @@
             loadBackgroundImages() {
                 // Load main background as level1.png
                 const mainBg = new Image();
-                mainBg.src = '../level1.png';
+                mainBg.src = './level1.png';
                 mainBg.onerror = () => {
                     console.error('Failed to load main background level1.png');
                 };
@@ -426,7 +426,7 @@
                 // Load additional background layers (1.png through 4.png) if they exist
                 for (let i = 1; i <= 4; i++) {
                     const img = new Image();
-                    img.src = `../Images/${i}.png`;
+                    img.src = `./Images/${i}.png`;
                     img.onerror = () => {
                         console.log(`Background layer ${i} not found, skipping`);
                     };
@@ -457,7 +457,7 @@
             
             loadImages() {
                 const imagePromises = this.selectedImageNumbers.map((imageNumber, index) => {
-                    const imagePath = `../images/filthyfeetsecrets${imageNumber}.png`;
+                    const imagePath = `./images/filthyfeetsecrets${imageNumber}.png`;
                     const img = new Image();
                     
                     // Store metadata with the image
