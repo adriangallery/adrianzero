@@ -358,7 +358,7 @@
                 
                 // Crosshair/cursor
                 this.crosshair = new Image();
-                this.crosshair.src = './Images/crosshair.png';
+                this.crosshair.src = './images/crosshair.png';
                 this.crosshairLoaded = false;
                 this.crosshair.onload = () => {
                     this.crosshairLoaded = true;
@@ -426,7 +426,7 @@
                 // Load additional background layers (1.png through 4.png) if they exist
                 for (let i = 1; i <= 4; i++) {
                     const img = new Image();
-                    img.src = `./Images/${i}.png`;
+                    img.src = `./images/${i}.png`;
                     img.onerror = () => {
                         console.log(`Background layer ${i} not found, skipping`);
                     };
