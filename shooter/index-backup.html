@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filthy Feet Game</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Ensure canvas is visible and has dimensions */
+        #gameCanvas {
+            display: block;
+            width: 920px;
+            height: 540px;
+            margin: 0 auto;
+            background: url('./level1.png') no-repeat center center;
+            background-size: cover;
+        }
+        
+        /* Hide the HTML UI elements as they'll be rendered in canvas */
+        .hidden {
+            display: none;
+        }
+        
+        body {
+            background-color: #222;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Pixelify Sans', sans-serif;
+        }
+        
+        .game-container {
+            max-width: 920px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Only keep the canvas, remove header and UI overlays -->
+        <canvas id="gameCanvas" width="920" height="540" style="display: block; margin: 0 auto;"></canvas>
+        
+        <!-- Keep these elements but hide them - we'll use them for data storage only -->
+        <div id="score" class="hidden">0</div>
+        <div id="time" class="hidden">60</div>
+        <div id="finalScore" class="hidden">0</div>
+        <div id="highScore" class="hidden">0</div>
+    </div>
+    
+    <!-- Make sure the script is loaded properly -->
+    <script type="module">
+        import game from './game.js';
+        
+        // Explicitly initialize the game when DOM is loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            // Make game accessible for debugging
+            window.gameInstance = game;
+            
+            // Initialize the game
+            if (typeof game.init === 'function') {
+                game.init();
+            } else {
+                console.error('Game initialization function not found');
+            }
+            
+            // Add click handler to the canvas for all interactions
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.addEventListener('click', (event) => {
+                    if (typeof game.handleClick === 'function') {
+                        game.handleClick(event);
+                    }
+                });
+                
+                // Add mouse move handler
+                canvas.addEventListener('mousemove', (event) => {
+                    if (typeof game.handleMouseMove === 'function') {
+                        game.handleMouseMove(event);
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Add console logging for debugging -->
+    <script>
+        console.log('Page loaded, checking game elements...');
+        window.addEventListener('load', function() {
+            // Check if canvas is accessible
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) {
+                console.error('Canvas element not found');
+            } else {
+                console.log('Canvas found:', canvas.width + 'x' + canvas.height);
+            }
+        });
+    </script>
+</body>
+</html>
