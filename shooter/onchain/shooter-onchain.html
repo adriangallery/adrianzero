@@ -401,22 +401,30 @@
             }
             
             loadBackgroundImages() {
-                // Load background images for parallax effect
-                const backgroundImages = [
-                    '../level1.png', // Layer 0 (back)
-                    '../level1.png', // Layer 1
-                    '../level1.png', // Layer 2
-                    '../level1.png', // Layer 3
-                    '../level1.png'  // Layer 4 (front)
-                ];
+                // Load main background as level1.png
+                const mainBg = new Image();
+                mainBg.src = '../level1.png';
+                mainBg.onerror = () => {
+                    console.error('Failed to load main background level1.png');
+                };
+                mainBg.onload = () => {
+                    console.log(`Loaded main background: ${mainBg.width}x${mainBg.height}`);
+                    // Set the main background as layer 0
+                    this.backgroundLayers[0].image = mainBg;
+                };
                 
-                backgroundImages.forEach((src, index) => {
+                // Load additional background layers (1.png through 4.png) if they exist
+                for (let i = 1; i <= 4; i++) {
                     const img = new Image();
-                    img.src = src;
-                    img.onload = () => {
-                        this.backgroundLayers[index].image = img;
+                    img.src = `../Images/${i}.png`;
+                    img.onerror = () => {
+                        console.log(`Background layer ${i} not found, skipping`);
                     };
-                });
+                    img.onload = () => {
+                        console.log(`Loaded background layer ${i}: ${img.width}x${img.height}`);
+                        this.backgroundLayers[i].image = img;
+                    };
+                }
             }
             
             selectRandomImages() {
@@ -437,7 +445,7 @@
             
             loadImages() {
                 const imagePromises = this.selectedImageNumbers.map((imageNumber, index) => {
-                    const imagePath = `../Images/filthyfeetsecrets${imageNumber}.png`;
+                    const imagePath = `../images/filthyfeetsecrets${imageNumber}.png`;
                     const img = new Image();
                     
                     // Store metadata with the image
