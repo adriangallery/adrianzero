@@ -3,96 +3,1702 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Filthy Feet Game</title>
+    <title>Shooter Game - Onchain Rewards</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <style>
-        /* Ensure canvas is visible and has dimensions */
-        #gameCanvas {
-            display: block;
-            width: 920px;
-            height: 540px;
-            margin: 0 auto;
-            background: url('./level1.png') no-repeat center center;
-            background-size: cover;
+        /* Wallet connection overlay */
+        .wallet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
-        
-        /* Hide the HTML UI elements as they'll be rendered in canvas */
+
+        .wallet-modal {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .wallet-modal h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .zombie-image {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        .wallet-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #4CAF50;
+            word-break: break-all;
+        }
+
+        .token-status {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #ffd700;
+        }
+
+        .token-list {
+            text-align: left;
+            margin: 10px 0;
+        }
+
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .token-name {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .token-balance {
+            color: #4CAF50;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+        }
+
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+        }
+
         .hidden {
             display: none;
         }
-        
-        body {
-            background-color: #222;
-            margin: 0;
-            padding: 20px;
-            font-family: 'Pixelify Sans', sans-serif;
+
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
         }
-        
-        .game-container {
-            max-width: 920px;
-            margin: 0 auto;
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+        }
+
+        .status-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        .status-info {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            border: 1px solid #2196F3;
+        }
+
+        /* Game UI improvements */
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: 'Pixelify Sans', cursive;
+            z-index: 100;
+        }
+
+        .score-display {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .time-display {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .key-display {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Reward notification */
+        .reward-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+            animation: rewardPulse 2s ease-in-out;
+        }
+
+        @keyframes rewardPulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid #ffd700;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <!-- Only keep the canvas, remove header and UI overlays -->
-        <canvas id="gameCanvas" width="920" height="540" style="display: block; margin: 0 auto;"></canvas>
-        
-        <!-- Keep these elements but hide them - we'll use them for data storage only -->
-        <div id="score" class="hidden">0</div>
-        <div id="time" class="hidden">60</div>
-        <div id="finalScore" class="hidden">0</div>
-        <div id="highScore" class="hidden">0</div>
-    </div>
-    
-    <!-- Make sure the script is loaded properly -->
-    <script type="module">
-        import game from './game.js';
-        
-        // Explicitly initialize the game when DOM is loaded
-        window.addEventListener('DOMContentLoaded', () => {
-            // Make game accessible for debugging
-            window.gameInstance = game;
+    <!-- Wallet Connection Overlay -->
+    <div id="walletOverlay" class="wallet-overlay">
+        <div class="wallet-modal">
+            <h2>🎮 Connect Wallet to Play</h2>
+            <img src="/Zombie_Adrian.gif" alt="Zombie Adrian" class="zombie-image">
+            <p>You need to connect your wallet and own required tokens to play this game.</p>
             
-            // Initialize the game
-            if (typeof game.init === 'function') {
-                game.init();
-            } else {
-                console.error('Game initialization function not found');
+            <div id="walletInfo" class="wallet-info hidden">
+                <p><strong>Connected:</strong> <span id="walletAddress" class="wallet-address"></span></p>
+                <div id="tokenStatus" class="token-status">
+                    <p><strong>Token Status:</strong></p>
+                    <div id="tokenList" class="token-list"></div>
+                </div>
+            </div>
+            
+            <button id="connectWallet" class="btn">Connect Wallet</button>
+            <button id="mintKey" class="btn btn-warning hidden">Mint Required Tokens</button>
+            <button id="startGame" class="btn btn-success hidden">Start Game</button>
+            
+            <button id="musicToggle" class="btn btn-secondary hidden" style="margin-left: 10px;">
+                <span id="musicIcon">🔊</span> Music
+            </button>
+            
+            <div id="statusMessage" class="status-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas" width="920" height="540"></canvas>
+    
+    <!-- Background Music -->
+    <audio id="backgroundMusic" loop>
+        <source src="/music/DeadOfNight.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <!-- Game UI -->
+    <div class="game-ui">
+        <div class="score-display">Score: <span id="score">0</span></div>
+        <div class="time-display">Time: <span id="time">60</span></div>
+        <div class="key-display">Key: <span id="key">-</span></div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1500;">
+        <div style="text-align: center; color: white; font-family: 'Pixelify Sans', cursive;">
+            <h1 style="font-size: 3rem; margin-bottom: 20px; color: #ff6b6b;">GAME OVER</h1>
+            <p style="font-size: 1.5rem; margin-bottom: 10px;">Your Score: <span id="finalScore" style="color: #ffd700;">0</span></p>
+            <p style="font-size: 1.2rem; margin-bottom: 30px;">High Score: <span id="highScore" style="color: #4CAF50;">0</span></p>
+            <button id="playAgain" class="btn">Play Again</button>
+            <button id="claimReward" class="btn btn-success hidden">Claim Reward</button>
+        </div>
+    </div>
+
+    <!-- Load ethers.js from reliable CDN -->
+    <script src="https://unpkg.com/ethers@6.8.0/dist/ethers.umd.min.js"></script>
+    
+    <!-- Load configuration -->
+    <script src="onchain/config.js"></script>
+    
+    <!-- Load ERC1155 Manager -->
+    <script src="onchain/utils/erc1155Manager.js"></script>
+    
+    <!-- Game class will be defined inline -->
+    
+    <!-- Main game script -->
+    <script>
+        // Standalone Game Class
+        class ShooterGame {
+            constructor() {
+                console.log('🎮 [DEBUG] ShooterGame constructor called');
+                // Initialize canvas and context
+                this.canvas = document.getElementById('gameCanvas');
+                if (!this.canvas) {
+                    console.error('Canvas element not found!');
+                    return;
+                }
+                
+                this.ctx = this.canvas.getContext('2d');
+                if (!this.ctx) {
+                    console.error('Could not get 2D context from canvas!');
+                    return;
+                }
+                
+                // Set canvas to window size
+                this.resizeCanvas();
+                window.addEventListener('resize', this.resizeCanvas.bind(this));
+                
+                // Update canvas size to 1920x1080
+                this.canvas.width = 1920 * 0.5;
+                this.canvas.height = 1080 * 0.5;
+                
+                // Game state
+                this.gameState = 'start'; // 'start', 'playing', 'paused', 'gameOver'
+                this.score = 0;
+                this.timeLeft = 60;
+                this.highScore = localStorage.getItem('shooterHighScore') || 0;
+                console.log('🎮 [DEBUG] ShooterGame initialized with gameState:', this.gameState);
+                
+                // Game objects
+                this.feet = [];
+                this.cleaningEffects = [];
+                this.feetTypes = [
+                    { name: 'small', points: 10, width: 60, height: 60, speed: 3, yPosition: 112 },
+                    { name: 'medium', points: 20, width: 80, height: 80, speed: 2, yPosition: 205 },
+                    { name: 'large', points: 30, width: 100, height: 100, speed: 1, yPosition: 275 },
+                    { name: 'Xlarge', points: 40, width: 120, height: 120, speed: 0.5, yPosition: 350 }
+                ];
+                
+                this.footMovementStates = {
+                    RISING: 'rising',
+                    WAITING: 'waiting',
+                    FALLING: 'falling'
+                };
+                
+                // Add background layers for parallax effect
+                this.backgroundLayers = [
+                    { image: null, speed: 0.1, x: 0 },   // Layer 0 (back)
+                    { image: null, speed: 0.3, x: 0 },   // Layer 1
+                    { image: null, speed: 0.5, x: 0 },   // Layer 2
+                    { image: null, speed: 0.7, x: 0 },   // Layer 3 (front)
+                    { image: null, speed: 0.9, x: 0 }    // Layer 4 (very front)
+                ];
+                
+                // Define which layer each foot type appears in
+                this.footLayerMapping = {
+                    'small': 0,    // Small feet appear after layer 0
+                    'medium': 1,   // Medium feet appear after layer 1
+                    'large': 2,    // Large feet appear after layer 2
+                    'Xlarge': 3    // Xlarge feet appear after layer 3
+                };
+                
+                // Track mouse position for parallax
+                this.mouseX = this.canvas.width / 2;
+                this.mouseY = this.canvas.height / 2;
+                
+                // Crosshair/cursor
+                this.crosshair = new Image();
+                this.crosshair.src = '/onchain/images/crosshair.png';
+                this.crosshairLoaded = false;
+                this.crosshair.onload = () => {
+                    this.crosshairLoaded = true;
+                };
+                
+                // Hide default cursor
+                this.canvas.style.cursor = 'none';
+                
+                // Load background images
+                this.loadBackgroundImages();
+                
+                // Initialize image loading system
+                this.loadedImages = [];
+                this.selectRandomImages();
+                this.loadImages();
+                
+                // Game timing
+                this.lastTime = 0;
+                this.timer = null;
+                this.spawnTimer = null;
+                
+                // Callbacks
+                this.onScoreUpdate = null;
+                this.onGameOver = null;
+                
+                // Load background images
+                this.loadBackgroundImages();
+                
+                // Setup event listeners
+                this.setupEventListeners();
+                
+                // Create UI elements
+                this.createUIElements();
             }
             
-            // Add click handler to the canvas for all interactions
-            const canvas = document.getElementById('gameCanvas');
-            if (canvas) {
-                canvas.addEventListener('click', (event) => {
-                    if (typeof game.handleClick === 'function') {
-                        game.handleClick(event);
-                    }
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            loadBackgroundImages() {
+                // Load main background
+                const bgImage = new Image();
+                bgImage.onload = () => {
+                    this.backgroundLayers = [
+                        { image: bgImage, speed: 0.1, x: 0, y: 0, width: this.canvas.width, height: this.canvas.height }
+                    ];
+                };
+                bgImage.src = '/level1.png';
+            }
+            
+            loadBackgroundImages() {
+                // Load main background as level1.png
+                const mainBg = new Image();
+                mainBg.src = '/level1.png';
+                mainBg.onerror = () => {
+                    console.error('Failed to load main background level1.png');
+                };
+                mainBg.onload = () => {
+                    console.log(`Loaded main background: ${mainBg.width}x${mainBg.height}`);
+                    // Set the main background as layer 0
+                    this.backgroundLayers[0].image = mainBg;
+                };
+                
+                // Load additional background layers (1.png through 4.png) if they exist
+                for (let i = 1; i <= 4; i++) {
+                    const img = new Image();
+                    img.src = `/onchain/images/${i}.png`;
+                    img.onerror = () => {
+                        console.log(`Background layer ${i} not found, skipping`);
+                    };
+                    img.onload = () => {
+                        console.log(`Loaded background layer ${i}: ${img.width}x${img.height}`);
+                        this.backgroundLayers[i].image = img;
+                    };
+                }
+            }
+            
+            selectRandomImages() {
+                // Only use images that actually exist: 1-20, 23, 24, 25
+                const availableImages = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,24,25];
+                const imagesToSelect = 20;
+                const selectedNumbers = new Set();
+                
+                // Keep selecting random numbers until we have 20 unique ones
+                while(selectedNumbers.size < imagesToSelect) {
+                    const randomIndex = Math.floor(Math.random() * availableImages.length);
+                    const randomNumber = availableImages[randomIndex];
+                    selectedNumbers.add(randomNumber);
+                }
+                
+                // Convert the Set to an Array and return it
+                this.selectedImageNumbers = Array.from(selectedNumbers);
+                console.log("Selected 20 random images:", this.selectedImageNumbers);
+            }
+            
+            loadImages() {
+                const imagePromises = this.selectedImageNumbers.map((imageNumber, index) => {
+                    const imagePath = `/onchain/images/filthyfeetsecrets${imageNumber}.png`;
+                    const img = new Image();
+                    
+                    // Store metadata with the image
+                    img.metadata = {
+                        footType: this.getFootTypeFromNumber(imageNumber),
+                        points: this.getPointsFromNumber(imageNumber),
+                        speed: this.getSpeedFromNumber(imageNumber),
+                        imageNumber: imageNumber
+                    };
+                    
+                    const promise = new Promise((resolve, reject) => {
+                        img.onload = () => {
+                            console.log(`Loaded image ${index + 1}/20: ${imagePath}`);
+                            resolve(img);
+                        };
+                        img.onerror = () => {
+                            console.warn(`Failed to load image: ${imagePath}`);
+                            resolve(null); // Resolve with null to continue loading other images
+                        };
+                        img.src = imagePath;
+                    });
+                    
+                    return promise;
                 });
                 
-                // Add mouse move handler
-                canvas.addEventListener('mousemove', (event) => {
-                    if (typeof game.handleMouseMove === 'function') {
-                        game.handleMouseMove(event);
+                // Wait for all images to load
+                Promise.all(imagePromises)
+                    .then(images => {
+                        // Filter out any null images (failed to load)
+                        this.loadedImages = images.filter(img => img !== null);
+                        console.log(`Successfully loaded ${this.loadedImages.length} out of 20 images`);
+                    })
+                    .catch(error => {
+                        console.error('Error loading feet images:', error);
+                    });
+            }
+            
+            getFootTypeFromNumber(imageNumber) {
+                if (imageNumber >= 3500) return 'Gold';
+                if (imageNumber >= 2800) return 'Zombie';
+                if (imageNumber >= 2100) return 'Alien';
+                if (imageNumber >= 1400) return 'Ape';
+                if (imageNumber >= 700) return 'Light';
+                return 'Default';
+            }
+            
+            getPointsFromNumber(imageNumber) {
+                if (imageNumber >= 3500) return 200;
+                if (imageNumber >= 2800) return 100;
+                if (imageNumber >= 2100) return 50;
+                if (imageNumber >= 1400) return 30;
+                if (imageNumber >= 700) return 20;
+                return 10;
+            }
+            
+            getSpeedFromNumber(imageNumber) {
+                if (imageNumber >= 3500) return 1;
+                if (imageNumber >= 2800) return 1.5;
+                if (imageNumber >= 2100) return 2;
+                if (imageNumber >= 1400) return 2.5;
+                if (imageNumber >= 700) return 3;
+                return 3.5;
+            }
+            
+            createCleanedVersion(originalImage) {
+                // Create a cleaned version of the image
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = originalImage.width;
+                canvas.height = originalImage.height;
+                
+                // Draw the original image
+                ctx.drawImage(originalImage, 0, 0);
+                
+                // Apply cleaning effect (lighten the image)
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    // Lighten the image by increasing brightness
+                    data[i] = Math.min(255, data[i] + 50);     // Red
+                    data[i + 1] = Math.min(255, data[i + 1] + 50); // Green
+                    data[i + 2] = Math.min(255, data[i + 2] + 50); // Blue
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                
+                // Convert canvas to image
+                const cleanedImage = new Image();
+                cleanedImage.src = canvas.toDataURL();
+                return cleanedImage;
+            }
+            
+            setupEventListeners() {
+                // Keyboard controls
+                this.keys = {};
+                document.addEventListener('keydown', (e) => {
+                    this.keys[e.code] = true;
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    this.keys[e.code] = false;
+                });
+                
+                // Mouse controls
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mouseX = e.clientX - rect.left;
+                    this.mouseY = e.clientY - rect.top;
+                });
+                
+                this.canvas.addEventListener('click', (e) => {
+                    if (this.gameState === 'playing') {
+                        this.handleClick(e);
                     }
                 });
             }
-        });
-    </script>
-    
-    <!-- Add console logging for debugging -->
-    <script>
-        console.log('Page loaded, checking game elements...');
-        window.addEventListener('load', function() {
-            // Check if canvas is accessible
-            const canvas = document.getElementById('gameCanvas');
-            if (!canvas) {
-                console.error('Canvas element not found');
-            } else {
-                console.log('Canvas found:', canvas.width + 'x' + canvas.height);
+            
+            createUIElements() {
+                // Create UI container if it doesn't exist
+                let uiContainer = document.getElementById('uiContainer');
+                if (!uiContainer) {
+                    uiContainer = document.createElement('div');
+                    uiContainer.id = 'uiContainer';
+                    uiContainer.style.position = 'absolute';
+                    uiContainer.style.top = '0';
+                    uiContainer.style.left = '0';
+                    uiContainer.style.width = '100%';
+                    uiContainer.style.height = '100%';
+                    uiContainer.style.pointerEvents = 'none';
+                    uiContainer.style.zIndex = '100';
+                    document.body.appendChild(uiContainer);
+                }
+                
+                // Create score display
+                let scoreDisplay = document.getElementById('scoreDisplay');
+                if (!scoreDisplay) {
+                    scoreDisplay = document.createElement('div');
+                    scoreDisplay.id = 'scoreDisplay';
+                    scoreDisplay.style.position = 'absolute';
+                    scoreDisplay.style.top = '20px';
+                    scoreDisplay.style.left = '20px';
+                    scoreDisplay.style.color = 'white';
+                    scoreDisplay.style.fontSize = '24px';
+                    scoreDisplay.style.fontFamily = 'Arial, sans-serif';
+                    scoreDisplay.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                    scoreDisplay.textContent = 'Score: 0';
+                    uiContainer.appendChild(scoreDisplay);
+                }
+                
+                // Create time display
+                let timeDisplay = document.getElementById('timeDisplay');
+                if (!timeDisplay) {
+                    timeDisplay = document.createElement('div');
+                    timeDisplay.id = 'timeDisplay';
+                    timeDisplay.style.position = 'absolute';
+                    timeDisplay.style.top = '60px';
+                    timeDisplay.style.left = '20px';
+                    timeDisplay.style.color = 'white';
+                    timeDisplay.style.fontSize = '24px';
+                    timeDisplay.style.fontFamily = 'Arial, sans-serif';
+                    timeDisplay.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                    timeDisplay.textContent = 'Time: 60';
+                    uiContainer.appendChild(timeDisplay);
+                }
             }
+            
+            start() {
+                console.log('🎮 [DEBUG] ShooterGame.start() called, current gameState:', this.gameState);
+                if (this.gameState === 'start') {
+                    console.log('🎮 [DEBUG] Starting game...');
+                    this.gameState = 'playing';
+                    this.score = 0;
+                    this.timeLeft = 60;
+                    this.feet = [];
+                    this.cleaningEffects = [];
+                    
+                    // Clear any existing timers
+                    if (this.timer) clearInterval(this.timer);
+                    if (this.spawnTimer) clearInterval(this.spawnTimer);
+                    
+                    // Start game loop
+                    this.timer = setInterval(() => {
+                        this.timeLeft--;
+                        if (this.timeLeft <= 0) {
+                            this.endGame();
+                        }
+                    }, 1000);
+                    
+                    // Start foot spawning
+                    this.spawnTimer = setInterval(() => {
+                        this.spawnFoot();
+                    }, 1500); // Slightly faster spawning
+                    
+                    // Start game loop
+                    this.gameLoop();
+                }
+            }
+            
+            endGame() {
+                console.log('🎮 [DEBUG] ShooterGame.endGame() called, current gameState:', this.gameState);
+                this.gameState = 'gameOver';
+                
+                // Clear timers
+                if (this.timer) clearInterval(this.timer);
+                if (this.spawnTimer) clearInterval(this.spawnTimer);
+                
+                // Update high score
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('shooterHighScore', this.highScore);
+                }
+                
+                // Call callbacks
+                if (this.onScoreUpdate) this.onScoreUpdate(this.score);
+                if (this.onGameOver) this.onGameOver(this.score);
+                
+                // Show game over screen
+                this.showGameOverScreen();
+            }
+            
+            showGameOverScreen() {
+                const gameOverScreen = document.getElementById('gameOverScreen');
+                if (gameOverScreen) {
+                    const finalScore = document.getElementById('finalScore');
+                    const highScore = document.getElementById('highScore');
+                    
+                    if (finalScore) finalScore.textContent = this.score;
+                    if (highScore) highScore.textContent = this.highScore;
+                    
+                    gameOverScreen.classList.remove('hidden');
+                    gameOverScreen.style.display = 'flex';
+                }
+            }
+            
+            spawnFoot() {
+                if (this.gameState !== 'playing') return;
+                
+                const typeIndex = Math.floor(Math.random() * this.feetTypes.length);
+                const type = this.feetTypes[typeIndex];
+                
+                // Use a random loaded image if available
+                if (this.loadedImages && this.loadedImages.length > 0) {
+                    const randomImageIndex = Math.floor(Math.random() * this.loadedImages.length);
+                    const randomImage = this.loadedImages[randomImageIndex];
+                    
+                    // Use the metadata stored with the image
+                    const metadata = randomImage.metadata || {
+                        footType: 'Default',
+                        points: type.points,
+                        speed: type.speed,
+                        imageNumber: 0
+                    };
+                    
+                    // Create a cleaned version of the image
+                    const cleanedImage = this.createCleanedVersion(randomImage);
+                    
+                    // Create the foot object with metadata from the image
+                    const foot = {
+                        x: Math.random() * (this.canvas.width - type.width),
+                        y: this.canvas.height,
+                        width: type.width,
+                        height: type.height,
+                        type: type.name,
+                        points: metadata.points,
+                        speed: metadata.speed,
+                        footType: metadata.footType,
+                        cleaned: false,
+                        visible: true,
+                        image: randomImage,
+                        cleanImage: cleanedImage,
+                        movementState: this.footMovementStates.RISING,
+                        targetY: type.yPosition,
+                        waitTime: 1000 + Math.random() * 3000,
+                        waitStart: 0
+                    };
+                    
+                    this.feet.push(foot);
+                } else {
+                    // Fallback to basic foot if no images loaded
+                    const foot = {
+                        x: Math.random() * (this.canvas.width - type.width),
+                        y: this.canvas.height,
+                        width: type.width,
+                        height: type.height,
+                        type: type.name,
+                        points: type.points,
+                        speed: type.speed,
+                        cleaned: false,
+                        visible: true,
+                        image: null,
+                        cleanImage: null,
+                        movementState: this.footMovementStates.RISING,
+                        targetY: type.yPosition,
+                        waitTime: 1000 + Math.random() * 3000,
+                        waitStart: 0
+                    };
+                    
+                    this.feet.push(foot);
+                }
+            }
+            
+            handleClick(event) {
+                if (this.gameState !== 'playing') return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const clickY = event.clientY - rect.top;
+                
+                // Update mouse position for parallax
+                this.mouseX = clickX;
+                this.mouseY = clickY;
+                
+                // Check if click hit any foot
+                for (let i = this.feet.length - 1; i >= 0; i--) {
+                    const foot = this.feet[i];
+                    
+                    if (foot.cleaned || !foot.visible) continue;
+                    
+                    if (clickX >= foot.x && clickX <= foot.x + foot.width &&
+                        clickY >= foot.y && clickY <= foot.y + foot.height) {
+                        
+                        // Clean the foot
+                        foot.cleaned = true;
+                        this.score += foot.points;
+                        
+                        // Add cleaning effect
+                        this.cleaningEffects.push({
+                            x: foot.x + foot.width / 2,
+                            y: foot.y + foot.height / 2,
+                            radius: 5,
+                            maxRadius: 30,
+                            alpha: 1,
+                            duration: 1000
+                        });
+                        
+                        // Remove foot after a short delay
+                        setTimeout(() => {
+                            foot.visible = false;
+                        }, 500);
+                        
+                        // Only clean one foot per click
+                        break;
+                    }
+                }
+            }
+            
+            update() {
+                if (this.gameState !== 'playing') return;
+                
+                const currentTime = Date.now();
+                
+                // Update feet positions
+                for (let i = this.feet.length - 1; i >= 0; i--) {
+                    const foot = this.feet[i];
+                    
+                    if (!foot.visible) {
+                        this.feet.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // Handle different movement states
+                    switch (foot.movementState) {
+                        case this.footMovementStates.RISING:
+                            foot.y -= foot.speed;
+                            if (foot.y <= foot.targetY) {
+                                foot.y = foot.targetY;
+                                foot.movementState = this.footMovementStates.WAITING;
+                                foot.waitStart = currentTime;
+                            }
+                            break;
+                            
+                        case this.footMovementStates.WAITING:
+                            if (currentTime - foot.waitStart >= foot.waitTime) {
+                                foot.movementState = this.footMovementStates.FALLING;
+                            }
+                            break;
+                            
+                        case this.footMovementStates.FALLING:
+                            foot.y += foot.speed * 1.5;
+                            if (foot.y > this.canvas.height) {
+                                this.feet.splice(i, 1);
+                            }
+                            break;
+                    }
+                }
+                
+                // Update cleaning effects
+                for (let i = this.cleaningEffects.length - 1; i >= 0; i--) {
+                    const effect = this.cleaningEffects[i];
+                    effect.radius += 2;
+                    effect.alpha -= 0.02;
+                    
+                    if (effect.alpha <= 0 || effect.radius >= effect.maxRadius) {
+                        this.cleaningEffects.splice(i, 1);
+                    }
+                }
+                
+                // Update UI
+                this.updateUI();
+            }
+            
+            updatePlayer() {
+                // Keyboard movement
+                if (this.keys['ArrowLeft'] || this.keys['KeyA']) {
+                    this.player.x = Math.max(0, this.player.x - this.player.speed);
+                }
+                if (this.keys['ArrowRight'] || this.keys['KeyD']) {
+                    this.player.x = Math.min(this.canvas.width - this.player.width, this.player.x + this.player.speed);
+                }
+                if (this.keys['ArrowUp'] || this.keys['KeyW']) {
+                    this.player.y = Math.max(0, this.player.y - this.player.speed);
+                }
+                if (this.keys['ArrowDown'] || this.keys['KeyS']) {
+                    this.player.y = Math.min(this.canvas.height - this.player.height, this.player.y + this.player.speed);
+                }
+                
+                // Mouse movement
+                if (this.mouseX !== undefined && this.mouseY !== undefined) {
+                    this.player.x = this.mouseX - this.player.width / 2;
+                    this.player.y = this.mouseY - this.player.height / 2;
+                }
+            }
+            
+            updateBullets() {
+                for (let i = this.bullets.length - 1; i >= 0; i--) {
+                    const bullet = this.bullets[i];
+                    bullet.y -= bullet.speed;
+                    
+                    // Remove bullets that are off screen
+                    if (bullet.y < 0) {
+                        this.bullets.splice(i, 1);
+                    }
+                }
+            }
+            
+            updateEnemies() {
+                for (let i = this.enemies.length - 1; i >= 0; i--) {
+                    const enemy = this.enemies[i];
+                    enemy.y += enemy.speed;
+                    
+                    // Remove enemies that are off screen
+                    if (enemy.y > this.canvas.height) {
+                        this.enemies.splice(i, 1);
+                    }
+                }
+            }
+            
+            updateParticles() {
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const particle = this.particles[i];
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life--;
+                    
+                    if (particle.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+            }
+            
+            checkCollisions() {
+                // Bullet vs Enemy collisions
+                for (let i = this.bullets.length - 1; i >= 0; i--) {
+                    const bullet = this.bullets[i];
+                    
+                    for (let j = this.enemies.length - 1; j >= 0; j--) {
+                        const enemy = this.enemies[j];
+                        
+                        if (this.isColliding(bullet, enemy)) {
+                            // Remove bullet and enemy
+                            this.bullets.splice(i, 1);
+                            this.enemies.splice(j, 1);
+                            
+                            // Add score
+                            this.score += 10;
+                            
+                            // Create explosion particles
+                            this.createExplosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
+                            
+                            break;
+                        }
+                    }
+                }
+                
+                // Player vs Enemy collisions
+                for (let i = this.enemies.length - 1; i >= 0; i--) {
+                    const enemy = this.enemies[i];
+                    
+                    if (this.isColliding(this.player, enemy)) {
+                        // Game over
+                        this.endGame();
+                        break;
+                    }
+                }
+            }
+            
+            isColliding(rect1, rect2) {
+                return rect1.x < rect2.x + rect2.width &&
+                       rect1.x + rect1.width > rect2.x &&
+                       rect1.y < rect2.y + rect2.height &&
+                       rect1.y + rect1.height > rect2.y;
+            }
+            
+            createExplosion(x, y) {
+                for (let i = 0; i < 10; i++) {
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        life: 30,
+                        color: '#ffaa00'
+                    });
+                }
+            }
+            
+            updateUI() {
+                // Update score in game UI (for onchain functionality)
+                const scoreElement = document.getElementById('score');
+                const timeElement = document.getElementById('time');
+                
+                if (scoreElement) scoreElement.textContent = this.score;
+                if (timeElement) timeElement.textContent = this.timeLeft;
+                
+                // Call score update callback
+                if (this.onScoreUpdate) this.onScoreUpdate(this.score);
+            }
+            
+            render() {
+                // Ensure canvas has the correct 16:9 dimensions (920x540)
+                if (this.canvas.width !== 920 || this.canvas.height !== 540) {
+                    this.canvas.width = 920;
+                    this.canvas.height = 540;
+                }
+                
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Create a sorted array of feet by layer
+                const feetByLayer = {
+                    0: [], // Small feet (after layer 0)
+                    1: [], // Medium feet (after layer 1)
+                    2: [], // Large feet (after layer 2)
+                    3: []  // Xlarge feet (after layer 3)
+                };
+                
+                // Sort feet into their respective layers
+                this.feet.forEach(foot => {
+                    const layer = this.footLayerMapping[foot.type] || 0;
+                    feetByLayer[layer].push(foot);
+                });
+                
+                // Render background layer 0 (back)
+                this.drawBackgroundLayer(0);
+                
+                // Render small feet (layer 0)
+                feetByLayer[0].forEach(foot => this.renderFoot(foot));
+                
+                // Render background layer 1
+                this.drawBackgroundLayer(1);
+                
+                // Render medium feet (layer 1)
+                feetByLayer[1].forEach(foot => this.renderFoot(foot));
+                
+                // Render background layer 2
+                this.drawBackgroundLayer(2);
+                
+                // Render large feet (layer 2)
+                feetByLayer[2].forEach(foot => this.renderFoot(foot));
+                
+                // Render background layer 3
+                this.drawBackgroundLayer(3);
+                
+                // Render Xlarge feet (layer 3)
+                feetByLayer[3].forEach(foot => this.renderFoot(foot));
+                
+                // Render background layer 4 (front)
+                this.drawBackgroundLayer(4);
+                
+                // Draw cleaning effects
+                this.drawCleaningEffects();
+                
+                // Draw crosshair at mouse position
+                if (this.crosshairLoaded) {
+                    const crosshairSize = 40;
+                    this.ctx.drawImage(
+                        this.crosshair,
+                        this.mouseX - crosshairSize/2,
+                        this.mouseY - crosshairSize/2,
+                        crosshairSize,
+                        crosshairSize
+                    );
+                }
+                
+                // Draw UI elements on canvas
+                this.drawUI();
+            }
+            
+            drawBackgroundLayer(layerIndex) {
+                if (this.backgroundLayers && this.backgroundLayers[layerIndex] && this.backgroundLayers[layerIndex].image) {
+                    const layer = this.backgroundLayers[layerIndex];
+                    
+                    // Calculate parallax offset based on mouse position with reduced effect
+                    const parallaxX = (this.mouseX - (this.canvas.width / 2)) * layer.speed * 0.6;
+                    
+                    // Calculate horizontal position to center the image
+                    const imageWidth = layer.image.width * 0.5;
+                    const xPosition = (this.canvas.width - imageWidth) / 2 + parallaxX;
+                    
+                    // Use different positioning for different layers like in original
+                    if (layerIndex === 0) {
+                        // Layer 0: centered
+                        const imageHeight = layer.image.height * 0.5;
+                        const yPosition = (this.canvas.height - imageHeight) / 2;
+                        this.ctx.drawImage(layer.image, xPosition, yPosition, imageWidth, imageHeight);
+                    } else {
+                        // Other layers: positioned at bottom
+                        this.ctx.drawImage(
+                            layer.image,
+                            xPosition, 
+                            this.canvas.height - (layer.image.height * 0.5),
+                            imageWidth, 
+                            layer.image.height * 0.5
+                        );
+                    }
+                }
+            }
+            
+            renderFoot(foot) {
+                if (!foot.visible) return;
+                
+                if (foot.image && foot.cleanImage) {
+                    // Use the loaded image
+                    const img = foot.cleaned ? foot.cleanImage : foot.image;
+                    this.ctx.drawImage(img, foot.x, foot.y, foot.width, foot.height);
+                } else {
+                    // Fallback to colored rectangle while image loads
+                    this.ctx.fillStyle = foot.cleaned ? '#90EE90' : '#8B4513';
+                    this.ctx.fillRect(foot.x, foot.y, foot.width, foot.height);
+                    
+                    // Draw foot outline
+                    this.ctx.strokeStyle = '#000000';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(foot.x, foot.y, foot.width, foot.height);
+                }
+                
+                // Draw points
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.strokeStyle = '#000000';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeText(foot.points.toString(), foot.x + 5, foot.y + 20);
+                this.ctx.fillText(foot.points.toString(), foot.x + 5, foot.y + 20);
+            }
+            
+            drawUI() {
+                // Draw score panel with better visibility
+                this.ctx.save();
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                this.ctx.fillRect(this.canvas.width - 180, 10, 160, 100);
+                this.ctx.strokeStyle = 'white';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(this.canvas.width - 180, 10, 160, 100);
+                
+                // Draw score text with improved styling
+                this.ctx.font = 'bold 20px "Pixelify Sans", sans-serif';
+                this.ctx.fillStyle = 'white';
+                this.ctx.textAlign = 'left';
+                this.ctx.textBaseline = 'top';
+                this.ctx.fillText(`Score: ${this.score}`, this.canvas.width - 160, 20);
+                this.ctx.fillText(`Time: ${this.timeLeft}`, this.canvas.width - 160, 50);
+                this.ctx.restore();
+                
+                // Draw game over screen if needed
+                if (this.gameState === 'gameOver') {
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    this.ctx.fillStyle = '#FFFFFF';
+                    this.ctx.font = 'bold 48px "Pixelify Sans", sans-serif';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText('GAME OVER!', this.canvas.width / 2, this.canvas.height / 2 - 60);
+                    
+                    this.ctx.font = 'bold 24px "Pixelify Sans", sans-serif';
+                    this.ctx.fillText(`Your score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2);
+                    this.ctx.fillText(`High score: ${this.highScore || this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50);
+                    
+                    this.ctx.textAlign = 'left'; // Reset text alignment
+                }
+            }
+            
+            drawFeet() {
+                // This function is now handled by renderFoot in the main render function
+                // Keep for compatibility but it's not used in the new rendering system
+            }
+            
+            drawCleaningEffects() {
+                this.cleaningEffects.forEach(effect => {
+                    this.ctx.save();
+                    this.ctx.globalAlpha = effect.alpha;
+                    this.ctx.strokeStyle = '#00FFFF';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.beginPath();
+                    this.ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    this.ctx.restore();
+                });
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                
+                if (this.gameState === 'playing') {
+                    requestAnimationFrame(() => this.gameLoop());
+                }
+            }
+            
+            reset() {
+                this.gameState = 'start';
+                this.score = 0;
+                this.timeLeft = 60;
+                this.feet = [];
+                this.cleaningEffects = [];
+                
+                // Clear timers
+                if (this.timer) clearInterval(this.timer);
+                if (this.spawnTimer) clearInterval(this.spawnTimer);
+            }
+        }
+
+        class OnchainShooterGame {
+            constructor() {
+                console.log('🎮 [DEBUG] OnchainShooterGame constructor called');
+                this.walletManager = null;
+                this.game = null;
+                this.isConnected = false;
+                this.hasRequiredTokens = false;
+                this.playableTokens = [];
+                this.currentScore = 0;
+                this.highScore = localStorage.getItem('shooterHighScore') || 0;
+                
+                // Ensure game over screen is hidden
+                const gameOverScreen = document.getElementById('gameOverScreen');
+                if (gameOverScreen) {
+                    gameOverScreen.classList.add('hidden');
+                    gameOverScreen.style.display = 'none';
+                    console.log('🎮 [DEBUG] Game over screen hidden on constructor');
+                } else {
+                    console.log('🎮 [DEBUG] Game over screen not found!');
+                }
+                
+                this.init();
+            }
+
+            init() {
+                console.log('🎮 [DEBUG] OnchainShooterGame.init() called');
+                this.setupEventListeners();
+                this.initializeWallet();
+            }
+
+            setupEventListeners() {
+                document.getElementById('connectWallet').addEventListener('click', () => this.connectWallet());
+                document.getElementById('mintKey').addEventListener('click', () => this.mintRequiredTokens());
+                document.getElementById('startGame').addEventListener('click', () => this.startGame());
+                document.getElementById('playAgain').addEventListener('click', () => this.playAgain());
+                document.getElementById('claimReward').addEventListener('click', () => this.claimReward());
+                document.getElementById('musicToggle').addEventListener('click', () => this.toggleMusic());
+            }
+
+            async initializeWallet() {
+                try {
+                    if (typeof window.ethereum !== 'undefined') {
+                        this.walletManager = new ethers.BrowserProvider(window.ethereum);
+                        console.log('Wallet manager initialized, waiting for user to connect');
+                    } else {
+                        this.showStatus('MetaMask not installed. Please install MetaMask to play.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error initializing wallet:', error);
+                    this.showStatus('Error initializing wallet: ' + error.message, 'error');
+                }
+            }
+
+            async connectWallet() {
+                try {
+                    this.showStatus('Connecting wallet...', 'info');
+                    
+                    // Request account access
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // Get signer
+                    const signer = await this.walletManager.getSigner();
+                    const address = await signer.getAddress();
+                    
+                    // Check network
+                    const network = await this.walletManager.getNetwork();
+                    if (Number(network.chainId) !== SHOOTER_CONFIG.CHAIN_ID) {
+                        await this.switchNetwork();
+                    }
+                    
+                    this.isConnected = true;
+                    this.updateWalletUI(address);
+                    
+                    // Check for required tokens
+                    await this.checkRequiredTokens();
+                    
+                } catch (error) {
+                    console.error('Error connecting wallet:', error);
+                    this.showStatus('Failed to connect wallet: ' + error.message, 'error');
+                }
+            }
+
+            async switchNetwork() {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: `0x${SHOOTER_CONFIG.CHAIN_ID.toString(16)}` }],
+                    });
+                } catch (error) {
+                    if (error.code === 4902) {
+                        // Network doesn't exist, add it
+                        await this.addNetwork();
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+
+            async addNetwork() {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: `0x${SHOOTER_CONFIG.CHAIN_ID.toString(16)}`,
+                        chainName: SHOOTER_CONFIG.CHAIN_NAME,
+                        rpcUrls: [SHOOTER_CONFIG.RPC_URL],
+                        blockExplorerUrls: [SHOOTER_CONFIG.BLOCK_EXPLORER_URL],
+                        nativeCurrency: {
+                            name: 'ETH',
+                            symbol: 'ETH',
+                            decimals: 18
+                        }
+                    }]
+                });
+            }
+
+            updateWalletUI(address) {
+                document.getElementById('walletAddress').textContent = address;
+                document.getElementById('walletInfo').classList.remove('hidden');
+                document.getElementById('connectWallet').classList.add('hidden');
+            }
+
+            async checkRequiredTokens() {
+                try {
+                    this.showStatus('Checking required tokens...', 'info');
+                    
+                    // Get burn tokens from admin config
+                    const adminConfig = new AdminConfig();
+                    const burnTokens = adminConfig.getActiveBurnTokens();
+                    
+                    console.log('Required burn tokens:', burnTokens);
+                    
+                    if (burnTokens.length === 0) {
+                        this.showStatus('No tokens required. You can play!', 'success');
+                        this.hasRequiredTokens = true;
+                        this.showStartButton();
+                        return;
+                    }
+                    
+                    // Check if player has required tokens
+                    const erc1155Manager = new ERC1155Manager(
+                        SHOOTER_CONFIG.ERC1155_CONTRACT, 
+                        this.walletManager, 
+                        await this.walletManager.getSigner()
+                    );
+                    
+                    // Test connection first
+                    const connectionTest = await erc1155Manager.testConnection();
+                    if (!connectionTest) {
+                        this.showStatus('Failed to connect to token contract', 'error');
+                        return;
+                    }
+                    
+                    this.hasRequiredTokens = await erc1155Manager.canPlay(burnTokens);
+                    this.playableTokens = await erc1155Manager.getPlayableTokens(burnTokens);
+                    
+                    this.updateTokenStatus(burnTokens, this.playableTokens);
+                    
+                    if (this.hasRequiredTokens) {
+                        this.showStatus('Required tokens found! You can play!', 'success');
+                        this.showStartButton();
+                    } else {
+                        this.showStatus('Required tokens not found. Check admin panel for required tokens.', 'error');
+                        this.showMintButton();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error checking required tokens:', error);
+                    this.showStatus('Error checking tokens: ' + error.message, 'error');
+                }
+            }
+
+            updateTokenStatus(requiredTokens, playableTokens) {
+                const tokenList = document.getElementById('tokenList');
+                tokenList.innerHTML = '';
+                
+                requiredTokens.forEach(token => {
+                    const playableToken = playableTokens.find(pt => pt.id === token.id);
+                    const hasEnough = playableToken && playableToken.availableBalance >= token.amount;
+                    
+                    const tokenItem = document.createElement('div');
+                    tokenItem.className = 'token-item';
+                    tokenItem.innerHTML = `
+                        <span class="token-name">${token.name} (ID: ${token.id})</span>
+                        <span class="token-balance" style="color: ${hasEnough ? '#4CAF50' : '#f44336'}">
+                            ${playableToken ? playableToken.availableBalance : 0} / ${token.amount}
+                        </span>
+                    `;
+                    tokenList.appendChild(tokenItem);
+                });
+            }
+
+            showStartButton() {
+                document.getElementById('startGame').classList.remove('hidden');
+                document.getElementById('musicToggle').classList.remove('hidden');
+                document.getElementById('mintKey').classList.add('hidden');
+            }
+
+            showMintButton() {
+                document.getElementById('mintKey').classList.remove('hidden');
+                document.getElementById('startGame').classList.add('hidden');
+                document.getElementById('musicToggle').classList.add('hidden');
+            }
+
+            async mintRequiredTokens() {
+                this.showStatus('Minting required tokens...', 'info');
+                // This would integrate with the minting contract
+                // For now, just show a message
+                this.showStatus('Token minting not implemented yet. Please get tokens from admin panel.', 'error');
+            }
+
+            startGame() {
+                this.hideWalletOverlay();
+                this.initializeGame();
+                this.game.start();
+                this.playBackgroundMusic();
+            }
+
+            hideWalletOverlay() {
+                document.getElementById('walletOverlay').style.display = 'none';
+            }
+
+            playBackgroundMusic() {
+                const music = document.getElementById('backgroundMusic');
+                if (music) {
+                    music.volume = 0.3; // Set volume to 30%
+                    music.play().catch(error => {
+                        console.log('Could not play background music:', error);
+                        // Music might not play due to browser autoplay policies
+                    });
+                }
+            }
+
+            toggleMusic() {
+                const music = document.getElementById('backgroundMusic');
+                const musicIcon = document.getElementById('musicIcon');
+                
+                if (music) {
+                    if (music.paused) {
+                        music.play().catch(error => {
+                            console.log('Could not play music:', error);
+                        });
+                        musicIcon.textContent = '🔊';
+                    } else {
+                        music.pause();
+                        musicIcon.textContent = '🔇';
+                    }
+                }
+            }
+
+            initializeGame() {
+                console.log('🎮 [DEBUG] initializeGame() called');
+                // Initialize the game
+                this.game = new ShooterGame();
+                console.log('🎮 [DEBUG] ShooterGame created, gameState:', this.game.gameState);
+                this.game.onScoreUpdate = (score) => this.updateScore(score);
+                this.game.onGameOver = (finalScore) => {
+                    console.log('🎮 [DEBUG] onGameOver callback triggered with score:', finalScore);
+                    this.handleGameOver(finalScore);
+                };
+                // Don't start the game immediately - wait for user to click start
+                console.log('🎮 [DEBUG] Game initialized, waiting for user to start');
+            }
+
+            updateScore(score) {
+                this.currentScore = score;
+                document.getElementById('score').textContent = score;
+            }
+
+            handleGameOver(finalScore) {
+                console.log('🎮 [DEBUG] OnchainShooterGame.handleGameOver() called with score:', finalScore);
+                this.currentScore = finalScore;
+                
+                // Update high score
+                if (finalScore > this.highScore) {
+                    this.highScore = finalScore;
+                    localStorage.setItem('shooterHighScore', this.highScore);
+                }
+                
+                // Update UI
+                document.getElementById('finalScore').textContent = finalScore;
+                document.getElementById('highScore').textContent = this.highScore;
+                
+                // Show claim reward button if player has required tokens
+                if (this.hasRequiredTokens && this.playableTokens.length > 0) {
+                    document.getElementById('claimReward').classList.remove('hidden');
+                }
+                
+                // Show game over screen
+                const gameOverScreen = document.getElementById('gameOverScreen');
+                gameOverScreen.classList.remove('hidden');
+                gameOverScreen.style.display = 'flex';
+            }
+
+            playAgain() {
+                const gameOverScreen = document.getElementById('gameOverScreen');
+                gameOverScreen.classList.add('hidden');
+                gameOverScreen.style.display = 'none';
+                document.getElementById('claimReward').classList.add('hidden');
+                this.initializeGame();
+            }
+
+            async claimReward() {
+                try {
+                    this.showStatus('Claiming reward...', 'info');
+                    
+                    // Get reward for current score
+                    const adminConfig = new AdminConfig();
+                    const reward = adminConfig.getRewardForScore(this.currentScore);
+                    
+                    if (!reward) {
+                        this.showStatus('No reward available for this score', 'error');
+                        return;
+                    }
+                    
+                    // Send score to backend for signing
+                    try {
+                        const response = await fetch(`${SHOOTER_CONFIG.BACKEND_URL}/sign-reward`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                playerAddress: await this.walletManager.getSigner().address,
+                                score: this.currentScore,
+                                rewardTokenId: reward.tokenId,
+                                rewardAmount: reward.amount
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Backend not available');
+                        }
+                        
+                        const signedData = await response.json();
+                        
+                        console.log('🎮 Backend signature received:', {
+                            playerAddress: await this.walletManager.getSigner().address,
+                            score: this.currentScore,
+                            rewardTokenId: reward.tokenId,
+                            rewardAmount: reward.amount,
+                            nonce: signedData.nonce,
+                            expiry: signedData.expiry
+                        });
+                    
+                    // Call executePlay on shooter contract (new proxy contract)
+                    const shooterContract = new ethers.Contract(
+                        SHOOTER_CONFIG.SHOOTER_CONTRACT,
+                        SHOOTER_CONFIG.PROXY_ABI,
+                        await this.walletManager.getSigner()
+                    );
+                    
+                    // Prepare PlayParams struct using data from backend
+                    const playParams = {
+                        burnIds: signedData.burnIds,
+                        burnAmts: signedData.burnAmts,
+                        mintIds: signedData.mintIds,
+                        mintAmts: signedData.mintAmts,
+                        nonce: signedData.nonce,
+                        expiry: signedData.expiry
+                    };
+                    
+                    console.log('🎮 Calling executePlay with params:', playParams);
+                    
+                    const tx = await shooterContract.executePlay(
+                        playParams,
+                        signedData.signature
+                    );
+                    
+                    console.log('🎮 Transaction sent:', tx.hash);
+                    await tx.wait();
+                    
+                    console.log('🎮 Transaction confirmed!');
+                    
+                        this.showRewardNotification(`Reward claimed! ${reward.amount} x ${reward.name}`);
+                        this.showStatus('Reward claimed successfully onchain!', 'success');
+                        
+                    } catch (error) {
+                        console.log('Backend not available, showing demo reward:', error.message);
+                        this.showRewardNotification(`Demo Reward: ${reward.amount} x ${reward.name} (Backend offline)`);
+                        this.showStatus('Demo reward shown (Backend offline - rewards not claimed onchain)', 'info');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error claiming reward:', error);
+                    this.showStatus('Failed to claim reward: ' + error.message, 'error');
+                }
+            }
+
+            showRewardNotification(message) {
+                const notification = document.createElement('div');
+                notification.className = 'reward-notification';
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+
+            showStatus(message, type) {
+                const statusDiv = document.getElementById('statusMessage');
+                statusDiv.textContent = message;
+                statusDiv.className = `status-message status-${type}`;
+                statusDiv.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    statusDiv.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        // Admin Configuration (Inline)
+        class AdminConfig {
+            constructor() {
+                this.storageKey = 'shooterGameAdminConfig';
+                this.defaultConfig = {
+                    burnTokens: [
+                        {
+                            id: 1,
+                            name: 'Basic Token',
+                            amount: 1,
+                            active: true
+                        }
+                    ],
+                    rewards: [
+                        {
+                            score: 100,
+                            tokenId: 2,
+                            amount: 1,
+                            name: 'Bronze Reward'
+                        },
+                        {
+                            score: 500,
+                            tokenId: 3,
+                            amount: 5,
+                            name: 'Silver Reward'
+                        },
+                        {
+                            score: 1000,
+                            tokenId: 4,
+                            amount: 10,
+                            name: 'Gold Reward'
+                        }
+                    ],
+                    lastUpdated: null
+                };
+                this.loadConfig();
+            }
+
+            loadConfig() {
+                try {
+                    const stored = localStorage.getItem(this.storageKey);
+                    if (stored) {
+                        this.config = JSON.parse(stored);
+                    } else {
+                        this.config = { ...this.defaultConfig };
+                        this.saveConfig();
+                    }
+                } catch (error) {
+                    console.error('Error loading config:', error);
+                    this.config = { ...this.defaultConfig };
+                }
+            }
+
+            saveConfig() {
+                try {
+                    this.config.lastUpdated = new Date().toISOString();
+                    localStorage.setItem(this.storageKey, JSON.stringify(this.config));
+                    return true;
+                } catch (error) {
+                    console.error('Error saving config:', error);
+                    return false;
+                }
+            }
+
+            getBurnTokens() {
+                return this.config.burnTokens || [];
+            }
+
+            getActiveBurnTokens() {
+                return this.config.burnTokens.filter(t => t.active);
+            }
+
+            getRewards() {
+                return this.config.rewards || [];
+            }
+
+            getRewardForScore(score) {
+                const sortedRewards = this.config.rewards.sort((a, b) => b.score - a.score);
+                return sortedRewards.find(r => score >= r.score);
+            }
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎮 [DEBUG] DOMContentLoaded event fired');
+            // Ensure game over screen is hidden on page load
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            if (gameOverScreen) {
+                gameOverScreen.classList.add('hidden');
+                gameOverScreen.style.display = 'none';
+                console.log('🎮 [DEBUG] Game over screen hidden on DOMContentLoaded');
+            } else {
+                console.log('🎮 [DEBUG] Game over screen not found on DOMContentLoaded!');
+            }
+            
+            console.log('🎮 [DEBUG] Creating OnchainShooterGame instance...');
+            new OnchainShooterGame();
         });
     </script>
 </body>
