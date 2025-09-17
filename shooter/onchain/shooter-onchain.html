@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shooter Game - Onchain Rewards</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap">
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <style>
         /* Wallet connection overlay */
         .wallet-overlay {
@@ -224,7 +224,7 @@
     <div id="walletOverlay" class="wallet-overlay">
         <div class="wallet-modal">
             <h2>🎮 Connect Wallet to Play</h2>
-            <img src="../Zombie_Adrian.gif" alt="Zombie Adrian" class="zombie-image">
+            <img src="/Zombie_Adrian.gif" alt="Zombie Adrian" class="zombie-image">
             <p>You need to connect your wallet and own required tokens to play this game.</p>
             
             <div id="walletInfo" class="wallet-info hidden">
@@ -252,7 +252,7 @@
     
     <!-- Background Music -->
     <audio id="backgroundMusic" loop>
-        <source src="/shooter/music/DeadOfNight.mp3" type="audio/mpeg">
+        <source src="/music/DeadOfNight.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
     
@@ -358,7 +358,7 @@
                 
                 // Crosshair/cursor
                 this.crosshair = new Image();
-                this.crosshair.src = './images/crosshair.png';
+                this.crosshair.src = '/images/crosshair.png';
                 this.crosshairLoaded = false;
                 this.crosshair.onload = () => {
                     this.crosshairLoaded = true;
@@ -407,13 +407,13 @@
                         { image: bgImage, speed: 0.1, x: 0, y: 0, width: this.canvas.width, height: this.canvas.height }
                     ];
                 };
-                bgImage.src = '../level1.png';
+                bgImage.src = '/level1.png';
             }
             
             loadBackgroundImages() {
                 // Load main background as level1.png
                 const mainBg = new Image();
-                mainBg.src = './level1.png';
+                mainBg.src = '/level1.png';
                 mainBg.onerror = () => {
                     console.error('Failed to load main background level1.png');
                 };
@@ -426,7 +426,7 @@
                 // Load additional background layers (1.png through 4.png) if they exist
                 for (let i = 1; i <= 4; i++) {
                     const img = new Image();
-                    img.src = `./images/${i}.png`;
+                    img.src = `/images/${i}.png`;
                     img.onerror = () => {
                         console.log(`Background layer ${i} not found, skipping`);
                     };
@@ -457,7 +457,7 @@
             
             loadImages() {
                 const imagePromises = this.selectedImageNumbers.map((imageNumber, index) => {
-                    const imagePath = `./images/filthyfeetsecrets${imageNumber}.png`;
+                    const imagePath = `/images/filthyfeetsecrets${imageNumber}.png`;
                     const img = new Image();
                     
                     // Store metadata with the image

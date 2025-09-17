@@ -1,0 +1,13 @@
+# Vercel redirects for static assets
+/images/* /onchain/images/:splat 200
+/music/* /music/:splat 200
+/styles.css /styles.css 200
+/level1.png /level1.png 200
+/Zombie_Adrian.gif /Zombie_Adrian.gif 200
+
+# API routes
+/api/* /onchain/backend/server.js 200
+
+# Main game route
+/ /onchain/shooter-onchain.html 200
+/* /onchain/shooter-onchain.html 200

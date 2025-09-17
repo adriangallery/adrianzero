@@ -344,13 +344,21 @@ app.use((error, req, res, next) => {
     });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`🚀 Shooter Game Backend running on port ${PORT}`);
+// Start server only if not in Vercel environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Shooter Game Backend running on port ${PORT}`);
+        console.log(`📋 Contract: ${CONTRACT_ADDRESS}`);
+        console.log(`👤 Admin: ${ADMIN_WALLET}`);
+        console.log(`🌐 RPC: ${RPC_URL}`);
+        console.log(`🔑 Signer: ${signer ? signer.address : 'Not configured'}`);
+    });
+} else {
+    console.log(`🚀 Shooter Game Backend ready for Vercel deployment`);
     console.log(`📋 Contract: ${CONTRACT_ADDRESS}`);
     console.log(`👤 Admin: ${ADMIN_WALLET}`);
     console.log(`🌐 RPC: ${RPC_URL}`);
     console.log(`🔑 Signer: ${signer ? signer.address : 'Not configured'}`);
-});
+}
 
 module.exports = app;

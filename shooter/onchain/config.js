@@ -15,7 +15,9 @@ const SHOOTER_CONFIG = {
     ADMIN_WALLET: '0x4943407105999e3E97EFA2035F5cbC64D72581C6',
     
     // Backend Configuration
-    BACKEND_URL: 'https://shooter-game-backend-production.up.railway.app', // Production backend URL
+    BACKEND_URL: process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:3001' 
+        : window.location.origin + '/api', // Use Vercel serverless functions
     
     // Game Configuration
     GAME_CONFIG: {

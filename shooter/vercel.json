@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "onchain/backend/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/onchain/backend/server.js"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/onchain/images/$1"
+    },
+    {
+      "src": "/music/(.*)",
+      "dest": "/music/$1"
+    },
+    {
+      "src": "/level1.png",
+      "dest": "/level1.png"
+    },
+    {
+      "src": "/styles.css",
+      "dest": "/styles.css"
+    },
+    {
+      "src": "/Zombie_Adrian.gif",
+      "dest": "/Zombie_Adrian.gif"
+    },
+    {
+      "src": "/config.js",
+      "dest": "/onchain/config.js"
+    },
+    {
+      "src": "/utils/(.*)",
+      "dest": "/onchain/utils/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/onchain/shooter-onchain.html"
+    }
+  ],
+  "functions": {
+    "onchain/backend/server.js": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ]
+}
