@@ -1,3 +1,0 @@
-Test auto-deploy after vercel.json update
-Timestamp: $(date)
-Commit: Testing Vercel auto-deploy with updated configuration
