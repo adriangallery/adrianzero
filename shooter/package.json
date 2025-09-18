@@ -2,7 +2,7 @@
   "name": "shooter-game-onchain",
   "version": "1.0.0",
   "description": "Browser shooter game with onchain rewards on Base",
-  "main": "onchain/shooter-onchain.html",
+  "main": "index.html",
   "scripts": {
     "dev": "cd onchain/backend && npm run dev",
     "build": "echo 'Static files ready for deployment'",
