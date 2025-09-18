@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shooter Game - Admin Panel (Simple)</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pixelify Sans', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .wallet-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .wallet-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            word-break: break-all;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Pixelify Sans', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #00b894, #00a085);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e17055, #d63031);
+        }
+
+        .config-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-family: 'Pixelify Sans', sans-serif;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255,215,0,0.3);
+        }
+
+        .score-rewards {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .reward-item, .burn-token-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .reward-item input, .burn-token-item input {
+            width: 100px;
+            margin: 0 10px;
+        }
+
+        .burn-token-item {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .reward-item {
+            border-left: 4px solid #00b894;
+        }
+
+        .token-active {
+            background: rgba(0,184,148,0.1);
+        }
+
+        .token-inactive {
+            background: rgba(214,48,49,0.1);
+            opacity: 0.7;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .status.success {
+            background: rgba(0,184,148,0.2);
+            border: 1px solid #00b894;
+        }
+
+        .status.error {
+            background: rgba(214,48,49,0.2);
+            border: 1px solid #d63031;
+        }
+
+        .status.info {
+            background: rgba(116,185,255,0.2);
+            border: 1px solid #74b9ff;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Shooter Game Admin Panel</h1>
+            <p>Configure game rewards and settings (Simple Version)</p>
+        </div>
+
+        <!-- Wallet Connection Section -->
+        <div class="wallet-section">
+            <div class="wallet-info">
+                <div>
+                    <h3>Wallet Connection</h3>
+                    <div id="walletAddress" class="wallet-address">Not connected</div>
+                </div>
+                <button id="connectWallet" class="btn">Connect Wallet</button>
+            </div>
+            <div id="walletStatus" class="status hidden"></div>
+        </div>
+
+        <!-- Burn Tokens Configuration Section -->
+        <div class="config-section">
+            <h3>🔥 Burn Tokens Configuration</h3>
+            <p>Configure which tokens players need to burn to play the game</p>
+            <div id="burnTokensList">
+                <!-- Dynamic burn tokens will be added here -->
+            </div>
+            <div style="margin-top: 20px;">
+                <button id="addBurnToken" class="btn">Add Burn Token</button>
+                <button id="saveBurnTokens" class="btn btn-success">Save Burn Tokens</button>
+            </div>
+        </div>
+
+        <!-- Score Rewards Section -->
+        <div class="score-rewards">
+            <h3>🏆 Score Rewards Configuration</h3>
+            <div id="rewardsList">
+                <!-- Dynamic rewards will be added here -->
+            </div>
+            <div style="margin-top: 20px;">
+                <button id="addReward" class="btn">Add New Reward</button>
+                <button id="saveRewards" class="btn btn-success">Save All Rewards</button>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessages"></div>
+    </div>
+
+    <!-- Load ethers.js from reliable CDN -->
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- Load configuration -->
+    <script src="../config.js"></script>
+    
+    <!-- Load admin config -->
+    <script src="config.js"></script>
+    
+    <script>
+        class SimpleAdminPanel {
+            constructor() {
+                this.contractAddress = SHOOTER_CONFIG.CONTRACT_ADDRESS;
+                this.adminWallet = SHOOTER_CONFIG.ADMIN_WALLET;
+                this.isConnected = false;
+                this.config = new AdminConfig();
+                this.init();
+            }
+
+            async init() {
+                this.setupEventListeners();
+                this.loadConfiguration();
+            }
+
+            setupEventListeners() {
+                document.getElementById('connectWallet').addEventListener('click', () => this.connectWallet());
+                document.getElementById('addBurnToken').addEventListener('click', () => this.addBurnToken());
+                document.getElementById('saveBurnTokens').addEventListener('click', () => this.saveBurnTokens());
+                document.getElementById('addReward').addEventListener('click', () => this.addReward());
+                document.getElementById('saveRewards').addEventListener('click', () => this.saveRewards());
+            }
+
+            async connectWallet() {
+                try {
+                    // Check if MetaMask is installed
+                    if (typeof window.ethereum === 'undefined') {
+                        this.showStatus('MetaMask not installed', 'error');
+                        return;
+                    }
+
+                    // Request account access
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // Get provider and signer
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const signer = provider.getSigner();
+                    const account = await signer.getAddress();
+                    
+                    // Check if connected wallet is admin
+                    if (account.toLowerCase() !== this.adminWallet.toLowerCase()) {
+                        this.showStatus('Error: Connected wallet is not authorized admin', 'error');
+                        return;
+                    }
+
+                    document.getElementById('walletAddress').textContent = account;
+                    document.getElementById('connectWallet').textContent = 'Connected';
+                    document.getElementById('connectWallet').disabled = true;
+                    
+                    this.isConnected = true;
+                    this.showStatus('Wallet connected successfully!', 'success');
+                    this.loadConfiguration();
+                } catch (error) {
+                    this.showStatus('Failed to connect wallet: ' + error.message, 'error');
+                }
+            }
+
+            async loadConfiguration() {
+                try {
+                    this.loadBurnTokens();
+                    this.loadRewards();
+                    this.showStatus('Configuration loaded from storage', 'success');
+                } catch (error) {
+                    this.showStatus('Error loading configuration: ' + error.message, 'error');
+                }
+            }
+
+            loadBurnTokens() {
+                const burnTokens = this.config.getBurnTokens();
+                const container = document.getElementById('burnTokensList');
+                container.innerHTML = '';
+
+                burnTokens.forEach(token => {
+                    const tokenItem = document.createElement('div');
+                    tokenItem.className = `burn-token-item ${token.active ? 'token-active' : 'token-inactive'}`;
+                    tokenItem.innerHTML = `
+                        <span>Token ID:</span>
+                        <input type="number" value="${token.id}" class="token-id-input" ${!token.active ? 'disabled' : ''}>
+                        <span>Name:</span>
+                        <input type="text" value="${token.name}" class="token-name-input" ${!token.active ? 'disabled' : ''}>
+                        <span>Amount:</span>
+                        <input type="number" value="${token.amount}" class="token-amount-input" ${!token.active ? 'disabled' : ''}>
+                        <label>
+                            <input type="checkbox" ${token.active ? 'checked' : ''} class="token-active-checkbox"> Active
+                        </label>
+                        <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+                    `;
+                    container.appendChild(tokenItem);
+                });
+            }
+
+            loadRewards() {
+                const rewards = this.config.getRewards();
+                const container = document.getElementById('rewardsList');
+                container.innerHTML = '';
+
+                rewards.forEach(reward => {
+                    const rewardItem = document.createElement('div');
+                    rewardItem.className = 'reward-item';
+                    rewardItem.innerHTML = `
+                        <span>Score:</span>
+                        <input type="number" value="${reward.score}" class="score-input">
+                        <span>Token ID:</span>
+                        <input type="number" value="${reward.tokenId}" class="token-input">
+                        <span>Amount:</span>
+                        <input type="number" value="${reward.amount}" class="amount-input">
+                        <span>Name:</span>
+                        <input type="text" value="${reward.name}" class="reward-name-input">
+                        <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+                    `;
+                    container.appendChild(rewardItem);
+                });
+            }
+
+            addBurnToken() {
+                const container = document.getElementById('burnTokensList');
+                const tokenItem = document.createElement('div');
+                tokenItem.className = 'burn-token-item token-active';
+                tokenItem.innerHTML = `
+                    <span>Token ID:</span>
+                    <input type="number" placeholder="Token ID" class="token-id-input">
+                    <span>Name:</span>
+                    <input type="text" placeholder="Token Name" class="token-name-input">
+                    <span>Amount:</span>
+                    <input type="number" placeholder="1" value="1" class="token-amount-input">
+                    <label>
+                        <input type="checkbox" checked class="token-active-checkbox"> Active
+                    </label>
+                    <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+                `;
+                container.appendChild(tokenItem);
+            }
+
+            async saveBurnTokens() {
+                try {
+                    const tokenItems = document.querySelectorAll('.burn-token-item');
+                    const burnTokens = [];
+
+                    for (const item of tokenItems) {
+                        const id = item.querySelector('.token-id-input').value;
+                        const name = item.querySelector('.token-name-input').value;
+                        const amount = item.querySelector('.token-amount-input').value;
+                        const active = item.querySelector('.token-active-checkbox').checked;
+
+                        if (id && name && amount) {
+                            burnTokens.push({
+                                id: parseInt(id),
+                                name: name,
+                                amount: parseInt(amount),
+                                active: active
+                            });
+                        }
+                    }
+
+                    // Clear existing burn tokens
+                    this.config.config.burnTokens = [];
+                    
+                    // Add new burn tokens
+                    burnTokens.forEach(token => {
+                        this.config.addBurnToken(token);
+                    });
+
+                    this.showStatus('Burn tokens saved successfully!', 'success');
+                    this.loadBurnTokens();
+                } catch (error) {
+                    this.showStatus('Error saving burn tokens: ' + error.message, 'error');
+                }
+            }
+
+            addReward() {
+                const rewardsList = document.getElementById('rewardsList');
+                const rewardItem = document.createElement('div');
+                rewardItem.className = 'reward-item';
+                rewardItem.innerHTML = `
+                    <span>Score:</span>
+                    <input type="number" placeholder="Min Score" class="score-input">
+                    <span>Token ID:</span>
+                    <input type="number" placeholder="Reward Token ID" class="token-input">
+                    <span>Amount:</span>
+                    <input type="number" placeholder="Amount" class="amount-input">
+                    <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+                `;
+                rewardsList.appendChild(rewardItem);
+            }
+
+            async saveRewards() {
+                try {
+                    const rewardItems = document.querySelectorAll('.reward-item');
+                    const rewards = [];
+
+                    for (const item of rewardItems) {
+                        const score = item.querySelector('.score-input').value;
+                        const tokenId = item.querySelector('.token-input').value;
+                        const amount = item.querySelector('.amount-input').value;
+                        const name = item.querySelector('.reward-name-input').value;
+
+                        if (score && tokenId && amount) {
+                            rewards.push({
+                                score: parseInt(score),
+                                tokenId: parseInt(tokenId),
+                                amount: parseInt(amount),
+                                name: name || `Reward for ${score}+ points`
+                            });
+                        }
+                    }
+
+                    if (rewards.length === 0) {
+                        this.showStatus('Please add at least one reward', 'error');
+                        return;
+                    }
+
+                    // Clear existing rewards
+                    this.config.config.rewards = [];
+                    
+                    // Add new rewards
+                    rewards.forEach(reward => {
+                        this.config.addReward(reward);
+                    });
+
+                    this.showStatus('Rewards saved successfully!', 'success');
+                    this.loadRewards();
+                } catch (error) {
+                    this.showStatus('Error saving rewards: ' + error.message, 'error');
+                }
+            }
+
+            showStatus(message, type) {
+                const statusDiv = document.getElementById('statusMessages');
+                const statusElement = document.createElement('div');
+                statusElement.className = `status ${type}`;
+                statusElement.textContent = message;
+                statusDiv.appendChild(statusElement);
+
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    statusElement.remove();
+                }, 5000);
+            }
+        }
+
+        // Initialize admin panel when page loads
+        window.addEventListener('load', () => {
+            new SimpleAdminPanel();
+        });
+    </script>
+</body>
+</html>

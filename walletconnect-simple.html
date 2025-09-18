@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalletConnect v2 Simple Test</title>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- WalletConnect v2 -->
+    <script src="https://unpkg.com/@walletconnect/universal-provider@2.9.0/dist/umd/index.min.js" onload="console.log('✅ UniversalProvider loaded')" onerror="console.error('❌ UniversalProvider failed to load')"></script>
+    
+    <!-- Web3Modal -->
+    <script src="https://unpkg.com/@web3modal/standalone@2.4.3/dist/index.umd.min.js" onload="console.log('✅ Web3Modal loaded')" onerror="console.error('❌ Web3Modal failed to load')"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: #cccccc;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .status.info {
+            background: rgba(0, 204, 255, 0.2);
+            border: 1px solid #00ccff;
+            color: #00ccff;
+        }
+
+        .wallet-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .debug-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .debug-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+
+        .debug-log {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .debug-log.success { color: #00ff88; }
+        .debug-log.error { color: #ff0000; }
+        .debug-log.info { color: #00ccff; }
+        .debug-log.warning { color: #ffaa00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WalletConnect v2 Test</h1>
+        <p class="subtitle">Based on Official Examples</p>
+        
+        <div id="status" class="status info" style="display: none;">
+            Initializing WalletConnect...
+        </div>
+        
+        <div id="buttonContainer">
+            <button id="connectBtn" class="button" disabled>
+                Connect Wallet
+            </button>
+            <button id="disconnectBtn" class="button" style="display: none;">
+                Disconnect Wallet
+            </button>
+        </div>
+        
+        <div id="walletInfo" class="wallet-info" style="display: none;">
+            <h3>Wallet Connected</h3>
+            <div class="wallet-address" id="walletAddress"></div>
+            <div id="walletType"></div>
+        </div>
+        
+        <div class="debug-panel">
+            <div class="debug-title">Debug Log</div>
+            <div id="debugLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DEBUGGING UTILITIES =====
+        function addDebugLog(message, type = 'info') {
+            const debugLog = document.getElementById('debugLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `debug-log ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            addDebugLog(`Status: ${message}`, type);
+        }
+
+        // ===== GLOBAL VARIABLES =====
+        let universalProvider = null;
+        let web3Modal = null;
+        let web3Provider = null;
+        let signer = null;
+        let isConnected = false;
+        let userAddress = null;
+        let session = null;
+
+        // ===== WALLETCONNECT V2 IMPLEMENTATION =====
+        
+        async function initWalletConnect() {
+            try {
+                addDebugLog('🔍 Starting WalletConnect v2 initialization...', 'info');
+                
+                // Check for UniversalProvider
+                if (!window.UniversalProvider) {
+                    throw new Error('UniversalProvider not found');
+                }
+                
+                addDebugLog('✅ UniversalProvider found', 'success');
+                
+                const projectId = '6afed75f72df7cefde4d998c2da4b041';
+                addDebugLog(`🔍 Using Project ID: ${projectId}`, 'info');
+                
+                // Initialize UniversalProvider
+                universalProvider = await window.UniversalProvider.init({
+                    projectId: projectId,
+                    logger: 'debug',
+                    relayUrl: 'wss://relay.walletconnect.com'
+                });
+                
+                addDebugLog('✅ UniversalProvider initialized', 'success');
+                
+                // Initialize Web3Modal
+                if (window.Web3Modal) {
+                    web3Modal = new window.Web3Modal({
+                        projectId: projectId,
+                        walletConnectVersion: 2
+                    });
+                    addDebugLog('✅ Web3Modal initialized', 'success');
+                }
+                
+                // Set up event listeners
+                setupEventListeners();
+                
+                // Create Web3Provider
+                web3Provider = new ethers.providers.Web3Provider(universalProvider);
+                signer = web3Provider.getSigner();
+                
+                addDebugLog('✅ Ethers provider created', 'success');
+                
+                showStatus('WalletConnect v2 initialized successfully!', 'success');
+                document.getElementById('connectBtn').disabled = false;
+                
+            } catch (error) {
+                addDebugLog(`❌ Failed to initialize WalletConnect v2: ${error.message}`, 'error');
+                showStatus('Failed to initialize WalletConnect v2', 'error');
+                console.error('WalletConnect v2 initialization error:', error);
+            }
+        }
+        
+        function setupEventListeners() {
+            if (!universalProvider) return;
+            
+            addDebugLog('🔍 Setting up event listeners...', 'info');
+            
+            // Display URI event
+            universalProvider.on('display_uri', async (uri) => {
+                addDebugLog('🔍 QR Code Modal open', 'info');
+                if (web3Modal) {
+                    web3Modal.openModal({ uri });
+                }
+            });
+            
+            // Session ping
+            universalProvider.on('session_ping', ({ id, topic }) => {
+                addDebugLog(`🔍 Session ping: ${id}, ${topic}`, 'info');
+            });
+            
+            // Session event
+            universalProvider.on('session_event', ({ event, chainId }) => {
+                addDebugLog(`🔍 Session event: ${JSON.stringify(event)}, ${chainId}`, 'info');
+            });
+            
+            // Session update
+            universalProvider.on('session_update', ({ topic, session: updatedSession }) => {
+                addDebugLog('🔍 Session updated', 'info');
+                session = updatedSession;
+            });
+            
+            // Session delete
+            universalProvider.on('session_delete', ({ id, topic }) => {
+                addDebugLog(`🔍 Session deleted: ${id}, ${topic}`, 'info');
+                handleDisconnection();
+            });
+            
+            addDebugLog('✅ Event listeners set up successfully', 'success');
+        }
+        
+        async function connectWallet() {
+            try {
+                if (!universalProvider) {
+                    showStatus('WalletConnect not initialized', 'error');
+                    return;
+                }
+                
+                addDebugLog('🔍 Connecting to wallet...', 'info');
+                showStatus('Connecting to wallet...', 'info');
+                
+                // Connect to wallet
+                session = await universalProvider.connect({
+                    namespaces: {
+                        eip155: {
+                            methods: [
+                                'eth_sendTransaction',
+                                'eth_signTransaction',
+                                'eth_sign',
+                                'personal_sign',
+                                'eth_signTypedData',
+                            ],
+                            chains: ['eip155:1', 'eip155:8453'], // Ethereum and Base
+                            events: ['chainChanged', 'accountsChanged'],
+                            rpcMap: {
+                                1: `https://rpc.walletconnect.com?chainId=eip155:1&projectId=6afed75f72df7cefde4d998c2da4b041`,
+                                8453: `https://rpc.walletconnect.com?chainId=eip155:8453&projectId=6afed75f72df7cefde4d998c2da4b041`
+                            }
+                        }
+                    }
+                });
+                
+                addDebugLog('✅ Session created', 'success');
+                
+                // Enable provider
+                const accounts = await universalProvider.enable();
+                addDebugLog(`✅ Accounts enabled: ${JSON.stringify(accounts)}`, 'success');
+                
+                if (accounts && accounts.length > 0) {
+                    userAddress = accounts[0];
+                    isConnected = true;
+                    
+                    addDebugLog(`✅ Wallet connected: ${userAddress}`, 'success');
+                    updateWalletUI();
+                    showStatus('Wallet connected successfully!', 'success');
+                    
+                    if (web3Modal) {
+                        web3Modal.closeModal();
+                    }
+                } else {
+                    addDebugLog('❌ No accounts returned', 'error');
+                    showStatus('No accounts returned', 'error');
+                }
+                
+            } catch (error) {
+                addDebugLog(`❌ Connection error: ${error.message}`, 'error');
+                showStatus('Failed to connect wallet', 'error');
+                console.error('Connection error:', error);
+            }
+        }
+        
+        function handleDisconnection() {
+            addDebugLog('🔍 Handling disconnection...', 'info');
+            isConnected = false;
+            userAddress = null;
+            session = null;
+            
+            updateWalletUI();
+            showStatus('Wallet disconnected', 'info');
+        }
+        
+        function updateWalletUI() {
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const walletInfo = document.getElementById('walletInfo');
+            const walletAddress = document.getElementById('walletAddress');
+            const walletType = document.getElementById('walletType');
+            
+            if (isConnected && userAddress) {
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'inline-block';
+                walletInfo.style.display = 'block';
+                walletAddress.textContent = userAddress;
+                walletType.textContent = 'Connected via WalletConnect v2';
+                addDebugLog('✅ UI updated for connected state', 'success');
+            } else {
+                connectBtn.style.display = 'inline-block';
+                disconnectBtn.style.display = 'none';
+                walletInfo.style.display = 'none';
+                addDebugLog('✅ UI updated for disconnected state', 'success');
+            }
+        }
+        
+        async function disconnectWallet() {
+            try {
+                addDebugLog('🔍 Disconnecting wallet...', 'info');
+                
+                if (universalProvider) {
+                    await universalProvider.disconnect();
+                    addDebugLog('✅ UniversalProvider disconnected', 'success');
+                }
+                
+                handleDisconnection();
+                
+            } catch (error) {
+                addDebugLog(`❌ Disconnection error: ${error.message}`, 'error');
+                console.error('Disconnection error:', error);
+            }
+        }
+        
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugLog('🔍 DOM loaded, initializing WalletConnect v2...', 'info');
+            
+            // Set up button event listeners
+            document.getElementById('connectBtn').addEventListener('click', connectWallet);
+            document.getElementById('disconnectBtn').addEventListener('click', disconnectWallet);
+            
+            // Initialize WalletConnect v2
+            initWalletConnect();
+        });
+    </script>
+</body>
+</html>

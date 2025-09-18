@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PatientZERO - Rehabilitation Center</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -527,9 +528,109 @@
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
         }
+
+        /* Menu styles - PatientZERO Theme */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #ff4444;
+            font-family: 'VT323', monospace;
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #ff4444 !important;
+            text-shadow: 0 0 10px #ff4444;
+        }
+
+        #menu-container .token-symbol {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.4rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        #menu-container .navbar-toggler {
+            border-color: #ff4444;
+        }
+
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 68, 68, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Adjust first section to account for fixed menu */
+        .container {
+            padding-top: 60px;
+        }
+
+        /* Menu always collapsed - no responsive adjustments needed */
+        #menu-container .navbar-nav .nav-link {
+            font-size: 1rem;
+        }
+    
+        /* Optimización para imágenes SVG de renders personalizados en patientzero */
+        .profile-image img[src*="/svg"] {
+            /* Escalar la imagen SVG para mantener el tamaño visual */
+            transform: scale(1.2); /* Aumentar 20% para compensar el tamaño más pequeño del SVG */
+            transform-origin: center;
+            /* Mantener el max-width y max-height originales pero permitir escalado */
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            /* Mejorar la calidad de renderizado para SVG */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            /* Asegurar que el escalado no afecte el layout */
+            display: block;
+            margin: 0 auto;
+        }
+        
+        /* Ajustar el contenedor para SVG escalado */
+        .profile-image {
+            width: 100%;
+            height: 200px;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden; /* Evitar que el escalado se salga del contenedor */
+        }
     </style>
 </head>
 <body>
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    <script>
+      // Load the menu
+      fetch('../components/menu.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = '../components/menu.js';
+          document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    </script>
+
     <div class="container">
         <div class="header">
             <h1><span class="patient">Patient</span><span class="zero">ZERO</span></h1>
@@ -1116,8 +1217,8 @@
                 
                 console.log('Query string:', queryString);
                 
-                // Use token ID 148 for the base image
-                const imageUrl = `https://adrianlab.vercel.app/api/render/custom/148?${queryString}`;
+                // Use token ID 208 for the base image (SVG format for better performance)
+                const imageUrl = `https://adrianlab.vercel.app/api/render/custom/208/svg?${queryString}`;
                 console.log('Generated image URL:', imageUrl);
                 
                 // Select the correct container
@@ -1673,6 +1774,31 @@
             // TODO: Implement detailed view or link to external viewer
         }
 
+        // Load Bootstrap scripts
+        const bootstrapScript = document.createElement('script');
+        bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+        document.head.appendChild(bootstrapScript);
+    
+        // Función para verificar que las URLs SVG se están generando correctamente en patientzero
+        function debugPatientZeroSvgRender() {
+            console.log('🔍 DEBUG: Verificando URLs de renders personalizados SVG en patientzero');
+            
+            // Simular la generación de URL como en generateProfileImage
+            const numericTraitIds = [1, 245, 3, 2]; // Ejemplo de trait IDs
+            const queryParams = numericTraitIds.map(traitId => 'trait=' + traitId);
+            const queryString = queryParams.join('&');
+            const imageUrl = 'https://adrianlab.vercel.app/api/render/custom/208/svg?' + queryString;
+            
+            console.log('📋 URL generada:', imageUrl);
+            console.log('✅ Formato SVG detectado:', imageUrl.includes('/svg'));
+            console.log('🎯 Token ID base: 208');
+            console.log('🔧 Query string:', queryString);
+            
+            return imageUrl;
+        }
+        
+        // Hacer función disponible globalmente
+        window.debugPatientZeroSvgRender = debugPatientZeroSvgRender;
     </script>
 </body>
 </html> 

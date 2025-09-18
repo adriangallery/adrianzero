@@ -178,6 +178,21 @@ class OutsideScene extends BaseScene {
                     open: "🚪 You open the garage door. It's full of pixelated Lambos!",
                     close: "🚪 The garage door closes with a satisfying on-chain sound."
                 }
+            },
+            // Mountain Path - lateral izquierdo
+            {
+                name: 'Mountain Path',
+                x: [0.0, 25.0],
+                y: [0.0, 100.0],
+                action: 'go_to_mountain',
+                messages: {
+                    explore: "🏔️ You see a path leading up to a majestic mountain in the distance...",
+                    use: "🚶 You start walking towards the mountain. The journey to the peak begins!",
+                    take: "🛤️ You can't take the path, but you can follow it to new heights!",
+                    inspect: "🔍 The mountain path looks challenging but rewarding. Perfect for a web3 adventure!",
+                    open: "🚪 The path is always open. It's permissionless!",
+                    close: "🔒 You can't close a mountain path. It's decentralized!"
+                }
             }
         ];
         console.log('OutsideScene hotspots configurados:', this.hotspots);
@@ -205,6 +220,15 @@ class OutsideScene extends BaseScene {
                     sceneManagerV2.loadScene('frontdoor');
                     }
                 }, 1500);
+        } else if (hotspot.name === 'Mountain Path') {
+            showFloatingText(hotspot.messages?.use || `You use the ${hotspot.name}.`, x, y);
+            setTimeout(() => {
+                if (typeof sceneManager !== 'undefined' && typeof sceneManager.loadScene === 'function') {
+                    sceneManager.loadScene('mountain');
+                } else if (typeof sceneManagerV2 !== 'undefined' && typeof sceneManagerV2.loadScene === 'function') {
+                    sceneManagerV2.loadScene('mountain');
+                }
+            }, 1500);
         } else {
             showFloatingText(hotspot.messages?.use || `You use the ${hotspot.name}.`, x, y);
         }

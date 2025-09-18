@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "onchain/backend/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "styles.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "Zombie_Adrian.gif",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "level1.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "music/(.*)",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "onchain/(.*)",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/onchain/backend/server.js"
+    },
+    {
+      "src": "/styles.css",
+      "dest": "/styles.css"
+    },
+    {
+      "src": "/Zombie_Adrian.gif",
+      "dest": "/Zombie_Adrian.gif"
+    },
+    {
+      "src": "/level1.png",
+      "dest": "/level1.png"
+    },
+    {
+      "src": "/music/(.*)",
+      "dest": "/music/$1"
+    },
+    {
+      "src": "/onchain/(.*)",
+      "dest": "/onchain/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
+  ]
+}

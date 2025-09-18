@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup GitHub Token - TraitCreator</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background: #111;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #00ff00;
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #222;
+            border-radius: 5px;
+        }
+        
+        .step-number {
+            font-weight: bold;
+            color: #ffff00;
+        }
+        
+        .code {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        
+        .token-input {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: monospace;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        .button:hover {
+            background: #00cc00;
+        }
+        
+        .warning {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #00ff00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🔧 Setup GitHub Token</div>
+        
+        <div class="step">
+            <div class="step-number">Paso 1: Generar GitHub Token</div>
+            <p>Ve a <a href="https://github.com/settings/tokens" target="_blank" style="color: #00ffff;">GitHub Settings → Tokens</a></p>
+            <p>Click en "Generate new token (classic)"</p>
+            <p>Permisos necesarios:</p>
+            <div class="code">
+☑️ repo (Full control of private repositories)<br>
+☑️ workflow (Update GitHub Action workflows)
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">Paso 2: Copiar Token</div>
+            <p>Después de generar el token, cópialo aquí:</p>
+            <input type="password" id="tokenInput" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            <button class="button" onclick="testToken()">Test Token</button>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">Paso 3: Configurar en TraitCreator</div>
+            <p>Una vez que el token funcione, cópialo en:</p>
+            <div class="code">traitcreator.html</div>
+            <p>Busca esta línea y reemplaza con tu token:</p>
+            <div class="code">window.setGitHubToken('tu-token-aqui');</div>
+        </div>
+        
+        <div id="result" class="step" style="display: none;">
+            <div id="resultContent"></div>
+        </div>
+        
+        <div class="warning">
+            ⚠️ IMPORTANTE: Nunca compartas tu token. Se guarda solo localmente.
+        </div>
+    </div>
+    
+    <script>
+        async function testToken() {
+            const token = document.getElementById('tokenInput').value;
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            if (!token) {
+                resultContent.innerHTML = '<span class="warning">❌ Por favor ingresa un token</span>';
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    resultContent.innerHTML = `
+                        <span class="success">✅ Token válido!</span><br>
+                        Usuario: ${user.login}<br>
+                        Email: ${user.email || 'No disponible'}<br>
+                        <br>
+                        <span class="success">Ahora puedes usar este token en TraitCreator</span>
+                    `;
+                } else {
+                    resultContent.innerHTML = '<span class="warning">❌ Token inválido. Verifica los permisos.</span>';
+                }
+            } catch (error) {
+                resultContent.innerHTML = '<span class="warning">❌ Error al verificar token: ' + error.message + '</span>';
+            }
+            
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html> 

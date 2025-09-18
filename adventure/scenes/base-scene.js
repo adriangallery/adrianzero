@@ -7,9 +7,10 @@ const baseSceneStyles = `
 .commands-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
+    gap: 2px;
     flex: 1;
     min-height: 0;
+    padding: 1px;
 }
 
 /* Command button styling */
@@ -17,13 +18,14 @@ const baseSceneStyles = `
     background: rgba(0, 255, 0, 0.1);
     border: 1px solid #00ff00;
     color: #00ff00;
-    padding: 6px 8px;
-    border-radius: 4px;
+    padding: 4px 6px;
+    border-radius: 3px;
     cursor: pointer;
     font-family: 'VT323', monospace;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     transition: all 0.3s ease;
     text-align: center;
+    min-height: 35px;
 }
 
 .command-btn:hover {
@@ -51,13 +53,17 @@ const baseSceneStyles = `
 /* Inventory grid layout - Responsive */
 .inventory-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    padding: 4px;
+    max-height: 80px;
+    padding: 1px;
     align-items: start;
+    max-width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 2px;
 }
 
 /* Force remove any borders from inventory items */
@@ -149,10 +155,12 @@ const baseSceneStyles = `
     border: none;
 }
 
-/* Mobile inventory grid - 2 columns */
-@media (max-width: 768px) {
+/* Mobile inventory grid - 2 columns - FORCED MOBILE */
+@media (min-width: 0px) {
     .inventory-grid {
         grid-template-columns: repeat(2, 1fr);
+        max-height: 80px;
+        overflow-y: auto;
     }
     
     /* Mobile popup adjustments */
@@ -205,20 +213,22 @@ const baseSceneStyles = `
 
 /* Inventory item styling */
 .inventory-item {
-    background: rgba(255, 255, 255, 0.1);
-    border: none !important;
-    border-radius: 6px;
-    padding: 6px 4px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.3) !important;
+    border-radius: 3px;
+    padding: 2px 1px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    height: 65px;
+    height: 60px;
     box-sizing: border-box;
     overflow: hidden;
+    min-width: 0;
+    margin: 0px;
 }
 
 .inventory-item:hover {
@@ -228,39 +238,26 @@ const baseSceneStyles = `
 
 .inventory-item.selected {
     border: 2px solid #ffff00;
+    background: rgba(255, 255, 0, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
 }
 
 .inventory-item img {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
-    margin-bottom: 3px;
-    border-radius: 2px;
+    margin-bottom: 0;
+    border-radius: 1px;
     flex-shrink: 0;
 }
 
 .inventory-item .item-name {
-    color: #00ff00;
-    font-size: 0.5rem;
-    font-weight: bold;
-    line-height: 1.1;
-    margin-bottom: 2px;
-    font-family: 'VT323', monospace;
-    flex-shrink: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-    width: 100%;
+    display: none;
 }
 
 .inventory-item .item-id {
-    color: #888;
-    font-size: 0.4rem;
-    line-height: 1;
-    font-family: 'VT323', monospace;
-    flex-shrink: 0;
-    width: 100%;
+    display: none;
 }
 
 .no-items {
@@ -273,56 +270,61 @@ const baseSceneStyles = `
     grid-column: 1 / -1;
 }
 
-/* Mobile responsive adjustments */
-@media (max-width: 768px) {
+/* Mobile responsive adjustments - FORCED MOBILE */
+@media (min-width: 0px) {
     .background-container {
         top: 50px;        /* Header más pequeño en móvil */
         bottom: 166px;    /* Footer: 150px + 16px padding */
     }
     
     .commands-grid {
-        gap: 2px;
+        gap: 1px;
+        padding: 1px;
     }
     
     .command-btn {
-        padding: 4px 6px;
+        padding: 3px 4px;
         font-size: 0.5rem;
+        min-height: 30px;
     }
     
     .inventory-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2px;
-        padding: 2px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1px;
+        padding: 1px;
+        max-height: 80px;
+        overflow-y: auto;
     }
     
     .inventory-item {
-        height: 40px;
-        padding: 3px 2px;
+        height: 50px;
+        padding: 2px 1px;
+        margin: 0px;
     }
     
     .inventory-item img {
-        width: 20px;
-        height: 20px;
-        margin-bottom: 2px;
+        width: 28px;
+        height: 28px;
+        margin-bottom: 0;
     }
     
     .inventory-item .item-name {
-        font-size: 0.35rem;
-        margin-bottom: 1px;
+        display: none;
     }
     
     .inventory-item .item-id {
-        font-size: 0.25rem;
+        display: none;
     }
     
     .no-items {
-        font-size: 0.5rem;
-        padding: 5px;
+        font-size: 0.4rem;
+        padding: 3px;
+        line-height: 1.2;
     }
 }
 
-/* Desktop responsive adjustments */
-@media (min-width: 769px) {
+/* Desktop responsive adjustments - DISABLED FOR MOBILE FORCE */
+@media (min-width: 9999px) {
     .background-container {
         top: 60px;        /* Header estándar en desktop */
         bottom: 232px;    /* Footer: 200px + 32px padding */
@@ -332,6 +334,8 @@ const baseSceneStyles = `
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 6px;
         padding: 6px;
+        max-height: 80px;
+        overflow-y: auto;
     }
     
     .inventory-item {
@@ -346,17 +350,16 @@ const baseSceneStyles = `
     }
     
     .inventory-item .item-name {
-        font-size: 0.55rem;
-        margin-bottom: 3px;
+        display: none;
     }
     
     .inventory-item .item-id {
-        font-size: 0.45rem;
+        display: none;
     }
 }
 
-/* Extra small mobile adjustments */
-@media (max-width: 480px) {
+/* Extra small mobile adjustments - FORCED */
+@media (min-width: 0px) {
     .background-container {
         top: 40px;        /* Header muy pequeño */
         bottom: 136px;    /* Footer: 120px + 16px padding */
@@ -431,6 +434,55 @@ class BaseScene {
             title: '',
             subtitle: ''
         };
+        this.selectedItem = null; // Item seleccionado del inventario
+        this.itemInteractions = {
+            // Definir interacciones específicas: comando + item + hotspot = mensaje/acción
+            'use': {
+                'og floppy': {
+                    'door': 'You can use the OG Floppy disc with the door. It might contain important data.',
+                    'computer': 'You insert the OG Floppy disc into the computer. The screen flickers to life.',
+                    'default': 'You examine the OG Floppy disc. It contains mysterious data.'
+                },
+                'green floppy': {
+                    'door': 'You can use the Green Floppy disc with the door. It might contain important data.',
+                    'computer': 'You insert the Green Floppy disc into the computer. The screen flickers to life.',
+                    'default': 'You examine the Green Floppy disc. It contains mysterious data.'
+                },
+                'glitched floppy': {
+                    'door': 'You can use the Glitched Floppy disc with the door. It might contain important data.',
+                    'computer': 'You insert the Glitched Floppy disc into the computer. The screen flickers to life.',
+                    'default': 'You examine the Glitched Floppy disc. It contains mysterious data.'
+                },
+                'floppy': {
+                    'door': 'You can use the floppy disc with the door. It might contain important data.',
+                    'computer': 'You insert the floppy disc into the computer. The screen flickers to life.',
+                    'default': 'You examine the floppy disc. It contains mysterious data.'
+                },
+                'serum': {
+                    'door': 'The serum won\'t work on the door. You need to find the right target.',
+                    'computer': 'You can\'t use the serum on the computer.',
+                    'default': 'You hold the serum carefully. It looks valuable.'
+                },
+                'key': {
+                    'door': 'You use the key on the door. It clicks open!',
+                    'computer': 'The key doesn\'t fit the computer.',
+                    'default': 'You examine the key. It looks like it could open something.'
+                },
+                'default': {
+                    'default': 'You can\'t use that here.'
+                }
+            },
+            'take': {
+                'default': {
+                    'default': 'You can\'t take that.'
+                }
+            },
+            'open': {
+                'default': {
+                    'default': 'You can\'t open that.'
+                }
+            }
+        };
     }
 
     // Inicializar la escena
@@ -448,6 +500,77 @@ class BaseScene {
     // Configurar event listeners (debe ser implementado por cada escena)
     setupEventListeners() {
         throw new Error('setupEventListeners must be implemented by subclass');
+    }
+
+    // Seleccionar item del inventario
+    selectItem(item) {
+        console.log('BaseScene.selectItem called with:', item);
+        this.selectedItem = item;
+        this.updateCommandDisplay();
+        console.log(`Item selected: ${item ? item.name : 'none'}`);
+    }
+
+    // Actualizar display del comando con item seleccionado
+    updateCommandDisplay() {
+        const command = getCurrentCommand();
+        const commandBtn = document.querySelector(`.command-btn.active`);
+        
+        console.log('updateCommandDisplay called:', {
+            command: command,
+            selectedItem: this.selectedItem,
+            commandBtn: commandBtn
+        });
+        
+        if (commandBtn) {
+            if (this.selectedItem) {
+                // Usar title en lugar de name, ya que los items del inventario tienen title
+                const itemName = this.selectedItem.title || this.selectedItem.name || 'ITEM';
+                const newText = `${command.toUpperCase()} "${itemName.toUpperCase()}" WITH...`;
+                commandBtn.textContent = newText;
+                commandBtn.style.background = 'rgba(255, 255, 0, 0.3)';
+                commandBtn.style.borderColor = '#ffff00';
+                commandBtn.style.color = '#ffff00';
+                console.log('Updated command button text to:', newText);
+            } else {
+                commandBtn.textContent = command.toUpperCase();
+                commandBtn.style.background = 'rgba(0, 255, 0, 0.3)';
+                commandBtn.style.borderColor = '#ffff00';
+                commandBtn.style.color = '#ffff00';
+                console.log('Reset command button text to:', command.toUpperCase());
+            }
+        } else {
+            console.log('No active command button found');
+        }
+    }
+
+    // Actualizar selección visual del inventario
+    updateInventorySelection() {
+        // Remover selección previa
+        document.querySelectorAll('.inventory-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Añadir selección al item actual
+        if (this.selectedItem) {
+            const itemElement = document.querySelector(`[data-token-id="${this.selectedItem.tokenId}"]`);
+            if (itemElement) {
+                itemElement.classList.add('selected');
+            }
+        }
+    }
+
+    // Obtener mensaje de interacción según comando, item y hotspot
+    getInteractionMessage(command, item, hotspot) {
+        const interactions = this.itemInteractions[command];
+        if (!interactions) return 'You can\'t do that.';
+
+        // Usar title en lugar de name, ya que los items del inventario tienen title
+        const itemName = item ? (item.title || item.name || 'default') : 'default';
+        const itemInteractions = interactions[itemName.toLowerCase()];
+        if (!itemInteractions) return 'You can\'t use that item.';
+
+        const message = itemInteractions[hotspot ? hotspot.name.toLowerCase() : 'default'];
+        return message || itemInteractions['default'] || 'You can\'t use that here.';
     }
 
     // Asegurar que el popup de mint existe
@@ -614,6 +737,12 @@ class BaseScene {
         
         const command = getCurrentCommand();
         
+        // Si hay un item seleccionado, usar lógica de interacción con item
+        if (this.selectedItem) {
+            this.handleItemInteraction(hotspot, x, y);
+            return;
+        }
+        
         switch (command) {
             case 'explore':
                 this.handleExploreCommand(hotspot, x, y);
@@ -632,9 +761,36 @@ class BaseScene {
         }
     }
 
+    // Manejar interacción con item seleccionado
+    handleItemInteraction(hotspot, x, y) {
+        const command = getCurrentCommand();
+        const message = this.getInteractionMessage(command, this.selectedItem, hotspot);
+        
+        showFloatingText(message, x, y);
+        
+        // Deseleccionar item después de usarlo
+        this.selectedItem = null;
+        this.updateCommandDisplay();
+        
+        // Actualizar visual del inventario
+        this.updateInventorySelection();
+    }
+
     // Manejar click general (fuera de hotspots)
     handleGeneralClick(x, y) {
         const command = getCurrentCommand();
+        
+        // Si hay un item seleccionado, mostrar mensaje contextual
+        if (this.selectedItem) {
+            const message = this.getInteractionMessage(command, this.selectedItem, null);
+            showFloatingText(message, x, y);
+            
+            // Deseleccionar item después de usarlo
+            this.selectedItem = null;
+            this.updateCommandDisplay();
+            this.updateInventorySelection();
+            return;
+        }
         
         // if (command === 'explore') {
             // showNotification(`You clicked at ${x.toFixed(1)}%, ${y.toFixed(1)}%`);
@@ -1036,4 +1192,105 @@ function closeTraitLabPopup() {
 
 // Make new functions globally available
 window.openTraitLabPopup = openTraitLabPopup;
-window.closeTraitLabPopup = closeTraitLabPopup; 
+window.closeTraitLabPopup = closeTraitLabPopup;
+
+// Función global para manejar clicks en items del inventario
+function handleInventoryItemClick(item) {
+    console.log('Inventory item clicked:', item);
+    
+    // Obtener la escena actual
+    const activeScene = document.querySelector('.screen.active');
+    if (!activeScene) {
+        console.log('No active scene found');
+        return;
+    }
+    
+    const sceneId = activeScene.id;
+    console.log('Active scene ID:', sceneId);
+    
+    // Buscar la instancia de la escena en el sceneManagerV2
+    let scene = null;
+    
+    if (window.sceneManagerV2 && window.sceneManagerV2.scenes) {
+        scene = window.sceneManagerV2.scenes.get(sceneId);
+        console.log('Found scene in sceneManagerV2:', scene);
+    }
+    
+    if (!scene) {
+        console.log('Scene not found in sceneManagerV2, trying alternative methods...');
+        // Intentar con sceneManager como fallback
+        if (window.sceneManager && window.sceneManager.scenes) {
+            scene = window.sceneManager.scenes.get(sceneId);
+            console.log('Found scene in sceneManager:', scene);
+        }
+    }
+    
+    if (scene) {
+        // Verificar si el item ya está seleccionado para deseleccionarlo
+        if (scene.selectedItem && scene.selectedItem.tokenId === item.tokenId) {
+            console.log('Deselecting item:', item.title);
+            scene.selectedItem = null;
+            scene.updateCommandDisplay();
+            scene.updateInventorySelection();
+            
+            // Actualizar también el MenuManager
+            if (window.menuManager) {
+                window.menuManager.selectedInventoryItem = null;
+            }
+            
+            showNotification(`Deselected: ${item.title}`, 'info');
+            return;
+        }
+        
+        // Seleccionar el nuevo item
+        scene.selectItem(item);
+        scene.updateInventorySelection();
+        
+        // Actualizar también el MenuManager
+        if (window.menuManager) {
+            window.menuManager.selectedInventoryItem = item;
+        }
+        
+        showNotification(`Selected: ${item.title} (ID: ${item.tokenId})`, 'success');
+    } else {
+        console.error('Scene not found for ID:', sceneId);
+        console.log('Available scene managers:', {
+            sceneManagerV2: !!window.sceneManagerV2,
+            sceneManager: !!window.sceneManager,
+            gameManager: !!window.gameManager
+        });
+    }
+}
+
+// Make function globally available
+window.handleInventoryItemClick = handleInventoryItemClick;
+
+// Función de debug para probar el sistema
+function debugInventorySystem() {
+    console.log('=== DEBUG INVENTORY SYSTEM ===');
+    console.log('Active scene:', document.querySelector('.screen.active')?.id);
+    console.log('SceneManagerV2 available:', !!window.sceneManagerV2);
+    console.log('SceneManager available:', !!window.sceneManager);
+    console.log('MenuManager available:', !!window.menuManager);
+    console.log('Current command:', getCurrentCommand());
+    
+    if (window.sceneManagerV2) {
+        console.log('SceneManagerV2 scenes:', Array.from(window.sceneManagerV2.scenes.keys()));
+    }
+    
+    const activeScene = document.querySelector('.screen.active');
+    if (activeScene && window.sceneManagerV2) {
+        const scene = window.sceneManagerV2.scenes.get(activeScene.id);
+        console.log('Current scene instance:', scene);
+        if (scene) {
+            console.log('Scene selectedItem:', scene.selectedItem);
+        }
+    }
+    
+    console.log('Active command button:', document.querySelector('.command-btn.active'));
+    console.log('Inventory items:', document.querySelectorAll('.inventory-item').length);
+    console.log('=== END DEBUG ===');
+}
+
+// Make debug function globally available
+window.debugInventorySystem = debugInventorySystem; 

@@ -1,0 +1,508 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+
+/// @title Adrian Gumball (Version B: request → fulfill)
+/// @notice Máquina gumball para una sola colección ERC721 (AdrianZERO). Flujo antisimulación:
+///         el usuario paga y solicita, y se cumple en un bloque posterior usando blockhash.
+contract AdrianGumballV2 is Ownable, Pausable, ReentrancyGuard, IERC721Receiver {
+    // ========= Config =========
+    address public immutable collection;   // ERC721 AdrianZERO (Base)
+    address public treasury;               // destino de fondos (modificable)
+    address public paymentToken;           // address(0) => modo ETH; si !=0 => ERC20
+    uint256 public priceETH;               // wei por intento
+    uint256 public priceToken;             // 18 dec por intento (si ERC20)
+    uint256 public maxPerTx = 10;          // límite por tx
+
+    // ========= Pool de premios =========
+    uint256[] private pool; // tokenIds custodiados y disponibles
+    // indexOf[tokenId] = idx+1 en `pool` (0 = no presente)
+    mapping(uint256 => uint256) private indexOf;
+
+    // ========= Reservas (para evitar sobreventa entre requests) =========
+    uint256 public reserved; // cantidad de NFTs comprometidos en requests pendientes
+
+    // ========= Historial de claims =========
+    struct Claim {
+        uint256 tokenId;
+        address to;
+        uint64  timestamp;
+        address payToken;   // address(0)=ETH, otro=ERC20 usado
+        uint256 unitPrice;  // precio por intento en la modalidad usada
+    }
+    Claim[] private claims;
+
+    // ========= Requests =========
+    struct PlayRequest {
+        address user;
+        uint32  qty;
+        uint64  requestBlock;  // bloque de la solicitud
+        bool    fulfilled;
+        address payToken;      // address(0)=ETH, otro=ERC20
+        uint256 unitPrice;     // precio unitario en la modalidad usada
+        uint256 totalAmount;   // unitPrice * qty (ETH wei o token 18d)
+    }
+    PlayRequest[] public requests;
+
+    // ========= Control hook =========
+    bool private _skipOnReceive; // evita doble alta durante depósitos bulk
+
+    // ========= RNG interno auxiliar (no revela en request/tx del usuario) =========
+    // Usamos blockhash(requestBlock+1) en fulfill. No se usa prevrandao aquí.
+
+    // ========= Eventos =========
+    event Deposited(uint256 indexed tokenId, address indexed from);
+    event PlayRequested(uint256 indexed requestId, address indexed user, uint32 qty, address payToken, uint256 unitPrice, uint256 totalAmount);
+    event PlayFulfilled(uint256 indexed requestId, address indexed user, uint32 qty, bytes32 seed);
+    event PlayCanceled(uint256 indexed requestId, address indexed by, string reason);
+    event Dispensed(address indexed to, uint256 indexed tokenId, address payToken, uint256 unitPrice);
+    event PricesUpdated(uint256 priceETH, uint256 priceToken);
+    event TreasuryUpdated(address indexed newTreasury);
+    event PaymentTokenUpdated(address indexed erc20); // address(0) = ETH
+    event MaxPerTxUpdated(uint256 maxPerTx);
+
+    constructor(address _collection, address _treasury, address initialOwner)
+        Ownable(initialOwner)
+    {
+        require(_collection != address(0), "collection=0");
+        require(_treasury   != address(0), "treasury=0");
+        collection = _collection;
+        treasury   = _treasury;
+    }
+
+    // =========================================================
+    //                         DEPOSITO
+    // =========================================================
+
+    /// @notice Depósito en bulk desde una wallet que posea los NFTs (requiere setApprovalForAll hacia este contrato)
+    /// @dev onlyOwner para control del stock; evita spam
+    function depositBatchFrom(address from, uint256[] calldata tokenIds)
+        external
+        onlyOwner
+        whenNotPaused
+        nonReentrant
+    {
+        require(from != address(0), "from=0");
+        require(tokenIds.length > 0, "empty");
+
+        IERC721 c = IERC721(collection);
+
+        // Evitar doble alta: durante el bulk el hook no registra
+        _skipOnReceive = true;
+        for (uint256 i; i < tokenIds.length; ++i) {
+            uint256 id = tokenIds[i];
+            c.safeTransferFrom(from, address(this), id);
+            _addToPool(id); // alta manual post-transfer
+            emit Deposited(id, from);
+        }
+        _skipOnReceive = false;
+    }
+
+    /// @notice Recepción directa de NFTs (safeTransferFrom simple). Los añade al pool si no estamos en bulk.
+    function onERC721Received(address, address, uint256 tokenId, bytes calldata)
+        external
+        override
+        returns (bytes4)
+    {
+        // Acepta únicamente tokens de la colección configurada
+        require(msg.sender == collection, "unknown collection");
+
+        // Si venimos de un bulk, saltamos el alta (ya lo hace depositBatchFrom)
+        if (_skipOnReceive) {
+            return IERC721Receiver.onERC721Received.selector;
+        }
+
+        if (indexOf[tokenId] == 0) {
+            _addToPool(tokenId);
+            emit Deposited(tokenId, address(0));
+        }
+        return IERC721Receiver.onERC721Received.selector;
+    }
+
+    // =========================================================
+    //                     REQUEST → FULFILL
+    // =========================================================
+
+    /// @notice Solicitar jugadas pagando en ETH (si paymentToken == address(0)).
+    /// @dev Bloquea stock vía `reserved`, guarda fondos en el contrato y no revela tokenIds.
+    function requestPlayETH(uint32 qty)
+        external
+        payable
+        whenNotPaused
+        nonReentrant
+    {
+        require(paymentToken == address(0), "token mode enabled"); // modo ETH activo
+        _preChecksRequest(qty);
+        uint256 need = priceETH * qty;
+        require(msg.value == need, "bad ETH value");
+
+        // bloquear stock
+        reserved += qty;
+
+        // guardar request
+        requests.push(PlayRequest({
+            user: msg.sender,
+            qty: qty,
+            requestBlock: uint64(block.number),
+            fulfilled: false,
+            payToken: address(0),
+            unitPrice: priceETH,
+            totalAmount: need
+        }));
+
+        emit PlayRequested(requests.length - 1, msg.sender, qty, address(0), priceETH, need);
+    }
+
+    /// @notice Solicitar jugadas pagando en ERC20 (si paymentToken != address(0)).
+    /// @dev Transfiere tokens al contrato, bloquea stock, no revela tokenIds.
+    function requestPlayToken(uint32 qty)
+        external
+        whenNotPaused
+        nonReentrant
+    {
+        address payTok = paymentToken;
+        require(payTok != address(0), "ETH mode enabled"); // modo token activo
+        _preChecksRequest(qty);
+
+        uint256 need = priceToken * qty;
+        IERC20(payTok).transferFrom(msg.sender, address(this), need);
+
+        // bloquear stock
+        reserved += qty;
+
+        // guardar request
+        requests.push(PlayRequest({
+            user: msg.sender,
+            qty: qty,
+            requestBlock: uint64(block.number),
+            fulfilled: false,
+            payToken: payTok,
+            unitPrice: priceToken,
+            totalAmount: need
+        }));
+
+        emit PlayRequested(requests.length - 1, msg.sender, qty, payTok, priceToken, need);
+    }
+
+    function _preChecksRequest(uint32 qty) internal view {
+        require(qty > 0 && qty <= maxPerTx, "bad qty");
+        require(pool.length - reserved >= qty, "insufficient stock");
+    }
+
+    /// @notice Cumple una solicitud en un bloque posterior (evita simulación del tokenId).
+    /// @dev Si han pasado >256 bloques, el blockhash ya no está disponible → permite cancelación.
+    function fulfill(uint256 requestId)
+        external
+        whenNotPaused
+        nonReentrant
+    {
+        require(requestId < requests.length, "bad id");
+        PlayRequest storage r = requests[requestId];
+        require(!r.fulfilled, "already fulfilled");
+        require(block.number > r.requestBlock, "wait 1 block");
+
+        // Obtener blockhash post-solicitud (válido hasta 256 bloques)
+        uint256 revealBlock = uint256(r.requestBlock) + 1;
+        bytes32 bh = blockhash(revealBlock);
+        require(bh != bytes32(0), "expired request"); // usar cancelExpired si vence
+
+        // Asegurar stock suficiente (debería haber por la reserva, salvo admin withdrawals)
+        require(pool.length >= r.qty, "not enough prizes");
+
+        // desbloquear reserva
+        reserved -= r.qty;
+
+        // seed determinista
+        bytes32 seed = keccak256(abi.encodePacked(bh, requestId, address(this)));
+        _dispenseWithSeed(r.user, r.qty, r.payToken, r.unitPrice, seed);
+
+        // forward por-request
+        if (r.payToken == address(0)) {
+            _forwardETHAmount(r.totalAmount);
+        } else {
+            _forwardTokenAmount(r.payToken, r.totalAmount);
+        }
+
+        r.fulfilled = true;
+        emit PlayFulfilled(requestId, r.user, r.qty, seed);
+    }
+
+    /// @notice Cancela una solicitud expirada (>256 bloques) y reembolsa al usuario.
+    function cancelExpired(uint256 requestId)
+        external
+        nonReentrant
+    {
+        require(requestId < requests.length, "bad id");
+        PlayRequest storage r = requests[requestId];
+        require(!r.fulfilled, "already fulfilled");
+        require(msg.sender == r.user, "not your request");
+
+        // comprobar expiración
+        require(block.number > uint256(r.requestBlock) + 256, "not expired");
+
+        // desbloquear reserva
+        reserved -= r.qty;
+
+        // refund
+        if (r.payToken == address(0)) {
+            _refundETH(r.user, r.totalAmount);
+        } else {
+            IERC20(r.payToken).transfer(r.user, r.totalAmount);
+        }
+
+        r.fulfilled = true; // marcamos como resuelta (cancelada)
+        emit PlayCanceled(requestId, msg.sender, "expired");
+    }
+
+    /// @notice Cancelación administrativa (por ejemplo, si no hay stock por retirada manual). Reembolsa al usuario.
+    function cancelRequest(uint256 requestId, string calldata reason)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        require(requestId < requests.length, "bad id");
+        PlayRequest storage r = requests[requestId];
+        require(!r.fulfilled, "already fulfilled");
+
+        reserved -= r.qty;
+
+        if (r.payToken == address(0)) {
+            _refundETH(r.user, r.totalAmount);
+        } else {
+            IERC20(r.payToken).transfer(r.user, r.totalAmount);
+        }
+
+        r.fulfilled = true;
+        emit PlayCanceled(requestId, msg.sender, reason);
+    }
+
+    // =========================================================
+    //                         JUEGO (internas)
+    // =========================================================
+
+    function _dispenseWithSeed(
+        address to,
+        uint32 qty,
+        address payTok,
+        uint256 unitPrice,
+        bytes32 seed
+    ) internal {
+        IERC721 c = IERC721(collection);
+
+        for (uint32 i = 0; i < qty; ++i) {
+            // Derivar un rnd por ítem
+            seed = keccak256(abi.encodePacked(seed, i, pool.length));
+            uint256 rnd = uint256(seed) % pool.length;
+
+            uint256 tokenId = pool[rnd];
+
+            // swap-and-pop
+            uint256 lastIdx = pool.length - 1;
+            if (rnd != lastIdx) {
+                uint256 lastId = pool[lastIdx];
+                pool[rnd] = lastId;
+                indexOf[lastId] = rnd + 1;
+            }
+            pool.pop();
+            indexOf[tokenId] = 0;
+
+            // transferir al jugador
+            c.safeTransferFrom(address(this), to, tokenId);
+
+            // registrar claim
+            claims.push(Claim({
+                tokenId: tokenId,
+                to: to,
+                timestamp: uint64(block.timestamp),
+                payToken: payTok,
+                unitPrice: unitPrice
+            }));
+
+            emit Dispensed(to, tokenId, payTok, unitPrice);
+        }
+    }
+
+    // =========================================================
+    //                         ADMIN
+    // =========================================================
+
+    function setPrices(uint256 _priceETH, uint256 _priceToken) external onlyOwner {
+        priceETH   = _priceETH;
+        priceToken = _priceToken;
+        emit PricesUpdated(_priceETH, _priceToken);
+    }
+
+    function setPaymentToken(address erc20OrZero) external onlyOwner {
+        paymentToken = erc20OrZero; // 0 => modo ETH, !=0 => modo token
+        emit PaymentTokenUpdated(erc20OrZero);
+    }
+
+    function setTreasury(address t) external onlyOwner {
+        require(t != address(0), "treasury=0");
+        treasury = t;
+        emit TreasuryUpdated(t);
+    }
+
+    function setMaxPerTx(uint256 m) external onlyOwner {
+        require(m > 0, "max=0");
+        maxPerTx = m;
+        emit MaxPerTxUpdated(m);
+    }
+
+    function pause() external onlyOwner { _pause(); }
+    function unpause() external onlyOwner { _unpause(); }
+
+    /// @notice Retirar NFTs no dispensados (mantenimiento/emergencia)
+    function adminWithdrawBatch(uint256[] calldata tokenIds, address to)
+        external
+        onlyOwner
+        nonReentrant
+    {
+        require(to != address(0), "to=0");
+        IERC721 c = IERC721(collection);
+        for (uint256 i; i < tokenIds.length; ++i) {
+            uint256 id = tokenIds[i];
+            _removeFromPoolIfPresent(id);
+            c.safeTransferFrom(address(this), to, id);
+        }
+        // Nota: si retiras stock con requests pendientes, usa cancelRequest() para reembolsar
+        // o espera a que se cumplan/caduquen para evitar inconsistencias.
+    }
+
+    // =========================================================
+    //                         READS
+    // =========================================================
+
+    /// @notice Devuelve TODOS los tokenIds disponibles actualmente (una sola llamada)
+    function getAllAvailable() external view returns (uint256[] memory tokenIds) {
+        uint256 n = pool.length;
+        tokenIds = new uint256[](n);
+        for (uint256 i; i < n; ++i) {
+            tokenIds[i] = pool[i];
+        }
+    }
+
+    /// @notice Tamaño del pool disponible
+    function availableSupply() external view returns (uint256) {
+        return pool.length;
+    }
+
+    /// @notice Stock libre (no reservado por requests pendientes)
+    function freeSupply() external view returns (uint256) {
+        return pool.length - reserved;
+    }
+
+    /// @notice Devuelve TODOS los tokens reclamados y sus timestamps (arrays paralelos)
+    function getClaimHistory()
+        external
+        view
+        returns (uint256[] memory tokenIds, uint64[] memory timestamps)
+    {
+        uint256 n = claims.length;
+        tokenIds   = new uint256[](n);
+        timestamps = new uint64[](n);
+        for (uint256 i; i < n; ++i) {
+            Claim memory c = claims[i];
+            tokenIds[i]   = c.tokenId;
+            timestamps[i] = c.timestamp;
+        }
+    }
+
+    /// @notice Info extendida del claim (to, token de pago y unitPrice)
+    function getClaimHistoryExtended()
+        external
+        view
+        returns (
+            uint256[] memory tokenIds,
+            address[] memory tos,
+            uint64[] memory timestamps,
+            address[] memory payTokens,
+            uint256[] memory unitPrices
+        )
+    {
+        uint256 n = claims.length;
+        tokenIds   = new uint256[](n);
+        tos        = new address[](n);
+        timestamps = new uint64[](n);
+        payTokens  = new address[](n);
+        unitPrices = new uint256[](n);
+
+        for (uint256 i; i < n; ++i) {
+            Claim memory c = claims[i];
+            tokenIds[i]   = c.tokenId;
+            tos[i]        = c.to;
+            timestamps[i] = c.timestamp;
+            payTokens[i]  = c.payToken;
+            unitPrices[i] = c.unitPrice;
+        }
+    }
+
+    /// @notice Número total de claims
+    function claimCount() external view returns (uint256) {
+        return claims.length;
+    }
+
+    /// @notice Lee datos brutos de un request
+    function getRequest(uint256 requestId) external view returns (
+        address user,
+        uint32 qty,
+        uint64 requestBlock,
+        bool fulfilled,
+        address payTok,
+        uint256 unitPrice,
+        uint256 totalAmount
+    ) {
+        PlayRequest memory r = requests[requestId];
+        return (r.user, r.qty, r.requestBlock, r.fulfilled, r.payToken, r.unitPrice, r.totalAmount);
+    }
+
+    /// @notice Cantidad de requests creados
+    function requestCount() external view returns (uint256) {
+        return requests.length;
+    }
+
+    // =========================================================
+    //                      INTERNAS
+    // =========================================================
+
+    function _addToPool(uint256 tokenId) internal {
+        require(indexOf[tokenId] == 0, "already in pool");
+        pool.push(tokenId);
+        indexOf[tokenId] = pool.length; // idx+1
+    }
+
+    function _removeFromPoolIfPresent(uint256 tokenId) internal {
+        uint256 idx1 = indexOf[tokenId];
+        require(idx1 != 0, "not in pool");
+        uint256 idx = idx1 - 1;
+        uint256 lastIdx = pool.length - 1;
+
+        if (idx != lastIdx) {
+            uint256 lastId = pool[lastIdx];
+            pool[idx] = lastId;
+            indexOf[lastId] = idx + 1;
+        }
+        pool.pop();
+        indexOf[tokenId] = 0;
+    }
+
+    function _refundETH(address to, uint256 amount) internal {
+        (bool ok, ) = payable(to).call{value: amount}("");
+        require(ok, "refund ETH failed");
+    }
+
+    function _forwardETHAmount(uint256 amount) internal {
+        (bool ok, ) = payable(treasury).call{value: amount}("");
+        require(ok, "forward ETH failed");
+    }
+
+    function _forwardTokenAmount(address token, uint256 amount) internal {
+        IERC20(token).transfer(treasury, amount);
+    }
+}

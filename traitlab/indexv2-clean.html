@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraitLAB v2 - Modular & Clean</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="modules/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Contenedor principal para la aplicación -->
+    <div id="app-container"></div>
+
+    <!-- Scripts de módulos -->
+    <script src="modules/sticky-visibility.js"></script>
+    <script src="modules/data-manager.js"></script>
+    <script src="modules/filters.js"></script>
+    <script src="modules/display-manager.js"></script>
+    <script src="modules/token-selection-manager.js"></script>
+    <script src="modules/app-initializer.js"></script>
+    <script src="modules/ui-templates.js"></script>
+    <script src="modules/traits.js"></script>
+    <script src="modules/floppy.js"></script>
+    <script src="modules/serums.js"></script>
+    <script src="modules/crafting.js"></script>
+    <script src="modules/zero.js"></script>
+    <script src="modules/ui.js"></script>
+    <script src="modules/wallet.js"></script>
+    <script src="modules/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // TraitLAB v2 - Main Application (Esqueleto Limpio)
+        class TraitLABv2 {
+            constructor() {
+                this.modules = {};
+                this.currentContract = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+                this.currentFilter = null;
+            }
+
+            /**
+             * Inicializar aplicación
+             */
+            async init() {
+                try {
+                    console.log('🚀 TraitLAB v2: Inicializando...');
+                    
+                    // Renderizar UI usando templates
+                    this.renderUI();
+                    
+                    // Inicializar aplicación usando AppInitializer
+                    const initializer = new window.AppInitializer(this);
+                    await initializer.initialize();
+                    
+                    console.log('✅ TraitLAB v2: Inicializada correctamente');
+                    
+                } catch (error) {
+                    console.error('❌ TraitLAB v2: Error en inicialización:', error);
+                }
+            }
+
+            /**
+             * Renderizar interfaz de usuario
+             */
+            renderUI() {
+                const container = document.getElementById('app-container');
+                if (container) {
+                    const templates = new window.UITemplates();
+                    templates.renderAllTemplates(container);
+                }
+            }
+
+            /**
+             * Cargar tokens para el tab actual
+             */
+            async loadTokensForTab() {
+                try {
+                    console.log('🚀 TraitLAB v2: Cargando tokens para tab:', this.currentFilter);
+                    console.log('🔍 Contrato actual:', this.currentContract);
+                    
+                    this.showLoading();
+                    
+                    // Verificar que tengamos los módulos necesarios
+                    if (!this.modules.wallet || !this.modules.ui) {
+                        throw new Error('Módulos wallet o UI no disponibles');
+                    }
+                    
+                    const userAddress = this.modules.wallet.getCurrentAccount();
+                    if (!userAddress) {
+                        throw new Error('No hay wallet conectada');
+                    }
+                    
+                    // Cargar tokens base según el contrato
+                    if (!this.modules.zero || !this.currentContract) {
+                        throw new Error('Módulo zero o contrato no disponible');
+                    }
+                    
+                    const allTokens = await this.modules.zero.loadTokens(userAddress, this.currentContract);
+                    console.log(`📊 Tokens cargados: ${allTokens.length}`);
+                    
+                    // Usar módulo de filtros para procesar tokens
+                    if (this.modules.filters) {
+                        let filteredTokens;
+                        
+                        if (this.currentFilter === 'crafting') {
+                            // Mostrar contenido de crafting
+                            if (this.modules.crafting) {
+                                await this.modules.crafting.loadRecipes();
+                                this.modules.displayManager.displayCraftingContent(
+                                    document.getElementById('tokens-grid'),
+                                    this.modules.crafting,
+                                    this.modules.dataManager
+                                );
+                            } else {
+                                throw new Error('Módulo de crafting no disponible');
+                            }
+                        } else {
+                            // Filtrar tokens por tipo
+                            filteredTokens = this.modules.filters.filterTokensByType(allTokens, this.currentFilter || 'adrianzero');
+                            
+                            // Mostrar tokens filtrados
+                            if (filteredTokens.length > 0) {
+                                this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
+                            } else {
+                                this.modules.displayManager.showNoTokens(
+                                    document.getElementById('tokens-grid'),
+                                    `No ${this.currentFilter || 'adrianzero'} tokens found`
+                                );
+                            }
+                        }
+                    } else {
+                        throw new Error('Módulo de filtros no disponible');
+                    }
+                    
+                    this.hideLoading();
+                    
+                } catch (error) {
+                    console.error('❌ Error cargando tokens:', error);
+                    this.hideLoading();
+                    this.showError(`Error cargando tokens: ${error.message}`);
+                }
+            }
+
+            /**
+             * Mostrar loading
+             */
+            showLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) loading.style.display = 'block';
+            }
+
+            /**
+             * Ocultar loading
+             */
+            hideLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) loading.style.display = 'none';
+            }
+
+            /**
+             * Mostrar error
+             */
+            showError(message) {
+                const error = document.getElementById('error');
+                if (error) {
+                    error.textContent = message;
+                    error.style.display = 'block';
+                }
+            }
+
+            /**
+             * Mostrar éxito
+             */
+            showSuccess(message) {
+                const success = document.getElementById('success');
+                if (success) {
+                    success.textContent = message;
+                    success.style.display = 'block';
+                }
+            }
+
+            /**
+             * Limpiar tokens
+             */
+            clearTokens() {
+                const grid = document.getElementById('tokens-grid');
+                if (grid) grid.innerHTML = '';
+            }
+
+            /**
+             * Manejar wallet conectada
+             */
+            onWalletConnected(data) {
+                console.log('🔌 TraitLAB v2: Wallet conectada:', data);
+                
+                // Update UI
+                document.getElementById('connect-section').style.display = 'none';
+                document.getElementById('account-section').style.display = 'block';
+                document.getElementById('tokens-section').style.display = 'block';
+                
+                // Update wallet address
+                const walletAddress = document.getElementById('walletAddress');
+                if (walletAddress) {
+                    walletAddress.textContent = data.account;
+                }
+                
+                // Clear any previous tokens
+                this.clearTokens();
+            }
+
+            /**
+             * Manejar wallet desconectada
+             */
+            onWalletDisconnected() {
+                console.log('🔌 TraitLAB v2: Wallet desconectada');
+                
+                // Update UI
+                document.getElementById('connect-section').style.display = 'block';
+                document.getElementById('account-section').style.display = 'none';
+                document.getElementById('tokens-section').style.display = 'none';
+                
+                // Clear tokens
+                this.clearTokens();
+            }
+        }
+
+        // Inicializar aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 TraitLAB v2: DOM listo, inicializando...');
+            
+            // Crear instancia global
+            window.app = new TraitLABv2();
+            
+            // Inicializar
+            await window.app.init();
+        });
+    </script>
+</body>
+</html>

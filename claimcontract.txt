@@ -1,0 +1,147 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+/**
+ * @title OGcardclaim
+ * @notice Claim 1:1 para holders de AdrianPunks:
+ *         punkId (1..1000) -> traitId (100000 + punkId) en AdrianTraitsCore.
+ *         Requiere que ESTE contrato esté autorizado como extension en TraitsCore
+ *         y que los assets 100001..101000 estén ya creados (pre-registrados).
+ */
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Interfaces mínimas
+// ──────────────────────────────────────────────────────────────────────────────
+interface IAdrianPunks {
+    function ownerOf(uint256 tokenId) external view returns (address);
+}
+
+interface IAdrianTraitsCore {
+    function mintFromExtension(address to, uint256 id, uint256 amount) external;
+    function authorizedExtensions(address ext) external view returns (bool);
+    // (Opcional, por si lo usas en UI) total minteado de un asset concreto
+    // function getTotalMinted(uint256 assetId) external view returns (uint256);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Contrato
+// ──────────────────────────────────────────────────────────────────────────────
+contract OGcardclaim is Ownable, ReentrancyGuard {
+    using BitMaps for BitMaps.BitMap;
+
+    // Mapeo de IDs: 1..1000 -> 100001..101000
+    uint256 public constant BASE_OFFSET = 100000;
+    uint256 public constant MIN_PUNK_ID = 1;
+    uint256 public constant MAX_PUNK_ID = 1000;
+
+    IAdrianPunks public adrianPunks;
+    IAdrianTraitsCore public traitsCore;
+
+    // Bitmap de reclamados (bit por punkId)
+    BitMaps.BitMap private _claimed;
+    uint256 public totalClaimed;
+
+    // Eventos
+    event Claimed(address indexed account, uint256 indexed punkId, uint256 indexed traitId);
+    event BatchClaimed(address indexed account, uint256 count);
+    event AdminSetAddresses(address adrianPunks, address traitsCore);
+
+    constructor(address _adrianPunks, address _traitsCore) Ownable(msg.sender) {
+        require(_adrianPunks != address(0) && _traitsCore != address(0), "Zero address");
+        adrianPunks = IAdrianPunks(_adrianPunks);
+        traitsCore = IAdrianTraitsCore(_traitsCore);
+        emit AdminSetAddresses(_adrianPunks, _traitsCore);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Admin
+    // ──────────────────────────────────────────────────────────────────────────
+    function setContracts(address _adrianPunks, address _traitsCore) external onlyOwner {
+        require(_adrianPunks != address(0) && _traitsCore != address(0), "Zero address");
+        adrianPunks = IAdrianPunks(_adrianPunks);
+        traitsCore = IAdrianTraitsCore(_traitsCore);
+        emit AdminSetAddresses(_adrianPunks, _traitsCore);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Claims
+    // ──────────────────────────────────────────────────────────────────────────
+    function claim(uint256 punkId) public nonReentrant {
+        _claimSingle(msg.sender, punkId);
+    }
+
+    function claimBatch(uint256[] calldata punkIds) external nonReentrant {
+        uint256 n = punkIds.length;
+        require(n > 0, "Empty");
+        for (uint256 i = 0; i < n; ++i) {
+            _claimSingle(msg.sender, punkIds[i]);
+        }
+        emit BatchClaimed(msg.sender, n);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Reads
+    // ──────────────────────────────────────────────────────────────────────────
+    function isClaimed(uint256 punkId) public view returns (bool) {
+        _requireValidPunkId(punkId);
+        return _claimed.get(punkId);
+    }
+
+    function previewTraitId(uint256 punkId) public pure returns (uint256) {
+        _requireValidPunkId(punkId);
+        return BASE_OFFSET + punkId;
+    }
+
+    function getClaimedCount() external view returns (uint256) {
+        return totalClaimed;
+    }
+
+    // Estado por rango (para UI/admin)
+    function getRangeStatus(uint256 startPunkId, uint256 endPunkId)
+        external
+        view
+        returns (uint256[] memory ids, bool[] memory claimed)
+    {
+        require(startPunkId >= MIN_PUNK_ID && endPunkId <= MAX_PUNK_ID && startPunkId <= endPunkId, "Range");
+        uint256 len = endPunkId - startPunkId + 1;
+        ids = new uint256[](len);
+        claimed = new bool[](len);
+        for (uint256 i = 0; i < len; ++i) {
+            uint256 id = startPunkId + i;
+            ids[i] = id;
+            claimed[i] = _claimed.get(id);
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Internals
+    // ──────────────────────────────────────────────────────────────────────────
+    function _claimSingle(address caller, uint256 punkId) internal {
+        _requireValidPunkId(punkId);
+        require(!_claimed.get(punkId), "Already claimed");
+
+        // Verifica que este contrato esté autorizado como extensión
+        require(traitsCore.authorizedExtensions(address(this)), "Not extension");
+
+        // Verifica propiedad del punk
+        address owner = adrianPunks.ownerOf(punkId);
+        require(owner == caller, "Not punk owner");
+
+        // Mint exacto: traitId = 100000 + punkId, amount = 1
+        uint256 traitId = BASE_OFFSET + punkId;
+        traitsCore.mintFromExtension(owner, traitId, 1);
+
+        _claimed.set(punkId);
+        unchecked { totalClaimed++; }
+
+        emit Claimed(owner, punkId, traitId);
+    }
+
+    function _requireValidPunkId(uint256 punkId) internal pure {
+        require(punkId >= MIN_PUNK_ID && punkId <= MAX_PUNK_ID, "Invalid punkId");
+    }
+}

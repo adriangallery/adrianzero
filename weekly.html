@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>$ADRIAN Ecosystem — Historical Roadmap</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="icon" href="components/images/adrianzero.png">
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --fg:#e6f1ff;
+      --muted:#98a6b3;
+      --cyan:#00e5ff;
+      --red:#ff004c;
+      --card:#0f1620;
+      --line:#182431;
+      --ring1:0 0 30px rgba(0,229,255,.28);
+      --ring2:0 0 30px rgba(255,0,76,.16);
+      /* Grid suave */
+      --grid-rgb: 255,255,255;       /* líneas blancas suaves (visibles) */
+      --cell: 144px;                 /* separación cuadrícula fina (3x más grande) */
+      --block: 384px;                /* mantener líneas mayores como estaban (8*48px) */
+      --minor-a: .18;                /* opacidad finas (visible) */
+      --major-a: .28;                /* opacidad mayores (visible) */
+    }
+    /* Fondo cuadriculado suave estilo Miro ($ADRIAN) */
+    .grid-soft{
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(to right, rgba(var(--grid-rgb), var(--minor-a)) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--grid-rgb), var(--minor-a)) 1px, transparent 1px),
+        linear-gradient(to right, rgba(var(--grid-rgb), var(--major-a)) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--grid-rgb), var(--major-a)) 1px, transparent 1px),
+        radial-gradient(1200px 800px at 80% -10%, rgba(0,229,255,.06), transparent 60%),
+        radial-gradient(900px 600px at -10% 100%, rgba(255,0,76,.07), transparent 65%);
+      background-size:
+        var(--cell) var(--cell),
+        var(--cell) var(--cell),
+        var(--block) var(--block),
+        var(--block) var(--block),
+        auto,
+        auto;
+      background-position:
+         0 0,
+         0 0,
+         0 0,
+         0 0,
+         center,
+         center;
+      background-repeat: repeat;
+      background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+      image-rendering: pixelated;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:#ffffff;
+      font-family:"VT323", monospace;
+      line-height:1.6;
+      overflow-x:hidden;
+      position:relative;min-height:100vh;
+    }
+    body::before{
+      content:none;
+    }
+    .container{width:min(1100px,92%);margin:0 auto 64px;position:relative}
+    h1{margin:32px auto 8px;text-align:center;font-size:52px;letter-spacing:.5px;
+       background: linear-gradient(45deg, #00ff00, #00ccff, #ff0088);
+       -webkit-background-clip:text;
+       -webkit-text-fill-color:transparent;
+       background-clip:text;
+       color:transparent;
+       animation: glow 3s ease-in-out infinite alternate}
+    @keyframes glow{from{filter:drop-shadow(0 0 20px rgba(0,255,0,.5))}to{filter:drop-shadow(0 0 40px rgba(0,255,0,.8))}}
+    .subtitle{text-align:center;color:#cccccc;margin-bottom:32px;font-size:24px}
+
+    /* Logo hero superior */
+    .logo-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;margin:8px 0 20px}
+    .logo-hero img{width:280px;height:auto;user-select:none;-webkit-user-drag:none}
+    .logo-hero img.brand{filter:drop-shadow(0 0 12px rgba(255,0,136,.35))}
+    .logo-hero img.glasses{filter:drop-shadow(0 0 12px rgba(0,170,255,.35))}
+    @media (min-width: 992px){.logo-hero img{width:360px}}
+
+    /* Timeline apilada */
+    .timeline{position:relative;padding:12px 0}
+    .timeline::before{
+      content:"";position:absolute;left:16px;top:0;bottom:0;width:2px;
+      background:linear-gradient(to bottom, rgba(255,0,136,.25), rgba(0,170,255,.25));
+      box-shadow:0 0 8px rgba(0,0,0,.25);
+    }
+
+    .item{position:relative;width:100%;margin:0 0 20px 0;padding:0 0 0 56px;clear:both}
+
+    .dot{position:absolute;top:18px;left:16px;width:12px;height:12px;border-radius:50%;
+         box-shadow:0 0 0 4px rgba(255,255,255,.03),0 0 12px rgba(0,0,0,.35)}
+
+    /* Alternancia de colores: magenta / azul */
+    .item:nth-child(odd) .dot{background:linear-gradient(135deg,#ff0088,#ff55aa)}
+    .item:nth-child(even) .dot{background:linear-gradient(135deg,#00aaff,#00ddff)}
+
+    /* Quitar cajas y unir todo en una línea */
+    .card{background:transparent;border:none;border-radius:0;padding:0;box-shadow:none}
+    .card::before{content:none}
+
+    .header{display:inline;margin:0;padding:0}
+    .emoji{font-size:24px;vertical-align:middle}
+    .week{font-weight:700;color:#ffffff;font-size:22px;margin-left:8px}
+    .date{font-weight:600;opacity:.95;font-size:20px;margin-left:8px}
+    .item:nth-child(odd) .date{color:#ff55aa}
+    .item:nth-child(even) .date{color:#00ccff}
+
+    .title{display:inline;color:#f0f0f0;font-size:22px;margin-left:16px}
+    .item:nth-child(odd) .title{color:#ff66aa}
+    .item:nth-child(even) .title{color:#00ccff}
+
+    .meta{display:none}
+    .badge{display:none}
+
+    .footer-note{text-align:center;color:#cccccc;margin-top:32px;font-size:12px}
+
+    @media (max-width: 800px){
+      .timeline::before{left:12px}
+      .item{padding-left:52px}
+      .dot{left:12px}
+    }
+
+    /* Estilos del menú (tomados de mintwithadrian.html) */
+    #menu-container{position:fixed;top:0;left:0;right:0;z-index:1000}
+    #menu-container .navbar{background:rgba(0,0,0,.9);backdrop-filter:blur(10px);border-bottom:2px solid #00ff00}
+    #menu-container .navbar-nav .nav-link{color:#00ff00 !important;font-family:'VT323', monospace;font-size:1.1rem;transition:all .3s ease}
+    #menu-container .navbar-nav .nav-link:hover{color:#ffffff !important;text-shadow:0 0 10px #00ff00}
+    #menu-container .navbar-text{color:#00ff00 !important;font-family:'VT323', monospace;font-size:1.2rem;font-weight:bold}
+    #menu-container .navbar-toggler{border-color:#00ff00}
+    #menu-container .navbar-toggler-icon{background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e")}
+    
+    /* ===== AX TIMELINE (tronco blanco + ramas + nodos) ===== */
+    :root{
+      --trunk-w: 14px;    /* grosor línea vertical (y ramas) */
+      --branch-h: var(--trunk-w);
+      --node: 38px;       /* tamaño del bloque de color */
+      --branch-l: 96px;   /* longitud de la rama */
+      --row-gap: 18px;    /* separación vertical muy compacta */
+      --side-pad: 32px;   /* padding lateral */
+    }
+    
+    .ax-timeline{
+      position:relative;margin:0 auto;width:100%;
+      padding:80px var(--side-pad);color:var(--fg);
+    }
+    .ax-timeline::before{
+       content:"";position:absolute;top:0;bottom:0;left:50%;width:var(--trunk-w);
+       transform:translateX(-50%);background:#ffffff;z-index:0;
+       box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, 0 0 14px rgba(0,0,0,.25);
+       /* Animación del tronco central */
+       animation: trunkGlow 4s ease-in-out infinite alternate;
+    }
+    
+    @keyframes trunkGlow {
+      0% { box-shadow: 0 0 0 1px rgba(255,255,255,.02) inset, 0 0 14px rgba(0,0,0,.25); }
+      100% { box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset, 0 0 20px rgba(255,255,255,.15), 0 0 14px rgba(0,0,0,.25); }
+    }
+    
+    .ax-events{list-style:none;margin:0;padding:0}
+    .ax-event{position:relative;display:block;min-height:var(--node);margin:var(--row-gap) 0;
+              /* Estado inicial para animaciones */
+              opacity: 0;
+              transform: translateY(30px);
+              transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);}
+    
+    /* Clase para activar animaciones */
+    .ax-event.animate-in{
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .ax-event.left{width:calc(50% - var(--side-pad));padding-right:calc(var(--branch-l) + 12px);text-align:right}
+    .ax-event.right{width:calc(50% - var(--side-pad));margin-left:calc(50% + var(--side-pad));padding-left:calc(var(--branch-l) + 12px);text-align:left}
+    
+    .ax-branch{position:absolute;top:50%;height:var(--trunk-w);background:#ffffff;transform:translateY(-50%);width:var(--branch-l);z-index:1;
+                /* Animación de entrada para las ramas */
+                opacity: 0;
+                transform: translateY(-50%) scaleX(0);
+                transform-origin: left;
+                transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s;}
+    
+    .ax-event.animate-in .ax-branch{
+      opacity: 1;
+      transform: translateY(-50%) scaleX(1);
+    }
+    
+    .ax-event.left .ax-branch{right:calc(-1 * var(--side-pad));transform-origin: right;}
+    .ax-event.right .ax-branch{left:calc(-1 * var(--side-pad));transform-origin: left;}
+    
+    .ax-node{position:absolute;top:50%;width:var(--node);height:var(--node);background:var(--node-color, var(--cyan));
+      transform:translateY(-50%);
+      box-shadow:0 0 0 2px rgba(255,255,255,.04) inset, 0 6px 18px rgba(0,0,0,.35);z-index:2;
+      /* Animación de entrada para los nodos */
+      opacity: 0;
+      transform: translateY(-50%) scale(0);
+      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s;
+      /* Efecto de pulso continuo */
+      animation: nodePulse 3s ease-in-out infinite;}
+    
+    .ax-event.animate-in .ax-node{
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+    
+    @keyframes nodePulse {
+      0%, 100% { 
+        box-shadow: 0 0 0 2px rgba(255,255,255,.04) inset, 0 6px 18px rgba(0,0,0,.35);
+      }
+      50% { 
+        box-shadow: 0 0 0 2px rgba(255,255,255,.1) inset, 0 6px 18px rgba(0,0,0,.35), 0 0 20px var(--node-color, var(--cyan));
+      }
+    }
+    
+    .ax-event.left .ax-node{right:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2)}
+    .ax-event.right .ax-node{left:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2)}
+    
+    .ax-card{display:inline-block;max-width:420px;padding:8px 0;position:relative;z-index:3;
+             /* Animación de entrada para las tarjetas */
+             opacity: 0;
+             transform: translateX(20px);
+             transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s;}
+    
+    .ax-event.animate-in .ax-card{
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    .ax-event.left .ax-card{
+      transform: translateX(-20px);
+    }
+    
+    .ax-event.left.animate-in .ax-card{
+      transform: translateX(0);
+    }
+    
+    .ax-card h3{margin:0 0 2px 0;font-size:22px;letter-spacing:.2px;color:#ffffff;font-weight:700}
+    .ax-card h3 .ax-week{font-size:22px;font-weight:700}
+    .ax-card h3 .ax-date{font-size:16px;font-weight:400;color:var(--muted)}
+    .ax-card p{margin:0;font-size:28px;line-height:1.45;color:#ffffff;font-weight:700}
+    
+    /* Efecto hover en las tarjetas */
+    .ax-card:hover {
+      transform: translateY(-2px);
+      transition: transform 0.3s ease;
+    }
+    
+    .ax-end-image{display:flex;justify-content:center;align-items:center;margin:40px 0 0;
+                  /* Animación de entrada para la imagen final */
+                  opacity: 0;
+                  transform: translateY(20px);
+                  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1s;
+                  min-height: 100px;}
+    
+    .ax-end-image.animate-in{
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Asegurar que la imagen sea visible incluso sin animación */
+    .ax-end-image img{
+      max-width: 260px;
+      width: 50%;
+      height: auto;
+      opacity: 0.98;
+      display: block;
+    }
+    
+    @media (max-width:900px){
+      :root{--branch-l:52px;--row-gap:16px;--side-pad:16px;--trunk-w:10px}
+      .ax-event,.ax-event.left,.ax-event.right{width:100%;margin-left:0;text-align:center;padding:0;min-height:unset}
+      /* Reservar espacio arriba para nodo/ramas */
+      .ax-event{padding-top:calc(var(--node) + 8px)}
+      /* Tronco centrado ya por defecto; ramas ancladas al centro */
+      .ax-event .ax-branch{top:calc(var(--node)/2);left:50%;right:auto;width:var(--branch-l)}
+      .ax-event.left .ax-branch{transform:translate(-100%,-50%);transform-origin: right;}
+      .ax-event.right .ax-branch{transform:translate(0,-50%);transform-origin: left;}
+      /* Nodos en el extremo de cada rama, anclados al centro */
+      .ax-event.left .ax-node{top:calc(var(--node)/2);left:calc(50% - var(--branch-l) - var(--node)/2);right:auto}
+      .ax-event.right .ax-node{top:calc(var(--node)/2);left:calc(50% + var(--branch-l) - var(--node)/2);right:auto}
+      /* Texto debajo del nodo, centrado y con padding lateral */
+      .ax-event .ax-card{display:block;margin:12px auto 0;padding:0 16px;max-width:560px}
+      .ax-card h3{font-size:19px}
+      .ax-card h3 .ax-week{font-size:19px}
+      .ax-card h3 .ax-date{font-size:14px}
+      .ax-card p{font-size:19px;line-height:1.35}
+    }
+    
+    /* Modo súper compacto para móviles pequeños */
+    @media (max-width:600px){
+      :root{--branch-l:0px;--node:30px;--row-gap:12px;--trunk-w:6px}
+      /* Ocultar ramas para evitar bloqueo visual */
+      .ax-event .ax-branch{display:none}
+      /* Centrar nodos sobre el tronco */
+      .ax-event.left .ax-node,.ax-event.right .ax-node{left:50%}
+      .ax-event{padding-top:calc(var(--node) + 6px)}
+      /* Hacer el tronco más sutil */
+      .ax-timeline::before{opacity:.6}
+      /* Tipografía un poco más pequeña */
+      .ax-card h3{font-size:18px}
+      .ax-card h3 .ax-week{font-size:18px}
+      .ax-card h3 .ax-date{font-size:13px}
+      .ax-card p{font-size:16px;line-height:1.3}
+    }
+
+    /* Zoom móvil en lugar de reflow: mantiene proporciones del desktop */
+    @media (max-width:900px){
+      .ax-timeline{transform:scale(.85);transform-origin:top center}
+      /* Revertir a layout desktop para evitar desplazamientos */
+      .ax-event,.ax-event.left,.ax-event.right{width:calc(50% - var(--side-pad));margin-left:0;text-align:left;padding:0;min-height:unset}
+      .ax-event.right{margin-left:calc(50% + var(--side-pad));padding-left:calc(var(--branch-l) + 12px)}
+      .ax-event.left{padding-right:calc(var(--branch-l) + 12px);text-align:right}
+      .ax-event .ax-branch{top:50%;left:auto;right:auto;width:var(--branch-l);height:var(--trunk-w);transform:translateY(-50%);display:block}
+      .ax-event.left .ax-branch{right:calc(-1 * var(--side-pad));transform-origin: right;}
+      .ax-event.right .ax-branch{left:calc(-1 * var(--side-pad));transform-origin: left;}
+      .ax-event.left .ax-node{top:50%;right:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2);left:auto}
+      .ax-event.right .ax-node{top:50%;left:calc(-1 * var(--side-pad) + var(--branch-l) - var(--node)/2);right:auto}
+      .ax-event .ax-card{display:inline-block;margin:0;padding:8px 0;max-width:420px;text-align:inherit}
+    }
+    @media (max-width:600px){
+      .ax-timeline{transform:scale(.72)}
+    }
+    
+    /* Indicador de progreso del scroll */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--red));
+      transform-origin: left;
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body class="grid-soft">
+  <!-- Indicador de progreso del scroll -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+  
+  <!-- Menu -->
+  <div id="menu-container"></div>
+  <script>
+    fetch('components/menu.html')
+      .then(r => r.text())
+      .then(html => { document.getElementById('menu-container').innerHTML = html; const s = document.createElement('script'); s.src = 'components/menu.js'; document.head.appendChild(s); })
+      .catch(err => console.error('Error loading menu:', err));
+  </script>
+
+  <div class="container" style="padding-top:70px;">
+    <div class="logo-hero">
+      <img src="components/images/adrianlogo.png" alt="Adrian Logo" class="brand">
+      <img src="components/images/glasses.png" alt="Adrian Glasses" class="glasses">
+    </div>
+    <p class="subtitle" style="font-family: 'VT323', monospace;">$ADRIAN Ecosystem — Historical Roadmap</p>
+
+    <section class="ax-timeline">
+      <ol class="ax-events">
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 1</span> <span class="ax-date">· Jan 21, 2025</span></h3>
+            <p>$ADRIAN launch PumpFun</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 2</span> <span class="ax-date">· Jan 28, 2025</span></h3>
+            <p>Discord</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 3</span> <span class="ax-date">· Feb 04, 2025</span></h3>
+            <p>$ADRIAN v2 on BASE</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 4</span> <span class="ax-date">· Feb 11, 2025</span></h3>
+            <p>LP created</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 5</span> <span class="ax-date">· Feb 18, 2025</span></h3>
+            <p>Pumpyour$Adrians</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 6</span> <span class="ax-date">· Feb 25, 2025</span></h3>
+            <p>$ADRIAN v3</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 7</span> <span class="ax-date">· Mar 04, 2025</span></h3>
+            <p>AdrianAuctions</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 8</span> <span class="ax-date">· Mar 11, 2025</span></h3>
+            <p>FilthyRICH + Forked AdrianGALLERY + BurnStatsDAPP + HoldingsDapp</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 9</span> <span class="ax-date">· Mar 18, 2025</span></h3>
+            <p>AdrianGALLERY marketplace ERC1155</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 10</span> <span class="ax-date">· Mar 25, 2025</span></h3>
+            <p>Mint PIMPS + Akashi auction + THE OFFERING</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 11</span> <span class="ax-date">· Apr 01, 2025</span></h3>
+            <p>AdrianPunks contract coding</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 12</span> <span class="ax-date">· Apr 08, 2025</span></h3>
+            <p>AdrianLOTTERY + AdrianMARKET</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 13</span> <span class="ax-date">· Apr 15, 2025</span></h3>
+            <p>TAX Reaper</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 14</span> <span class="ax-date">· Apr 22, 2025</span></h3>
+            <p>AdrianPUNKS mint + PunkQUEST soft stake</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 15</span> <span class="ax-date">· Apr 29, 2025</span></h3>
+            <p>Coding random shit</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 16</span> <span class="ax-date">· May 06, 2025</span></h3>
+            <p>TOMO auction + Punk Exchange P2P + HalfXAdrians</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 17</span> <span class="ax-date">· May 13, 2025</span></h3>
+            <p>OG Lambobuilder + Art auctions + AdrianTOGGLER</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 18</span> <span class="ax-date">· May 20, 2025</span></h3>
+            <p>AdrianAuctions launch</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 19</span> <span class="ax-date">· May 27, 2025</span></h3>
+            <p>VECTORadrians toggled</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 20</span> <span class="ax-date">· Jun 03, 2025</span></h3>
+            <p>Vercel render + AdrianLAB coding</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 21</span> <span class="ax-date">· Jun 10, 2025</span></h3>
+            <p>Coding AdrianLAB</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 22</span> <span class="ax-date">· Jun 17, 2025</span></h3>
+            <p>Coding AdrianLAB</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 23</span> <span class="ax-date">· Jun 24, 2025</span></h3>
+            <p>Coding AdrianLAB</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 24</span> <span class="ax-date">· Jul 01, 2025</span></h3>
+            <p>Coding AdrianLAB</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 25</span> <span class="ax-date">· Jul 08, 2025</span></h3>
+            <p>OG Floppy</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 26</span> <span class="ax-date">· Jul 15, 2025</span></h3>
+            <p>PatientZERO + First ActionPACK + AdrianZERO + AdrianLAB + GREENFloppy</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 27</span> <span class="ax-date">· Jul 22, 2025</span></h3>
+            <p>GF Floppy + AdrianNAMEregistry + GF Serum</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 28</span> <span class="ax-date">· Jul 29, 2025</span></h3>
+            <p>OG mint proceeds distribution</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 29</span> <span class="ax-date">· Aug 05, 2025</span></h3>
+            <p>T-Shit Studio + TraitSHOP + First stream</p>
+          </div>
+        </li>
+        <li class="ax-event right" style="--node-color: var(--red);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 30</span> <span class="ax-date">· Aug 12, 2025</span></h3>
+            <p>Gold serums</p>
+          </div>
+        </li>
+        <li class="ax-event left" style="--node-color: var(--cyan);">
+          <div class="ax-branch"></div>
+          <div class="ax-node"></div>
+          <div class="ax-card">
+            <h3><span class="ax-week">Week 31</span> <span class="ax-date">· Aug 19, 2025</span></h3>
+            <p>OG traitcards + Glitch Floppy</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+    <div class="ax-end-image">
+      <img src="components/images/bereal.png" alt="BeReal" style="max-width: 260px; width: 50%; height: auto; opacity: 0.98;">
+    </div>
+
+    <p class="footer-note">Last updated Aug 16, 2025 · Anaglyph cyan/red styling · Monospace vibe</p>
+  </div>
+
+  <!-- Script para las animaciones de scroll -->
+  <script>
+    // Función para verificar si un elemento está en el viewport
+    function isInViewport(element) {
+      const rect = element.getBoundingClientRect();
+      return (
+        rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
+        rect.bottom >= 0
+      );
+    }
+
+    // Función para activar animaciones
+    function activateAnimations() {
+      const events = document.querySelectorAll('.ax-event');
+      const endImage = document.querySelector('.ax-end-image');
+      
+      events.forEach(event => {
+        if (isInViewport(event) && !event.classList.contains('animate-in')) {
+          event.classList.add('animate-in');
+        }
+      });
+      
+      // Asegurar que la imagen final se active cuando esté visible
+      if (endImage && isInViewport(endImage) && !endImage.classList.contains('animate-in')) {
+        endImage.classList.add('animate-in');
+      }
+    }
+
+    // Función para actualizar la barra de progreso del scroll
+    function updateScrollProgress() {
+      const scrollProgress = document.getElementById('scrollProgress');
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      
+      scrollProgress.style.transform = `scaleX(${scrollPercent / 100})`;
+    }
+
+    // Event listeners
+    window.addEventListener('scroll', () => {
+      activateAnimations();
+      updateScrollProgress();
+    });
+
+    // Activar animaciones al cargar la página
+    window.addEventListener('load', () => {
+      // Pequeño delay para asegurar que todo esté renderizado
+      setTimeout(() => {
+        activateAnimations();
+      }, 100);
+      
+      // Forzar activación de la imagen final después de 2 segundos
+      setTimeout(() => {
+        const endImage = document.querySelector('.ax-end-image');
+        if (endImage && !endImage.classList.contains('animate-in')) {
+          endImage.classList.add('animate-in');
+        }
+      }, 2000);
+    });
+
+    // Activar animaciones al hacer resize
+    window.addEventListener('resize', activateAnimations);
+  </script>
+</body>
+</html>

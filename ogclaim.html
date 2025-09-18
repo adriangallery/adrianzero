@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OG Claim - AdrianPunks Holders</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="icon" href="components/images/adrianzero.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: #0e0e0e;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #9d50ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            color: #bdbdbd;
+        }
+
+        /* Menu */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff88;
+            font-family: 'VT323', monospace;
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #00ff88 !important;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        #menu-container .navbar-toggler {
+            border-color: #00ff88;
+        }
+
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 136, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .container {
+            padding-top: 70px;
+        }
+
+        /* Connect */
+        .connect-section {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #2a2a2a;
+            margin-bottom: 20px;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #00ff88, #00aaff);
+            color: #000;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            font-weight: bold;
+        }
+
+        .connect-btn:hover { transform: translateY(-2px); }
+
+        .wallet-pill {
+            display: inline-block;
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid rgba(0, 170, 255, 0.4);
+            padding: 8px 14px;
+            border-radius: 10px;
+            color: #00aaff;
+            font-family: monospace;
+            margin-top: 10px;
+        }
+
+        .network-warning {
+            display: none;
+            background: rgba(255, 187, 0, 0.1);
+            border: 1px solid rgba(255, 187, 0, 0.3);
+            color: #ffbb00;
+            padding: 10px 14px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .network-warning button {
+            background: rgba(255, 187, 0, 0.15);
+            border: 1px solid rgba(255, 187, 0, 0.4);
+            color: #ffbb00;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            margin-left: 8px;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .stat-title { color: #cccccc; font-size: 0.95rem; margin-bottom: 6px; }
+        .stat-value { color: #00ff88; font-size: 1.6rem; font-weight: bold; }
+        .progress { height: 10px; background: #1d1d1d; border-radius: 6px; overflow: hidden; }
+        .progress-bar { height: 10px; background: linear-gradient(90deg, #00ff88, #00aaff); }
+
+        /* Search/eligibility */
+        .eligibility-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .eligibility-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .input-id { flex: 1; min-width: 220px; padding: 10px 12px; border-radius: 10px; border: 1px solid #2a2a2a; background: #0f0f0f; color: #fff; }
+        .btn-secondary { padding: 10px 14px; border-radius: 10px; background: #1f1f1f; border: 1px solid #2a2a2a; color: #ddd; cursor: pointer; }
+        .btn-secondary:hover { background: #262626; }
+
+        .status-line { margin-top: 10px; font-size: 1rem; }
+        .status-line.success { color: #00ff88; }
+        .status-line.error { color: #ff6666; }
+        .status-line.info { color: #00aaff; }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .token-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .token-img { width: 100%; height: 220px; background: #1c1c1c; display: flex; align-items: center; justify-content: center; }
+        .token-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .token-body { padding: 12px; }
+        .token-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 6px; }
+        .token-sub { color: #bdbdbd; font-size: 0.95rem; margin-bottom: 6px; }
+
+        .claim-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #00ff88, #00aaff);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .claim-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .batch-bar {
+            position: sticky;
+            bottom: 15px;
+            background: rgba(0,0,0,0.85);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 12px;
+            display: none;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .checkbox { transform: scale(1.2); margin-right: 6px; }
+
+        .footer {
+            text-align: center;
+            margin: 30px 0 10px;
+            color: #8a8a8a;
+        }
+        /* Debug Panel */
+        .debug-panel { position: fixed; right: 10px; bottom: 10px; width: 380px; max-height: 60vh; background: rgba(0,0,0,0.9); border: 1px solid #2a2a2a; border-radius: 10px; z-index: 2000; display: none; }
+        .debug-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #2a2a2a; }
+        .debug-title { font-weight: bold; color: #00ff88; }
+        .debug-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+        .debug-body { padding: 8px; }
+        .debug-log { width: 100%; height: 220px; background: #0f0f0f; color: #c8c8c8; border: 1px solid #2a2a2a; border-radius: 6px; padding: 6px; overflow: auto; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+        .debug-input { width: 74px; background: #0f0f0f; color: #c8c8c8; border: 1px solid #2a2a2a; border-radius: 6px; padding: 4px 6px; }
+        .badge-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; background: #666; }
+        .badge-dot.on { background: #00ff88; box-shadow: 0 0 6px #00ff88; }
+    </style>
+</head>
+<body>
+    <!-- Menu -->
+    <div id="menu-container"></div>
+    <script>
+      fetch('components/menu.html')
+        .then(r => r.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const s = document.createElement('script');
+          s.src = 'components/menu.js';
+          document.head.appendChild(s);
+        })
+        .catch(err => console.error('Error loading menu:', err));
+    </script>
+
+    <div class="container">
+        <div class="header">
+            <h1>OG Claim</h1>
+            <div class="subtitle">1:1 claim for AdrianPunks holders → AdrianTraitsCore assets</div>
+        </div>
+
+        <div id="networkWarning" class="network-warning">
+            ⚠️ Please switch to Base Network
+            <button onclick="switchToBase()">Switch Network</button>
+        </div>
+
+        <div class="connect-section" id="connectSection">
+            <button id="connectBtn" class="connect-btn">Connect Wallet</button>
+            <div id="walletInfo" class="wallet-pill" style="display:none;"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-title">Total Claimed</div>
+                <div class="stat-value" id="claimedCount">-</div>
+                <div class="progress" style="margin-top:10px;">
+                    <div class="progress-bar" id="claimedProgress" style="width:0%"></div>
+                </div>
+                <div class="stat-title" style="margin-top:6px;">Supply: 1..1000</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Contract</div>
+                <div class="stat-value" style="font-size:1.05rem; color:#00aaff;">
+                    0x31D66c...D84b
+                </div>
+                <div class="stat-title" style="margin-top:6px;">AdrianPunks</div>
+                <div class="stat-value" style="font-size:1.05rem; color:#00ff88;">
+                    0x79BE8A...7566
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Batch Actions</div>
+                <div class="stat-value" id="batchSelectedCount">0 selected</div>
+                <button class="btn-secondary" id="claimSelectedBtn" style="margin-top:8px;" disabled>Claim Selected</button>
+            </div>
+        </div>
+
+        <div class="eligibility-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div>
+                    <div style="font-size:1.2rem; font-weight:bold;">Check Eligibility</div>
+                    <div style="color:#bdbdbd; font-size:0.95rem;">Enter an AdrianPunks token ID (1..1000)</div>
+                </div>
+                <div class="eligibility-actions">
+                    <input id="checkIdInput" type="number" min="1" max="1000" placeholder="Punk ID" class="input-id">
+                    <button class="btn-secondary" id="checkBtn">Check</button>
+                </div>
+            </div>
+            <div id="checkStatus" class="status-line"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="font-size:1.4rem; font-weight:bold;">Your AdrianPunks</div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-secondary" id="refreshBtn">Refresh</button>
+                <button class="btn-secondary" id="selectAllBtn">Select All Eligible</button>
+                <button class="btn-secondary" id="clearSelectionBtn">Clear Selection</button>
+            </div>
+        </div>
+
+
+        <div id="myPunksGrid" class="grid" style="margin-top:12px;"></div>
+        <div id="noTokens" class="subtitle" style="display:none; text-align:center; margin:20px 0;">No AdrianPunks found in this wallet</div>
+
+        <div id="batchBar" class="batch-bar">
+            <div style="flex:1; color:#bdbdbd;">
+                <span id="batchInfo">0 selected</span>
+            </div>
+            <button id="batchClaimBtn" class="claim-btn" disabled>Claim Selected</button>
+        </div>
+
+        <div class="footer">Powered by $ADRIAN</div>
+    </div>
+
+    <!-- Debug Panel -->
+    <div id="debugPanel" class="debug-panel">
+        <div class="debug-header">
+            <div class="debug-title">Debug Console <span id="debugDot" class="badge-dot"></span></div>
+            <div class="debug-controls">
+                <label style="display:flex;align-items:center;gap:4px;">
+                    <input type="checkbox" id="debugEnabled"> Verbose
+                </label>
+                <input type="number" id="maxItemsInput" class="debug-input" min="1" max="1000" value="50" title="Max items to process">
+                <button id="selfTestBtn" class="btn-secondary">Self Test</button>
+                <button id="stopBtn" class="btn-secondary">Stop</button>
+                <button id="clearLogBtn" class="btn-secondary">Clear</button>
+                <button id="closeDebugBtn" class="btn-secondary">✕</button>
+            </div>
+        </div>
+        <div class="debug-body">
+            <div id="debugLog" class="debug-log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Config principal
+        const CLAIM_CONTRACT = '0x31D66caBC1D6E65a4947D19ed22FB63ee2C8D84b';
+        const PUNKS_CONTRACT = '0x79BE8AcdD339C7b92918fcC3fd3875b5Aaad7566';
+        const BASE_CHAIN_ID_HEX = '0x2105'; // 8453
+        const PLACEHOLDER_IMG = 'components/images/adrianzero.png';
+        const PUNKS_IMAGE_BASE = 'https://adrianpunks.com/market/adrianpunksimages/';
+        
+        // Infura Base RPC (como mypunks.html)
+        const INFURA_URL = 'https://base-mainnet.infura.io/v3/cc0c8013b1e044dcba79d4f7ec3b2ba1';
+        const NETWORK_CONF = { name: 'base', chainId: 8453 };
+        const baseProvider = new ethers.providers.JsonRpcProvider(INFURA_URL, NETWORK_CONF);
+
+        // Multicall3 en Base
+        const MULTICALL3 = '0xcA11bde05977b3631167028862bE2a173976CA11';
+        const multicallAbi = [
+          'function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) public view returns (tuple(bool success, bytes returnData)[] returnData)'
+        ];
+
+        // ABIs
+        const OG_CLAIM_ABI = [
+            'function claim(uint256 punkId) external',
+            'function claimBatch(uint256[] punkIds) external',
+            'function isClaimed(uint256 punkId) external view returns (bool)',
+            'function getClaimedCount() external view returns (uint256)'
+        ];
+        const ERC721_MIN_ABI = [ 'function ownerOf(uint256 tokenId) view returns (address)' ];
+        const ERC721_ENUM_ABI = [ 'function balanceOf(address) view returns (uint256)', 'function tokenOfOwnerByIndex(address,uint256) view returns (uint256)' ];
+
+        // Helpers
+        function getPunkImageUrl(id) { return `${PUNKS_IMAGE_BASE}${id}.png`; }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        // Estado
+        let provider, signer, userAddress;
+        let claimContract;
+        let myPunks = [];
+        let selectedIds = new Set();
+
+        // DOM (referencias existentes)
+        const connectBtn = document.getElementById('connectBtn');
+        const walletInfo = document.getElementById('walletInfo');
+        const networkWarning = document.getElementById('networkWarning');
+        const claimedCountEl = document.getElementById('claimedCount');
+        const claimedProgressEl = document.getElementById('claimedProgress');
+        const myPunksGrid = document.getElementById('myPunksGrid');
+        const noTokensEl = document.getElementById('noTokens');
+        const batchBar = document.getElementById('batchBar');
+        const batchInfo = document.getElementById('batchInfo');
+        const batchClaimBtn = document.getElementById('batchClaimBtn');
+        const claimSelectedBtn = document.getElementById('claimSelectedBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        const checkIdInput = document.getElementById('checkIdInput');
+        const toggleDebugBtn = document.getElementById('toggleDebugBtn');
+
+        // Debug State
+        let DEBUG = false;
+        let STOP_FLAG = false;
+        let MAX_ITEMS = 50;
+        let rateLimitHits = 0;
+        const RATE_LIMIT_MAX = 5;
+
+        // DOM
+        const debugPanel = document.getElementById('debugPanel');
+        const debugEnabled = document.getElementById('debugEnabled');
+        const maxItemsInput = document.getElementById('maxItemsInput');
+        const debugLogEl = document.getElementById('debugLog');
+        const debugDot = document.getElementById('debugDot');
+        const selfTestBtn = document.getElementById('selfTestBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const clearLogBtn = document.getElementById('clearLogBtn');
+        const closeDebugBtn = document.getElementById('closeDebugBtn');
+
+        // Debug helpers
+        function dbg(msg, data) { const ts = new Date().toISOString().slice(11, 23); const line = `[${ts}] ${msg}${data!==undefined?' '+safeStringify(data):''}`; if (DEBUG) console.log(line); if (debugLogEl) { debugLogEl.textContent += (debugLogEl.textContent?'\n':'') + line; debugLogEl.scrollTop = debugLogEl.scrollHeight; } }
+        function safeStringify(v) { try { return typeof v === 'string' ? v : JSON.stringify(v); } catch { return String(v); } }
+        function setDot(on) { if (debugDot) debugDot.classList.toggle('on', !!on); }
+
+        // Wire debug UI
+        if (toggleDebugBtn) toggleDebugBtn.addEventListener('click', () => { debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none'; });
+        if (closeDebugBtn) closeDebugBtn.addEventListener('click', () => { debugPanel.style.display = 'none'; });
+        if (debugEnabled) debugEnabled.addEventListener('change', (e) => { DEBUG = e.target.checked; setDot(DEBUG); dbg('Debug toggled', DEBUG); });
+        if (maxItemsInput) maxItemsInput.addEventListener('input', (e) => { const v = parseInt(e.target.value, 10); if (Number.isFinite(v) && v >= 1 && v <= 1000) { MAX_ITEMS = v; dbg('MAX_ITEMS set', v); } });
+        if (selfTestBtn) selfTestBtn.addEventListener('click', runSelfTest);
+        if (stopBtn) stopBtn.addEventListener('click', () => { STOP_FLAG = true; dbg('Stop flag set'); });
+        if (clearLogBtn) clearLogBtn.addEventListener('click', () => { debugLogEl.textContent = ''; });
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            if (connectBtn) connectBtn.addEventListener('click', connectWallet);
+            if (refreshBtn) refreshBtn.addEventListener('click', loadMyPunks);
+            if (selectAllBtn) selectAllBtn.addEventListener('click', selectAllEligible);
+            if (clearSelectionBtn) clearSelectionBtn.addEventListener('click', clearSelection);
+            if (checkBtn) checkBtn.addEventListener('click', checkEligibility);
+            if (batchClaimBtn) batchClaimBtn.addEventListener('click', claimSelected);
+            if (claimSelectedBtn) claimSelectedBtn.addEventListener('click', claimSelected);
+            attachWalletListeners();
+            checkAutoConnect();
+        });
+
+        async function runSelfTest() {
+            try {
+                dbg('SelfTest start');
+                const pub = baseProvider; const net = await pub.getNetwork(); dbg('Public RPC network', net);
+                if (provider) { const wnet = await provider.getNetwork(); dbg('Wallet network', wnet); }
+                const claimRead = new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, pub);
+                const claimedCount = await claimRead.getClaimedCount(); dbg('getClaimedCount()', claimedCount.toString());
+                dbg('SelfTest end');
+            } catch (e) { dbg('SelfTest error', e.message || e); }
+        }
+
+        async function checkAutoConnect() {
+            if (window.ethereum) {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) await connectWallet();
+            }
+        }
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) { alert('Please install MetaMask'); return; }
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== BASE_CHAIN_ID_HEX) { networkWarning.style.display = 'block'; throw new Error('Wrong network'); }
+                networkWarning.style.display = 'none';
+                claimContract = new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, signer);
+                if (connectBtn) connectBtn.style.display = 'none';
+                if (walletInfo) { walletInfo.style.display = 'inline-block'; walletInfo.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`; }
+                await loadEverything();
+            } catch (e) { console.error('Connect error:', e); }
+        }
+
+        async function ensureBase() { const chainId = await window.ethereum.request({ method: 'eth_chainId' }); if (chainId !== BASE_CHAIN_ID_HEX) { networkWarning.style.display = 'block'; throw new Error('Wrong network'); } networkWarning.style.display = 'none'; }
+
+        async function switchToBase() { try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX }] }); setTimeout(() => window.location.reload(), 600); } catch (switchError) { if (switchError.code === 4902) { try { await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX, chainName: 'Base Mainnet', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://mainnet.base.org'], blockExplorerUrls: ['https://basescan.org'] }] }); setTimeout(() => window.location.reload(), 600); } catch (addError) { dbg('Add network error', addError.message || addError); } } } }
+
+        function attachWalletListeners() { if (!window.ethereum) return; window.ethereum.on('accountsChanged', () => window.location.reload()); window.ethereum.on('chainChanged', () => window.location.reload()); }
+
+        async function loadEverything() { try { rateLimitHits = 0; STOP_FLAG = false; await ensureBase(); await Promise.all([ loadStats(), loadMyPunks() ]); } catch (e) { dbg('Load error', e.message || e); } }
+
+        async function loadStats() {
+            try {
+                const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, baseProvider).getClaimedCount();
+                const claimedNum = parseInt(claimed.toString(), 10) || 0;
+                claimedCountEl.textContent = `${claimedNum} / 1000`;
+                const pct = Math.max(0, Math.min(100, (claimedNum / 1000) * 100));
+                claimedProgressEl.style.width = pct.toFixed(1) + '%';
+            } catch { claimedCountEl.textContent = 'Error'; }
+        }
+
+        // NUEVO: Cargar tokens con Multicall3 (igual que mypunks)
+        async function loadMyPunks() {
+            try {
+                myPunksGrid.innerHTML = '<div class="subtitle">Loading your AdrianPunks...</div>';
+                noTokensEl.style.display = 'none';
+                selectedIds.clear(); updateBatchBar();
+
+                // balanceOf(owner)
+                const enumNft = new ethers.Contract(PUNKS_CONTRACT, ERC721_ENUM_ABI, baseProvider);
+                const balanceBN = await enumNft.balanceOf(userAddress);
+                const total = balanceBN.toNumber();
+                if (total === 0) { myPunks = []; myPunksGrid.innerHTML = ''; noTokensEl.style.display = 'block'; return; }
+
+                // aggregate3 tokenOfOwnerByIndex(owner, i)
+                const multicall = new ethers.Contract(MULTICALL3, multicallAbi, baseProvider);
+                const iface = new ethers.utils.Interface(ERC721_ENUM_ABI);
+                const calls = [];
+                for (let i = 0; i < total; i++) {
+                    calls.push({
+                        target: PUNKS_CONTRACT,
+                        allowFailure: true,
+                        callData: iface.encodeFunctionData('tokenOfOwnerByIndex', [userAddress, i])
+                    });
+                }
+                const results = await multicall.aggregate3(calls);
+                const tokenIds = results
+                    .filter(r => r.success)
+                    .map(r => iface.decodeFunctionResult('tokenOfOwnerByIndex', r.returnData)[0])
+                    .map(bn => (ethers.BigNumber.isBigNumber(bn) ? bn.toNumber() : parseInt(bn, 10)));
+
+                // Construir lista con imágenes directas
+                const owned = tokenIds.map(id => ({ tokenId: id, title: `Punk #${id}`, imageUrl: getPunkImageUrl(id) }));
+
+                // isClaimed (lotes pequeños)
+                const claimRead = new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, baseProvider);
+                const enriched = [];
+                for (let i = 0; i < owned.length; i++) {
+                    try {
+                        const claimed = await claimRead.isClaimed(owned[i].tokenId);
+                        enriched.push({ ...owned[i], isClaimed: !!claimed });
+                    } catch (e) {
+                        enriched.push({ ...owned[i], isClaimed: false });
+                        await sleep(50);
+                    }
+                }
+
+                myPunks = enriched.sort((a,b) => a.tokenId - b.tokenId);
+                renderMyPunks();
+            } catch (e) {
+                console.error('loadMyPunks error:', e);
+                myPunksGrid.innerHTML = '<div class="subtitle" style="color:#ff6666;">Error loading tokens</div>';
+            }
+        }
+
+        function renderMyPunks() {
+            myPunksGrid.innerHTML = '';
+            myPunks.forEach(tok => {
+                const traitId = 100000 + tok.tokenId;
+                const el = document.createElement('div');
+                el.className = 'token-card';
+                const imgSrc = tok.imageUrl || getPunkImageUrl(tok.tokenId) || PLACEHOLDER_IMG;
+                el.innerHTML = `
+                    <div class="token-img">
+                        <img src="${imgSrc}" alt="${tok.title}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}';">
+                    </div>
+                    <div class="token-body">
+                        <div class="token-title">${tok.title || 'Punk'} #${tok.tokenId}</div>
+                        <div class="token-sub">Trait ID → ${traitId}</div>
+                        <div class="token-sub" style="${tok.isClaimed ? 'color:#ffbb00' : 'color:#00ff88'}">${tok.isClaimed ? 'Already claimed' : 'Eligible to claim'}</div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                            <label style="display:flex; align-items:center; gap:8px; color:#bdbdbd;">
+                                <input type="checkbox" class="checkbox" data-id="${tok.tokenId}" ${tok.isClaimed ? 'disabled' : ''} ${selectedIds.has(tok.tokenId) ? 'checked' : ''}>
+                                Select
+                            </label>
+                            <button class="claim-btn" ${tok.isClaimed ? 'disabled' : ''} data-claim-id="${tok.tokenId}">Claim</button>
+                        </div>
+                    </div>
+                `;
+                myPunksGrid.appendChild(el);
+            });
+            // Eventos selección y claim
+            myPunksGrid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'), 10);
+                    if (e.target.checked) selectedIds.add(id); else selectedIds.delete(id);
+                    updateBatchBar();
+                });
+            });
+            myPunksGrid.querySelectorAll('button[data-claim-id]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(e.target.getAttribute('data-claim-id'), 10);
+                    await claimSingle(id, e.target);
+                });
+            });
+            updateBatchBar();
+        }
+
+        function updateBatchBar() {
+            const count = selectedIds.size;
+            batchInfo.textContent = `${count} selected`;
+            batchClaimBtn.disabled = count === 0;
+            claimSelectedBtn.disabled = count === 0;
+            batchBar.style.display = count > 0 ? 'flex' : 'none';
+        }
+
+
+
+        function selectAllEligible() { myPunks.filter(t => !t.isClaimed).forEach(t => selectedIds.add(t.tokenId)); renderMyPunks(); }
+        function clearSelection() { selectedIds.clear(); renderMyPunks(); }
+
+        async function checkEligibility() {
+            const val = parseInt(checkIdInput.value, 10);
+            checkStatus.className = 'status-line info';
+            if (!Number.isFinite(val) || val < 1 || val > 1000) { checkStatus.className = 'status-line error'; checkStatus.textContent = 'Enter a valid Punk ID between 1 and 1000'; return; }
+            try {
+                checkStatus.textContent = 'Checking...';
+                const claimed = await new ethers.Contract(CLAIM_CONTRACT, OG_CLAIM_ABI, baseProvider).isClaimed(val);
+                const traitId = 100000 + val;
+                let ownership = '';
+                try { const owner = await new ethers.Contract(PUNKS_CONTRACT, ERC721_MIN_ABI, baseProvider).ownerOf(val); ownership = owner && userAddress ? (owner.toLowerCase() === userAddress.toLowerCase() ? 'You own this token.' : 'You do not own this token.') : ''; } catch {}
+                checkStatus.className = claimed ? 'status-line error' : 'status-line success';
+                checkStatus.textContent = claimed ? `Token #${val} already claimed. Trait ${traitId}. ${ownership}` : `Token #${val} is eligible. Claim will mint trait ${traitId}. ${ownership}`;
+            } catch (e) { checkStatus.className = 'status-line error'; checkStatus.textContent = 'Error checking eligibility'; dbg('checkEligibility error', e.message || e); }
+        }
+
+        async function claimSingle(id, btnEl) {
+            try {
+                if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Claiming...'; }
+                const tx = await claimContract.claim(id); await tx.wait();
+                const idx = myPunks.findIndex(t => t.tokenId === id); if (idx >= 0) myPunks[idx].isClaimed = true;
+                selectedIds.delete(id); renderMyPunks(); await loadStats();
+            } catch (e) {
+                if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Claim'; }
+                alert(parseError(e));
+            }
+        }
+
+        async function claimSelected() {
+            const ids = Array.from(selectedIds); if (ids.length === 0) return;
+            try {
+                await ensureBase();
+                batchClaimBtn.disabled = true; batchClaimBtn.textContent = 'Claiming...'; claimSelectedBtn.disabled = true;
+                const toClaim = ids.filter(id => { const t = myPunks.find(x => x.tokenId === id); return t && !t.isClaimed; }); if (toClaim.length === 0) { alert('Nothing to claim'); return; }
+                if (toClaim.length === 1) { const tx = await claimContract.claim(toClaim[0]); await tx.wait(); }
+                else { const tx = await claimContract.claimBatch(toClaim); await tx.wait(); }
+                toClaim.forEach(id => { const idx = myPunks.findIndex(t => t.tokenId === id); if (idx >= 0) myPunks[idx].isClaimed = true; selectedIds.delete(id); });
+                renderMyPunks(); await loadStats();
+            } catch (e) { alert(parseError(e)); }
+            finally { batchClaimBtn.disabled = false; batchClaimBtn.textContent = 'Claim Selected'; claimSelectedBtn.disabled = selectedIds.size === 0; }
+        }
+
+        function parseError(error) {
+            if (!error) return 'Unknown error'; if (error.code === 4001) return 'Transaction rejected by user';
+            const msg = error.message || String(error);
+            if (msg.includes('Not extension')) return 'Extension not authorized in TraitsCore';
+            if (msg.toLowerCase().includes('owner')) return 'You must own the AdrianPunk to claim';
+            if (msg.toLowerCase().includes('already claimed')) return 'Token already claimed';
+            if (msg.toLowerCase().includes('rate')) return 'Rate limited, please wait and retry';
+            return msg;
+        }
+
+        // Defaults
+        debugPanel.style.display = 'none';
+    </script>
+</body>
+</html> 

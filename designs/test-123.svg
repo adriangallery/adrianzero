@@ -1,0 +1,16 @@
+
+      <svg width="148" height="148" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated; shape-rendering: crispEdges;">
+        <defs>
+          <pattern id="tshirt-pattern" patternUnits="userSpaceOnUse" width="148" height="148">
+            <image href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ4IiBoZWlnaHQ9IjE0OCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTQ4IiBoZWlnaHQ9IjE0OCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=" width="148" height="148"/>
+          </pattern>
+        </defs>
+        <rect width="148" height="148" fill="url(#tshirt-pattern)"/>
+        <rect x="50" y="50" width="10" height="10" fill="#ff0000"/>
+        <rect x="60" y="50" width="10" height="10" fill="#00ff00"/>
+        <rect x="70" y="50" width="10" height="10" fill="#0000ff"/>
+        <rect x="50" y="60" width="10" height="10" fill="#ffff00"/>
+        <rect x="60" y="60" width="10" height="10" fill="#ff00ff"/>
+        <rect x="70" y="60" width="10" height="10" fill="#00ffff"/>
+      </svg>
+    

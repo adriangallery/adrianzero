@@ -1,0 +1,17 @@
+{
+  "name": "shooter-game-backend",
+  "description": "Backend server for Shooter Game with onchain rewards",
+  "version": "1.0.0",
+  "main": "static-server.js",
+  "scripts": {
+    "start": "node static-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ethers": "^6.8.0",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": "18"
+  }
+}

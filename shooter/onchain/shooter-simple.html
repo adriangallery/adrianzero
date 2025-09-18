@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shooter Game - Simple Version</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        /* Wallet connection overlay */
+        .wallet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .wallet-modal {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .wallet-modal h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .zombie-image {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        .wallet-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            word-break: break-all;
+            color: #74b9ff;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Pixelify Sans', sans-serif;
+            font-size: 18px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #00b894, #00a085);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #fdcb6e, #e17055);
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .status-success {
+            background: rgba(0,184,148,0.2);
+            border: 1px solid #00b894;
+            color: #00b894;
+        }
+
+        .status-error {
+            background: rgba(214,48,49,0.2);
+            border: 1px solid #d63031;
+            color: #d63031;
+        }
+
+        .status-info {
+            background: rgba(116,185,255,0.2);
+            border: 1px solid #74b9ff;
+            color: #74b9ff;
+        }
+
+        .game-stats {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Pixelify Sans', sans-serif;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Game canvas styles */
+        #gameCanvas {
+            display: block;
+            width: 920px;
+            height: 540px;
+            margin: 0 auto;
+            background: url('../level1.png') no-repeat center center;
+            background-size: cover;
+        }
+
+        body {
+            background-color: #222;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Pixelify Sans', sans-serif;
+        }
+
+        .game-container {
+            max-width: 920px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Wallet Connection Overlay -->
+    <div id="walletOverlay" class="wallet-overlay">
+        <div class="wallet-modal">
+            <h2>🎮 Connect Wallet to Play</h2>
+            <img src="../Zombie_Adrian.gif" alt="Zombie Adrian" class="zombie-image">
+            <p>You need to connect your wallet and own a Key NFT to play this game.</p>
+            
+            <div id="walletInfo" class="wallet-info hidden">
+                <div>Connected: <span id="walletAddress" class="wallet-address"></span></div>
+                <div id="keyStatus"></div>
+            </div>
+
+            <div id="walletButtons">
+                <button id="connectWallet" class="btn">Connect Wallet</button>
+                <button id="mintKey" class="btn btn-warning hidden">Mint Key NFT</button>
+            </div>
+
+            <div id="statusMessage" class="status-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <canvas id="gameCanvas" width="920" height="540" style="display: block; margin: 0 auto;"></canvas>
+        
+        <!-- Game Stats -->
+        <div class="game-stats">
+            <div>Score: <span id="score">0</span></div>
+            <div>Time: <span id="time">60</span></div>
+            <div>Key: <span id="keyId">-</span></div>
+        </div>
+
+        <!-- Hidden elements for data storage -->
+        <div id="finalScore" class="hidden">0</div>
+        <div id="highScore" class="hidden">0</div>
+    </div>
+
+    <!-- Load ethers.js from reliable CDN -->
+    <script src="https://unpkg.com/ethers@6.8.0/dist/ethers.umd.min.js"></script>
+    
+    <!-- Load configuration -->
+    <script src="config.js"></script>
+    
+    <!-- Load ERC1155 Manager -->
+    <script src="utils/erc1155Manager.js"></script>
+    
+    <!-- Inline Admin Config -->
+    <script>
+        // Admin Configuration Storage (Inline)
+        class AdminConfig {
+            constructor() {
+                this.storageKey = 'shooterGameAdminConfig';
+                this.defaultConfig = {
+                    burnTokens: [
+                        {
+                            id: 1,
+                            name: 'Basic Token',
+                            amount: 1,
+                            active: true
+                        }
+                    ],
+                    rewards: [
+                        {
+                            score: 100,
+                            tokenId: 2,
+                            amount: 1,
+                            name: 'Bronze Reward'
+                        },
+                        {
+                            score: 500,
+                            tokenId: 3,
+                            amount: 5,
+                            name: 'Silver Reward'
+                        },
+                        {
+                            score: 1000,
+                            tokenId: 4,
+                            amount: 10,
+                            name: 'Gold Reward'
+                        }
+                    ],
+                    lastUpdated: null
+                };
+                this.loadConfig();
+            }
+
+            loadConfig() {
+                try {
+                    const stored = localStorage.getItem(this.storageKey);
+                    if (stored) {
+                        this.config = JSON.parse(stored);
+                    } else {
+                        this.config = { ...this.defaultConfig };
+                        this.saveConfig();
+                    }
+                } catch (error) {
+                    console.error('Error loading config:', error);
+                    this.config = { ...this.defaultConfig };
+                }
+            }
+
+            saveConfig() {
+                try {
+                    this.config.lastUpdated = new Date().toISOString();
+                    localStorage.setItem(this.storageKey, JSON.stringify(this.config));
+                    return true;
+                } catch (error) {
+                    console.error('Error saving config:', error);
+                    return false;
+                }
+            }
+
+            getBurnTokens() {
+                return this.config.burnTokens || [];
+            }
+
+            getActiveBurnTokens() {
+                return this.config.burnTokens.filter(t => t.active);
+            }
+
+            getRewards() {
+                return this.config.rewards || [];
+            }
+
+            getRewardForScore(score) {
+                const sortedRewards = this.config.rewards.sort((a, b) => b.score - a.score);
+                return sortedRewards.find(r => score >= r.score);
+            }
+        }
+    </script>
+    
+    <!-- Simple wallet connection script -->
+    <script>
+        class SimpleWalletManager {
+            constructor() {
+                this.provider = null;
+                this.signer = null;
+                this.account = null;
+                this.contract = null;
+                this.erc1155Address = SHOOTER_CONFIG.ERC1155_CONTRACT;
+                this.shooterAddress = SHOOTER_CONFIG.SHOOTER_CONTRACT;
+                this.chainId = SHOOTER_CONFIG.CHAIN_ID;
+                this.isConnected = false;
+                this.hasKey = false;
+                this.keyId = null;
+            }
+
+            async init() {
+                // Check if MetaMask is installed
+                if (typeof window.ethereum !== 'undefined') {
+                    this.provider = new ethers.providers.Web3Provider(window.ethereum);
+                    
+                    // Check if already connected
+                    const accounts = await this.provider.listAccounts();
+                    if (accounts.length > 0) {
+                        await this.connect();
+                    }
+                } else {
+                    throw new Error('MetaMask not installed');
+                }
+            }
+
+            async connect() {
+                try {
+                    // Request account access
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // Get provider and signer
+                    this.provider = new ethers.providers.Web3Provider(window.ethereum);
+                    this.signer = this.provider.getSigner();
+                    this.account = await this.signer.getAddress();
+                    
+                    // Check if we're on the correct network
+                    const network = await this.provider.getNetwork();
+                    if (network.chainId !== this.chainId) {
+                        await this.switchNetwork();
+                    }
+                    
+                    this.isConnected = true;
+                    
+                    // Listen for account changes
+                    window.ethereum.on('accountsChanged', this.handleAccountsChanged.bind(this));
+                    window.ethereum.on('chainChanged', this.handleChainChanged.bind(this));
+                    
+                    return this.account;
+                } catch (error) {
+                    console.error('Failed to connect wallet:', error);
+                    throw error;
+                }
+            }
+
+            async switchNetwork() {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x2105' }], // Base mainnet
+                    });
+                } catch (switchError) {
+                    // If network doesn't exist, add it
+                    if (switchError.code === 4902) {
+                        await this.addBaseNetwork();
+                    } else {
+                        throw switchError;
+                    }
+                }
+            }
+
+            async addBaseNetwork() {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: '0x2105',
+                        chainName: 'Base',
+                        rpcUrls: ['https://mainnet.base.org'],
+                        nativeCurrency: {
+                            name: 'Ethereum',
+                            symbol: 'ETH',
+                            decimals: 18,
+                        },
+                        blockExplorerUrls: ['https://basescan.org'],
+                    }],
+                });
+            }
+
+            handleAccountsChanged(accounts) {
+                if (accounts.length === 0) {
+                    this.disconnect();
+                } else {
+                    this.account = accounts[0];
+                    this.signer = this.provider.getSigner();
+                }
+            }
+
+            handleChainChanged(chainId) {
+                if (parseInt(chainId, 16) !== this.chainId) {
+                    this.disconnect();
+                }
+            }
+
+            disconnect() {
+                this.provider = null;
+                this.signer = null;
+                this.account = null;
+                this.contract = null;
+                this.isConnected = false;
+            }
+
+            async hasRequiredTokens() {
+                if (!this.account) return false;
+                
+                console.log('🔍 Checking required tokens...');
+                console.log('Account:', this.account);
+                console.log('ERC1155 Address:', this.erc1155Address);
+                console.log('Provider:', this.provider);
+                console.log('Signer:', this.signer);
+                
+                // Get burn tokens from admin config
+                const adminConfig = new AdminConfig();
+                const burnTokens = adminConfig.getActiveBurnTokens();
+                
+                console.log('Burn tokens from config:', burnTokens);
+                
+                if (burnTokens.length === 0) {
+                    console.log('✅ No burn tokens required, allowing play');
+                    return true;
+                }
+                
+                // Check if player has required tokens
+                const erc1155Manager = new ERC1155Manager(this.erc1155Address, this.provider, this.signer);
+                console.log('ERC1155Manager created:', erc1155Manager);
+                
+                // Test contract connection first
+                console.log('🧪 Testing contract connection...');
+                const connectionTest = await erc1155Manager.testConnection();
+                console.log('Contract connection test result:', connectionTest);
+                
+                if (!connectionTest) {
+                    console.log('❌ Contract connection test failed, cannot verify tokens');
+                    return false;
+                }
+                
+                const canPlay = await erc1155Manager.canPlay(burnTokens);
+                console.log('Can play result:', canPlay);
+                
+                return canPlay;
+            }
+
+            async getPlayableTokens() {
+                if (!this.account) return [];
+                
+                console.log('🎮 Getting playable tokens...');
+                
+                // Get burn tokens from admin config
+                const adminConfig = new AdminConfig();
+                const burnTokens = adminConfig.getActiveBurnTokens();
+                
+                console.log('Burn tokens for playable check:', burnTokens);
+                
+                if (burnTokens.length === 0) {
+                    console.log('No burn tokens configured');
+                    return [];
+                }
+                
+                // Get playable tokens
+                const erc1155Manager = new ERC1155Manager(this.erc1155Address, this.provider, this.signer);
+                const playableTokens = await erc1155Manager.getPlayableTokens(burnTokens);
+                
+                console.log('Playable tokens result:', playableTokens);
+                
+                return playableTokens;
+            }
+        }
+
+        class SimpleShooterGame {
+            constructor() {
+                this.walletManager = new SimpleWalletManager();
+                this.isConnected = false;
+                this.hasKey = false;
+                this.keyId = null;
+                this.currentScore = 0;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.walletManager.init();
+                    this.setupEventListeners();
+                    this.checkWalletStatus();
+                } catch (error) {
+                    this.showStatus('Error initializing wallet: ' + error.message, 'error');
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('connectWallet').addEventListener('click', () => this.connectWallet());
+                document.getElementById('mintKey').addEventListener('click', () => this.mintKey());
+            }
+
+            async checkWalletStatus() {
+                if (this.walletManager.isConnected) {
+                    await this.updateWalletInfo();
+                }
+            }
+
+            async connectWallet() {
+                try {
+                    const account = await this.walletManager.connect();
+                    document.getElementById('walletAddress').textContent = account;
+                    document.getElementById('walletInfo').classList.remove('hidden');
+                    
+                    this.isConnected = true;
+                    await this.updateWalletInfo();
+                } catch (error) {
+                    this.showStatus('Failed to connect wallet: ' + error.message, 'error');
+                }
+            }
+
+            async updateWalletInfo() {
+                if (!this.isConnected) return;
+
+                try {
+                    this.hasKey = await this.walletManager.hasRequiredTokens();
+                    const playableTokens = await this.walletManager.getPlayableTokens();
+
+                    const keyStatus = document.getElementById('keyStatus');
+                    const mintButton = document.getElementById('mintKey');
+
+                    if (this.hasKey) {
+                        const tokenNames = playableTokens.map(token => token.name).join(', ');
+                        keyStatus.innerHTML = `✅ Required tokens found: ${tokenNames}`;
+                        mintButton.classList.add('hidden');
+                        this.hideWalletOverlay();
+                        this.startGame();
+                    } else {
+                        keyStatus.innerHTML = '❌ Required tokens not found. Check admin panel for required tokens.';
+                        mintButton.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    this.showStatus('Error checking token status: ' + error.message, 'error');
+                }
+            }
+
+            async mintKey() {
+                try {
+                    this.showStatus('Minting Key NFT...', 'info');
+                    // Simulate minting
+                    setTimeout(() => {
+                        this.showStatus('Key NFT minted successfully!', 'success');
+                        this.updateWalletInfo();
+                    }, 2000);
+                } catch (error) {
+                    this.showStatus('Failed to mint key: ' + error.message, 'error');
+                }
+            }
+
+            startGame() {
+                // Update key ID display
+                document.getElementById('keyId').textContent = this.keyId;
+                
+                // Start the game (simplified version)
+                this.showStatus('Game started! Click on the feet to clean them!', 'success');
+                
+                // Simulate game logic
+                this.simulateGame();
+            }
+
+            simulateGame() {
+                // Simple game simulation
+                let score = 0;
+                let timeLeft = 60;
+                
+                const updateScore = () => {
+                    document.getElementById('score').textContent = score;
+                };
+                
+                const updateTime = () => {
+                    document.getElementById('time').textContent = timeLeft;
+                    if (timeLeft <= 0) {
+                        this.endGame(score);
+                        return;
+                    }
+                    timeLeft--;
+                };
+                
+                // Add click handler to canvas
+                const canvas = document.getElementById('gameCanvas');
+                canvas.addEventListener('click', () => {
+                    score += 10;
+                    updateScore();
+                });
+                
+                // Start timer
+                const timer = setInterval(updateTime, 1000);
+                
+                // Store timer for cleanup
+                this.gameTimer = timer;
+            }
+
+            endGame(score) {
+                clearInterval(this.gameTimer);
+                this.showStatus(`Game Over! Final Score: ${score}`, 'info');
+                
+                // Update final score
+                document.getElementById('finalScore').textContent = score;
+                
+                // Show restart option
+                setTimeout(() => {
+                    if (confirm('Game Over! Play again?')) {
+                        this.startGame();
+                    }
+                }, 1000);
+            }
+
+            showWalletOverlay() {
+                document.getElementById('walletOverlay').classList.remove('hidden');
+            }
+
+            hideWalletOverlay() {
+                document.getElementById('walletOverlay').classList.add('hidden');
+            }
+
+            showStatus(message, type) {
+                const statusDiv = document.getElementById('statusMessage');
+                statusDiv.textContent = message;
+                statusDiv.className = `status-message status-${type}`;
+                statusDiv.classList.remove('hidden');
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    statusDiv.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        // Initialize the simple game when page loads
+        window.addEventListener('load', () => {
+            new SimpleShooterGame();
+        });
+    </script>
+</body>
+</html>

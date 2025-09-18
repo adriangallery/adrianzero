@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdrianLAB - Get Started with Digital Evolution</title>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff00, #00ccff, #ff0088);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { 
+                filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
+            }
+            to { 
+                filter: drop-shadow(0 0 40px rgba(0, 255, 0, 0.8));
+            }
+        }
+
+        .hero .subtitle {
+            font-size: 1.8rem;
+            color: #cccccc;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .hero .description {
+            font-size: 1.4rem;
+            color: #888888;
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
+
+        /* Wallet Connection */
+        .wallet-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            font-weight: bold;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
+            background: linear-gradient(45deg, #00ff44, #00ee00);
+        }
+
+        .wallet-info {
+            display: none;
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: #00aaff;
+            margin-bottom: 10px;
+        }
+
+        /* Steps Section */
+        .steps-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .steps-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #00ff00;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #888;
+            margin-bottom: 60px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+            max-width: 1400px;
+        }
+
+        .step-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-card:hover {
+            border-color: #00ff00;
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 255, 0, 0.2);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            border-radius: 50%;
+            line-height: 60px;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .step-title {
+            font-size: 2rem;
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+
+        .step-description {
+            font-size: 1.3rem;
+            color: #cccccc;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* NFT Preview Images */
+        .nft-preview {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            border: 3px solid #00ff00;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2);
+        }
+
+        .nft-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Mint Interface */
+        .mint-interface {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'VT323', monospace;
+        }
+
+        .quantity-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.5);
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quantity-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00ff88;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .total-cost {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        .cost-amount {
+            color: #00aaff;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .btn-approve {
+            background: linear-gradient(45deg, #ff8800, #ffaa00);
+            color: #000;
+        }
+
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 136, 0, 0.3);
+        }
+
+        .btn-mint {
+            background: linear-gradient(45deg, #00ff88, #00aaff);
+            color: #000;
+        }
+
+        .btn-mint:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-uniswap {
+            background: linear-gradient(45deg, #ff0088, #ff4400);
+            color: #fff;
+        }
+
+        .btn-uniswap:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 0, 136, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-loading {
+            color: transparent !important;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Status messages */
+        .status-message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.loading {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid rgba(255, 255, 0, 0.3);
+            color: #ffff00;
+        }
+
+        .status-message.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .status-message.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff4444;
+        }
+
+        /* Price indicators */
+        .price-tag {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 1.1rem;
+            color: #00ff00;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .supply-info {
+            background: rgba(0, 170, 255, 0.2);
+            border: 1px solid #00aaff;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 1rem;
+            color: #00aaff;
+            display: inline-block;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .supply-text {
+            color: #00aaff;
+        }
+
+        /* Final CTA Section */
+        .final-cta {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(0, 0, 0, 0.9));
+            padding: 80px 20px;
+            text-align: center;
+            border-top: 2px solid #00ff00;
+        }
+
+        .final-cta h2 {
+            font-size: 3rem;
+            color: #00ff00;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.5));
+        }
+
+        .final-cta p {
+            font-size: 1.5rem;
+            color: #cccccc;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .final-cta-button {
+            background: linear-gradient(45deg, #00ff00, #00aaff);
+            color: #000;
+            border: none;
+            padding: 25px 50px;
+            font-size: 1.8rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.4);
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .final-cta-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(0, 255, 0, 0.6);
+        }
+
+        /* Feature highlights */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+            padding: 0 20px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+
+        .feature-text {
+            color: #cccccc;
+            font-size: 1.2rem;
+        }
+
+        /* Network warning */
+        .network-warning {
+            background: rgba(255, 136, 0, 0.1);
+            border: 1px solid rgba(255, 136, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #ff8800;
+            text-align: center;
+            display: none;
+        }
+
+        .network-warning button {
+            background: rgba(255, 136, 0, 0.2);
+            border: 1px solid rgba(255, 136, 0, 0.5);
+            color: #ff8800;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: 600;
+            font-family: 'VT323', monospace;
+        }
+
+        .network-warning button:hover {
+            background: rgba(255, 136, 0, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.4rem;
+            }
+
+            .hero .description {
+                font-size: 1.2rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .step-title {
+                font-size: 1.8rem;
+            }
+
+            .step-description {
+                font-size: 1.2rem;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                max-width: 100%;
+            }
+
+            .final-cta h2 {
+                font-size: 2.5rem;
+            }
+
+            .final-cta-button {
+                padding: 20px 40px;
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: 15px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .step-card {
+                padding: 30px 20px;
+            }
+
+            .connect-btn {
+                padding: 15px 30px;
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Fade in animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Menu Styles */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff00;
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: #00ff00 !important;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        #menu-container .navbar-text {
+            color: #00ff00 !important;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #menu-container .navbar-toggler {
+            border-color: #00ff00;
+        }
+
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Adjust first section to account for fixed menu */
+        .steps-section {
+            padding-top: 60px;
+        }
+
+        /* Menu always collapsed - no responsive adjustments needed */
+        #menu-container .navbar-nav .nav-link {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    <script>
+      // Load the menu
+      fetch('components/menu.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = 'components/menu.js';
+          document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    </script>
+
+    <!-- Network Warning -->
+    <div id="networkWarning" class="network-warning">
+        <span>⚠️ Please switch to Base Network</span>
+        <button onclick="switchToBase()">Switch Network</button>
+    </div>
+
+    <!-- Steps Section -->
+    <section class="steps-section" id="get-started">
+        <!-- Wallet Connection -->
+        <div class="wallet-section">
+            <button id="connectBtn" class="connect-btn">Connect Wallet</button>
+            <div id="walletInfo" class="wallet-info">
+                <div class="wallet-address" id="walletAddress"></div>
+            </div>
+        </div>
+        
+        <div class="steps-grid">
+            <!-- Step 1: Get $ADRIAN -->
+            <div class="step-card fade-in">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Get $ADRIAN Tokens</h3>
+                
+                <div class="nft-preview">
+                    <img src="https://adrianlab.vercel.app/api/render/148" alt="$ADRIAN Token Preview">
+                </div>
+                
+                <p class="step-description">
+                    Start by swapping ETH for $ADRIAN tokens on Uniswap. 
+                    You'll need these tokens to mint NFTs and apply traits.
+                </p>
+                <div class="price-tag">Base Network • Low Fees</div>
+                
+                <div class="mint-interface">
+                    <a href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" 
+                       target="_blank" 
+                       class="action-btn btn-uniswap">
+                        Swap on Uniswap
+                    </a>
+                </div>
+            </div>
+
+            <!-- Step 2: Mint AdrianZERO -->
+            <div class="step-card fade-in">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Mint AdrianZERO NFT</h3>
+                
+                <div class="nft-preview">
+                    <img src="https://adrianlab.vercel.app/api/render/1" alt="AdrianZERO NFT Preview">
+                </div>
+                
+                <p class="step-description">
+                    Mint your base AdrianZERO NFT - the foundation of your collection. 
+                    This is your canvas for trait customization.
+                </p>
+                <div class="price-tag">Price: <span id="adrianZeroPrice">Loading...</span> $ADRIAN</div>
+                
+                <div class="mint-interface" style="display: none;" id="adrianZeroMint">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('adrianZero', -1)">-</button>
+                        <div class="quantity-display" id="adrianZeroQuantity">1</div>
+                        <button class="quantity-btn" onclick="changeQuantity('adrianZero', 1)">+</button>
+                    </div>
+                    <div class="total-cost">Total: <span class="cost-amount" id="adrianZeroTotal">0</span> $ADRIAN</div>
+                    <button class="action-btn btn-mint" id="mintAdrianZero" onclick="mintAdrianZero()">
+                        Mint AdrianZERO
+                    </button>
+                    <div class="status-message" id="adrianZeroStatus"></div>
+                </div>
+            </div>
+
+            <!-- Step 3: Mint STARTER Floppy -->
+            <div class="step-card fade-in">
+                <div class="step-number">3</div>
+                <h3 class="step-title">STARTER Floppy (Green)</h3>
+                
+                <div class="nft-preview">
+                    <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif?v=1751800464450" alt="STARTER Floppy Green Preview">
+                </div>
+                
+                <p class="step-description">
+                    Mint STARTER Floppy Discs containing rare traits. 
+                    Open them to discover unique traits for your collection.
+                </p>
+                <div class="price-tag">Price: 7,500 $ADRIAN each</div>
+                <div class="supply-info">
+                    <span class="supply-text">Minted: <span id="starterFloppyMinted">Loading...</span> / <span id="starterFloppyTotal">Loading...</span></span>
+                </div>
+                
+                <div class="mint-interface" style="display: none;" id="starterFloppyMint">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('starterFloppy', -1)">-</button>
+                        <div class="quantity-display" id="starterFloppyQuantity">1</div>
+                        <button class="quantity-btn" onclick="changeQuantity('starterFloppy', 1)">+</button>
+                    </div>
+                    <div class="total-cost">Total: <span class="cost-amount" id="starterFloppyCostTotal">7,500</span> $ADRIAN</div>
+                    <button class="action-btn btn-mint" id="mintStarterFloppy" onclick="mintStarterFloppy()">
+                        Mint STARTER Floppy
+                    </button>
+                    <div class="status-message" id="starterFloppyStatus"></div>
+                </div>
+            </div>
+
+            <!-- Step 4: Mint GF Floppy -->
+            <div class="step-card fade-in">
+                <div class="step-number">4</div>
+                <h3 class="step-title">GF Floppy</h3>
+                
+                <div class="nft-preview">
+                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/79ad354b58424ea67b8e0357bc7396/e679ad354b58424ea67b8e0357bc7396.gif?w=500" alt="GF Floppy Preview">
+                </div>
+                
+                <p class="step-description">
+                    Mint GF Floppy Discs containing exclusive traits. 
+                    Higher tier floppy with premium trait distribution.
+                </p>
+                <div class="price-tag">Price: 8,000 $ADRIAN each</div>
+                <div class="supply-info">
+                    <span class="supply-text">Minted: <span id="gfFloppyMinted">Loading...</span> / <span id="gfFloppyTotal">Loading...</span></span>
+                </div>
+                
+                <div class="mint-interface" style="display: none;" id="gfFloppyMint">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('gfFloppy', -1)">-</button>
+                        <div class="quantity-display" id="gfFloppyQuantity">1</div>
+                        <button class="quantity-btn" onclick="changeQuantity('gfFloppy', 1)">+</button>
+                    </div>
+                    <div class="total-cost">Total: <span class="cost-amount" id="gfFloppyCostTotal">8,000</span> $ADRIAN</div>
+                    <button class="action-btn btn-mint" id="mintGfFloppy" onclick="mintGfFloppy()">
+                        Mint GF Floppy
+                    </button>
+                    <div class="status-message" id="gfFloppyStatus"></div>
+                </div>
+            </div>
+
+            <!-- Step 5: Mint GLITCHED Floppy -->
+            <div class="step-card fade-in">
+                <div class="step-number">5</div>
+                <h3 class="step-title">GLITCHED Floppy</h3>
+                
+                <div class="nft-preview">
+                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/b824b24911d6b2c56d33898502d9c6/ebb824b24911d6b2c56d33898502d9c6.gif?w=500" alt="GLITCHED Floppy Preview">
+                </div>
+                
+                <p class="step-description">
+                    Mint GLITCHED Floppy Discs containing glitched traits. 
+                    Unique glitched aesthetic traits for your collection.
+                </p>
+                <div class="price-tag">Price: 5,000 $ADRIAN each</div>
+                <div class="supply-info">
+                    <span class="supply-text">Minted: <span id="glitchedFloppyMinted">Loading...</span> / <span id="glitchedFloppyTotal">Loading...</span></span>
+                </div>
+                
+                <div class="mint-interface" style="display: none;" id="glitchedFloppyMint">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('glitchedFloppy', -1)">-</button>
+                        <div class="quantity-display" id="glitchedFloppyQuantity">1</div>
+                        <button class="quantity-btn" onclick="changeQuantity('glitchedFloppy', 1)">+</button>
+                    </div>
+                    <div class="total-cost">Total: <span class="cost-amount" id="glitchedFloppyCostTotal">5,000</span> $ADRIAN</div>
+                    <button class="action-btn btn-mint" id="mintGlitchedFloppy" onclick="mintGlitchedFloppy()">
+                        Mint GLITCHED Floppy
+                    </button>
+                    <div class="status-message" id="glitchedFloppyStatus"></div>
+                </div>
+            </div>
+
+            <!-- Step 6: Mint OG Floppy (MINTED OUT) -->
+            <div class="step-card fade-in">
+                <div class="step-number">6</div>
+                <h3 class="step-title">OG Floppy (MINTED OUT)</h3>
+                
+                <div class="nft-preview">
+                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/bdbcd37920a9bfdc062bc7e4257180/93bdbcd37920a9bfdc062bc7e4257180.gif?w=500" alt="OG Floppy Preview">
+                </div>
+                
+                <p class="step-description">
+                    OG Floppy Discs - The original floppy collection. 
+                    All OG Floppys have been minted. No more available.
+                </p>
+                <div class="price-tag">Price: 1,000 $ADRIAN each</div>
+                <div class="supply-info">
+                    <span class="supply-text">Minted: <span id="ogFloppyMinted">Loading...</span> / <span id="ogFloppyTotal">Loading...</span></span>
+                </div>
+                
+                <div class="mint-interface" style="display: none;" id="ogFloppyMint">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('ogFloppy', -1)" disabled>-</button>
+                        <div class="quantity-display" id="ogFloppyQuantity">1</div>
+                        <button class="quantity-btn" onclick="changeQuantity('ogFloppy', 1)" disabled>+</button>
+                    </div>
+                    <div class="total-cost">Total: <span class="cost-amount" id="ogFloppyCostTotal">1,000</span> $ADRIAN</div>
+                    <button class="action-btn btn-mint" id="mintOgFloppy" onclick="mintOgFloppy()" disabled>
+                        MINTED OUT
+                    </button>
+                    <div class="status-message" id="ogFloppyStatus"></div>
+                </div>
+            </div>
+
+            <!-- Step 7: Mint Golden Floppy (SOON) -->
+            <div class="step-card fade-in">
+                <div class="step-number">7</div>
+                <h3 class="step-title">Golden Floppy (SOON)</h3>
+                
+                <div class="nft-preview">
+                    <img src="components/images/10005.gif" alt="Golden Floppy Preview">
+                </div>
+                
+                <p class="step-description">
+                    Golden Floppy Discs - The most exclusive floppy collection. 
+                    Coming soon with premium golden traits and limited availability.
+                </p>
+                <div class="price-tag">Price: <span id="goldenFloppyPrice">TBD</span></div>
+                <div class="supply-info">
+                    <span class="supply-text">Minted: <span id="goldenFloppyMinted">--</span> / <span id="goldenFloppyTotal">--</span></span>
+                </div>
+                
+                <div class="mint-interface" style="display: none;" id="goldenFloppyMint">
+                    <div class="payment-method" style="margin-bottom:12px; text-align:center;">
+                        <label style="margin-right:16px;">
+                            <input type="radio" name="goldenPay" value="ADRIAN" checked> Pay with $ADRIAN
+                        </label>
+                        <label>
+                            <input type="radio" name="goldenPay" value="ETH"> Pay with ETH
+                        </label>
+                    </div>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('goldenFloppy', -1)" disabled>-</button>
+                        <div class="quantity-display" id="goldenFloppyQuantity">1</div>
+                        <button class="quantity-btn" onclick="changeQuantity('goldenFloppy', 1)" disabled>+</button>
+                    </div>
+                    <div class="total-cost">Total: <span class="cost-amount" id="goldenFloppyCostTotal">TBD</span> <span id="goldenFloppyCurrency">$ADRIAN</span></div>
+                    <button class="action-btn btn-mint" id="mintGoldenFloppy" onclick="mintGoldenFloppy()" disabled>
+                        COMING SOON
+                    </button>
+                    <div class="status-message" id="goldenFloppyStatus"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <h2>Ready to Evolve?</h2>
+        <p>
+            Now that you have your NFTs and traits, it's time to enter the TraitLAB 
+            and start customizing your collection like never before.
+        </p>
+        <a href="adrianzero.com/traitlab" class="final-cta-button">
+            Enter TraitLAB →
+        </a>
+        
+        <div class="features" style="margin-top: 40px;">
+            <div class="feature">
+                <span class="feature-icon">🎨</span>
+                <div class="feature-title">Visual Trait Preview</div>
+                <div class="feature-text">See how traits look before applying</div>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🔧</span>
+                <div class="feature-title">Easy Application</div>
+                <div class="feature-text">Apply multiple traits with one transaction</div>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">📱</span>
+                <div class="feature-title">Mobile Friendly</div>
+                <div class="feature-text">Works perfectly on all devices</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Contract addresses and configurations
+        const ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
+        const ADRIAN_ZERO_MINT = "0xF278a1060900005aD5b9077602b09A513541f5d2";
+        const PACK_MINTER = "0x673bE1968A12470F93BE374AAB529a89d5D607d5";
+        const ADRIAN_ETH_MINTER = "0x9165753093ba640b34d8111cb9c9d1325799d251"; // AdrianFloppyETH
+        const BASE_CHAIN_ID = 8453;
+        const BASE_CHAIN_ID_HEX = "0x2105";
+
+        // Pack configurations
+        const STARTER_FLOPPY_PACK_ID = 10002;
+        const STARTER_FLOPPY_PRICE = ethers.utils.parseEther("7500");
+        const GF_FLOPPY_PACK_ID = 10004;
+        const GF_FLOPPY_PRICE = ethers.utils.parseEther("8000");
+        const GLITCHED_FLOPPY_PACK_ID = 10003;
+        const GLITCHED_FLOPPY_PRICE = ethers.utils.parseEther("5000");
+        const OG_FLOPPY_PACK_ID = 10000;
+        const OG_FLOPPY_PRICE = ethers.utils.parseEther("1000");
+        const GOLDEN_FLOPPY_PACK_ID = 10005;
+        const GOLDEN_FLOPPY_PRICE = ethers.utils.parseEther("0"); // legacy (no usado con ETH minter)
+        const GOLDEN_ETH_BATCH_ID = 1; // ajustar si es distinto en AdrianFloppyETH
+
+        // ABIs
+        const ERC20_ABI = [
+            "function approve(address spender, uint256 amount) returns (bool)",
+            "function allowance(address owner, address spender) view returns (uint256)",
+            "function balanceOf(address account) view returns (uint256)"
+        ];
+
+        const ADRIAN_ETH_ABI = [
+            "function mint(uint256 batchId, uint256 quantity) payable",
+            "function mintWithToken(uint256 batchId, uint256 quantity)",
+            "function getBatchSummary(uint256 batchId) view returns (uint256 id, string name, uint256 floppyTokenId, uint256 priceWei, uint256 priceToken, uint256 startTime, uint256 endTime, bool active, uint256 minted, uint256 maxSupply, uint256 remaining, uint256 maxPerWallet, uint256 maxPerTx)",
+            "function getActiveBatchIds(uint256 fromId, uint256 toId) view returns (uint256[] ids)",
+            "function adrianToken() view returns (address)"
+        ];
+
+        // Helper: formato amigable para cantidades (sin ceros largos)
+        function formatAmount(amount) {
+            // amount puede ser float; limitamos a 4 decimales y con separador de miles
+            const rounded = Math.round((amount + Number.EPSILON) * 10000) / 10000;
+            return rounded.toLocaleString(undefined, { maximumFractionDigits: 4 });
+        }
+
+        const ADRIAN_ZERO_ABI = [
+            "function mintMultiplePublic(uint256 quantity)",
+            "function getCurrentBatchInfo() view returns (uint256 batchId, string name, uint256 price, uint256 minted, uint256 maxSupply, bool active, uint256 startTime, uint256 endTime, bool useMerkleWhitelist)"
+        ];
+
+        const PACK_MINTER_ABI = [
+            "function purchasePack(uint256 packId, uint256 quantity, bool useAllowlist) external",
+            "function packConfigs(uint256 packId) external view returns (uint256 id, uint256 publicPrice, uint256 maxSupply, uint256 minted, uint256 itemsPerPack, uint256 maxPerWallet, uint256 startTime, uint256 endTime, bool active, uint256 allowlistFreeAmount, uint256 allowlistPrice, bool hasPublicSale, bool hasAllowlist)"
+        ];
+
+        // Global state
+        let provider;
+        let signer;
+        let userAddress;
+        let adrianToken;
+        let adrianZeroContract;
+        let packMinterContract;
+        let adrianEthContract;
+        let goldenSummary; // último resumen de Golden ETH
+        // Estado global adicional (igual que SHOP/)
+        let approvedAmountZero = 0; // Allowance para ADRIAN_ZERO_MINT
+        let approvedAmountPack = 0; // Allowance para PACK_MINTER
+        let adrianBalance = 0;   // Balance actual de ADRIAN del usuario
+        let quantities = {
+            adrianZero: 1,
+            starterFloppy: 1,
+            gfFloppy: 1,
+            glitchedFloppy: 1,
+            ogFloppy: 1,
+            goldenFloppy: 1
+        };
+        let adrianZeroPrice = ethers.utils.parseEther("0");
+        let goldenPriceToken = ethers.BigNumber.from("0");
+        let goldenPriceWei = ethers.BigNumber.from("0");
+        
+        // Supply information
+        let supplyInfo = {
+            starterFloppy: { total: 0, minted: 0 },
+            gfFloppy: { total: 0, minted: 0 },
+            glitchedFloppy: { total: 0, minted: 0 },
+            ogFloppy: { total: 0, minted: 0 },
+            goldenFloppy: { total: 0, minted: 0 }
+        };
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if wallet is already connected
+            checkConnection();
+            
+            // Set up event listeners
+            document.getElementById('connectBtn').addEventListener('click', connectWallet);
+            
+            // Fade in animations
+            setupFadeInAnimations();
+        });
+
+        async function checkConnection() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        await connectWallet();
+                    }
+                } catch (error) {
+                    console.error("Connection check failed:", error);
+                }
+            }
+        }
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    showStatus('all', 'Please install MetaMask!', 'error');
+                    return;
+                }
+
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                
+                // Check network
+                await ensureCorrectNetwork();
+                
+                // Initialize contracts
+                adrianToken = new ethers.Contract(ADRIAN_TOKEN, ERC20_ABI, signer);
+                adrianZeroContract = new ethers.Contract(ADRIAN_ZERO_MINT, ADRIAN_ZERO_ABI, signer);
+                packMinterContract = new ethers.Contract(PACK_MINTER, PACK_MINTER_ABI, signer);
+                adrianEthContract = new ethers.Contract(ADRIAN_ETH_MINTER, ADRIAN_ETH_ABI, signer);
+                
+                // Cargar balances y allowance para simplificar approves
+                await loadBalances();
+
+                // Update UI
+                document.getElementById('connectBtn').style.display = 'none';
+                document.getElementById('walletInfo').style.display = 'block';
+                document.getElementById('walletAddress').textContent = 
+                    `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+                
+                // Show mint interfaces
+                document.getElementById('adrianZeroMint').style.display = 'block';
+                document.getElementById('starterFloppyMint').style.display = 'block';
+                document.getElementById('gfFloppyMint').style.display = 'block';
+                document.getElementById('glitchedFloppyMint').style.display = 'block';
+                document.getElementById('ogFloppyMint').style.display = 'block';
+                document.getElementById('goldenFloppyMint').style.display = 'block';
+                
+                // Load prices and data
+                await loadAdrianZeroPrice();
+                await loadSupplyInfo();
+                await loadGoldenBatch();
+                updateAllTotals();
+                
+                showStatus('all', 'Wallet connected successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Connection error:', error);
+                showStatus('all', 'Failed to connect wallet', 'error');
+            }
+        }
+
+        async function ensureCorrectNetwork() {
+            try {
+                const { chainId } = await provider.getNetwork();
+                if (chainId !== BASE_CHAIN_ID) {
+                    document.getElementById('networkWarning').style.display = 'block';
+                    throw new Error('Wrong network. Please switch to Base.');
+                } else {
+                    document.getElementById('networkWarning').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Network check failed:', error);
+                throw error;
+            }
+        }
+
+        // Cargar balances y allowance (similar a SHOP/)
+        async function loadBalances() {
+            try {
+                // Balance ADRIAN
+                const balanceWei = await adrianToken.balanceOf(userAddress);
+                adrianBalance = parseFloat(ethers.utils.formatEther(balanceWei));
+
+                // Allowances relevantes
+                const allowanceZeroWei = await adrianToken.allowance(userAddress, ADRIAN_ZERO_MINT);
+                const allowancePackWei = await adrianToken.allowance(userAddress, PACK_MINTER);
+                approvedAmountZero = parseFloat(ethers.utils.formatEther(allowanceZeroWei));
+                approvedAmountPack = parseFloat(ethers.utils.formatEther(allowancePackWei));
+
+                console.log('Balances loaded - ADRIAN:', adrianBalance, 'Approved(Zero):', approvedAmountZero, 'Approved(Pack):', approvedAmountPack);
+            } catch (err) {
+                console.error('Error loading balances:', err);
+            }
+        }
+
+        async function switchToBase() {
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: BASE_CHAIN_ID_HEX }]
+                });
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BASE_CHAIN_ID_HEX,
+                                chainName: 'Base',
+                                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                rpcUrls: ['https://mainnet.base.org'],
+                                blockExplorerUrls: ['https://basescan.org']
+                            }]
+                        });
+                        
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                        
+                    } catch (addError) {
+                        console.error('Add network error:', addError);
+                    }
+                }
+            }
+        }
+
+        async function loadAdrianZeroPrice() {
+            try {
+                const batchInfo = await adrianZeroContract.getCurrentBatchInfo();
+                adrianZeroPrice = batchInfo.price;
+                
+                const priceFormatted = ethers.utils.formatEther(adrianZeroPrice);
+                document.getElementById('adrianZeroPrice').textContent = 
+                    parseFloat(priceFormatted).toLocaleString();
+                
+                updateAllTotals();
+            } catch (error) {
+                console.error('Error loading AdrianZero price:', error);
+                document.getElementById('adrianZeroPrice').textContent = 'Error loading';
+            }
+        }
+
+        async function loadSupplyInfo() {
+            try {
+                // Load supply info for each floppy
+                const packIds = [
+                    { id: STARTER_FLOPPY_PACK_ID, key: 'starterFloppy' },
+                    { id: GF_FLOPPY_PACK_ID, key: 'gfFloppy' },
+                    { id: GLITCHED_FLOPPY_PACK_ID, key: 'glitchedFloppy' },
+                    { id: OG_FLOPPY_PACK_ID, key: 'ogFloppy' }
+                ];
+
+                for (const pack of packIds) {
+                    try {
+                        // Retry/backoff simple para rate limiting
+                        const getConfig = async () => packMinterContract.packConfigs(pack.id);
+                        let packConfig;
+                        let attempts = 0;
+                        while (true) {
+                            try {
+                                packConfig = await getConfig();
+                                break;
+                            } catch (err) {
+                                attempts++;
+                                const isRateLimited = err && (err.code === -32005 || (err.message && err.message.includes('rate limited')));
+                                const isCallException = err && err.code === 'CALL_EXCEPTION';
+                                if (attempts >= 3 || (!isRateLimited && !isCallException)) throw err;
+                                await new Promise(r => setTimeout(r, 500 * attempts));
+                            }
+                        }
+                        supplyInfo[pack.key] = {
+                            total: packConfig.maxSupply.toNumber(),
+                            minted: packConfig.minted.toNumber()
+                        };
+
+                        // Update UI
+                        document.getElementById(pack.key + 'Minted').textContent = 
+                            packConfig.minted.toNumber().toLocaleString();
+                        document.getElementById(pack.key + 'Total').textContent = 
+                            packConfig.maxSupply.toNumber().toLocaleString();
+
+                        // Special handling for OG Floppy (MINTED OUT)
+                        if (pack.key === 'ogFloppy') {
+                            const ogFloppyMint = document.getElementById('ogFloppyMint');
+                            const mintOgFloppy = document.getElementById('mintOgFloppy');
+                            const quantityBtns = ogFloppyMint.querySelectorAll('.quantity-btn');
+                            
+                            // Force OG Floppy to show 100/100 as it's minted out
+                            document.getElementById('ogFloppyMinted').textContent = '100';
+                            document.getElementById('ogFloppyTotal').textContent = '100';
+                            
+                            // Disable mint interface
+                            mintOgFloppy.textContent = 'MINTED OUT';
+                            mintOgFloppy.disabled = true;
+                            quantityBtns.forEach(btn => btn.disabled = true);
+                        }
+                    } catch (error) {
+                        console.error(`Error loading supply info for ${pack.key}:`, error);
+                        document.getElementById(pack.key + 'Minted').textContent = 'Error';
+                        document.getElementById(pack.key + 'Total').textContent = 'Error';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading supply info:', error);
+            }
+        }
+
+        async function loadGoldenBatch() {
+            try {
+                // Retry con backoff para rate limits de MetaMask
+                let attempts = 0;
+                let summary;
+                while (true) {
+                    try {
+                        summary = await adrianEthContract.getBatchSummary(GOLDEN_ETH_BATCH_ID);
+                        break;
+                    } catch (err) {
+                        attempts++;
+                        const isRateLimited = err && (err.code === -32005 || (err.message && err.message.includes('rate limited')));
+                        const isCallException = err && err.code === 'CALL_EXCEPTION' && attempts < 3;
+                        if (!isRateLimited && !isCallException || attempts >= 3) throw err;
+                        await new Promise(r => setTimeout(r, 600 * attempts));
+                    }
+                }
+                goldenSummary = summary;
+                goldenPriceWei = summary.priceWei; // uint256
+                goldenPriceToken = summary.priceToken; // uint256 (decimales del token)
+                const active = summary.active;
+                const minted = summary.minted.toNumber();
+                const maxSupply = summary.maxSupply.toNumber();
+
+                document.getElementById('goldenFloppyMinted').textContent = minted === 0 ? '--' : minted.toLocaleString();
+                document.getElementById('goldenFloppyTotal').textContent = maxSupply === 0 ? '--' : maxSupply.toLocaleString();
+
+                // Mostrar precio preferente: si existe token, mostrar en $ADRIAN; si no, en ETH
+                let priceLabel = 'TBD';
+                if (!goldenPriceToken.isZero()) {
+                    priceLabel = `${parseFloat(ethers.utils.formatEther(goldenPriceToken)).toLocaleString()} $ADRIAN`;
+                    document.getElementById('goldenFloppyCurrency').textContent = '$ADRIAN';
+                } else if (!goldenPriceWei.isZero()) {
+                    priceLabel = `${formatEthString(ethers.utils.formatEther(goldenPriceWei))} ETH`;
+                    document.getElementById('goldenFloppyCurrency').textContent = 'ETH';
+                }
+                document.getElementById('goldenFloppyPrice').textContent = priceLabel;
+
+                // Habilitar UI si activo
+                const mintBtn = document.getElementById('mintGoldenFloppy');
+                const qtyBtns = document.querySelectorAll('#goldenFloppyMint .quantity-btn');
+                const payAdrian = document.querySelector('input[name="goldenPay"][value="ADRIAN"]');
+                const payEth = document.querySelector('input[name="goldenPay"][value="ETH"]');
+                if (active) {
+                    mintBtn.textContent = 'Mint Golden Floppy';
+                    mintBtn.disabled = false;
+                    qtyBtns.forEach(b => b.disabled = false);
+                }
+                // Determinar si el token ADRIAN está configurado en el contrato ETH
+                let tokenSet = false;
+                try {
+                    const tokenAddr = await adrianEthContract.adrianToken();
+                    tokenSet = tokenAddr && tokenAddr !== '0x0000000000000000000000000000000000000000';
+                } catch {}
+
+                // Deshabilitar $ADRIAN si el token no está configurado o no hay precioToken
+                if (!tokenSet || goldenPriceToken.isZero()) {
+                    if (payAdrian) { payAdrian.disabled = true; }
+                    if (payEth) { payEth.checked = true; }
+                    document.getElementById('goldenFloppyCurrency').textContent = 'ETH';
+                } else {
+                    if (payAdrian) { payAdrian.disabled = false; }
+                }
+                // Refrescar total segun método actual
+                refreshGoldenTotals();
+            } catch (e) {
+                console.error('Error loading golden batch:', e);
+                // Habilitar UI en modo fallback
+                document.getElementById('goldenFloppyPrice').textContent = 'TBD';
+                document.getElementById('goldenFloppyMinted').textContent = '--';
+                document.getElementById('goldenFloppyTotal').textContent = '--';
+                const mintBtn = document.getElementById('mintGoldenFloppy');
+                const qtyBtns = document.querySelectorAll('#goldenFloppyMint .quantity-btn');
+                mintBtn.textContent = 'Mint Golden Floppy';
+                mintBtn.disabled = false;
+                qtyBtns.forEach(b => b.disabled = false);
+                // En fallback, preferimos ETH
+                const payEth = document.querySelector('input[name="goldenPay"][value="ETH"]');
+                const payAdrian = document.querySelector('input[name="goldenPay"][value="ADRIAN"]');
+                if (payEth) { payEth.checked = true; }
+                if (payAdrian) { payAdrian.disabled = true; }
+            }
+        }
+
+        function changeQuantity(type, delta) {
+            const newQuantity = quantities[type] + delta;
+            if (newQuantity >= 1 && newQuantity <= 10) {
+                quantities[type] = newQuantity;
+                document.getElementById(type + 'Quantity').textContent = newQuantity;
+                updateTotal(type);
+            }
+        }
+
+        function updateTotal(type) {
+            let price;
+            switch(type) {
+                case 'adrianZero':
+                    price = adrianZeroPrice;
+                    break;
+                case 'starterFloppy':
+                    price = STARTER_FLOPPY_PRICE;
+                    break;
+                case 'gfFloppy':
+                    price = GF_FLOPPY_PRICE;
+                    break;
+                case 'glitchedFloppy':
+                    price = GLITCHED_FLOPPY_PRICE;
+                    break;
+                case 'ogFloppy':
+                    price = OG_FLOPPY_PRICE;
+                    break;
+                case 'goldenFloppy':
+                    // Depende del método de pago seleccionado
+                    const method = document.querySelector('input[name="goldenPay"]:checked')?.value || 'ADRIAN';
+                    if (method === 'ETH') {
+                        price = goldenPriceWei;
+                        document.getElementById('goldenFloppyCurrency').textContent = 'ETH';
+                    } else {
+                        price = goldenPriceToken;
+                        document.getElementById('goldenFloppyCurrency').textContent = '$ADRIAN';
+                    }
+                    break;
+            }
+            
+            let formatted = '0';
+            try {
+                const total = price.mul(quantities[type]);
+                const asEth = ethers.utils.formatEther(total);
+                // Si es golden y método ETH, usa formato ETH legible
+                if (type === 'goldenFloppy') {
+                    const method = document.querySelector('input[name="goldenPay"]:checked')?.value || 'ADRIAN';
+                    if (method === 'ETH') {
+                        formatted = formatEthString(asEth);
+                    } else {
+                        formatted = Number(asEth).toLocaleString();
+                    }
+                } else {
+                    formatted = Number(asEth).toLocaleString();
+                }
+            } catch {}
+            
+            // Special handling for cost total IDs
+            let elementId;
+            switch(type) {
+                case 'starterFloppy':
+                    elementId = 'starterFloppyCostTotal';
+                    break;
+                case 'gfFloppy':
+                    elementId = 'gfFloppyCostTotal';
+                    break;
+                case 'glitchedFloppy':
+                    elementId = 'glitchedFloppyCostTotal';
+                    break;
+                case 'ogFloppy':
+                    elementId = 'ogFloppyCostTotal';
+                    break;
+                case 'goldenFloppy':
+                    elementId = 'goldenFloppyCostTotal';
+                    break;
+                default:
+                    elementId = type + 'Total';
+            }
+            document.getElementById(elementId).textContent = 
+                formatted;
+        }
+
+        function updateAllTotals() {
+            updateTotal('adrianZero');
+            updateTotal('starterFloppy');
+            updateTotal('gfFloppy');
+            updateTotal('glitchedFloppy');
+            updateTotal('ogFloppy');
+            updateTotal('goldenFloppy');
+        }
+
+
+
+        async function mintAdrianZero() {
+            if (!userAddress) {
+                showStatus('adrianZero', 'Connect wallet first!', 'error');
+                return;
+            }
+            
+            try {
+                const button = document.getElementById('mintAdrianZero');
+                button.disabled = true;
+                button.classList.add('btn-loading');
+                
+                // Calculate total cost using BigNumber for better performance
+                let totalCostWei = ethers.BigNumber.from(0);
+                let totalCostEther = 0;
+                
+                // Get price in ether for calculations
+                const priceEther = parseFloat(ethers.utils.formatEther(adrianZeroPrice));
+                totalCostEther = priceEther * quantities.adrianZero;
+                
+                // Calculate in wei using BigNumber for approval (same as shop/)
+                const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
+                totalCostWei = itemPriceWei.mul(quantities.adrianZero);
+                
+                // For user display, use the direct calculation
+                const userDisplayAmount = priceEther * quantities.adrianZero;
+                
+                // Check balance
+                const balance = await adrianToken.balanceOf(userAddress);
+                const balanceEther = parseFloat(ethers.utils.formatEther(balance));
+                
+                if (totalCostEther > balanceEther) {
+                    showStatus('adrianZero', 'Insufficient ADRIAN balance for mint', 'error');
+                    return;
+                }
+                
+                // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
+                if (totalCostEther > approvedAmountZero) {
+                    showStatus('adrianZero', 'Approval needed. Processing approval transaction...', 'loading');
+                    
+                    // Add delay before approval transaction
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    showStatus('adrianZero', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
+                    
+                    // Use the pre-calculated BigNumber (no conversion needed)
+                    const approveTx = await adrianToken.approve(ADRIAN_ZERO_MINT, totalCostWei);
+                    await approveTx.wait();
+                    
+                    showStatus('adrianZero', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Refresh approval amount
+                    await loadBalances();
+                    
+                    // Add delay before proceeding to mint
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Process the mint
+                showStatus('adrianZero', `Minting ${quantities.adrianZero} AdrianZERO NFT(s)...`, 'loading');
+                
+                // Add delay before mint transaction
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const tx = await adrianZeroContract.mintMultiplePublic(quantities.adrianZero);
+                await tx.wait();
+                
+                showStatus('adrianZero', `🎉 Successfully minted ${quantities.adrianZero} AdrianZERO NFT(s)!`, 'success');
+                
+                // Refresh balances post-mint
+                await loadBalances();
+                
+            } catch (error) {
+                console.error('Mint error:', error);
+                showStatus('adrianZero', 'Mint failed: ' + parseError(error), 'error');
+            } finally {
+                const button = document.getElementById('mintAdrianZero');
+                button.disabled = false;
+                button.classList.remove('btn-loading');
+            }
+        }
+
+        async function mintStarterFloppy() {
+            if (!userAddress) {
+                showStatus('starterFloppy', 'Connect wallet first!', 'error');
+                return;
+            }
+            
+            try {
+                const button = document.getElementById('mintStarterFloppy');
+                button.disabled = true;
+                button.classList.add('btn-loading');
+                
+                // Calculate total cost using BigNumber for better performance
+                let totalCostWei = ethers.BigNumber.from(0);
+                let totalCostEther = 0;
+                
+                // Get price in ether for calculations
+                const priceEther = parseFloat(ethers.utils.formatEther(STARTER_FLOPPY_PRICE));
+                totalCostEther = priceEther * quantities.starterFloppy;
+                
+                // Calculate in wei using BigNumber for approval (same as shop/)
+                const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
+                totalCostWei = itemPriceWei.mul(quantities.starterFloppy);
+                
+                // For user display, use the direct calculation
+                const userDisplayAmount = priceEther * quantities.starterFloppy;
+                
+                // Check balance
+                const balance = await adrianToken.balanceOf(userAddress);
+                const balanceEther = parseFloat(ethers.utils.formatEther(balance));
+                
+                if (totalCostEther > balanceEther) {
+                    showStatus('starterFloppy', 'Insufficient ADRIAN balance for mint', 'error');
+                    return;
+                }
+                
+                // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
+                if (totalCostEther > approvedAmountPack) {
+                    showStatus('starterFloppy', 'Approval needed. Processing approval transaction...', 'loading');
+                    
+                    // Add delay before approval transaction
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    showStatus('starterFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
+                    
+                    // Use the pre-calculated BigNumber (no conversion needed)
+                    const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
+                    await approveTx.wait();
+                    
+                    showStatus('starterFloppy', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Refresh approval amount
+                    await loadBalances();
+                    
+                    // Add delay before proceeding to mint
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Process the mint
+                showStatus('starterFloppy', `Minting ${quantities.starterFloppy} STARTER Floppy...`, 'loading');
+                
+                // Add delay before mint transaction
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const tx = await packMinterContract.purchasePack(STARTER_FLOPPY_PACK_ID, quantities.starterFloppy, false);
+                await tx.wait();
+                
+                showStatus('starterFloppy', `🎉 Successfully minted ${quantities.starterFloppy} STARTER Floppy!`, 'success');
+                
+                // Update supply info after successful mint
+                await loadSupplyInfo();
+                
+            } catch (error) {
+                console.error('Mint error:', error);
+                showStatus('starterFloppy', 'Mint failed: ' + parseError(error), 'error');
+            } finally {
+                const button = document.getElementById('mintStarterFloppy');
+                button.disabled = false;
+                button.classList.remove('btn-loading');
+            }
+        }
+
+        async function mintGfFloppy() {
+            if (!userAddress) {
+                showStatus('gfFloppy', 'Connect wallet first!', 'error');
+                return;
+            }
+            
+            try {
+                const button = document.getElementById('mintGfFloppy');
+                button.disabled = true;
+                button.classList.add('btn-loading');
+                
+                // Calculate total cost using BigNumber for better performance
+                let totalCostWei = ethers.BigNumber.from(0);
+                let totalCostEther = 0;
+                
+                // Get price in ether for calculations
+                const priceEther = parseFloat(ethers.utils.formatEther(GF_FLOPPY_PRICE));
+                totalCostEther = priceEther * quantities.gfFloppy;
+                
+                // Calculate in wei using BigNumber for approval (same as shop/)
+                const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
+                totalCostWei = itemPriceWei.mul(quantities.gfFloppy);
+                
+                // For user display, use the direct calculation
+                const userDisplayAmount = priceEther * quantities.gfFloppy;
+                
+                // Check balance
+                const balance = await adrianToken.balanceOf(userAddress);
+                const balanceEther = parseFloat(ethers.utils.formatEther(balance));
+                
+                if (totalCostEther > balanceEther) {
+                    showStatus('gfFloppy', 'Insufficient ADRIAN balance for mint', 'error');
+                    return;
+                }
+                
+                // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
+                if (totalCostEther > approvedAmountPack) {
+                    showStatus('gfFloppy', 'Approval needed. Processing approval transaction...', 'loading');
+                    
+                    // Add delay before approval transaction
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    showStatus('gfFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
+                    
+                    // Use the pre-calculated BigNumber (no conversion needed)
+                    const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
+                    await approveTx.wait();
+                    
+                    showStatus('gfFloppy', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Refresh approval amount
+                    await loadBalances();
+                    
+                    // Add delay before proceeding to mint
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Process the mint
+                showStatus('gfFloppy', `Minting ${quantities.gfFloppy} GF Floppy...`, 'loading');
+                
+                // Add delay before mint transaction
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const tx = await packMinterContract.purchasePack(GF_FLOPPY_PACK_ID, quantities.gfFloppy, false);
+                await tx.wait();
+                
+                showStatus('gfFloppy', `🎉 Successfully minted ${quantities.gfFloppy} GF Floppy!`, 'success');
+                
+                // Update supply info after successful mint
+                await loadSupplyInfo();
+                
+            } catch (error) {
+                console.error('Mint error:', error);
+                showStatus('gfFloppy', 'Mint failed: ' + parseError(error), 'error');
+            } finally {
+                const button = document.getElementById('mintGfFloppy');
+                button.disabled = false;
+                button.classList.remove('btn-loading');
+            }
+        }
+
+        async function mintGlitchedFloppy() {
+            if (!userAddress) {
+                showStatus('glitchedFloppy', 'Connect wallet first!', 'error');
+                return;
+            }
+            
+            try {
+                const button = document.getElementById('mintGlitchedFloppy');
+                button.disabled = true;
+                button.classList.add('btn-loading');
+                
+                // Calculate total cost using BigNumber for better performance
+                let totalCostWei = ethers.BigNumber.from(0);
+                let totalCostEther = 0;
+                
+                // Get price in ether for calculations
+                const priceEther = parseFloat(ethers.utils.formatEther(GLITCHED_FLOPPY_PRICE));
+                totalCostEther = priceEther * quantities.glitchedFloppy;
+                
+                // Calculate in wei using BigNumber for approval (same as shop/)
+                const itemPriceWei = ethers.utils.parseEther(priceEther.toString());
+                totalCostWei = itemPriceWei.mul(quantities.glitchedFloppy);
+                
+                // For user display, use the direct calculation
+                const userDisplayAmount = priceEther * quantities.glitchedFloppy;
+                
+                // Check balance
+                const balance = await adrianToken.balanceOf(userAddress);
+                const balanceEther = parseFloat(ethers.utils.formatEther(balance));
+                
+                if (totalCostEther > balanceEther) {
+                    showStatus('glitchedFloppy', 'Insufficient ADRIAN balance for mint', 'error');
+                    return;
+                }
+                
+                // Step 1: Check if approval is needed and handle it (lógica simplificada como SHOP/)
+                if (totalCostEther > approvedAmountPack) {
+                    showStatus('glitchedFloppy', 'Approval needed. Processing approval transaction...', 'loading');
+                    
+                    // Add delay before approval transaction
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    showStatus('glitchedFloppy', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
+                    
+                    // Use the pre-calculated BigNumber (no conversion needed)
+                    const approveTx = await adrianToken.approve(PACK_MINTER, totalCostWei);
+                    await approveTx.wait();
+                    
+                    showStatus('glitchedFloppy', 'ADRIAN tokens approved successfully!', 'success');
+                    
+                    // Refresh approval amount
+                    await loadBalances();
+                    
+                    // Add delay before proceeding to mint
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Process the mint
+                showStatus('glitchedFloppy', `Minting ${quantities.glitchedFloppy} GLITCHED Floppy...`, 'loading');
+                
+                // Add delay before mint transaction
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const tx = await packMinterContract.purchasePack(GLITCHED_FLOPPY_PACK_ID, quantities.glitchedFloppy, false);
+                await tx.wait();
+                
+                showStatus('glitchedFloppy', `🎉 Successfully minted ${quantities.glitchedFloppy} GLITCHED Floppy!`, 'success');
+                
+                // Update supply info after successful mint
+                await loadSupplyInfo();
+                
+            } catch (error) {
+                console.error('Mint error:', error);
+                showStatus('glitchedFloppy', 'Mint failed: ' + parseError(error), 'error');
+            } finally {
+                const button = document.getElementById('mintGlitchedFloppy');
+                button.disabled = false;
+                button.classList.remove('btn-loading');
+            }
+        }
+
+        async function mintOgFloppy() {
+            showStatus('ogFloppy', 'OG Floppy is MINTED OUT - No more available!', 'error');
+        }
+
+        async function mintGoldenFloppy() {
+            if (!userAddress) {
+                showStatus('goldenFloppy', 'Connect wallet first!', 'error');
+                return;
+            }
+
+            try {
+                const button = document.getElementById('mintGoldenFloppy');
+                button.disabled = true;
+                button.classList.add('btn-loading');
+
+                const method = document.querySelector('input[name="goldenPay"]:checked').value;
+
+                if (method === 'ETH') {
+                    if (goldenPriceWei.isZero()) {
+                        showStatus('goldenFloppy', 'ETH payment disabled for this batch', 'error');
+                        return;
+                    }
+                    if (!goldenSummary || !goldenSummary.active) {
+                        showStatus('goldenFloppy', 'Sale not active', 'error');
+                        return;
+                    }
+                    // Validaciones básicas de límites
+                    try {
+                        const maxPerTx = goldenSummary.maxPerTx?.toNumber?.() ?? 0;
+                        const remaining = goldenSummary.remaining?.toNumber?.() ?? 0;
+                        if (maxPerTx > 0 && quantities.goldenFloppy > maxPerTx) {
+                            showStatus('goldenFloppy', `Max per tx: ${maxPerTx}`, 'error');
+                            return;
+                        }
+                        if (remaining > 0 && quantities.goldenFloppy > remaining) {
+                            showStatus('goldenFloppy', `Only ${remaining} remaining`, 'error');
+                            return;
+                        }
+                    } catch {}
+                    const total = goldenPriceWei.mul(quantities.goldenFloppy);
+                    // Comprobación previa: balance suficiente para value + gas
+                    try {
+                        const [balanceWei, gasPrice] = await Promise.all([
+                            signer.getBalance(),
+                            provider.getGasPrice()
+                        ]);
+                        let estGas;
+                        try {
+                            estGas = await adrianEthContract.estimateGas.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total });
+                        } catch {
+                            estGas = ethers.BigNumber.from('300000');
+                        }
+                        const fee = gasPrice.mul(estGas);
+                        const needed = total.add(fee);
+                        if (balanceWei.lt(needed)) {
+                            const have = formatEthString(ethers.utils.formatEther(balanceWei));
+                            const needTotal = formatEthString(ethers.utils.formatEther(needed));
+                            showStatus('goldenFloppy', `You don't have enough ETH to complete this transaction (mint price + gas). Needed ~${needTotal} ETH total, you have ${have} ETH.`, 'error');
+                            return;
+                        }
+                    } catch {}
+                    showStatus('goldenFloppy', `Minting ${quantities.goldenFloppy} Golden Floppy with ETH...`, 'loading');
+                    // callStatic para detectar reverts antes de enviar
+                    try {
+                        await adrianEthContract.callStatic.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total });
+                    } catch (preErr) {
+                        throw preErr;
+                    }
+                    let tx;
+                    try {
+                        tx = await adrianEthContract.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total });
+                    } catch (sendErr) {
+                        // Fallback con gasLimit si la estimación falla o proveedor da -32603
+                        const msg = sendErr?.message || '';
+                        const code = sendErr?.code;
+                        const isUnpredictable = msg.includes('UNPREDICTABLE_GAS_LIMIT') || (code === 'UNPREDICTABLE_GAS_LIMIT');
+                        const isInternal = code === -32603;
+                        if (isUnpredictable || isInternal) {
+                            tx = await adrianEthContract.mint(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy, { value: total, gasLimit: ethers.BigNumber.from('300000') });
+                        } else {
+                            throw sendErr;
+                        }
+                    }
+                    await tx.wait();
+                } else { // ADRIAN
+                    try {
+                        const tokenAddr = await adrianEthContract.adrianToken();
+                        if (!tokenAddr || tokenAddr === '0x0000000000000000000000000000000000000000' || goldenPriceToken.isZero()) {
+                            showStatus('goldenFloppy', 'Token payment disabled for this batch', 'error');
+                            return;
+                        }
+                    } catch {
+                        showStatus('goldenFloppy', 'Token payment disabled for this batch', 'error');
+                        return;
+                    }
+                    const totalToken = goldenPriceToken.mul(quantities.goldenFloppy);
+                    const allowWei = await adrianToken.allowance(userAddress, ADRIAN_ETH_MINTER);
+                    if (allowWei.lt(totalToken)) {
+                        const human = parseFloat(ethers.utils.formatEther(totalToken)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 });
+                        showStatus('goldenFloppy', `Approving ${human} $ADRIAN...`, 'loading');
+                        const approveTx = await adrianToken.approve(ADRIAN_ETH_MINTER, totalToken);
+                        await approveTx.wait();
+                    }
+                    showStatus('goldenFloppy', `Minting ${quantities.goldenFloppy} Golden Floppy with $ADRIAN...`, 'loading');
+                    const tx2 = await adrianEthContract.mintWithToken(GOLDEN_ETH_BATCH_ID, quantities.goldenFloppy);
+                    await tx2.wait();
+                }
+
+                showStatus('goldenFloppy', `🎉 Successfully minted ${quantities.goldenFloppy} Golden Floppy!`, 'success');
+                await loadGoldenBatch();
+            } catch (error) {
+                console.error('Mint error:', error);
+                showStatus('goldenFloppy', 'Mint failed: ' + parseError(error), 'error');
+            } finally {
+                const button = document.getElementById('mintGoldenFloppy');
+                button.disabled = false;
+                button.classList.remove('btn-loading');
+            }
+        }
+
+        function showStatus(type, message, statusType) {
+            if (type === 'all') {
+                ['adrianZero', 'starterFloppy', 'gfFloppy', 'glitchedFloppy', 'ogFloppy', 'goldenFloppy'].forEach(t => {
+                    const statusEl = document.getElementById(t + 'Status');
+                    if (statusEl) {
+                        statusEl.className = `status-message ${statusType}`;
+                        statusEl.textContent = message;
+                        statusEl.style.display = 'block';
+                        
+                        if (statusType === 'success') {
+                            setTimeout(() => {
+                                statusEl.style.display = 'none';
+                            }, 5000);
+                        }
+                    }
+                });
+            } else {
+                const statusEl = document.getElementById(type + 'Status');
+                if (statusEl) {
+                    statusEl.className = `status-message ${statusType}`;
+                    statusEl.textContent = message;
+                    statusEl.style.display = 'block';
+                    
+                    if (statusType === 'success') {
+                        setTimeout(() => {
+                            statusEl.style.display = 'none';
+                        }, 5000);
+                    }
+                }
+            }
+        }
+
+        function parseError(error) {
+            // User rejection
+            if (error?.code === 4001) return 'Transaction rejected by user';
+            // Rate limited
+            if (error?.code === -32005 || (error?.message && error.message.includes('rate limited'))) {
+                return 'Provider rate limited. Please retry in a few seconds.';
+            }
+            // Ethers unpredictable gas
+            if ((error?.message || '').includes('UNPREDICTABLE_GAS_LIMIT')) {
+                return 'Cannot estimate gas. Transaction may revert. Retrying with fallback gas...';
+            }
+            // Insufficient ETH for value + gas
+            if ((error?.message || '').includes('insufficient funds for gas * price + value') || (error?.data?.message || '').includes('insufficient funds for gas * price + value')) {
+                return "You don't have enough ETH to complete this transaction (mint price + gas).";
+            }
+            // Nested messages (MetaMask -32603)
+            const mmDataMsg = error?.data?.message || error?.error?.message;
+            if (mmDataMsg) {
+                const execReverted = mmDataMsg.match(/execution reverted:([^\n]+)/i);
+                if (execReverted && execReverted[1]) {
+                    return execReverted[1].trim();
+                }
+                return mmDataMsg;
+            }
+            // Hex-encoded revert data (0x08c379a0...)
+            const dataHex = error?.data?.data || error?.data;
+            if (typeof dataHex === 'string' && dataHex.startsWith('0x08c379a0')) {
+                try {
+                    // Decode Error(string) manually
+                    const reasonHex = dataHex.slice(10 + 64 * 1, 10 + 64 * 2); // naive slice
+                    const length = parseInt(dataHex.slice(10 + 64 * 2, 16), 16);
+                    const strHex = dataHex.slice(10 + 64 * 3, 10 + 64 * 3 + length * 2);
+                    const reason = decodeURIComponent(strHex.replace(/(..)/g, '%$1'));
+                    if (reason) return reason;
+                } catch {}
+            }
+            // Fallbacks
+            if (error?.message) return error.message;
+            try { return JSON.stringify(error); } catch {}
+            return 'Unknown error occurred';
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function setupFadeInAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(function(el) {
+                observer.observe(el);
+            });
+
+            const stepCards = document.querySelectorAll('.step-card');
+            stepCards.forEach(function(card, index) {
+                card.style.transitionDelay = (index * 0.2) + 's';
+            });
+        }
+
+        // Listen for account changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', function (accounts) {
+                if (accounts.length === 0) {
+                    window.location.reload();
+                } else {
+                    connectWallet();
+                }
+            });
+
+            window.ethereum.on('chainChanged', function () {
+                window.location.reload();
+            });
+        }
+
+        // Load Bootstrap scripts
+        const bootstrapScript = document.createElement('script');
+        bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+        document.head.appendChild(bootstrapScript);
+
+        function refreshGoldenTotals() {
+            updateTotal('goldenFloppy');
+        }
+
+        // Cambios de método de pago en Golden
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.name === 'goldenPay') {
+                refreshGoldenTotals();
+            }
+        });
+
+        // Helper: formato ETH visible (min 2 decimales, max 8)
+        function formatEthString(etherString) {
+            const n = Number(etherString);
+            if (!isFinite(n)) return '0.00';
+            return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 });
+        }
+    </script>
+</body>
+</html>

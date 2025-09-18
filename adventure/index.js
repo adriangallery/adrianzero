@@ -109,8 +109,28 @@ class MenuManager {
         // Actualizar comando actual
         this.currentCommand = command;
         
+        // Actualizar display del comando en la escena actual si hay un item seleccionado
+        const activeScene = document.querySelector('.screen.active');
+        if (activeScene) {
+            const sceneId = activeScene.id;
+            let scene = null;
+            
+            // Buscar en sceneManagerV2 primero
+            if (window.sceneManagerV2 && window.sceneManagerV2.scenes) {
+                scene = window.sceneManagerV2.scenes.get(sceneId);
+            }
+            
+            // Fallback a sceneManager
+            if (!scene && window.sceneManager && window.sceneManager.scenes) {
+                scene = window.sceneManager.scenes.get(sceneId);
+            }
+            
+            if (scene && scene.updateCommandDisplay) {
+                scene.updateCommandDisplay();
+            }
+        }
+        
         // Removed OPEN command logic - now handled by USE + Computer in upstairs scene
-
     }
 
     // Obtener comando actual
@@ -118,11 +138,11 @@ class MenuManager {
         return this.currentCommand;
     }
 
-    // Verificar si hay un floppy disc seleccionado
+    // Verificar si hay un floppy disc o AdrianGF seleccionado
     hasFloppySelected() {
         if (!this.selectedInventoryItem) return false;
         const tokenId = parseInt(this.selectedInventoryItem.tokenId);
-        return tokenId >= 10000 && tokenId <= 10005;
+        return (tokenId >= 10000 && tokenId <= 10005); // Solo floppy discs, no AdrianGF
     }
 
     // Obtener el floppy seleccionado
@@ -206,8 +226,21 @@ class MenuManager {
             
             console.log(`Loading ${tokenType} tokens from contract: ${contractAddress}`);
             
-            // Usar Alchemy REST API directamente
+            // Cargar todas las páginas de NFTs
+            let allNfts = [];
+            let pageKey = null;
+            let pageCount = 0;
+            
+            do {
+                pageCount++;
+                console.log(`Loading page ${pageCount}...`);
+                
+                // Construir URL con paginación
             let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${this.currentAccount}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=50&tokenType=${tokenType}`;
+                
+                if (pageKey) {
+                    alchemyUrl += `&pageKey=${pageKey}`;
+                }
             
             console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
             
@@ -218,11 +251,25 @@ class MenuManager {
             }
             
             const nftsData = await alchemyResponse.json();
-            console.log(`NFT data received:`, nftsData);
+                console.log(`Page ${pageCount} data received:`, nftsData);
             
-            // Procesar NFTs y filtrar para tokens 10000, 10001, y 10002
+                // Agregar NFTs de esta página al array total
             if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
-                const tokens = nftsData.ownedNfts.map(nft => {
+                    allNfts = allNfts.concat(nftsData.ownedNfts);
+                }
+                
+                // Obtener pageKey para la siguiente página
+                pageKey = nftsData.pageKey;
+                
+                console.log(`Page ${pageCount}: ${nftsData.ownedNfts ? nftsData.ownedNfts.length : 0} NFTs, total so far: ${allNfts.length}, has next page: ${!!pageKey}`);
+                
+            } while (pageKey && pageCount < 10); // Límite de seguridad para evitar bucles infinitos
+            
+            console.log(`Total NFTs loaded: ${allNfts.length} from ${pageCount} pages`);
+            
+            // Procesar todos los NFTs y filtrar para tokens 10000, 10001, 10002, 10003, 10004, 10005, y 262144
+            if (allNfts.length > 0) {
+                const tokens = allNfts.map(nft => {
                     try {
                         // Extraer tokenId
                         let tokenId;
@@ -250,14 +297,7 @@ class MenuManager {
                             return null;
                         }
                         
-                        // Filtrar para tokens 10000, 10001, 10002, 10003, 10004, 10005, y 262144
-                        if (tokenIdInt !== 10000 && tokenIdInt !== 10001 && tokenIdInt !== 10002 && 
-                            tokenIdInt !== 10003 && tokenIdInt !== 10004 && tokenIdInt !== 10005 && 
-                            tokenIdInt !== 262144) {
-                            return null;
-                        }
-                        
-                        // Extraer título/nombre
+                        // Extraer título/nombre primero para el log
                         let title = `Token #${tokenIdInt}`;
                         
                         if (nft.title) {
@@ -269,6 +309,19 @@ class MenuManager {
                         } else if (nft.contract && nft.contract.name) {
                             title = `${nft.contract.name} #${tokenIdInt}`;
                         }
+                        
+                        // Log para debuggear qué tokens tiene el usuario
+                        console.log(`Processing token ${tokenIdInt} (${title})`);
+                        
+                        // Filtrar para tokens 10000, 10001, 10002, 10003, 10004, 10005, y 262144
+                        if (tokenIdInt !== 10000 && tokenIdInt !== 10001 && tokenIdInt !== 10002 && 
+                            tokenIdInt !== 10003 && tokenIdInt !== 10004 && tokenIdInt !== 10005 && 
+                            tokenIdInt !== 262144) {
+                            console.log(`Excluding token ${tokenIdInt} - not in allowed list`);
+                            return null;
+                        }
+                        
+                        console.log(`Including token ${tokenIdInt} - in allowed list`);
                         
                         // Extraer URL de imagen
                         let mediaUrl = "";
@@ -315,8 +368,11 @@ class MenuManager {
                 }).filter(token => token !== null);
                 
                 console.log(`Filtered tokens:`, tokens);
+                console.log(`Setting inventoryItems to:`, tokens);
                 this.inventoryItems = tokens;
+                console.log(`Calling displayInventory()...`);
                 this.displayInventory();
+                console.log(`displayInventory() completed`);
                 
             } else {
                 this.showNoItems();
@@ -356,24 +412,124 @@ class MenuManager {
         return activeScene;
     }
 
-    // ✅ SOLUCIÓN: Buscar dentro de la escena activa, no globalmente
+    // ✅ SOLUCIÓN: Buscar los grids globalmente, no dentro de la escena activa
     displayInventory() {
-        console.log('Displaying inventory items:', this.inventoryItems);
+        // DEBUG: Función temporal para debugging
+        window.debugInventoryGrids = () => {
+            console.log('=== DEBUG INVENTORY GRIDS ===');
+            const allLeftGrids = document.querySelectorAll('#inventory-grid-left');
+            const allRightGrids = document.querySelectorAll('#inventory-grid-right');
+            
+            allLeftGrids.forEach((grid, index) => {
+                const styles = window.getComputedStyle(grid);
+                console.log(`Left Grid ${index}:`, {
+                    element: grid,
+                    visible: grid.offsetParent !== null,
+                    height: styles.height,
+                    maxHeight: styles.maxHeight,
+                    overflowY: styles.overflowY,
+                    display: styles.display,
+                    flex: styles.flex,
+                    offsetHeight: grid.offsetHeight,
+                    scrollHeight: grid.scrollHeight,
+                    clientHeight: grid.clientHeight,
+                    parent: grid.parentElement
+                });
+            });
+            
+            allRightGrids.forEach((grid, index) => {
+                const styles = window.getComputedStyle(grid);
+                console.log(`Right Grid ${index}:`, {
+                    element: grid,
+                    visible: grid.offsetParent !== null,
+                    height: styles.height,
+                    maxHeight: styles.maxHeight,
+                    overflowY: styles.overflowY,
+                    display: styles.display,
+                    flex: styles.flex,
+                    offsetHeight: grid.offsetHeight,
+                    scrollHeight: grid.scrollHeight,
+                    clientHeight: grid.clientHeight,
+                    parent: grid.parentElement
+                });
+            });
+        };
         
-        // ✅ SOLUCIÓN: Buscar dentro de la escena activa, no globalmente
-        const activeScene = this.getActiveScene();
-        if (!activeScene) {
-            console.warn('No active scene found for inventory display');
-            return;
-        }
-
-        // Buscar grids de inventario dentro de la escena activa específicamente
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
-        const rightGrid = activeScene.querySelector('#inventory-grid-right');
+        // Ejecutar debug automáticamente
+        window.debugInventoryGrids();
+        console.log('=== displayInventory() called ===');
+        console.log('this.inventoryItems:', this.inventoryItems);
+        console.log('this.inventoryItems.length:', this.inventoryItems ? this.inventoryItems.length : 'undefined');
         
-        console.log('Active scene:', activeScene.id || 'unknown');
+        // Buscar todos los grids de inventario
+        const allLeftGrids = document.querySelectorAll('#inventory-grid-left');
+        const allRightGrids = document.querySelectorAll('#inventory-grid-right');
+        // Seleccionar solo el grid visible (de la escena activa)
+        const leftGrid = Array.from(allLeftGrids).find(grid => grid.offsetParent !== null);
+        const rightGrid = Array.from(allRightGrids).find(grid => grid.offsetParent !== null);
+        
         console.log('Left grid found:', !!leftGrid);
         console.log('Right grid found:', !!rightGrid);
+        console.log('Total left grids found:', allLeftGrids.length);
+        console.log('Total right grids found:', allRightGrids.length);
+        
+        // DEBUG: Inspeccionar estilos computados de los grids
+        if (leftGrid) {
+            const leftStyles = window.getComputedStyle(leftGrid);
+            console.log('=== LEFT GRID STYLES ===');
+            console.log('height:', leftStyles.height);
+            console.log('max-height:', leftStyles.maxHeight);
+            console.log('overflow-y:', leftStyles.overflowY);
+            console.log('display:', leftStyles.display);
+            console.log('grid-template-columns:', leftStyles.gridTemplateColumns);
+            console.log('flex:', leftStyles.flex);
+            console.log('min-height:', leftStyles.minHeight);
+            console.log('offsetHeight:', leftGrid.offsetHeight);
+            console.log('scrollHeight:', leftGrid.scrollHeight);
+            console.log('clientHeight:', leftGrid.clientHeight);
+            
+            // DEBUG: Verificar si los estilos CSS están siendo aplicados
+            console.log('=== CSS STYLE SOURCES ===');
+            console.log('CSS max-height applied:', leftStyles.maxHeight !== 'none');
+            console.log('CSS overflow-y applied:', leftStyles.overflowY !== 'visible');
+            console.log('CSS flex applied:', leftStyles.flex !== '0 1 auto');
+            
+            // DEBUG: Verificar el contenedor padre
+            const parent = leftGrid.parentElement;
+            if (parent) {
+                const parentStyles = window.getComputedStyle(parent);
+                console.log('=== PARENT CONTAINER STYLES ===');
+                console.log('parent display:', parentStyles.display);
+                console.log('parent flex:', parentStyles.flex);
+                console.log('parent height:', parentStyles.height);
+                console.log('parent overflow:', parentStyles.overflow);
+            }
+        }
+        
+        if (rightGrid) {
+            const rightStyles = window.getComputedStyle(rightGrid);
+            console.log('=== RIGHT GRID STYLES ===');
+            console.log('height:', rightStyles.height);
+            console.log('max-height:', rightStyles.maxHeight);
+            console.log('overflow-y:', rightStyles.overflowY);
+            console.log('display:', rightStyles.display);
+            console.log('grid-template-columns:', rightStyles.gridTemplateColumns);
+            console.log('flex:', rightStyles.flex);
+            console.log('min-height:', rightStyles.minHeight);
+            console.log('offsetHeight:', rightGrid.offsetHeight);
+            console.log('scrollHeight:', rightGrid.scrollHeight);
+            console.log('clientHeight:', rightGrid.clientHeight);
+        }
+        allLeftGrids.forEach((grid, index) => {
+            console.log(`Left grid ${index}:`, grid);
+            console.log(`Left grid ${index} parent:`, grid.parentElement);
+            console.log(`Left grid ${index} visible:`, grid.offsetParent !== null);
+        });
+        allRightGrids.forEach((grid, index) => {
+            console.log(`Right grid ${index}:`, grid);
+            console.log(`Right grid ${index} parent:`, grid.parentElement);
+            console.log(`Right grid ${index} visible:`, grid.offsetParent !== null);
+        });
         
         if (leftGrid) {
             leftGrid.innerHTML = '';
@@ -381,11 +537,14 @@ class MenuManager {
             if (this.inventoryItems.length === 0) {
                 leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
             } else {
-                // Filtrar tokens para el grid izquierdo (floppy discs): 10000, 10001, 10002, 10003, 10004, 10005
-                const floppyTokens = this.inventoryItems.filter(item => 
-                    item.tokenId === 10000 || item.tokenId === 10001 || item.tokenId === 10002 ||
-                    item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005
-                );
+                // Filtrar tokens para el grid izquierdo (solo floppy discs): 10000, 10001, 10002, 10003, 10004, 10005
+                const floppyTokens = this.inventoryItems.filter(item => {
+                    console.log(`Checking item ${item.title} with tokenId: ${item.tokenId} (type: ${typeof item.tokenId})`);
+                    const isFloppy = item.tokenId === 10000 || item.tokenId === 10001 || item.tokenId === 10002 ||
+                        item.tokenId === 10003 || item.tokenId === 10004 || item.tokenId === 10005;
+                    console.log(`Is floppy: ${isFloppy}`);
+                    return isFloppy;
+                });
                 
                 if (floppyTokens.length === 0) {
                     leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
@@ -398,16 +557,15 @@ class MenuManager {
                 }
             }
         } else {
-            console.warn('Left grid not found in active scene');
+            console.warn('Left grid not found in document');
         }
         
         if (rightGrid) {
             rightGrid.innerHTML = '';
             
-            // Filtrar tokens para el grid derecho (todos los que no sean floppy discs)
+            // Filtrar tokens para el grid derecho (AdrianGF y otros items especiales)
             const itemTokens = this.inventoryItems.filter(item => 
-                item.tokenId !== 10000 && item.tokenId !== 10001 && item.tokenId !== 10002 &&
-                item.tokenId !== 10003 && item.tokenId !== 10004 && item.tokenId !== 10005
+                item.tokenId === 262144 // AdrianGF va al grid derecho
             );
             
             if (itemTokens.length === 0) {
@@ -419,6 +577,8 @@ class MenuManager {
                     console.log('Added item to right grid:', item.title);
                 });
             }
+        } else {
+            console.warn('Right grid not found in document');
         }
     }
 
@@ -426,6 +586,7 @@ class MenuManager {
     createInventoryItemElement(item) {
         const itemElement = document.createElement('div');
         itemElement.className = 'inventory-item';
+        itemElement.setAttribute('data-token-id', item.tokenId);
         
         const imageUrl = item.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjIwIiB5PSIyMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
         
@@ -437,7 +598,13 @@ class MenuManager {
         
         // Agregar evento click para selección de item
         itemElement.addEventListener('click', () => {
-            this.selectInventoryItem(item);
+            // Usar la nueva función global para manejar clicks en items
+            if (window.handleInventoryItemClick) {
+                window.handleInventoryItemClick(item);
+            } else {
+                // Fallback al método local si la función global no está disponible
+                this.selectInventoryItem(item);
+            }
         });
         
         return itemElement;
@@ -475,13 +642,11 @@ class MenuManager {
         // Removed OPEN command logic - now handled by USE + Computer in upstairs scene
     }
 
-    // ✅ ACTUALIZAR: Función showNoItems también debe usar escena activa
+    // ✅ CORREGIDO: Buscar grids globalmente, no dentro de la escena activa
     showNoItems() {
-        const activeScene = this.getActiveScene();
-        if (!activeScene) return;
-        
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
-        const rightGrid = activeScene.querySelector('#inventory-grid-right');
+        // Buscar grids de inventario globalmente en el documento
+        const leftGrid = document.querySelector('#inventory-grid-left');
+        const rightGrid = document.querySelector('#inventory-grid-right');
         
         if (leftGrid) {
             leftGrid.innerHTML = '<div class="no-items">No floppy discs found.</div>';
@@ -491,12 +656,10 @@ class MenuManager {
         }
     }
 
-    // ✅ ACTUALIZAR: Función showInventoryLoading también debe usar escena activa
+    // ✅ CORREGIDO: Buscar grids globalmente, no dentro de la escena activa
     showInventoryLoading() {
-        const activeScene = this.getActiveScene();
-        if (!activeScene) return;
-        
-        const leftGrid = activeScene.querySelector('#inventory-grid-left');
+        // Buscar grids de inventario globalmente en el documento
+        const leftGrid = document.querySelector('#inventory-grid-left');
         const loadingHTML = `
             <div class="loading">
                 <div class="spinner"></div>
@@ -1485,7 +1648,7 @@ function showFloatingText(message, x, y) {
         if (floatingText.parentNode) {
             floatingText.remove();
         }
-    }, 2000);
+    }, 4000);
 }
 
 // Handle mouse movement for cursor feedback

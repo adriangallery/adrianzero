@@ -1,0 +1,30 @@
+{
+  "name": "shooter-game-onchain",
+  "version": "1.0.0",
+  "description": "Browser shooter game with onchain rewards on Base",
+  "main": "index.html",
+  "scripts": {
+    "dev": "cd onchain/backend && npm run dev",
+    "build": "echo 'Static files ready for deployment'",
+    "start": "cd onchain/backend && npm start",
+    "vercel-build": "cd onchain/backend && npm install"
+  },
+  "keywords": [
+    "shooter",
+    "game",
+    "blockchain",
+    "ethereum",
+    "base",
+    "rewards",
+    "browser-game"
+  ],
+  "author": "AdrianLAB",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adrianzero-1/shooter.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

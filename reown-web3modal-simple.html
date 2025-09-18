@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reown Web3Modal Simple - Working Implementation</title>
+    
+    <!-- Ethers.js -->
+    <script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- Web3Modal Standalone -->
+    <script src="https://unpkg.com/@web3modal/standalone@2.3.7/dist/index.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: #cccccc;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .status.info {
+            background: rgba(0, 204, 255, 0.2);
+            border: 1px solid #00ccff;
+            color: #00ccff;
+        }
+
+        .wallet-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .debug-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .debug-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+
+        .debug-log {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 5px 0;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .debug-log.success { color: #00ff88; }
+        .debug-log.error { color: #ff0000; }
+        .debug-log.info { color: #00ccff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reown Web3Modal Simple</h1>
+        <p class="subtitle">Working Implementation with Web3Modal</p>
+        
+        <div id="status" class="status info">
+            Initializing Web3Modal...
+        </div>
+        
+        <div class="button-group">
+            <button id="connectBtn" class="button" disabled>Connect Wallet</button>
+            <button id="disconnectBtn" class="button" style="display: none;">Disconnect</button>
+        </div>
+        
+        <div class="wallet-info" id="walletInfo" style="display: none;">
+            <h3>Wallet Connected</h3>
+            <div class="wallet-address" id="walletAddress"></div>
+            <div id="walletType"></div>
+        </div>
+        
+        <div class="debug-panel">
+            <div class="debug-title">Debug Log</div>
+            <div id="debugLog"></div>
+        </div>
+    </div>
+
+    <script>
+        // Debug utilities
+        function addDebugLog(message, type = 'info') {
+            const debugLog = document.getElementById('debugLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = `debug-log ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        // Global variables
+        let web3Modal = null;
+        let isConnected = false;
+        let userAddress = null;
+        let provider = null;
+        let signer = null;
+
+        // Initialize Web3Modal
+        async function initWeb3Modal() {
+            try {
+                addDebugLog('🔍 Initializing Web3Modal...', 'info');
+                
+                // Check if Web3Modal is available
+                if (typeof window.Web3Modal === 'undefined') {
+                    throw new Error('Web3Modal not found');
+                }
+                
+                addDebugLog('✅ Web3Modal found', 'success');
+                
+                const projectId = '6afed75f72df7cefde4d998c2da4b041';
+                
+                // Create Web3Modal instance
+                web3Modal = new window.Web3Modal({
+                    projectId: projectId,
+                    themeMode: 'light',
+                    themeVariables: {
+                        '--w3m-accent': '#000000',
+                    },
+                    chains: [
+                        {
+                            chainId: 1,
+                            name: 'Ethereum',
+                            currency: 'ETH',
+                            explorerUrl: 'https://etherscan.io',
+                            rpcUrl: 'https://cloudflare-eth.com'
+                        },
+                        {
+                            chainId: 137,
+                            name: 'Polygon',
+                            currency: 'MATIC',
+                            explorerUrl: 'https://polygonscan.com',
+                            rpcUrl: 'https://polygon-rpc.com'
+                        },
+                        {
+                            chainId: 11155111,
+                            name: 'Sepolia',
+                            currency: 'ETH',
+                            explorerUrl: 'https://sepolia.etherscan.io',
+                            rpcUrl: 'https://rpc.sepolia.org'
+                        }
+                    ],
+                    metadata: {
+                        name: 'Reown Web3Modal Test',
+                        description: 'Testing Web3Modal Implementation',
+                        url: window.location.origin,
+                        icons: ['https://avatars.githubusercontent.com/u/179229932']
+                    }
+                });
+                
+                addDebugLog('✅ Web3Modal created successfully', 'success');
+                
+                // Set up event listeners
+                setupEventListeners();
+                
+                // Update UI
+                document.getElementById('status').textContent = 'Web3Modal ready!';
+                document.getElementById('status').className = 'status success';
+                document.getElementById('connectBtn').disabled = false;
+                
+            } catch (error) {
+                addDebugLog(`❌ Failed to initialize Web3Modal: ${error.message}`, 'error');
+                document.getElementById('status').textContent = 'Failed to initialize Web3Modal';
+                document.getElementById('status').className = 'status error';
+                console.error('Web3Modal initialization error:', error);
+            }
+        }
+
+        function setupEventListeners() {
+            if (!web3Modal) return;
+            
+            addDebugLog('🔍 Setting up event listeners...', 'info');
+            
+            // Button event listeners
+            document.getElementById('connectBtn').addEventListener('click', async () => {
+                try {
+                    addDebugLog('🔍 Opening Web3Modal...', 'info');
+                    await web3Modal.open();
+                } catch (error) {
+                    addDebugLog(`❌ Error opening modal: ${error.message}`, 'error');
+                }
+            });
+            
+            document.getElementById('disconnectBtn').addEventListener('click', async () => {
+                try {
+                    addDebugLog('🔍 Disconnecting...', 'info');
+                    await web3Modal.disconnect();
+                } catch (error) {
+                    addDebugLog(`❌ Error disconnecting: ${error.message}`, 'error');
+                }
+            });
+            
+            // Listen for connection events
+            web3Modal.subscribeEvents((event) => {
+                addDebugLog(`🔍 Web3Modal event: ${JSON.stringify(event)}`, 'info');
+                
+                if (event.type === 'track') {
+                    switch (event.event) {
+                        case 'CONNECT_SUCCESS':
+                            addDebugLog('✅ Connection successful', 'success');
+                            handleConnectionSuccess();
+                            break;
+                        case 'DISCONNECT_SUCCESS':
+                            addDebugLog('✅ Disconnection successful', 'info');
+                            handleDisconnection();
+                            break;
+                        case 'CONNECT_ERROR':
+                            addDebugLog(`❌ Connection error: ${event.data?.message || 'Unknown error'}`, 'error');
+                            break;
+                        default:
+                            addDebugLog(`🔍 Other event: ${event.event}`, 'info');
+                    }
+                }
+            });
+            
+            addDebugLog('✅ Event listeners set up', 'success');
+        }
+
+        async function handleConnectionSuccess() {
+            try {
+                if (!web3Modal) return;
+                
+                const account = web3Modal.getAccount();
+                const isConnected = web3Modal.getIsConnected();
+                
+                addDebugLog(`�� Account: ${JSON.stringify(account)}`, 'info');
+                addDebugLog(`🔍 Is connected: ${isConnected}`, 'info');
+                
+                if (isConnected && account) {
+                    userAddress = account.address;
+                    isConnected = true;
+                    
+                    // Create provider from Web3Modal
+                    const walletProvider = web3Modal.getWalletProvider();
+                    if (walletProvider) {
+                        provider = new ethers.BrowserProvider(walletProvider);
+                        signer = await provider.getSigner();
+                        addDebugLog('✅ Ethers provider created', 'success');
+                    }
+                    
+                    updateWalletUI();
+                    addDebugLog(`✅ Wallet connected: ${userAddress}`, 'success');
+                }
+                
+            } catch (error) {
+                addDebugLog(`❌ Connection handling error: ${error.message}`, 'error');
+                console.error('Connection handling error:', error);
+            }
+        }
+
+        function handleDisconnection() {
+            addDebugLog('🔍 Handling disconnection...', 'info');
+            isConnected = false;
+            userAddress = null;
+            provider = null;
+            signer = null;
+            
+            updateWalletUI();
+        }
+
+        function updateWalletUI() {
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const walletInfo = document.getElementById('walletInfo');
+            const walletAddress = document.getElementById('walletAddress');
+            const walletType = document.getElementById('walletType');
+            
+            if (isConnected && userAddress) {
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'inline-block';
+                walletInfo.style.display = 'block';
+                walletAddress.textContent = userAddress;
+                walletType.textContent = 'Connected via Web3Modal';
+                addDebugLog('✅ UI updated for connected state', 'success');
+            } else {
+                connectBtn.style.display = 'inline-block';
+                disconnectBtn.style.display = 'none';
+                walletInfo.style.display = 'none';
+                addDebugLog('✅ UI updated for disconnected state', 'success');
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugLog('🔍 DOM loaded, initializing Web3Modal...', 'info');
+            
+            // Wait a bit for scripts to load
+            setTimeout(() => {
+                initWeb3Modal();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

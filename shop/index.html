@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AdrianSHOP - Traits Store</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         * {
@@ -15,9 +16,9 @@
 
         body {
             font-family: 'VT323', monospace;
-            background: #808080;
+            background: #1a1a1a;
             min-height: 100vh;
-            color: #333;
+            color: #fff;
         }
 
         .container {
@@ -39,7 +40,7 @@
         }
 
         .header h1 .adrian {
-            color: #333333;
+            color: #ffffff;
         }
 
         .header h1 .shop {
@@ -48,7 +49,7 @@
 
         .header .subtitle {
             font-size: 1.45rem;
-            color: white;
+            color: #cccccc;
             margin-bottom: 20px;
             font-family: 'VT323', monospace;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
@@ -57,19 +58,21 @@
         .header p {
             font-size: 1.3rem;
             opacity: 0.9;
+            color: #aaaaaa;
         }
 
         .connect-section {
             text-align: center;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             margin-bottom: 30px;
+            border: 1px solid #333;
         }
 
         .connect-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #00cc00, #009900);
             color: white;
             border: none;
             padding: 15px 30px;
@@ -88,11 +91,12 @@
 
         .account-section {
             display: none;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             margin-bottom: 30px;
+            border: 1px solid #333;
         }
 
         .wallet-info {
@@ -105,7 +109,8 @@
         }
 
         .wallet-address {
-            background: #f8f9fa;
+            background: #2a2a2a;
+            color: #ffffff;
             padding: 10px 15px;
             border-radius: 10px;
             font-family: monospace;
@@ -120,7 +125,8 @@
         }
 
         .balance-item {
-            background: #e8f5e8;
+            background: #2a2a2a;
+            color: #ffffff;
             padding: 8px 12px;
             border-radius: 8px;
             font-family: 'VT323', monospace;
@@ -142,17 +148,70 @@
             background: #c82333;
         }
 
+        /* Tabs Styles */
+        .tabs-section {
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #333;
+            color: #ccc;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #00ff00;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #00cc00, #009900);
+            border-color: #00ff00;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .tab-icon {
+            font-size: 1.2rem;
+        }
+
+        .tab-text {
+            font-weight: bold;
+        }
+
         .shop-section {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #333;
         }
 
         .section-title {
             font-size: 1.8rem;
             margin-bottom: 20px;
-            color: #333;
+            color: #fff;
             text-align: center;
             font-family: 'VT323', monospace;
         }
@@ -185,8 +244,8 @@
         }
 
         .approve-btn {
-            background: #ffc107;
-            color: #212529;
+            background: #00cc00;
+            color: #ffffff;
             border: none;
             padding: 10px 20px;
             border-radius: 6px;
@@ -220,10 +279,91 @@
 
         .cart-item {
             display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-bottom: 1px solid #555;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .cart-item-header {
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px 0;
-            border-bottom: 1px solid #555;
+            margin-bottom: 8px;
+        }
+
+        .cart-item-header .item-name {
+            font-weight: bold;
+            color: #fff;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+        }
+
+        .remove-item-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .remove-item-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .cart-item-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quantity-btn {
+            background: #00cc00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #009900;
+            transform: scale(1.1);
+        }
+
+        .quantity-display {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+            font-family: 'VT323', monospace;
+        }
+
+        .item-price {
+            color: #00ff00;
+            font-size: 1rem;
+            font-family: 'VT323', monospace;
         }
 
         .cart-total {
@@ -248,13 +388,13 @@
         }
 
         .item-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
             cursor: pointer;
-            border: 3px solid transparent;
+            border: 1px solid #333;
             position: relative;
         }
 
@@ -272,7 +412,7 @@
             width: 100%;
             height: 200px;
             object-fit: contain;
-            background: #f8f9fa;
+            background: #2a2a2a;
         }
 
         .item-info {
@@ -282,7 +422,7 @@
         .item-name {
             font-weight: bold;
             margin-bottom: 8px;
-            color: #333;
+            color: #fff;
             font-family: 'VT323', monospace;
             font-size: 1.2rem;
         }
@@ -296,7 +436,7 @@
         }
 
         .item-availability {
-            color: #666;
+            color: #cccccc;
             font-size: 0.9rem;
             margin-bottom: 5px;
             font-family: 'VT323', monospace;
@@ -331,7 +471,7 @@
 
         .item-description {
             font-size: 0.8rem;
-            color: #555;
+            color: #aaaaaa;
             margin-bottom: 8px;
             font-style: italic;
             line-height: 1.2;
@@ -339,7 +479,7 @@
 
         .item-other-attrs {
             font-size: 0.8rem;
-            color: #666;
+            color: #cccccc;
             margin-bottom: 5px;
             font-family: 'VT323', monospace;
         }
@@ -362,8 +502,8 @@
 
         .action-btn {
             flex: 1;
-            background: #667eea;
-            color: white;
+            background: #00cc00;
+            color: black;
             border: none;
             padding: 8px 12px;
             border-radius: 6px;
@@ -376,6 +516,7 @@
 
         .action-btn:hover {
             transform: translateY(-1px);
+            background: #009900;
         }
 
         .action-btn:disabled {
@@ -511,15 +652,80 @@
                 text-align: center;
             }
         }
+
+        /* Menu styles - AdrianSHOP Theme */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        #menu-container .navbar {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff00;
+            font-family: 'VT323', monospace;
+        }
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #00ff00 !important;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        #menu-container .token-symbol {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.4rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        #menu-container .navbar-toggler {
+            border-color: #00ff00;
+        }
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Adjust first section to account for fixed menu */
+        .container {
+            padding-top: 60px;
+        }
+
+        /* Menu always collapsed - no responsive adjustments needed */
+        #menu-container .navbar-nav .nav-link {
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    <script>
+      // Load the menu
+      fetch('../components/menu.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = '../components/menu.js';
+          document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    </script>
+
     <div class="container">
         <div class="header">
             <h1><span class="adrian">Adrian</span><span class="shop">SHOP</span></h1>
             <div class="subtitle">Official Traits Store</div>
             <p>Buy traits and assets with $ADRIAN tokens</p>
         </div>
+
+
 
         <!-- Connect Section -->
         <div id="connect-section" class="connect-section">
@@ -547,31 +753,38 @@
             </div>
         </div>
 
-        <!-- Approval Section -->
-        <div id="approve-section" class="approve-section">
-            <h3>Approve ADRIAN Tokens</h3>
-            <p>You need to approve ADRIAN tokens before making purchases</p>
-            <button id="approveBtn" class="approve-btn">Approve ADRIAN</button>
-            <div id="approve-status" style="margin-top: 10px;"></div>
-        </div>
+
 
         <!-- Cart Section -->
         <div id="cart-section" class="cart-section">
             <div class="cart-header">
                 <h3>🛒 Shopping Cart</h3>
-                <button id="clearCartBtn" class="action-btn remove">Clear Cart</button>
             </div>
             <div id="cart-items" class="cart-items"></div>
             <div id="cart-total" class="cart-total"></div>
             <div class="cart-actions">
-                <button id="checkoutBtn" class="action-btn" style="flex: 2;">Checkout</button>
-                <button id="approveForCartBtn" class="action-btn" style="background: #ffc107; color: #212529;">Approve Tokens</button>
+                <button id="checkoutBtn" class="action-btn" style="flex: 1;">Checkout</button>
+                <button id="clearCartBtn" class="action-btn remove" style="flex: 1;">Clear Cart</button>
             </div>
         </div>
 
         <!-- Shop Section -->
         <div id="shop-section" class="shop-section" style="display: none;">
             <h2 class="section-title">Traits Store</h2>
+            
+            <!-- Tabs Section -->
+            <div class="tabs-section">
+                <div class="tabs-container">
+                    <button class="tab-btn active" data-tab="traits" onclick="switchTab('traits')">
+                        <span class="tab-icon">🎨</span>
+                        <span class="tab-text">Traits</span>
+                    </button>
+                    <button class="tab-btn" data-tab="serums" onclick="switchTab('serums')">
+                        <span class="tab-icon">🧪</span>
+                        <span class="tab-text">Serums</span>
+                    </button>
+                </div>
+            </div>
             
             <div class="shop-controls">
                 <div class="shop-stats">
@@ -652,7 +865,7 @@
         var connectSection = document.getElementById('connect-section');
         var accountSection = document.getElementById('account-section');
         var shopSection = document.getElementById('shop-section');
-        var approveSection = document.getElementById('approve-section');
+
         var cartSection = document.getElementById('cart-section');
         var connectBtn = document.getElementById('connectBtn');
         var disconnectBtn = document.getElementById('disconnectBtn');
@@ -667,13 +880,36 @@
         var itemsGrid = document.getElementById('items-grid');
         var totalItemsEl = document.getElementById('totalItems');
         var currentPageEl = document.getElementById('currentPage');
+
+        // Tab state
+        var currentTab = 'traits';
+        var allTraitsItems = [];
+        var allSerumsItems = [];
+
+        // Function to get correct image path based on environment
+        function getImagePath(assetId, extension) {
+            // Check if we're running locally (localhost) or online
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocal) {
+                // Local development - use relative path from current directory
+                return '../components/images/' + assetId + extension;
+            } else {
+                // Production - use absolute path from root
+                return '/components/images/' + assetId + extension;
+            }
+        // Function to check if an item uses local images
+        function isLocalItem(assetId) {
+            // Check if assetId is in the range of local items
+            return (assetId >= 262144 && assetId <= 262147) || assetId === 150 || assetId === 559;
+        }
+        }
         var pagination = document.getElementById('pagination');
         var cartItemsEl = document.getElementById('cart-items');
         var cartTotalEl = document.getElementById('cart-total');
         var clearCartBtn = document.getElementById('clearCartBtn');
         var checkoutBtn = document.getElementById('checkoutBtn');
-        var approveBtn = document.getElementById('approveBtn');
-        var approveForCartBtn = document.getElementById('approveForCartBtn');
+
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -683,8 +919,7 @@
             disconnectBtn.addEventListener('click', disconnectWallet);
             clearCartBtn.addEventListener('click', clearCart);
             checkoutBtn.addEventListener('click', checkout);
-            approveBtn.addEventListener('click', approveTokens);
-            approveForCartBtn.addEventListener('click', approveTokensForCart);
+
             
             // Check if wallet is already connected
             checkConnection();
@@ -768,17 +1003,55 @@
             }
         }
 
+        // Switch tabs
+        function switchTab(tabName) {
+            console.log('Switching to tab:', tabName);
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Update current tab
+            currentTab = tabName;
+            currentPage = 1;
+            
+            // Update section title
+            const sectionTitle = document.querySelector('.section-title');
+            if (tabName === 'traits') {
+                sectionTitle.textContent = 'Traits Store';
+            } else if (tabName === 'serums') {
+                sectionTitle.textContent = 'Serums Store';
+            }
+            
+            // Filter and display items
+            filterAndDisplayItems();
+        }
+
+        // Filter items based on current tab
+        function filterAndDisplayItems() {
+            if (currentTab === 'traits') {
+                allItems = allTraitsItems;
+            } else if (currentTab === 'serums') {
+                allItems = allSerumsItems;
+            }
+            
+            displayItems();
+        }
+
         // Disconnect wallet
         function disconnectWallet() {
             currentAccount = null;
             currentPage = 1;
             allItems = [];
+            allTraitsItems = [];
+            allSerumsItems = [];
             cart = [];
             
             connectSection.style.display = "block";
             accountSection.style.display = "none";
             shopSection.style.display = "none";
-            approveSection.style.display = "none";
             cartSection.style.display = "none";
             
             itemsGrid.innerHTML = "";
@@ -870,11 +1143,19 @@
                 
                 console.log(`Loaded ${items.length} items out of ${totalActive} total active`);
                 
-                // Process items
-                allItems = [];
+                // Process items and separate by type
+                allTraitsItems = [];
+                allSerumsItems = [];
+                
                 for (var i = 0; i < items.length; i++) {
                     var processedItem = processShopItem(items[i]);
-                    allItems.push(processedItem);
+                    
+                    // Separate items by assetId range
+                    if (processedItem.assetId >= 262144 && processedItem.assetId <= 262147) {
+                        allSerumsItems.push(processedItem);
+                    } else {
+                        allTraitsItems.push(processedItem);
+                    }
                     
                     // Add small delay between processing items to avoid overload
                     if (i < items.length - 1) {
@@ -882,7 +1163,11 @@
                     }
                 }
                 
-                console.log("Processed items:", allItems);
+                console.log("Processed traits items:", allTraitsItems);
+                console.log("Processed serums items:", allSerumsItems);
+                
+                // Set initial items based on current tab
+                allItems = allTraitsItems;
                 
                 // Load metadata for all items (with error handling)
                 try {
@@ -912,19 +1197,28 @@
 
         // Load metadata for all items with better error handling
         async function loadMetadataForItems() {
-            console.log('Loading metadata for', allItems.length, 'items...');
+            console.log('Loading metadata for traits:', allTraitsItems.length, 'and serums:', allSerumsItems.length);
             
-            var metadataPromises = allItems.map(function(item, index) {
-                // Add staggered delay to avoid overwhelming the server
+            // Load metadata for traits items
+            var traitsMetadataPromises = allTraitsItems.map(function(item, index) {
                 return new Promise(function(resolve) {
                     setTimeout(function() {
                         loadItemMetadata(item).then(resolve).catch(resolve);
-                    }, index * 200); // 200ms delay between each request
+                    }, index * 200);
+                });
+            });
+            
+            // Load metadata for serums items
+            var serumsMetadataPromises = allSerumsItems.map(function(item, index) {
+                return new Promise(function(resolve) {
+                    setTimeout(function() {
+                        loadItemMetadata(item).then(resolve).catch(resolve);
+                    }, index * 200);
                 });
             });
             
             try {
-                await Promise.all(metadataPromises);
+                await Promise.all([...traitsMetadataPromises, ...serumsMetadataPromises]);
                 console.log('All metadata loading attempts completed');
             } catch (err) {
                 console.error('Error in metadata loading:', err);
@@ -959,7 +1253,7 @@
                 if (metadata.description) {
                     item.description = metadata.description;
                 }
-                if (metadata.image) {
+                if (metadata.image && !isLocalItem(item.assetId)) {
                     item.imageUrl = metadata.image;
                 }
                 if (metadata.attributes) {
@@ -1020,7 +1314,11 @@
                 freeUsedByUser: freeUsedByUser,
                 freeRemaining: freeRemaining,
                 isAllowlisted: item.isAllowlisted,
-                imageUrl: 'https://adrianlab.vercel.app/api/render/floppy/' + assetId + '.png',
+                imageUrl: (assetId >= 262144 && assetId <= 262147) ? 
+                    getImagePath(assetId, '.gif') : 
+                    (assetId === 150 || assetId === 559) ? 
+                        getImagePath(assetId, '.png') : 
+                        'https://adrianlab.vercel.app/api/render/floppy/' + assetId + '.png',
                 metadataUrl: 'https://adrianlab.vercel.app/api/metadata/floppy/' + assetId + '.json',
                 description: '',
                 attributes: []
@@ -1302,7 +1600,6 @@
             if (!item.canQuickBuy) {
                 if (item.price > approvedAmount) {
                     showError("Please approve ADRIAN tokens first for quick buy");
-                    approveSection.style.display = "block";
                 } else if (item.price > adrianBalance) {
                     showError("Insufficient ADRIAN balance");
                 } else {
@@ -1337,7 +1634,7 @@
             displayItems();
         }
 
-        // Update cart display
+        // Update cart display with quantity controls and individual item removal
         function updateCartDisplay() {
             if (cart.length === 0) {
                 cartSection.style.display = 'none';
@@ -1363,11 +1660,36 @@
                     totalFree += item.quantity;
                 }
                 
-                cartItem.innerHTML =
-                    '<span>' + item.name + '</span>' +
-                    '<span>' + item.quantity + ' x ' + 
-                    (item.useFree ? 'FREE' : item.price.toLocaleString() + ' $ADRIAN') +
-                    ' = ' + (item.useFree ? 'FREE' : itemCost.toLocaleString() + ' $ADRIAN') + '</span>';
+                // Create quantity controls
+                var quantityControls = '';
+                if (item.quantity > 1) {
+                    quantityControls = `
+                        <button class="quantity-btn" onclick="changeQuantity(${i}, -1)" title="Reducir cantidad">-</button>
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button class="quantity-btn" onclick="changeQuantity(${i}, 1)" title="Aumentar cantidad">+</button>
+                    `;
+                } else {
+                    quantityControls = `
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button class="quantity-btn" onclick="changeQuantity(${i}, 1)" title="Aumentar cantidad">+</button>
+                    `;
+                }
+                
+                cartItem.innerHTML = `
+                    <div class="cart-item-header">
+                        <span class="item-name">${item.name}</span>
+                        <button class="remove-item-btn" onclick="removeFromCart(${i})" title="Eliminar item">🗑️</button>
+                    </div>
+                    <div class="cart-item-details">
+                        <div class="quantity-controls">
+                            ${quantityControls}
+                        </div>
+                        <div class="item-price">
+                            ${item.useFree ? 'FREE' : item.price.toLocaleString() + ' $ADRIAN'} x ${item.quantity} = 
+                            <strong>${item.useFree ? 'FREE' : itemCost.toLocaleString() + ' $ADRIAN'}</strong>
+                        </div>
+                    </div>
+                `;
                 
                 cartItemsEl.appendChild(cartItem);
             }
@@ -1380,13 +1702,58 @@
             
             // Update checkout button state - only disable if insufficient balance
             checkoutBtn.disabled = totalCost > adrianBalance;
+        }
+
+        // Change quantity of an item in cart
+        function changeQuantity(cartIndex, change) {
+            if (cartIndex < 0 || cartIndex >= cart.length) return;
             
-            // Show approval section if needed, but don't disable checkout
-            if (totalCost > 0 && totalCost > approvedAmount) {
-                approveSection.style.display = "block";
-            } else {
-                approveSection.style.display = "none";
+            var item = cart[cartIndex];
+            var newQuantity = item.quantity + change;
+            
+            // Validate quantity limits
+            if (newQuantity <= 0) {
+                // Remove item if quantity becomes 0
+                removeFromCart(cartIndex);
+                return;
             }
+            
+            // Check if we're trying to increase quantity
+            if (change > 0) {
+                // Find the original item in allItems to check maxPerWallet
+                var originalItem = allItems.find(function(shopItem) {
+                    return shopItem.assetId === item.assetId;
+                });
+                
+                if (originalItem) {
+                    // Check if we would exceed the wallet limit
+                    var currentTotalInCart = cart.reduce(function(total, cartItem) {
+                        if (cartItem.assetId === item.assetId) {
+                            return total + cartItem.quantity;
+                        }
+                        return total;
+                    }, 0);
+                    
+                    var wouldExceed = (currentTotalInCart + change) > originalItem.maxPerWallet;
+                    
+                    if (wouldExceed) {
+                        showError(`❌ No puedes añadir más de ${originalItem.maxPerWallet} unidades de este item por wallet.`);
+                        return;
+                    }
+                }
+            }
+            
+            // Update quantity
+            item.quantity = newQuantity;
+            updateCartDisplay();
+        }
+
+        // Remove specific item from cart
+        function removeFromCart(cartIndex) {
+            if (cartIndex < 0 || cartIndex >= cart.length) return;
+            
+            cart.splice(cartIndex, 1);
+            updateCartDisplay();
         }
 
         // Purchase single item with retry logic
@@ -1422,39 +1789,65 @@
             }
         }
 
-        // Checkout (batch purchase)
+        // Checkout (batch purchase with automatic approval)
         async function checkout() {
             if (cart.length === 0) return;
             
-            // Calculate total cost for validation
-            var totalCost = 0;
+            // Calculate total cost using BigNumber for better performance
+            let totalCostWei = ethers.BigNumber.from(0);
+            let totalCostEther = 0;
+            
             for (var i = 0; i < cart.length; i++) {
                 if (!cart[i].useFree) {
-                    totalCost += cart[i].price * cart[i].quantity;
+                    // Convert price to wei using BigNumber
+                    const itemPriceWei = ethers.utils.parseEther(cart[i].price.toString());
+                    const itemTotalWei = itemPriceWei.mul(cart[i].quantity);
+                    totalCostWei = totalCostWei.add(itemTotalWei);
+                    
+                    // Also calculate in ether for balance validation
+                    totalCostEther += cart[i].price * cart[i].quantity;
                 }
             }
             
-            // Check if approval is needed before proceeding
-            if (totalCost > 0 && totalCost > approvedAmount) {
-                showError("Please approve ADRIAN tokens before checkout");
-                approveSection.style.display = "block";
-                return;
-            }
-            
             // Check balance
-            if (totalCost > adrianBalance) {
+            if (totalCostEther > adrianBalance) {
                 showError("Insufficient ADRIAN balance for checkout");
                 return;
             }
             
             try {
-                showInfo("Preparing batch purchase...");
-                
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
+                const adrianContract = new ethers.Contract(ADRIAN_TOKEN_CONTRACT, ERC20_ABI, signer);
                 const shopContract = new ethers.Contract(ADRIAN_SHOP_CONTRACT, SHOP_ABI, signer);
                 
-                // Add delay before transaction
+                        // Step 1: Check if approval is needed and handle it
+        if (totalCostEther > 0 && totalCostEther > approvedAmount) {
+            showInfo("Approval needed. Processing approval transaction...");
+            
+            // Add delay before approval transaction
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            showInfo(`Approving ${totalCostEther} ADRIAN tokens for cart total...`);
+            
+            // Use the pre-calculated BigNumber (no conversion needed)
+            const tx = await adrianContract.approve(ADRIAN_SHOP_CONTRACT, totalCostWei);
+            showInfo('Approval transaction sent: ' + tx.hash);
+                    
+                    await tx.wait();
+                    showSuccess("ADRIAN tokens approved successfully!");
+                    
+                    // Refresh approval amount
+                    await loadBalances();
+                    
+                    // Add delay before proceeding to purchase
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Step 2: Process the batch purchase
+                showInfo("Preparing batch purchase...");
+                
+                // Add delay before purchase transaction
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
                 showInfo("Processing batch purchase...");
@@ -1469,10 +1862,10 @@
                 });
                 
                 const tx = await shopContract.batchPurchase(requests);
-                showInfo('Batch transaction sent: ' + tx.hash);
+                showInfo('Batch purchase transaction sent: ' + tx.hash);
                 
                 await tx.wait();
-                showSuccess("Batch purchase completed successfully!");
+                showSuccess("Checkout completed successfully!");
                 
                 // Add delay before refreshing data
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1525,9 +1918,46 @@
             }
         }
 
-        // Approve tokens for cart
-        function approveTokensForCart() {
-            approveTokens();
+
+
+        // Parse blockchain errors for user-friendly messages
+        function parseBlockchainError(err) {
+            console.error("Full error:", err);
+            
+            // Check for specific error messages
+            if (err.message && err.message.includes("Exceeds wallet limit")) {
+                return "❌ Error: Has excedido el límite de compra por wallet para este item. Reduce la cantidad o elimina algunos items del carrito.";
+            }
+            
+            if (err.message && err.message.includes("Insufficient balance")) {
+                return "❌ Error: Saldo insuficiente de ADRIAN tokens. Verifica tu balance.";
+            }
+            
+            if (err.message && err.message.includes("execution reverted")) {
+                // Extract the actual error message from the revert
+                const revertMatch = err.message.match(/execution reverted: (.+)/);
+                if (revertMatch) {
+                    const revertMessage = revertMatch[1];
+                    if (revertMessage.includes("Exceeds wallet limit")) {
+                        return "❌ Error: Has excedido el límite de compra por wallet para este item. Reduce la cantidad o elimina algunos items del carrito.";
+                    }
+                    if (revertMessage.includes("Insufficient")) {
+                        return "❌ Error: Saldo insuficiente. Verifica tu balance de ADRIAN tokens.";
+                    }
+                    return "❌ Error de contrato: " + revertMessage;
+                }
+            }
+            
+            if (err.code === "UNPREDICTABLE_GAS_LIMIT") {
+                return "❌ Error: La transacción falló. Verifica que tienes suficiente ETH para gas y que no excedes los límites de compra.";
+            }
+            
+            if (err.code === "ACTION_REJECTED") {
+                return "❌ Transacción cancelada por el usuario.";
+            }
+            
+            // Default error message
+            return "❌ Error en la transacción. Verifica tu conexión y balance.";
         }
 
         // UI Helper functions
@@ -1569,6 +1999,13 @@
             error.style.display = "none";
             success.style.display = "none";
             info.style.display = "none";
+        }
+
+        // Load Bootstrap scripts
+        if (window.ethereum) {
+            const bootstrapScript = document.createElement('script');
+            bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+            document.head.appendChild(bootstrapScript);
         }
     </script>
 </body>

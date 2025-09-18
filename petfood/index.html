@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdrianPETFOOD - Stack $ADRIAN for Pet Food</title>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* ADRIAN_ZERO Font */
+        @font-face {
+            font-family: 'ADRIAN_ZERO';
+            src: url('fonts/ADRIAN_ZERO.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Menu Styles */
+        .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            color: #ffd700 !important;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .navbar-nav .nav-link {
+            color: #ffffff !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #ffd700 !important;
+        }
+
+        .token-symbol {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .navbar-toggler {
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 215, 0, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+            margin-top: 80px; /* Space for fixed navbar */
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-family: 'ADRIAN_ZERO', 'VT323', monospace;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffd700, #ffed4e, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            animation: goldenGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes goldenGlow {
+            from { 
+                filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+            }
+            to { 
+                filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.8));
+            }
+        }
+
+        .hero .subtitle {
+            font-size: 1.8rem;
+            color: #cccccc;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .hero .description {
+            font-size: 1.4rem;
+            color: #888888;
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
+
+        /* Wallet Connection */
+        .wallet-section {
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+            font-family: 'VT323', monospace;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+        }
+
+        .wallet-info {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .wallet-address {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .disconnect-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+        }
+
+        /* Staking Tiers */
+        .staking-tiers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .tier-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 215, 0, 0.6);
+            box-shadow: 0 25px 50px rgba(255, 215, 0, 0.2);
+        }
+
+        .tier-card.can {
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+
+        .tier-card.six-pack {
+            border-color: rgba(255, 165, 0, 0.4);
+        }
+
+        .tier-card.sack {
+            border-color: rgba(255, 69, 0, 0.4);
+        }
+
+        .tier-icon {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 4rem;
+        }
+
+        .tier-title {
+            font-size: 2.5rem;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .tier-description {
+            font-size: 1.2rem;
+            color: #cccccc;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .tier-requirements {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .requirement-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .requirement-label {
+            color: #888888;
+        }
+
+        .requirement-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .tier-reward {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .reward-amount {
+            font-size: 2rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .reward-unit {
+            font-size: 1.2rem;
+            color: #cccccc;
+        }
+
+        /* Staking Interface */
+        .staking-interface {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .amount-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'VT323', monospace;
+        }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .balance-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #cccccc;
+        }
+
+        .balance-amount {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            margin-bottom: 15px;
+        }
+
+        .btn-stake {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #000;
+        }
+
+        .btn-stake:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-stake:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-loading {
+            background: linear-gradient(45deg, #666, #999);
+            color: #fff;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .status-message.loading {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+            display: block;
+        }
+
+        .status-message.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            display: block;
+        }
+
+        .status-message.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6b6b;
+            display: block;
+        }
+
+        /* Active Stakes */
+        .active-stakes {
+            margin-top: 40px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .stakes-title {
+            font-size: 2.5rem;
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .stake-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stake-info {
+            flex: 1;
+        }
+
+        .stake-amount {
+            font-size: 1.3rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .stake-details {
+            font-size: 1rem;
+            color: #cccccc;
+            margin-top: 5px;
+        }
+
+        .stake-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-withdraw {
+            background: linear-gradient(45deg, #00ff00, #32cd32);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+        }
+
+        .btn-early-withdraw {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            .hero .subtitle {
+                font-size: 1.5rem;
+            }
+            
+            .staking-tiers {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .tier-card {
+                padding: 20px;
+            }
+            
+            .tier-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .stake-item {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .stake-actions {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffd700;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Fade In Animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <nav class="navbar">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <span class="navbar-text token-symbol ms-2">$ADRIAN</span>
+        </div>
+
+            <div class="d-flex align-items-center">
+                <!-- Espacio reservado para futuras funcionalidades -->
+            </div>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" target="_blank">Buy $ADRIAN</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com/mintwithadrian">Mint with $ADRIAN</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com/roadmaps">Roadmap</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com/traitlab">TraitLAB</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com/ogclaim">OG Claim</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com/">Adventure</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com/shop">TraitSHOP</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com/traitcreator">T-Shit Studio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianzero.com/patientzero">PatientZERO</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adriangallery.com">AdrianGALLERY</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://adrianpunks.com">AdrianPUNKS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://discord.gg/ZtyBkXGtwd" target="_blank">DISCORD</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://x.com/adriancerda" target="_blank">X</a>
+                    </li>
+                </ul>
+                </div>
+
+            <div class="d-none d-lg-flex align-items-center ms-auto desktop-wallet-section">
+                <!-- Botón de wallet quitado pero dejando el espacio -->
+                </div>
+                </div>
+    </nav>
+
+    <div class="hero">
+        <div class="container">
+            <h1>AdrianPETFOOD</h1>
+            <p class="subtitle">Stack $ADRIAN • Earn Pet Food</p>
+            <p class="description">
+                Lock your $ADRIAN tokens for different periods and receive exclusive Pet Food rewards. 
+                The longer you lock, the better the rewards!
+            </p>
+            
+            <!-- Wallet Connection -->
+            <div class="wallet-section" id="walletSection">
+                <button class="connect-btn" id="connectBtn">
+                    Connect Wallet
+                </button>
+                </div>
+
+            <div class="wallet-info" id="walletInfo">
+                <div class="wallet-address" id="walletAddress"></div>
+                <button class="disconnect-btn" id="disconnectBtn">Disconnect</button>
+                </div>
+
+            <!-- Staking Tiers -->
+            <div class="staking-tiers fade-in">
+                <!-- CAN Tier -->
+                <div class="tier-card can">
+                    <div class="tier-icon">🥫</div>
+                    <h3 class="tier-title">CAN</h3>
+                    <p class="tier-description">Basic pet food can for short-term staking</p>
+                    
+                    <div class="tier-requirements">
+                        <div class="requirement-item">
+                            <span class="requirement-label">Amount:</span>
+                            <span class="requirement-value">1,000,000 $ADRIAN</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="requirement-label">Duration:</span>
+                            <span class="requirement-value">1 Month</span>
+                        </div>
+                </div>
+                
+                    <div class="tier-reward">
+                        <div class="reward-amount">1</div>
+                        <div class="reward-unit">CAN</div>
+                    </div>
+
+                    <div class="staking-interface" id="canStaking">
+                        <input type="number" class="amount-input" placeholder="Enter amount (1M minimum)" id="canAmount" min="1000000">
+                        <div class="balance-info">
+                            Balance: <span class="balance-amount" id="canBalance">0</span> $ADRIAN
+                        </div>
+                        <button class="action-btn btn-stake" id="stakeCan" onclick="stake('can')">
+                            Stake for CAN
+                        </button>
+                        <div class="status-message" id="canStatus"></div>
+                    </div>
+            </div>
+
+                <!-- 6 PACK CAN Tier -->
+                <div class="tier-card six-pack">
+                    <div class="tier-icon">📦</div>
+                    <h3 class="tier-title">6 PACK CAN</h3>
+                    <p class="tier-description">Six-pack of pet food for medium-term staking</p>
+                    
+                    <div class="tier-requirements">
+                        <div class="requirement-item">
+                            <span class="requirement-label">Amount:</span>
+                            <span class="requirement-value">3,000,000 $ADRIAN</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="requirement-label">Duration:</span>
+                            <span class="requirement-value">3 Months</span>
+                        </div>
+            </div>
+
+                    <div class="tier-reward">
+                        <div class="reward-amount">3</div>
+                        <div class="reward-unit">CANS</div>
+            </div>
+
+                    <div class="staking-interface" id="sixPackStaking">
+                        <input type="number" class="amount-input" placeholder="Enter amount (3M minimum)" id="sixPackAmount" min="3000000">
+                        <div class="balance-info">
+                            Balance: <span class="balance-amount" id="sixPackBalance">0</span> $ADRIAN
+                        </div>
+                        <button class="action-btn btn-stake" id="stakeSixPack" onclick="stake('sixPack')">
+                            Stake for 6 PACK
+                        </button>
+                        <div class="status-message" id="sixPackStatus"></div>
+                    </div>
+                        </div>
+                    
+                <!-- SACK Tier -->
+                <div class="tier-card sack">
+                    <div class="tier-icon">🛍️</div>
+                    <h3 class="tier-title">SACK</h3>
+                    <p class="tier-description">Premium sack of pet food for long-term staking</p>
+                    
+                    <div class="tier-requirements">
+                        <div class="requirement-item">
+                            <span class="requirement-label">Amount:</span>
+                            <span class="requirement-value">1,000,000 $ADRIAN</span>
+                        </div>
+                        <div class="requirement-item">
+                            <span class="requirement-label">Duration:</span>
+                            <span class="requirement-value">6 Months</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tier-reward">
+                        <div class="reward-amount">1</div>
+                        <div class="reward-unit">SACK</div>
+                    </div>
+
+                    <div class="staking-interface" id="sackStaking">
+                        <input type="number" class="amount-input" placeholder="Enter amount (1M minimum)" id="sackAmount" min="1000000">
+                        <div class="balance-info">
+                            Balance: <span class="balance-amount" id="sackBalance">0</span> $ADRIAN
+                        </div>
+                        <button class="action-btn btn-stake" id="stakeSack" onclick="stake('sack')">
+                            Stake for SACK
+                    </button>
+                        <div class="status-message" id="sackStatus"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Stakes -->
+            <div class="active-stakes" id="activeStakes" style="display: none;">
+                <h3 class="stakes-title">Your Active Stakes</h3>
+                <div id="stakesList">
+                    <!-- Active stakes will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Contract addresses and configurations
+        const ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
+        const PETFOOD_CONTRACT = "0x0000000000000000000000000000000000000000"; // PLACEHOLDER - Contract not deployed yet
+        const BASE_CHAIN_ID = 8453;
+        const BASE_CHAIN_ID_HEX = "0x2105";
+
+        // Staking plans configuration
+        const STAKING_PLANS = {
+            can: {
+                planId: 1,
+                unitAmount: ethers.utils.parseEther("1000000"), // 1M $ADRIAN
+                duration: 30 * 24 * 60 * 60, // 30 days in seconds
+                rewardTokenId: 1,
+                rewardPerUnit: 1,
+                name: "CAN"
+            },
+            sixPack: {
+                planId: 2,
+                unitAmount: ethers.utils.parseEther("1000000"), // 1M $ADRIAN per unit
+                duration: 90 * 24 * 60 * 60, // 90 days in seconds (3 months)
+                rewardTokenId: 2,
+                rewardPerUnit: 1,
+                name: "6 PACK CAN",
+                minUnits: 3 // Need 3 units minimum
+            },
+            sack: {
+                planId: 3,
+                unitAmount: ethers.utils.parseEther("1000000"), // 1M $ADRIAN
+                duration: 180 * 24 * 60 * 60, // 180 days in seconds
+                rewardTokenId: 3,
+                rewardPerUnit: 1,
+                name: "SACK"
+            }
+        };
+
+        // App state
+        let userAddress = null;
+        let provider = null;
+        let signer = null;
+        let adrianToken = null;
+        let petFoodContract = null;
+        let userBalance = ethers.BigNumber.from(0);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            checkConnection();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('connectBtn').addEventListener('click', connectWallet);
+            document.getElementById('disconnectBtn').addEventListener('click', disconnectWallet);
+            
+            // Amount input listeners
+            document.getElementById('canAmount').addEventListener('input', () => validateAmount('can'));
+            document.getElementById('sixPackAmount').addEventListener('input', () => validateAmount('sixPack'));
+            document.getElementById('sackAmount').addEventListener('input', () => validateAmount('sack'));
+        }
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    alert('Please install MetaMask to use this dApp!');
+                    return;
+                }
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+
+                // Check if we're on Base network
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== BASE_CHAIN_ID_HEX) {
+                    try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: BASE_CHAIN_ID_HEX }],
+                        });
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BASE_CHAIN_ID_HEX,
+                                    chainName: 'Base Mainnet',
+                                nativeCurrency: {
+                                    name: 'ETH',
+                                    symbol: 'ETH',
+                                        decimals: 18,
+                                },
+                                rpcUrls: ['https://mainnet.base.org'],
+                                    blockExplorerUrls: ['https://basescan.org/'],
+                                }],
+                            });
+                } else {
+                            throw switchError;
+                        }
+                    }
+                }
+
+                // Setup provider and contracts
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+
+                // Contract ABIs
+                const adrianTokenABI = [
+                    "function allowance(address owner, address spender) external view returns (uint256)",
+                    "function approve(address spender, uint256 amount) external returns (bool)",
+                    "function balanceOf(address account) external view returns (uint256)"
+                ];
+
+                const petFoodABI = [
+                    "function stake(uint64 planId, uint256 amount) external returns (uint256 lockId)",
+                    "function getPlan(uint64 planId) external view returns (uint256 unitAmount, uint40 duration, address petFoodCore, uint256 rewardTokenId, uint96 rewardPerUnit, bool active, bool exists)",
+                    "function getLocksOf(address user) external view returns (uint256[] memory)",
+                    "function getLock(uint256 lockId) external view returns (address owner, uint128 amountLocked, uint40 unlockTime, uint64 planId, uint16 units, bool withdrawn)",
+                    "function withdraw(uint256 lockId) external",
+                    "function earlyWithdraw(uint256 lockId) external"
+                ];
+
+                adrianToken = new ethers.Contract(ADRIAN_TOKEN, adrianTokenABI, signer);
+                
+                // Only initialize pet food contract if address is not placeholder
+                if (PETFOOD_CONTRACT !== "0x0000000000000000000000000000000000000000") {
+                    petFoodContract = new ethers.Contract(PETFOOD_CONTRACT, petFoodABI, signer);
+                }
+
+                updateUI();
+                await loadUserBalance();
+                await loadActiveStakes();
+
+                } catch (error) {
+                console.error('Error connecting wallet:', error);
+                alert('Failed to connect wallet: ' + error.message);
+            }
+        }
+
+        function disconnectWallet() {
+            userAddress = null;
+            provider = null;
+            signer = null;
+            adrianToken = null;
+            petFoodContract = null;
+            userBalance = ethers.BigNumber.from(0);
+            updateUI();
+        }
+
+        function updateUI() {
+            const walletSection = document.getElementById('walletSection');
+            const walletInfo = document.getElementById('walletInfo');
+            const activeStakes = document.getElementById('activeStakes');
+
+            if (userAddress) {
+                walletSection.style.display = 'none';
+                walletInfo.style.display = 'block';
+                
+                document.getElementById('walletAddress').textContent = 
+                    `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+            } else {
+                walletSection.style.display = 'block';
+                walletInfo.style.display = 'none';
+                activeStakes.style.display = 'none';
+            }
+        }
+
+        async function loadUserBalance() {
+            if (!adrianToken || !userAddress) return;
+
+            try {
+                userBalance = await adrianToken.balanceOf(userAddress);
+                
+                // Update balance displays
+                const balanceFormatted = parseFloat(ethers.utils.formatEther(userBalance)).toFixed(2);
+                document.getElementById('canBalance').textContent = balanceFormatted;
+                document.getElementById('sixPackBalance').textContent = balanceFormatted;
+                document.getElementById('sackBalance').textContent = balanceFormatted;
+            } catch (error) {
+                console.error('Error loading balance:', error);
+            }
+        }
+
+        function validateAmount(tier) {
+            const input = document.getElementById(`${tier}Amount`);
+            const button = document.getElementById(`stake${tier.charAt(0).toUpperCase() + tier.slice(1)}`);
+            const plan = STAKING_PLANS[tier];
+            
+            const amount = ethers.utils.parseEther(input.value || "0");
+            const minAmount = plan.minUnits ? plan.unitAmount.mul(plan.minUnits) : plan.unitAmount;
+            
+            if (amount.lt(minAmount)) {
+                button.disabled = true;
+                button.textContent = `Minimum: ${ethers.utils.formatEther(minAmount)} $ADRIAN`;
+            } else if (amount.gt(userBalance)) {
+                button.disabled = true;
+                button.textContent = 'Insufficient Balance';
+            } else {
+                button.disabled = false;
+                button.textContent = `Stake for ${plan.name}`;
+            }
+        }
+
+        async function stake(tier) {
+            if (!userAddress || !adrianToken) {
+                showStatus(tier, 'Connect wallet first!', 'error');
+                return;
+            }
+
+            if (PETFOOD_CONTRACT === "0x0000000000000000000000000000000000000000") {
+                showStatus(tier, 'Contract not deployed yet!', 'error');
+                return;
+            }
+
+            try {
+                const input = document.getElementById(`${tier}Amount`);
+                const amount = ethers.utils.parseEther(input.value);
+                const plan = STAKING_PLANS[tier];
+                const button = document.getElementById(`stake${tier.charAt(0).toUpperCase() + tier.slice(1)}`);
+
+                button.disabled = true;
+                button.classList.add('btn-loading');
+                button.textContent = 'Processing...';
+
+                showStatus(tier, `Staking ${ethers.utils.formatEther(amount)} $ADRIAN for ${plan.name}...`, 'loading');
+
+                // Check allowance
+                const allowance = await adrianToken.allowance(userAddress, PETFOOD_CONTRACT);
+                if (allowance.lt(amount)) {
+                    showStatus(tier, `Approving ${ethers.utils.formatEther(amount)} $ADRIAN...`, 'loading');
+                    const approveTx = await adrianToken.approve(PETFOOD_CONTRACT, amount);
+                    await approveTx.wait();
+                }
+
+                // Stake
+                const stakeTx = await petFoodContract.stake(plan.planId, amount);
+                await stakeTx.wait();
+
+                showStatus(tier, `🎉 Successfully staked for ${plan.name}!`, 'success');
+                
+                // Reset form
+                input.value = '';
+                validateAmount(tier);
+                
+                // Reload data
+                await loadUserBalance();
+                await loadActiveStakes();
+                
+            } catch (error) {
+                console.error('Staking error:', error);
+                showStatus(tier, 'Staking failed: ' + parseError(error), 'error');
+            } finally {
+                const button = document.getElementById(`stake${tier.charAt(0).toUpperCase() + tier.slice(1)}`);
+                button.disabled = false;
+                button.classList.remove('btn-loading');
+                validateAmount(tier);
+            }
+        }
+
+        async function loadActiveStakes() {
+            if (!petFoodContract || !userAddress) return;
+
+            try {
+                const lockIds = await petFoodContract.getLocksOf(userAddress);
+                const stakesList = document.getElementById('stakesList');
+                const activeStakes = document.getElementById('activeStakes');
+
+                stakesList.innerHTML = '';
+
+                if (lockIds.length === 0) {
+                    activeStakes.style.display = 'none';
+                        return;
+                    }
+
+                activeStakes.style.display = 'block';
+
+                for (let i = 0; i < lockIds.length; i++) {
+                    const lockId = lockIds[i];
+                    const lock = await petFoodContract.getLock(lockId);
+                    
+                    if (lock.withdrawn) continue;
+
+                    const stakeItem = document.createElement('div');
+                    stakeItem.className = 'stake-item';
+                    
+                    const planName = Object.values(STAKING_PLANS).find(p => p.planId === lock.planId)?.name || 'Unknown';
+                    const amountFormatted = parseFloat(ethers.utils.formatEther(lock.amountLocked)).toFixed(2);
+                    const unlockDate = new Date(lock.unlockTime * 1000).toLocaleDateString();
+                    const isUnlocked = Date.now() / 1000 >= lock.unlockTime;
+
+                    stakeItem.innerHTML = `
+                        <div class="stake-info">
+                            <div class="stake-amount">${amountFormatted} $ADRIAN</div>
+                            <div class="stake-details">
+                                Plan: ${planName} • Units: ${lock.units} • Unlocks: ${unlockDate}
+                            </div>
+                        </div>
+                        <div class="stake-actions">
+                            ${isUnlocked ? 
+                                `<button class="btn-withdraw" onclick="withdrawStake(${lockId})">Withdraw</button>` :
+                                `<button class="btn-early-withdraw" onclick="earlyWithdrawStake(${lockId})">Early Withdraw</button>`
+                            }
+                        </div>
+                    `;
+
+                    stakesList.appendChild(stakeItem);
+                }
+
+            } catch (error) {
+                console.error('Error loading active stakes:', error);
+            }
+        }
+
+        async function withdrawStake(lockId) {
+            if (!petFoodContract) return;
+
+            try {
+                showStatus('global', `Withdrawing stake ${lockId}...`, 'loading');
+                const tx = await petFoodContract.withdraw(lockId);
+                await tx.wait();
+                showStatus('global', `🎉 Successfully withdrew stake!`, 'success');
+                await loadActiveStakes();
+                await loadUserBalance();
+            } catch (error) {
+                console.error('Withdraw error:', error);
+                showStatus('global', 'Withdraw failed: ' + parseError(error), 'error');
+            }
+        }
+
+        async function earlyWithdrawStake(lockId) {
+            if (!petFoodContract) return;
+
+            if (!confirm('Early withdrawal will incur a penalty. Continue?')) return;
+
+            try {
+                showStatus('global', `Early withdrawing stake ${lockId}...`, 'loading');
+                const tx = await petFoodContract.earlyWithdraw(lockId);
+                await tx.wait();
+                showStatus('global', `🎉 Successfully early withdrew stake!`, 'success');
+                await loadActiveStakes();
+                await loadUserBalance();
+                } catch (error) {
+                console.error('Early withdraw error:', error);
+                showStatus('global', 'Early withdraw failed: ' + parseError(error), 'error');
+            }
+        }
+
+        function showStatus(tier, message, type) {
+            const statusElement = document.getElementById(`${tier}Status`);
+            if (statusElement) {
+            statusElement.textContent = message;
+            statusElement.className = `status-message ${type}`;
+            }
+        }
+
+        function parseError(error) {
+            if (error.code === 4001) {
+                return 'Transaction rejected by user';
+            }
+            if (error.message) {
+                return error.message;
+            }
+            return 'Unknown error occurred';
+        }
+
+        function checkConnection() {
+            if (window.ethereum) {
+                window.ethereum.request({ method: 'eth_accounts' })
+                    .then(accounts => {
+                    if (accounts.length > 0) {
+                            userAddress = accounts[0];
+                        connectWallet();
+                    }
+                    })
+                    .catch(console.error);
+                }
+            }
+
+        // Handle wallet changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    disconnectWallet();
+                } else {
+                    userAddress = accounts[0];
+                    connectWallet();
+                }
+            });
+            
+            window.ethereum.on('chainChanged', () => {
+            window.location.reload();
+        });
+        }
+    </script>
+</body>
+</html>

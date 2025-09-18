@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'VT323', monospace;
+  }
+  
+  body {
+    background: linear-gradient(135deg, #000000 0%, #2a2a2a 100%);
+    color: #ffffff;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  .retro-button {
+    @apply bg-gray-800 text-white 
+           px-4 py-2 font-pixel text-lg cursor-pointer transition-all duration-200
+           hover:bg-retro-primary hover:text-retro-dark hover:shadow-lg hover:shadow-retro-primary/50
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-retro-primary/50;
+    @apply anaglyph-border-simple;
+  }
+  
+  .retro-button-secondary {
+    @apply bg-gray-800 text-retro-secondary 
+           px-4 py-2 font-pixel text-lg cursor-pointer transition-all duration-200
+           hover:bg-retro-secondary hover:text-retro-dark hover:shadow-lg hover:shadow-retro-secondary/50
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-retro-secondary/50;
+    @apply anaglyph-border-simple;
+  }
+  
+  .retro-input {
+    @apply bg-gray-800 text-white 
+           px-3 py-2 font-pixel text-base focus:outline-none focus:ring-2 focus:ring-retro-primary/50
+           placeholder-gray-400;
+    @apply anaglyph-border-simple;
+  }
+  
+  .retro-card {
+    @apply bg-gray-900 p-4 shadow-lg shadow-retro-primary/20;
+    @apply anaglyph-border-simple;
+  }
+  
+  .retro-panel {
+    @apply bg-gray-900 p-4;
+    @apply anaglyph-border-simple;
+  }
+  
+  .pixel-border {
+    @apply border-2 border-retro-primary;
+    image-rendering: pixelated;
+  }
+  
+  .neon-glow {
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+  }
+  
+  .anaglyph-title {
+    text-shadow: 
+      0 0 5px #0080ff, 0 0 10px #0080ff, 0 0 15px #0080ff,
+      2px 2px 0px #ff0080, 4px 4px 0px #ff0080, 6px 6px 0px #ff0080;
+    color: #ffffff;
+    font-weight: bold;
+  }
+  
+  .scan-line {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .scan-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #0080ff, transparent);
+    animation: scan 3s linear infinite;
+  }
+  
+  /* Anaglyph glow effect - solo colores sin efecto 3D */
+  .anaglyph-glow {
+    text-shadow: 
+      0 0 5px #0080ff, 0 0 10px #0080ff, 0 0 15px #0080ff,
+      0 0 20px #ff0080, 0 0 25px #ff0080;
+  }
+  
+  /* Glow con colores anaglyph individuales */
+  .anaglyph-glow-blue {
+    text-shadow: 0 0 5px #0080ff, 0 0 10px #0080ff, 0 0 15px #0080ff;
+  }
+  
+  .anaglyph-glow-magenta {
+    text-shadow: 0 0 5px #ff0080, 0 0 10px #ff0080, 0 0 15px #ff0080;
+  }
+  
+  .anaglyph-glow-cyan {
+    text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+  }
+  
+  /* Borde simple con color anaglyph */
+  .anaglyph-border-simple {
+    border: 2px solid #0080ff;
+    box-shadow: 0 0 10px rgba(0, 128, 255, 0.5);
+  }
+  
+  .anaglyph-border-simple:hover {
+    border-color: #ff0080;
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 2px 2px 0px #000000;
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 4px 4px 0px #000000;
+  }
+  
+  .pixel-perfect {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0080ff;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0066cc;
+}
+
+/* Selection */
+::selection {
+  background: #0080ff;
+  color: #ffffff;
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid #0080ff;
+  outline-offset: 2px;
+}
+
+/* Menu styles */
+.menu-link {
+  @apply text-gray-300 font-pixel text-sm transition-all duration-200;
+}
+
+.menu-link:hover {
+  @apply text-retro-primary shadow-lg shadow-retro-primary/50;
+}
+
+/* Hamburger menu animation */
+.hamburger-line {
+  @apply w-6 h-0.5 bg-retro-primary transition-all duration-200;
+}
+
+.hamburger-button:hover .hamburger-line {
+  @apply bg-retro-primary/80;
+}
+
+/* Menu dropdown animation */
+.menu-dropdown {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

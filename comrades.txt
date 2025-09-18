@@ -1,0 +1,556 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol"; // If using OZ v4, change to security/ReentrancyGuard.sol
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+
+// =============== INTERFACES ===============
+interface IAdrianTraitsCore {
+    function mintFromExtension(address to, uint256 id, uint256 amount) external;
+    function authorizedExtensions(address extension) external view returns (bool);
+}
+
+// Optional supply view interface (if TraitsCore implements ERC1155Supply-like views)
+interface IAdrianTraitsSupply {
+    function totalSupply(uint256 id) external view returns (uint256);
+    function maxSupply(uint256 id) external view returns (uint256);
+}
+
+// =============== CONTRACT ===============
+/**
+ * @title AdrianFloppyETH
+ * @notice Minter para ERC1155 floppies vía AdrianTraitsCore que soporta:
+ *         - MULTI-batch activo simultáneo.
+ *         - Pago con ETH y con ERC20 $ADRIAN (ambos configurables por batch).
+ *         - Límites por wallet/tx, ventana temporal y supply por batch.
+ *         - ✅ Allowlist por Merkle (overloads de mint).
+ *
+ *         Excluido: ERC721, kits.
+ */
+contract AdrianFloppyETH is Ownable, ReentrancyGuard {
+    // =============== STRUCTS ===============
+    struct Batch {
+        uint256 id;
+        uint256 floppyTokenId;   // ERC1155 id to mint
+        uint256 priceWei;        // Precio por unidad (wei). 0 = deshabilitado
+        uint256 priceToken;      // Precio por unidad en $ADRIAN (decimales del token). 0 = deshabilitado
+        uint256 maxSupply;       // Max unidades vendibles en este batch
+        uint256 minted;          // Unidades vendidas/minteadas por este contrato
+        uint256 startTime;       // 0 = open immediately
+        uint256 endTime;         // 0 = no end
+        uint256 maxPerWallet;    // e.g., 3
+        uint256 maxPerTx;        // e.g., 3
+        bool active;             // Mintable cuando true
+        string name;             // Etiqueta opcional
+    }
+
+    // =============== STATE ===============
+    IAdrianTraitsCore public traitsCore;
+    IERC20 public adrianToken;           // ERC20 $ADRIAN
+    address public treasuryWallet;
+
+    uint256 public nextBatchId = 1; // first batch id = 1
+    mapping(uint256 => Batch) public batches; // batchId => Batch
+    mapping(uint256 => mapping(address => uint256)) public mintedPerWallet; // batchId => wallet => minted
+    mapping(uint256 => mapping(address => uint256)) public freeMintedPerWallet; // batchId => wallet => freeMinted
+
+    // ✅ Merkle allowlist por batch
+    mapping(uint256 => bytes32) public batchMerkleRoot;
+
+    bool public mintPaused;
+
+    // =============== EVENTS ===============
+    event BatchCreated(uint256 indexed batchId, uint256 floppyTokenId, uint256 priceWei, uint256 priceToken, uint256 maxSupply, string name);
+    event BatchActivated(uint256 indexed batchId);
+    event BatchDeactivated(uint256 indexed batchId);
+    event BatchUpdated(uint256 indexed batchId);
+    event MintedETH(address indexed buyer, uint256 indexed batchId, uint256 quantity, uint256 totalPaidWei);
+    event MintedToken(address indexed buyer, uint256 indexed batchId, uint256 quantity, uint256 totalPaidToken);
+    event MintedFree(address indexed buyer, uint256 indexed batchId, uint256 quantity);
+    event TreasuryWalletUpdated(address indexed newTreasury);
+    event TraitsCoreUpdated(address indexed newTraitsCore);
+    event AdrianTokenUpdated(address indexed newToken);
+    event MintPaused(bool paused);
+    // ✅ nuevos
+    event BatchMerkleRootUpdated(uint256 indexed batchId, bytes32 merkleRoot);
+
+    // =============== ERRORS ===============
+    error NotAuthorizedExtension();
+    error InvalidBatch();
+    error BatchNotActive();
+    error MintPausedErr();
+    error OutsideWindow();
+    error ExceedsSupply();
+    error ExceedsPerWallet();
+    error ExceedsPerTx();
+    error InvalidQuantity();
+    error InvalidTreasury();
+    error InsufficientETH();
+    error ETHPaymentDisabled();
+    error TokenPaymentDisabled();
+    error TokenTransferFailed();
+    error AllowlistDisabled();
+    error NotInAllowlist();
+    error AlreadyUsedFreeMint();
+
+    // =============== MODIFIERS ===============
+    modifier notPaused() {
+        if (mintPaused) revert MintPausedErr();
+        _;
+    }
+
+    // =============== CONSTRUCTOR ===============
+    constructor(address _traitsCore, address _treasury) Ownable(msg.sender) {
+        require(_traitsCore != address(0), "Invalid traitsCore");
+        require(_treasury != address(0), "Invalid treasury");
+        traitsCore = IAdrianTraitsCore(_traitsCore);
+        treasuryWallet = _treasury;
+    }
+
+    // =============== RECEIVE ETH ===============
+    receive() external payable {}
+
+    // =============== ADMIN: BATCH MANAGEMENT ===============
+    function createBatch(
+        string calldata name_,
+        uint256 floppyTokenId_,
+        uint256 priceWei_,
+        uint256 priceToken_,
+        uint256 maxSupply_,
+        uint256 startTime_,
+        uint256 endTime_,
+        uint256 maxPerWallet_,
+        uint256 maxPerTx_,
+        bool makeActive_
+    ) external onlyOwner {
+        require(floppyTokenId_ > 0, "Invalid floppy id");
+        require(priceWei_ > 0 || priceToken_ > 0, "Invalid price");
+        require(maxSupply_ > 0, "Invalid supply");
+        require(maxPerWallet_ > 0, "Invalid per-wallet");
+        require(maxPerTx_ > 0, "Invalid per-tx");
+        if (endTime_ > 0 && startTime_ > 0) {
+            require(endTime_ > startTime_, "endTime <= startTime");
+        }
+
+        uint256 batchId = nextBatchId++;
+        Batch storage b = batches[batchId];
+        b.id = batchId;
+        b.floppyTokenId = floppyTokenId_;
+        b.priceWei = priceWei_;
+        b.priceToken = priceToken_;
+        b.maxSupply = maxSupply_;
+        b.minted = 0;
+        b.startTime = startTime_;
+        b.endTime = endTime_;
+        b.maxPerWallet = maxPerWallet_;
+        b.maxPerTx = maxPerTx_;
+        b.active = false;
+        b.name = name_;
+
+        if (makeActive_) {
+            b.active = true; // No desactiva otros batches.
+            emit BatchActivated(batchId);
+        }
+
+        emit BatchCreated(batchId, b.floppyTokenId, b.priceWei, b.priceToken, b.maxSupply, b.name);
+    }
+
+    function setBatchActive(uint256 batchId, bool active) external onlyOwner {
+        Batch storage b = _requireBatch(batchId);
+        if (b.active == active) return;
+        b.active = active;
+        if (active) emit BatchActivated(batchId); else emit BatchDeactivated(batchId);
+    }
+
+    function setBatchesActive(uint256[] calldata ids, bool active) external onlyOwner {
+        for (uint256 i = 0; i < ids.length; i++) {
+            uint256 id = ids[i];
+            if (id == 0 || id >= nextBatchId) continue; // skip invalid
+            Batch storage b = batches[id];
+            if (b.active != active) {
+                b.active = active;
+                if (active) emit BatchActivated(id); else emit BatchDeactivated(id);
+            }
+        }
+    }
+
+    // ======= ADMIN: BATCH UPDATERS (safe setters) =======
+    function setBatchPriceETH(uint256 batchId, uint256 newPriceWei) external onlyOwner {
+        Batch storage b = _requireBatch(batchId);
+        b.priceWei = newPriceWei; // 0 = deshabilitar ETH
+        emit BatchUpdated(batchId);
+    }
+
+    function setBatchPriceToken(uint256 batchId, uint256 newPriceToken) external onlyOwner {
+        Batch storage b = _requireBatch(batchId);
+        b.priceToken = newPriceToken; // 0 = deshabilitar token
+        emit BatchUpdated(batchId);
+    }
+
+    function setBatchPrices(uint256 batchId, uint256 newPriceWei, uint256 newPriceToken) external onlyOwner {
+        Batch storage b = _requireBatch(batchId);
+        b.priceWei = newPriceWei;
+        b.priceToken = newPriceToken;
+        emit BatchUpdated(batchId);
+    }
+
+    function setBatchWindow(uint256 batchId, uint256 newStart, uint256 newEnd) external onlyOwner {
+        Batch storage b = _requireBatch(batchId);
+        if (newEnd > 0 && newStart > 0) {
+            require(newEnd > newStart, "end <= start");
+        }
+        b.startTime = newStart;
+        b.endTime = newEnd;
+        emit BatchUpdated(batchId);
+    }
+
+    function setBatchLimits(uint256 batchId, uint256 newMaxPerWallet, uint256 newMaxPerTx) external onlyOwner {
+        Batch storage b = _requireBatch(batchId);
+        require(newMaxPerWallet > 0, "Invalid per-wallet");
+        require(newMaxPerTx > 0, "Invalid per-tx");
+        b.maxPerWallet = newMaxPerWallet;
+        b.maxPerTx = newMaxPerTx;
+        emit BatchUpdated(batchId);
+    }
+
+    function setBatchMaxSupply(uint256 batchId, uint256 newMaxSupply) external onlyOwner {
+        Batch storage b = _requireBatch(batchId);
+        require(newMaxSupply >= b.minted, "new max < minted");
+        b.maxSupply = newMaxSupply;
+        emit BatchUpdated(batchId);
+    }
+
+    // ✅ ADMIN: Merkle
+    function setBatchMerkleRoot(uint256 batchId, bytes32 merkleRoot) external onlyOwner {
+        _requireBatch(batchId); // valida existencia
+        batchMerkleRoot[batchId] = merkleRoot;
+        emit BatchMerkleRootUpdated(batchId, merkleRoot);
+    }
+
+    // =============== ADMIN: GLOBAL SETTERS ===============
+    function setTreasuryWallet(address newTreasury) external onlyOwner {
+        if (newTreasury == address(0)) revert InvalidTreasury();
+        treasuryWallet = newTreasury;
+        emit TreasuryWalletUpdated(newTreasury);
+    }
+
+    function setTraitsCore(address newTraitsCore) external onlyOwner {
+        require(newTraitsCore != address(0), "Invalid traitsCore");
+        traitsCore = IAdrianTraitsCore(newTraitsCore);
+        emit TraitsCoreUpdated(newTraitsCore);
+    }
+
+    function setAdrianToken(address newToken) external onlyOwner {
+        adrianToken = IERC20(newToken); // puede ser address(0) para deshabilitar temporalmente
+        emit AdrianTokenUpdated(newToken);
+    }
+
+    function setMintPaused(bool paused) external onlyOwner {
+        mintPaused = paused;
+        emit MintPaused(paused);
+    }
+
+    // =============== PUBLIC MINT (PÚBLICO) ===============
+    /// @notice Mint pagando en ETH (público, sin Merkle). Úsalo cuando NO haya gating por allowlist.
+    function mint(uint256 batchId, uint256 quantity) external payable notPaused nonReentrant {
+        _mintCore(batchId, msg.sender, quantity, false /*admin*/);
+        Batch storage b = batches[batchId];
+        if (b.priceWei == 0) revert ETHPaymentDisabled();
+        uint256 totalCost = b.priceWei * quantity;
+        if (msg.value != totalCost) revert InsufficientETH();
+        (bool ok, ) = treasuryWallet.call{value: totalCost}("");
+        require(ok, "ETH transfer failed");
+        emit MintedETH(msg.sender, batchId, quantity, totalCost);
+    }
+
+    /// @notice Mint pagando con token $ADRIAN (ERC20) (público, sin Merkle)
+    function mintWithToken(uint256 batchId, uint256 quantity) external notPaused nonReentrant {
+        _mintCore(batchId, msg.sender, quantity, false /*admin*/);
+        Batch storage b = batches[batchId];
+        if (b.priceToken == 0) revert TokenPaymentDisabled();
+        require(address(adrianToken) != address(0), "Token not set");
+        uint256 totalCost = b.priceToken * quantity;
+        bool ok = adrianToken.transferFrom(msg.sender, treasuryWallet, totalCost);
+        if (!ok) revert TokenTransferFailed();
+        emit MintedToken(msg.sender, batchId, quantity, totalCost);
+    }
+
+    // =============== PUBLIC MINT (ALLOWLIST MERKLE) ===============
+    /// @notice Mint con ETH usando allowlist Merkle
+    function mint(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof)
+        external
+        payable
+        notPaused
+        nonReentrant
+    {
+        _requireAllowlisted(batchId, msg.sender, merkleProof);
+        _mintCore(batchId, msg.sender, quantity, false /*admin*/);
+        Batch storage b = batches[batchId];
+        if (b.priceWei == 0) revert ETHPaymentDisabled();
+        uint256 totalCost = b.priceWei * quantity;
+        if (msg.value != totalCost) revert InsufficientETH();
+        (bool ok, ) = treasuryWallet.call{value: totalCost}("");
+        require(ok, "ETH transfer failed");
+        emit MintedETH(msg.sender, batchId, quantity, totalCost);
+    }
+
+    /// @notice Mint con $ADRIAN usando allowlist Merkle
+    function mintWithToken(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof)
+        external
+        notPaused
+        nonReentrant
+    {
+        _requireAllowlisted(batchId, msg.sender, merkleProof);
+        _mintCore(batchId, msg.sender, quantity, false /*admin*/);
+        Batch storage b = batches[batchId];
+        if (b.priceToken == 0) revert TokenPaymentDisabled();
+        require(address(adrianToken) != address(0), "Token not set");
+        uint256 totalCost = b.priceToken * quantity;
+        bool ok = adrianToken.transferFrom(msg.sender, treasuryWallet, totalCost);
+        if (!ok) revert TokenTransferFailed();
+        emit MintedToken(msg.sender, batchId, quantity, totalCost);
+    }
+
+    /// @notice Free mint con allowlist Merkle (solo 1 free mint por wallet)
+    function mintFreeWithMerkle(uint256 batchId, uint256 quantity, bytes32[] calldata merkleProof)
+        external
+        notPaused
+        nonReentrant
+    {
+        _requireAllowlisted(batchId, msg.sender, merkleProof);
+        
+        // Solo permitir 1 free mint por wallet
+        if (quantity != 1) revert InvalidQuantity();
+        
+        // Verificar que no haya usado su free mint
+        if (freeMintedPerWallet[batchId][msg.sender] > 0) revert AlreadyUsedFreeMint();
+        
+        _mintCore(batchId, msg.sender, quantity, false /*admin*/);
+        
+        // Marcar como usado el free mint
+        freeMintedPerWallet[batchId][msg.sender] = 1;
+        
+        emit MintedFree(msg.sender, batchId, quantity);
+    }
+
+    // =============== ADMIN MINT (airdrop) ===============
+    function ownerMintTo(uint256 batchId, address to, uint256 quantity) external onlyOwner nonReentrant {
+        _mintCore(batchId, to, quantity, true /*admin*/);
+    }
+
+    // =============== INTERNAL MINT LOGIC ===============
+    function _mintCore(uint256 batchId, address to, uint256 quantity, bool isAdmin) internal {
+        if (quantity == 0) revert InvalidQuantity();
+        Batch storage b = _requireBatch(batchId);
+
+        if (!isAdmin) {
+            if (!b.active) revert BatchNotActive();
+            if (mintPaused) revert MintPausedErr();
+            if (b.startTime > 0 && block.timestamp < b.startTime) revert OutsideWindow();
+            if (b.endTime > 0 && block.timestamp > b.endTime) revert OutsideWindow();
+            if (quantity > b.maxPerTx) revert ExceedsPerTx();
+
+            uint256 userMinted = mintedPerWallet[b.id][to];
+            if (userMinted + quantity > b.maxPerWallet) revert ExceedsPerWallet();
+        }
+
+        if (b.minted + quantity > b.maxSupply) revert ExceedsSupply();
+
+        // Ensure extension is authorized (fail early with custom error)
+        bool isAuth;
+        try traitsCore.authorizedExtensions(address(this)) returns (bool ok) {
+            isAuth = ok;
+        } catch {
+            // If the core doesn't expose this view, skip check and rely on mintFromExtension to revert if unauthorized.
+            isAuth = true;
+        }
+        if (!isAuth) revert NotAuthorizedExtension();
+
+        // Mint in a single call for efficiency
+        traitsCore.mintFromExtension(to, b.floppyTokenId, quantity);
+
+        // Update counters
+        if (!isAdmin) {
+            mintedPerWallet[b.id][to] += quantity;
+        }
+        b.minted += quantity;
+
+        // Auto-deactivate if sold out (local batch cap)
+        if (b.minted >= b.maxSupply && b.active) {
+            b.active = false;
+            emit BatchDeactivated(b.id);
+        }
+    }
+
+    // =============== MERKLE HELPERS ===============
+    function verifyAllowlist(uint256 batchId, address wallet, bytes32[] calldata merkleProof) external view returns (bool) {
+        bytes32 root = batchMerkleRoot[batchId];
+        if (root == bytes32(0)) return false;
+        bytes32 leaf = keccak256(abi.encodePacked(wallet));
+        return MerkleProof.verify(merkleProof, root, leaf);
+    }
+
+    function _requireAllowlisted(uint256 batchId, address wallet, bytes32[] calldata merkleProof) internal view {
+        bytes32 root = batchMerkleRoot[batchId];
+        if (root == bytes32(0)) revert AllowlistDisabled();
+        bytes32 leaf = keccak256(abi.encodePacked(wallet));
+        if (!MerkleProof.verify(merkleProof, root, leaf)) revert NotInAllowlist();
+    }
+
+    // =============== VIEW HELPERS ===============
+    function getBatchInfo(uint256 batchId) external view returns (Batch memory) {
+        Batch storage s = _requireBatch(batchId);
+        // copy storage -> memory
+        Batch memory m = Batch({
+            id: s.id,
+            floppyTokenId: s.floppyTokenId,
+            priceWei: s.priceWei,
+            priceToken: s.priceToken,
+            maxSupply: s.maxSupply,
+            minted: s.minted,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            maxPerWallet: s.maxPerWallet,
+            maxPerTx: s.maxPerTx,
+            active: s.active,
+            name: s.name
+        });
+        return m;
+    }
+
+    /// @notice Resumen rápido del batch
+    function getBatchSummary(uint256 batchId)
+        external
+        view
+        returns (
+            uint256 id,
+            string memory name,
+            uint256 floppyTokenId,
+            uint256 priceWei,
+            uint256 priceToken,
+            uint256 startTime,
+            uint256 endTime,
+            bool active,
+            uint256 minted,
+            uint256 maxSupply,
+            uint256 remaining,
+            uint256 maxPerWallet,
+            uint256 maxPerTx
+        )
+    {
+        Batch storage b = _requireBatch(batchId);
+        uint256 rem = b.maxSupply > b.minted ? b.maxSupply - b.minted : 0;
+        return (
+            b.id,
+            b.name,
+            b.floppyTokenId,
+            b.priceWei,
+            b.priceToken,
+            b.startTime,
+            b.endTime,
+            b.active,
+            b.minted,
+            b.maxSupply,
+            rem,
+            b.maxPerWallet,
+            b.maxPerTx
+        );
+    }
+
+    /// @notice Cuánto le queda al usuario antes de llegar a su maxPerWallet
+    function getUserAllowanceLeft(uint256 batchId, address user) external view returns (uint256 left) {
+        Batch storage b = _requireBatch(batchId);
+        uint256 mintedByUser = mintedPerWallet[batchId][user];
+        if (mintedByUser >= b.maxPerWallet) return 0;
+        return b.maxPerWallet - mintedByUser;
+    }
+
+    /// @notice Verificar si el usuario ya usó su free mint
+    function hasUsedFreeMint(uint256 batchId, address user) external view returns (bool) {
+        return freeMintedPerWallet[batchId][user] > 0;
+    }
+
+    /// @notice Intenta leer supply global del TraitsCore (si implementa vistas). Devuelve el mínimo efectivo
+    function getEffectiveRemaining(uint256 batchId)
+        external
+        view
+        returns (
+            uint256 batchRemaining,
+            bool hasCoreData,
+            uint256 coreTotalSupply,
+            uint256 coreMaxSupply,
+            uint256 coreRemaining,
+            uint256 effectiveRemaining
+        )
+    {
+        Batch storage b = _requireBatch(batchId);
+        batchRemaining = b.maxSupply > b.minted ? b.maxSupply - b.minted : 0;
+
+        // Try/catch against optional supply interface
+        try IAdrianTraitsSupply(address(traitsCore)).maxSupply(b.floppyTokenId) returns (uint256 maxS) {
+            try IAdrianTraitsSupply(address(traitsCore)).totalSupply(b.floppyTokenId) returns (uint256 totS) {
+                hasCoreData = true;
+                coreMaxSupply = maxS;
+                coreTotalSupply = totS;
+                coreRemaining = maxS > totS ? maxS - totS : 0;
+                effectiveRemaining = coreRemaining < batchRemaining ? coreRemaining : batchRemaining;
+                return (batchRemaining, hasCoreData, coreTotalSupply, coreMaxSupply, coreRemaining, effectiveRemaining);
+            } catch {
+                // only maxSupply found
+                hasCoreData = true;
+                coreMaxSupply = maxS;
+                // cannot compute total -> assume 0 to be safe?
+                return (batchRemaining, hasCoreData, 0, coreMaxSupply, 0, batchRemaining);
+            }
+        } catch {
+            // no supply views available
+            return (batchRemaining, false, 0, 0, 0, batchRemaining);
+        }
+    }
+
+    function getActiveBatchIds(uint256 fromId, uint256 toId) external view returns (uint256[] memory ids) {
+        if (toId == 0 || toId >= nextBatchId) toId = nextBatchId - 1;
+        if (fromId == 0) fromId = 1;
+        if (toId < fromId) {
+            ids = new uint256[](0);
+            return ids;
+        }
+
+        // First pass: count
+        uint256 count = 0;
+        for (uint256 i = fromId; i <= toId; i++) {
+            if (batches[i].active) count++;
+        }
+
+        // Second pass: fill
+        ids = new uint256[](count);
+        if (count == 0) return ids;
+
+        uint256 idx = 0;
+        for (uint256 i2 = fromId; i2 <= toId; i2++) {
+            if (batches[i2].active) {
+                ids[idx++] = i2;
+            }
+        }
+    }
+
+    function batchCount() external view returns (uint256) {
+        return nextBatchId - 1;
+    }
+
+    function _requireBatch(uint256 batchId) internal view returns (Batch storage) {
+        if (batchId == 0 || batchId >= nextBatchId) revert InvalidBatch();
+        return batches[batchId];
+    }
+
+    // =============== EMERGENCY WITHDRAW ===============
+    function emergencyWithdrawETH(uint256 amount, address to) external onlyOwner nonReentrant {
+        require(to != address(0), "Invalid to");
+        require(amount > 0, "Invalid amount");
+        require(address(this).balance >= amount, "Insufficient balance");
+        (bool ok, ) = to.call{value: amount}("");
+        require(ok, "Withdraw failed");
+    }
+}

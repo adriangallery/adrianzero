@@ -1,0 +1,417 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+/**
+ * @title AdrianPETFOOD
+ * @notice Commitment-based staking for $ADRIAN (ERC20) that mints ERC-1155 "PET FOOD" immediately
+ *         and locks the deposited tokens until a fixed unlock time. Supports early withdrawal
+ *         with penalty to treasury, per-unit commission to a commission wallet, and "exact units"
+ *         staking helpers to handle wallet/token transfer fees deterministically.
+ *
+ * Key properties
+ * - Rewards are minted up-front via a PET FOOD ERC-1155 core using `mintFromExtension`.
+ * - Amounts are based on the *actual amount received* (contract balance delta) to be robust
+ *   to fee-on-transfer tokens.
+ * - Each lock stores immutable parameters. Editing a plan never mutates existing locks.
+ * - `pause()` only disables new stakes; withdrawals remain available.
+ */
+
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
+
+/// @dev Minimal EIP-2612 interface for gasless approval UX.
+interface IERC20Permit {
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
+}
+
+/// @dev PET FOOD core subset (ERC-1155) used for minting rewards and auth checking.
+interface IAdrianPetFoodCore {
+    function authorizedExtensions(address ext) external view returns (bool);
+    function mintFromExtension(address to, uint256 id, uint256 amount) external;
+}
+
+contract AdrianPETFOOD is Ownable, Pausable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
+    // ===== Constants =====
+    uint16 public constant BPS = 10_000; // 100% = 10,000 bps
+
+    // ===== Immutable config =====
+    IERC20 public immutable token;              // $ADRIAN ERC20
+    IERC20Permit public immutable tokenPermit;  // Optional permit interface (same address as token)
+
+    // ===== Admin-configurable economy params =====
+    address public commissionWallet;   // receives commission per *whole unit*
+    uint256 public commissionPerUnit;  // in $ADRIAN (18 decimals), applied per unit
+
+    address public treasury;           // receives early-withdraw penalties
+    uint16  public earlyPenaltyBps;    // e.g., 5000 = 50%
+
+    // ===== Plans (tiers) =====
+    struct Plan {
+        uint256 unitAmount;      // e.g., 1_000_000 * 1e18 ($ADRIAN units)
+        uint40  duration;        // seconds (e.g., 30 days)
+        address petFoodCore;     // ERC-1155 PET FOOD core; this contract must be an authorized extension
+        uint256 rewardTokenId;   // PET FOOD token id to mint
+        uint96  rewardPerUnit;   // PET FOOD quantity per whole unit
+        bool    active;          // plan activation flag
+        bool    exists;          // plan existence flag
+    }
+
+    mapping(uint64 => Plan) public plans; // planId => Plan
+
+    // ===== Locks =====
+    struct Lock {
+        address owner;           // lock owner
+        uint128 amountLocked;    // net locked after commission (leftover included)
+        uint40  unlockTime;      // timestamp when withdraw is allowed
+        uint64  planId;          // reference plan
+        uint16  units;           // whole units counted for rewards/commission
+        bool    withdrawn;       // already withdrawn?
+    }
+
+    Lock[] public locks;                          // all locks (lockId = index)
+    mapping(address => uint256[]) public locksOf; // owner => list of lockIds
+
+    // ===== Accounting (informational) =====
+    uint256 public totalLocked;                   // aggregate of amountLocked
+
+    // ===== Events =====
+    event PlanUpdated(
+        uint64 indexed planId,
+        uint256 unitAmount,
+        uint40 duration,
+        address petFoodCore,
+        uint256 rewardTokenId,
+        uint96 rewardPerUnit,
+        bool active
+    );
+
+    event CommissionUpdated(address indexed wallet, uint256 commissionPerUnit);
+    event TreasuryUpdated(address indexed treasury);
+    event EarlyPenaltyUpdated(uint16 bps);
+
+    event Staked(
+        uint256 indexed lockId,
+        address indexed user,
+        uint64 indexed planId,
+        uint256 amountReceived,
+        uint16 units,
+        uint256 commission,
+        uint256 amountLocked,
+        uint40 unlockTime
+    );
+
+    event PetFoodMinted( // renamed for lore
+        uint256 indexed lockId,
+        address indexed to,
+        address indexed petFoodCore,
+        uint256 tokenId,
+        uint256 qty
+    );
+
+    event CommissionPaid(uint256 indexed lockId, address indexed wallet, uint256 amount);
+    event Withdrawn(uint256 indexed lockId, address indexed user, uint256 amount);
+    event EarlyWithdraw(uint256 indexed lockId, address indexed user, uint256 toUser, uint256 penaltyToTreasury);
+
+    constructor(
+        address _token,
+        address _commissionWallet,
+        address _treasury,
+        uint16   _earlyPenaltyBps,
+        uint256  _commissionPerUnit
+    ) Ownable(msg.sender) {
+        require(_token != address(0), "token=0");
+        require(_commissionWallet != address(0), "commissionWallet=0");
+        require(_treasury != address(0), "treasury=0");
+        require(_earlyPenaltyBps <= BPS, "penalty>100%");
+
+        token = IERC20(_token);
+        tokenPermit = IERC20Permit(_token);
+
+        commissionWallet = _commissionWallet;
+        commissionPerUnit = _commissionPerUnit;
+        treasury = _treasury;
+        earlyPenaltyBps = _earlyPenaltyBps;
+    }
+
+    // =========================
+    // Admin setters
+    // =========================
+
+    function createOrUpdatePlan(
+        uint64  planId,
+        uint256 unitAmount,
+        uint40  duration,
+        address petFoodCore,
+        uint256 rewardTokenId,
+        uint96  rewardPerUnit,
+        bool    active
+    ) external onlyOwner {
+        require(planId != 0, "planId=0");
+        require(unitAmount > 0, "unitAmount=0");
+        require(duration > 0, "duration=0");
+        require(petFoodCore != address(0), "petFoodCore=0");
+        require(rewardPerUnit > 0, "rewardPerUnit=0");
+
+        plans[planId] = Plan({
+            unitAmount: unitAmount,
+            duration: duration,
+            petFoodCore: petFoodCore,
+            rewardTokenId: rewardTokenId,
+            rewardPerUnit: rewardPerUnit,
+            active: active,
+            exists: true
+        });
+
+        emit PlanUpdated(planId, unitAmount, duration, petFoodCore, rewardTokenId, rewardPerUnit, active);
+    }
+
+    function setPlanActive(uint64 planId, bool active) external onlyOwner {
+        Plan storage p = plans[planId];
+        require(p.exists, "plan !exists");
+        p.active = active;
+        emit PlanUpdated(planId, p.unitAmount, p.duration, p.petFoodCore, p.rewardTokenId, p.rewardPerUnit, active);
+    }
+
+    function setCommission(address wallet, uint256 perUnit) external onlyOwner {
+        require(wallet != address(0), "wallet=0");
+        commissionWallet = wallet;
+        commissionPerUnit = perUnit;
+        emit CommissionUpdated(wallet, perUnit);
+    }
+
+    function setTreasury(address _treasury) external onlyOwner {
+        require(_treasury != address(0), "treasury=0");
+        treasury = _treasury;
+        emit TreasuryUpdated(_treasury);
+    }
+
+    function setEarlyPenaltyBps(uint16 bps) external onlyOwner {
+        require(bps <= BPS, "penalty>100%");
+        earlyPenaltyBps = bps;
+        emit EarlyPenaltyUpdated(bps);
+    }
+
+    function pause() external onlyOwner { _pause(); }
+    function unpause() external onlyOwner { _unpause(); }
+
+    // =========================
+    // Views for dApp
+    // =========================
+
+    function getPlan(uint64 planId) external view returns (
+        uint256 unitAmount,
+        uint40 duration,
+        address petFoodCore,
+        uint256 rewardTokenId,
+        uint96 rewardPerUnit,
+        bool active,
+        bool exists
+    ) {
+        Plan memory p = plans[planId];
+        return (p.unitAmount, p.duration, p.petFoodCore, p.rewardTokenId, p.rewardPerUnit, p.active, p.exists);
+    }
+
+    function locksCount() external view returns (uint256) { return locks.length; }
+    function getLock(uint256 lockId) external view returns (Lock memory) { return locks[lockId]; }
+    function getLocksOf(address user) external view returns (uint256[] memory) { return locksOf[user]; }
+
+    function quoteForAmountReceived(uint64 planId, uint256 amountReceived)
+        external
+        view
+        returns (
+            uint16 units,
+            uint256 rewardTokenId,
+            uint256 rewardQty,
+            uint256 commission,
+            uint256 netStake,
+            uint40 unlockTime
+        )
+    {
+        Plan memory p = plans[planId];
+        require(p.exists && p.active, "plan inactive");
+        units = uint16(amountReceived / p.unitAmount);
+        rewardTokenId = p.rewardTokenId;
+        rewardQty = uint256(units) * uint256(p.rewardPerUnit);
+        commission = uint256(units) * commissionPerUnit;
+        netStake = amountReceived - commission; // leftover (if any) stays locked as part of netStake
+        unlockTime = uint40(block.timestamp + p.duration);
+    }
+
+    // =========================
+    // Staking core
+    // =========================
+
+    function stake(uint64 planId, uint256 amount) public nonReentrant whenNotPaused returns (uint256 lockId) {
+        require(amount > 0, "amount=0");
+        Plan storage p = plans[planId];
+        require(p.exists && p.active, "plan inactive");
+
+        uint256 balBefore = token.balanceOf(address(this));
+        token.safeTransferFrom(msg.sender, address(this), amount);
+        uint256 amountReceived = token.balanceOf(address(this)) - balBefore;
+        require(amountReceived > 0, "received=0");
+
+        uint16 units = uint16(amountReceived / p.unitAmount);
+        require(units > 0, "amount too small for plan");
+
+        uint256 commission = uint256(units) * commissionPerUnit;
+        if (commission > 0) {
+            token.safeTransfer(commissionWallet, commission);
+            emit CommissionPaid(locks.length, commissionWallet, commission);
+        }
+
+        uint256 netStake = amountReceived - commission;
+        uint40 unlockTime = uint40(block.timestamp + p.duration);
+
+        lockId = _createLock(msg.sender, planId, uint128(netStake), unlockTime, units);
+
+        _mintPetFood(p.petFoodCore, msg.sender, p.rewardTokenId, uint256(units) * uint256(p.rewardPerUnit), lockId);
+
+        emit Staked(lockId, msg.sender, planId, amountReceived, units, commission, netStake, unlockTime);
+    }
+
+    function stakeExactUnits(
+        uint64 planId,
+        uint16 unitsDesired,
+        uint256 maxAmount
+    ) public nonReentrant whenNotPaused returns (uint256 lockId) {
+        require(unitsDesired > 0, "units=0");
+        require(maxAmount > 0, "max=0");
+        Plan storage p = plans[planId];
+        require(p.exists && p.active, "plan inactive");
+
+        uint256 balBefore = token.balanceOf(address(this));
+        token.safeTransferFrom(msg.sender, address(this), maxAmount);
+        uint256 amountReceived = token.balanceOf(address(this)) - balBefore;
+        require(amountReceived > 0, "received=0");
+
+        uint256 minRequired = uint256(unitsDesired) * p.unitAmount;
+        require(amountReceived >= minRequired, "insufficient after fees");
+
+        uint256 commission = uint256(unitsDesired) * commissionPerUnit;
+        if (commission > 0) {
+            token.safeTransfer(commissionWallet, commission);
+            emit CommissionPaid(locks.length, commissionWallet, commission);
+        }
+
+        uint256 netStake = amountReceived - commission;
+        uint40 unlockTime = uint40(block.timestamp + p.duration);
+
+        lockId = _createLock(msg.sender, planId, uint128(netStake), unlockTime, unitsDesired);
+
+        _mintPetFood(p.petFoodCore, msg.sender, p.rewardTokenId, uint256(unitsDesired) * uint256(p.rewardPerUnit), lockId);
+
+        emit Staked(lockId, msg.sender, planId, amountReceived, unitsDesired, commission, netStake, unlockTime);
+    }
+
+    function stakeWithPermit(
+        uint64 planId,
+        uint256 amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external returns (uint256 lockId) {
+        tokenPermit.permit(msg.sender, address(this), amount, deadline, v, r, s);
+        lockId = stake(planId, amount);
+    }
+
+    function stakeExactUnitsWithPermit(
+        uint64 planId,
+        uint16 unitsDesired,
+        uint256 maxAmount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external returns (uint256 lockId) {
+        tokenPermit.permit(msg.sender, address(this), maxAmount, deadline, v, r, s);
+        lockId = stakeExactUnits(planId, unitsDesired, maxAmount);
+    }
+
+    // =========================
+    // Withdrawals
+    // =========================
+
+    function withdraw(uint256 lockId) public nonReentrant {
+        Lock storage L = locks[lockId];
+        require(L.owner == msg.sender, "not owner");
+        require(!L.withdrawn, "already withdrawn");
+        require(block.timestamp >= L.unlockTime, "not unlocked yet");
+        L.withdrawn = true;
+        totalLocked -= L.amountLocked;
+        token.safeTransfer(msg.sender, L.amountLocked);
+        emit Withdrawn(lockId, msg.sender, L.amountLocked);
+    }
+
+    function earlyWithdraw(uint256 lockId) public nonReentrant {
+        Lock storage L = locks[lockId];
+        require(L.owner == msg.sender, "not owner");
+        require(!L.withdrawn, "already withdrawn");
+        require(block.timestamp < L.unlockTime, "already unlocked");
+
+        L.withdrawn = true;
+        totalLocked -= L.amountLocked;
+
+        uint256 penalty = (uint256(L.amountLocked) * earlyPenaltyBps) / BPS;
+        uint256 toUser = uint256(L.amountLocked) - penalty;
+
+        if (penalty > 0) {
+            token.safeTransfer(treasury, penalty);
+        }
+        if (toUser > 0) {
+            token.safeTransfer(msg.sender, toUser);
+        }
+        emit EarlyWithdraw(lockId, msg.sender, toUser, penalty);
+    }
+
+    // =========================
+    // Internals
+    // =========================
+
+    function _createLock(
+        address user,
+        uint64 planId,
+        uint128 amountLocked,
+        uint40 unlockTime,
+        uint16 units
+    ) internal returns (uint256 lockId) {
+        locks.push(Lock({
+            owner: user,
+            amountLocked: amountLocked,
+            unlockTime: unlockTime,
+            planId: planId,
+            units: units,
+            withdrawn: false
+        }));
+        lockId = locks.length - 1;
+        locksOf[user].push(lockId);
+        totalLocked += amountLocked;
+    }
+
+    function _mintPetFood(
+        address petFoodCore,
+        address to,
+        uint256 tokenId,
+        uint256 qty,
+        uint256 lockId
+    ) internal {
+        if (qty == 0) return; // nothing to mint
+        require(IAdrianPetFoodCore(petFoodCore).authorizedExtensions(address(this)), "not authorized in petFoodCore");
+        IAdrianPetFoodCore(petFoodCore).mintFromExtension(to, tokenId, qty);
+        emit PetFoodMinted(lockId, to, petFoodCore, tokenId, qty);
+    }
+}
