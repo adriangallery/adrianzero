@@ -12,32 +12,8 @@
       "dest": "/onchain/backend/server.js"
     },
     {
-      "src": "/onchain/(.*)",
-      "dest": "/onchain/$1"
-    },
-    {
-      "src": "/images/(.*)",
-      "dest": "/onchain/images/$1"
-    },
-    {
-      "src": "/music/(.*)",
-      "dest": "/music/$1"
-    },
-    {
-      "src": "/level1.png",
-      "dest": "/level1.png"
-    },
-    {
-      "src": "/styles.css",
-      "dest": "/styles.css"
-    },
-    {
-      "src": "/Zombie_Adrian.gif",
-      "dest": "/Zombie_Adrian.gif"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
