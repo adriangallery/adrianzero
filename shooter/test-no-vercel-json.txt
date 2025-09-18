@@ -1,3 +1,0 @@
-Testing auto-deploy without vercel.json
-Vercel should detect changes automatically
-Timestamp: $(date)
