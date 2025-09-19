@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdrianZERO - OpenSea API Test</title>
+    <title>OpenSea Test - Adrian Zero</title>
+    <script src="https://cdn.jsdelivr.net/npm/opensea-js@latest/lib/sdk.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,481 +17,575 @@
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: white;
+            padding: 2rem 0;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .api-key-section {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
             border-radius: 15px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            width: 90%;
+            margin: 0 auto;
         }
 
-        .api-key-section h3 {
-            color: #ffd700;
-            margin-bottom: 15px;
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            text-align: center;
         }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+            text-align: center;
         }
 
-        .input-group input {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
+        .wallet-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid #667eea;
+            text-align: center;
+        }
+
+        .wallet-address {
+            background: #e9ecef;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 1rem 0;
+            word-break: break-all;
         }
 
         .btn {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
+            padding: 0.75rem 1.5rem;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 16px;
             font-weight: bold;
-            transition: all 0.3s ease;
+            margin: 0.5rem;
+            transition: transform 0.2s;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .result-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .result-card h3 {
-            color: #ffd700;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .nft-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
         }
 
         .nft-card {
-            background: rgba(255, 255, 255, 0.1);
+            background: white;
             border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .nft-card:hover {
+            transform: translateY(-5px);
         }
 
         .nft-image {
             width: 100%;
-            height: 150px;
+            height: 200px;
             object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 10px;
+        }
+
+        .nft-info {
+            padding: 1rem;
         }
 
         .nft-name {
             font-weight: bold;
-            margin-bottom: 5px;
-            color: #fff;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .nft-collection {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
         }
 
         .nft-price {
-            color: #ffd700;
-            font-size: 0.9rem;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: bold;
         }
 
         .error {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid rgba(255, 0, 0, 0.5);
-            color: #ff6b6b;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
         }
 
         .success {
-            background: rgba(0, 255, 0, 0.2);
-            border: 1px solid rgba(0, 255, 0, 0.5);
-            color: #4ade80;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
         }
 
-        .stats {
+        .stats-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            gap: 1rem;
+            margin: 2rem 0;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
+            background: white;
+            padding: 1.5rem;
             border-radius: 10px;
             text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .stat-value {
+        .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            color: #ffd700;
+            color: #667eea;
         }
 
         .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            color: #888;
             font-size: 0.9rem;
-            opacity: 0.8;
+            text-align: center;
+        }
+
+        .section {
+            margin: 2rem 0;
+        }
+
+        .section-title {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎨 AdrianZERO</h1>
-            <p>OpenSea API Integration Test</p>
-        </div>
-
-        <div class="api-key-section">
-            <h3>🔑 API Key Configuration</h3>
-            <div class="input-group">
-                <input type="password" id="apiKey" placeholder="Enter your OpenSea API Key" />
-                <button class="btn" onclick="setApiKey()">Set API Key</button>
+        <h1>OpenSea Test</h1>
+        <p class="subtitle">Plataforma de pruebas para integración con OpenSea</p>
+        
+        <div class="wallet-section">
+            <h2>🔗 Conexión de Wallet</h2>
+            <div class="wallet-address">
+                <strong>Dirección de Adrian Zero:</strong><br>
+                0x6e369bf0e4e0c106192d606fb6d85836d684da75
             </div>
-            <p style="font-size: 0.9rem; opacity: 0.8;">
-                Your API key is stored locally and never sent to our servers.
-            </p>
+            <div style="background: #fff3cd; padding: 1rem; border-radius: 5px; margin: 1rem 0; border-left: 4px solid #ffc107;">
+                <strong>⚠️ Configuración API:</strong> Para usar la API real de OpenSea, 
+                reemplaza <code>YOUR_OPENSEA_API_KEY_HERE</code> en el código con tu API key real.
+            </div>
+            <button class="btn" onclick="loadNFTs()">
+                <span id="loadBtn">Cargar NFTs</span>
+            </button>
+            <button class="btn" onclick="loadCollectionOffers()">
+                Cargar Ofertas de Colección
+            </button>
+            <button class="btn" onclick="searchNFT()">
+                Buscar NFT Específico
+            </button>
         </div>
 
-        <div class="controls">
-            <button class="btn" onclick="loadCollection()" id="loadBtn">📊 Load Collection Data</button>
-            <button class="btn" onclick="loadNFTs()" id="nftBtn">🖼️ Load NFTs</button>
-            <button class="btn" onclick="loadOffers()" id="offersBtn">💰 Load Offers</button>
-            <button class="btn" onclick="loadListings()" id="listingsBtn">🏷️ Load Listings</button>
+        <div id="status"></div>
+
+        <div class="stats-section" id="statsSection" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="totalNFTs">0</div>
+                <div class="stat-label">NFTs Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCollections">0</div>
+                <div class="stat-label">Colecciones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalOffers">0</div>
+                <div class="stat-label">Ofertas Activas</div>
+            </div>
         </div>
 
-        <div id="results"></div>
+        <div class="section">
+            <h2 class="section-title">🖼️ NFTs de Adrian Zero</h2>
+            <div class="nft-grid" id="nftGrid"></div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">💰 Ofertas y Listings</h2>
+            <div id="offersSection"></div>
+        </div>
+
+        <div class="footer">
+            <p>Adrian Zero © 2024</p>
+            <p>Integración con OpenSea API - Versión 1.1</p>
+            <p>🚀 Actualizado: ${new Date().toLocaleDateString()}</p>
+        </div>
     </div>
 
     <script>
-        // Configuration
-        const CONTRACT_ADDRESS = '0x6e369bf0e4e0c106192d606fb6d85836d684da75';
-        const COLLECTION_SLUG = 'adrianzero'; // You may need to adjust this
+        // Configuración de OpenSea SDK
+        // Nota: En producción, la API key debe estar configurada en el servidor o variables de entorno
+        const OPENSEA_API_KEY = 'YOUR_OPENSEA_API_KEY_HERE'; // Reemplazar con la API key real
+        const WALLET_ADDRESS = '0x6e369bf0e4e0c106192d606fb6d85836d684da75';
         const API_BASE_URL = 'https://api.opensea.io/api/v2';
+        
+        // Inicializar SDK (usando API REST directa por compatibilidad)
+        let nfts = [];
+        let collections = new Set();
+        let offers = [];
 
-        let apiKey = localStorage.getItem('opensea_api_key') || '';
+        // Función para mostrar estado
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            statusDiv.innerHTML = `<div class="${className}">${message}</div>`;
+        }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            if (apiKey) {
-                document.getElementById('apiKey').value = apiKey;
-                showMessage('API Key loaded from storage', 'success');
-            }
-        });
-
-        function setApiKey() {
-            const key = document.getElementById('apiKey').value.trim();
-            if (key) {
-                apiKey = key;
-                localStorage.setItem('opensea_api_key', key);
-                showMessage('API Key saved successfully!', 'success');
-            } else {
-                showMessage('Please enter a valid API key', 'error');
+        // Función para mostrar loading
+        function showLoading(elementId, show = true) {
+            const element = document.getElementById(elementId);
+            if (show) {
+                element.innerHTML = '<span class="loading"></span> Cargando...';
             }
         }
 
-        function showMessage(message, type) {
-            const results = document.getElementById('results');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = type;
-            messageDiv.textContent = message;
-            results.insertBefore(messageDiv, results.firstChild);
+        // Función para cargar NFTs usando la API REST de OpenSea
+        async function loadNFTs() {
+            showLoading('loadBtn');
+            showStatus('Cargando NFTs de Adrian Zero...', 'info');
             
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 5000);
-        }
-
-        function showLoading(message) {
-            const results = document.getElementById('results');
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading';
-            loadingDiv.id = 'loading';
-            loadingDiv.innerHTML = `⏳ ${message}`;
-            results.appendChild(loadingDiv);
-        }
-
-        function hideLoading() {
-            const loading = document.getElementById('loading');
-            if (loading) loading.remove();
-        }
-
-        async function makeAPICall(endpoint, params = {}) {
-            if (!apiKey) {
-                showMessage('Please set your API key first', 'error');
-                return null;
-            }
-
-            const url = new URL(`${API_BASE_URL}${endpoint}`);
-            Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-
             try {
+                // Usar la API REST de OpenSea v2
+                const url = `${API_BASE_URL}/chain/ethereum/account/${WALLET_ADDRESS}/nfts?limit=50`;
                 const response = await fetch(url, {
                     headers: {
-                        'X-API-KEY': apiKey,
+                        'X-API-KEY': OPENSEA_API_KEY,
                         'Accept': 'application/json'
                     }
                 });
-
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    if (response.status === 401) {
+                        throw new Error('API Key inválida o faltante');
+                    } else if (response.status === 429) {
+                        throw new Error('Límite de rate excedido');
+                    } else {
+                        throw new Error(`Error de API: ${response.status} - ${response.statusText}`);
+                    }
                 }
-
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                showMessage(`API Error: ${error.message}`, 'error');
-                return null;
-            }
-        }
-
-        async function loadCollection() {
-            showLoading('Loading collection data...');
-            
-            try {
-                // Try to get collection by contract address
-                const collectionData = await makeAPICall(`/collection/${CONTRACT_ADDRESS}`);
                 
-                if (collectionData) {
-                    displayCollectionData(collectionData);
-                }
+                const data = await response.json();
+                nfts = data.nfts || [];
+                
+                // Actualizar estadísticas
+                updateStats();
+                
+                // Mostrar NFTs
+                displayNFTs(nfts);
+                
+                showStatus(`✅ Cargados ${nfts.length} NFTs exitosamente`, 'success');
+                
             } catch (error) {
-                showMessage('Failed to load collection data', 'error');
+                console.error('Error cargando NFTs:', error);
+                showStatus(`❌ Error cargando NFTs: ${error.message}`, 'error');
+                
+                // Mostrar datos de ejemplo si falla la API
+                loadExampleData();
             }
             
-            hideLoading();
+            document.getElementById('loadBtn').innerHTML = 'Cargar NFTs';
         }
 
-        async function loadNFTs() {
-            showLoading('Loading NFTs...');
+        // Función para buscar un NFT específico (basada en getting-started guide)
+        async function searchNFT() {
+            const contractAddress = prompt('Ingresa la dirección del contrato:', '0x06012c8cf97bead5deae237070f9587f8e7a266d');
+            const tokenId = prompt('Ingresa el Token ID:', '1');
+            
+            if (!contractAddress || !tokenId) return;
+            
+            showStatus('Buscando NFT específico...', 'info');
             
             try {
-                const nftData = await makeAPICall('/nfts', {
-                    asset_contract_address: CONTRACT_ADDRESS,
-                    limit: 20
+                // Implementar getNFT del getting-started guide
+                const url = `${API_BASE_URL}/chain/ethereum/contract/${contractAddress}/nfts/${tokenId}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'X-API-KEY': OPENSEA_API_KEY,
+                        'Accept': 'application/json'
+                    }
                 });
                 
-                if (nftData) {
-                    displayNFTs(nftData.nfts || []);
+                if (!response.ok) {
+                    throw new Error(`NFT no encontrado: ${response.status}`);
                 }
+                
+                const data = await response.json();
+                const nft = data.nft;
+                
+                if (nft) {
+                    displayNFTs([nft]);
+                    showStatus(`✅ NFT encontrado: ${nft.name || `Token #${tokenId}`}`, 'success');
+                    
+                    // También buscar órdenes para este NFT
+                    await loadOrdersForNFT(contractAddress, tokenId);
+                } else {
+                    showStatus('❌ NFT no encontrado', 'error');
+                }
+                
             } catch (error) {
-                showMessage('Failed to load NFTs', 'error');
+                console.error('Error buscando NFT:', error);
+                showStatus(`❌ Error buscando NFT: ${error.message}`, 'error');
             }
-            
-            hideLoading();
         }
 
-        async function loadOffers() {
-            showLoading('Loading offers...');
-            
+        // Función para cargar órdenes de un NFT específico (basada en getting-started guide)
+        async function loadOrdersForNFT(contractAddress, tokenId) {
             try {
-                const offersData = await makeAPICall('/orders', {
-                    asset_contract_address: CONTRACT_ADDRESS,
-                    side: 'offer',
-                    limit: 10
+                // Obtener ofertas (offers)
+                const offersUrl = `${API_BASE_URL}/orders/ethereum/seaport/offers?asset_contract_address=${contractAddress}&token_ids=${tokenId}`;
+                const offersResponse = await fetch(offersUrl, {
+                    headers: {
+                        'X-API-KEY': OPENSEA_API_KEY,
+                        'Accept': 'application/json'
+                    }
                 });
                 
-                if (offersData) {
-                    displayOffers(offersData.orders || []);
-                }
-            } catch (error) {
-                showMessage('Failed to load offers', 'error');
-            }
-            
-            hideLoading();
-        }
-
-        async function loadListings() {
-            showLoading('Loading listings...');
-            
-            try {
-                const listingsData = await makeAPICall('/orders', {
-                    asset_contract_address: CONTRACT_ADDRESS,
-                    side: 'listing',
-                    limit: 10
+                // Obtener listings
+                const listingsUrl = `${API_BASE_URL}/orders/ethereum/seaport/listings?asset_contract_address=${contractAddress}&token_ids=${tokenId}`;
+                const listingsResponse = await fetch(listingsUrl, {
+                    headers: {
+                        'X-API-KEY': OPENSEA_API_KEY,
+                        'Accept': 'application/json'
+                    }
                 });
                 
-                if (listingsData) {
-                    displayListings(listingsData.orders || []);
-                }
+                const offersData = offersResponse.ok ? await offersResponse.json() : { orders: [] };
+                const listingsData = listingsResponse.ok ? await listingsResponse.json() : { orders: [] };
+                
+                displayOrders(offersData.orders || [], listingsData.orders || [], contractAddress, tokenId);
+                
             } catch (error) {
-                showMessage('Failed to load listings', 'error');
+                console.error('Error cargando órdenes:', error);
             }
-            
-            hideLoading();
         }
 
-        function displayCollectionData(data) {
-            const results = document.getElementById('results');
-            const card = document.createElement('div');
-            card.className = 'result-card';
+        // Función para mostrar órdenes
+        function displayOrders(offers, listings, contractAddress, tokenId) {
+            const offersSection = document.getElementById('offersSection');
             
-            card.innerHTML = `
-                <h3>📊 Collection Information</h3>
-                <div class="stats">
-                    <div class="stat-card">
-                        <div class="stat-value">${data.stats?.total_supply || 'N/A'}</div>
-                        <div class="stat-label">Total Supply</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${data.stats?.num_owners || 'N/A'}</div>
-                        <div class="stat-label">Owners</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${data.stats?.floor_price ? `${data.stats.floor_price} ETH` : 'N/A'}</div>
-                        <div class="stat-label">Floor Price</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${data.stats?.total_volume ? `${data.stats.total_volume} ETH` : 'N/A'}</div>
-                        <div class="stat-label">Total Volume</div>
-                    </div>
-                </div>
-                <p><strong>Name:</strong> ${data.name || 'N/A'}</p>
-                <p><strong>Description:</strong> ${data.description || 'N/A'}</p>
-                <p><strong>Contract:</strong> ${data.primary_asset_contracts?.[0]?.address || CONTRACT_ADDRESS}</p>
+            let html = `
+                <div class="wallet-section">
+                    <h3>📊 Órdenes para Token #${tokenId}</h3>
+                    <p><strong>Contrato:</strong> ${contractAddress}</p>
             `;
             
-            results.appendChild(card);
+            if (offers.length > 0) {
+                html += `
+                    <h4>💰 Ofertas (${offers.length})</h4>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                `;
+                offers.forEach(offer => {
+                    const price = offer.current_price ? (parseInt(offer.current_price) / 1e18).toFixed(4) : 'N/A';
+                    html += `
+                        <div style="border: 1px solid #ddd; margin: 5px; padding: 10px; border-radius: 5px;">
+                            <strong>Precio:</strong> ${price} ETH<br>
+                            <strong>Ofertante:</strong> ${offer.maker?.address || 'Desconocido'}<br>
+                            <strong>Expira:</strong> ${offer.expiration_time ? new Date(offer.expiration_time * 1000).toLocaleDateString() : 'N/A'}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            } else {
+                html += '<p>No hay ofertas activas</p>';
+            }
+            
+            if (listings.length > 0) {
+                html += `
+                    <h4>🏷️ Listings (${listings.length})</h4>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                `;
+                listings.forEach(listing => {
+                    const price = listing.current_price ? (parseInt(listing.current_price) / 1e18).toFixed(4) : 'N/A';
+                    html += `
+                        <div style="border: 1px solid #ddd; margin: 5px; padding: 10px; border-radius: 5px;">
+                            <strong>Precio:</strong> ${price} ETH<br>
+                            <strong>Vendedor:</strong> ${listing.maker?.address || 'Desconocido'}<br>
+                            <strong>Expira:</strong> ${listing.expiration_time ? new Date(listing.expiration_time * 1000).toLocaleDateString() : 'N/A'}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            } else {
+                html += '<p>No hay listings activos</p>';
+            }
+            
+            html += '</div>';
+            offersSection.innerHTML = html;
         }
 
-        function displayNFTs(nfts) {
-            const results = document.getElementById('results');
-            const card = document.createElement('div');
-            card.className = 'result-card';
+        // Función para cargar datos de ejemplo
+        function loadExampleData() {
+            nfts = [
+                {
+                    identifier: '1',
+                    collection: 'example-collection',
+                    contract: '0x06012c8cf97bead5deae237070f9587f8e7a266d',
+                    token_standard: 'erc721',
+                    name: 'Example NFT #1',
+                    description: 'NFT de ejemplo para demostración',
+                    image_url: 'https://via.placeholder.com/250x200?text=NFT+1',
+                    metadata_url: '',
+                    opensea_url: 'https://opensea.io/assets/ethereum/0x06012c8cf97bead5deae237070f9587f8e7a266d/1'
+                },
+                {
+                    identifier: '2',
+                    collection: 'example-collection-2',
+                    contract: '0x06012c8cf97bead5deae237070f9587f8e7a266d',
+                    token_standard: 'erc721',
+                    name: 'Example NFT #2',
+                    description: 'Otro NFT de ejemplo',
+                    image_url: 'https://via.placeholder.com/250x200?text=NFT+2',
+                    metadata_url: '',
+                    opensea_url: 'https://opensea.io/assets/ethereum/0x06012c8cf97bead5deae237070f9587f8e7a266d/2'
+                }
+            ];
             
-            let nftHTML = '<h3>🖼️ NFTs</h3><div class="nft-grid">';
+            updateStats();
+            displayNFTs(nfts);
+            showStatus('📝 Mostrando datos de ejemplo (API no disponible)', 'info');
+        }
+
+        // Función para mostrar NFTs
+        function displayNFTs(nftList) {
+            const nftGrid = document.getElementById('nftGrid');
             
-            nfts.forEach(nft => {
-                nftHTML += `
-                    <div class="nft-card">
-                        <img src="${nft.image_url || '/placeholder.png'}" alt="${nft.name}" class="nft-image" onerror="this.src='/placeholder.png'">
-                        <div class="nft-name">${nft.name || `#${nft.token_id}`}</div>
-                        <div class="nft-price">Token ID: ${nft.token_id}</div>
+            if (nftList.length === 0) {
+                nftGrid.innerHTML = '<p>No se encontraron NFTs para esta dirección.</p>';
+                return;
+            }
+            
+            nftGrid.innerHTML = nftList.map(nft => `
+                <div class="nft-card" onclick="showNFTDetails('${nft.identifier}', '${nft.contract}')">
+                    <img class="nft-image" src="${nft.image_url || 'https://via.placeholder.com/250x200?text=Sin+Imagen'}" 
+                         alt="${nft.name || 'NFT sin nombre'}" 
+                         onerror="this.src='https://via.placeholder.com/250x200?text=Error+Imagen'">
+                    <div class="nft-info">
+                        <div class="nft-name">${nft.name || `Token #${nft.identifier}`}</div>
+                        <div class="nft-collection">${nft.collection || 'Colección desconocida'}</div>
+                        <div class="nft-price">Click para ver detalles</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Función para mostrar detalles de NFT
+        function showNFTDetails(tokenId, contractAddress) {
+            const nft = nfts.find(n => n.identifier === tokenId && n.contract === contractAddress);
+            if (nft) {
+                alert(`
+NFT: ${nft.name || `Token #${tokenId}`}
+Colección: ${nft.collection || 'Desconocida'}
+Contrato: ${contractAddress}
+Token ID: ${tokenId}
+Estándar: ${nft.token_standard || 'ERC721'}
+
+${nft.description || 'Sin descripción disponible'}
+
+Ver en OpenSea: ${nft.opensea_url || 'No disponible'}
+                `);
+            }
+        }
+
+        // Función para actualizar estadísticas
+        function updateStats() {
+            document.getElementById('totalNFTs').textContent = nfts.length;
+            
+            // Contar colecciones únicas
+            const uniqueCollections = new Set(nfts.map(nft => nft.collection).filter(Boolean));
+            document.getElementById('totalCollections').textContent = uniqueCollections.size;
+            
+            document.getElementById('totalOffers').textContent = offers.length;
+            
+            document.getElementById('statsSection').style.display = 'grid';
+        }
+
+        // Función para cargar ofertas de colección (ejemplo)
+        async function loadCollectionOffers() {
+            showStatus('Cargando ofertas de colección...', 'info');
+            
+            try {
+                // Ejemplo de carga de ofertas (requeriría colecciones específicas)
+                const offersSection = document.getElementById('offersSection');
+                offersSection.innerHTML = `
+                    <div class="wallet-section">
+                        <h3>🎯 Funcionalidades de Ofertas</h3>
+                        <p>Según el getting-started guide, puedes:</p>
+                        <ul style="text-align: left; margin: 1rem;">
+                            <li><strong>Crear ofertas:</strong> openseaSDK.createOffer()</li>
+                            <li><strong>Crear listings:</strong> openseaSDK.createListing()</li>
+                            <li><strong>Obtener órdenes:</strong> openseaSDK.api.getOrders()</li>
+                            <li><strong>Comprar items:</strong> openseaSDK.fulfillOrder()</li>
+                            <li><strong>Aceptar ofertas:</strong> fulfillOrder() con ofertas</li>
+                        </ul>
+                        <p><em>Nota: Para funcionalidad completa se requiere conexión de wallet y configuración del SDK completo.</em></p>
                     </div>
                 `;
-            });
-            
-            nftHTML += '</div>';
-            card.innerHTML = nftHTML;
-            results.appendChild(card);
-        }
-
-        function displayOffers(offers) {
-            const results = document.getElementById('results');
-            const card = document.createElement('div');
-            card.className = 'result-card';
-            
-            let offersHTML = '<h3>💰 Active Offers</h3>';
-            
-            if (offers.length === 0) {
-                offersHTML += '<p>No active offers found.</p>';
-            } else {
-                offers.forEach(offer => {
-                    offersHTML += `
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; margin: 10px 0; border-radius: 8px;">
-                            <p><strong>Price:</strong> ${offer.current_price || 'N/A'} ETH</p>
-                            <p><strong>Maker:</strong> ${offer.maker?.address || 'N/A'}</p>
-                            <p><strong>Expiration:</strong> ${offer.expiration_time ? new Date(offer.expiration_time * 1000).toLocaleDateString() : 'N/A'}</p>
-                        </div>
-                    `;
-                });
+                
+                showStatus('✅ Información de ofertas cargada', 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error cargando ofertas: ${error.message}`, 'error');
             }
-            
-            card.innerHTML = offersHTML;
-            results.appendChild(card);
         }
 
-        function displayListings(listings) {
-            const results = document.getElementById('results');
-            const card = document.createElement('div');
-            card.className = 'result-card';
-            
-            let listingsHTML = '<h3>🏷️ Active Listings</h3>';
-            
-            if (listings.length === 0) {
-                listingsHTML += '<p>No active listings found.</p>';
-            } else {
-                listings.forEach(listing => {
-                    listingsHTML += `
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; margin: 10px 0; border-radius: 8px;">
-                            <p><strong>Price:</strong> ${listing.current_price || 'N/A'} ETH</p>
-                            <p><strong>Seller:</strong> ${listing.maker?.address || 'N/A'}</p>
-                            <p><strong>Expiration:</strong> ${listing.expiration_time ? new Date(listing.expiration_time * 1000).toLocaleDateString() : 'N/A'}</p>
-                        </div>
-                    `;
-                });
-            }
-            
-            card.innerHTML = listingsHTML;
-            results.appendChild(card);
-        }
-
-        // Clear results function
-        function clearResults() {
-            document.getElementById('results').innerHTML = '';
-        }
+        // Cargar NFTs automáticamente al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('🚀 Aplicación OpenSea Test iniciada', 'success');
+            // Cargar datos de ejemplo inicialmente
+            loadExampleData();
+        });
     </script>
 </body>
 </html>

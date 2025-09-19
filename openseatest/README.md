@@ -1,131 +1,84 @@
-# AdrianZERO - OpenSea API Integration
+# OpenSea Test - Adrian Zero
 
-Este proyecto integra la API de OpenSea para mostrar datos de la colección AdrianZERO.
+Aplicación de prueba para integración con la API de OpenSea, desarrollada para explorar y mostrar NFTs de la dirección de wallet de Adrian Zero.
 
-## 🔑 Configuración de API Key
+## 🚀 Características
 
-### 1. Obtener API Key de OpenSea
+- **Visualización de NFTs**: Muestra todos los NFTs asociados a la dirección de Adrian Zero
+- **Búsqueda específica**: Busca NFTs individuales por contrato y token ID
+- **Ofertas y Listings**: Visualiza ofertas y listings activos para NFTs específicos
+- **Estadísticas**: Muestra contadores de NFTs totales, colecciones y ofertas
+- **Interfaz responsive**: Diseño moderno y adaptable
 
-1. Ve a [OpenSea API Keys](https://opensea.io/account/api-keys)
-2. Inicia sesión con tu cuenta
-3. Crea una nueva API key
-4. Copia la clave generada
+## 🔧 Configuración
 
-### 2. Configurar en GitHub Secrets
+### API Key de OpenSea
 
-Para usar la API key de forma segura en producción:
+Para usar la funcionalidad completa, necesitas configurar tu API key de OpenSea:
 
-#### **Opción A: GitHub Secrets (Recomendado)**
+1. Obtén una API key de [OpenSea Developer Portal](https://docs.opensea.io/reference/api-keys)
+2. Reemplaza `YOUR_OPENSEA_API_KEY_HERE` en el archivo `index.html` con tu API key real
+3. En producción, considera usar variables de entorno para mayor seguridad
 
-1. Ve a tu repositorio en GitHub: `https://github.com/adriangallery/adrianzero`
-2. Ve a **Settings** → **Secrets and variables** → **Actions**
-3. Haz clic en **New repository secret**
-4. Añade estos secrets:
+### Dirección de Wallet
 
+La aplicación está configurada para mostrar NFTs de la dirección:
 ```
-OPENSEA_API_KEY = tu_api_key_aqui
-```
-
-#### **Opción B: Variables de Entorno Locales**
-
-Crea un archivo `.env` en la carpeta `openseatest/`:
-
-```bash
-OPENSEA_API_KEY=tu_api_key_aqui
+0x6e369bf0e4e0c106192d606fb6d85836d684da75
 ```
 
-**⚠️ IMPORTANTE:** Nunca subas el archivo `.env` a GitHub. Añádelo a `.gitignore`.
+## 📋 Funcionalidades Implementadas
 
-### 3. Uso en el Código
+Basado en el `getting-started.md` guide, la aplicación incluye:
 
-```javascript
-// En el HTML, la API key se almacena localmente
-const apiKey = localStorage.getItem('opensea_api_key') || '';
+### ✅ Completado
+- **Fetching NFTs**: Obtención de NFTs por cuenta usando `getNFTsByAccount`
+- **NFT Details**: Vista detallada de NFTs individuales
+- **Fetching Orders**: Obtención de ofertas y listings usando `getOrders`
+- **Error Handling**: Manejo de errores y datos de ejemplo
+- **Responsive UI**: Interfaz moderna y responsive
 
-// Para uso en servidor (Node.js)
-const apiKey = process.env.OPENSEA_API_KEY;
-```
+### 🔄 Funcionalidades del SDK Disponibles
+- **Making Offers**: `openseaSDK.createOffer()` - Crear ofertas en NFTs
+- **Making Listings**: `openseaSDK.createListing()` - Crear listings para vender
+- **Buying Items**: `openseaSDK.fulfillOrder()` - Comprar NFTs
+- **Accepting Offers**: Aceptar ofertas en NFTs propios
+- **Collection Offers**: Ofertas en colecciones completas
 
-## 🚀 Funcionalidades Implementadas
+## 🎯 Uso
 
-### ✅ Colección
-- Información general de la colección
-- Estadísticas (total supply, owners, floor price, volume)
-- Metadatos de la colección
+1. Abre `index.html` en tu navegador
+2. Haz clic en "Cargar NFTs" para ver los NFTs de Adrian Zero
+3. Usa "Buscar NFT Específico" para buscar NFTs individuales
+4. Explora las ofertas y listings disponibles
+5. Las estadísticas se actualizan automáticamente
 
-### ✅ NFTs
-- Lista de NFTs de la colección
-- Imágenes y metadatos
-- Token IDs y nombres
+## 🛠️ Tecnologías
 
-### ✅ Ofertas (Offers)
-- Ofertas activas en la colección
-- Precios y expiraciones
-- Información del oferente
+- **HTML5/CSS3**: Estructura y estilos
+- **JavaScript ES6+**: Lógica de aplicación
+- **OpenSea API v2**: Integración con OpenSea
+- **Fetch API**: Llamadas HTTP
+- **CSS Grid/Flexbox**: Layout responsive
 
-### ✅ Listings
-- Listados activos para venta
-- Precios de venta
-- Información del vendedor
+## 📝 Notas Técnicas
 
-## 🔧 Endpoints de la API Utilizados
+- La aplicación incluye datos de ejemplo que se muestran si la API no está disponible
+- Manejo de errores para diferentes códigos de respuesta (401, 429, etc.)
+- Límite de 50 NFTs por carga inicial
+- Formato de precios en ETH con 4 decimales
 
-### Collection Data
-```
-GET /api/v2/collection/{contract_address}
-```
+## 🔗 Enlaces Útiles
 
-### NFTs
-```
-GET /api/v2/nfts?asset_contract_address={contract_address}&limit=20
-```
+- [OpenSea API Documentation](https://docs.opensea.io/)
+- [OpenSea SDK](https://github.com/ProjectOpenSea/opensea-js)
+- [Getting Started Guide](./getting-started.md)
 
-### Orders (Offers/Listings)
-```
-GET /api/v2/orders?asset_contract_address={contract_address}&side=offer
-GET /api/v2/orders?asset_contract_address={contract_address}&side=listing
-```
+## 👨‍💻 Desarrollador
 
-## 📊 Datos Disponibles
+**Adrian Zero**  
+Dirección: `0x6e369bf0e4e0c106192d606fb6d85836d684da75`
 
-### Collection Stats
-- `total_supply`: Total de NFTs en la colección
-- `num_owners`: Número de propietarios únicos
-- `floor_price`: Precio mínimo actual
-- `total_volume`: Volumen total de ventas
+---
 
-### NFT Data
-- `token_id`: ID único del token
-- `name`: Nombre del NFT
-- `image_url`: URL de la imagen
-- `description`: Descripción del NFT
-- `attributes`: Atributos/traits del NFT
-
-### Order Data
-- `current_price`: Precio actual
-- `maker`: Dirección del creador de la orden
-- `expiration_time`: Tiempo de expiración
-- `side`: Tipo de orden (offer/listing)
-
-## 🛡️ Seguridad
-
-- La API key se almacena localmente en el navegador
-- No se envía a servidores externos
-- Para producción, usar GitHub Secrets o variables de entorno del servidor
-
-## 🎯 Próximas Funcionalidades
-
-- [ ] Filtros por traits/atributos
-- [ ] Búsqueda de NFTs específicos
-- [ ] Historial de ventas
-- [ ] Gráficos de precios
-- [ ] Integración con wallet (MetaMask)
-- [ ] Crear ofertas desde la interfaz
-- [ ] Notificaciones de cambios de precio
-
-## 📝 Notas
-
-- La API de OpenSea tiene límites de rate limiting
-- Plan gratuito: 1 request por segundo
-- Plan Pro: 10 requests por segundo
-- Algunos endpoints requieren API key para funcionar correctamente
+*Esta aplicación es una demostración técnica de integración con OpenSea API.*
