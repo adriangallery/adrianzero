@@ -626,6 +626,10 @@ class FloppyManager {
             let errorMessage = 'Failed to open pack.';
             if (error.code === 4001) {
                 errorMessage = 'Transaction was rejected by user.';
+            } else if (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) {
+                errorMessage = '⏳ Network is still syncing. Please wait a few minutes and try again.';
+            } else if (error.message && error.message.includes('CALL_EXCEPTION')) {
+                errorMessage = '❌ Contract call failed. The pack may not be active or you may not be eligible.';
             } else if (error.message) {
                 errorMessage = `Error: ${error.message}`;
             }
