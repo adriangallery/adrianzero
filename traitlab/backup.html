@@ -1419,8 +1419,9 @@
                     const filteredTokens = tokens.filter(token => {
                         if (token.tokenType === 'ERC1155') {
                             if (currentFilter === 'floppy') {
-                                // Floppy discs filter: show only tokens 10000-10007, 15000-15015
-                                if (token.tokenId === 10000 || token.tokenId === 10001 || token.tokenId === 10002 || token.tokenId === 10003 || token.tokenId === 10004 || token.tokenId === 10005 || token.tokenId === 10007 ||
+                                // Floppy discs filter: show only tokens 10000-10010, 15000-15015
+                                // 10008 (OPTICALpack) uses ACTION_PACKS_CONTRACT, 10010 (ComradesUSB) uses ADRIAN_FLOPPY_DISCS_CONTRACT
+                                if (token.tokenId === 10000 || token.tokenId === 10001 || token.tokenId === 10002 || token.tokenId === 10003 || token.tokenId === 10004 || token.tokenId === 10005 || token.tokenId === 10007 || token.tokenId === 10008 || token.tokenId === 10010 ||
                                     token.tokenId === 15000 || token.tokenId === 15001 || token.tokenId === 15002 || 
                                     token.tokenId === 15003 || token.tokenId === 15004 || token.tokenId === 15005 ||
                                     token.tokenId === 15006 || token.tokenId === 15007 ||
@@ -1444,7 +1445,7 @@
                                 }
                             } else {
                                 // Normal filter: exclude floppy & serum tokens
-                                if (token.tokenId === 10000 || token.tokenId === 10001 || token.tokenId === 10002 || token.tokenId === 10003 || token.tokenId === 10004 || token.tokenId === 10005 || token.tokenId === 10007 ||
+                                if (token.tokenId === 10000 || token.tokenId === 10001 || token.tokenId === 10002 || token.tokenId === 10003 || token.tokenId === 10004 || token.tokenId === 10005 || token.tokenId === 10007 || token.tokenId === 10008 || token.tokenId === 10010 ||
                                     token.tokenId === 15000 || token.tokenId === 10001 || token.tokenId === 10002 || 
                                     token.tokenId === 15003 || token.tokenId === 15004 || token.tokenId === 15005 ||
                                     token.tokenId === 15006 || token.tokenId === 15007 ||
@@ -1763,6 +1764,10 @@
                         displayTitle = 'Golden Floppy';
                     } else if (token.tokenId === 10007) {
                         displayTitle = 'Action Pack 10007';
+                    } else if (token.tokenId === 10008) {
+                        displayTitle = 'OPTICALpack';
+                    } else if (token.tokenId === 10010) {
+                        displayTitle = 'ComradesUSB';
                     }
                 }
                 
@@ -1961,6 +1966,10 @@
                         floppyDisplayName = 'Golden Floppy';
                     } else if (selectedFloppy.tokenId === 10007) {
                         floppyDisplayName = 'Action Pack 10007';
+                    } else if (selectedFloppy.tokenId === 10008) {
+                        floppyDisplayName = 'OPTICALpack';
+                    } else if (selectedFloppy.tokenId === 10010) {
+                        floppyDisplayName = 'ComradesUSB';
                     }
                     infoText = `Selected Floppy: ${floppyDisplayName} (ID: ${selectedFloppy.tokenId})`;
                     selectionText.innerHTML = infoText;
@@ -1971,8 +1980,10 @@
                     refreshMetadataSection.style.display = 'none'; // Hide refresh metadata in floppy tab
                     
                     // Check if it's a token that should show SOON or Open Pack
-                    // Token 10003 should show SOON, token 10004 should show Open Pack (PackTokenMinter), token 10005 should show SOON,
-                    // token 10007 should show Open Pack (ActionPack), tokens 15008-15015 should show Open Pack (ActionPacks), all other floppy discs should be openable
+                    // Token 10003 should show Open Pack (NEW_FLOPPY_PACK), token 10004 should show Open Pack (PackTokenMinter), 
+                    // token 10005 should show Open Floppy (ADRIAN_FLOPPY_DISCS), token 10007 should show Open Pack (ActionPack),
+                    // token 10008 should show Open Pack (ActionPacks), token 10010 should show Open Floppy (ADRIAN_FLOPPY_DISCS),
+                    // tokens 15008-15015 should show Open Pack (ActionPacks), all other floppy discs should be openable
                     if (selectedFloppy.tokenId === 10003) {
                         // Activar openPack con nuevo contrato para 10003
                         openFloppySection.style.display = 'none';
@@ -1990,6 +2001,17 @@
                         openPackSection.style.display = 'block';
                         openPackBtn.textContent = 'Open Pack';
                         openPackBtn.disabled = false;
+                    } else if (selectedFloppy.tokenId === 10008) {
+                        // Activar openPack con contrato ActionPacks para 10008
+                        openFloppySection.style.display = 'none';
+                        openPackSection.style.display = 'block';
+                        openPackBtn.textContent = 'Open Pack';
+                        openPackBtn.disabled = false;
+                    } else if (selectedFloppy.tokenId === 10010) {
+                        // Activar openFloppy con contrato AdrianFloppyDiscs para 10010
+                        openFloppyBtn.textContent = 'Open Floppy';
+                        openFloppyBtn.disabled = false;
+                        openPackSection.style.display = 'none';
                     } else if (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015) {
                         openFloppySection.style.display = 'none';
                         openPackSection.style.display = 'block';
@@ -2540,7 +2562,14 @@
                         ];
 
                         // Create contract instance
-                        const targetContract = (selectedFloppy.tokenId === 10005) ? ADRIAN_FLOPPY_DISCS_CONTRACT : PACK_TOKEN_MINTER_CONTRACT;
+                        let targetContract;
+                        if (selectedFloppy.tokenId === 10005 || selectedFloppy.tokenId === 10010) {
+                            targetContract = ADRIAN_FLOPPY_DISCS_CONTRACT;
+                        } else if (selectedFloppy.tokenId === 10008) {
+                            targetContract = ACTION_PACKS_CONTRACT;
+                        } else {
+                            targetContract = PACK_TOKEN_MINTER_CONTRACT;
+                        }
                         const contract = new ethers.Contract(targetContract, contractABI, signer);
 
                         // Prepare parameters - use the floppy token ID as packId
@@ -3295,6 +3324,12 @@
             } else if (selectedFloppy.tokenId === 10007) {
                 console.log('Redirecting to openActionPack10007() for token', selectedFloppy.tokenId);
                 await openActionPack10007();
+            } else if (selectedFloppy.tokenId === 10008) {
+                console.log('Redirecting to openActionPack() for token', selectedFloppy.tokenId);
+                await openActionPack();
+            } else if (selectedFloppy.tokenId === 10010) {
+                console.log('Redirecting to openFloppy() for token', selectedFloppy.tokenId);
+                await openFloppy();
             } else if (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015) {
                 console.log('Redirecting to openActionPack() for token', selectedFloppy.tokenId);
                 await openActionPack();
@@ -3385,8 +3420,8 @@
                 showOpenPackStatus('Please select a pack first.', 'error');
                 return;
             }
-            if (!(selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015)) {
-                showOpenPackStatus('This function is only available for Action Packs (15008-15015).', 'error');
+            if (!(selectedFloppy.tokenId === 10008 || (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015))) {
+                showOpenPackStatus('This function is only available for Action Packs (10008, 15008-15015).', 'error');
                 return;
             }
             if (!currentAccount) {
