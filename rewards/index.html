@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdrianREWARDS - OG Holders Rewards</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <link rel="icon" href="../components/images/adrianzero.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: #1a1a1a;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 4.5rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header h1 .adrian {
+            color: #ffffff;
+        }
+
+        .header h1 .rewards {
+            color: #ff6b35;
+        }
+
+        .header .subtitle {
+            font-size: 1.45rem;
+            color: #cccccc;
+            margin-bottom: 20px;
+            font-family: 'VT323', monospace;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            color: #aaaaaa;
+        }
+
+        .connect-section {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-family: 'VT323', monospace;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .account-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .account-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .account-address {
+            font-size: 1.1rem;
+            color: #00ff88;
+            font-family: 'VT323', monospace;
+        }
+
+        .punk-count {
+            font-size: 1.2rem;
+            color: #ff6b35;
+            font-weight: bold;
+        }
+
+        .rewards-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .reward-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #333;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reward-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border-color: #ff6b35;
+        }
+
+        .reward-card.active {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .reward-card.claimed {
+            border-color: #666;
+            background: rgba(102, 102, 102, 0.1);
+            opacity: 0.7;
+        }
+
+        .reward-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .reward-title {
+            font-size: 1.4rem;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .reward-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .status-inactive {
+            background: #666;
+            color: #fff;
+        }
+
+        .status-claimed {
+            background: #ff6b35;
+            color: #fff;
+        }
+
+        .reward-details {
+            margin-bottom: 20px;
+        }
+
+        .reward-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .reward-detail-label {
+            color: #ccc;
+        }
+
+        .reward-detail-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .reward-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .claim-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .claim-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .claim-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .batch-claim-btn {
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .batch-claim-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .batch-claim-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #00ff88;
+            font-size: 1.2rem;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .punk-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .punk-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .punk-item:last-child {
+            border-bottom: none;
+        }
+
+        .punk-id {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .punk-status {
+            font-size: 0.9rem;
+        }
+
+        .status-available {
+            color: #00ff88;
+        }
+
+        .status-claimed {
+            color: #ff6b35;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 3rem;
+            }
+            
+            .rewards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .account-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="adrian">Adrian</span><span class="rewards">REWARDS</span></h1>
+            <p class="subtitle">Recompensas para holders de AdrianPunks</p>
+            <p>Reclama tus recompensas basadas en tus tokens OG</p>
+        </div>
+
+        <!-- Connect Section -->
+        <div class="connect-section" id="connectSection">
+            <h3>Conecta tu wallet para comenzar</h3>
+            <p>Necesitas tener AdrianPunks para poder reclamar recompensas</p>
+            <button class="connect-btn" onclick="connectWallet()">Conectar Wallet</button>
+        </div>
+
+        <!-- Account Section -->
+        <div class="account-section" id="accountSection">
+            <div class="account-info">
+                <div>
+                    <strong>Cuenta:</strong>
+                    <span class="account-address" id="accountAddress"></span>
+                </div>
+                <div>
+                    <strong>AdrianPunks:</strong>
+                    <span class="punk-count" id="punkCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p>Cargando recompensas...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error" id="errorMessage"></div>
+
+        <!-- Success Message -->
+        <div class="success" id="successMessage"></div>
+
+        <!-- Rewards Section -->
+        <div class="rewards-section" id="rewardsSection">
+            <h3>Recompensas Disponibles</h3>
+            <p>Selecciona una campaña para ver los detalles y reclamar</p>
+            <div class="rewards-grid" id="rewardsGrid">
+                <!-- Rewards will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Contract addresses (mockup for now)
+        const REWARDS_CONTRACT = '0x0000000000000000000000000000000000000000'; // Mockup - will be updated after deploy
+        const PUNKS_CONTRACT = '0x79BE8AcdD339C7b92918fcC3fd3875b5Aaad7566'; // AdrianPunks
+        const TRAITS_CORE_CONTRACT = '0x90546848474fb3c9fda3fdad887969bb244e7e58'; // AdrianLAB
+
+        // Contract ABIs
+        const REWARDS_ABI = [
+            "function getCampaign(uint256 campaignId) external view returns (tuple(uint256 assetId, uint256 amountPerToken, uint64 startTime, uint64 endTime, bool active, uint256 totalClaimed))",
+            "function canClaim(uint256 campaignId, uint256 punkId, address user) external view returns (bool, string)",
+            "function hasClaimed(uint256 campaignId, uint256 punkId) external view returns (bool)",
+            "function claim(uint256 campaignId, uint256 punkId) external",
+            "function batchClaim(uint256 campaignId, uint256[] calldata punkIds) external",
+            "function currentCampaignId() external view returns (uint256)",
+            "event Claimed(uint256 indexed campaignId, address indexed account, uint256 indexed punkId, uint256 assetId, uint256 amount)",
+            "event BatchClaimed(uint256 indexed campaignId, address indexed account, uint256 count)"
+        ];
+
+        const PUNKS_ABI = [
+            "function balanceOf(address owner) external view returns (uint256)",
+            "function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256)",
+            "function ownerOf(uint256 tokenId) external view returns (address)"
+        ];
+
+        // Global variables
+        let provider;
+        let signer;
+        let rewardsContract;
+        let punksContract;
+        let currentAccount;
+        let userPunks = [];
+        let campaigns = [];
+
+        // Initialize the app
+        async function init() {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []);
+                    signer = provider.getSigner();
+                    currentAccount = await signer.getAddress();
+                    
+                    // Initialize contracts
+                    rewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, signer);
+                    punksContract = new ethers.Contract(PUNKS_CONTRACT, PUNKS_ABI, provider);
+                    
+                    showAccountSection();
+                    await loadUserPunks();
+                    await loadCampaigns();
+                } else {
+                    showError('MetaMask no está instalado. Por favor instala MetaMask para continuar.');
+                }
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                showError('Error al conectar con MetaMask: ' + error.message);
+            }
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    await init();
+                } else {
+                    showError('MetaMask no está instalado. Por favor instala MetaMask para continuar.');
+                }
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                showError('Error al conectar wallet: ' + error.message);
+            }
+        }
+
+        // Show account section
+        function showAccountSection() {
+            document.getElementById('connectSection').style.display = 'none';
+            document.getElementById('accountSection').style.display = 'block';
+            document.getElementById('rewardsSection').style.display = 'block';
+            document.getElementById('accountAddress').textContent = currentAccount;
+        }
+
+        // Load user's AdrianPunks
+        async function loadUserPunks() {
+            try {
+                showLoading(true);
+                const balance = await punksContract.balanceOf(currentAccount);
+                const punkCount = balance.toNumber();
+                
+                document.getElementById('punkCount').textContent = punkCount;
+                
+                userPunks = [];
+                for (let i = 0; i < punkCount; i++) {
+                    const tokenId = await punksContract.tokenOfOwnerByIndex(currentAccount, i);
+                    userPunks.push(tokenId.toNumber());
+                }
+                
+                console.log('User punks loaded:', userPunks);
+            } catch (error) {
+                console.error('Error loading user punks:', error);
+                showError('Error al cargar AdrianPunks: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Load campaigns
+        async function loadCampaigns() {
+            try {
+                showLoading(true);
+                
+                // For now, we'll create mock campaigns since the contract is not deployed
+                campaigns = [
+                    {
+                        id: 1,
+                        assetId: 10001,
+                        amountPerToken: 1,
+                        startTime: Math.floor(Date.now() / 1000) - 86400, // 1 day ago
+                        endTime: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days from now
+                        active: true,
+                        totalClaimed: 0,
+                        name: "OG Serum Pack",
+                        description: "Serum especial para holders OG"
+                    },
+                    {
+                        id: 2,
+                        assetId: 10002,
+                        amountPerToken: 2,
+                        startTime: Math.floor(Date.now() / 1000) - 86400 * 2,
+                        endTime: Math.floor(Date.now() / 1000) + 86400 * 15,
+                        active: true,
+                        totalClaimed: 0,
+                        name: "Rare Floppy",
+                        description: "Floppy raro para la comunidad OG"
+                    }
+                ];
+                
+                renderCampaigns();
+            } catch (error) {
+                console.error('Error loading campaigns:', error);
+                showError('Error al cargar campañas: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Render campaigns
+        function renderCampaigns() {
+            const grid = document.getElementById('rewardsGrid');
+            grid.innerHTML = '';
+
+            campaigns.forEach(campaign => {
+                const card = createCampaignCard(campaign);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create campaign card
+        function createCampaignCard(campaign) {
+            const card = document.createElement('div');
+            card.className = 'reward-card';
+            card.id = `campaign-${campaign.id}`;
+
+            const now = Math.floor(Date.now() / 1000);
+            const isActive = campaign.active && 
+                           (campaign.startTime === 0 || now >= campaign.startTime) &&
+                           (campaign.endTime === 0 || now <= campaign.endTime);
+
+            const availablePunks = userPunks.length;
+            const totalReward = availablePunks * campaign.amountPerToken;
+
+            card.innerHTML = `
+                <div class="reward-header">
+                    <div class="reward-title">${campaign.name}</div>
+                    <div class="reward-status ${isActive ? 'status-active' : 'status-inactive'}">
+                        ${isActive ? 'ACTIVO' : 'INACTIVO'}
+                    </div>
+                </div>
+                
+                <div class="reward-details">
+                    <div class="reward-detail">
+                        <span class="reward-detail-label">Asset ID:</span>
+                        <span class="reward-detail-value">${campaign.assetId}</span>
+                    </div>
+                    <div class="reward-detail">
+                        <span class="reward-detail-label">Cantidad por Punk:</span>
+                        <span class="reward-detail-value">${campaign.amountPerToken}</span>
+                    </div>
+                    <div class="reward-detail">
+                        <span class="reward-detail-label">Tus Punks:</span>
+                        <span class="reward-detail-value">${availablePunks}</span>
+                    </div>
+                    <div class="reward-detail">
+                        <span class="reward-detail-label">Total a Reclamar:</span>
+                        <span class="reward-detail-value">${totalReward}</span>
+                    </div>
+                    <div class="reward-detail">
+                        <span class="reward-detail-label">Descripción:</span>
+                        <span class="reward-detail-value">${campaign.description}</span>
+                    </div>
+                </div>
+
+                <div class="reward-actions">
+                    <button class="claim-btn" onclick="claimReward(${campaign.id})" ${!isActive ? 'disabled' : ''}>
+                        Reclamar Todo
+                    </button>
+                    <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})" ${!isActive ? 'disabled' : ''}>
+                        Seleccionar Punks
+                    </button>
+                </div>
+
+                <div class="punk-list" id="punk-list-${campaign.id}" style="display: none;">
+                    <!-- Punk list will be populated here -->
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Show punk list for batch claim
+        function showPunkList(campaignId) {
+            const punkList = document.getElementById(`punk-list-${campaignId}`);
+            const isVisible = punkList.style.display !== 'none';
+            
+            if (isVisible) {
+                punkList.style.display = 'none';
+                return;
+            }
+
+            // Hide other punk lists
+            document.querySelectorAll('.punk-list').forEach(list => {
+                list.style.display = 'none';
+            });
+
+            // Show this punk list
+            punkList.style.display = 'block';
+            punkList.innerHTML = '';
+
+            userPunks.forEach(punkId => {
+                const punkItem = document.createElement('div');
+                punkItem.className = 'punk-item';
+                punkItem.innerHTML = `
+                    <span class="punk-id">Punk #${punkId}</span>
+                    <span class="punk-status status-available">Disponible</span>
+                `;
+                punkList.appendChild(punkItem);
+            });
+        }
+
+        // Claim reward for all punks
+        async function claimReward(campaignId) {
+            try {
+                if (userPunks.length === 0) {
+                    showError('No tienes AdrianPunks para reclamar');
+                    return;
+                }
+
+                showLoading(true);
+                
+                // For now, simulate the claim since contract is not deployed
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                showSuccess(`¡Recompensa reclamada exitosamente! ${userPunks.length} tokens procesados.`);
+                
+                // Update UI
+                const card = document.getElementById(`campaign-${campaignId}`);
+                card.classList.add('claimed');
+                card.querySelector('.claim-btn').disabled = true;
+                card.querySelector('.batch-claim-btn').disabled = true;
+                
+            } catch (error) {
+                console.error('Error claiming reward:', error);
+                showError('Error al reclamar recompensa: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Batch claim for selected punks
+        async function batchClaim(campaignId, punkIds) {
+            try {
+                if (punkIds.length === 0) {
+                    showError('Selecciona al menos un Punk para reclamar');
+                    return;
+                }
+
+                showLoading(true);
+                
+                // For now, simulate the batch claim since contract is not deployed
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                showSuccess(`¡Recompensa reclamada exitosamente! ${punkIds.length} tokens procesados.`);
+                
+            } catch (error) {
+                console.error('Error batch claiming:', error);
+                showError('Error al reclamar recompensa: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Show loading
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            if (typeof window.ethereum !== 'undefined') {
+                init();
+            }
+        });
+
+        // Listen for account changes
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    location.reload();
+                } else {
+                    init();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
