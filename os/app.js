@@ -20,6 +20,7 @@ class AdrianLABApp {
         this.apiKey = this.config.OPENSEA.API_KEY;
         this.contractAddress = this.config.COLLECTION.CONTRACT_ADDRESS;
         this.apiBaseUrl = this.config.OPENSEA.API_BASE_URL;
+        this.proxyUrl = 'https://adrianlab-api.vercel.app/api'; // URL del proxy
         this.currentPage = 1;
         this.itemsPerPage = 20;
         this.currentTab = 'overview';
@@ -149,12 +150,12 @@ class AdrianLABApp {
         try {
             this.showStatus('Cargando información de la colección...', 'info');
             
-            // Cargar información de la colección
-            const collectionResponse = await this.apiCall(`/chain/ethereum/contract/${this.contractAddress}`);
+            // Cargar información de la colección usando el proxy
+            const collectionResponse = await this.proxyCall(`/collection/${this.contractAddress}`);
             this.collection = collectionResponse.contract;
             
             // Cargar estadísticas de la colección
-            const statsResponse = await this.apiCall(`/collections/${this.contractAddress}/stats`);
+            const statsResponse = await this.proxyCall(`/collection/${this.contractAddress}/stats`);
             const stats = statsResponse.stats;
             
             // Actualizar UI
@@ -174,7 +175,7 @@ class AdrianLABApp {
         try {
             this.showStatus('Cargando NFTs...', 'info');
             
-            const response = await this.apiCall(`/chain/ethereum/contract/${this.contractAddress}/nfts?limit=${this.itemsPerPage}&offset=${(this.currentPage - 1) * this.itemsPerPage}`);
+            const response = await this.proxyCall(`/collection/${this.contractAddress}/nfts?limit=${this.itemsPerPage}&offset=${(this.currentPage - 1) * this.itemsPerPage}`);
             this.nfts = response.nfts || [];
             
             this.displayNFTs(this.nfts);
@@ -194,11 +195,11 @@ class AdrianLABApp {
             this.showStatus('Cargando datos del marketplace...', 'info');
             
             // Cargar listings
-            const listingsResponse = await this.apiCall(`/orders/ethereum/seaport/listings?asset_contract_address=${this.contractAddress}&limit=20`);
+            const listingsResponse = await this.proxyCall(`/listings?contract_address=${this.contractAddress}&limit=20`);
             this.listings = listingsResponse.orders || [];
             
             // Cargar ofertas
-            const offersResponse = await this.apiCall(`/orders/ethereum/seaport/offers?asset_contract_address=${this.contractAddress}&limit=20`);
+            const offersResponse = await this.proxyCall(`/offers?contract_address=${this.contractAddress}&limit=20`);
             this.offers = offersResponse.orders || [];
             
             this.displayListings(this.listings);
@@ -216,7 +217,7 @@ class AdrianLABApp {
         try {
             this.showStatus('Cargando eventos...', 'info');
             
-            const response = await this.apiCall(`/events/collection/${this.contractAddress}?limit=50`);
+            const response = await this.proxyCall(`/collection/${this.contractAddress}/events?limit=50`);
             this.events = response.asset_events || [];
             
             this.displayEvents(this.events);
@@ -234,7 +235,7 @@ class AdrianLABApp {
             this.showStatus('Cargando analytics...', 'info');
             
             // Cargar estadísticas de la colección para analytics
-            const response = await this.apiCall(`/collections/${this.contractAddress}/stats`);
+            const response = await this.proxyCall(`/collection/${this.contractAddress}/stats`);
             const stats = response.stats;
             
             this.updateAnalyticsData(stats);
@@ -265,6 +266,26 @@ class AdrianLABApp {
                 throw new Error('Límite de rate excedido');
             } else {
                 throw new Error(`Error de API: ${response.status} - ${response.statusText}`);
+            }
+        }
+
+        return await response.json();
+    }
+
+    async proxyCall(endpoint) {
+        const url = `${this.proxyUrl}${endpoint}`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 500) {
+                throw new Error('Error del servidor proxy');
+            } else {
+                throw new Error(`Error del proxy: ${response.status} - ${response.statusText}`);
             }
         }
 
