@@ -147,6 +147,13 @@ class DisplayManager {
                     </div>
                     <div class="recipe-output">
                         <h5>Output:</h5>
+                        <div class="output-image" style="text-align: center; margin: 10px 0;">
+                            <img src="https://adrianlab.vercel.app/api/render/floppy/${recipe.output.id}" 
+                                 alt="Trait ${recipe.output.id}" 
+                                 style="max-width: 80px; max-height: 80px; border-radius: 8px; border: 2px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);"
+                                 onload="console.log('✅ Recipe output image loaded for trait ${recipe.output.id}:', this.src)"
+                                 onerror="console.error('❌ Recipe output image failed to load for trait ${recipe.output.id}:', this.src); this.style.display='none'">
+                        </div>
                         <div class="output-info">
                             <span>Trait #${recipe.output.id}</span>
                             <span>Amount: ${recipe.output.amount}</span>
@@ -170,6 +177,13 @@ class DisplayManager {
                     </div>
                     <div class="recipe-output">
                         <h5>Output:</h5>
+                        <div class="output-image" style="text-align: center; margin: 10px 0;">
+                            <img src="https://adrianlab.vercel.app/api/render/floppy/${recipe.output.id}" 
+                                 alt="Trait ${recipe.output.id}" 
+                                 style="max-width: 80px; max-height: 80px; border-radius: 8px; border: 2px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);"
+                                 onload="console.log('✅ Recipe output image loaded for trait ${recipe.output.id}:', this.src)"
+                                 onerror="console.error('❌ Recipe output image failed to load for trait ${recipe.output.id}:', this.src); this.style.display='none'">
+                        </div>
                         <div class="output-info">
                             <span>Trait #${recipe.output.id}</span>
                             <span>Amount: ${recipe.output.amount}</span>
