@@ -84,7 +84,9 @@ class TraitLABCrafting {
                                 amount: specificRecipe.outAmount.toString()
                             }
                         });
-                        continue;
+                        console.log(`✅ Receta específica ${recipeId} añadida - activa`);
+                    } else {
+                        console.log(`❌ Receta específica ${recipeId} inactiva`);
                     }
                 } catch (error) {
                     console.log(`🔨 Receta específica ${recipeId} no existe o error:`, error.message);
@@ -108,6 +110,9 @@ class TraitLABCrafting {
                                 amount: anyRecipe.outAmount.toString()
                             }
                         });
+                        console.log(`✅ Receta any ${recipeId} añadida - activa`);
+                    } else {
+                        console.log(`❌ Receta any ${recipeId} inactiva`);
                     }
                 } catch (error) {
                     console.log(`🔨 Receta general ${recipeId} no existe o error:`, error.message);
@@ -124,11 +129,11 @@ class TraitLABCrafting {
         } catch (error) {
             console.error('🔨 TraitLABCrafting: Error cargando recetas:', error);
             
-            // Crear recetas de ejemplo si falla
-            this.recipes = this.createExampleRecipes();
+            // No usar recetas de ejemplo, solo mostrar las que están realmente activas
+            this.recipes = [];
             this.isLoading = false;
             this.recipesLoaded = true;
-            console.log('🔨 TraitLABCrafting: Usando recetas de ejemplo:', this.recipes);
+            console.log('🔨 TraitLABCrafting: No se pudieron cargar recetas del contrato. Lista vacía.');
             
             return this.recipes;
         }
