@@ -517,41 +517,51 @@
             }
         }
 
-        // Load campaigns
+        // Load campaigns from contract
         async function loadCampaigns() {
             try {
                 showLoading(true);
                 
-                // For now, we'll create mock campaigns since the contract is not deployed
-                campaigns = [
-                    {
-                        id: 1,
-                        assetId: 10001,
-                        amountPerToken: 1,
-                        startTime: Math.floor(Date.now() / 1000) - 86400, // 1 day ago
-                        endTime: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days from now
-                        active: true,
-                        totalClaimed: 0,
-                        name: "OG Serum Pack",
-                        description: "Serum especial para holders OG"
-                    },
-                    {
-                        id: 2,
-                        assetId: 10002,
-                        amountPerToken: 2,
-                        startTime: Math.floor(Date.now() / 1000) - 86400 * 2,
-                        endTime: Math.floor(Date.now() / 1000) + 86400 * 15,
-                        active: true,
-                        totalClaimed: 0,
-                        name: "Rare Floppy",
-                        description: "Floppy raro para la comunidad OG"
-                    }
-                ];
+                console.log('Loading campaigns from contract...');
                 
+                // Get current campaign ID from contract
+                const currentCampaignId = await rewardsContract.currentCampaignId();
+                console.log('Current campaign ID:', currentCampaignId.toString());
+                
+                campaigns = [];
+                
+                // Load all campaigns from the contract
+                for (let i = 1; i <= currentCampaignId.toNumber(); i++) {
+                    try {
+                        const campaignData = await rewardsContract.getCampaign(i);
+                        console.log(`Campaign ${i}:`, campaignData);
+                        
+                        // Convert BigNumber values to numbers
+                        const campaign = {
+                            id: i,
+                            assetId: campaignData.assetId.toNumber(),
+                            amountPerToken: campaignData.amountPerToken.toNumber(),
+                            startTime: campaignData.startTime.toNumber(),
+                            endTime: campaignData.endTime.toNumber(),
+                            active: campaignData.active,
+                            totalClaimed: campaignData.totalClaimed.toNumber(),
+                            name: `Campaign ${i}`,
+                            description: `Asset ID: ${campaignData.assetId.toString()}, Amount: ${campaignData.amountPerToken.toString()}`
+                        };
+                        
+                        campaigns.push(campaign);
+                    } catch (error) {
+                        console.warn(`Error loading campaign ${i}:`, error);
+                        // Continue with other campaigns
+                    }
+                }
+                
+                console.log('Loaded campaigns:', campaigns);
                 renderCampaigns();
+                
             } catch (error) {
                 console.error('Error loading campaigns:', error);
-                showError('Error al cargar campañas: ' + error.message);
+                showError('Error al cargar campañas del contrato: ' + error.message);
             } finally {
                 showLoading(false);
             }
@@ -631,7 +641,7 @@
         }
 
         // Show punk list for batch claim
-        function showPunkList(campaignId) {
+        async function showPunkList(campaignId) {
             const punkList = document.getElementById(`punk-list-${campaignId}`);
             const isVisible = punkList.style.display !== 'none';
             
@@ -647,17 +657,39 @@
 
             // Show this punk list
             punkList.style.display = 'block';
-            punkList.innerHTML = '';
+            punkList.innerHTML = '<div style="text-align: center; padding: 10px; color: #ccc;">Cargando estado de Punks...</div>';
 
-            userPunks.forEach(punkId => {
-                const punkItem = document.createElement('div');
-                punkItem.className = 'punk-item';
-                punkItem.innerHTML = `
-                    <span class="punk-id">Punk #${punkId}</span>
-                    <span class="punk-status status-available">Disponible</span>
-                `;
-                punkList.appendChild(punkItem);
-            });
+            try {
+                // Check claim status for each punk
+                const punkStatuses = await Promise.all(
+                    userPunks.map(async (punkId) => {
+                        try {
+                            const hasClaimed = await rewardsContract.hasClaimed(campaignId, punkId);
+                            return { punkId, hasClaimed };
+                        } catch (error) {
+                            console.warn(`Error checking claim status for punk ${punkId}:`, error);
+                            return { punkId, hasClaimed: false };
+                        }
+                    })
+                );
+
+                punkList.innerHTML = '';
+
+                punkStatuses.forEach(({ punkId, hasClaimed }) => {
+                    const punkItem = document.createElement('div');
+                    punkItem.className = 'punk-item';
+                    punkItem.innerHTML = `
+                        <span class="punk-id">Punk #${punkId}</span>
+                        <span class="punk-status ${hasClaimed ? 'status-claimed' : 'status-available'}">
+                            ${hasClaimed ? 'Reclamado' : 'Disponible'}
+                        </span>
+                    `;
+                    punkList.appendChild(punkItem);
+                });
+            } catch (error) {
+                console.error('Error loading punk statuses:', error);
+                punkList.innerHTML = '<div style="text-align: center; padding: 10px; color: #ff6b35;">Error al cargar estado de Punks</div>';
+            }
         }
 
         // Claim reward for all punks
@@ -670,10 +702,19 @@
 
                 showLoading(true);
                 
-                // For now, simulate the claim since contract is not deployed
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                console.log(`Claiming reward for campaign ${campaignId} with ${userPunks.length} punks`);
                 
-                showSuccess(`¡Recompensa reclamada exitosamente! ${userPunks.length} tokens procesados.`);
+                // Use batchClaim for all user punks
+                const tx = await rewardsContract.batchClaim(campaignId, userPunks);
+                console.log('Transaction sent:', tx.hash);
+                
+                showSuccess('Transacción enviada. Esperando confirmación...');
+                
+                // Wait for transaction confirmation
+                const receipt = await tx.wait();
+                console.log('Transaction confirmed:', receipt);
+                
+                showSuccess(`¡Recompensa reclamada exitosamente! ${userPunks.length} tokens procesados. TX: ${tx.hash}`);
                 
                 // Update UI
                 const card = document.getElementById(`campaign-${campaignId}`);
@@ -681,9 +722,26 @@
                 card.querySelector('.claim-btn').disabled = true;
                 card.querySelector('.batch-claim-btn').disabled = true;
                 
+                // Reload campaigns to update totalClaimed
+                await loadCampaigns();
+                
             } catch (error) {
                 console.error('Error claiming reward:', error);
-                showError('Error al reclamar recompensa: ' + error.message);
+                
+                let errorMessage = 'Error al reclamar recompensa: ';
+                if (error.code === 4001) {
+                    errorMessage += 'Transacción rechazada por el usuario.';
+                } else if (error.message && error.message.includes('Already claimed')) {
+                    errorMessage += 'Ya has reclamado esta recompensa.';
+                } else if (error.message && error.message.includes('Not token owner')) {
+                    errorMessage += 'No eres propietario de estos tokens.';
+                } else if (error.message && error.message.includes('Campaign not active')) {
+                    errorMessage += 'La campaña no está activa.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage);
             } finally {
                 showLoading(false);
             }
@@ -699,14 +757,40 @@
 
                 showLoading(true);
                 
-                // For now, simulate the batch claim since contract is not deployed
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                console.log(`Batch claiming reward for campaign ${campaignId} with punks:`, punkIds);
                 
-                showSuccess(`¡Recompensa reclamada exitosamente! ${punkIds.length} tokens procesados.`);
+                // Use batchClaim for selected punks
+                const tx = await rewardsContract.batchClaim(campaignId, punkIds);
+                console.log('Transaction sent:', tx.hash);
+                
+                showSuccess('Transacción enviada. Esperando confirmación...');
+                
+                // Wait for transaction confirmation
+                const receipt = await tx.wait();
+                console.log('Transaction confirmed:', receipt);
+                
+                showSuccess(`¡Recompensa reclamada exitosamente! ${punkIds.length} tokens procesados. TX: ${tx.hash}`);
+                
+                // Reload campaigns to update totalClaimed
+                await loadCampaigns();
                 
             } catch (error) {
                 console.error('Error batch claiming:', error);
-                showError('Error al reclamar recompensa: ' + error.message);
+                
+                let errorMessage = 'Error al reclamar recompensa: ';
+                if (error.code === 4001) {
+                    errorMessage += 'Transacción rechazada por el usuario.';
+                } else if (error.message && error.message.includes('Already claimed')) {
+                    errorMessage += 'Ya has reclamado esta recompensa.';
+                } else if (error.message && error.message.includes('Not token owner')) {
+                    errorMessage += 'No eres propietario de estos tokens.';
+                } else if (error.message && error.message.includes('Campaign not active')) {
+                    errorMessage += 'La campaña no está activa.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage);
             } finally {
                 showLoading(false);
             }
