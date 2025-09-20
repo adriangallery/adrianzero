@@ -29,7 +29,7 @@ rewards/
 ## Contratos
 
 ### AdrianOGREWARDS (Contrato Principal)
-- **Dirección**: `0x0000000000000000000000000000000000000000` (Mockup - actualizar después del deploy)
+- **Dirección**: `0x5b8c47176432f0b587ca31c4ccc61d0513814be1` (Desplegado en Base Mainnet)
 - **Funcionalidad**: Gestión de campañas de recompensas y claims
 
 ### AdrianPunks (ERC721)
@@ -63,11 +63,11 @@ rewards/
 
 ## Configuración
 
-### Actualizar Dirección del Contrato
-Una vez desplegado el contrato AdrianOGREWARDS, actualizar la dirección en `config.js`:
+### Contrato Desplegado
+El contrato AdrianOGREWARDS ya está desplegado y configurado:
 
 ```javascript
-this.REWARDS_CONTRACT = "0xNUEVA_DIRECCION_DEL_CONTRATO";
+this.REWARDS_CONTRACT = "0x5b8c47176432f0b587ca31c4ccc61d0513814be1";
 ```
 
 ### Configurar Red

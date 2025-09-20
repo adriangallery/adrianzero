@@ -6,7 +6,7 @@
 class RewardsConfig {
     constructor() {
         // Contract addresses
-        this.REWARDS_CONTRACT = "0x0000000000000000000000000000000000000000"; // Mockup - will be updated after deploy
+        this.REWARDS_CONTRACT = "0x5b8c47176432f0b587ca31c4ccc61d0513814be1"; // AdrianOGREWARDS deployed contract
         this.PUNKS_CONTRACT = "0x79BE8AcdD339C7b92918fcC3fd3875b5Aaad7566"; // AdrianPunks
         this.TRAITS_CORE_CONTRACT = "0x90546848474fb3c9fda3fdad887969bb244e7e58"; // AdrianLAB
         
