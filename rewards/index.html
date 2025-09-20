@@ -445,9 +445,13 @@
         let userPunks = [];
         let campaigns = [];
 
-        // Generate image URL for reward asset
+        // Generate image URL for reward asset using AdrianLAB ERC1155
         function getRewardImageUrl(assetId) {
-            return `https://adrianlab.vercel.app/api/render/${assetId}.png`;
+            // Use AdrianLAB ERC1155 contract for reward images
+            // This matches the pattern used in traitlab for ERC1155 tokens
+            const imageUrl = `https://adrianlab.vercel.app/api/render/${assetId}.png`;
+            console.log(`🖼️ Generating reward image URL for asset ${assetId}:`, imageUrl);
+            return imageUrl;
         }
 
         // Initialize the app
@@ -611,7 +615,8 @@
                     <img src="${rewardImageUrl}" 
                          alt="Reward Asset ${campaign.assetId}" 
                          style="max-width: 120px; max-height: 120px; border-radius: 10px; border: 2px solid #333;"
-                         onerror="this.style.display='none'">
+                         onload="console.log('✅ Reward image loaded for asset ${campaign.assetId}:', this.src)"
+                         onerror="console.error('❌ Reward image failed to load for asset ${campaign.assetId}:', this.src); this.style.display='none'">
                 </div>
                 
                 <div class="reward-details">
