@@ -1,0 +1,45 @@
+{
+  "name": "adrianlab-opensea-integration",
+  "version": "1.0.0",
+  "description": "Frontend para integración con OpenSea API de la colección AdrianLAB",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "build": "node deploy.js",
+    "deploy": "npm run build && echo 'Build completado'",
+    "test": "echo 'No hay tests configurados'",
+    "lint": "echo 'No hay linter configurado'"
+  },
+  "keywords": [
+    "opensea",
+    "nft",
+    "blockchain",
+    "ethereum",
+    "adrianlab",
+    "frontend",
+    "api"
+  ],
+  "author": "Adrian Zero",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adrianzero/adrianzero-1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adrianzero/adrianzero-1/issues"
+  },
+  "homepage": "https://adrianzero.com",
+  "dependencies": {
+    "chart.js": "^4.4.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
