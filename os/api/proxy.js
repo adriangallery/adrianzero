@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 // Configuración de OpenSea
-const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY;
+const OPENSEA_API_KEY = process.env.opensea_api_key;
 const OPENSEA_BASE_URL = 'https://api.opensea.io/api/v2';
 
 // Función para hacer requests a OpenSea
