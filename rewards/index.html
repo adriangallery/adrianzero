@@ -363,22 +363,22 @@
     <div class="container">
         <div class="header">
             <h1><span class="adrian">Adrian</span><span class="rewards">REWARDS</span></h1>
-            <p class="subtitle">Recompensas para holders de AdrianPunks</p>
-            <p>Reclama tus recompensas basadas en tus tokens OG</p>
+            <p class="subtitle">Rewards for AdrianPunks holders</p>
+            <p>Claim your rewards based on your OG tokens</p>
         </div>
 
         <!-- Connect Section -->
         <div class="connect-section" id="connectSection">
-            <h3>Conecta tu wallet para comenzar</h3>
-            <p>Necesitas tener AdrianPunks para poder reclamar recompensas</p>
-            <button class="connect-btn" onclick="connectWallet()">Conectar Wallet</button>
+            <h3>Connect your wallet to start</h3>
+            <p>You need to have AdrianPunks to claim rewards</p>
+            <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
         </div>
 
         <!-- Account Section -->
         <div class="account-section" id="accountSection">
             <div class="account-info">
                 <div>
-                    <strong>Cuenta:</strong>
+                    <strong>Account:</strong>
                     <span class="account-address" id="accountAddress"></span>
                 </div>
                 <div>
@@ -391,9 +391,9 @@
         <!-- Loading -->
         <div class="loading" id="loading">
             <div class="spinner-border text-success" role="status">
-                <span class="visually-hidden">Cargando...</span>
+                <span class="visually-hidden">Loading...</span>
             </div>
-            <p>Cargando recompensas...</p>
+            <p>Loading rewards...</p>
         </div>
 
         <!-- Error Message -->
@@ -404,8 +404,8 @@
 
         <!-- Rewards Section -->
         <div class="rewards-section" id="rewardsSection">
-            <h3>Recompensas Disponibles</h3>
-            <p>Selecciona una campaña para ver los detalles y reclamar</p>
+            <h3>Available Rewards</h3>
+            <p>Select a campaign to view details and claim</p>
             <div class="rewards-grid" id="rewardsGrid">
                 <!-- Rewards will be loaded here -->
             </div>
@@ -445,6 +445,11 @@
         let userPunks = [];
         let campaigns = [];
 
+        // Generate image URL for reward asset
+        function getRewardImageUrl(assetId) {
+            return `https://adrianlab.vercel.app/api/render/${assetId}.png`;
+        }
+
         // Initialize the app
         async function init() {
             try {
@@ -462,11 +467,11 @@
                     await loadUserPunks();
                     await loadCampaigns();
                 } else {
-                    showError('MetaMask no está instalado. Por favor instala MetaMask para continuar.');
+                    showError('MetaMask is not installed. Please install MetaMask to continue.');
                 }
             } catch (error) {
                 console.error('Error initializing app:', error);
-                showError('Error al conectar con MetaMask: ' + error.message);
+                showError('Error connecting to MetaMask: ' + error.message);
             }
         }
 
@@ -477,11 +482,11 @@
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
                     await init();
                 } else {
-                    showError('MetaMask no está instalado. Por favor instala MetaMask para continuar.');
+                    showError('MetaMask is not installed. Please install MetaMask to continue.');
                 }
             } catch (error) {
                 console.error('Error connecting wallet:', error);
-                showError('Error al conectar wallet: ' + error.message);
+                showError('Error connecting wallet: ' + error.message);
             }
         }
 
@@ -511,7 +516,7 @@
                 console.log('User punks loaded:', userPunks);
             } catch (error) {
                 console.error('Error loading user punks:', error);
-                showError('Error al cargar AdrianPunks: ' + error.message);
+                showError('Error loading AdrianPunks: ' + error.message);
             } finally {
                 showLoading(false);
             }
@@ -561,7 +566,7 @@
                 
             } catch (error) {
                 console.error('Error loading campaigns:', error);
-                showError('Error al cargar campañas del contrato: ' + error.message);
+                showError('Error loading campaigns from contract: ' + error.message);
             } finally {
                 showLoading(false);
             }
@@ -592,12 +597,21 @@
             const availablePunks = userPunks.length;
             const totalReward = availablePunks * campaign.amountPerToken;
 
+            const rewardImageUrl = getRewardImageUrl(campaign.assetId);
+            
             card.innerHTML = `
                 <div class="reward-header">
                     <div class="reward-title">${campaign.name}</div>
                     <div class="reward-status ${isActive ? 'status-active' : 'status-inactive'}">
-                        ${isActive ? 'ACTIVO' : 'INACTIVO'}
+                        ${isActive ? 'ACTIVE' : 'INACTIVE'}
                     </div>
+                </div>
+                
+                <div class="reward-image" style="text-align: center; margin: 15px 0;">
+                    <img src="${rewardImageUrl}" 
+                         alt="Reward Asset ${campaign.assetId}" 
+                         style="max-width: 120px; max-height: 120px; border-radius: 10px; border: 2px solid #333;"
+                         onerror="this.style.display='none'">
                 </div>
                 
                 <div class="reward-details">
@@ -606,29 +620,29 @@
                         <span class="reward-detail-value">${campaign.assetId}</span>
                     </div>
                     <div class="reward-detail">
-                        <span class="reward-detail-label">Cantidad por Punk:</span>
+                        <span class="reward-detail-label">Amount per Punk:</span>
                         <span class="reward-detail-value">${campaign.amountPerToken}</span>
                     </div>
                     <div class="reward-detail">
-                        <span class="reward-detail-label">Tus Punks:</span>
+                        <span class="reward-detail-label">Your Punks:</span>
                         <span class="reward-detail-value">${availablePunks}</span>
                     </div>
                     <div class="reward-detail">
-                        <span class="reward-detail-label">Total a Reclamar:</span>
+                        <span class="reward-detail-label">Total to Claim:</span>
                         <span class="reward-detail-value">${totalReward}</span>
                     </div>
                     <div class="reward-detail">
-                        <span class="reward-detail-label">Descripción:</span>
+                        <span class="reward-detail-label">Description:</span>
                         <span class="reward-detail-value">${campaign.description}</span>
                     </div>
                 </div>
 
                 <div class="reward-actions">
                     <button class="claim-btn" onclick="claimReward(${campaign.id})" ${!isActive ? 'disabled' : ''}>
-                        Reclamar Todo
+                        Claim All
                     </button>
                     <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})" ${!isActive ? 'disabled' : ''}>
-                        Seleccionar Punks
+                        Select Punks
                     </button>
                 </div>
 
@@ -657,7 +671,7 @@
 
             // Show this punk list
             punkList.style.display = 'block';
-            punkList.innerHTML = '<div style="text-align: center; padding: 10px; color: #ccc;">Cargando estado de Punks...</div>';
+            punkList.innerHTML = '<div style="text-align: center; padding: 10px; color: #ccc;">Loading Punk status...</div>';
 
             try {
                 // Check claim status for each punk
@@ -681,14 +695,14 @@
                     punkItem.innerHTML = `
                         <span class="punk-id">Punk #${punkId}</span>
                         <span class="punk-status ${hasClaimed ? 'status-claimed' : 'status-available'}">
-                            ${hasClaimed ? 'Reclamado' : 'Disponible'}
+                            ${hasClaimed ? 'Claimed' : 'Available'}
                         </span>
                     `;
                     punkList.appendChild(punkItem);
                 });
             } catch (error) {
                 console.error('Error loading punk statuses:', error);
-                punkList.innerHTML = '<div style="text-align: center; padding: 10px; color: #ff6b35;">Error al cargar estado de Punks</div>';
+                punkList.innerHTML = '<div style="text-align: center; padding: 10px; color: #ff6b35;">Error loading Punk status</div>';
             }
         }
 
@@ -696,7 +710,7 @@
         async function claimReward(campaignId) {
             try {
                 if (userPunks.length === 0) {
-                    showError('No tienes AdrianPunks para reclamar');
+                    showError('You don\'t have AdrianPunks to claim');
                     return;
                 }
 
@@ -708,13 +722,13 @@
                 const tx = await rewardsContract.batchClaim(campaignId, userPunks);
                 console.log('Transaction sent:', tx.hash);
                 
-                showSuccess('Transacción enviada. Esperando confirmación...');
+                showSuccess('Transaction sent. Waiting for confirmation...');
                 
                 // Wait for transaction confirmation
                 const receipt = await tx.wait();
                 console.log('Transaction confirmed:', receipt);
                 
-                showSuccess(`¡Recompensa reclamada exitosamente! ${userPunks.length} tokens procesados. TX: ${tx.hash}`);
+                showSuccess(`Reward claimed successfully! ${userPunks.length} tokens processed. TX: ${tx.hash}`);
                 
                 // Update UI
                 const card = document.getElementById(`campaign-${campaignId}`);
@@ -728,15 +742,17 @@
             } catch (error) {
                 console.error('Error claiming reward:', error);
                 
-                let errorMessage = 'Error al reclamar recompensa: ';
+                let errorMessage = 'Error claiming reward: ';
                 if (error.code === 4001) {
-                    errorMessage += 'Transacción rechazada por el usuario.';
+                    errorMessage += 'Transaction rejected by user.';
                 } else if (error.message && error.message.includes('Already claimed')) {
-                    errorMessage += 'Ya has reclamado esta recompensa.';
+                    errorMessage += 'You have already claimed this reward.';
                 } else if (error.message && error.message.includes('Not token owner')) {
-                    errorMessage += 'No eres propietario de estos tokens.';
+                    errorMessage += 'You are not the owner of these tokens.';
                 } else if (error.message && error.message.includes('Campaign not active')) {
-                    errorMessage += 'La campaña no está activa.';
+                    errorMessage += 'Campaign is not active.';
+                } else if (error.message && error.message.includes('Exceeds max supply')) {
+                    errorMessage += 'Exceeds max supply. The reward asset may be sold out.';
                 } else {
                     errorMessage += error.message;
                 }
@@ -751,7 +767,7 @@
         async function batchClaim(campaignId, punkIds) {
             try {
                 if (punkIds.length === 0) {
-                    showError('Selecciona al menos un Punk para reclamar');
+                    showError('Select at least one Punk to claim');
                     return;
                 }
 
@@ -763,13 +779,13 @@
                 const tx = await rewardsContract.batchClaim(campaignId, punkIds);
                 console.log('Transaction sent:', tx.hash);
                 
-                showSuccess('Transacción enviada. Esperando confirmación...');
+                showSuccess('Transaction sent. Waiting for confirmation...');
                 
                 // Wait for transaction confirmation
                 const receipt = await tx.wait();
                 console.log('Transaction confirmed:', receipt);
                 
-                showSuccess(`¡Recompensa reclamada exitosamente! ${punkIds.length} tokens procesados. TX: ${tx.hash}`);
+                showSuccess(`Reward claimed successfully! ${punkIds.length} tokens processed. TX: ${tx.hash}`);
                 
                 // Reload campaigns to update totalClaimed
                 await loadCampaigns();
@@ -777,15 +793,17 @@
             } catch (error) {
                 console.error('Error batch claiming:', error);
                 
-                let errorMessage = 'Error al reclamar recompensa: ';
+                let errorMessage = 'Error claiming reward: ';
                 if (error.code === 4001) {
-                    errorMessage += 'Transacción rechazada por el usuario.';
+                    errorMessage += 'Transaction rejected by user.';
                 } else if (error.message && error.message.includes('Already claimed')) {
-                    errorMessage += 'Ya has reclamado esta recompensa.';
+                    errorMessage += 'You have already claimed this reward.';
                 } else if (error.message && error.message.includes('Not token owner')) {
-                    errorMessage += 'No eres propietario de estos tokens.';
+                    errorMessage += 'You are not the owner of these tokens.';
                 } else if (error.message && error.message.includes('Campaign not active')) {
-                    errorMessage += 'La campaña no está activa.';
+                    errorMessage += 'Campaign is not active.';
+                } else if (error.message && error.message.includes('Exceeds max supply')) {
+                    errorMessage += 'Exceeds max supply. The reward asset may be sold out.';
                 } else {
                     errorMessage += error.message;
                 }
