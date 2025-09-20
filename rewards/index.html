@@ -22,10 +22,47 @@
             color: #fff;
         }
 
+        /* Menu */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff88;
+            font-family: 'VT323', monospace;
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #00ff88 !important;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        #menu-container .navbar-toggler {
+            border-color: #00ff88;
+        }
+
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 136, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            padding-top: 80px;
         }
 
         .header {
@@ -360,6 +397,7 @@
     </style>
 </head>
 <body>
+    <div id="menu-container"></div>
     <div class="container">
         <div class="header">
             <h1><span class="adrian">Adrian</span><span class="rewards">REWARDS</span></h1>
@@ -611,10 +649,10 @@
                     </div>
                 </div>
                 
-                <div class="reward-image" style="text-align: center; margin: 15px 0;">
+                <div class="reward-image" style="text-align: center; margin: 20px 0;">
                     <img src="${rewardImageUrl}" 
                          alt="Reward Asset ${campaign.assetId}" 
-                         style="max-width: 120px; max-height: 120px; border-radius: 10px; border: 2px solid #333;"
+                         style="max-width: 200px; max-height: 200px; border-radius: 15px; border: 3px solid #00ff88; box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);"
                          onload="console.log('✅ Reward image loaded for asset ${campaign.assetId}:', this.src)"
                          onerror="console.error('❌ Reward image failed to load for asset ${campaign.assetId}:', this.src); this.style.display='none'">
                 </div>
@@ -861,6 +899,17 @@
                 }
             });
         }
+
+        // Load menu
+        fetch('../components/menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('menu-container').innerHTML = html;
+                const s = document.createElement('script');
+                s.src = '../components/menu.js';
+                document.head.appendChild(s);
+            })
+            .catch(error => console.error('Error loading menu:', error));
     </script>
 </body>
 </html>
