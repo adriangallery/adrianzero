@@ -287,7 +287,22 @@ class TraitLABCrafting {
             console.log(`✅ Crafting: Método ${methodName} confirmado:`, receipt.transactionHash);
             return receipt;
         } catch (error) {
-            console.warn(`⚠️ Crafting: Método ${methodName} falló:`, error?.reason || error?.message || error);
+            let errorMessage = error?.reason || error?.message || error;
+            console.warn(`⚠️ Crafting: Método ${methodName} falló:`, errorMessage);
+            
+            // Proporcionar mensajes más específicos para errores comunes
+            if (errorMessage && errorMessage.includes('Recipe inactive')) {
+                throw new Error('❌ Esta receta está inactiva. No se puede realizar crafting.');
+            } else if (errorMessage && errorMessage.includes('Insufficient balance')) {
+                throw new Error('❌ No tienes suficientes traits para esta receta.');
+            } else if (errorMessage && errorMessage.includes('Not owner')) {
+                throw new Error('❌ No eres el propietario de los traits necesarios.');
+            } else if (errorMessage && errorMessage.includes('Reverted')) {
+                throw new Error('❌ La transacción fue revertida. Verifica que tienes los traits necesarios.');
+            } else if (errorMessage && errorMessage.includes('Internal JSON-RPC error')) {
+                throw new Error('⏳ Error de red. Por favor, inténtalo de nuevo en unos minutos.');
+            }
+            
             return null;
         }
     }
@@ -357,12 +372,29 @@ class TraitLABCrafting {
             ['craft', [rid, ids, amts]]
         ];
 
+        let lastError = null;
+        
         for (const [method, args] of candidates) {
-            const receipt = await this.tryCraftMethod(crafting, method, args);
-            if (receipt) {
-                return receipt;
+            try {
+                const receipt = await this.tryCraftMethod(crafting, method, args);
+                if (receipt) {
+                    return receipt;
+                }
+            } catch (error) {
+                // Capturar el error específico del primer método que falle con un error conocido
+                if (error.message && !error.message.includes('No se pudo ejecutar')) {
+                    lastError = error;
+                    break; // Si tenemos un error específico, no probar otros métodos
+                }
+                lastError = error;
             }
         }
+        
+        // Si tenemos un error específico, lanzarlo; si no, lanzar el error genérico
+        if (lastError && lastError.message && !lastError.message.includes('No se pudo ejecutar')) {
+            throw lastError;
+        }
+        
         throw new Error('No se pudo ejecutar craftAny: ninguna variante de método funcionó');
     }
 }
