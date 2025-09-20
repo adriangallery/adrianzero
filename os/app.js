@@ -1,8 +1,8 @@
 // Configuración de la aplicación AdrianLAB
 class AdrianLABApp {
     constructor() {
-        // Cargar configuración
-        this.config = typeof CONFIG !== 'undefined' ? CONFIG : {
+        // Cargar configuración - esperar a que CONFIG esté disponible
+        this.config = {
             OPENSEA: {
                 API_KEY: 'OPENSEA_API_KEY',
                 API_BASE_URL: 'https://api.opensea.io/api/v2'
@@ -11,6 +11,11 @@ class AdrianLABApp {
                 CONTRACT_ADDRESS: '0x90546848474FB3c9fda3fdAd887969bB244E7e58'
             }
         };
+        
+        // Actualizar con CONFIG si está disponible
+        if (typeof CONFIG !== 'undefined') {
+            this.config = CONFIG;
+        }
         
         this.apiKey = this.config.OPENSEA.API_KEY;
         this.contractAddress = this.config.COLLECTION.CONTRACT_ADDRESS;

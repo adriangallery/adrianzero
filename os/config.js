@@ -3,7 +3,7 @@ const CONFIG = {
     // Configuración de la API de OpenSea
     OPENSEA: {
         API_BASE_URL: 'https://api.opensea.io/api/v2',
-        API_KEY: process.env.OPENSEA_API_KEY || 'OPENSEA_API_KEY', // Se reemplazará con la clave real
+        API_KEY: 'OPENSEA_API_KEY', // Se reemplazará con la clave real
         RATE_LIMIT: {
             REQUESTS_PER_SECOND: 2,
             REQUESTS_PER_MINUTE: 100
@@ -87,13 +87,4 @@ function getApiHeaders() {
     };
 }
 
-// Exportar para uso en otros módulos
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        CONFIG,
-        getConfig,
-        updateApiKey,
-        getEndpointUrl,
-        getApiHeaders
-    };
-}
+// Las funciones están disponibles globalmente en el navegador
