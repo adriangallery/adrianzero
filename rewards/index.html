@@ -448,8 +448,8 @@
         // Generate image URL for reward asset using AdrianLAB ERC1155
         function getRewardImageUrl(assetId) {
             // Use AdrianLAB ERC1155 contract for reward images
-            // This matches the pattern used in traitlab for ERC1155 tokens
-            const imageUrl = `https://adrianlab.vercel.app/api/render/${assetId}.png`;
+            // Pattern: https://adrianlab.vercel.app/api/render/floppy/{assetId}
+            const imageUrl = `https://adrianlab.vercel.app/api/render/floppy/${assetId}`;
             console.log(`🖼️ Generating reward image URL for asset ${assetId}:`, imageUrl);
             return imageUrl;
         }
