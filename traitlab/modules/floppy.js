@@ -179,22 +179,18 @@ class FloppyManager {
 
     /**
      * Determine which contract to use for a specific floppy
-     * Based on the logic from index.html original
+     * Updated to use OpenPackV4 for specified packs
      */
     getContractForFloppy(tokenId) {
-        if (tokenId === 10003) {
-            // GLITCH Floppy - NEW_FLOPPY_PACK_CONTRACT
+        // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10010
+        if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || 
+            tokenId === 10003 || tokenId === 10004 || tokenId === 10005 || 
+            tokenId === 10010) {
             return {
-                address: window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT,
+                address: window.TraitLABConfig.OPENPACK_V4_CONTRACT,
                 type: 'pack',
-                name: 'GLITCH Pack'
-            };
-        } else if (tokenId === 10004) {
-            // GF Floppy - PackTokenMinter
-            return {
-                address: window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT,
-                type: 'pack',
-                name: 'GF Pack'
+                name: 'OpenPackV4',
+                function: 'openPacks'
             };
         } else if (tokenId === 10007) {
             // Action Pack 10007 - ActionPack
@@ -224,26 +220,12 @@ class FloppyManager {
                 type: 'floppy',
                 name: 'PUNKSfloppy'
             };
-        } else if (tokenId === 10010) {
-            // ComradesUSB - floppynuevo contract
-            return {
-                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
-                type: 'floppy',
-                name: 'ComradesUSB'
-            };
-        } else if (tokenId === 10005 || tokenId === 10006) {
-            // Golden Floppy y otros floppies - ADRIAN_FLOPPY_DISCS_CONTRACT
+        } else if (tokenId === 10006) {
+            // Golden Floppy - ADRIAN_FLOPPY_DISCS_CONTRACT
             return {
                 address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
                 type: 'floppy',
                 name: 'Floppy'
-            };
-        } else if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002) {
-            // Floppies 10000, 10001, 10002 use PackTokenMinter (Open Pack)
-            return {
-                address: window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT,
-                type: 'pack',
-                name: 'Pack'
             };
         } else {
             // Default fallback
@@ -257,7 +239,7 @@ class FloppyManager {
 
     /**
      * Wrapper para decidir qué contrato usar al abrir un pack
-     * Basado en openSelectedPack() del index.html original
+     * Updated to handle OpenPackV4
      */
     async openSelectedPack() {
         if (!this.selectedFloppy) {
@@ -266,9 +248,11 @@ class FloppyManager {
         
         console.log('openSelectedPack: selectedFloppy.tokenId =', this.selectedFloppy.tokenId);
         
-        if (this.selectedFloppy.tokenId === 10003) {
-            console.log('Redirecting to openPack10003()');
-            return await this.openPack10003();
+        // Check if this pack uses OpenPackV4
+        const contractInfo = this.getContractForFloppy(this.selectedFloppy.tokenId);
+        if (contractInfo.function === 'openPacks') {
+            console.log('Redirecting to openPackV4() for token', this.selectedFloppy.tokenId);
+            return await this.openPackV4();
         } else if (this.selectedFloppy.tokenId === 10007) {
             console.log('Redirecting to openActionPack10007() for token', this.selectedFloppy.tokenId);
             return await this.openActionPack10007();
@@ -278,12 +262,126 @@ class FloppyManager {
         } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015) {
             console.log('Redirecting to openActionPack() for token', this.selectedFloppy.tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId === 10005 || this.selectedFloppy.tokenId === 10006 || this.selectedFloppy.tokenId === 10009 || this.selectedFloppy.tokenId === 10010) {
+        } else if (this.selectedFloppy.tokenId === 10006 || this.selectedFloppy.tokenId === 10009) {
             console.log('Redirecting to openFloppy() for floppy token', this.selectedFloppy.tokenId);
             return await this.openFloppy();
         } else {
             console.log('Redirecting to openPack() for token', this.selectedFloppy.tokenId);
             return await this.openPack();
+        }
+    }
+
+    /**
+     * Open Pack V4 function for OpenPackV4 contract
+     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10010
+     */
+    async openPackV4() {
+        console.log('openPackV4 called');
+        if (!this.selectedFloppy) {
+            throw new Error('Please select a pack first.');
+        }
+        
+        // Check if this pack is supported by OpenPackV4
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10010];
+        if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
+            throw new Error('This pack is not supported by OpenPackV4.');
+        }
+        
+        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+            throw new Error('Please connect your wallet first.');
+        }
+
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        this.executeOpenPackV4Transaction(ethers)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library. Please refresh the page.'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeOpenPackV4Transaction(ethers);
+            }
+        } catch (error) {
+            console.error('Error in openPackV4:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute the open pack V4 transaction
+     */
+    async executeOpenPackV4Transaction(ethers) {
+        try {
+            // Get provider and signer
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            // OpenPackV4 ABI - función openPacks
+            const openPackV4ABI = [
+                'function openPacks(uint256 packId, uint32 quantity) external'
+            ];
+
+            // Create contract instance
+            const contract = new ethers.Contract(
+                window.TraitLABConfig.OPENPACK_V4_CONTRACT, 
+                openPackV4ABI, 
+                signer
+            );
+
+            // Prepare parameters
+            const packId = this.selectedFloppy.tokenId;
+            const quantity = 1; // Hardcoded to 1 as requested
+
+            console.log('Contract address:', window.TraitLABConfig.OPENPACK_V4_CONTRACT);
+            console.log('Pack ID:', packId);
+            console.log('Quantity:', quantity);
+
+            // Call the contract function
+            const tx = await contract.openPacks(packId, quantity);
+            
+            console.log('Transaction hash:', tx.hash);
+
+            // Wait for transaction confirmation
+            const receipt = await tx.wait();
+            
+            console.log('Transaction confirmed:', receipt);
+
+            // Emit success event
+            this.emit('floppyOpened', { 
+                tokenId: packId, 
+                transactionHash: receipt.transactionHash,
+                receipt 
+            });
+
+            return receipt;
+
+        } catch (error) {
+            console.error('Error in transaction:', error);
+            
+            let errorMessage = 'Failed to open pack.';
+            
+            // Handle specific error cases
+            if (error.code === 4001) {
+                errorMessage = 'Transaction was rejected by user.';
+            } else if (error.message) {
+                errorMessage = `Error: ${error.message}`;
+            }
+            
+            throw new Error(errorMessage);
         }
     }
 
@@ -296,8 +394,10 @@ class FloppyManager {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (this.selectedFloppy.tokenId !== 10000 && this.selectedFloppy.tokenId !== 10001 && this.selectedFloppy.tokenId !== 10002 && this.selectedFloppy.tokenId !== 10004) {
-            throw new Error('This function is only available for Pack tokens 10000, 10001, 10002 and 10004.');
+        // This function is now only for legacy packs not handled by OpenPackV4
+        const openPackV4Packs = [10000, 10001, 10002, 10003, 10004, 10005, 10010];
+        if (openPackV4Packs.includes(this.selectedFloppy.tokenId)) {
+            throw new Error('This pack is now handled by OpenPackV4. Please use the correct function.');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
