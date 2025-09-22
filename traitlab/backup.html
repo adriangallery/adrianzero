@@ -844,6 +844,8 @@
         const ADRIAN_FLOPPY_DISCS_CONTRACT = "0x56B3fCc1417f269138CB7eBA1272e8Ccfee8fFc8";
         // Contrato para ActionPack 10007
         const ACTION_PACK_10007_CONTRACT = "0xA7e2Ae50E7f15D220CD3f61728E52D0E6e1b2E36";
+        // OpenPackV4 contract (maneja packs: 10000, 10001, 10002, 10003, 10004, 10005, 10010)
+        const OPENPACK_V4_CONTRACT = "0x238083148F4FBF4232efe16261e7aa87CE787022";
 
         // App state
         let currentAccount = null;
@@ -3318,21 +3320,25 @@
             
             console.log('openSelectedPack: selectedFloppy.tokenId =', selectedFloppy.tokenId);
             
-            if (selectedFloppy.tokenId === 10003) {
-                console.log('Redirecting to openPack10003()');
-                await openPack10003();
+            // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10010
+            if (selectedFloppy.tokenId === 10000 || selectedFloppy.tokenId === 10001 || 
+                selectedFloppy.tokenId === 10002 || selectedFloppy.tokenId === 10003 || 
+                selectedFloppy.tokenId === 10004 || selectedFloppy.tokenId === 10005 || 
+                selectedFloppy.tokenId === 10010) {
+                console.log('Redirecting to openPackV4() for token', selectedFloppy.tokenId);
+                await openPackV4();
             } else if (selectedFloppy.tokenId === 10007) {
                 console.log('Redirecting to openActionPack10007() for token', selectedFloppy.tokenId);
                 await openActionPack10007();
             } else if (selectedFloppy.tokenId === 10008) {
                 console.log('Redirecting to openActionPack() for token', selectedFloppy.tokenId);
                 await openActionPack();
-            } else if (selectedFloppy.tokenId === 10010) {
-                console.log('Redirecting to openFloppy() for token', selectedFloppy.tokenId);
-                await openFloppy();
             } else if (selectedFloppy.tokenId >= 15008 && selectedFloppy.tokenId <= 15015) {
                 console.log('Redirecting to openActionPack() for token', selectedFloppy.tokenId);
                 await openActionPack();
+            } else if (selectedFloppy.tokenId === 10006 || selectedFloppy.tokenId === 10009) {
+                console.log('Redirecting to openFloppy() for token', selectedFloppy.tokenId);
+                await openFloppy();
             } else {
                 console.log('Redirecting to openPack() for token', selectedFloppy.tokenId);
                 await openPack();
@@ -3774,6 +3780,93 @@
                 }
             } catch (error) {
                 console.error('Error opening pack (10003):', error);
+                showOpenPackStatus('Failed to load ethers library. Please refresh the page.', 'error');
+                openPackBtn.disabled = false;
+            }
+        }
+
+        // OpenPackV4 function para packs: 10000, 10001, 10002, 10003, 10004, 10005, 10010
+        async function openPackV4() {
+            console.log('openPackV4 called');
+            if (!selectedFloppy) { 
+                showOpenPackStatus('Please select a pack first.', 'error'); 
+                return; 
+            }
+            
+            // Check if this pack is supported by OpenPackV4
+            const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10010];
+            if (!supportedPacks.includes(selectedFloppy.tokenId)) {
+                showOpenPackStatus('This pack is not supported by OpenPackV4.', 'error');
+                return;
+            }
+            
+            if (!currentAccount) { 
+                showOpenPackStatus('Please connect your wallet first.', 'error'); 
+                return; 
+            }
+            
+            try {
+                showOpenPackStatus('Loading ethers library...', 'loading');
+                openPackBtn.disabled = true;
+                let ethers;
+                if (typeof window.ethers === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                    script.onload = () => { 
+                        ethers = window.ethers; 
+                        console.log('Ethers loaded successfully'); 
+                        executeOpenPackV4(); 
+                    };
+                    script.onerror = () => { 
+                        showOpenPackStatus('Failed to load ethers library. Please refresh the page.', 'error'); 
+                        openPackBtn.disabled = false; 
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    ethers = window.ethers;
+                    await executeOpenPackV4();
+                }
+                
+                async function executeOpenPackV4() {
+                    try {
+                        showOpenPackStatus('Preparing transaction...', 'loading');
+                        const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        const signer = provider.getSigner();
+                        
+                        // OpenPackV4 ABI - función openPacks
+                        const openPackV4ABI = [
+                            'function openPacks(uint256 packId, uint32 quantity) external'
+                        ];
+                        
+                        const contract = new ethers.Contract(OPENPACK_V4_CONTRACT, openPackV4ABI, signer);
+                        const packId = selectedFloppy.tokenId;
+                        const quantity = 1; // Hardcoded to 1 as requested
+                        
+                        console.log('Contract address:', OPENPACK_V4_CONTRACT);
+                        console.log('Pack ID:', packId);
+                        console.log('Quantity:', quantity);
+                        
+                        showOpenPackStatus('Confirming transaction in your wallet...', 'loading');
+                        const tx = await contract.openPacks(packId, quantity);
+                        showOpenPackStatus('Transaction sent! Waiting for confirmation...', 'loading');
+                        const receipt = await tx.wait();
+                        showOpenPackStatus(`✅ Pack opened successfully! Transaction: ${receipt.transactionHash}`, 'success');
+                        setTimeout(() => { loadTokens(currentAccount, currentContract); }, 2000);
+                    } catch (error) {
+                        console.error('Error opening pack (OpenPackV4):', error);
+                        let errorMessage = 'Failed to open pack.';
+                        if (error.code === 4001) { 
+                            errorMessage = 'Transaction was rejected by user.'; 
+                        } else if (error.message) { 
+                            errorMessage = `Error: ${error.message}`; 
+                        }
+                        showOpenPackStatus(errorMessage, 'error');
+                    } finally { 
+                        openPackBtn.disabled = false; 
+                    }
+                }
+            } catch (error) {
+                console.error('Error opening pack (OpenPackV4):', error);
                 showOpenPackStatus('Failed to load ethers library. Please refresh the page.', 'error');
                 openPackBtn.disabled = false;
             }
