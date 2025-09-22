@@ -503,6 +503,39 @@
             return imageUrl;
         }
 
+        // Retry contract call with limited retries and longer delays
+        async function retryContractCall(contractCall, maxRetries = 2, baseDelay = 3000) {
+            let lastError;
+            
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    console.log(`🔄 Attempt ${attempt}/${maxRetries} - Contract call`);
+                    const result = await contractCall();
+                    console.log(`✅ Contract call successful on attempt ${attempt}`);
+                    return result;
+                } catch (error) {
+                    lastError = error;
+                    console.warn(`❌ Attempt ${attempt}/${maxRetries} failed:`, error.message);
+                    
+                    // Only retry for specific RPC errors, not for all errors
+                    if (attempt < maxRetries && 
+                        (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) ||
+                        error.code === 'CALL_EXCEPTION' || error.code === -32603) {
+                        
+                        console.log(`⏳ Waiting ${baseDelay}ms before retry...`);
+                        await new Promise(resolve => setTimeout(resolve, baseDelay));
+                    } else {
+                        // For other errors or max retries reached, don't retry
+                        throw error;
+                    }
+                }
+            }
+            
+            // If we get here, all retries failed
+            console.error(`❌ All ${maxRetries} attempts failed`);
+            throw lastError;
+        }
+
         // Initialize the app
         async function init() {
             try {
@@ -551,39 +584,48 @@
             document.getElementById('accountAddress').textContent = currentAccount;
         }
 
-        // Load user's AdrianPunks
+        // Load user's AdrianPunks with retry logic
         async function loadUserPunks() {
             try {
                 showLoading(true);
-                const balance = await punksContract.balanceOf(currentAccount);
+                
+                // Retry logic for balanceOf call
+                const balance = await retryContractCall(() => punksContract.balanceOf(currentAccount));
                 const punkCount = balance.toNumber();
                 
                 document.getElementById('punkCount').textContent = punkCount;
                 
                 userPunks = [];
                 for (let i = 0; i < punkCount; i++) {
-                    const tokenId = await punksContract.tokenOfOwnerByIndex(currentAccount, i);
+                    // Retry logic for each tokenOfOwnerByIndex call
+                    const tokenId = await retryContractCall(() => punksContract.tokenOfOwnerByIndex(currentAccount, i));
                     userPunks.push(tokenId.toNumber());
                 }
                 
                 console.log('User punks loaded:', userPunks);
             } catch (error) {
                 console.error('Error loading user punks:', error);
-                showError('Error loading AdrianPunks: ' + error.message);
+                
+                // Check if it's a state indexing error
+                if (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) {
+                    showError('⏳ La red está sincronizando. Por favor espera unos minutos y recarga la página.');
+                } else {
+                    showError('Error loading AdrianPunks: ' + error.message);
+                }
             } finally {
                 showLoading(false);
             }
         }
 
-        // Load campaigns from contract
+        // Load campaigns from contract with retry logic
         async function loadCampaigns() {
             try {
                 showLoading(true);
                 
                 console.log('Loading campaigns from contract...');
                 
-                // Get current campaign ID from contract
-                const currentCampaignId = await rewardsContract.currentCampaignId();
+                // Get current campaign ID from contract with retry
+                const currentCampaignId = await retryContractCall(() => rewardsContract.currentCampaignId());
                 console.log('Current campaign ID:', currentCampaignId.toString());
                 
                 campaigns = [];
@@ -591,7 +633,7 @@
                 // Load all campaigns from the contract
                 for (let i = 1; i <= currentCampaignId.toNumber(); i++) {
                     try {
-                        const campaignData = await rewardsContract.getCampaign(i);
+                        const campaignData = await retryContractCall(() => rewardsContract.getCampaign(i));
                         console.log(`Campaign ${i}:`, campaignData);
                         
                         // Convert BigNumber values to numbers
@@ -619,7 +661,13 @@
                 
             } catch (error) {
                 console.error('Error loading campaigns:', error);
-                showError('Error loading campaigns from contract: ' + error.message);
+                
+                // Check if it's a state indexing error
+                if (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) {
+                    showError('⏳ La red está sincronizando. Por favor espera unos minutos y recarga la página.');
+                } else {
+                    showError('Error loading campaigns from contract: ' + error.message);
+                }
             } finally {
                 showLoading(false);
             }
@@ -880,7 +928,7 @@
             errorDiv.style.display = 'block';
             setTimeout(() => {
                 errorDiv.style.display = 'none';
-            }, 5000);
+            }, 8000);
         }
 
         // Show success message
@@ -892,6 +940,7 @@
                 successDiv.style.display = 'none';
             }, 5000);
         }
+
 
         // Initialize when page loads
         window.addEventListener('load', () => {
