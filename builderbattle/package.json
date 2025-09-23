@@ -1,0 +1,27 @@
+{
+  "name": "builderbattle",
+  "version": "1.0.0",
+  "description": "Builder Battle - Voting & Lottery System",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required for static site'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "voting",
+    "lottery",
+    "blockchain",
+    "web3",
+    "builder",
+    "competition"
+  ],
+  "author": "AdrianZero",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "dependencies": {
+    "ethers": "^5.7.2"
+  }
+}

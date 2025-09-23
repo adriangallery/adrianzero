@@ -11,6 +11,7 @@ class BuilderBattle {
         this.voters = new Set();
         this.isAdmin = false;
         this.maxVotesPerUser = 1;
+        this.apiBase = '/api/votes';
         
         this.init();
     }
@@ -96,64 +97,48 @@ class BuilderBattle {
 
     // Data Management
     async loadData() {
-        this.loadParticipants();
-        this.loadVotes();
-        this.updateUI();
-    }
-
-    loadParticipants() {
-        const saved = localStorage.getItem('builderbattle_participants');
-        if (saved) {
-            this.participants = JSON.parse(saved);
-        } else {
-            // Default participants
-            this.participants = [
-                {
-                    id: 1,
-                    name: 'Builder Alpha',
-                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZmY2YjM1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFscGhhPC90ZXh0Pjwvc3ZnPg==',
-                    votes: 0
-                },
-                {
-                    id: 2,
-                    name: 'Builder Beta',
-                    image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDBmZjg4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJldGE8L3RleHQ+PC9zdmc+',
-                    votes: 0
-                }
-            ];
-            this.saveParticipants();
+        try {
+            this.showLoading(true);
+            const response = await fetch(this.apiBase);
+            const result = await response.json();
+            
+            if (result.success) {
+                this.participants = result.data.participants;
+                this.updateUI();
+            } else {
+                this.showError('Failed to load data from server');
+            }
+        } catch (error) {
+            console.error('Error loading data:', error);
+            this.showError('Error loading data: ' + error.message);
+        } finally {
+            this.showLoading(false);
         }
     }
 
-    saveParticipants() {
-        localStorage.setItem('builderbattle_participants', JSON.stringify(this.participants));
-    }
-
-    loadVotes() {
-        const saved = localStorage.getItem('builderbattle_votes');
-        if (saved) {
-            const votesData = JSON.parse(saved);
-            this.votes = new Map(votesData.votes);
-            this.voters = new Set(votesData.voters);
+    async loadVotes() {
+        try {
+            const response = await fetch(this.apiBase);
+            const result = await response.json();
+            
+            if (result.success) {
+                // Convert votes object to Map
+                this.votes.clear();
+                this.voters.clear();
+                
+                // This would need to be implemented in the API
+                // For now, we'll use a simple approach
+                this.updateUI();
+            }
+        } catch (error) {
+            console.error('Error loading votes:', error);
         }
-    }
-
-    saveVotes() {
-        localStorage.setItem('builderbattle_votes', JSON.stringify({
-            votes: Array.from(this.votes.entries()),
-            voters: Array.from(this.voters)
-        }));
     }
 
     // Voting System
     async vote(participantId) {
         if (!this.currentAccount) {
             this.showError('Please connect your wallet first.');
-            return;
-        }
-
-        if (this.votes.has(this.currentAccount)) {
-            this.showError('You have already voted!');
             return;
         }
 
@@ -169,22 +154,32 @@ class BuilderBattle {
                 return;
             }
 
-            // Record the vote
-            this.votes.set(this.currentAccount, participantId);
-            this.voters.add(this.currentAccount);
-            
-            // Update participant vote count
-            const participant = this.participants.find(p => p.id === participantId);
-            if (participant) {
-                participant.votes++;
-            }
+            // Send vote to API
+            const response = await fetch(this.apiBase, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'vote',
+                    address: this.currentAccount,
+                    participantId: participantId,
+                    signature: signature,
+                    message: message
+                })
+            });
 
-            this.saveVotes();
-            this.saveParticipants();
-            this.updateUI();
-            this.updateVoteStatus();
+            const result = await response.json();
             
-            this.showSuccess(`Vote recorded for ${participant.name}!`);
+            if (result.success) {
+                this.votes.set(this.currentAccount, participantId);
+                this.voters.add(this.currentAccount);
+                this.updateUI();
+                this.updateVoteStatus();
+                this.showSuccess(`Vote recorded for ${result.participant.name}!`);
+            } else {
+                this.showError(result.error || 'Failed to record vote');
+            }
             
         } catch (error) {
             console.error('Error voting:', error);
@@ -239,23 +234,34 @@ class BuilderBattle {
             // Convert image to base64
             const imageData = await this.fileToBase64(imageFile);
             
-            // Create new participant
-            const newParticipant = {
-                id: Date.now(), // Simple ID generation
-                name: name,
-                image: imageData,
-                votes: 0
-            };
+            // Send to API
+            const response = await fetch(this.apiBase, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'addParticipant',
+                    name: name,
+                    image: imageData,
+                    adminAddress: this.currentAccount
+                })
+            });
 
-            this.participants.push(newParticipant);
-            this.saveParticipants();
-            this.updateUI();
+            const result = await response.json();
             
-            // Clear form
-            document.getElementById('participantName').value = '';
-            document.getElementById('participantImage').value = '';
-            
-            this.showSuccess(`Participant "${name}" added successfully!`);
+            if (result.success) {
+                this.participants.push(result.participant);
+                this.updateUI();
+                
+                // Clear form
+                document.getElementById('participantName').value = '';
+                document.getElementById('participantImage').value = '';
+                
+                this.showSuccess(`Participant "${name}" added successfully!`);
+            } else {
+                this.showError(result.error || 'Failed to add participant');
+            }
             
         } catch (error) {
             console.error('Error adding participant:', error);
@@ -286,18 +292,34 @@ class BuilderBattle {
             document.getElementById('lotteryBtn').disabled = true;
             document.getElementById('lotteryLoading').style.display = 'block';
 
-            // Use blockchain randomness for fair drawing
-            const randomSeed = await this.getBlockchainRandomness();
-            const winnerIndex = randomSeed % this.participants.length;
-            const winner = this.participants[winnerIndex];
+            // Send lottery request to API
+            const response = await fetch(this.apiBase, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'drawWinner',
+                    adminAddress: this.currentAccount
+                })
+            });
 
-            // Show winner with animation
-            setTimeout(() => {
-                this.showWinner(winner);
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show winner with animation
+                setTimeout(() => {
+                    this.showWinner(result.winner);
+                    this.showLoading(false);
+                    document.getElementById('lotteryBtn').disabled = false;
+                    document.getElementById('lotteryLoading').style.display = 'none';
+                }, 2000);
+            } else {
+                this.showError(result.error || 'Failed to draw winner');
                 this.showLoading(false);
                 document.getElementById('lotteryBtn').disabled = false;
                 document.getElementById('lotteryLoading').style.display = 'none';
-            }, 2000);
+            }
 
         } catch (error) {
             console.error('Error drawing winner:', error);
