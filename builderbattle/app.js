@@ -33,8 +33,8 @@ class BuilderBattle {
             }
         }
 
-        // Load participants from localStorage
-        this.loadParticipants();
+        // Load participants from API
+        await this.loadData();
         this.updateUI();
     }
 
