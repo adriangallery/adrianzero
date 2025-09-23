@@ -99,7 +99,13 @@ class BuilderBattle {
     async loadData() {
         try {
             this.showLoading(true);
-            const response = await fetch(this.apiBase);
+            const response = await fetch(this.apiBase + '?t=' + Date.now(), {
+                method: 'GET',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
             const result = await response.json();
             
             if (result.success) {
