@@ -119,6 +119,48 @@ module.exports = async function handler(req, res) {
         });
       }
 
+      if (action === 'removeParticipant') {
+        const { participantId, adminAddress } = payload;
+        
+        // Simple admin check
+        const adminAddresses = [
+          '0x4943407105999e3e97efa2035f5cbc64d72581c6'
+        ];
+
+        if (!adminAddresses.includes(adminAddress.toLowerCase())) {
+          return res.status(403).json({ error: 'Unauthorized: Admin access required' });
+        }
+
+        if (!participantId) {
+          return res.status(400).json({ error: 'Participant ID is required' });
+        }
+
+        // Find and remove participant
+        const participantIndex = data.participants.findIndex(p => p.id === participantId);
+        if (participantIndex === -1) {
+          return res.status(404).json({ error: 'Participant not found' });
+        }
+
+        const removedParticipant = data.participants[participantIndex];
+        data.participants.splice(participantIndex, 1);
+
+        // Remove votes for this participant
+        Object.keys(data.votes).forEach(address => {
+          if (data.votes[address].participantId === participantId) {
+            delete data.votes[address];
+          }
+        });
+
+        // Update voters list
+        data.voters = data.voters.filter(address => data.votes[address]);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Participant removed successfully',
+          removedParticipant: removedParticipant
+        });
+      }
+
       if (action === 'drawWinner') {
         const { adminAddress } = payload;
         

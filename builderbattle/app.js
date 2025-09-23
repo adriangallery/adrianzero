@@ -215,6 +215,50 @@ class BuilderBattle {
     }
 
     // Participant Management
+    async removeParticipant(participantId) {
+        if (!this.isAdmin) {
+            this.showError('Only admins can remove participants.');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to remove this participant? This will also remove all votes for this participant.')) {
+            return;
+        }
+
+        try {
+            this.showLoading(true);
+            
+            const response = await fetch(this.apiBase, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'removeParticipant',
+                    participantId: participantId,
+                    adminAddress: this.currentAccount
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                // Remove from local array
+                this.participants = this.participants.filter(p => p.id !== participantId);
+                this.updateUI();
+                this.showSuccess(`Participant "${result.removedParticipant.name}" removed successfully!`);
+            } else {
+                this.showError(result.error || 'Failed to remove participant');
+            }
+            
+        } catch (error) {
+            console.error('Error removing participant:', error);
+            this.showError('Error removing participant: ' + error.message);
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
     async addParticipant() {
         if (!this.isAdmin) {
             this.showError('Only admins can add participants.');
@@ -399,15 +443,26 @@ class BuilderBattle {
             const hasVoted = this.votes.has(this.currentAccount);
             const userVotedForThis = this.votes.get(this.currentAccount) === participant.id;
             
+            // Admin remove button
+            const adminControls = this.isAdmin ? 
+                `<button class="remove-btn" onclick="builderBattle.removeParticipant(${participant.id})" title="Remove Participant">
+                    🗑️ Remove
+                </button>` : '';
+            
             card.innerHTML = `
-                <img src="${participant.image}" alt="${participant.name}" class="participant-image">
-                <div class="participant-name">${participant.name}</div>
-                <div class="vote-count">${participant.votes} votes</div>
-                <button class="vote-btn" 
-                        onclick="builderBattle.vote(${participant.id})" 
-                        ${hasVoted ? 'disabled' : ''}>
-                    ${hasVoted ? (userVotedForThis ? '✓ Voted' : 'Already Voted') : 'Vote'}
-                </button>
+                <div class="participant-image-container">
+                    <img src="${participant.image}" alt="${participant.name}" class="participant-image">
+                </div>
+                <div class="participant-info">
+                    <div class="participant-name">${participant.name}</div>
+                    <div class="vote-count">${participant.votes} votes</div>
+                    <button class="vote-btn" 
+                            onclick="builderBattle.vote(${participant.id})" 
+                            ${hasVoted ? 'disabled' : ''}>
+                        ${hasVoted ? (userVotedForThis ? '✓ Voted' : 'Already Voted') : 'Vote'}
+                    </button>
+                    ${adminControls}
+                </div>
             `;
             
             grid.appendChild(card);
