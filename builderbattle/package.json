@@ -4,10 +4,8 @@
   "description": "Builder Battle - Voting & Lottery System",
   "main": "index.html",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
     "build": "echo 'No build step required'",
-    "vercel-build": "echo 'No build step required'"
+    "start": "echo 'Static site - no start command needed'"
   },
   "dependencies": {
     "ethers": "^5.7.2"

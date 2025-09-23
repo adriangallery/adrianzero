@@ -1,8 +1,7 @@
-# Vercel ignore file
-node_modules/
-.env.local
+node_modules
 .env
+.env.local
+.env.production.local
+.env.development.local
 *.log
 .DS_Store
-data/
-*.tmp

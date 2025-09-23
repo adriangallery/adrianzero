@@ -1,21 +1,7 @@
 {
   "version": 2,
   "name": "builderbattle",
+  "buildCommand": "echo 'No build required'",
   "outputDirectory": ".",
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "**/*",
-      "use": "@vercel/static"
-    }
-  ],
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "buildCommand": "echo 'Building Builder Battle...'"
+  "installCommand": "npm install"
 }
