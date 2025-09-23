@@ -233,6 +233,46 @@
             text-align: center;
         }
 
+        .x-profile-link {
+            color: #1da1f2;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: normal;
+            margin-left: 5px;
+        }
+
+        .x-profile-link:hover {
+            color: #0d8bd9;
+            text-decoration: underline;
+        }
+
+        .share-btn {
+            background: linear-gradient(45deg, #1da1f2, #0d8bd9);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .share-btn:hover {
+            background: linear-gradient(45deg, #0d8bd9, #0a6bb3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(29, 161, 242, 0.3);
+        }
+
+        .form-help {
+            color: #ccc;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: block;
+        }
+
         .admin-section {
             background: rgba(255, 0, 0, 0.1);
             border: 2px solid #ff6b35;
@@ -482,6 +522,11 @@
                 <div class="form-group">
                     <label class="form-label">Participant Name:</label>
                     <input type="text" class="form-input" id="participantName" placeholder="Enter participant name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">X Profile (optional):</label>
+                    <input type="text" class="form-input" id="participantXProfile" placeholder="@username" pattern="@[a-zA-Z0-9_]+">
+                    <small class="form-help">Enter X (Twitter) username with @ symbol</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Upload Image:</label>

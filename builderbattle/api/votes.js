@@ -9,12 +9,14 @@ let data = {
       id: 1,
       name: 'Builder Alpha',
       image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZmY2YjM1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFscGhhPC90ZXh0Pjwvc3ZnPg==',
+      xProfile: '@builderalpha',
       votes: 0
     },
     {
       id: 2,
       name: 'Builder Beta',
       image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDBmZjg4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJldGE8L3RleHQ+PC9zdmc+',
+      xProfile: '@builderbeta',
       votes: 0
     }
   ],
@@ -86,7 +88,7 @@ module.exports = async function handler(req, res) {
       }
 
       if (action === 'addParticipant') {
-        const { name, image, adminAddress } = payload;
+        const { name, image, xProfile, adminAddress } = payload;
         
         if (!name || !image || !adminAddress) {
           return res.status(400).json({ error: 'Missing required fields' });
@@ -106,6 +108,7 @@ module.exports = async function handler(req, res) {
           id: Date.now(),
           name,
           image,
+          xProfile: xProfile || '',
           votes: 0,
           createdAt: new Date().toISOString()
         };

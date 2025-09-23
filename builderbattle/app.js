@@ -266,6 +266,7 @@ class BuilderBattle {
         }
 
         const name = document.getElementById('participantName').value.trim();
+        const xProfile = document.getElementById('participantXProfile').value.trim();
         const imageFile = document.getElementById('participantImage').files[0];
 
         if (!name) {
@@ -275,6 +276,12 @@ class BuilderBattle {
 
         if (!imageFile) {
             this.showError('Please select an image.');
+            return;
+        }
+
+        // Validate X profile format if provided
+        if (xProfile && !xProfile.startsWith('@')) {
+            this.showError('X profile must start with @ symbol.');
             return;
         }
 
@@ -294,6 +301,7 @@ class BuilderBattle {
                     action: 'addParticipant',
                     name: name,
                     image: imageData,
+                    xProfile: xProfile,
                     adminAddress: this.currentAccount
                 })
             });
@@ -306,6 +314,7 @@ class BuilderBattle {
                 
                 // Clear form
                 document.getElementById('participantName').value = '';
+                document.getElementById('participantXProfile').value = '';
                 document.getElementById('participantImage').value = '';
                 
                 this.showSuccess(`Participant "${name}" added successfully!`);
@@ -449,17 +458,25 @@ class BuilderBattle {
                     🗑️ Remove
                 </button>` : '';
             
+            // X profile link
+            const xProfileLink = participant.xProfile ? 
+                `<a href="https://x.com/${participant.xProfile.replace('@', '')}" target="_blank" class="x-profile-link">by ${participant.xProfile}</a>` : 
+                '';
+
             card.innerHTML = `
                 <div class="participant-image-container">
                     <img src="${participant.image}" alt="${participant.name}" class="participant-image">
                 </div>
                 <div class="participant-info">
-                    <div class="participant-name">${participant.name}</div>
+                    <div class="participant-name">${participant.name} ${xProfileLink}</div>
                     <div class="vote-count">${participant.votes} votes</div>
                     <button class="vote-btn" 
                             onclick="builderBattle.vote(${participant.id})" 
                             ${hasVoted ? 'disabled' : ''}>
                         ${hasVoted ? (userVotedForThis ? '✓ Voted' : 'Already Voted') : 'Vote'}
+                    </button>
+                    <button class="share-btn" onclick="builderBattle.shareParticipant(${participant.id})">
+                        📢 Share & Vote
                     </button>
                     ${adminControls}
                 </div>
@@ -467,6 +484,28 @@ class BuilderBattle {
             
             grid.appendChild(card);
         });
+    }
+
+    // Share Function
+    shareParticipant(participantId) {
+        const participant = this.participants.find(p => p.id === participantId);
+        if (!participant) {
+            this.showError('Participant not found.');
+            return;
+        }
+
+        // Create share message
+        const xProfile = participant.xProfile || '@HalfXtiger'; // Default to your X profile
+        const shareMessage = `#BuilderBattle ${participant.name} by ${xProfile} AdrianZERO by @HalfXtiger`;
+        const shareUrl = `https://builderbattle.vercel.app`;
+        
+        // Create Twitter share URL
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}&url=${encodeURIComponent(shareUrl)}`;
+        
+        // Open Twitter in new window
+        window.open(twitterUrl, '_blank', 'width=600,height=400');
+        
+        this.showSuccess('Share window opened! Help spread the word! 🚀');
     }
 
     // Utility Functions
