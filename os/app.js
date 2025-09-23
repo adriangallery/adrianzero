@@ -1,26 +1,17 @@
-// Configuración de la aplicación AdrianLAB
+// Configuración de la aplicación AdrianLAB - API temporalmente deshabilitada
 class AdrianLABApp {
     constructor() {
-        // Cargar configuración - esperar a que CONFIG esté disponible
+        // Configuración básica sin API
         this.config = {
-            OPENSEA: {
-                API_KEY: 'OPENSEA_API_KEY',
-                API_BASE_URL: 'https://api.opensea.io/api/v2'
-            },
             COLLECTION: {
                 CONTRACT_ADDRESS: '0x90546848474FB3c9fda3fdAd887969bB244E7e58'
             }
         };
         
-        // Actualizar con CONFIG si está disponible
-        if (typeof CONFIG !== 'undefined') {
-            this.config = CONFIG;
-        }
-        
-        this.apiKey = this.config.OPENSEA.API_KEY;
+        this.apiKey = null; // API deshabilitada temporalmente
         this.contractAddress = this.config.COLLECTION.CONTRACT_ADDRESS;
-        this.apiBaseUrl = this.config.OPENSEA.API_BASE_URL;
-        this.proxyUrl = 'https://adrianlab-api.vercel.app/api'; // URL del proxy
+        this.apiBaseUrl = null; // API deshabilitada
+        this.proxyUrl = null; // Proxy deshabilitado
         this.currentPage = 1;
         this.itemsPerPage = 20;
         this.currentTab = 'overview';
@@ -35,8 +26,22 @@ class AdrianLABApp {
 
     async init() {
         this.setupEventListeners();
-        this.loadCollectionData();
-        this.showStatus('🚀 AdrianLAB App iniciada correctamente', 'success');
+        this.showApiDisabledMessage();
+        this.showStatus('🚀 AdrianLAB App iniciada (API deshabilitada)', 'success');
+    }
+
+    showApiDisabledMessage() {
+        const container = document.querySelector('.container');
+        if (container) {
+            const message = document.createElement('div');
+            message.className = 'alert alert-warning';
+            message.innerHTML = `
+                <h4>⚠️ API Temporalmente Deshabilitada</h4>
+                <p>La integración con OpenSea está temporalmente deshabilitada para evitar rate limiting.</p>
+                <p>La funcionalidad se restaurará más adelante.</p>
+            `;
+            container.insertBefore(message, container.firstChild);
+        }
     }
 
     setupEventListeners() {
@@ -273,23 +278,8 @@ class AdrianLABApp {
     }
 
     async proxyCall(endpoint) {
-        const url = `${this.proxyUrl}${endpoint}`;
-        
-        const response = await fetch(url, {
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            if (response.status === 500) {
-                throw new Error('Error del servidor proxy');
-            } else {
-                throw new Error(`Error del proxy: ${response.status} - ${response.statusText}`);
-            }
-        }
-
-        return await response.json();
+        console.log('API deshabilitada temporalmente:', endpoint);
+        throw new Error('API deshabilitada temporalmente');
     }
 
     updateCollectionInfo() {
