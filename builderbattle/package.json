@@ -4,24 +4,24 @@
   "description": "Builder Battle - Voting & Lottery System",
   "main": "index.html",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build step required for static site'",
-    "deploy": "vercel --prod"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "echo 'No build step required'",
+    "vercel-build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "ethers": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "keywords": [
     "voting",
     "lottery",
     "blockchain",
-    "web3",
-    "builder",
-    "competition"
+    "ethereum",
+    "web3"
   ],
-  "author": "AdrianZero",
-  "license": "MIT",
-  "devDependencies": {
-    "vercel": "^32.0.0"
-  },
-  "dependencies": {
-    "ethers": "^5.7.2"
-  }
+  "author": "Adrian",
+  "license": "MIT"
 }
