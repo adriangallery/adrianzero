@@ -6,18 +6,12 @@
   "installCommand": "npm install",
   "builds": [
     {
-      "src": "api.js",
+      "src": "api/**/*.js",
       "use": "@vercel/node"
     },
     {
       "src": "**/*",
       "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/votes",
-      "dest": "/api.js"
     }
   ],
   "headers": [
