@@ -94,7 +94,7 @@ module.exports = async function handler(req, res) {
 
         // Simple admin check
         const adminAddresses = [
-          '0x4943407105999e3E97EFA2035F5cbC64D72581C6'
+          '0x4943407105999e3e97efa2035f5cbc64d72581c6'
         ];
 
         if (!adminAddresses.includes(adminAddress.toLowerCase())) {
@@ -124,7 +124,7 @@ module.exports = async function handler(req, res) {
         
         // Simple admin check
         const adminAddresses = [
-          '0x4943407105999e3E97EFA2035F5cbC64D72581C6'
+          '0x4943407105999e3e97efa2035f5cbc64d72581c6'
         ];
 
         if (!adminAddresses.includes(adminAddress.toLowerCase())) {

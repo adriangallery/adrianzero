@@ -89,7 +89,7 @@ class BuilderBattle {
     isAdminAddress(address) {
         // Add your admin addresses here
         const adminAddresses = [
-            '0x4943407105999e3E97EFA2035F5cbC64D72581C6', // Your address
+            '0x4943407105999e3e97efa2035f5cbc64d72581c6', // Your address
             // Add more admin addresses as needed
         ];
         return adminAddresses.includes(address.toLowerCase());
