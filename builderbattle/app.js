@@ -509,15 +509,44 @@ class BuilderBattle {
         // Create share message
         const xProfile = participant.xProfile || '@HalfXtiger'; // Default to your X profile
         const shareMessage = `#BuilderBattle ${participant.name} by ${xProfile} AdrianZERO by @HalfXtiger`;
-        const shareUrl = `https://builderbattle.vercel.app`;
+        const shareUrl = `https://builderbattle.vercel.app?participant=${participantId}`;
         
-        // Create Twitter share URL
+        // Create image URL for X sharing
+        const imageUrl = `https://builderbattle.vercel.app/api/image?participantId=${participantId}`;
+        
+        // Create Twitter share URL with image
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}&url=${encodeURIComponent(shareUrl)}`;
         
         // Open Twitter in new window
         window.open(twitterUrl, '_blank', 'width=600,height=400');
         
+        // Update meta tags for better sharing
+        this.updateMetaTags(participant, imageUrl);
+        
         this.showSuccess('Share window opened! Help spread the word! 🚀');
+    }
+
+    // Update meta tags for better sharing
+    updateMetaTags(participant, imageUrl) {
+        // Update Open Graph meta tags
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        const ogDescription = document.querySelector('meta[property="og:description"]');
+        const ogImage = document.querySelector('meta[property="og:image"]');
+        const ogUrl = document.querySelector('meta[property="og:url"]');
+        
+        // Update Twitter Card meta tags
+        const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+        const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+        const twitterImage = document.querySelector('meta[name="twitter:image"]');
+        
+        if (ogTitle) ogTitle.setAttribute('content', `${participant.name} - Builder Battle`);
+        if (ogDescription) ogDescription.setAttribute('content', `Vote for ${participant.name} in Builder Battle!`);
+        if (ogImage && imageUrl) ogImage.setAttribute('content', imageUrl);
+        if (ogUrl) ogUrl.setAttribute('content', `https://builderbattle.vercel.app?participant=${participant.id}`);
+        
+        if (twitterTitle) twitterTitle.setAttribute('content', `${participant.name} - Builder Battle`);
+        if (twitterDescription) twitterDescription.setAttribute('content', `Vote for ${participant.name} in Builder Battle!`);
+        if (twitterImage && imageUrl) twitterImage.setAttribute('content', imageUrl);
     }
 
     // Utility Functions
