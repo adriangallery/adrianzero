@@ -333,8 +333,17 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ error: 'No participants to draw from' });
                 }
 
+                console.log('Voters data:', data.voters);
+                console.log('Voters length:', data.voters.length);
+                console.log('Votes data:', data.votes);
+                console.log('Votes keys length:', Object.keys(data.votes).length);
+                
                 if (data.voters.length < 3) {
-                    return res.status(400).json({ error: 'Need at least 3 voters to draw voter winners' });
+                    return res.status(400).json({ 
+                        error: 'Need at least 3 voters to draw voter winners',
+                        currentVoters: data.voters.length,
+                        voters: data.voters
+                    });
                 }
 
                 // 1. Find the winning participant (most votes)

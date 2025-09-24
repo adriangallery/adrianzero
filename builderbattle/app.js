@@ -171,6 +171,11 @@ class BuilderBattle {
             if (result.success) {
                 this.participants = result.data.participants;
                 this.voters = result.data.voters || [];
+                console.log('Loaded data:', {
+                    participants: this.participants.length,
+                    voters: this.voters.length,
+                    votersData: this.voters
+                });
                 this.updateUI();
             } else {
                 this.showError('Failed to load data from server');
@@ -423,8 +428,15 @@ class BuilderBattle {
             return;
         }
 
-        if (Object.keys(this.votes).length < 3) {
-            this.showError('Need at least 3 voters to draw voter winners.');
+        console.log('Draw winners check:', {
+            participants: this.participants.length,
+            voters: this.voters.length,
+            votes: Object.keys(this.votes).length,
+            votersData: this.voters
+        });
+        
+        if (this.voters.length < 3) {
+            this.showError(`Need at least 3 voters to draw voter winners. Current: ${this.voters.length}`);
             return;
         }
 
