@@ -19,6 +19,9 @@ class BuilderBattle {
     async init() {
         console.log('🏗️ Builder Battle initialized');
         
+        // Check for URL parameters
+        this.checkUrlParameters();
+        
         // Check if wallet is already connected
         if (typeof window.ethereum !== 'undefined') {
             try {
@@ -36,6 +39,61 @@ class BuilderBattle {
         // Load participants from API
         await this.loadData();
         this.updateUI();
+        
+        // Update meta tags if there's a participant parameter
+        if (this.highlightParticipant) {
+            this.updateMetaTagsForParticipant(this.highlightParticipant);
+        }
+    }
+
+    checkUrlParameters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const participantId = urlParams.get('participant');
+        
+        if (participantId) {
+            console.log('Participant ID from URL:', participantId);
+            this.highlightParticipant = parseInt(participantId);
+            this.updateMetaTagsForParticipant(participantId);
+        }
+    }
+
+    updateMetaTagsForParticipant(participantId) {
+        // Find the participant in the current data
+        const participant = this.participants.find(p => p.id === parseInt(participantId));
+        
+        if (participant) {
+            // Update page title
+            document.title = `${participant.name} - Builder Battle`;
+            
+            // Update Twitter Card meta tags
+            this.updateMetaTag('twitter:title', `${participant.name} - Builder Battle`);
+            this.updateMetaTag('twitter:description', `Vote for ${participant.name} in Builder Battle! ${participant.xProfile ? `by ${participant.xProfile}` : ''} Join the battle and help decide the winner.`);
+            this.updateMetaTag('twitter:image', participant.image);
+            
+            // Update Open Graph meta tags
+            this.updateMetaTag('og:title', `${participant.name} - Builder Battle`);
+            this.updateMetaTag('og:description', `Vote for ${participant.name} in Builder Battle! ${participant.xProfile ? `by ${participant.xProfile}` : ''} Join the battle and help decide the winner.`);
+            this.updateMetaTag('og:image', participant.image);
+            this.updateMetaTag('og:url', window.location.href);
+        }
+    }
+
+    updateMetaTag(property, content) {
+        // Update existing meta tag or create new one
+        let metaTag = document.querySelector(`meta[name="${property}"], meta[property="${property}"]`);
+        
+        if (metaTag) {
+            metaTag.setAttribute('content', content);
+        } else {
+            metaTag = document.createElement('meta');
+            if (property.startsWith('og:')) {
+                metaTag.setAttribute('property', property);
+            } else {
+                metaTag.setAttribute('name', property);
+            }
+            metaTag.setAttribute('content', content);
+            document.head.appendChild(metaTag);
+        }
     }
 
     // Wallet Connection
@@ -463,6 +521,11 @@ class BuilderBattle {
             const card = document.createElement('div');
             card.className = 'participant-card';
             
+            // Highlight participant if specified in URL
+            if (this.highlightParticipant && participant.id === this.highlightParticipant) {
+                card.classList.add('highlighted-participant');
+            }
+            
             const hasVoted = this.votes.has(this.currentAccount);
             const userVotedForThis = this.votes.get(this.currentAccount) === participant.id;
             
@@ -511,8 +574,8 @@ class BuilderBattle {
         }
 
         // Create share message
-        const xProfile = participant.xProfile || '@HalfXtiger'; // Default to your X profile
-        const shareMessage = `#BuilderBattle ${participant.name} by ${xProfile} AdrianZERO by @HalfXtiger`;
+        const xProfile = participant.xProfile || '';
+        const shareMessage = `#BuilderBattle ${participant.name}${xProfile ? ` by ${xProfile}` : ''} - Vote for your favorite builder! https://builderbattle.vercel.app?participant=${participantId}`;
         const shareUrl = `https://builderbattle.vercel.app?participant=${participantId}`;
         
         // Create image URL for X sharing
