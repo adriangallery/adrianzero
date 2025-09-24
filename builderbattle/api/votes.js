@@ -50,9 +50,13 @@ module.exports = async function handler(req, res) {
 
     if (req.method === 'POST') {
       const { action, ...payload } = req.body;
+      
+      console.log('API received:', { action, payload });
 
       if (action === 'vote') {
         const { address, participantId } = payload;
+        
+        console.log('Vote data:', { address, participantId });
         
         if (!address || !participantId) {
           return res.status(400).json({ error: 'Missing required fields' });

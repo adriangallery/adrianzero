@@ -148,6 +148,12 @@ class BuilderBattle {
             return;
         }
 
+        // Additional validation
+        if (!participantId) {
+            this.showError('Invalid participant ID.');
+            return;
+        }
+
         try {
             this.showLoading(true);
             
@@ -161,18 +167,22 @@ class BuilderBattle {
             }
 
             // Send vote to API
+            const voteData = {
+                action: 'vote',
+                address: this.currentAccount,
+                participantId: participantId,
+                signature: signature,
+                message: message
+            };
+            
+            console.log('Sending vote data:', voteData);
+            
             const response = await fetch(this.apiBase, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    action: 'vote',
-                    address: this.currentAccount,
-                    participantId: participantId,
-                    signature: signature,
-                    message: message
-                })
+                body: JSON.stringify(voteData)
             });
 
             const result = await response.json();
