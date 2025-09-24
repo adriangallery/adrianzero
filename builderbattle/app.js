@@ -415,8 +415,13 @@ class BuilderBattle {
 
     // Lottery System
     async drawWinners() {
-        if (this.participants.length < 3) {
-            this.showError('Need at least 3 participants to draw winners.');
+        if (this.participants.length === 0) {
+            this.showError('No participants to draw from.');
+            return;
+        }
+
+        if (Object.keys(this.votes).length < 3) {
+            this.showError('Need at least 3 voters to draw voter winners.');
             return;
         }
 
@@ -442,7 +447,7 @@ class BuilderBattle {
             if (result.success) {
                 // Show winners with animation
                 setTimeout(() => {
-                    this.showWinners(result.winners);
+                    this.showWinners(result.winningParticipant, result.winningVoters);
                     this.showLoading(false);
                     document.getElementById('lotteryBtn').disabled = false;
                     document.getElementById('lotteryLoading').style.display = 'none';
@@ -499,28 +504,50 @@ class BuilderBattle {
         winnerResult.scrollIntoView({ behavior: 'smooth' });
     }
 
-    showWinners(winners) {
+    showWinners(winningParticipant, winningVoters) {
         const winnerResult = document.getElementById('winnerResult');
         const winnerDetails = document.getElementById('winnerDetails');
         
-        const positions = ['🥇', '🥈', '🥉'];
-        const colors = ['#ffd700', '#c0c0c0', '#cd7f32']; // Gold, Silver, Bronze
+        const voterPositions = ['🥇', '🥈', '🥉'];
+        const voterColors = ['#ffd700', '#c0c0c0', '#cd7f32']; // Gold, Silver, Bronze
         
         winnerDetails.innerHTML = `
             <h2 style="color: #fff; font-size: 2.5rem; margin-bottom: 30px; text-align: center;">🏆 WINNERS ANNOUNCED! 🏆</h2>
-            <div style="display: flex; flex-direction: column; gap: 30px; align-items: center;">
-                ${winners.map((winner, index) => `
-                    <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 15px; min-width: 400px;">
-                        <div style="font-size: 3rem;">${positions[index]}</div>
-                        <img src="${winner.image}" alt="${winner.name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 20px ${colors[index]}40;">
-                        <div>
-                            <h3 style="color: ${colors[index]}; font-size: 1.5rem; margin: 0;">${winner.name}</h3>
-                            <p style="color: #fff; margin: 5px 0;">${winner.votes} votes</p>
-                            ${winner.x_profile ? `<p style="color: #00ff88; margin: 0; font-size: 0.9rem;">@${winner.x_profile}</p>` : ''}
-                        </div>
+            
+            <!-- Winning Participant -->
+            <div style="margin-bottom: 40px;">
+                <h3 style="color: #00ff88; font-size: 1.8rem; margin-bottom: 20px; text-align: center;">🏗️ WINNING BUILDER</h3>
+                <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: rgba(0, 255, 136, 0.1); border-radius: 15px; min-width: 400px; margin: 0 auto; border: 2px solid #00ff88;">
+                    <div style="font-size: 3rem;">🏆</div>
+                    <img src="${winningParticipant.image}" alt="${winningParticipant.name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 20px #00ff8840;">
+                    <div>
+                        <h3 style="color: #00ff88; font-size: 1.5rem; margin: 0;">${winningParticipant.name}</h3>
+                        <p style="color: #fff; margin: 5px 0;">${winningParticipant.votes} votes</p>
+                        ${winningParticipant.x_profile ? `<p style="color: #00ff88; margin: 0; font-size: 0.9rem;">@${winningParticipant.x_profile}</p>` : ''}
                     </div>
-                `).join('')}
+                </div>
             </div>
+
+            <!-- Winning Voters -->
+            <div>
+                <h3 style="color: #ffd700; font-size: 1.8rem; margin-bottom: 20px; text-align: center;">🎲 WINNING VOTERS</h3>
+                <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+                    ${winningVoters.map((voter, index) => `
+                        <div style="display: flex; align-items: center; gap: 20px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 15px; min-width: 400px;">
+                            <div style="font-size: 2.5rem;">${voterPositions[index]}</div>
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(45deg, #1a1a2e, #16213e); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px ${voterColors[index]}40;">
+                                <span style="color: ${voterColors[index]}; font-size: 1.5rem;">👤</span>
+                            </div>
+                            <div>
+                                <h3 style="color: ${voterColors[index]}; font-size: 1.2rem; margin: 0;">Voter #${index + 1}</h3>
+                                <p style="color: #fff; margin: 5px 0; font-family: monospace; font-size: 0.9rem;">${voter.address.slice(0, 6)}...${voter.address.slice(-4)}</p>
+                                <p style="color: #ccc; margin: 0; font-size: 0.8rem;">Randomly selected voter</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
             <p style="font-size: 1.2rem; color: #ccc; margin-top: 30px; text-align: center;">Congratulations to all winners! 🎉</p>
         `;
         

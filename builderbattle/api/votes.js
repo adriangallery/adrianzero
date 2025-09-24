@@ -329,11 +329,15 @@ module.exports = async function handler(req, res) {
                     return res.status(403).json({ error: 'Unauthorized' });
                 }
 
-                if (data.participants.length < 3) {
-                    return res.status(400).json({ error: 'Need at least 3 participants to draw winners' });
+                if (data.participants.length === 0) {
+                    return res.status(400).json({ error: 'No participants to draw from' });
                 }
 
-                // Sort participants by votes (descending) and then by random for ties
+                if (Object.keys(data.votes).length < 3) {
+                    return res.status(400).json({ error: 'Need at least 3 voters to draw voter winners' });
+                }
+
+                // 1. Find the winning participant (most votes)
                 const sortedParticipants = [...data.participants].sort((a, b) => {
                     if (b.votes !== a.votes) {
                         return b.votes - a.votes;
@@ -341,33 +345,58 @@ module.exports = async function handler(req, res) {
                     // If votes are equal, use random order
                     return Math.random() - 0.5;
                 });
+                const winningParticipant = sortedParticipants[0];
 
-                // Select top 3
-                const winners = sortedParticipants.slice(0, 3);
+                // 2. Select 3 random voters from all voters
+                const allVoters = Object.keys(data.votes);
+                const shuffledVoters = [...allVoters].sort(() => Math.random() - 0.5);
+                const winningVoters = shuffledVoters.slice(0, 3);
+
                 const drawnAt = new Date().toISOString();
 
-                // Add winners to history
-                const winnersData = winners.map((winner, index) => ({
-                    participant_id: winner.id,
-                    participant_name: winner.name,
-                    participant_image: winner.image,
-                    participant_x_profile: winner.x_profile || '',
-                    position: index + 1, // 1st, 2nd, 3rd
+                // Add winning participant to history
+                const participantWinnerData = {
+                    participant_id: winningParticipant.id,
+                    participant_name: winningParticipant.name,
+                    participant_image: winningParticipant.image,
+                    participant_x_profile: winningParticipant.x_profile || '',
+                    position: 1, // Winner
                     total_participants: data.participants.length,
                     total_votes: Object.keys(data.votes).length,
-                    drawn_at: drawnAt
+                    drawn_at: drawnAt,
+                    winner_type: 'participant'
+                };
+
+                // Add winning voters to history
+                const voterWinnersData = winningVoters.map((voterAddress, index) => ({
+                    participant_id: null,
+                    participant_name: null,
+                    participant_image: null,
+                    participant_x_profile: null,
+                    voter_address: voterAddress,
+                    position: index + 1, // 1st, 2nd, 3rd voter
+                    total_participants: data.participants.length,
+                    total_votes: Object.keys(data.votes).length,
+                    drawn_at: drawnAt,
+                    winner_type: 'voter'
                 }));
                 
-                data.winners.push(...winnersData);
+                data.winners.push(participantWinnerData, ...voterWinnersData);
 
                 // Save data
                 if (await saveData(data)) {
                     return res.status(200).json({
                         success: true,
                         message: 'Winners drawn successfully',
-                        winners: winners.map((winner, index) => ({
-                            ...winner,
-                            position: index + 1
+                        winningParticipant: {
+                            ...winningParticipant,
+                            position: 1,
+                            type: 'participant'
+                        },
+                        winningVoters: winningVoters.map((voterAddress, index) => ({
+                            address: voterAddress,
+                            position: index + 1,
+                            type: 'voter'
                         }))
                     });
                 } else {
