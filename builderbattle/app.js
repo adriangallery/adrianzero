@@ -67,7 +67,7 @@ class BuilderBattle {
             
             // Update Twitter Card meta tags
             const xProfile = participant.x_profile || participant.xProfile || '';
-            const imageUrl = `https://builderbattle.vercel.app/api/image?participantId=${participant.id}`;
+            const imageUrl = `https://builderbattle.vercel.app/api/og-image?participantId=${participant.id}`;
             this.updateMetaTag('twitter:title', `${participant.name} - Builder Battle`);
             this.updateMetaTag('twitter:description', `Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.`);
             this.updateMetaTag('twitter:image', imageUrl);
@@ -610,7 +610,7 @@ class BuilderBattle {
         const shareUrl = `https://builderbattle.vercel.app/api/participant?participantId=${participantId}`;
         
         // Create image URL for X sharing
-        const imageUrl = `https://builderbattle.vercel.app/api/image?participantId=${participantId}`;
+        const imageUrl = `https://builderbattle.vercel.app/api/og-image?participantId=${participantId}`;
         
         // Create Twitter share URL with image
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}&url=${encodeURIComponent(shareUrl)}`;

@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
         }
 
         const xProfile = participant.x_profile || '';
-        const imageUrl = `https://builderbattle.vercel.app/api/image?participantId=${participantId}`;
+        const imageUrl = `https://builderbattle.vercel.app/api/og-image?participantId=${participantId}`;
         const pageUrl = `https://builderbattle.vercel.app?participant=${participantId}`;
 
         // Generate HTML with proper meta tags
@@ -45,16 +45,22 @@ module.exports = async function handler(req, res) {
     <!-- X (Twitter) Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@adriangallery">
+    <meta name="twitter:creator" content="${xProfile || '@adriangallery'}">
     <meta name="twitter:title" content="${participant.name} - Builder Battle">
     <meta name="twitter:description" content="Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.">
     <meta name="twitter:image" content="${imageUrl}">
+    <meta name="twitter:image:alt" content="${participant.name} - Builder Battle participant">
     
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="${participant.name} - Builder Battle">
     <meta property="og:description" content="Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.">
     <meta property="og:image" content="${imageUrl}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="${participant.name} - Builder Battle participant">
     <meta property="og:url" content="${pageUrl}">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Builder Battle">
     
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
