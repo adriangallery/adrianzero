@@ -1,6 +1,6 @@
 {
   "name": "builderbattle",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Builder Battle - Voting & Lottery System",
   "main": "index.html",
   "scripts": {
