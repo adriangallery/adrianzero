@@ -132,6 +132,28 @@ async function saveData(data) {
             }
         }
 
+        // Update winners (only add new ones, don't clear existing)
+        for (const winner of data.winners) {
+            // Check if this winner already exists
+            const { data: existingWinner } = await supabase
+                .from('winners')
+                .select('id')
+                .eq('participant_id', winner.participant_id)
+                .eq('drawn_at', winner.drawn_at)
+                .single();
+
+            if (!existingWinner) {
+                const { error: winnerError } = await supabase
+                    .from('winners')
+                    .insert(winner);
+
+                if (winnerError) {
+                    console.error('Error saving winner:', winnerError);
+                    return false;
+                }
+            }
+        }
+
         console.log('Data saved to Supabase successfully');
         return true;
     } catch (error) {
@@ -299,7 +321,7 @@ module.exports = async function handler(req, res) {
                 }
             }
 
-            if (action === 'drawWinner') {
+            if (action === 'drawWinners') {
                 const { address } = payload;
                 
                 // Check if user is admin
@@ -307,31 +329,49 @@ module.exports = async function handler(req, res) {
                     return res.status(403).json({ error: 'Unauthorized' });
                 }
 
-                if (data.participants.length === 0) {
-                    return res.status(400).json({ error: 'No participants to draw from' });
+                if (data.participants.length < 3) {
+                    return res.status(400).json({ error: 'Need at least 3 participants to draw winners' });
                 }
 
-                // Simple random selection based on current time
-                const randomIndex = Math.floor(Math.random() * data.participants.length);
-                const winner = data.participants[randomIndex];
-
-                // Add to winners history
-                data.winners.push({
-                    participant: winner,
-                    drawn_at: new Date().toISOString(),
-                    total_participants: data.participants.length,
-                    total_votes: Object.keys(data.votes).length
+                // Sort participants by votes (descending) and then by random for ties
+                const sortedParticipants = [...data.participants].sort((a, b) => {
+                    if (b.votes !== a.votes) {
+                        return b.votes - a.votes;
+                    }
+                    // If votes are equal, use random order
+                    return Math.random() - 0.5;
                 });
+
+                // Select top 3
+                const winners = sortedParticipants.slice(0, 3);
+                const drawnAt = new Date().toISOString();
+
+                // Add winners to history
+                const winnersData = winners.map((winner, index) => ({
+                    participant_id: winner.id,
+                    participant_name: winner.name,
+                    participant_image: winner.image,
+                    participant_x_profile: winner.x_profile || '',
+                    position: index + 1, // 1st, 2nd, 3rd
+                    total_participants: data.participants.length,
+                    total_votes: Object.keys(data.votes).length,
+                    drawn_at: drawnAt
+                }));
+                
+                data.winners.push(...winnersData);
 
                 // Save data
                 if (await saveData(data)) {
                     return res.status(200).json({
                         success: true,
-                        message: 'Winner drawn successfully',
-                        winner: winner
+                        message: 'Winners drawn successfully',
+                        winners: winners.map((winner, index) => ({
+                            ...winner,
+                            position: index + 1
+                        }))
                     });
                 } else {
-                    return res.status(500).json({ error: 'Failed to save winner' });
+                    return res.status(500).json({ error: 'Failed to save winners' });
                 }
             }
 

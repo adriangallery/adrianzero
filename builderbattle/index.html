@@ -596,14 +596,14 @@
         <!-- Lottery Section -->
         <div class="lottery-section">
             <h2 class="section-title">🎲 Lottery Draw</h2>
-            <p style="font-size: 1.2rem; margin-bottom: 20px;">Draw a random winner from all participants</p>
-            <button class="lottery-btn" id="lotteryBtn" onclick="drawWinner()">Draw Winner</button>
-            <div class="loading" id="lotteryLoading">Drawing winner...</div>
+            <p style="font-size: 1.2rem; margin-bottom: 20px;">Draw the top 3 winners from all participants</p>
+            <button class="lottery-btn" id="lotteryBtn" onclick="drawWinners()">Draw Winners (Top 3)</button>
+            <div class="loading" id="lotteryLoading">Drawing winners...</div>
         </div>
 
         <!-- Winner Result -->
         <div class="winner-result" id="winnerResult">
-            <h2 style="color: #ffd700; font-size: 2.5rem; margin-bottom: 20px;">🎉 WINNER! 🎉</h2>
+            <h2 style="color: #ffd700; font-size: 2.5rem; margin-bottom: 20px;">🎉 WINNERS! 🎉</h2>
             <div id="winnerDetails"></div>
         </div>
 

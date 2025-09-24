@@ -67,7 +67,7 @@ class BuilderBattle {
             
             // Update Twitter Card meta tags
             const xProfile = participant.x_profile || participant.xProfile || '';
-            const imageUrl = `https://builderbattle.vercel.app/api/og-image?participantId=${participant.id}`;
+            const imageUrl = `https://builderbattle.vercel.app/api/static-image?participantId=${participant.id}`;
             this.updateMetaTag('twitter:title', `${participant.name} - Builder Battle`);
             this.updateMetaTag('twitter:description', `Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.`);
             this.updateMetaTag('twitter:image', imageUrl);
@@ -414,9 +414,9 @@ class BuilderBattle {
     }
 
     // Lottery System
-    async drawWinner() {
-        if (this.participants.length === 0) {
-            this.showError('No participants to draw from.');
+    async drawWinners() {
+        if (this.participants.length < 3) {
+            this.showError('Need at least 3 participants to draw winners.');
             return;
         }
 
@@ -432,7 +432,7 @@ class BuilderBattle {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    action: 'drawWinner',
+                    action: 'drawWinners',
                     adminAddress: this.currentAccount
                 })
             });
@@ -440,23 +440,23 @@ class BuilderBattle {
             const result = await response.json();
             
             if (result.success) {
-                // Show winner with animation
+                // Show winners with animation
                 setTimeout(() => {
-                    this.showWinner(result.winner);
+                    this.showWinners(result.winners);
                     this.showLoading(false);
                     document.getElementById('lotteryBtn').disabled = false;
                     document.getElementById('lotteryLoading').style.display = 'none';
                 }, 2000);
             } else {
-                this.showError(result.error || 'Failed to draw winner');
+                this.showError(result.error || 'Failed to draw winners');
                 this.showLoading(false);
                 document.getElementById('lotteryBtn').disabled = false;
                 document.getElementById('lotteryLoading').style.display = 'none';
             }
 
         } catch (error) {
-            console.error('Error drawing winner:', error);
-            this.showError('Error drawing winner: ' + error.message);
+            console.error('Error drawing winners:', error);
+            this.showError('Error drawing winners: ' + error.message);
             this.showLoading(false);
             document.getElementById('lotteryBtn').disabled = false;
             document.getElementById('lotteryLoading').style.display = 'none';
@@ -496,6 +496,37 @@ class BuilderBattle {
         winnerResult.classList.add('show');
         
         // Scroll to winner
+        winnerResult.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    showWinners(winners) {
+        const winnerResult = document.getElementById('winnerResult');
+        const winnerDetails = document.getElementById('winnerDetails');
+        
+        const positions = ['🥇', '🥈', '🥉'];
+        const colors = ['#ffd700', '#c0c0c0', '#cd7f32']; // Gold, Silver, Bronze
+        
+        winnerDetails.innerHTML = `
+            <h2 style="color: #fff; font-size: 2.5rem; margin-bottom: 30px; text-align: center;">🏆 WINNERS ANNOUNCED! 🏆</h2>
+            <div style="display: flex; flex-direction: column; gap: 30px; align-items: center;">
+                ${winners.map((winner, index) => `
+                    <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 15px; min-width: 400px;">
+                        <div style="font-size: 3rem;">${positions[index]}</div>
+                        <img src="${winner.image}" alt="${winner.name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 20px ${colors[index]}40;">
+                        <div>
+                            <h3 style="color: ${colors[index]}; font-size: 1.5rem; margin: 0;">${winner.name}</h3>
+                            <p style="color: #fff; margin: 5px 0;">${winner.votes} votes</p>
+                            ${winner.x_profile ? `<p style="color: #00ff88; margin: 0; font-size: 0.9rem;">@${winner.x_profile}</p>` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <p style="font-size: 1.2rem; color: #ccc; margin-top: 30px; text-align: center;">Congratulations to all winners! 🎉</p>
+        `;
+        
+        winnerResult.classList.add('show');
+        
+        // Scroll to winners
         winnerResult.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -610,7 +641,7 @@ class BuilderBattle {
         const shareUrl = `https://builderbattle.vercel.app/api/participant?participantId=${participantId}`;
         
         // Create image URL for X sharing
-        const imageUrl = `https://builderbattle.vercel.app/api/og-image?participantId=${participantId}`;
+        const imageUrl = `https://builderbattle.vercel.app/api/static-image?participantId=${participantId}`;
         
         // Create Twitter share URL with image
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}&url=${encodeURIComponent(shareUrl)}`;
@@ -684,8 +715,8 @@ function addParticipant() {
     builderBattle.addParticipant();
 }
 
-function drawWinner() {
-    builderBattle.drawWinner();
+function drawWinners() {
+    builderBattle.drawWinners();
 }
 
 // Initialize the app
