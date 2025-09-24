@@ -183,7 +183,7 @@ module.exports = async function handler(req, res) {
                 success: true,
                 data: {
                     participants: data.participants,
-                    totalVotes: Object.keys(data.votes).length,
+                    totalVotes: data.voters.length,
                     voters: data.voters.length,
                     lastUpdated: data.lastUpdated
                 }
@@ -333,7 +333,7 @@ module.exports = async function handler(req, res) {
                     return res.status(400).json({ error: 'No participants to draw from' });
                 }
 
-                if (Object.keys(data.votes).length < 3) {
+                if (data.voters.length < 3) {
                     return res.status(400).json({ error: 'Need at least 3 voters to draw voter winners' });
                 }
 

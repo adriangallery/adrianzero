@@ -594,7 +594,7 @@ class BuilderBattle {
     updateStats() {
         const totalParticipants = this.participants.length;
         const totalVotes = this.participants.reduce((sum, p) => sum + p.votes, 0);
-        const votersCount = this.voters.size;
+        const votersCount = this.voters ? this.voters.length : 0;
 
         document.getElementById('totalParticipants').textContent = totalParticipants;
         document.getElementById('totalVotes').textContent = totalVotes;
