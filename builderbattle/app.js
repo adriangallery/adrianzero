@@ -66,13 +66,14 @@ class BuilderBattle {
             document.title = `${participant.name} - Builder Battle`;
             
             // Update Twitter Card meta tags
+            const xProfile = participant.x_profile || participant.xProfile || '';
             this.updateMetaTag('twitter:title', `${participant.name} - Builder Battle`);
-            this.updateMetaTag('twitter:description', `Vote for ${participant.name} in Builder Battle! ${participant.xProfile ? `by ${participant.xProfile}` : ''} Join the battle and help decide the winner.`);
+            this.updateMetaTag('twitter:description', `Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.`);
             this.updateMetaTag('twitter:image', participant.image);
             
             // Update Open Graph meta tags
             this.updateMetaTag('og:title', `${participant.name} - Builder Battle`);
-            this.updateMetaTag('og:description', `Vote for ${participant.name} in Builder Battle! ${participant.xProfile ? `by ${participant.xProfile}` : ''} Join the battle and help decide the winner.`);
+            this.updateMetaTag('og:description', `Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.`);
             this.updateMetaTag('og:image', participant.image);
             this.updateMetaTag('og:url', window.location.href);
         }
@@ -536,8 +537,9 @@ class BuilderBattle {
                 </button>` : '';
             
             // X profile link
-            const xProfileLink = participant.xProfile ? 
-                `<a href="https://x.com/${participant.xProfile.replace('@', '')}" target="_blank" class="x-profile-link">by ${participant.xProfile}</a>` : 
+            const xProfile = participant.x_profile || participant.xProfile; // Support both formats
+            const xProfileLink = xProfile ? 
+                `<a href="https://x.com/${xProfile.replace('@', '')}" target="_blank" class="x-profile-link">by ${xProfile}</a>` : 
                 '';
 
             card.innerHTML = `
@@ -574,7 +576,7 @@ class BuilderBattle {
         }
 
         // Create share message
-        const xProfile = participant.xProfile || '';
+        const xProfile = participant.x_profile || participant.xProfile || '';
         const shareMessage = `#BuilderBattle ${participant.name}${xProfile ? ` by ${xProfile}` : ''} - Vote for your favorite builder! https://builderbattle.vercel.app?participant=${participantId}`;
         const shareUrl = `https://builderbattle.vercel.app?participant=${participantId}`;
         
