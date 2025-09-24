@@ -1,9 +1,15 @@
-// Builder Battle API - Persistent Data Storage
+// Builder Battle API - Persistent Data Storage using GitHub API
 const fs = require('fs');
 const path = require('path');
 
 // Data file path (will be committed to GitHub)
 const DATA_FILE = path.join(process.cwd(), 'data.json');
+
+// GitHub API configuration
+const GITHUB_OWNER = 'adrianzero-1';
+const GITHUB_REPO = 'adrianzero-1';
+const GITHUB_PATH = 'builderbattle/data.json';
+const GITHUB_API_BASE = 'https://api.github.com';
 
 // Default data structure
 const defaultData = {
@@ -50,15 +56,58 @@ function loadData() {
     }
 }
 
-// Save data to GitHub file
-function saveData(data) {
+// Save data to GitHub using API
+async function saveData(data) {
     try {
         data.lastUpdated = new Date().toISOString();
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-        console.log('Data saved to GitHub file');
-        return true;
+        const content = JSON.stringify(data, null, 2);
+        
+        // Get GitHub token from environment
+        const githubToken = process.env.GITHUB_TOKEN;
+        if (!githubToken) {
+            console.error('GITHUB_TOKEN environment variable not set');
+            return false;
+        }
+        
+        // First, get the current file to get the SHA
+        const getResponse = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`, {
+            headers: {
+                'Authorization': `token ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        let sha = null;
+        if (getResponse.ok) {
+            const fileData = await getResponse.json();
+            sha = fileData.sha;
+        }
+        
+        // Update the file
+        const updateResponse = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Update Builder Battle data - ${new Date().toISOString()}`,
+                content: Buffer.from(content).toString('base64'),
+                sha: sha
+            })
+        });
+        
+        if (updateResponse.ok) {
+            console.log('Data saved to GitHub via API');
+            return true;
+        } else {
+            const error = await updateResponse.text();
+            console.error('GitHub API error:', error);
+            return false;
+        }
     } catch (error) {
-        console.error('Error saving data:', error);
+        console.error('Error saving data to GitHub:', error);
         return false;
     }
 }
@@ -100,19 +149,24 @@ module.exports = async function handler(req, res) {
                 const { address, participantId } = payload;
                 
                 console.log('Vote data:', { address, participantId });
+                console.log('Available participants:', data.participants.map(p => ({ id: p.id, name: p.name })));
+                console.log('Current voters:', data.voters);
                 
                 if (!address || !participantId) {
+                    console.log('Missing required fields for vote:', { address: !!address, participantId: !!participantId });
                     return res.status(400).json({ error: 'Missing required fields' });
                 }
 
                 // Check if user has already voted
                 if (data.voters.includes(address)) {
+                    console.log('User already voted:', address);
                     return res.status(400).json({ error: 'User has already voted' });
                 }
 
                 // Check if participant exists
                 const participant = data.participants.find(p => p.id === participantId);
                 if (!participant) {
+                    console.log('Participant not found:', participantId);
                     return res.status(400).json({ error: 'Participant not found' });
                 }
 
@@ -120,15 +174,19 @@ module.exports = async function handler(req, res) {
                 data.votes[address] = participantId;
                 data.voters.push(address);
                 participant.votes++;
+                
+                console.log('Vote recorded, participant votes:', participant.votes);
 
                 // Save data
-                if (saveData(data)) {
+                if (await saveData(data)) {
+                    console.log('Vote saved successfully');
                     return res.status(200).json({
                         success: true,
                         message: 'Vote recorded successfully',
                         participant: participant
                     });
                 } else {
+                    console.error('Failed to save vote data');
                     return res.status(500).json({ error: 'Failed to save vote' });
                 }
             }
@@ -136,13 +194,22 @@ module.exports = async function handler(req, res) {
             if (action === 'addParticipant') {
                 const { name, image, xProfile } = payload;
                 
+                console.log('Adding participant:', { name, xProfile, hasImage: !!image });
+                
                 if (!name || !image) {
+                    console.log('Missing required fields:', { name: !!name, image: !!image });
                     return res.status(400).json({ error: 'Name and image are required' });
                 }
 
                 // Create new participant
+                const nextId = data.participants.length > 0 
+                    ? Math.max(...data.participants.map(p => p.id), 0) + 1
+                    : 1;
+                
+                console.log('Next participant ID:', nextId);
+                
                 const newParticipant = {
-                    id: Math.max(...data.participants.map(p => p.id), 0) + 1,
+                    id: nextId,
                     name: name,
                     image: image,
                     xProfile: xProfile || '',
@@ -150,15 +217,18 @@ module.exports = async function handler(req, res) {
                 };
 
                 data.participants.push(newParticipant);
+                console.log('Participant added to data, total participants:', data.participants.length);
 
                 // Save data
-                if (saveData(data)) {
+                if (await saveData(data)) {
+                    console.log('Participant saved successfully');
                     return res.status(200).json({
                         success: true,
                         message: 'Participant added successfully',
                         participant: newParticipant
                     });
                 } else {
+                    console.error('Failed to save participant data');
                     return res.status(500).json({ error: 'Failed to save participant' });
                 }
             }
@@ -191,7 +261,7 @@ module.exports = async function handler(req, res) {
                 });
 
                 // Save data
-                if (saveData(data)) {
+                if (await saveData(data)) {
                     return res.status(200).json({
                         success: true,
                         message: 'Participant removed successfully'
@@ -226,7 +296,7 @@ module.exports = async function handler(req, res) {
                 });
 
                 // Save data
-                if (saveData(data)) {
+                if (await saveData(data)) {
                     return res.status(200).json({
                         success: true,
                         message: 'Winner drawn successfully',
@@ -263,7 +333,7 @@ module.exports = async function handler(req, res) {
                 // Reset to default data
                 data = { ...defaultData };
                 
-                if (saveData(data)) {
+                if (await saveData(data)) {
                     return res.status(200).json({
                         success: true,
                         message: 'Data reset successfully'
