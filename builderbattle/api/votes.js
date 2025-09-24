@@ -184,7 +184,7 @@ module.exports = async function handler(req, res) {
                 data: {
                     participants: data.participants,
                     totalVotes: data.voters.length,
-                    voters: data.voters.length,
+                    voters: data.voters,
                     lastUpdated: data.lastUpdated
                 }
             });
