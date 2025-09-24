@@ -189,13 +189,15 @@
             color: white;
             border: none;
             padding: 10px 20px;
-            border-radius: 20px;
+            border-radius: 0px;
             cursor: pointer;
             font-family: 'VT323', monospace;
             font-size: 1rem;
             font-weight: bold;
             margin-top: 10px;
             transition: all 0.3s ease;
+            flex: 1;
+            margin-right: 5px;
         }
 
         .vote-btn:hover:not(:disabled) {
@@ -250,20 +252,27 @@
             background: linear-gradient(45deg, #1da1f2, #0d8bd9);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 15px;
-            font-size: 0.9rem;
+            padding: 10px 20px;
+            border-radius: 0px;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 8px;
-            width: 100%;
+            margin-top: 10px;
+            flex: 1;
+            margin-left: 5px;
         }
 
         .share-btn:hover {
             background: linear-gradient(45deg, #0d8bd9, #0a6bb3);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(29, 161, 242, 0.3);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 0;
+            margin-top: 10px;
         }
 
         .form-help {

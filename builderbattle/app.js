@@ -470,14 +470,16 @@ class BuilderBattle {
                 <div class="participant-info">
                     <div class="participant-name">${participant.name} ${xProfileLink}</div>
                     <div class="vote-count">${participant.votes} votes</div>
-                    <button class="vote-btn" 
-                            onclick="builderBattle.vote(${participant.id})" 
-                            ${hasVoted ? 'disabled' : ''}>
-                        ${hasVoted ? (userVotedForThis ? '✓ Voted' : 'Already Voted') : 'Vote'}
-                    </button>
-                    <button class="share-btn" onclick="builderBattle.shareParticipant(${participant.id})">
-                        📢 Share & Vote
-                    </button>
+                    <div class="button-row">
+                        <button class="vote-btn" 
+                                onclick="builderBattle.vote(${participant.id})" 
+                                ${hasVoted ? 'disabled' : ''}>
+                            ${hasVoted ? (userVotedForThis ? '✓ Voted' : 'Already Voted') : 'Vote'}
+                        </button>
+                        <button class="share-btn" onclick="builderBattle.shareParticipant(${participant.id})">
+                            Share
+                        </button>
+                    </div>
                     ${adminControls}
                 </div>
             `;
