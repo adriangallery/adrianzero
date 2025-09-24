@@ -609,11 +609,16 @@ class BuilderBattle {
         const shareMessage = `#BuilderBattle ${participant.name}${xProfile ? ` by ${xProfile}` : ''} - Vote for your favorite builder! https://builderbattle.vercel.app?participant=${participantId}`;
         const shareUrl = `https://builderbattle.vercel.app?participant=${participantId}`;
         
+        // Add X profile to the message if it exists
+        const finalMessage = xProfile ? 
+            `${shareMessage} ${xProfile}` : 
+            shareMessage;
+        
         // Create image URL for X sharing
         const imageUrl = `https://builderbattle.vercel.app/api/image?participantId=${participantId}`;
         
         // Create Twitter share URL with image
-        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}&url=${encodeURIComponent(shareUrl)}`;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(finalMessage)}&url=${encodeURIComponent(shareUrl)}`;
         
         // Open Twitter in new window
         window.open(twitterUrl, '_blank', 'width=600,height=400');
