@@ -40,7 +40,7 @@ class BuilderBattle {
         await this.loadData();
         this.updateUI();
         
-        // Update meta tags if there's a participant parameter
+        // Update meta tags if there's a participant parameter (after data is loaded)
         if (this.highlightParticipant) {
             this.updateMetaTagsForParticipant(this.highlightParticipant);
         }
@@ -53,7 +53,7 @@ class BuilderBattle {
         if (participantId) {
             console.log('Participant ID from URL:', participantId);
             this.highlightParticipant = parseInt(participantId);
-            this.updateMetaTagsForParticipant(participantId);
+            // Meta tags will be updated after data is loaded
         }
     }
 
@@ -67,14 +67,15 @@ class BuilderBattle {
             
             // Update Twitter Card meta tags
             const xProfile = participant.x_profile || participant.xProfile || '';
+            const imageUrl = `https://builderbattle.vercel.app/api/image?participantId=${participant.id}`;
             this.updateMetaTag('twitter:title', `${participant.name} - Builder Battle`);
             this.updateMetaTag('twitter:description', `Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.`);
-            this.updateMetaTag('twitter:image', participant.image);
+            this.updateMetaTag('twitter:image', imageUrl);
             
             // Update Open Graph meta tags
             this.updateMetaTag('og:title', `${participant.name} - Builder Battle`);
             this.updateMetaTag('og:description', `Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.`);
-            this.updateMetaTag('og:image', participant.image);
+            this.updateMetaTag('og:image', imageUrl);
             this.updateMetaTag('og:url', window.location.href);
         }
     }
@@ -502,6 +503,34 @@ class BuilderBattle {
     updateUI() {
         this.updateStats();
         this.renderParticipants();
+        
+        // Show special message if viewing specific participant
+        if (this.highlightParticipant) {
+            this.showParticipantMessage();
+        }
+    }
+
+    showParticipantMessage() {
+        const participant = this.participants.find(p => p.id === this.highlightParticipant);
+        if (participant) {
+            // Create or update special message
+            let messageDiv = document.getElementById('participantMessage');
+            if (!messageDiv) {
+                messageDiv = document.createElement('div');
+                messageDiv.id = 'participantMessage';
+                messageDiv.className = 'participant-message';
+                document.querySelector('.hero-section').appendChild(messageDiv);
+            }
+            
+            const xProfile = participant.x_profile || participant.xProfile || '';
+            messageDiv.innerHTML = `
+                <div class="highlighted-participant-info">
+                    <h2>🎯 Voting for ${participant.name}${xProfile ? ` by ${xProfile}` : ''}</h2>
+                    <p>This participant has ${participant.votes} vote${participant.votes !== 1 ? 's' : ''}</p>
+                    <p>Scroll down to vote or see all participants!</p>
+                </div>
+            `;
+        }
     }
 
     updateStats() {
