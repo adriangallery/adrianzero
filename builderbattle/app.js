@@ -253,10 +253,14 @@ class BuilderBattle {
             const result = await response.json();
             
             if (result.success) {
+                // Find participant name before removing
+                const participant = this.participants.find(p => p.id === participantId);
+                const participantName = participant ? participant.name : 'Participant';
+                
                 // Remove from local array
                 this.participants = this.participants.filter(p => p.id !== participantId);
                 this.updateUI();
-                this.showSuccess(`Participant "${result.removedParticipant.name}" removed successfully!`);
+                this.showSuccess(`Participant "${participantName}" removed successfully!`);
             } else {
                 this.showError(result.error || 'Failed to remove participant');
             }

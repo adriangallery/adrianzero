@@ -73,22 +73,7 @@ async function loadData() {
 // Get default data structure
 function getDefaultData() {
     return {
-        participants: [
-            {
-                id: 1,
-                name: 'Builder Alpha',
-                image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZmY2YjM1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkFscGhhPC90ZXh0Pjwvc3ZnPg==',
-                x_profile: '@builderalpha',
-                votes: 0
-            },
-            {
-                id: 2,
-                name: 'Builder Beta',
-                image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDBmZjg4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJldGE8L3RleHQ+PC9zdmc+',
-                x_profile: '@builderbeta',
-                votes: 0
-            }
-        ],
+        participants: [],
         votes: {},
         voters: [],
         winners: [],
@@ -373,15 +358,25 @@ module.exports = async function handler(req, res) {
                     return res.status(403).json({ error: 'Unauthorized' });
                 }
 
-                // Reset to default data
-                data = getDefaultData();
-                
-                if (await saveData(data)) {
+                // Clear all data from Supabase
+                try {
+                    // Clear votes
+                    await supabase.from('votes').delete().neq('id', 0);
+                    
+                    // Clear participants
+                    await supabase.from('participants').delete().neq('id', 0);
+                    
+                    // Clear winners
+                    await supabase.from('winners').delete().neq('id', 0);
+                    
+                    console.log('All data cleared from Supabase');
+                    
                     return res.status(200).json({
                         success: true,
                         message: 'Data reset successfully'
                     });
-                } else {
+                } catch (error) {
+                    console.error('Error clearing data:', error);
                     return res.status(500).json({ error: 'Failed to reset data' });
                 }
             }
