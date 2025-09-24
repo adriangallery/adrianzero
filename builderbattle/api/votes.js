@@ -322,12 +322,13 @@ module.exports = async function handler(req, res) {
             }
 
             if (action === 'drawWinners') {
-                const { address } = payload;
-                
-                // Check if user is admin
-                if (address.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()) {
-                    return res.status(403).json({ error: 'Unauthorized' });
-                }
+                try {
+                    const { address } = payload;
+                    
+                    // Check if user is admin
+                    if (address.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()) {
+                        return res.status(403).json({ error: 'Unauthorized' });
+                    }
 
                 if (data.participants.length === 0) {
                     return res.status(400).json({ error: 'No participants to draw from' });
@@ -393,7 +394,11 @@ module.exports = async function handler(req, res) {
                 data.winners.push(participantWinnerData, ...voterWinnersData);
 
                 // Save data
-                if (await saveData(data)) {
+                console.log('Attempting to save winners data...');
+                const saveResult = await saveData(data);
+                console.log('Save result:', saveResult);
+                
+                if (saveResult) {
                     return res.status(200).json({
                         success: true,
                         message: 'Winners drawn successfully',
@@ -409,7 +414,12 @@ module.exports = async function handler(req, res) {
                         }))
                     });
                 } else {
+                    console.error('Failed to save winners data');
                     return res.status(500).json({ error: 'Failed to save winners' });
+                }
+                } catch (error) {
+                    console.error('Error in drawWinners:', error);
+                    return res.status(500).json({ error: 'Internal server error: ' + error.message });
                 }
             }
 
