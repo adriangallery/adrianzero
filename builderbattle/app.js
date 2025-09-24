@@ -8,7 +8,7 @@ class BuilderBattle {
         this.currentAccount = null;
         this.participants = [];
         this.votes = new Map(); // address -> participantId
-        this.voters = new Set();
+        this.voters = [];
         this.isAdmin = false;
         this.maxVotesPerUser = 1;
         this.apiBase = '/api/votes';
@@ -125,7 +125,7 @@ class BuilderBattle {
     disconnectWallet() {
         this.currentAccount = null;
         this.votes.clear();
-        this.voters.clear();
+        this.voters = [];
         document.getElementById('connectSection').style.display = 'block';
         document.getElementById('accountSection').style.display = 'none';
         document.getElementById('adminSection').style.display = 'none';
@@ -170,6 +170,7 @@ class BuilderBattle {
             
             if (result.success) {
                 this.participants = result.data.participants;
+                this.voters = result.data.voters || [];
                 this.updateUI();
             } else {
                 this.showError('Failed to load data from server');
@@ -249,7 +250,9 @@ class BuilderBattle {
             
             if (result.success) {
                 this.votes.set(this.currentAccount, participantId);
-                this.voters.add(this.currentAccount);
+                if (!this.voters.includes(this.currentAccount)) {
+                    this.voters.push(this.currentAccount);
+                }
                 this.updateUI();
                 this.updateVoteStatus();
                 this.showSuccess(`Vote recorded for ${result.participant.name}!`);
