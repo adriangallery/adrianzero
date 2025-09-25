@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
         }
 
         const xProfile = participant.x_profile || '';
-        const imageUrl = `https://builderbattle.vercel.app/api/og-image?participantId=${participantId}`;
+        const imageUrl = `https://builderbattle.vercel.app/api/static-image?participantId=${participantId}`;
         const pageUrl = `https://builderbattle.vercel.app?participant=${participantId}`;
 
         // Generate HTML with proper meta tags
