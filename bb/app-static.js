@@ -145,6 +145,18 @@ class BuilderBattle {
             connectBtn.addEventListener('click', () => this.connectWallet());
         }
 
+        // Disconnect wallet button
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        if (disconnectBtn) {
+            disconnectBtn.addEventListener('click', () => this.disconnectWallet());
+        }
+
+        // Add participant button
+        const addParticipantBtn = document.getElementById('addParticipantBtn');
+        if (addParticipantBtn) {
+            addParticipantBtn.addEventListener('click', () => this.addParticipant());
+        }
+
         // Vote buttons
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('vote-btn')) {
@@ -190,6 +202,13 @@ class BuilderBattle {
             console.error('Error connecting wallet:', error);
             this.showError('Error connecting wallet: ' + error.message);
         }
+    }
+
+    disconnectWallet() {
+        this.currentAccount = null;
+        this.isAdmin = false;
+        this.updateUI();
+        this.showSuccess('Wallet disconnected successfully!');
     }
 
     async vote(participantId) {
@@ -357,6 +376,20 @@ class BuilderBattle {
         this.updateParticipants();
         this.updateVoteStatus();
         this.updateAdminPanel();
+        this.updateConnectSection();
+    }
+
+    updateConnectSection() {
+        const connectSection = document.getElementById('connectSection');
+        const accountSection = document.getElementById('accountSection');
+        
+        if (this.currentAccount) {
+            connectSection.style.display = 'none';
+            accountSection.style.display = 'block';
+        } else {
+            connectSection.style.display = 'block';
+            accountSection.style.display = 'none';
+        }
     }
 
     updateParticipants() {

@@ -527,7 +527,7 @@
             <h2 class="section-title">Connect Your Wallet</h2>
             <div class="connect-section">
                 <p style="font-size: 1.2rem; margin-bottom: 20px;">Connect your wallet to vote and participate in the lottery</p>
-                <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+                <button class="connect-btn" id="connectBtn">Connect Wallet</button>
             </div>
         </div>
 
@@ -543,7 +543,7 @@
                     <strong>Votes Used:</strong>
                     <span id="votesUsed">0</span> / <span id="maxVotes">1</span>
                 </div>
-                <button class="connect-btn" onclick="disconnectWallet()">Disconnect</button>
+                <button class="connect-btn" id="disconnectBtn">Disconnect</button>
             </div>
         </div>
 
@@ -591,7 +591,7 @@
                     <label class="form-label">Upload Image:</label>
                     <input type="file" class="form-input" id="participantImage" accept="image/*">
                 </div>
-                <button class="vote-btn" onclick="addParticipant()">Add Participant</button>
+                <button class="vote-btn" id="addParticipantBtn">Add Participant</button>
             </div>
             
         </div>
