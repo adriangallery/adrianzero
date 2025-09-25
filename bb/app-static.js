@@ -31,8 +31,10 @@ class BuilderBattle {
         // Setup event listeners
         this.setupEventListeners();
         
-        // Update UI
-        this.updateUI();
+        // Update UI after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            this.updateUI();
+        }, 100);
     }
 
     async loadData() {
@@ -373,6 +375,12 @@ class BuilderBattle {
     }
 
     updateUI() {
+        console.log('Updating UI...');
+        console.log('Participants:', this.participants.length);
+        console.log('Votes:', Object.keys(this.votes).length);
+        console.log('Current account:', this.currentAccount);
+        console.log('Is admin:', this.isAdmin);
+        
         this.updateParticipants();
         this.updateVoteStatus();
         this.updateAdminPanel();
@@ -393,10 +401,17 @@ class BuilderBattle {
     }
 
     updateParticipants() {
+        console.log('Updating participants...');
         const participantsContainer = document.getElementById('participants');
-        if (!participantsContainer) return;
+        console.log('Participants container:', participantsContainer);
+        
+        if (!participantsContainer) {
+            console.error('Participants container not found!');
+            return;
+        }
 
         participantsContainer.innerHTML = '';
+        console.log('Rendering', this.participants.length, 'participants');
 
         this.participants.forEach(participant => {
             const participantCard = document.createElement('div');
@@ -423,8 +438,14 @@ class BuilderBattle {
     }
 
     updateVoteStatus() {
+        console.log('Updating vote status...');
         const voteStatus = document.getElementById('voteStatus');
-        if (!voteStatus) return;
+        console.log('Vote status element:', voteStatus);
+        
+        if (!voteStatus) {
+            console.error('Vote status element not found!');
+            return;
+        }
 
         if (this.currentAccount) {
             if (this.votes[this.currentAccount]) {
