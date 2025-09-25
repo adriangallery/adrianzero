@@ -90,7 +90,35 @@ async function saveData(data) {
             winners: data.winners.length
         });
         
-        // Update participants
+        // Get current participants from database
+        const { data: currentParticipants, error: fetchError } = await supabase
+            .from('participants')
+            .select('id');
+
+        if (fetchError) {
+            console.error('Error fetching current participants:', fetchError);
+            return false;
+        }
+
+        // Delete participants that are no longer in the data
+        const currentIds = currentParticipants.map(p => p.id);
+        const newIds = data.participants.map(p => p.id);
+        const toDelete = currentIds.filter(id => !newIds.includes(id));
+
+        if (toDelete.length > 0) {
+            console.log('Deleting participants:', toDelete);
+            const { error: deleteError } = await supabase
+                .from('participants')
+                .delete()
+                .in('id', toDelete);
+
+            if (deleteError) {
+                console.error('Error deleting participants:', deleteError);
+                return false;
+            }
+        }
+
+        // Update or insert participants
         for (const participant of data.participants) {
             console.log('Saving participant:', participant.id, participant.name);
             const { error } = await supabase
