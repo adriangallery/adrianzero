@@ -332,10 +332,16 @@ module.exports = async function handler(req, res) {
             if (action === 'drawWinners') {
                 console.log('drawWinners action detected');
                 try {
-                    const { address } = payload;
+                    const { address, adminAddress } = payload;
+                    const userAddress = address || adminAddress;
+                    console.log('drawWinners payload:', { address, adminAddress, userAddress });
                     
                     // Check if user is admin
-                    if (address.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()) {
+                    if (!userAddress) {
+                        return res.status(400).json({ error: 'Missing admin address' });
+                    }
+                    
+                    if (userAddress.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()) {
                         return res.status(403).json({ error: 'Unauthorized' });
                     }
 
