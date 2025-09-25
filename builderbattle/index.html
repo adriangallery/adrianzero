@@ -592,12 +592,12 @@
                 <button class="vote-btn" onclick="addParticipant()">Add Participant</button>
             </div>
             
-            <!-- Lottery Section (Admin Only) -->
-            <div class="lottery-section" style="margin-top: 30px;">
+            <!-- Lottery Section (Admin Only) - Temporarily Disabled -->
+            <div class="lottery-section" style="margin-top: 30px; opacity: 0.5; pointer-events: none;">
                 <h2 class="section-title">🎲 Lottery Draw</h2>
-                <p style="font-size: 1.2rem; margin-bottom: 20px;">Draw 1 winning builder + 3 winning voters</p>
-                <button class="lottery-btn" id="lotteryBtn" onclick="drawWinners()">Draw Winners</button>
-                <div class="loading" id="lotteryLoading">Drawing winners...</div>
+                <p style="font-size: 1.2rem; margin-bottom: 20px;">Coming Soon - External Lottery System</p>
+                <button class="lottery-btn" id="lotteryBtn" disabled>Draw Winners (Coming Soon)</button>
+                <div class="loading" id="lotteryLoading" style="display: none;">Drawing winners...</div>
             </div>
         </div>
 

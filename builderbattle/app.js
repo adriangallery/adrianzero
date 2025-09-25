@@ -433,67 +433,8 @@ class BuilderBattle {
     }
 
     // Lottery System
-    async drawWinners() {
-        if (this.participants.length === 0) {
-            this.showError('No participants to draw from.');
-            return;
-        }
-
-        console.log('Draw winners check:', {
-            participants: this.participants.length,
-            voters: this.voters.length,
-            votes: this.votes.size,
-            votesData: Array.from(this.votes.entries()),
-            votersData: this.voters
-        });
-        
-        if (this.voters.length < 3) {
-            this.showError(`Need at least 3 voters to draw voter winners. Current: ${this.voters.length}`);
-            return;
-        }
-
-        try {
-            this.showLoading(true);
-            document.getElementById('lotteryBtn').disabled = true;
-            document.getElementById('lotteryLoading').style.display = 'block';
-
-            // Send lottery request to API
-            const response = await fetch(this.apiBase, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'drawWinners',
-                    adminAddress: this.currentAccount
-                })
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                // Show winners with animation
-                setTimeout(() => {
-                    this.showWinners(result.winningParticipant, result.winningVoters);
-                    this.showLoading(false);
-                    document.getElementById('lotteryBtn').disabled = false;
-                    document.getElementById('lotteryLoading').style.display = 'none';
-                }, 2000);
-            } else {
-                this.showError(result.error || 'Failed to draw winners');
-                this.showLoading(false);
-                document.getElementById('lotteryBtn').disabled = false;
-                document.getElementById('lotteryLoading').style.display = 'none';
-            }
-
-        } catch (error) {
-            console.error('Error drawing winners:', error);
-            this.showError('Error drawing winners: ' + error.message);
-            this.showLoading(false);
-            document.getElementById('lotteryBtn').disabled = false;
-            document.getElementById('lotteryLoading').style.display = 'none';
-        }
-    }
+    // drawWinners functionality temporarily removed
+    // Will be implemented later with external lottery system
 
     async getBlockchainRandomness() {
         try {
@@ -531,58 +472,8 @@ class BuilderBattle {
         winnerResult.scrollIntoView({ behavior: 'smooth' });
     }
 
-    showWinners(winningParticipant, winningVoters) {
-        const winnerResult = document.getElementById('winnerResult');
-        const winnerDetails = document.getElementById('winnerDetails');
-        
-        const voterPositions = ['🥇', '🥈', '🥉'];
-        const voterColors = ['#ffd700', '#c0c0c0', '#cd7f32']; // Gold, Silver, Bronze
-        
-        winnerDetails.innerHTML = `
-            <h2 style="color: #fff; font-size: 2.5rem; margin-bottom: 30px; text-align: center;">🏆 WINNERS ANNOUNCED! 🏆</h2>
-            
-            <!-- Winning Participant -->
-            <div style="margin-bottom: 40px;">
-                <h3 style="color: #00ff88; font-size: 1.8rem; margin-bottom: 20px; text-align: center;">🏗️ WINNING BUILDER</h3>
-                <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: rgba(0, 255, 136, 0.1); border-radius: 15px; min-width: 400px; margin: 0 auto; border: 2px solid #00ff88;">
-                    <div style="font-size: 3rem;">🏆</div>
-                    <img src="${winningParticipant.image}" alt="${winningParticipant.name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 20px #00ff8840;">
-                    <div>
-                        <h3 style="color: #00ff88; font-size: 1.5rem; margin: 0;">${winningParticipant.name}</h3>
-                        <p style="color: #fff; margin: 5px 0;">${winningParticipant.votes} votes</p>
-                        ${winningParticipant.x_profile ? `<p style="color: #00ff88; margin: 0; font-size: 0.9rem;">@${winningParticipant.x_profile}</p>` : ''}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Winning Voters -->
-            <div>
-                <h3 style="color: #ffd700; font-size: 1.8rem; margin-bottom: 20px; text-align: center;">🎲 WINNING VOTERS</h3>
-                <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
-                    ${winningVoters.map((voter, index) => `
-                        <div style="display: flex; align-items: center; gap: 20px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 15px; min-width: 400px;">
-                            <div style="font-size: 2.5rem;">${voterPositions[index]}</div>
-                            <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(45deg, #1a1a2e, #16213e); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px ${voterColors[index]}40;">
-                                <span style="color: ${voterColors[index]}; font-size: 1.5rem;">👤</span>
-                            </div>
-                            <div>
-                                <h3 style="color: ${voterColors[index]}; font-size: 1.2rem; margin: 0;">Voter #${index + 1}</h3>
-                                <p style="color: #fff; margin: 5px 0; font-family: monospace; font-size: 0.9rem;">${voter.address.slice(0, 6)}...${voter.address.slice(-4)}</p>
-                                <p style="color: #ccc; margin: 0; font-size: 0.8rem;">Randomly selected voter</p>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            
-            <p style="font-size: 1.2rem; color: #ccc; margin-top: 30px; text-align: center;">Congratulations to all winners! 🎉</p>
-        `;
-        
-        winnerResult.classList.add('show');
-        
-        // Scroll to winners
-        winnerResult.scrollIntoView({ behavior: 'smooth' });
-    }
+    // showWinners functionality temporarily removed
+    // Will be implemented later with external lottery system
 
     // UI Updates
     updateUI() {
@@ -769,9 +660,8 @@ function addParticipant() {
     builderBattle.addParticipant();
 }
 
-function drawWinners() {
-    builderBattle.drawWinners();
-}
+// drawWinners functionality temporarily removed
+// Will be implemented later with external lottery system
 
 // Initialize the app
 let builderBattle;
