@@ -397,7 +397,7 @@ module.exports = async function handler(req, res) {
                 const winningParticipant = sortedParticipants[0];
 
                 // 2. Select 3 random voters from all voters
-                const allVoters = Object.keys(data.votes);
+                const allVoters = data.voters;
                 const shuffledVoters = [...allVoters].sort(() => Math.random() - 0.5);
                 const winningVoters = shuffledVoters.slice(0, 3);
 
