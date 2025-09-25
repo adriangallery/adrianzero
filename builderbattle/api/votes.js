@@ -175,7 +175,14 @@ module.exports = async function handler(req, res) {
         }
 
         // Load current data
-        let data = await loadData();
+        let data;
+        try {
+            data = await loadData();
+            console.log('Data loaded successfully');
+        } catch (error) {
+            console.error('Error loading data:', error);
+            return res.status(500).json({ error: 'Failed to load data: ' + error.message });
+        }
 
         if (req.method === 'GET') {
             // Return all data
@@ -191,6 +198,7 @@ module.exports = async function handler(req, res) {
         }
 
         if (req.method === 'POST') {
+            console.log('POST request received, body:', req.body);
             const { action, ...payload } = req.body;
             
             console.log('API received:', { action, payload });
@@ -322,6 +330,7 @@ module.exports = async function handler(req, res) {
             }
 
             if (action === 'drawWinners') {
+                console.log('drawWinners action detected');
                 try {
                     const { address } = payload;
                     
