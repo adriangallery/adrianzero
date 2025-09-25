@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
         }
 
         const xProfile = participant.x_profile || '';
-        const imageUrl = `https://builderbattle.vercel.app/api/static-image?participantId=${participantId}`;
+        const imageUrl = participant.image;
         const pageUrl = `https://builderbattle.vercel.app?participant=${participantId}`;
 
         // Generate HTML with proper meta tags
@@ -128,6 +128,20 @@ module.exports = async function handler(req, res) {
             padding: 50px;
             font-size: 1.5rem;
         }
+        
+        .participant-image-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .participant-image-large {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -140,6 +154,9 @@ module.exports = async function handler(req, res) {
                 <h2>🎯 Voting for ${participant.name}${xProfile ? ` by ${xProfile}` : ''}</h2>
                 <p>This participant has ${participant.votes} vote${participant.votes !== 1 ? 's' : ''}</p>
                 <p>Loading the full application...</p>
+            </div>
+            <div class="participant-image-container">
+                <img src="${participant.image}" alt="${participant.name} - Builder Battle participant" class="participant-image-large">
             </div>
         </div>
     </div>
