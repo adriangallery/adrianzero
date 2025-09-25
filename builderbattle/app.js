@@ -171,10 +171,20 @@ class BuilderBattle {
             if (result.success) {
                 this.participants = result.data.participants;
                 this.voters = result.data.voters || [];
+                
+                // Load votes from API data
+                this.votes.clear();
+                if (result.data.votes) {
+                    Object.entries(result.data.votes).forEach(([voterAddress, participantId]) => {
+                        this.votes.set(voterAddress, participantId);
+                    });
+                }
+                
                 console.log('Loaded data:', {
                     participants: this.participants.length,
                     voters: this.voters.length,
-                    votersData: this.voters
+                    votersData: this.voters,
+                    votes: this.votes.size
                 });
                 this.updateUI();
             } else {
