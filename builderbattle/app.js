@@ -184,7 +184,8 @@ class BuilderBattle {
                     participants: this.participants.length,
                     voters: this.voters.length,
                     votersData: this.voters,
-                    votes: this.votes.size
+                    votes: this.votes.size,
+                    votesData: Array.from(this.votes.entries())
                 });
                 this.updateUI();
             } else {
@@ -441,7 +442,8 @@ class BuilderBattle {
         console.log('Draw winners check:', {
             participants: this.participants.length,
             voters: this.voters.length,
-            votes: Object.keys(this.votes).length,
+            votes: this.votes.size,
+            votesData: Array.from(this.votes.entries()),
             votersData: this.voters
         });
         
