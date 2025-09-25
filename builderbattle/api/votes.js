@@ -84,8 +84,15 @@ function getDefaultData() {
 // Save data to Supabase
 async function saveData(data) {
     try {
+        console.log('Starting saveData with:', {
+            participants: data.participants.length,
+            voters: data.voters.length,
+            winners: data.winners.length
+        });
+        
         // Update participants
         for (const participant of data.participants) {
+            console.log('Saving participant:', participant.id, participant.name);
             const { error } = await supabase
                 .from('participants')
                 .upsert({
@@ -104,6 +111,7 @@ async function saveData(data) {
         }
 
         // Clear existing votes
+        console.log('Clearing existing votes...');
         const { error: deleteError } = await supabase
             .from('votes')
             .delete()
@@ -113,6 +121,7 @@ async function saveData(data) {
             console.error('Error clearing votes:', deleteError);
             return false;
         }
+        console.log('Votes cleared successfully');
 
         // Insert new votes
         const votesToInsert = Object.entries(data.votes).map(([voterAddress, participantId]) => ({
@@ -121,6 +130,7 @@ async function saveData(data) {
             created_at: new Date().toISOString()
         }));
 
+        console.log('Votes to insert:', votesToInsert.length);
         if (votesToInsert.length > 0) {
             const { error: votesError } = await supabase
                 .from('votes')
@@ -130,19 +140,29 @@ async function saveData(data) {
                 console.error('Error saving votes:', votesError);
                 return false;
             }
+            console.log('Votes saved successfully');
         }
 
         // Update winners (only add new ones, don't clear existing)
+        console.log('Processing winners:', data.winners.length);
         for (const winner of data.winners) {
+            console.log('Processing winner:', winner);
+            
             // Check if this winner already exists
-            const { data: existingWinner } = await supabase
+            const { data: existingWinner, error: checkError } = await supabase
                 .from('winners')
                 .select('id')
                 .eq('participant_id', winner.participant_id)
                 .eq('drawn_at', winner.drawn_at)
                 .single();
 
+            if (checkError && checkError.code !== 'PGRST116') {
+                console.error('Error checking existing winner:', checkError);
+                return false;
+            }
+
             if (!existingWinner) {
+                console.log('Inserting new winner:', winner);
                 const { error: winnerError } = await supabase
                     .from('winners')
                     .insert(winner);
@@ -151,6 +171,9 @@ async function saveData(data) {
                     console.error('Error saving winner:', winnerError);
                     return false;
                 }
+                console.log('Winner saved successfully');
+            } else {
+                console.log('Winner already exists, skipping');
             }
         }
 
@@ -335,15 +358,15 @@ module.exports = async function handler(req, res) {
                     const { address, adminAddress } = payload;
                     const userAddress = address || adminAddress;
                     console.log('drawWinners payload:', { address, adminAddress, userAddress });
-                    
-                    // Check if user is admin
+                
+                // Check if user is admin
                     if (!userAddress) {
                         return res.status(400).json({ error: 'Missing admin address' });
                     }
                     
                     if (userAddress.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()) {
-                        return res.status(403).json({ error: 'Unauthorized' });
-                    }
+                    return res.status(403).json({ error: 'Unauthorized' });
+                }
 
                 if (data.participants.length === 0) {
                     return res.status(400).json({ error: 'No participants to draw from' });
