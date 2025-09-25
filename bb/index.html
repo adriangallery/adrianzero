@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Builder Battle - Voting & Lottery System v1.2.0</title>
+    
+    <!-- X (Twitter) Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@adriangallery">
+    <meta name="twitter:title" content="Builder Battle - Vote for Your Favorite Builder!">
+    <meta name="twitter:description" content="Vote for your favorite builder and enter the lottery! Join the battle and help decide the winner.">
+    <meta name="twitter:image" content="https://builderbattle.vercel.app/og-image.png">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Builder Battle - Vote for Your Favorite Builder!">
+    <meta property="og:description" content="Vote for your favorite builder and enter the lottery! Join the battle and help decide the winner.">
+    <meta property="og:image" content="https://builderbattle.vercel.app/og-image.png">
+    <meta property="og:url" content="https://builderbattle.vercel.app/">
+    <meta property="og:type" content="website">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏗️</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .hero-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 60px 0;
+            text-align: center;
+            border-bottom: 3px solid #00ff88;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #00ff88;
+            margin-bottom: 30px;
+        }
+
+        .winner-showcase {
+            background: rgba(0, 255, 136, 0.1);
+            border: 3px solid #00ff88;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .winner-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            margin: 20px 0;
+        }
+
+        .winner-title {
+            font-size: 2rem;
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid #333;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: #00ff88;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .connect-section {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'VT323', monospace;
+            font-weight: bold;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+        }
+
+        .account-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .account-address {
+            color: #00ff88;
+            font-size: 1.1rem;
+            font-family: 'VT323', monospace;
+        }
+
+        .participants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .participant-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #333;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .participant-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff88;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+        }
+
+        .highlighted-participant {
+            background: rgba(255, 215, 0, 0.2) !important;
+            border: 3px solid #ffd700 !important;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5) !important;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .participant-message {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .highlighted-participant-info h2 {
+            color: #ffd700;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .highlighted-participant-info p {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .participant-image-container {
+            width: 100%;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .participant-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .participant-name {
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .vote-count {
+            font-size: 1.1rem;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .vote-btn {
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            flex: 1;
+            margin-right: 5px;
+        }
+
+        .vote-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .vote-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .remove-btn {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .remove-btn:hover {
+            background: linear-gradient(45deg, #ff6666, #ff0000);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.3);
+        }
+
+        .participant-info {
+            text-align: center;
+        }
+
+        .x-profile-link {
+            color: #1da1f2;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: normal;
+            margin-left: 5px;
+        }
+
+        .x-profile-link:hover {
+            color: #0d8bd9;
+            text-decoration: underline;
+        }
+
+        .share-btn {
+            background: linear-gradient(45deg, #1da1f2, #0d8bd9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            flex: 1;
+            margin-left: 5px;
+        }
+
+        .share-btn:hover {
+            background: linear-gradient(45deg, #0d8bd9, #0a6bb3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(29, 161, 242, 0.3);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 0;
+            margin-top: 10px;
+        }
+
+        .form-help {
+            color: #ccc;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .admin-section {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff6b35;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .admin-title {
+            color: #ff6b35;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .add-participant-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-label {
+            color: #fff;
+            font-size: 1.1rem;
+        }
+
+        .form-input {
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+        }
+
+        .form-input::placeholder {
+            color: #999;
+        }
+
+        .lottery-section {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .lottery-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-weight: bold;
+            margin: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .lottery-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+        }
+
+        .lottery-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .winner-result {
+            background: rgba(255, 215, 0, 0.2);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            display: none;
+        }
+
+        .winner-result.show {
+            display: block;
+            animation: winnerGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes winnerGlow {
+            from { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            to { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #00ff88;
+            font-size: 1.2rem;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .participants-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .account-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">🏗️ Builder Battle</h1>
+                <p class="hero-subtitle">Vote for your favorite builder and enter the lottery! v1.2.0</p>
+            
+            <!-- Winner Showcase -->
+            <div class="winner-showcase">
+                <h2 class="winner-title">🏆 First Edition Winner</h2>
+                <img src="winnerfirstedition.gif" alt="First Edition Winner" class="winner-image">
+                <p style="font-size: 1.2rem; color: #fff;">Congratulations to our first champion!</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Connect Section -->
+        <div class="section" id="connectSection">
+            <h2 class="section-title">Connect Your Wallet</h2>
+            <div class="connect-section">
+                <p style="font-size: 1.2rem; margin-bottom: 20px;">Connect your wallet to vote and participate in the lottery</p>
+                <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+            </div>
+        </div>
+
+        <!-- Account Section -->
+        <div class="section" id="accountSection" style="display: none;">
+            <h2 class="section-title">Your Account</h2>
+            <div class="account-info">
+                <div>
+                    <strong>Account:</strong>
+                    <span class="account-address" id="accountAddress"></span>
+                </div>
+                <div>
+                    <strong>Votes Used:</strong>
+                    <span id="votesUsed">0</span> / <span id="maxVotes">1</span>
+                </div>
+                <button class="connect-btn" onclick="disconnectWallet()">Disconnect</button>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="section">
+            <h2 class="section-title">Battle Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalParticipants">0</div>
+                    <div class="stat-label">Participants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalVotes">0</div>
+                    <div class="stat-label">Total Votes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="votersCount">0</div>
+                    <div class="stat-label">Voters</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Participants Section -->
+        <div class="section">
+            <h2 class="section-title">Current Participants</h2>
+            <div class="participants-grid" id="participantsGrid">
+                <!-- Participants will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div class="admin-section" id="adminSection" style="display: none;">
+            <h2 class="admin-title">Admin Panel</h2>
+            <div class="add-participant-form">
+                <div class="form-group">
+                    <label class="form-label">Participant Name:</label>
+                    <input type="text" class="form-input" id="participantName" placeholder="Enter participant name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">X Profile (optional):</label>
+                    <input type="text" class="form-input" id="participantXProfile" placeholder="@username" pattern="@[a-zA-Z0-9_]+">
+                    <small class="form-help">Enter X (Twitter) username with @ symbol</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Upload Image:</label>
+                    <input type="file" class="form-input" id="participantImage" accept="image/*">
+                </div>
+                <button class="vote-btn" onclick="addParticipant()">Add Participant</button>
+            </div>
+            
+        </div>
+
+        <!-- Winner Result -->
+        <div class="winner-result" id="winnerResult">
+            <h2 style="color: #ffd700; font-size: 2.5rem; margin-bottom: 20px;">🎉 WINNERS! 🎉</h2>
+            <div id="winnerDetails"></div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error" id="errorMessage"></div>
+
+        <!-- Success Message -->
+        <div class="success" id="successMessage"></div>
+    </div>
+
+    <script src="app-static.js"></script>
+</body>
+</html>
