@@ -402,7 +402,7 @@ class BuilderBattle {
 
     updateParticipants() {
         console.log('Updating participants...');
-        const participantsContainer = document.getElementById('participants');
+        const participantsContainer = document.getElementById('participantsGrid');
         console.log('Participants container:', participantsContainer);
         
         if (!participantsContainer) {
@@ -439,28 +439,12 @@ class BuilderBattle {
 
     updateVoteStatus() {
         console.log('Updating vote status...');
-        const voteStatus = document.getElementById('voteStatus');
-        console.log('Vote status element:', voteStatus);
-        
-        if (!voteStatus) {
-            console.error('Vote status element not found!');
-            return;
-        }
-
-        if (this.currentAccount) {
-            if (this.votes[this.currentAccount]) {
-                const votedParticipant = this.participants.find(p => p.id === this.votes[this.currentAccount]);
-                voteStatus.innerHTML = `✅ You voted for: ${votedParticipant ? votedParticipant.name : 'Unknown'}`;
-            } else {
-                voteStatus.innerHTML = '❌ You haven\'t voted yet';
-            }
-        } else {
-            voteStatus.innerHTML = '🔗 Connect your wallet to vote';
-        }
+        // TODO: Add vote status element to HTML
+        // For now, we'll skip this functionality
     }
 
     updateAdminPanel() {
-        const adminPanel = document.getElementById('adminPanel');
+        const adminPanel = document.getElementById('adminSection');
         if (!adminPanel) return;
 
         if (this.isAdmin) {
