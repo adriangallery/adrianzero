@@ -1,11 +1,11 @@
 // Builder Battle - Supabase Configuration
 const SUPABASE_CONFIG = {
-    url: 'YOUR_SUPABASE_URL', // Reemplazar con tu URL de Supabase
-    anonKey: 'YOUR_SUPABASE_ANON_KEY' // Reemplazar con tu clave anónima de Supabase
+    url: 'https://ngfroppprerduwnyyewi.supabase.co',
+    anonKey: 'sb_publishable_SF3FSZ-yXWXLpZq2v5M3lg_eS-OmcDD'
 };
 
-// Admin address (same as original)
-const ADMIN_ADDRESS = '0x1234567890123456789012345678901234567890'; // Reemplazar con tu dirección admin
+// Admin address
+const ADMIN_ADDRESS = '0x4943407105999e3E97EFA2035F5cbC64D72581C6';
 
 // Export for use in other files
 window.SUPABASE_CONFIG = SUPABASE_CONFIG;
