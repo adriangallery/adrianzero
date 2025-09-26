@@ -84,6 +84,33 @@ class BuilderBattle {
         try {
             console.log('Saving data to Supabase...');
             
+            // Get current participant IDs from database
+            const { data: existingParticipants, error: fetchError } = await this.supabase
+                .from('participants')
+                .select('id');
+
+            if (fetchError) {
+                console.error('Error fetching existing participants:', fetchError);
+                return false;
+            }
+
+            const existingIds = existingParticipants.map(p => p.id);
+            const currentIds = this.participants.map(p => p.id);
+            const toDelete = existingIds.filter(id => !currentIds.includes(id));
+
+            // Delete participants that are no longer in the list
+            if (toDelete.length > 0) {
+                const { error: deleteError } = await this.supabase
+                    .from('participants')
+                    .delete()
+                    .in('id', toDelete);
+
+                if (deleteError) {
+                    console.error('Error deleting participants:', deleteError);
+                    return false;
+                }
+            }
+            
             // Update participants
             for (const participant of this.participants) {
                 const { error } = await this.supabase
