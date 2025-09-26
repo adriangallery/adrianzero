@@ -10,13 +10,13 @@
     <meta name="twitter:site" content="@adriangallery">
     <meta name="twitter:title" content="Builder Battle - Vote for Your Favorite Builder!">
     <meta name="twitter:description" content="Vote for your favorite builder and enter the lottery! Join the battle and help decide the winner.">
-    <meta name="twitter:image" content="https://adriangallery.github.io/adrianzero-1/bb/og-image.html">
+    <meta name="twitter:image" content="https://adrianzero.com/bb/og-image.html">
     
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="Builder Battle - Vote for Your Favorite Builder!">
     <meta property="og:description" content="Vote for your favorite builder and enter the lottery! Join the battle and help decide the winner.">
-    <meta property="og:image" content="https://adriangallery.github.io/adrianzero-1/bb/og-image.html">
-    <meta property="og:url" content="https://adriangallery.github.io/adrianzero-1/bb/">
+    <meta property="og:image" content="https://adrianzero.com/bb/og-image.html">
+    <meta property="og:url" content="https://adrianzero.com/bb/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Builder Battle">
     
@@ -135,7 +135,7 @@
             loadParticipantData(participantId);
         } else {
             // Redirect to main app
-            window.location.href = 'https://adriangallery.github.io/adrianzero-1/bb/';
+            window.location.href = 'https://adrianzero.com/bb/';
         }
 
         async function loadParticipantData(participantId) {
@@ -152,7 +152,7 @@
 
                 if (error || !participant) {
                     console.error('Error loading participant:', error);
-                    window.location.href = 'https://adriangallery.github.io/adrianzero-1/bb/';
+                    window.location.href = 'https://adrianzero.com/bb/';
                     return;
                 }
 
@@ -167,19 +167,19 @@
 
                 // Redirect to main app after 2 seconds
                 setTimeout(() => {
-                    window.location.href = `https://adriangallery.github.io/adrianzero-1/bb/?participant=${participantId}`;
+                    window.location.href = `https://adrianzero.com/bb/?participant=${participantId}`;
                 }, 2000);
 
             } catch (error) {
                 console.error('Error loading participant data:', error);
-                window.location.href = 'https://adriangallery.github.io/adrianzero-1/bb/';
+                window.location.href = 'https://adrianzero.com/bb/';
             }
         }
 
         function updateMetaTags(participant) {
             const xProfile = participant.x_profile || '';
             const imageUrl = participant.image;
-            const pageUrl = `https://adriangallery.github.io/adrianzero-1/bb/?participant=${participant.id}`;
+            const pageUrl = `https://adrianzero.com/bb/?participant=${participant.id}`;
 
             // Update title
             document.title = `${participant.name} - Builder Battle`;

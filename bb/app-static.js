@@ -387,7 +387,7 @@ class BuilderBattle {
         // Create share message
         const xProfile = participant.x_profile || '';
         const shareMessage = `#BuilderBattle ${participant.name}${xProfile ? ` by ${xProfile}` : ''} - Vote for your favorite builder!`;
-        const shareUrl = `https://adriangallery.github.io/adrianzero-1/bb/participant.html?participant=${participantId}`;
+        const shareUrl = `https://adrianzero.com/bb/participant.html?participant=${participantId}`;
         
         // Create Twitter share URL
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}&url=${encodeURIComponent(shareUrl)}`;
