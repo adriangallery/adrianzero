@@ -305,7 +305,10 @@ class BuilderBattle {
                 this.showSuccess(`Participant "${name}" added successfully!`);
                 
                 // Clear form
-                document.getElementById('addParticipantForm').reset();
+                const form = document.querySelector('.add-participant-form');
+                if (form) {
+                    form.reset();
+                }
             } else {
                 this.showError('Failed to save participant');
             }
@@ -446,9 +449,14 @@ class BuilderBattle {
         this.participants.forEach(participant => {
             const participantCard = document.createElement('div');
             participantCard.className = 'participant-card';
+            // Validate image URL
+            const imageUrl = participant.image && participant.image.startsWith('http') 
+                ? participant.image 
+                : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2NjYyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+            
             participantCard.innerHTML = `
                 <div class="participant-image-container">
-                    <img src="${participant.image}" alt="${participant.name}" class="participant-image">
+                    <img src="${imageUrl}" alt="${participant.name}" class="participant-image">
                 </div>
                 <div class="participant-info">
                     <h3>${participant.name}</h3>
