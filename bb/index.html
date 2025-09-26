@@ -166,6 +166,100 @@
             height: 80px;
         }
 
+        /* Participant Cards */
+        .participants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .participant-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .participant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .participant-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ffd700;
+            margin: 0 auto 15px;
+            display: block;
+        }
+
+        .participant-info h3 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .participant-info .x-profile {
+            color: #00ff88;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .votes {
+            margin-bottom: 15px;
+        }
+
+        .vote-count {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .vote-label {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-left: 5px;
+        }
+
+        .vote-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .vote-btn:hover {
+            background: linear-gradient(45deg, #00cc6a, #00ff88);
+            transform: scale(1.05);
+        }
+
+        .remove-btn {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: linear-gradient(45deg, #cc0000, #ff4444);
+            transform: scale(1.05);
+        }
+
         .hero-section {
             background: rgba(0, 0, 0, 0.3);
             padding: 60px 0;

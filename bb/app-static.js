@@ -385,6 +385,7 @@ class BuilderBattle {
         this.updateVoteStatus();
         this.updateAdminPanel();
         this.updateConnectSection();
+        this.updateStats();
     }
 
     updateConnectSection() {
@@ -451,6 +452,36 @@ class BuilderBattle {
             adminPanel.style.display = 'block';
         } else {
             adminPanel.style.display = 'none';
+        }
+    }
+
+    updateStats() {
+        console.log('Updating stats...');
+        
+        // Update total participants
+        const totalParticipants = document.getElementById('totalParticipants');
+        if (totalParticipants) {
+            totalParticipants.textContent = this.participants.length;
+        }
+
+        // Update total votes
+        const totalVotes = document.getElementById('totalVotes');
+        if (totalVotes) {
+            const totalVoteCount = this.participants.reduce((sum, p) => sum + (p.votes || 0), 0);
+            totalVotes.textContent = totalVoteCount;
+        }
+
+        // Update voters count
+        const votersCount = document.getElementById('votersCount');
+        if (votersCount) {
+            votersCount.textContent = this.voters.length;
+        }
+
+        // Update votes used for current user
+        const votesUsed = document.getElementById('votesUsed');
+        if (votesUsed) {
+            const userVotes = this.currentAccount ? (this.votes[this.currentAccount] ? 1 : 0) : 0;
+            votesUsed.textContent = userVotes;
         }
     }
 
