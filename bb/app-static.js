@@ -418,8 +418,8 @@ class BuilderBattle {
             const participantCard = document.createElement('div');
             participantCard.className = 'participant-card';
             participantCard.innerHTML = `
-                <div class="participant-image">
-                    <img src="${participant.image}" alt="${participant.name}">
+                <div class="participant-image-container">
+                    <img src="${participant.image}" alt="${participant.name}" class="participant-image">
                 </div>
                 <div class="participant-info">
                     <h3>${participant.name}</h3>
