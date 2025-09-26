@@ -113,7 +113,17 @@
             <div class="highlighted-participant-info">
                 <h2 id="participantTitle">Loading participant...</h2>
                 <p id="participantVotes">Loading votes...</p>
-                <p>Loading the full application...</p>
+                <p id="participantDescription">Loading description...</p>
+                <div id="participantActions" style="margin-top: 20px;">
+                    <a href="https://adrianzero.com/bb/" 
+                       style="display: inline-block; background: linear-gradient(45deg, #ff6b35, #f7931e); color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: bold; margin-right: 10px;">
+                        🏗️ Go to Builder Battle
+                    </a>
+                    <a href="https://adrianzero.com/bb/" 
+                       style="display: inline-block; background: linear-gradient(45deg, #1da1f2, #0d8bd9); color: white; padding: 12px 24px; text-decoration: none; border-radius: 25px; font-weight: bold;">
+                        🗳️ Vote Now
+                    </a>
+                </div>
             </div>
             <div class="participant-image-container">
                 <img id="participantImage" src="" alt="Participant" class="participant-image-large">
@@ -159,16 +169,24 @@
                 // Update page content
                 document.getElementById('participantTitle').textContent = `🎯 Voting for ${participant.name}${participant.x_profile ? ` by ${participant.x_profile}` : ''}`;
                 document.getElementById('participantVotes').textContent = `This participant has ${participant.votes} vote${participant.votes !== 1 ? 's' : ''}`;
+                document.getElementById('participantDescription').textContent = `Join the Builder Battle and help ${participant.name} win! ${participant.x_profile ? `Follow ${participant.x_profile} on X for updates.` : ''}`;
                 document.getElementById('participantImage').src = participant.image;
                 document.getElementById('participantImage').alt = participant.name;
+
+                // Update action buttons with participant-specific URLs
+                const actionButtons = document.querySelectorAll('#participantActions a');
+                actionButtons.forEach(button => {
+                    button.href = `https://adrianzero.com/bb/?participant=${participantId}`;
+                });
 
                 // Update meta tags for better sharing
                 updateMetaTags(participant);
 
-                // Redirect to main app after 2 seconds
-                setTimeout(() => {
-                    window.location.href = `https://adrianzero.com/bb/?participant=${participantId}`;
-                }, 2000);
+                // Hide loading message
+                const loadingDiv = document.querySelector('.loading');
+                if (loadingDiv) {
+                    loadingDiv.style.display = 'none';
+                }
 
             } catch (error) {
                 console.error('Error loading participant data:', error);
@@ -190,8 +208,8 @@
             const twitterImage = document.querySelector('meta[name="twitter:image"]');
             const twitterCreator = document.querySelector('meta[name="twitter:creator"]');
 
-            if (twitterTitle) twitterTitle.content = `${participant.name} - Builder Battle`;
-            if (twitterDescription) twitterDescription.content = `Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.`;
+            if (twitterTitle) twitterTitle.content = `#BuilderBattle ${participant.name}${xProfile ? ` by ${xProfile}` : ''} - Vote Now!`;
+            if (twitterDescription) twitterDescription.content = `🏗️ Help ${participant.name} win Builder Battle! ${participant.votes} vote${participant.votes !== 1 ? 's' : ''} so far. ${xProfile ? `Follow ${xProfile} for updates!` : ''} Join the battle and vote for your favorite builder!`;
             if (twitterImage) twitterImage.content = imageUrl;
             if (twitterCreator) twitterCreator.content = xProfile || '@adriangallery';
 
@@ -201,8 +219,8 @@
             const ogImage = document.querySelector('meta[property="og:image"]');
             const ogUrl = document.querySelector('meta[property="og:url"]');
 
-            if (ogTitle) ogTitle.content = `${participant.name} - Builder Battle`;
-            if (ogDescription) ogDescription.content = `Vote for ${participant.name} in Builder Battle! ${xProfile ? `by ${xProfile}` : ''} Join the battle and help decide the winner.`;
+            if (ogTitle) ogTitle.content = `#BuilderBattle ${participant.name}${xProfile ? ` by ${xProfile}` : ''} - Vote Now!`;
+            if (ogDescription) ogDescription.content = `🏗️ Help ${participant.name} win Builder Battle! ${participant.votes} vote${participant.votes !== 1 ? 's' : ''} so far. ${xProfile ? `Follow ${xProfile} for updates!` : ''} Join the battle and vote for your favorite builder!`;
             if (ogImage) ogImage.content = imageUrl;
             if (ogUrl) ogUrl.content = pageUrl;
         }
