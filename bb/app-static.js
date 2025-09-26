@@ -449,10 +449,20 @@ class BuilderBattle {
         this.participants.forEach(participant => {
             const participantCard = document.createElement('div');
             participantCard.className = 'participant-card';
-            // Validate image URL
-            const imageUrl = participant.image && participant.image.startsWith('http') 
-                ? participant.image 
-                : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2NjYyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+            // Validate image URL - only accept valid HTTP/HTTPS URLs or data URLs
+            let imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2NjYyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+            
+            if (participant.image) {
+                // Check if it's a valid HTTP/HTTPS URL
+                if (participant.image.startsWith('http://') || participant.image.startsWith('https://')) {
+                    imageUrl = participant.image;
+                }
+                // Check if it's a valid data URL
+                else if (participant.image.startsWith('data:')) {
+                    imageUrl = participant.image;
+                }
+                // For invalid URLs (like c:\fakepath\), use placeholder
+            }
             
             participantCard.innerHTML = `
                 <div class="participant-image-container">
@@ -481,7 +491,7 @@ class BuilderBattle {
     }
 
     updateVoteStatus() {
-        console.log('Updating vote status...');
+        // console.log('Updating vote status...');
         // TODO: Add vote status element to HTML
         // For now, we'll skip this functionality
     }
@@ -498,7 +508,7 @@ class BuilderBattle {
     }
 
     updateStats() {
-        console.log('Updating stats...');
+        // console.log('Updating stats...');
         
         // Update total participants
         const totalParticipants = document.getElementById('totalParticipants');
