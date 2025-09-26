@@ -167,6 +167,14 @@ class BuilderBattle {
             }
         });
 
+        // Share buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('share-btn')) {
+                const participantId = parseInt(e.target.dataset.participantId);
+                this.shareParticipant(participantId);
+            }
+        });
+
         // Add participant form
         const addParticipantForm = document.getElementById('addParticipantForm');
         if (addParticipantForm) {
@@ -369,6 +377,27 @@ class BuilderBattle {
         });
     }
 
+    shareParticipant(participantId) {
+        const participant = this.participants.find(p => p.id === participantId);
+        if (!participant) {
+            this.showError('Participant not found.');
+            return;
+        }
+
+        // Create share message
+        const xProfile = participant.x_profile || '';
+        const shareMessage = `#BuilderBattle ${participant.name}${xProfile ? ` by ${xProfile}` : ''} - Vote for your favorite builder!`;
+        const shareUrl = `https://adriangallery.github.io/adrianzero-1/bb/participant.html?participant=${participantId}`;
+        
+        // Create Twitter share URL
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}&url=${encodeURIComponent(shareUrl)}`;
+        
+        // Open Twitter in new window
+        window.open(twitterUrl, '_blank', 'width=600,height=400');
+        
+        this.showSuccess('Share window opened! Help spread the word! 🚀');
+    }
+
     highlightParticipant(participantId) {
         // This will be handled by CSS and JavaScript
         console.log('Highlighting participant:', participantId);
@@ -428,9 +457,14 @@ class BuilderBattle {
                         <span class="vote-count">${participant.votes || 0}</span>
                         <span class="vote-label">vote${participant.votes !== 1 ? 's' : ''}</span>
                     </div>
-                    <button class="vote-btn" data-participant-id="${participant.id}">
-                        Vote
-                    </button>
+                    <div class="button-row">
+                        <button class="vote-btn" data-participant-id="${participant.id}">
+                            Vote
+                        </button>
+                        <button class="share-btn" data-participant-id="${participant.id}">
+                            Share on X
+                        </button>
+                    </div>
                     ${this.isAdmin ? `<button class="remove-btn" data-participant-id="${participant.id}">Remove</button>` : ''}
                 </div>
             `;
