@@ -984,6 +984,9 @@
                 
                 // Cargar balances y allowance para simplificar approves
                 await loadBalances();
+                
+                // Delay before loading additional data
+                await new Promise(resolve => setTimeout(resolve, 1000));
 
                 // Update UI
                 const connectBtn = document.getElementById('connectBtn');
@@ -1001,8 +1004,12 @@
                 if (adrianZeroMint) adrianZeroMint.style.display = 'block';
                 if (starterFloppyMint) starterFloppyMint.style.display = 'block';
                 
-                // Load prices and data
+                // Load prices and data with delays
                 await loadAdrianZeroPrice();
+                
+                // Delay between price and supply loading
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
                 await loadSupplyInfo();
                 updateAllTotals();
                 
@@ -1036,8 +1043,15 @@
                 const balanceWei = await adrianToken.balanceOf(userAddress);
                 adrianBalance = parseFloat(ethers.utils.formatEther(balanceWei));
 
+                // Delay between balance and allowance calls
+                await new Promise(resolve => setTimeout(resolve, 500));
+
                 // Allowances relevantes
                 const allowanceZeroWei = await adrianToken.allowance(userAddress, ADRIAN_ZERO_MINT);
+                
+                // Delay between allowance calls
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
                 const allowancePackWei = await adrianToken.allowance(userAddress, PACK_MINTER);
                 approvedAmountZero = parseFloat(ethers.utils.formatEther(allowanceZeroWei));
                 approvedAmountPack = parseFloat(ethers.utils.formatEther(allowancePackWei));
@@ -1113,6 +1127,9 @@
 
         async function loadAdrianZeroPrice() {
             try {
+                // Delay before attempting price call
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
                 const batchInfo = await adrianZeroContract.getCurrentBatchInfo();
                 adrianZeroPrice = batchInfo.price;
                 
@@ -1144,6 +1161,9 @@
 
                 for (const pack of packIds) {
                     try {
+                        // Initial delay before attempting contract call
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
                         // Retry/backoff simple para rate limiting
                         const getConfig = async () => packMinterContract.packConfigs(pack.id);
                         let packConfig;
@@ -1157,7 +1177,8 @@
                                 const isRateLimited = err && (err.code === -32005 || (err.message && err.message.includes('rate limited')));
                                 const isCallException = err && err.code === 'CALL_EXCEPTION';
                                 if (attempts >= 3 || (!isRateLimited && !isCallException)) throw err;
-                                await new Promise(r => setTimeout(r, 500 * attempts));
+                                // Increased delay for retries
+                                await new Promise(r => setTimeout(r, 1000 * attempts));
                             }
                         }
 
@@ -1285,7 +1306,7 @@
                     showStatus('adrianZero', 'Approval needed. Processing approval transaction...', 'loading');
                     
                     // Add delay before approval transaction
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                     
                     showStatus('adrianZero', `Approving ${formatAmount(userDisplayAmount)} ADRIAN tokens for mint...`, 'loading');
                     
@@ -1299,14 +1320,14 @@
                     await loadBalances();
                     
                     // Add delay before proceeding to mint
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                 }
                 
                 // Step 2: Process the mint
                 showStatus('adrianZero', `Minting ${quantities.adrianZero} AdrianZERO NFT(s)...`, 'loading');
                 
                 // Add delay before mint transaction
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 const tx = await adrianZeroContract.mintMultiplePublic(quantities.adrianZero);
                 await tx.wait();
@@ -1385,14 +1406,14 @@
                     await loadBalances();
                     
                     // Add delay before proceeding to mint
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                 }
                 
                 // Step 2: Process the mint
                 showStatus('starterFloppy', `Minting ${quantities.starterFloppy} STARTER Floppy...`, 'loading');
                 
                 // Add delay before mint transaction
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 const tx = await packMinterContract.purchasePack(STARTER_FLOPPY_PACK_ID, quantities.starterFloppy, false);
                 await tx.wait();
