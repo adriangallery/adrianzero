@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdrianZERO — The $ADRIAN Wardrobe Experience</title>
+    <meta name="description" content="Enter AdrianZERO, a web3 experience powered by $ADRIAN. Open floppies, packs, and USBs to pull traits, equip wild fits, survive glitch resets, meet AdrianGF, and rename yourself via the on-chain Name Registry.">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323:wght@400&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap for responsive grid -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #00ff00;
+            --secondary-cyan: #00ccff;
+            --accent-pink: #ff0088;
+            --dark-bg: #000000;
+            --darker-bg: #0a0a0a;
+            --grid-bg: rgba(0, 255, 0, 0.03);
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: var(--dark-bg);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Scroll animations */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-reveal-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .scroll-reveal-left.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .scroll-reveal-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .scroll-reveal-right.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .scroll-reveal-scale {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .scroll-reveal-scale.revealed {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Background patterns */
+        .bg-pattern {
+            position: relative;
+        }
+
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(var(--grid-bg) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-bg) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 100px 20px 50px;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary-green), var(--secondary-cyan), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { 
+                filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
+            }
+            to { 
+                filter: drop-shadow(0 0 40px rgba(0, 255, 0, 0.8));
+            }
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: #cccccc;
+            margin-bottom: 30px;
+            max-width: 800px;
+        }
+
+        .hero .description {
+            font-size: clamp(1rem, 2.5vw, 1.4rem);
+            color: #888888;
+            margin-bottom: 40px;
+            max-width: 900px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-green), #00cc00);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
+            background: linear-gradient(45deg, #00ff44, #00ee00);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, var(--secondary-cyan), #0099cc);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 204, 255, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 204, 255, 0.5);
+            color: #000;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 80px 20px;
+            position: relative;
+        }
+
+        .section:nth-child(even) {
+            background: radial-gradient(circle at 50% 50%, rgba(0, 204, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .section:nth-child(odd) {
+            background: radial-gradient(circle at 50% 50%, rgba(255, 0, 136, 0.05) 0%, transparent 50%);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-green);
+            filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
+        }
+
+        .section-subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: #cccccc;
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Card Styles */
+        .card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--primary-green);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 255, 0, 0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            color: var(--primary-green);
+            margin-bottom: 15px;
+        }
+
+        .card-description {
+            font-size: 1.2rem;
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+
+        .microcopy {
+            font-size: 0.9rem;
+            color: #888888;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* Image containers */
+        .image-container {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .image-container:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 1px dotted var(--primary-green);
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Lore sidebar */
+        .lore-sidebar {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--primary-green);
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: #cccccc;
+            z-index: 100;
+            display: none;
+        }
+
+        .lore-sidebar h4 {
+            color: var(--primary-green);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        /* Sticky footer */
+        .sticky-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid var(--primary-green);
+            padding: 15px 20px;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .sticky-footer .btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 80px 20px 30px;
+            }
+
+            .section {
+                padding: 60px 20px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .lore-sidebar {
+                display: none;
+            }
+
+            .sticky-footer {
+                position: relative;
+                margin-top: 40px;
+            }
+        }
+
+        /* Floating elements animation */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Glitch effect */
+        .glitch {
+            position: relative;
+            animation: glitch 2s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+
+        /* Parallax effect */
+        .parallax {
+            transform: translateZ(0);
+            will-change: transform;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero bg-pattern">
+        <div class="scroll-reveal-scale">
+            <h1>ADRIANZERO</h1>
+            <p class="subtitle">Not an NFT — a web3 experience.</p>
+            <p class="description">
+                Meet Adrian. Meet $ADRIAN. Dress him, glitch him, rename him, evolve the story.
+            </p>
+            <div class="cta-buttons">
+                <a href="#adrian" class="btn-primary">Enter AdrianZERO</a>
+                <a href="https://adrianzero.com" class="btn-secondary">Mint / Connect Wallet</a>
+            </div>
+        </div>
+        <div class="scroll-reveal">
+            <div class="image-container" style="max-width: 400px; margin: 0 auto;">
+                <img src="images/adrian.png" alt="AdrianZERO standing in a red/cyan anaglyph glow, with floating floppies, packs and a USB around him.">
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 1: This is Adrian -->
+    <section id="adrian" class="section bg-pattern">
+        <div class="section-content">
+            <h2 class="section-title scroll-reveal">This is Adrian</h2>
+            <p class="section-subtitle scroll-reveal">
+                This is his coin: $ADRIAN. He uses it to buy random cool stuff to wear.
+            </p>
+            
+            <div class="grid-2">
+                <div class="card scroll-reveal-left">
+                    <h3 class="card-title">Where do traits come from?</h3>
+                    <p class="card-description">
+                        From Floppy Discs, Packs, and USBs — crack them open to discover wearables, skins, and oddities. 
+                        Sometimes legendary, sometimes ridiculous, always on-chain.
+                    </p>
+                    <div class="microcopy">
+                        "Opening items may be unpredictable. That's half the fun."
+                    </div>
+                    <a href="https://adrianzero.com/traitlab" class="btn-primary">Open a Floppy →</a>
+                </div>
+                
+                <div class="card scroll-reveal-right">
+                    <div class="image-container">
+                        <img src="images/adrianwithtraits.png" alt="Adrian with traits applied">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: The AdrianZERO Loop -->
+    <section class="section bg-pattern">
+        <div class="section-content">
+            <h2 class="section-title scroll-reveal">The AdrianZERO Loop</h2>
+            <p class="section-subtitle scroll-reveal">How it works</p>
+            
+            <div class="grid-3">
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">1. Get $ADRIAN</h3>
+                    <p class="card-description">Fuel your adventure with the ecosystem currency.</p>
+                    <div class="image-container">
+                        <img src="../components/images/ADRIAN_Coin.gif" alt="$ADRIAN Token">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">2. Mint AdrianZERO</h3>
+                    <p class="card-description">Your entry character into the experience.</p>
+                    <div class="image-container">
+                        <img src="images/adrian.png" alt="AdrianZERO Character - Base Adrian">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">3. Open Containers</h3>
+                    <p class="card-description">Pull traits from Floppies, Packs, and USBs.</p>
+                    <div class="image-container">
+                        <img src="../components/images/10001.gif" alt="Floppy Disc">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">4. Equip & Flex</h3>
+                    <p class="card-description">Build your look and show it off.</p>
+                    <div class="image-container">
+                        <img src="images/adrianwithtraits.png" alt="Adrian with equipped traits">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal glitch">
+                    <h3 class="card-title">5. Glitches Happen</h3>
+                    <p class="card-description">
+                        Sometimes Adrian gets dumped back to bare (naked/base).
+                        <span class="tooltip">
+                            ⚠️
+                            <span class="tooltiptext">A random reset may strip Adrian to his base form. Keep calm, re-equip, keep styling.</span>
+                        </span>
+                    </p>
+                    <div class="image-container">
+                        <img src="images/adrian.png" alt="Adrian back to base form after glitch">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">6. Do it Again</h3>
+                    <p class="card-description">New drops, new chaos, new fits.</p>
+                </div>
+            </div>
+            
+            <div class="text-center scroll-reveal">
+                <a href="https://adrianzero.com/traitlab" class="btn-primary">Equip Traits →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Adrian's Evolution -->
+    <section class="section bg-pattern">
+        <div class="section-content">
+            <h2 class="section-title scroll-reveal">Adrian's Evolution</h2>
+            <p class="section-subtitle scroll-reveal">From base to enhanced, the journey unfolds</p>
+            
+            <div class="grid-3">
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">Base Adrian</h3>
+                    <p class="card-description">The original, naked form. Ready for transformation.</p>
+                    <div class="image-container">
+                        <img src="images/adrian.png" alt="Base Adrian - Original form">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">Adrian with Traits</h3>
+                    <p class="card-description">Equipped and styled. The customization begins.</p>
+                    <div class="image-container">
+                        <img src="images/adrianwithtraits.png" alt="Adrian with traits applied">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">AdrianGF</h3>
+                    <p class="card-description">After the serum. Choices have consequences.</p>
+                    <div class="image-container">
+                        <img src="images/adriangf.png" alt="AdrianGF - Adrian after drinking the serum">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card scroll-reveal-scale" style="margin-top: 40px;">
+                <h3 class="card-title">The Transformation Story</h3>
+                <p class="card-description">
+                    Adrian started as a blank canvas. Through floppies, packs, and USBs, he discovered his style. 
+                    But one fateful decision changed everything — a dubious vendor's potion transformed him into AdrianGF. 
+                    Now the story continues with new possibilities and consequences.
+                </p>
+                <div class="microcopy">
+                    "Some paths unlock only when you're brave (or foolish) enough to try."
+                </div>
+                <a href="https://adrianzero.com/gallery" class="btn-primary">Explore the Gallery →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Name Registry -->
+    <section class="section bg-pattern">
+        <div class="section-content">
+            <h2 class="section-title scroll-reveal">Name Registry</h2>
+            <p class="section-subtitle scroll-reveal">
+                Today I'm "Adrian." Tomorrow… maybe not.
+            </p>
+            
+            <div class="card scroll-reveal-scale">
+                <h3 class="card-title">Adrian likes changing names</h3>
+                <p class="card-description">
+                    Use the Name Registry to rename your character for a small $ADRIAN fee. 
+                    On-chain, visible, yours.
+                </p>
+                <div class="microcopy">
+                    <span class="tooltip">
+                        Name Rules
+                        <span class="tooltiptext">Names must be unique and can be changed again for an additional fee.</span>
+                    </span>
+                </div>
+                <a href="https://adrianzero.com/traitlab" class="btn-primary">Register a Name →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: What You Can Expect -->
+    <section class="section bg-pattern">
+        <div class="section-content">
+            <h2 class="section-title scroll-reveal">What You Can Expect</h2>
+            
+            <div class="grid-2">
+                <div class="card scroll-reveal-left">
+                    <h3 class="card-title">Randomness</h3>
+                    <p class="card-description">Pulls that surprise, moments that reset.</p>
+                </div>
+                
+                <div class="card scroll-reveal-right">
+                    <h3 class="card-title">Expression</h3>
+                    <p class="card-description">Build wild fits, swap fast, experiment.</p>
+                </div>
+                
+                <div class="card scroll-reveal-left">
+                    <h3 class="card-title">Frequency</h3>
+                    <p class="card-description">Drops and events appear… when they appear.</p>
+                </div>
+                
+                <div class="card scroll-reveal-right">
+                    <h3 class="card-title">No promises</h3>
+                    <p class="card-description">No roadmap worship. We ship, you play.</p>
+                </div>
+            </div>
+            
+            <div class="text-center scroll-reveal">
+                <a href="https://adrianzero.com" class="btn-primary">Start Your Run →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Adrian's Wardrobe -->
+    <section class="section bg-pattern">
+        <div class="section-content">
+            <h2 class="section-title scroll-reveal">Adrian's Wardrobe (Highlights)</h2>
+            
+            <div class="grid-3">
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">Floppy Discs</h3>
+                    <p class="card-description">The classic. Click. Whirr. Surprise.</p>
+                    <div class="image-container">
+                        <img src="../components/images/10003.gif" alt="Floppy Disc">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">Packs</h3>
+                    <p class="card-description">Curated chaos with weighted odds.</p>
+                    <div class="image-container">
+                        <img src="../components/images/10004.gif" alt="Pack">
+                    </div>
+                </div>
+                
+                <div class="card scroll-reveal">
+                    <h3 class="card-title">USBs</h3>
+                    <p class="card-description">Strange ports, stranger outcomes.</p>
+                    <div class="image-container">
+                        <img src="../components/images/10005.gif" alt="USB">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="microcopy text-center scroll-reveal">
+                "Each container type can yield different trait categories and rarities."
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: FAQ -->
+    <section class="section bg-pattern">
+        <div class="section-content">
+            <h2 class="section-title scroll-reveal">For the Curious</h2>
+            
+            <div class="grid-2">
+                <div class="card scroll-reveal-left">
+                    <h3 class="card-title">Why $ADRIAN?</h3>
+                    <p class="card-description">
+                        Because style costs, memory glitches, and naming your destiny does too. 
+                        $ADRIAN powers the wardrobe, registry, and special events.
+                    </p>
+                </div>
+                
+                <div class="card scroll-reveal-right">
+                    <h3 class="card-title">Is this a game?</h3>
+                    <p class="card-description">
+                        It's a web3 experience. Part dress-up, part glitch tale, part social flex.
+                    </p>
+                </div>
+                
+                <div class="card scroll-reveal-left">
+                    <h3 class="card-title">Can I lose traits?</h3>
+                    <p class="card-description">
+                        You won't lose what you own, but glitch events can strip your outfit back to BareAdrian. 
+                        Re-equip anytime.
+                    </p>
+                </div>
+                
+                <div class="card scroll-reveal-right">
+                    <h3 class="card-title">How do I start?</h3>
+                    <p class="card-description">
+                        Connect your wallet, mint an AdrianZERO, get some $ADRIAN, and start opening containers!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lore Sidebar -->
+    <div class="lore-sidebar" id="loreSidebar">
+        <h4>Adrian's Journey</h4>
+        <p>Adrian woke up naked, with a coin and a question:</p>
+        <p>What do I wear to face the unknown?</p>
+        <p>Floppies answered. Packs whispered. A USB blinked.</p>
+        <p>He equipped traits, built his style.</p>
+        <p>Then he drank a potion from a dubious vendor.</p>
+        <p>Now he's AdrianGF. Choices have consequences.</p>
+        <p>Sometimes the system erases his look.</p>
+        <p>He starts over. That's the point.</p>
+    </div>
+
+    <!-- Sticky Footer -->
+    <div class="sticky-footer">
+        <a href="https://adrianzero.com" class="btn btn-primary">Enter AdrianZERO</a>
+        <a href="https://adrianzero.com/traitlab" class="btn btn-secondary">Open a Floppy</a>
+        <a href="https://adrianzero.com/traitlab" class="btn btn-primary">Register a Name</a>
+        <a href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" class="btn btn-secondary">Learn About $ADRIAN</a>
+    </div>
+
+    <script>
+        // Scroll reveal animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all scroll reveal elements
+        document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Parallax effect for hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.hero');
+            if (parallax) {
+                const speed = scrolled * 0.5;
+                parallax.style.transform = `translateY(${speed}px)`;
+            }
+        });
+
+        // Show lore sidebar on scroll
+        let loreShown = false;
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 1000 && !loreShown) {
+                document.getElementById('loreSidebar').style.display = 'block';
+                loreShown = true;
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add floating animation to random elements
+        const floatingElements = document.querySelectorAll('.card, .image-container');
+        floatingElements.forEach((el, index) => {
+            if (Math.random() > 0.7) {
+                el.classList.add('floating');
+                el.style.animationDelay = `${index * 0.5}s`;
+            }
+        });
+
+        // Glitch effect on hover for certain elements
+        document.querySelectorAll('.glitch').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                el.style.animation = 'glitch 0.3s infinite';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.animation = 'glitch 2s infinite';
+            });
+        });
+
+        // Add parallax to cards
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                const rect = card.getBoundingClientRect();
+                const speed = (index % 2 === 0 ? 1 : -1) * 0.1;
+                const yPos = -(rect.top * speed);
+                card.style.transform = `translateY(${yPos}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
