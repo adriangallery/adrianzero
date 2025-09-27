@@ -434,14 +434,26 @@
             }
         }
 
-        /* Floating elements animation */
+        /* Subtle floating animation - only for specific elements */
         .floating {
-            animation: floating 3s ease-in-out infinite;
+            animation: subtleFloat 4s ease-in-out infinite;
         }
 
-        @keyframes floating {
+        @keyframes subtleFloat {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Slide in animation for cards */
+        .slide-in {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.6s ease-out;
+        }
+
+        .slide-in.revealed {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         /* Glitch effect */
@@ -463,9 +475,82 @@
             transform: translateZ(0);
             will-change: transform;
         }
+
+        /* Menu Styles */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary-green);
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: var(--primary-green) !important;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px var(--primary-green);
+        }
+
+        #menu-container .navbar-text {
+            color: var(--primary-green) !important;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #menu-container .navbar-toggler {
+            border-color: var(--primary-green);
+        }
+
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Adjust first section to account for fixed menu */
+        .hero {
+            padding-top: 100px;
+        }
+
+        /* Bootstrap collapse functionality */
+        #menu-container .navbar-collapse {
+            display: none;
+        }
+
+        #menu-container .navbar-collapse.show {
+            display: block;
+        }
+
+        /* Mobile menu styles */
+        @media (max-width: 991.98px) {
+            #menu-container .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid var(--primary-green);
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    
     <!-- Hero Section -->
     <section class="hero bg-pattern">
         <div class="scroll-reveal-scale">
@@ -762,8 +847,8 @@
         </div>
     </section>
 
-    <!-- Lore Sidebar -->
-    <div class="lore-sidebar" id="loreSidebar">
+    <!-- Lore Sidebar - Hidden by default, shown on scroll -->
+    <div class="lore-sidebar" id="loreSidebar" style="display: none;">
         <h4>Adrian's Journey</h4>
         <p>Adrian woke up naked, with a coin and a question:</p>
         <p>What do I wear to face the unknown?</p>
@@ -813,10 +898,10 @@
             }
         });
 
-        // Show lore sidebar on scroll
+        // Show lore sidebar on deep scroll (less intrusive)
         let loreShown = false;
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 1000 && !loreShown) {
+            if (window.scrollY > 2000 && !loreShown) {
                 document.getElementById('loreSidebar').style.display = 'block';
                 loreShown = true;
             }
@@ -836,13 +921,11 @@
             });
         });
 
-        // Add floating animation to random elements
-        const floatingElements = document.querySelectorAll('.card, .image-container');
+        // Add subtle floating animation to only a few specific elements
+        const floatingElements = document.querySelectorAll('.hero .image-container, .card:nth-child(2)');
         floatingElements.forEach((el, index) => {
-            if (Math.random() > 0.7) {
-                el.classList.add('floating');
-                el.style.animationDelay = `${index * 0.5}s`;
-            }
+            el.classList.add('floating');
+            el.style.animationDelay = `${index * 1}s`;
         });
 
         // Glitch effect on hover for certain elements
@@ -865,6 +948,27 @@
                 card.style.transform = `translateY(${yPos}px)`;
             });
         });
+    </script>
+
+    <!-- Load the menu -->
+    <script>
+        // Load the menu with inline script to avoid conflicts
+        fetch('../components/menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('menu-container').innerHTML = html;
+                
+                // Add Bootstrap functionality for menu toggle
+                const navbarToggler = document.querySelector('.navbar-toggler');
+                const navbarCollapse = document.querySelector('.navbar-collapse');
+                
+                if (navbarToggler && navbarCollapse) {
+                    navbarToggler.addEventListener('click', function() {
+                        navbarCollapse.classList.toggle('show');
+                    });
+                }
+            })
+            .catch(error => console.error('Error loading menu:', error));
     </script>
 </body>
 </html>
