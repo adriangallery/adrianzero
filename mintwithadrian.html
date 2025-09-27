@@ -894,37 +894,6 @@
                 </div>
             </div>
 
-            <!-- Step 7: Mint Golden Floppy (SOON) -->
-            <div class="step-card fade-in">
-                <div class="step-number">7</div>
-                <h3 class="step-title">Golden Floppy (SOON)</h3>
-                
-                <div class="nft-preview">
-                    <img src="components/images/10005.gif" alt="Golden Floppy Preview">
-                </div>
-                
-                <p class="step-description">
-                    Golden Floppy Discs - The most exclusive floppy collection. 
-                    Coming soon with premium golden traits and limited availability.
-                </p>
-                <div class="price-tag">Price: TBD</div>
-                <div class="supply-info">
-                    <span class="supply-text">Minted: <span id="goldenFloppyMinted">--</span> / <span id="goldenFloppyTotal">--</span></span>
-                </div>
-                
-                <div class="mint-interface" style="display: none;" id="goldenFloppyMint">
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="changeQuantity('goldenFloppy', -1)" disabled>-</button>
-                        <div class="quantity-display" id="goldenFloppyQuantity">1</div>
-                        <button class="quantity-btn" onclick="changeQuantity('goldenFloppy', 1)" disabled>+</button>
-                    </div>
-                    <div class="total-cost">Total: <span class="cost-amount" id="goldenFloppyCostTotal">TBD</span> $ADRIAN</div>
-                    <button class="action-btn btn-mint" id="mintGoldenFloppy" onclick="mintGoldenFloppy()" disabled>
-                        COMING SOON
-                    </button>
-                    <div class="status-message" id="goldenFloppyStatus"></div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -975,8 +944,6 @@
         const GLITCHED_FLOPPY_PRICE = ethers.utils.parseEther("5000");
         const OG_FLOPPY_PACK_ID = 10000;
         const OG_FLOPPY_PRICE = ethers.utils.parseEther("1000");
-        const GOLDEN_FLOPPY_PACK_ID = 10005;
-        const GOLDEN_FLOPPY_PRICE = ethers.utils.parseEther("0"); // Price TBD
         const ADRIAN_ETH_MINTER = "0x9165753093ba640b34d8111cb9c9d1325799d251"; // AdrianFloppyETH
         let GOLDEN_ETH_BATCH_ID = null; // Se determinará automáticamente
 
@@ -1020,7 +987,6 @@
         let adrianZeroContract;
         let packMinterContract;
         let adrianEthContract;
-        let goldenFloppyPriceToken = ethers.BigNumber.from(0); // Dynamic price from batch
         // Estado global adicional (igual que SHOP/)
         let approvedAmountZero = 0; // Allowance para ADRIAN_ZERO_MINT
         let approvedAmountPack = 0; // Allowance para PACK_MINTER
@@ -1031,7 +997,6 @@
             gfFloppy: 1,
             glitchedFloppy: 1,
             ogFloppy: 1,
-            goldenFloppy: 1
         };
         let adrianZeroPrice = ethers.utils.parseEther("0");
         
@@ -1041,7 +1006,6 @@
             gfFloppy: { total: 0, minted: 0 },
             glitchedFloppy: { total: 0, minted: 0 },
             ogFloppy: { total: 0, minted: 0 },
-            goldenFloppy: { total: 0, minted: 0 }
         };
 
         // Initialize on page load
@@ -1106,7 +1070,6 @@
                 document.getElementById('gfFloppyMint').style.display = 'block';
                 document.getElementById('glitchedFloppyMint').style.display = 'block';
                 document.getElementById('ogFloppyMint').style.display = 'block';
-                document.getElementById('goldenFloppyMint').style.display = 'block';
                 
                 // Load prices and data
                 await loadAdrianZeroPrice();
@@ -1215,7 +1178,6 @@
                     { id: GF_FLOPPY_PACK_ID, key: 'gfFloppy' },
                     { id: GLITCHED_FLOPPY_PACK_ID, key: 'glitchedFloppy' },
                     { id: OG_FLOPPY_PACK_ID, key: 'ogFloppy' },
-                    { id: GOLDEN_FLOPPY_PACK_ID, key: 'goldenFloppy' }
                 ];
 
                 for (const pack of packIds) {
@@ -1263,10 +1225,6 @@
                             quantityBtns.forEach(btn => btn.disabled = true);
                         }
 
-                        // Special handling for Golden Floppy (use AdrianFloppyETH contract)
-                        if (pack.key === 'goldenFloppy') {
-                            await loadGoldenFloppyBatch();
-                        }
                     } catch (error) {
                         console.error(`Error loading supply info for ${pack.key}:`, error);
                         document.getElementById(pack.key + 'Minted').textContent = 'Error';
@@ -1305,9 +1263,6 @@
                 case 'ogFloppy':
                     price = OG_FLOPPY_PRICE;
                     break;
-                case 'goldenFloppy':
-                    price = goldenFloppyPriceToken.isZero() ? GOLDEN_FLOPPY_PRICE : goldenFloppyPriceToken;
-                    break;
             }
             
             const total = price.mul(quantities[type]);
@@ -1328,9 +1283,6 @@
                 case 'ogFloppy':
                     elementId = 'ogFloppyCostTotal';
                     break;
-                case 'goldenFloppy':
-                    elementId = 'goldenFloppyCostTotal';
-                    break;
                 default:
                     elementId = type + 'Total';
             }
@@ -1344,7 +1296,6 @@
             updateTotal('gfFloppy');
             updateTotal('glitchedFloppy');
             updateTotal('ogFloppy');
-            updateTotal('goldenFloppy');
         }
 
 
@@ -1677,220 +1628,11 @@
             showStatus('ogFloppy', 'OG Floppy is MINTED OUT - No more available!', 'error');
         }
 
-        async function loadGoldenFloppyBatch() {
-            try {
-                console.log('Loading Golden Floppy batch info...');
-                
-                // First, let's see what batches are available
-                try {
-                    const activeBatches = await adrianEthContract.getActiveBatchIds(0, 10);
-                    console.log('Active batch IDs:', activeBatches.map(id => id.toString()));
-                    
-                    // Find the Golden Floppy batch by checking each one
-                    for (let i = 0; i < activeBatches.length; i++) {
-                        const batchId = activeBatches[i];
-                        try {
-                            const batchInfo = await adrianEthContract.getBatchSummary(batchId);
-                            const [id, name, floppyTokenId, priceWei, priceToken, startTime, endTime, active, minted, maxSupply, remaining, maxPerWallet, maxPerTx] = batchInfo;
-                            
-                            console.log(`Batch ${batchId}:`, {
-                                name: name,
-                                floppyTokenId: floppyTokenId.toString(),
-                                priceWei: priceWei.toString(),
-                                priceToken: priceToken.toString(),
-                                active: active,
-                                minted: minted.toString(),
-                                maxSupply: maxSupply.toString()
-                            });
-                            
-                            // Check if this is the Golden Floppy batch (by name or floppyTokenId)
-                            if (name.toLowerCase().includes('golden') || floppyTokenId.toString() === '10005') {
-                                GOLDEN_ETH_BATCH_ID = batchId;
-                                console.log(`Found Golden Floppy batch: ${batchId}`);
-                                break;
-                            }
-                        } catch (error) {
-                            console.log(`Could not read batch ${batchId}:`, error.message);
-                        }
-                    }
-                    
-                    if (GOLDEN_ETH_BATCH_ID === null) {
-                        // If no specific Golden Floppy batch found, use the first active batch
-                        GOLDEN_ETH_BATCH_ID = activeBatches[0];
-                        console.log(`No specific Golden Floppy batch found, using first active: ${GOLDEN_ETH_BATCH_ID}`);
-                    }
-                    
-                } catch (error) {
-                    console.log('Could not get active batch IDs:', error.message);
-                    // Fallback to batch 0
-                    GOLDEN_ETH_BATCH_ID = 0;
-                }
-                
-                if (GOLDEN_ETH_BATCH_ID === null) {
-                    throw new Error('No active batches found');
-                }
-                
-                const batchInfo = await adrianEthContract.getBatchSummary(GOLDEN_ETH_BATCH_ID);
-                console.log('Batch info received:', batchInfo);
-                
-                const [id, name, floppyTokenId, priceWei, priceToken, startTime, endTime, active, minted, maxSupply, remaining, maxPerWallet, maxPerTx] = batchInfo;
-                
-                console.log('Parsed values:', {
-                    id: id.toString(),
-                    name: name,
-                    floppyTokenId: floppyTokenId.toString(),
-                    priceWei: priceWei.toString(),
-                    priceToken: priceToken.toString(),
-                    active: active,
-                    minted: minted.toString(),
-                    maxSupply: maxSupply.toString(),
-                    remaining: remaining.toString()
-                });
-                
-                // Update supply info
-                supplyInfo.goldenFloppy = {
-                    total: maxSupply.toNumber(),
-                    minted: minted.toNumber()
-                };
-                
-                // Update UI
-                document.getElementById('goldenFloppyMinted').textContent = minted.toNumber().toLocaleString();
-                document.getElementById('goldenFloppyTotal').textContent = maxSupply.toNumber().toLocaleString();
-                
-                // Update price display (only $ADRIAN)
-                const priceInToken = parseFloat(ethers.utils.formatEther(priceToken)).toFixed(6);
-                
-                // Update the price display in UI
-                const priceElement = document.querySelector('.price-tag');
-                if (priceElement) {
-                    priceElement.textContent = `Price: ${priceInToken} $ADRIAN`;
-                }
-                
-                // Store price for updateTotal function
-                goldenFloppyPriceToken = priceToken;
-                
-                // Update total cost display
-                const totalCostElement = document.getElementById('goldenFloppyCostTotal');
-                if (totalCostElement) {
-                    const totalCost = priceToken.mul(quantities.goldenFloppy);
-                    const totalCostFormatted = parseFloat(ethers.utils.formatEther(totalCost)).toFixed(6);
-                    totalCostElement.textContent = `${totalCostFormatted} $ADRIAN`;
-                }
-                
-                // Enable/disable mint button based on active status
-                const mintBtn = document.getElementById('mintGoldenFloppy');
-                const quantityBtns = document.querySelectorAll('#goldenFloppyMint .quantity-btn');
-                
-                if (active && remaining.gt(0)) {
-                    mintBtn.textContent = 'MINT GOLDEN FLOPPY';
-                    mintBtn.disabled = false;
-                    quantityBtns.forEach(btn => btn.disabled = false);
-                } else if (!active) {
-                    mintBtn.textContent = 'SALE NOT ACTIVE';
-                    mintBtn.disabled = true;
-                    quantityBtns.forEach(btn => btn.disabled = true);
-                } else {
-                    mintBtn.textContent = 'SOLD OUT';
-                    mintBtn.disabled = true;
-                    quantityBtns.forEach(btn => btn.disabled = true);
-                }
-                
-            } catch (error) {
-                console.error('Error loading Golden Floppy batch:', error);
-                document.getElementById('goldenFloppyMinted').textContent = 'Error';
-                document.getElementById('goldenFloppyTotal').textContent = 'Error';
-            }
-        }
 
-        async function mintGoldenFloppy() {
-            if (!userAddress) {
-                showStatus('goldenFloppy', 'Connect wallet first!', 'error');
-                return;
-            }
-
-            try {
-                const button = document.getElementById('mintGoldenFloppy');
-                button.disabled = true;
-                button.classList.add('btn-loading');
-
-                if (!GOLDEN_ETH_BATCH_ID && GOLDEN_ETH_BATCH_ID !== 0) {
-                    showStatus('goldenFloppy', 'Loading batch info...', 'loading');
-                    await loadGoldenFloppyBatch();
-                }
-
-                const batchInfo = await adrianEthContract.getBatchSummary(GOLDEN_ETH_BATCH_ID);
-                const [id, name, floppyTokenId, priceWei, priceToken, startTime, endTime, active, minted, maxSupply, remaining, maxPerWallet, maxPerTx] = batchInfo;
-
-                if (!active) {
-                    showStatus('goldenFloppy', 'Sale not active', 'error');
-                    return;
-                }
-
-                if (remaining.lte(0)) {
-                    showStatus('goldenFloppy', 'Sold out', 'error');
-                    return;
-                }
-
-                const quantity = quantities.goldenFloppy;
-                const maxPerTxLimit = maxPerTx?.toNumber?.() ?? 0;
-                
-                if (maxPerTxLimit > 0 && quantity > maxPerTxLimit) {
-                    showStatus('goldenFloppy', `Max per tx: ${maxPerTxLimit}`, 'error');
-                    return;
-                }
-
-                if (remaining.lt(quantity)) {
-                    showStatus('goldenFloppy', `Only ${remaining.toString()} remaining`, 'error');
-                    return;
-                }
-
-                // Use only $ADRIAN token payment for Golden Floppy
-                const totalToken = priceToken.mul(quantity);
-                
-                // Check token balance
-                const tokenBalance = await adrianToken.balanceOf(userAddress);
-                if (tokenBalance.lt(totalToken)) {
-                    showStatus('goldenFloppy', 'Insufficient $ADRIAN balance', 'error');
-                    return;
-                }
-
-                // Check allowance
-                const allowWei = await adrianToken.allowance(userAddress, ADRIAN_ETH_MINTER);
-                
-                if (allowWei.lt(totalToken)) {
-                    const human = parseFloat(ethers.utils.formatEther(totalToken)).toFixed(6);
-                    showStatus('goldenFloppy', `Approving ${human} $ADRIAN...`, 'loading');
-                    const approveTx = await adrianToken.approve(ADRIAN_ETH_MINTER, totalToken);
-                    await approveTx.wait();
-                }
-                
-                console.log('Minting Golden Floppy with $ADRIAN:', {
-                    batchId: GOLDEN_ETH_BATCH_ID,
-                    quantity: quantity,
-                    totalToken: totalToken.toString(),
-                    totalTokenFormatted: ethers.utils.formatEther(totalToken)
-                });
-                
-                showStatus('goldenFloppy', `Minting ${quantity} Golden Floppy with $ADRIAN...`, 'loading');
-                const tx = await adrianEthContract.mintWithToken(GOLDEN_ETH_BATCH_ID, quantity);
-                await tx.wait();
-
-                showStatus('goldenFloppy', `🎉 Successfully minted ${quantity} Golden Floppy!`, 'success');
-                await loadGoldenFloppyBatch();
-                
-            } catch (error) {
-                console.error('Mint error:', error);
-                showStatus('goldenFloppy', 'Mint failed: ' + parseError(error), 'error');
-            } finally {
-                const button = document.getElementById('mintGoldenFloppy');
-                button.disabled = false;
-                button.classList.remove('btn-loading');
-            }
-        }
 
         function showStatus(type, message, statusType) {
             if (type === 'all') {
-                ['adrianZero', 'starterFloppy', 'gfFloppy', 'glitchedFloppy', 'ogFloppy', 'goldenFloppy'].forEach(t => {
+                ['adrianZero', 'starterFloppy', 'gfFloppy', 'glitchedFloppy', 'ogFloppy'].forEach(t => {
                     const statusEl = document.getElementById(t + 'Status');
                     if (statusEl) {
                         statusEl.className = `status-message ${statusType}`;
