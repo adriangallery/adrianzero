@@ -359,27 +359,91 @@
             opacity: 1;
         }
 
-        /* Lore sidebar */
+        /* Lore sidebar - Improved positioning and size */
         .lore-sidebar {
             position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 200px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid var(--primary-green);
-            border-radius: 10px;
-            padding: 20px;
-            font-size: 0.9rem;
+            right: 0;
+            top: 0;
+            width: 350px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            border-left: 2px solid var(--primary-green);
+            padding: 30px;
+            font-size: 1rem;
             color: #cccccc;
-            z-index: 100;
+            z-index: 1000;
             display: none;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .lore-sidebar.show {
+            transform: translateX(0);
         }
 
         .lore-sidebar h4 {
             color: var(--primary-green);
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-family: 'Orbitron', monospace;
+            text-align: center;
+        }
+
+        .lore-sidebar p {
+            margin-bottom: 15px;
+            line-height: 1.6;
             font-size: 1rem;
+        }
+
+        .lore-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--primary-green);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .lore-close-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+            color: #ffffff;
+        }
+
+        .lore-trigger {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: linear-gradient(45deg, var(--primary-green), #00cc00);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .lore-trigger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 0, 0.4);
         }
 
         /* Sticky footer */
@@ -543,6 +607,22 @@
                 backdrop-filter: blur(10px);
                 border-top: 1px solid var(--primary-green);
                 padding: 1rem;
+            }
+
+            /* Mobile lore sidebar */
+            .lore-sidebar {
+                width: 100%;
+                right: 0;
+                left: 0;
+                top: 0;
+                height: 100vh;
+            }
+
+            .lore-trigger {
+                right: 15px;
+                bottom: 15px;
+                font-size: 0.9rem;
+                padding: 10px 15px;
             }
         }
     </style>
@@ -847,18 +927,32 @@
         </div>
     </section>
 
-    <!-- Lore Sidebar - Hidden by default, shown on scroll -->
-    <div class="lore-sidebar" id="loreSidebar" style="display: none;">
+    <!-- Lore Sidebar - Full height with close button -->
+    <div class="lore-sidebar" id="loreSidebar">
+        <button class="lore-close-btn" id="loreCloseBtn">×</button>
         <h4>Adrian's Journey</h4>
         <p>Adrian woke up naked, with a coin and a question:</p>
-        <p>What do I wear to face the unknown?</p>
+        <p><strong>What do I wear to face the unknown?</strong></p>
+        
         <p>Floppies answered. Packs whispered. A USB blinked.</p>
-        <p>He equipped traits, built his style.</p>
-        <p>Then he drank a potion from a dubious vendor.</p>
+        <p>He equipped traits, built his style, discovered his identity through digital fashion.</p>
+        
+        <p>Then came the choice - a dubious vendor offered a mysterious potion.</p>
+        <p><em>"Drink this," they said, "and become something more."</em></p>
+        
+        <p>Adrian hesitated, but curiosity won. He drank the serum.</p>
         <p>Now he's AdrianGF. Choices have consequences.</p>
-        <p>Sometimes the system erases his look.</p>
-        <p>He starts over. That's the point.</p>
+        
+        <p>Sometimes the system glitches, erases his carefully crafted look.</p>
+        <p>He returns to his base form, naked and vulnerable.</p>
+        
+        <p><strong>He starts over. That's the point.</strong></p>
+        
+        <p>In AdrianZERO, every choice matters. Every trait tells a story. Every glitch is a new beginning.</p>
     </div>
+
+    <!-- Lore Trigger Button -->
+    <button class="lore-trigger" id="loreTrigger">📖 Read Adrian's Story</button>
 
     <!-- Sticky Footer -->
     <div class="sticky-footer">
@@ -898,12 +992,44 @@
             }
         });
 
-        // Show lore sidebar on deep scroll (less intrusive)
-        let loreShown = false;
+        // Show lore trigger button on scroll
+        let loreTriggerShown = false;
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 2000 && !loreShown) {
-                document.getElementById('loreSidebar').style.display = 'block';
-                loreShown = true;
+            if (window.scrollY > 1500 && !loreTriggerShown) {
+                document.getElementById('loreTrigger').style.display = 'block';
+                loreTriggerShown = true;
+            }
+        });
+
+        // Lore sidebar functionality
+        const loreSidebar = document.getElementById('loreSidebar');
+        const loreTrigger = document.getElementById('loreTrigger');
+        const loreCloseBtn = document.getElementById('loreCloseBtn');
+
+        // Show lore sidebar
+        loreTrigger.addEventListener('click', () => {
+            loreSidebar.style.display = 'block';
+            setTimeout(() => {
+                loreSidebar.classList.add('show');
+            }, 10);
+            loreTrigger.style.display = 'none';
+        });
+
+        // Hide lore sidebar
+        loreCloseBtn.addEventListener('click', () => {
+            loreSidebar.classList.remove('show');
+            setTimeout(() => {
+                loreSidebar.style.display = 'none';
+            }, 300);
+        });
+
+        // Hide lore sidebar when clicking outside
+        loreSidebar.addEventListener('click', (e) => {
+            if (e.target === loreSidebar) {
+                loreSidebar.classList.remove('show');
+                setTimeout(() => {
+                    loreSidebar.style.display = 'none';
+                }, 300);
             }
         });
 
