@@ -182,10 +182,10 @@ class FloppyManager {
      * Updated to use OpenPackV4 for specified packs
      */
     getContractForFloppy(tokenId) {
-        // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10010
+        // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010
         if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || 
             tokenId === 10003 || tokenId === 10004 || tokenId === 10005 || 
-            tokenId === 10010) {
+            tokenId === 10009 || tokenId === 10010) {
             return {
                 address: window.TraitLABConfig.OPENPACK_V4_CONTRACT,
                 type: 'pack',
@@ -214,11 +214,12 @@ class FloppyManager {
                 name: 'OPTICALpack'
             };
         } else if (tokenId === 10009) {
-            // PUNKSfloppy - floppynuevo contract
+            // PUNKSfloppy - now uses OpenPackV4 contract
             return {
-                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
-                type: 'floppy',
-                name: 'PUNKSfloppy'
+                address: window.TraitLABConfig.OPENPACK_V4_CONTRACT,
+                type: 'pack',
+                name: 'OpenPackV4',
+                function: 'openPacks'
             };
         } else if (tokenId === 10006) {
             // Golden Floppy - ADRIAN_FLOPPY_DISCS_CONTRACT
@@ -262,7 +263,7 @@ class FloppyManager {
         } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015) {
             console.log('Redirecting to openActionPack() for token', this.selectedFloppy.tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId === 10006 || this.selectedFloppy.tokenId === 10009) {
+        } else if (this.selectedFloppy.tokenId === 10006) {
             console.log('Redirecting to openFloppy() for floppy token', this.selectedFloppy.tokenId);
             return await this.openFloppy();
         } else {
@@ -273,7 +274,7 @@ class FloppyManager {
 
     /**
      * Open Pack V4 function for OpenPackV4 contract
-     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10010
+     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010
      */
     async openPackV4() {
         console.log('openPackV4 called');
@@ -282,7 +283,7 @@ class FloppyManager {
         }
         
         // Check if this pack is supported by OpenPackV4
-        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10010];
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010];
         if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is not supported by OpenPackV4.');
         }
@@ -395,7 +396,7 @@ class FloppyManager {
             throw new Error('Please select a pack first.');
         }
         // This function is now only for legacy packs not handled by OpenPackV4
-        const openPackV4Packs = [10000, 10001, 10002, 10003, 10004, 10005, 10010];
+        const openPackV4Packs = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010];
         if (openPackV4Packs.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is now handled by OpenPackV4. Please use the correct function.');
         }
