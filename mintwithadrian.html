@@ -932,6 +932,9 @@
         };
         let adrianZeroPrice = ethers.utils.parseEther("0");
         
+        // Network status
+        let networkIssues = false;
+        
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -1040,20 +1043,25 @@
                 approvedAmountPack = parseFloat(ethers.utils.formatEther(allowancePackWei));
 
                 console.log('Balances loaded - ADRIAN:', adrianBalance, 'Approved(Zero):', approvedAmountZero, 'Approved(Pack):', approvedAmountPack);
+                networkIssues = false; // Reset network issues flag on success
             } catch (err) {
                 console.error('Error loading balances:', err);
                 
                 // Handle specific RPC errors
                 if (err.message && err.message.includes('state histories haven\'t been fully indexed yet')) {
-                    console.warn('Base network still indexing, using default values');
+                    console.warn('Base network still indexing, enabling fallback mode');
+                    networkIssues = true;
                     adrianBalance = 0;
                     approvedAmountZero = 0;
                     approvedAmountPack = 0;
+                    showNetworkWarning();
                 } else if (err.code === 'CALL_EXCEPTION') {
-                    console.warn('Contract call failed, using default values');
+                    console.warn('Contract call failed, enabling fallback mode');
+                    networkIssues = true;
                     adrianBalance = 0;
                     approvedAmountZero = 0;
                     approvedAmountPack = 0;
+                    showNetworkWarning();
                 } else {
                     // For other errors, still set defaults to prevent crashes
                     adrianBalance = 0;
@@ -1061,6 +1069,10 @@
                     approvedAmountPack = 0;
                 }
             }
+        }
+
+        function showNetworkWarning() {
+            showStatus('all', '⚠️ Base network is currently indexing. Some features may be limited. Please try again later.', 'warning');
         }
 
         async function switchToBase() {
@@ -1111,7 +1123,15 @@
                 updateAllTotals();
             } catch (error) {
                 console.error('Error loading AdrianZero price:', error);
-                document.getElementById('adrianZeroPrice').textContent = 'Error loading';
+                const priceEl = document.getElementById('adrianZeroPrice');
+                if (priceEl) {
+                    if (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) {
+                        priceEl.textContent = 'Network indexing...';
+                        networkIssues = true;
+                    } else {
+                        priceEl.textContent = 'Error loading';
+                    }
+                }
             }
         }
 
@@ -1153,8 +1173,21 @@
                         const mintedEl = document.getElementById(pack.key + 'Minted');
                         const totalEl = document.getElementById(pack.key + 'Total');
                         
-                        if (mintedEl) mintedEl.textContent = 'Error';
-                        if (totalEl) totalEl.textContent = 'Error';
+                        if (mintedEl) {
+                            if (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) {
+                                mintedEl.textContent = 'Indexing...';
+                                networkIssues = true;
+                            } else {
+                                mintedEl.textContent = 'Error';
+                            }
+                        }
+                        if (totalEl) {
+                            if (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) {
+                                totalEl.textContent = 'Indexing...';
+                            } else {
+                                totalEl.textContent = 'Error';
+                            }
+                        }
                     }
                 }
             } catch (error) {
@@ -1210,6 +1243,11 @@
         async function mintAdrianZero() {
             if (!userAddress) {
                 showStatus('adrianZero', 'Connect wallet first!', 'error');
+                return;
+            }
+            
+            if (networkIssues) {
+                showStatus('adrianZero', '⚠️ Base network is indexing. Minting may fail. Please try again later.', 'warning');
                 return;
             }
             
@@ -1291,6 +1329,11 @@
         async function mintStarterFloppy() {
             if (!userAddress) {
                 showStatus('starterFloppy', 'Connect wallet first!', 'error');
+                return;
+            }
+            
+            if (networkIssues) {
+                showStatus('starterFloppy', '⚠️ Base network is indexing. Minting may fail. Please try again later.', 'warning');
                 return;
             }
             
