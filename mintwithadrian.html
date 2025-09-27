@@ -509,6 +509,169 @@
             box-shadow: 0 20px 50px rgba(0, 255, 0, 0.6);
         }
 
+        /* CTA Buttons */
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, #00ff00, #00aaff);
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.4rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.4);
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.6);
+        }
+
+        .traitlab-button {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        .traitlab-button:hover {
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.6);
+        }
+
+        /* Footer Styles */
+        .main-footer {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            padding: 60px 0 20px;
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-section h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .footer-section h4 {
+            color: #00aaff;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-section ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: #00ff88;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-link {
+            color: #ccc;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            color: #00ff88;
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .shop-preview {
+            margin-top: 40px;
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        .shop-preview h4 {
+            color: #00ff88;
+            margin-bottom: 30px;
+            font-size: 1.3rem;
+        }
+
+        .shop-items {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .shop-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .shop-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .shop-item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .shop-item span {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #888;
+        }
+
         /* Feature highlights */
         .features {
             display: grid;
@@ -814,114 +977,88 @@
                 </div>
             </div>
 
-            <!-- Step 4: GF Floppy -->
-            <div class="step-card fade-in">
-                <div class="step-number">4</div>
-                <h3 class="step-title">GF Floppy</h3>
                 
-                <div class="nft-preview">
-                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/79ad354b58424ea67b8e0357bc7396/e679ad354b58424ea67b8e0357bc7396.gif?w=500" alt="GF Floppy Preview">
                 </div>
-                
-                <p class="step-description">
-                    GF Floppy Discs containing exclusive traits. 
-                    Higher tier floppy with premium trait distribution.
-                </p>
-                <div class="price-tag">Available in Shop</div>
-                
-                <div class="shop-interface">
-                    <button class="action-btn btn-shop" onclick="window.open('https://adrianzero.com/shop', '_blank')">
-                        Buy at Shop
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 5: GLITCHED Floppy -->
-            <div class="step-card fade-in">
-                <div class="step-number">5</div>
-                <h3 class="step-title">GLITCHED Floppy</h3>
-                
-                <div class="nft-preview">
-                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/b824b24911d6b2c56d33898502d9c6/ebb824b24911d6b2c56d33898502d9c6.gif?w=500" alt="GLITCHED Floppy Preview">
-                </div>
-                
-                <p class="step-description">
-                    GLITCHED Floppy Discs containing glitched traits. 
-                    Unique glitched aesthetic traits for your collection.
-                </p>
-                <div class="price-tag">Available in Shop</div>
-                
-                <div class="shop-interface">
-                    <button class="action-btn btn-shop" onclick="window.open('https://adrianzero.com/shop', '_blank')">
-                        Buy at Shop
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 6: Mint OG Floppy (MINTED OUT) -->
-            <div class="step-card fade-in">
-                <div class="step-number">6</div>
-                <h3 class="step-title">OG Floppy (MINTED OUT)</h3>
-                
-                <div class="nft-preview">
-                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/bdbcd37920a9bfdc062bc7e4257180/93bdbcd37920a9bfdc062bc7e4257180.gif?w=500" alt="OG Floppy Preview">
-                </div>
-                
-                <p class="step-description">
-                    OG Floppy Discs - The original floppy collection. 
-                    All OG Floppys have been minted. No more available.
-                </p>
-                <div class="price-tag">Price: 1,000 $ADRIAN each</div>
-                <div class="supply-info">
-                    <span class="supply-text">Minted: <span id="ogFloppyMinted">Loading...</span> / <span id="ogFloppyTotal">Loading...</span></span>
-                </div>
-                
-                <div class="mint-interface" style="display: none;" id="ogFloppyMint">
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="changeQuantity('ogFloppy', -1)" disabled>-</button>
-                        <div class="quantity-display" id="ogFloppyQuantity">1</div>
-                        <button class="quantity-btn" onclick="changeQuantity('ogFloppy', 1)" disabled>+</button>
-                    </div>
-                    <div class="total-cost">Total: <span class="cost-amount" id="ogFloppyCostTotal">1,000</span> $ADRIAN</div>
-                    <button class="action-btn btn-mint" id="mintOgFloppy" onclick="mintOgFloppy()" disabled>
-                        MINTED OUT
-                    </button>
-                    <div class="status-message" id="ogFloppyStatus"></div>
-                </div>
-            </div>
-
-        </div>
     </section>
 
     <!-- Final CTA -->
     <section class="final-cta">
         <h2>Ready to Evolve?</h2>
         <p>
-            Now that you have your NFTs and traits, it's time to enter the TraitLAB 
-            and start customizing your collection like never before.
+            Visit our <strong>Shop</strong> to buy Floppy Discs, USBs, Traits, and Serums, 
+            then use them in the <strong>TraitLAB</strong> to customize your collection.
         </p>
-        <a href="adrianzero.com/traitlab" class="final-cta-button">
-            Enter TraitLAB →
-        </a>
         
-        <div class="features" style="margin-top: 40px;">
-            <div class="feature">
-                <span class="feature-icon">🎨</span>
-                <div class="feature-title">Visual Trait Preview</div>
-                <div class="feature-text">See how traits look before applying</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">🔧</span>
-                <div class="feature-title">Easy Application</div>
-                <div class="feature-text">Apply multiple traits with one transaction</div>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">📱</span>
-                <div class="feature-title">Mobile Friendly</div>
-                <div class="feature-text">Works perfectly on all devices</div>
-            </div>
-        </div>
+        <div class="cta-buttons">
+            <a href="https://adrianzero.com/shop" class="cta-button shop-button" target="_blank">
+                🛒 Visit Shop
+            </a>
+            <a href="https://adrianzero.com/traitlab" class="cta-button traitlab-button" target="_blank">
+                🎨 Enter TraitLAB
+            </a>
+                    </div>
     </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>AdrianZERO</h3>
+                <p>The ultimate web3 experience for digital evolution and trait customization.</p>
+                </div>
+                
+            <div class="footer-section">
+                <h4>Shop</h4>
+                <ul>
+                    <li><a href="https://adrianzero.com/shop" target="_blank">Floppy Discs</a></li>
+                    <li><a href="https://adrianzero.com/shop" target="_blank">USBs</a></li>
+                    <li><a href="https://adrianzero.com/shop" target="_blank">Traits</a></li>
+                    <li><a href="https://adrianzero.com/shop" target="_blank">Serums</a></li>
+                </ul>
+                </div>
+                
+            <div class="footer-section">
+                <h4>Tools</h4>
+                <ul>
+                    <li><a href="https://adrianzero.com/traitlab" target="_blank">TraitLAB</a></li>
+                    <li><a href="https://adrianzero.com/gallery" target="_blank">Gallery</a></li>
+                    <li><a href="https://adrianzero.com/who" target="_blank">About</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <div class="social-links">
+                    <a href="#" class="social-link">Twitter</a>
+                    <a href="#" class="social-link">Discord</a>
+                    <a href="#" class="social-link">Telegram</a>
+                </div>
+                </div>
+            </div>
+
+        <!-- Shop Preview Images -->
+        <div class="shop-preview">
+            <h4>Available in Shop</h4>
+            <div class="shop-items">
+                <div class="shop-item">
+                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/79ad354b58424ea67b8e0357bc7396/e679ad354b58424ea67b8e0357bc7396.gif?w=100" alt="GF Floppy" class="shop-item-image">
+                    <span>GF Floppy</span>
+                </div>
+                <div class="shop-item">
+                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/b824b24911d6b2c56d33898502d9c6/ebb824b24911d6b2c56d33898502d9c6.gif?w=100" alt="GLITCHED Floppy" class="shop-item-image">
+                    <span>GLITCHED Floppy</span>
+                </div>
+                <div class="shop-item">
+                    <img src="https://i2.seadn.io/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/bdbcd37920a9bfdc062bc7e4257180/93bdbcd37920a9bfdc062bc7e4257180.gif?w=100" alt="OG Floppy" class="shop-item-image">
+                    <span>OG Floppy</span>
+                    </div>
+                </div>
+            </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 AdrianZERO. All rights reserved.</p>
+            </div>
+    </footer>
 
     <script>
         // Contract addresses and configurations
@@ -1536,3 +1673,4 @@
     </script>
 </body>
 </html>
+
