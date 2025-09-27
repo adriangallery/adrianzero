@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trait Gallery Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'ADRIAN_ZERO';
+            src: url('../components/fonts/ADRIAN_ZERO.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'ADRIAN_Regular';
+            src: url('../components/fonts/ADRIAN-Regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .admin-header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 2px solid #00ffff;
+            margin-bottom: 40px;
+        }
+
+        .admin-title {
+            font-family: 'ADRIAN_ZERO', monospace;
+            font-size: 3rem;
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff;
+            margin-bottom: 20px;
+        }
+
+        .admin-subtitle {
+            font-family: 'ADRIAN_Regular', monospace;
+            font-size: 1.2rem;
+            color: #ccc;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-section {
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-family: 'ADRIAN_Regular', monospace;
+            font-size: 1.8rem;
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            color: #00ffff;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-control {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ffff;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+        }
+
+        .form-control:focus {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+            color: #fff;
+        }
+
+        .btn-admin {
+            background: linear-gradient(45deg, #00ffff, #00ff88);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff4444, #ff6666);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+        }
+
+        .status-display {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'VT323', monospace;
+        }
+
+        .status-success {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .status-error {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .status-info {
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #ccc;
+            margin-top: 10px;
+        }
+
+        .log-entry {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .log-time {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #00ffff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .contract-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .contract-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .contract-name {
+            font-size: 1.2rem;
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .contract-address {
+            font-family: monospace;
+            color: #ccc;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        .contract-status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .status-pending {
+            background: rgba(255, 255, 0, 0.2);
+            color: #ffff00;
+        }
+
+        .status-in-progress {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+        }
+
+        .status-completed {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .status-error {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1 class="admin-title">Trait Gallery Admin</h1>
+        <p class="admin-subtitle">Manage NFT data synchronization and gallery settings</p>
+    </div>
+
+    <div class="admin-container">
+        <!-- Wallet Connection -->
+        <div class="admin-section">
+            <h2 class="section-title">Wallet Connection</h2>
+            <div id="walletSection">
+                <button id="connectWallet" class="btn-admin">Connect Wallet</button>
+                <div id="walletInfo" style="display: none; margin-top: 20px;">
+                    <div class="status-display status-info">
+                        <strong>Connected:</strong> <span id="walletAddress"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Statistics -->
+        <div class="admin-section">
+            <h2 class="section-title">Gallery Statistics</h2>
+            <button id="refreshStats" class="btn-admin">Refresh Stats</button>
+            <div id="statsDisplay" class="stats-grid">
+                <!-- Stats will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Sync Status -->
+        <div class="admin-section">
+            <h2 class="section-title">Sync Status</h2>
+            <button id="refreshSyncStatus" class="btn-admin">Refresh Status</button>
+            <div id="syncStatusDisplay" class="contract-list">
+                <!-- Sync status will be loaded here -->
+            </div>
+        </div>
+
+        <!-- NFT Sync -->
+        <div class="admin-section">
+            <h2 class="section-title">Sync NFT Data</h2>
+            <div class="form-group">
+                <label class="form-label">Contract Address</label>
+                <select id="contractSelect" class="form-control">
+                    <option value="0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea">AdrianZERO Contract</option>
+                    <!-- More contracts can be added here -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Start Token ID (optional)</label>
+                <input type="number" id="startTokenId" class="form-control" placeholder="1" min="1">
+            </div>
+            <div class="form-group">
+                <label class="form-label">End Token ID (optional)</label>
+                <input type="number" id="endTokenId" class="form-control" placeholder="Leave empty for all">
+            </div>
+            <button id="startSync" class="btn-admin">Start Sync</button>
+            <div id="syncProgress" class="loading">
+                <div class="spinner"></div>
+                <p>Syncing NFT data...</p>
+            </div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="admin-section">
+            <h2 class="section-title">Admin Actions</h2>
+            <button id="clearCache" class="btn-admin btn-danger">Clear Cache</button>
+            <button id="refreshLogs" class="btn-admin">Refresh Logs</button>
+            <div id="adminLogs" class="log-entry" style="max-height: 300px; overflow-y: auto;">
+                <!-- Admin logs will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Add Category -->
+        <div class="admin-section">
+            <h2 class="section-title">Add Category</h2>
+            <div class="form-group">
+                <label class="form-label">Category Name</label>
+                <input type="text" id="categoryName" class="form-control" placeholder="e.g., background">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Display Name</label>
+                <input type="text" id="categoryDisplayName" class="form-control" placeholder="e.g., Background">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <input type="text" id="categoryDescription" class="form-control" placeholder="e.g., Background traits and environments">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <input type="color" id="categoryColor" class="form-control" value="#00ffff">
+            </div>
+            <button id="addCategory" class="btn-admin">Add Category</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script>
+        // Global variables
+        let provider;
+        let signer;
+        let userAddress;
+
+        // API base URL
+        const API_BASE = '/api';
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkConnection();
+            setupEventListeners();
+            loadInitialData();
+        });
+
+        // Check if wallet is already connected
+        async function checkConnection() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        await connectWallet();
+                    }
+                } catch (error) {
+                    console.error('Connection check failed:', error);
+                }
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('connectWallet').addEventListener('click', connectWallet);
+            document.getElementById('refreshStats').addEventListener('click', loadStats);
+            document.getElementById('refreshSyncStatus').addEventListener('click', loadSyncStatus);
+            document.getElementById('startSync').addEventListener('click', startSync);
+            document.getElementById('clearCache').addEventListener('click', clearCache);
+            document.getElementById('refreshLogs').addEventListener('click', loadLogs);
+            document.getElementById('addCategory').addEventListener('click', addCategory);
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    alert('Please install MetaMask!');
+                    return;
+                }
+
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                
+                document.getElementById('walletSection').innerHTML = `
+                    <div class="status-display status-success">
+                        <strong>Connected:</strong> ${userAddress}
+                    </div>
+                `;
+                
+                loadInitialData();
+                
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Failed to connect wallet');
+            }
+        }
+
+        // Load initial data
+        async function loadInitialData() {
+            if (userAddress) {
+                await Promise.all([
+                    loadStats(),
+                    loadSyncStatus(),
+                    loadLogs()
+                ]);
+            }
+        }
+
+        // Load gallery statistics
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/gallery?action=stats`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayStats(data.data);
+                } else {
+                    showStatus('Error loading stats: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                showStatus('Error loading stats', 'error');
+            }
+        }
+
+        // Display statistics
+        function displayStats(stats) {
+            const statsHtml = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.totalNFTs}</div>
+                    <div class="stat-label">Total NFTs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Object.keys(stats.contracts).length}</div>
+                    <div class="stat-label">Contracts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Object.keys(stats.categories).length}</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.rarityDistribution.legendary}</div>
+                    <div class="stat-label">Legendary</div>
+                </div>
+            `;
+            
+            document.getElementById('statsDisplay').innerHTML = statsHtml;
+        }
+
+        // Load sync status
+        async function loadSyncStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/gallery?action=sync-status`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySyncStatus(data.data);
+                } else {
+                    showStatus('Error loading sync status: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading sync status:', error);
+                showStatus('Error loading sync status', 'error');
+            }
+        }
+
+        // Display sync status
+        function displaySyncStatus(statuses) {
+            const statusHtml = statuses.map(status => `
+                <div class="contract-card">
+                    <div class="contract-name">Contract</div>
+                    <div class="contract-address">${status.contract_address}</div>
+                    <div class="contract-status status-${status.sync_status}">${status.sync_status}</div>
+                    <div>Total Tokens: ${status.total_tokens || 0}</div>
+                    <div>Last Sync: ${status.last_sync ? new Date(status.last_sync).toLocaleString() : 'Never'}</div>
+                    ${status.error_message ? `<div style="color: #ff4444;">Error: ${status.error_message}</div>` : ''}
+                </div>
+            `).join('');
+            
+            document.getElementById('syncStatusDisplay').innerHTML = statusHtml;
+        }
+
+        // Start sync
+        async function startSync() {
+            if (!userAddress) {
+                alert('Please connect your wallet first');
+                return;
+            }
+
+            const contractAddress = document.getElementById('contractSelect').value;
+            const startTokenId = document.getElementById('startTokenId').value;
+            const endTokenId = document.getElementById('endTokenId').value;
+
+            if (!contractAddress) {
+                alert('Please select a contract');
+                return;
+            }
+
+            document.getElementById('syncProgress').style.display = 'block';
+            document.getElementById('startSync').disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/gallery`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'sync',
+                        adminAddress: userAddress,
+                        contractAddress: contractAddress,
+                        startTokenId: startTokenId ? parseInt(startTokenId) : null,
+                        endTokenId: endTokenId ? parseInt(endTokenId) : null
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus(`Sync completed! Synced ${data.data.syncedCount} NFTs`, 'success');
+                    loadSyncStatus();
+                    loadStats();
+                } else {
+                    showStatus('Sync failed: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Sync error:', error);
+                showStatus('Sync failed: ' + error.message, 'error');
+            } finally {
+                document.getElementById('syncProgress').style.display = 'none';
+                document.getElementById('startSync').disabled = false;
+            }
+        }
+
+        // Clear cache
+        async function clearCache() {
+            if (!userAddress) {
+                alert('Please connect your wallet first');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to clear all NFT data? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/gallery`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'admin',
+                        adminAddress: userAddress,
+                        adminAction: 'clear-cache'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('Cache cleared successfully', 'success');
+                    loadStats();
+                } else {
+                    showStatus('Failed to clear cache: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Clear cache error:', error);
+                showStatus('Failed to clear cache: ' + error.message, 'error');
+            }
+        }
+
+        // Load admin logs
+        async function loadLogs() {
+            if (!userAddress) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/gallery`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'admin',
+                        adminAddress: userAddress,
+                        adminAction: 'get-logs'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayLogs(data.data);
+                } else {
+                    showStatus('Error loading logs: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                showStatus('Error loading logs', 'error');
+            }
+        }
+
+        // Display logs
+        function displayLogs(logs) {
+            const logsHtml = logs.map(log => `
+                <div class="log-entry">
+                    <div class="log-time">${new Date(log.created_at).toLocaleString()}</div>
+                    <div><strong>${log.action}</strong> - ${log.admin_address}</div>
+                    ${log.details ? `<div style="color: #888;">${JSON.stringify(log.details, null, 2)}</div>` : ''}
+                </div>
+            `).join('');
+            
+            document.getElementById('adminLogs').innerHTML = logsHtml;
+        }
+
+        // Add category
+        async function addCategory() {
+            if (!userAddress) {
+                alert('Please connect your wallet first');
+                return;
+            }
+
+            const name = document.getElementById('categoryName').value;
+            const displayName = document.getElementById('categoryDisplayName').value;
+            const description = document.getElementById('categoryDescription').value;
+            const color = document.getElementById('categoryColor').value;
+
+            if (!name || !displayName) {
+                alert('Please fill in name and display name');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/gallery`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'admin',
+                        adminAddress: userAddress,
+                        adminAction: 'add-category',
+                        name: name,
+                        displayName: displayName,
+                        description: description,
+                        color: color
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('Category added successfully', 'success');
+                    document.getElementById('categoryName').value = '';
+                    document.getElementById('categoryDisplayName').value = '';
+                    document.getElementById('categoryDescription').value = '';
+                    document.getElementById('categoryColor').value = '#00ffff';
+                } else {
+                    showStatus('Failed to add category: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Add category error:', error);
+                showStatus('Failed to add category: ' + error.message, 'error');
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status-display status-${type}`;
+            statusDiv.textContent = message;
+            
+            // Insert at the top of the container
+            const container = document.querySelector('.admin-container');
+            container.insertBefore(statusDiv, container.firstChild);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

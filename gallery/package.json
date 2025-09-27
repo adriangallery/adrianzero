@@ -1,0 +1,30 @@
+{
+  "name": "trait-gallery",
+  "version": "1.0.0",
+  "description": "AdrianZERO Trait Gallery with Supabase integration",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "ethers": "^5.7.2"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "nft",
+    "gallery",
+    "supabase",
+    "adrianzero",
+    "web3"
+  ],
+  "author": "AdrianLAB",
+  "license": "MIT"
+}
