@@ -881,13 +881,13 @@
         // Contract addresses and configurations
         const ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
         const ADRIAN_ZERO_MINT = "0xF278a1060900005aD5b9077602b09A513541f5d2";
-        const PACK_MINTER = "0x673bE1968A12470F93BE374AAB529a89d5D607d5";
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
 
         // Pack configurations
         const STARTER_FLOPPY_PACK_ID = 10002;
         const STARTER_FLOPPY_PRICE = ethers.utils.parseEther("7500");
+        const PACK_MINTER = "0x673bE1968A12470F93BE374AAB529a89d5D607d5";
 
         // ABIs
         const ERC20_ABI = [
@@ -914,6 +914,7 @@
         ];
 
 
+
         // Global state
         let provider;
         let signer;
@@ -931,10 +932,6 @@
         };
         let adrianZeroPrice = ethers.utils.parseEther("0");
         
-        // Supply information
-        let supplyInfo = {
-            starterFloppy: { total: 0, minted: 0 },
-        };
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -1120,7 +1117,7 @@
 
         async function loadSupplyInfo() {
             try {
-                // Load supply info only for starterFloppy (only remaining floppy)
+                // Load supply info for starterFloppy
                 const packIds = [
                     { id: STARTER_FLOPPY_PACK_ID, key: 'starterFloppy' }
                 ];
@@ -1143,10 +1140,6 @@
                                 await new Promise(r => setTimeout(r, 500 * attempts));
                             }
                         }
-                        supplyInfo[pack.key] = {
-                            total: packConfig.maxSupply.toNumber(),
-                            minted: packConfig.minted.toNumber()
-                        };
 
                         // Update UI safely
                         const mintedEl = document.getElementById(pack.key + 'Minted');
