@@ -372,7 +372,7 @@
             font-size: 1rem;
             color: #cccccc;
             z-index: 1000;
-            display: none;
+            display: block;
             overflow-y: auto;
             backdrop-filter: blur(10px);
             box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
@@ -446,27 +446,6 @@
             box-shadow: 0 8px 20px rgba(0, 255, 0, 0.4);
         }
 
-        /* Sticky footer */
-        .sticky-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 2px solid var(--primary-green);
-            padding: 15px 20px;
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .sticky-footer .btn {
-            padding: 10px 20px;
-            font-size: 1rem;
-        }
 
         /* Responsive design */
         @media (max-width: 768px) {
@@ -954,14 +933,6 @@
     <!-- Lore Trigger Button -->
     <button class="lore-trigger" id="loreTrigger">📖 Read Adrian's Story</button>
 
-    <!-- Sticky Footer -->
-    <div class="sticky-footer">
-        <a href="https://adrianzero.com" class="btn btn-primary">Enter AdrianZERO</a>
-        <a href="https://adrianzero.com/traitlab" class="btn btn-secondary">Open a Floppy</a>
-        <a href="https://adrianzero.com/traitlab" class="btn btn-primary">Register a Name</a>
-        <a href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" class="btn btn-secondary">Learn About $ADRIAN</a>
-    </div>
-
     <script>
         // Scroll reveal animations
         const observerOptions = {
@@ -1006,7 +977,14 @@
         const loreTrigger = document.getElementById('loreTrigger');
         const loreCloseBtn = document.getElementById('loreCloseBtn');
 
-        // Show lore sidebar
+        // Show lore sidebar automatically on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loreSidebar.classList.add('show');
+            }, 1000); // Show after 1 second
+        });
+
+        // Show lore sidebar when trigger is clicked
         loreTrigger.addEventListener('click', () => {
             loreSidebar.style.display = 'block';
             setTimeout(() => {
