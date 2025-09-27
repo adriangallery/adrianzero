@@ -793,6 +793,10 @@
                         <span class="tab-icon">🧪</span>
                         <span class="tab-text">Serums</span>
                     </button>
+                    <button class="tab-btn" data-tab="packs" onclick="switchTab('packs')">
+                        <span class="tab-icon">📦</span>
+                        <span class="tab-text">Packs</span>
+                    </button>
                 </div>
             </div>
             
@@ -895,6 +899,7 @@
         var currentTab = 'traits';
         var allTraitsItems = [];
         var allSerumsItems = [];
+        var allPacksItems = [];
 
         // Function to get correct image path based on environment
         function getImagePath(assetId, extension) {
@@ -911,7 +916,9 @@
         // Function to check if an item uses local images
         function isLocalItem(assetId) {
             // Check if assetId is in the range of local items
-            return (assetId >= 262144 && assetId <= 262147) || assetId === 150 || assetId === 559;
+            return (assetId >= 262144 && assetId <= 262147) || 
+                   (assetId >= 10000 && assetId <= 20000) || 
+                   assetId === 150 || assetId === 559;
         }
         }
         var pagination = document.getElementById('pagination');
@@ -1033,6 +1040,8 @@
                 sectionTitle.textContent = 'Traits Store';
             } else if (tabName === 'serums') {
                 sectionTitle.textContent = 'Serums Store';
+            } else if (tabName === 'packs') {
+                sectionTitle.textContent = 'Packs Store';
             }
             
             // Filter and display items
@@ -1045,6 +1054,8 @@
                 allItems = allTraitsItems;
             } else if (currentTab === 'serums') {
                 allItems = allSerumsItems;
+            } else if (currentTab === 'packs') {
+                allItems = allPacksItems;
             }
             
             displayItems();
@@ -1057,6 +1068,7 @@
             allItems = [];
             allTraitsItems = [];
             allSerumsItems = [];
+            allPacksItems = [];
             cart = [];
             
             connectSection.style.display = "block";
@@ -1156,6 +1168,7 @@
                 // Process items and separate by type
                 allTraitsItems = [];
                 allSerumsItems = [];
+                allPacksItems = [];
                 
                 for (var i = 0; i < items.length; i++) {
                     var processedItem = processShopItem(items[i]);
@@ -1163,6 +1176,8 @@
                     // Separate items by assetId range
                     if (processedItem.assetId >= 262144 && processedItem.assetId <= 262147) {
                         allSerumsItems.push(processedItem);
+                    } else if (processedItem.assetId >= 10000 && processedItem.assetId <= 20000) {
+                        allPacksItems.push(processedItem);
                     } else {
                         allTraitsItems.push(processedItem);
                     }
@@ -1207,7 +1222,7 @@
 
         // Load metadata for all items with better error handling
         async function loadMetadataForItems() {
-            console.log('Loading metadata for traits:', allTraitsItems.length, 'and serums:', allSerumsItems.length);
+            console.log('Loading metadata for traits:', allTraitsItems.length, 'serums:', allSerumsItems.length, 'and packs:', allPacksItems.length);
             
             // Load metadata for traits items
             var traitsMetadataPromises = allTraitsItems.map(function(item, index) {
@@ -1227,8 +1242,17 @@
                 });
             });
             
+            // Load metadata for packs items
+            var packsMetadataPromises = allPacksItems.map(function(item, index) {
+                return new Promise(function(resolve) {
+                    setTimeout(function() {
+                        loadItemMetadata(item).then(resolve).catch(resolve);
+                    }, index * 200);
+                });
+            });
+            
             try {
-                await Promise.all([...traitsMetadataPromises, ...serumsMetadataPromises]);
+                await Promise.all([...traitsMetadataPromises, ...serumsMetadataPromises, ...packsMetadataPromises]);
                 console.log('All metadata loading attempts completed');
             } catch (err) {
                 console.error('Error in metadata loading:', err);
@@ -1326,9 +1350,11 @@
                 isAllowlisted: item.isAllowlisted,
                 imageUrl: (assetId >= 262144 && assetId <= 262147) ? 
                     getImagePath(assetId, '.gif') : 
-                    (assetId === 150 || assetId === 559) ? 
-                        getImagePath(assetId, '.png') : 
-                        'https://adrianlab.vercel.app/api/render/floppy/' + assetId + '.png',
+                    (assetId >= 10000 && assetId <= 20000) ?
+                        getImagePath(assetId, '.gif') :
+                        (assetId === 150 || assetId === 559) ? 
+                            getImagePath(assetId, '.png') : 
+                            'https://adrianlab.vercel.app/api/render/floppy/' + assetId + '.png',
                 metadataUrl: 'https://adrianlab.vercel.app/api/metadata/floppy/' + assetId + '.json',
                 description: '',
                 attributes: []
