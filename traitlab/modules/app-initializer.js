@@ -100,13 +100,13 @@ class AppInitializer {
             // Connect button
             const connectBtn = document.getElementById('connectBtn');
             if (connectBtn) {
-                connectBtn.addEventListener('click', () => this.app.modules.wallet.connect());
+                connectBtn.addEventListener('click', () => this.app.modules.wallet.connectWallet());
             }
             
             // Disconnect button
             const disconnectBtn = document.getElementById('disconnectBtn');
             if (disconnectBtn) {
-                disconnectBtn.addEventListener('click', () => this.app.modules.wallet.disconnect());
+                disconnectBtn.addEventListener('click', () => this.app.modules.wallet.disconnectWallet());
             }
             
             console.log('✅ AppInitializer: Event listeners configurados');
