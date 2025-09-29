@@ -599,6 +599,18 @@
             // Crear instancia global
             window.app = new TraitLABv2();
             
+            // Delay adicional para WalletConnect
+            if (window.ethereum && (
+                window.ethereum.isWalletConnect || 
+                window.ethereum.isWalletConnect === true ||
+                (window.ethereum.provider && window.ethereum.provider.isWalletConnect) ||
+                window.ethereum.connector ||
+                window.ethereum.wc
+            )) {
+                console.log('🚀 WalletConnect detectado, añadiendo delay de inicialización...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            
             // Inicializar
             await window.app.init();
         });

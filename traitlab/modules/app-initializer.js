@@ -14,8 +14,22 @@ class AppInitializer {
         console.log('🔧 AppInitializer: Inicializando módulos...');
         
         try {
-            // Wallet Manager
+            // Wallet Manager - con delay para WalletConnect
+            console.log('🔧 Inicializando Wallet Manager...');
             this.app.modules.wallet = new window.TraitLABWallet();
+            
+            // Delay adicional para WalletConnect
+            if (window.ethereum && (
+                window.ethereum.isWalletConnect || 
+                window.ethereum.isWalletConnect === true ||
+                (window.ethereum.provider && window.ethereum.provider.isWalletConnect) ||
+                window.ethereum.connector ||
+                window.ethereum.wc
+            )) {
+                console.log('🔧 WalletConnect detectado, añadiendo delay...');
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+            
             await this.app.modules.wallet.init();
             
             // UI Manager

@@ -34,27 +34,104 @@ class WalletManager {
         
         // Listen for messages from parent window (AdrianLab)
         window.addEventListener('message', this.handleParentMessage);
+        
+        // Listen for WalletConnect ready event
+        this.setupWalletConnectListener();
+    }
+    
+    /**
+     * Setup WalletConnect specific listeners
+     */
+    setupWalletConnectListener() {
+        // Escuchar cuando la página esté completamente cargada
+        window.addEventListener('load', () => {
+            console.log('WalletConnect listener: Page loaded, checking for WalletConnect...');
+            
+            // Verificar si es WalletConnect
+            if (this.isWalletConnect()) {
+                console.log('WalletConnect detected, setting up specific handlers...');
+                
+                // Añadir delay adicional para WalletConnect
+                setTimeout(() => {
+                    this.checkConnection();
+                }, 1000);
+            }
+        });
+        
+        // Escuchar cambios en window.ethereum (para WalletConnect)
+        if (window.ethereum) {
+            window.ethereum.on('connect', () => {
+                console.log('WalletConnect: Connected event received');
+                this.checkConnection();
+            });
+            
+            window.ethereum.on('disconnect', () => {
+                console.log('WalletConnect: Disconnected event received');
+                this.disconnectWallet();
+            });
+        }
+    }
+    
+    /**
+     * Detect if current wallet is WalletConnect
+     */
+    isWalletConnect() {
+        return window.ethereum && (
+            window.ethereum.isWalletConnect || 
+            window.ethereum.isWalletConnect === true ||
+            (window.ethereum.provider && window.ethereum.provider.isWalletConnect) ||
+            window.ethereum.connector ||
+            window.ethereum.wc ||
+            (window.ethereum._state && window.ethereum._state.isWalletConnect)
+        );
     }
 
     /**
-     * Connect wallet using MetaMask
+     * Connect wallet using MetaMask/WalletConnect
      */
     async connectWallet() {
         console.log('connectWallet called');
         
-        if (typeof window.ethereum === 'undefined') {
-            this.showError('MetaMask is not installed. Please install MetaMask to use this feature.');
+        // Verificación más robusta para WalletConnect
+        if (!window.ethereum || !window.ethereum.request) {
+            this.showError('Wallet not detected. Please install MetaMask or connect via WalletConnect.');
             return;
         }
 
         try {
             this.showLoading();
             
-            // Request account access
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            // Retry logic para WalletConnect
+            let accounts = null;
+            let retries = 3;
             
-            if (accounts.length === 0) {
-                this.showError('No accounts found. Please unlock MetaMask.');
+            while (retries > 0) {
+                try {
+                    // Verificar que ethereum esté disponible antes de cada intento
+                    if (!window.ethereum || !window.ethereum.request) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        retries--;
+                        continue;
+                    }
+                    
+                    // Request account access
+                    accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    break; // Si llegamos aquí, el request fue exitoso
+                    
+                } catch (error) {
+                    console.log(`Intento de conexión fallido, reintentando... (${retries} intentos restantes)`);
+                    if (retries > 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        retries--;
+                        continue;
+                    } else {
+                        throw error; // Si es el último intento, lanzar el error
+                    }
+                }
+            }
+            
+            if (!accounts || accounts.length === 0) {
+                this.showError('No accounts found. Please unlock your wallet.');
                 return;
             }
 
@@ -110,9 +187,15 @@ class WalletManager {
             if (error.code === 4001) {
                 this.showError('Connection rejected by user.');
             } else if (error.code === -32002) {
-                this.showError('Please check MetaMask for pending connection request.');
+                this.showError('Please check your wallet for pending connection request.');
+            } else if (error.code === -32603) {
+                this.showError('Network error. Please try again in a moment.');
+            } else if (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) {
+                this.showError('Network is still indexing. Please wait a moment and try again.');
+            } else if (error.message && error.message.includes('WalletConnect')) {
+                this.showError('WalletConnect connection failed. Please try again.');
             } else {
-                this.showError(`Connection failed: ${error.message}`);
+                this.showError(`Connection failed: ${error.message || 'Unknown error'}`);
             }
         } finally {
             this.hideLoading();
@@ -143,14 +226,33 @@ class WalletManager {
      * Check if wallet is already connected
      */
     async checkConnection() {
-        if (typeof window.ethereum === 'undefined') {
+        if (!window.ethereum || !window.ethereum.request) {
+            console.log('Wallet not available for connection check');
             return;
         }
 
         try {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            // Retry logic para WalletConnect
+            let accounts = null;
+            let retries = 2;
             
-            if (accounts.length > 0) {
+            while (retries > 0) {
+                try {
+                    accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    break;
+                } catch (error) {
+                    console.log(`Error checking accounts, retrying... (${retries} attempts left)`);
+                    if (retries > 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        retries--;
+                        continue;
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+            
+            if (accounts && accounts.length > 0) {
                 const account = accounts[0];
                 console.log('Found existing connection:', account);
                 
@@ -160,9 +262,12 @@ class WalletManager {
                 
                 this.updateUIForConnectedWallet();
                 this.emit('walletConnected', { account, contract: this.currentContract });
+            } else {
+                console.log('No existing wallet connection found');
             }
         } catch (error) {
             console.error('Error checking connection:', error);
+            // No mostrar error al usuario en checkConnection, solo log
         }
     }
 
