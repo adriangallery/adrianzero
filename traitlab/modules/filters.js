@@ -43,8 +43,8 @@ class TokenFilters {
         const floppyTokens = tokens.filter(token => {
             const tokenId = parseInt(token.tokenId);
             
-            // Solo usar rangos específicos de index.html: 10000-10010, 15000-15015
-            const isFloppyById = (tokenId >= 10000 && tokenId <= 10010) || 
+            // Solo usar rangos específicos de index.html: 10000-10012, 15000-15015
+            const isFloppyById = (tokenId >= 10000 && tokenId <= 10012) || 
                                  (tokenId >= 15000 && tokenId <= 15015);
             
             if (isFloppyById) {
@@ -72,6 +72,12 @@ class TokenFilters {
                 } else if (tokenId === 10010) {
                     token.displayName = 'ComradesUSB';
                     token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                } else if (tokenId === 10011) {
+                    token.displayName = 'PACK10011';
+                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
+                } else if (tokenId === 10012) {
+                    token.displayName = 'PACK10012';
+                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
                 } else {
                     // Otros floppys usan PACK_TOKEN_MINTER_CONTRACT
                     token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
@@ -151,8 +157,8 @@ class TokenFilters {
     isFloppyToken(token) {
         const tokenId = parseInt(token.tokenId);
         
-        // Solo usar rangos específicos de index.html: 10000-10010, 15000-15015
-        return (tokenId >= 10000 && tokenId <= 10010) || 
+        // Solo usar rangos específicos de index.html: 10000-10012, 15000-15015
+        return (tokenId >= 10000 && tokenId <= 10012) || 
                (tokenId >= 15000 && tokenId <= 15015);
     }
 
