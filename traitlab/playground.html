@@ -309,6 +309,17 @@
                     
                     // Then enhance with local images in background
                     console.log('🎮 Starting local images enhancement...');
+                    
+                    // Force test with a few known traits
+                    console.log('🎮 FORCE TEST: Manually setting local images for first 5 traits...');
+                    this.allTraits.slice(0, 5).forEach(trait => {
+                        const tokenId = trait.id || trait.tokenId;
+                        trait.image = `https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`;
+                        trait.localImage = true;
+                        trait.imageFormat = 'svg';
+                        console.log(`🎮 FORCE TEST: Set local image for ${trait.name} (ID: ${tokenId}):`, trait.image);
+                    });
+                    
                     this.enhanceWithLocalImages().then(() => {
                         console.log('🎮 Local images enhancement completed, re-rendering...');
                         console.log('🎮 Sample enhanced traits:', this.allTraits.slice(0, 3).map(t => ({
