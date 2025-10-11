@@ -3294,19 +3294,6 @@
       "external_url": "https://adrianzero.com/"
     },
     {
-      "tokenId": 15005,
-      "name": "ActionPACK",
-      "category": "ACTION PACKS",
-      "fileName": "ActionPACK",
-      "maxSupply": 1,
-      "traitsInside": "IDK",
-      "description": "BE REAL | BE ADRIAN | AdrianLAB by HalfxTiger",
-      "masterminds": [
-        "Adrian | HalfxTiger"
-      ],
-      "external_url": "https://adrianzero.com/"
-    },
-    {
       "tokenId": 15006,
       "name": "LaserMerl",
       "category": "PAGERS",
@@ -10057,7 +10044,7 @@
     }
   ],
   "metadata": {
-    "totalTraits": 847,
+    "totalTraits": 846,
     "categories": [
       "BACKGROUND",
       "EAR",
