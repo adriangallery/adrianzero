@@ -460,14 +460,16 @@
                 loadingIndicator.style.display = 'block';
                 
                 try {
-                    // Build query parameters
+                    // Build query parameters - format: trait=475&trait=482
                     const queryParams = this.selectedTraits.map(trait => `trait=${trait.tokenId}`);
                     const queryString = queryParams.join('&');
                     
-                    // Generate image URL
-                    const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}`;
+                    // Generate image URL with timestamp to prevent caching
+                    const timestamp = Date.now();
+                    const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}&_t=${timestamp}`;
                     
                     console.log('🎮 Generated image URL:', imageUrl);
+                    console.log('🎮 Query string:', queryString);
                     
                     // Preload image
                     const img = new Image();
