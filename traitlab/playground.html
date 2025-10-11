@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraitLAB Playground - AdrianLAB</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="modules/styles.css" rel="stylesheet">
+    
+    <style>
+        /* Playground specific styles */
+        .playground-container {
+            display: flex;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+        }
+
+        .traits-sidebar {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.8);
+            border-right: 2px solid #00ffff;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .preview-image-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .preview-image {
+            max-width: 400px;
+            max-height: 400px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .preview-image.loading {
+            opacity: 0.7;
+            filter: blur(2px);
+        }
+
+        .selected-traits-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            min-height: 100px;
+        }
+
+        .trait-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            color: #00ffff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .trait-item {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .trait-item:hover {
+            background: rgba(0, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .trait-item.selected {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+        }
+
+        .trait-image {
+            width: 100%;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        .trait-name {
+            font-size: 0.7rem;
+            color: #ffffff;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .trait-id {
+            font-size: 0.6rem;
+            color: #888;
+        }
+
+        .selected-trait {
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid #ff00ff;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-trait {
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .generate-btn {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            border: none;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .generate-btn:hover {
+            background: linear-gradient(45deg, #00cc00, #009900);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .base-image-info {
+            text-align: center;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ffff;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="playground-container">
+        <!-- Traits Sidebar -->
+        <div class="traits-sidebar">
+            <h2 style="color: #00ffff; margin-bottom: 20px; text-align: center;">TraitLAB Playground</h2>
+            
+            <!-- Search Box -->
+            <input type="text" id="searchInput" class="search-box" placeholder="Search traits...">
+            
+            <!-- Selected Traits Info -->
+            <div class="selected-traits-info">
+                <h5 style="color: #00ffff; margin-bottom: 10px;">Selected Traits:</h5>
+                <div id="selectedTraitsList">
+                    <p style="color: #888; font-style: italic;">No traits selected</p>
+                </div>
+            </div>
+            
+            <!-- Generate Button -->
+            <button id="generateBtn" class="generate-btn" disabled>
+                Generate Preview
+            </button>
+            
+            <!-- Traits by Category -->
+            <div id="traitsContainer">
+                <!-- Traits will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- Preview Area -->
+        <div class="preview-area">
+            <div class="base-image-info">
+                <h3 style="color: #00ffff; margin-bottom: 10px;">AdrianZERO Base</h3>
+                <p>Select traits from the sidebar to create your composition</p>
+            </div>
+            
+            <div class="preview-image-container">
+                <img id="previewImage" class="preview-image" src="https://adrianlab.vercel.app/api/render/1.png" alt="AdrianZERO Preview">
+            </div>
+            
+            <div id="loadingIndicator" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p style="color: #00ffff; margin-top: 10px;">Generating preview...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- TraitLAB Modules -->
+    <script src="modules/config.js?v=3"></script>
+    
+    <script>
+        // Playground Trait Manager - Simplified version
+        class PlaygroundTraitManager {
+            constructor() {
+                this.allTraits = [];
+                this.selectedTraits = [];
+                this.traitsByCategory = {};
+                this.baseTokenId = 1; // Base AdrianZERO token for preview
+            }
+
+            async init() {
+                console.log('🎮 PlaygroundTraitManager: Initializing...');
+                await this.loadTraitsDatabase();
+                this.setupEventListeners();
+                this.renderTraits();
+            }
+
+            async loadTraitsDatabase() {
+                try {
+                    console.log('🎮 Loading traits database...');
+                    
+                    let response;
+                    try {
+                        response = await fetch('./json/traits.json');
+                        if (!response.ok) {
+                            throw new Error(`Local file not found: ${response.status}`);
+                        }
+                    } catch (localError) {
+                        console.log('Local file failed, trying Vercel...');
+                        response = await fetch('https://adrianlab.vercel.app/labmetadata/traits.json');
+                        if (!response.ok) {
+                            throw new Error(`Failed to load traits database: ${response.status}`);
+                        }
+                    }
+                    
+                    const data = await response.json();
+                    this.allTraits = data.traits || [];
+                    console.log('🎮 Traits database loaded:', this.allTraits.length, 'traits');
+                    
+                    // Group traits by category
+                    this.groupTraitsByCategory();
+                    
+                } catch (error) {
+                    console.error('❌ Error loading traits database:', error);
+                    this.allTraits = [];
+                }
+            }
+
+            groupTraitsByCategory() {
+                this.traitsByCategory = {};
+                
+                this.allTraits.forEach(trait => {
+                    const category = trait.category || 'Other';
+                    if (!this.traitsByCategory[category]) {
+                        this.traitsByCategory[category] = [];
+                    }
+                    this.traitsByCategory[category].push(trait);
+                });
+                
+                console.log('🎮 Traits grouped by category:', Object.keys(this.traitsByCategory));
+            }
+
+            setupEventListeners() {
+                // Search input
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterTraits(e.target.value);
+                });
+
+                // Generate button
+                document.getElementById('generateBtn').addEventListener('click', () => {
+                    this.generatePreview();
+                });
+            }
+
+            filterTraits(searchTerm) {
+                const term = searchTerm.toLowerCase();
+                const traitItems = document.querySelectorAll('.trait-item');
+                
+                traitItems.forEach(item => {
+                    const traitName = item.querySelector('.trait-name').textContent.toLowerCase();
+                    const traitId = item.querySelector('.trait-id').textContent;
+                    
+                    if (traitName.includes(term) || traitId.includes(term)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
+            renderTraits() {
+                const container = document.getElementById('traitsContainer');
+                container.innerHTML = '';
+
+                Object.keys(this.traitsByCategory).sort().forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'trait-category';
+                    
+                    const title = document.createElement('div');
+                    title.className = 'category-title';
+                    title.textContent = category;
+                    categoryDiv.appendChild(title);
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'traits-grid';
+                    
+                    this.traitsByCategory[category].forEach(trait => {
+                        const traitItem = this.createTraitItem(trait);
+                        grid.appendChild(traitItem);
+                    });
+                    
+                    categoryDiv.appendChild(grid);
+                    container.appendChild(categoryDiv);
+                });
+            }
+
+            createTraitItem(trait) {
+                const item = document.createElement('div');
+                item.className = 'trait-item';
+                item.setAttribute('data-trait-id', trait.tokenId);
+                
+                // Create image URL (using the same pattern as TraitLAB)
+                const imageUrl = `https://adrianlab.vercel.app/labmetadata/traits/${trait.tokenId}.png`;
+                
+                item.innerHTML = `
+                    <img src="${imageUrl}" alt="${trait.name}" class="trait-image" onerror="this.style.display='none'">
+                    <div class="trait-name">${trait.name}</div>
+                    <div class="trait-id">#${trait.tokenId}</div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    this.toggleTraitSelection(trait, item);
+                });
+                
+                return item;
+            }
+
+            toggleTraitSelection(trait, item) {
+                const isSelected = item.classList.contains('selected');
+                
+                if (isSelected) {
+                    // Remove trait
+                    item.classList.remove('selected');
+                    this.selectedTraits = this.selectedTraits.filter(t => t.tokenId !== trait.tokenId);
+                } else {
+                    // Add trait
+                    item.classList.add('selected');
+                    this.selectedTraits.push(trait);
+                }
+                
+                this.updateSelectedTraitsList();
+                this.updateGenerateButton();
+            }
+
+            updateSelectedTraitsList() {
+                const container = document.getElementById('selectedTraitsList');
+                
+                if (this.selectedTraits.length === 0) {
+                    container.innerHTML = '<p style="color: #888; font-style: italic;">No traits selected</p>';
+                    return;
+                }
+                
+                container.innerHTML = this.selectedTraits.map(trait => `
+                    <div class="selected-trait">
+                        <span>${trait.name} (#${trait.tokenId})</span>
+                        <button class="remove-trait" onclick="playgroundManager.removeTrait(${trait.tokenId})">×</button>
+                    </div>
+                `).join('');
+            }
+
+            removeTrait(tokenId) {
+                this.selectedTraits = this.selectedTraits.filter(t => t.tokenId !== tokenId);
+                
+                // Update visual selection
+                const item = document.querySelector(`[data-trait-id="${tokenId}"]`);
+                if (item) {
+                    item.classList.remove('selected');
+                }
+                
+                this.updateSelectedTraitsList();
+                this.updateGenerateButton();
+            }
+
+            updateGenerateButton() {
+                const btn = document.getElementById('generateBtn');
+                btn.disabled = this.selectedTraits.length === 0;
+            }
+
+            async generatePreview() {
+                if (this.selectedTraits.length === 0) return;
+                
+                console.log('🎮 Generating preview with traits:', this.selectedTraits.map(t => t.tokenId));
+                
+                const previewImage = document.getElementById('previewImage');
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                
+                // Show loading state
+                previewImage.classList.add('loading');
+                loadingIndicator.style.display = 'block';
+                
+                try {
+                    // Build query parameters
+                    const queryParams = this.selectedTraits.map(trait => `trait=${trait.tokenId}`);
+                    const queryString = queryParams.join('&');
+                    
+                    // Generate image URL
+                    const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}`;
+                    
+                    console.log('🎮 Generated image URL:', imageUrl);
+                    
+                    // Preload image
+                    const img = new Image();
+                    img.onload = () => {
+                        previewImage.src = imageUrl;
+                        previewImage.classList.remove('loading');
+                        loadingIndicator.style.display = 'none';
+                        console.log('✅ Preview generated successfully');
+                    };
+                    
+                    img.onerror = () => {
+                        console.error('❌ Error loading preview image');
+                        previewImage.classList.remove('loading');
+                        loadingIndicator.style.display = 'none';
+                        alert('Error generating preview. Please try again.');
+                    };
+                    
+                    img.src = imageUrl;
+                    
+                } catch (error) {
+                    console.error('❌ Error generating preview:', error);
+                    previewImage.classList.remove('loading');
+                    loadingIndicator.style.display = 'none';
+                    alert('Error generating preview. Please try again.');
+                }
+            }
+        }
+
+        // Initialize playground when DOM is ready
+        let playgroundManager;
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🎮 Initializing TraitLAB Playground...');
+            playgroundManager = new PlaygroundTraitManager();
+            await playgroundManager.init();
+            console.log('✅ TraitLAB Playground initialized');
+        });
+    </script>
+</body>
+</html>
