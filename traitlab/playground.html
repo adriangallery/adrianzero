@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TraitLAB Playground - AdrianLAB</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -528,11 +528,9 @@
                     // Skip automatic enhancement for now since we're using force test
                     console.log('🎮 Skipping automatic enhancement - using force test results');
                     
-                    // Re-render after a short delay to prevent conflicts on mobile
-                    setTimeout(() => {
-                        console.log('🎮 Re-rendering after force test...');
-                        this.renderTraits();
-                    }, 100);
+                    // Re-render immediately but with protection
+                    console.log('🎮 Re-rendering after force test...');
+                    this.renderTraits();
                     
                     // Test if local images are accessible
                     const testImage = this.allTraits.find(t => t.localImage);
@@ -989,12 +987,26 @@
             try {
                 playgroundManager = new PlaygroundTraitManager();
                 await playgroundManager.init();
-                console.log('✅ TraitLAB Playground initialized');
+                console.log('✅ TraitLAB Playground initialized successfully');
             } catch (error) {
                 console.error('❌ Error initializing playground:', error);
+                // Don't reload or redirect on error
             } finally {
                 isInitializing = false;
             }
+        });
+
+        // Prevent page reload on errors
+        window.addEventListener('error', (event) => {
+            console.error('🎮 Global error caught:', event.error);
+            event.preventDefault();
+            return false;
+        });
+
+        // Prevent unhandled promise rejections from causing page reload
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('🎮 Unhandled promise rejection:', event.reason);
+            event.preventDefault();
         });
     </script>
 </body>
