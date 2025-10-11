@@ -228,6 +228,11 @@
                 Generate Preview
             </button>
             
+            <!-- Debug URL Button -->
+            <button id="debugUrlBtn" class="generate-btn" style="background: #ff8800; margin-top: 5px;" disabled>
+                Debug URL
+            </button>
+            
             <!-- Traits by Category -->
             <div id="traitsContainer">
                 <!-- Traits will be loaded here -->
@@ -330,6 +335,11 @@
                 // Generate button
                 document.getElementById('generateBtn').addEventListener('click', () => {
                     this.generatePreview();
+                });
+
+                // Debug URL button
+                document.getElementById('debugUrlBtn').addEventListener('click', () => {
+                    this.debugUrl();
                 });
             }
 
@@ -444,7 +454,10 @@
 
             updateGenerateButton() {
                 const btn = document.getElementById('generateBtn');
-                btn.disabled = this.selectedTraits.length === 0;
+                const debugBtn = document.getElementById('debugUrlBtn');
+                const hasTraits = this.selectedTraits.length > 0;
+                btn.disabled = !hasTraits;
+                debugBtn.disabled = !hasTraits;
             }
 
             async generatePreview() {
@@ -460,30 +473,64 @@
                 loadingIndicator.style.display = 'block';
                 
                 try {
-                    // Build query parameters
-                    const queryParams = this.selectedTraits.map(trait => `trait=${trait.tokenId}`);
+                    // Build query parameters - ensure we have valid tokenIds
+                    const queryParams = this.selectedTraits
+                        .filter(trait => trait.tokenId && !isNaN(trait.tokenId))
+                        .map(trait => `trait=${trait.tokenId}`);
+                    
+                    if (queryParams.length === 0) {
+                        console.error('❌ No valid traits found');
+                        previewImage.classList.remove('loading');
+                        loadingIndicator.style.display = 'none';
+                        alert('No valid traits selected. Please select traits with valid IDs.');
+                        return;
+                    }
+                    
                     const queryString = queryParams.join('&');
                     
-                    // Generate image URL
-                    const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}`;
+                    // Generate image URL with timestamp to prevent caching
+                    const timestamp = Date.now();
+                    const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}&_t=${timestamp}`;
                     
                     console.log('🎮 Generated image URL:', imageUrl);
+                    console.log('🎮 Query string:', queryString);
+                    console.log('🎮 Selected traits details:', this.selectedTraits);
                     
-                    // Preload image
+                    // Test the URL first
+                    console.log('🎮 Testing URL accessibility...');
+                    
+                    // Preload image with better error handling
                     const img = new Image();
+                    img.crossOrigin = 'anonymous'; // Handle CORS if needed
+                    
                     img.onload = () => {
+                        console.log('✅ Image loaded successfully');
                         previewImage.src = imageUrl;
                         previewImage.classList.remove('loading');
                         loadingIndicator.style.display = 'none';
                         console.log('✅ Preview generated successfully');
                     };
                     
-                    img.onerror = () => {
-                        console.error('❌ Error loading preview image');
+                    img.onerror = (error) => {
+                        console.error('❌ Error loading preview image:', error);
+                        console.error('❌ Failed URL:', imageUrl);
                         previewImage.classList.remove('loading');
                         loadingIndicator.style.display = 'none';
-                        alert('Error generating preview. Please try again.');
+                        
+                        // Show more detailed error
+                        const errorMsg = `Error generating preview.\nURL: ${imageUrl}\n\nPlease check the console for more details.`;
+                        alert(errorMsg);
                     };
+                    
+                    // Add timeout
+                    setTimeout(() => {
+                        if (img.complete === false) {
+                            console.error('❌ Image load timeout');
+                            previewImage.classList.remove('loading');
+                            loadingIndicator.style.display = 'none';
+                            alert('Image generation timed out. Please try again.');
+                        }
+                    }, 10000); // 10 second timeout
                     
                     img.src = imageUrl;
                     
@@ -493,6 +540,31 @@
                     loadingIndicator.style.display = 'none';
                     alert('Error generating preview. Please try again.');
                 }
+            }
+
+            debugUrl() {
+                if (this.selectedTraits.length === 0) return;
+                
+                const queryParams = this.selectedTraits
+                    .filter(trait => trait.tokenId && !isNaN(trait.tokenId))
+                    .map(trait => `trait=${trait.tokenId}`);
+                
+                const queryString = queryParams.join('&');
+                const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}`;
+                
+                console.log('🔍 DEBUG URL INFO:');
+                console.log('Base Token ID:', this.baseTokenId);
+                console.log('Selected Traits:', this.selectedTraits);
+                console.log('Query Params:', queryParams);
+                console.log('Query String:', queryString);
+                console.log('Full URL:', imageUrl);
+                
+                // Copy to clipboard
+                navigator.clipboard.writeText(imageUrl).then(() => {
+                    alert(`URL copied to clipboard!\n\n${imageUrl}\n\nCheck console for full debug info.`);
+                }).catch(() => {
+                    alert(`Debug URL:\n\n${imageUrl}\n\nCheck console for full debug info.`);
+                });
             }
         }
 
