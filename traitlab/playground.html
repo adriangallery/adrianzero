@@ -481,19 +481,14 @@
                 this.allTraits = [];
                 this.selectedTraits = [];
                 this.traitsByCategory = {};
-                this.baseTokenId = 1; // Base AdrianZERO token for preview
+                this.baseTokenId = 1;
                 this.galleryManager = null;
-                this.isRendering = false; // Flag to prevent multiple renders
-                this.isInitialized = false; // Flag to prevent multiple initializations
+                this.isRendering = false;
+                this.isInitialized = false;
             }
 
             async init() {
-                if (this.isInitialized) {
-                    console.log('🎮 PlaygroundTraitManager: Already initialized, skipping...');
-                    return;
-                }
-                
-                console.log('🎮 PlaygroundTraitManager: Initializing with local assets...');
+                if (this.isInitialized) return;
                 this.isInitialized = true;
                 await this.initializeLocal();
                 this.setupEventListeners();
@@ -501,183 +496,48 @@
 
             async initializeLocal() {
                 try {
-                    console.log('🎮 Loading traits from local assets...');
-                    
-                    // Load traits from JSON database first
                     await this.loadTraitsDatabase();
-                    
-                    // Render traits immediately with TraitLAB URLs
                     this.renderTraits();
                     
-                    // Then enhance with local images in background
-                    console.log('🎮 Starting local images enhancement...');
-                    
-                    // Force test with ALL traits - cover everything
-                    console.log('🎮 FORCE TEST: Manually setting local images for ALL traits...');
+                    // Set local images for all traits
                     this.allTraits.forEach(trait => {
                         const tokenId = trait.id || trait.tokenId;
                         trait.image = `https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`;
                         trait.localImage = true;
                         trait.imageFormat = 'svg';
-                        if (tokenId <= 10) { // Only log first 10 to avoid spam
-                            console.log(`🎮 FORCE TEST: Set local image for ${trait.name} (ID: ${tokenId}):`, trait.image);
-                        }
                     });
-                    console.log(`🎮 FORCE TEST: Set local images for ALL ${this.allTraits.length} traits total`);
                     
-                    // Skip automatic enhancement for now since we're using force test
-                    console.log('🎮 Skipping automatic enhancement - using force test results');
-                    
-                    // Re-render immediately but with protection
-                    console.log('🎮 Re-rendering after force test...');
                     this.renderTraits();
                     
-                    // Test if local images are accessible
-                    const testImage = this.allTraits.find(t => t.localImage);
-                    if (testImage) {
-                        console.log('🎮 Testing local image access:', testImage.image);
-                        fetch(testImage.image, { method: 'HEAD' })
-                            .then(response => {
-                                console.log('🎮 Test image response:', response.status, response.ok);
-                            })
-                            .catch(error => {
-                                console.error('🎮 Test image failed:', error);
-                            });
-                    }
-                    
-                    console.log('🎮 Traits loaded from local assets:', this.allTraits.length, 'traits');
-                    
                 } catch (error) {
-                    console.error('❌ Error loading local traits:', error);
-                    // Fallback to JSON database only
                     await this.loadTraitsDatabase();
                     this.renderTraits();
                 }
             }
 
-            async enhanceWithLocalImages() {
-                console.log('🎮 Enhancing traits with local images...');
-                
-                // Show loading indicator
-                const loadingIndicator = document.getElementById('loadingIndicator');
-                if (loadingIndicator) {
-                    loadingIndicator.style.display = 'block';
-                    loadingIndicator.innerHTML = `
-                        <div class="loading-spinner"></div>
-                        <p style="color: #00ffff; margin-top: 10px;">Scanning local assets...</p>
-                    `;
-                }
-                
-                try {
-                    // Set a timeout for the entire process
-                    const timeoutPromise = new Promise((_, reject) => {
-                        setTimeout(() => reject(new Error('Timeout scanning local assets')), 15000);
-                    });
-                    
-                    const scanPromise = this.checkAvailableImages();
-                    const availableImages = await Promise.race([scanPromise, timeoutPromise]);
-                    
-                    console.log('🎮 Available local images:', availableImages.length);
-                    
-                    // Create a map for faster lookup
-                    const imageMap = new Map();
-                    availableImages.forEach(img => {
-                        imageMap.set(img.tokenId, img);
-                    });
-                    
-                    // Update traits with local image URLs
-                    this.allTraits = this.allTraits.map(trait => {
-                        const tokenId = trait.id || trait.tokenId;
-                        const localImage = imageMap.get(tokenId);
-                        
-                        if (localImage) {
-                            console.log(`🎮 Updating trait ${trait.name} (ID: ${tokenId}) with local image:`, localImage.url);
-                            return {
-                                ...trait,
-                                image: localImage.url,
-                                localImage: true,
-                                imageFormat: localImage.format
-                            };
-                        }
-                        return trait;
-                    });
-                    
-                } catch (error) {
-                    console.warn('⚠️ Timeout or error scanning local assets, using fallback:', error.message);
-                    // Continue without local images - traits will use TraitLAB URLs
-                }
-                
-                // Hide loading indicator
-                if (loadingIndicator) {
-                    loadingIndicator.style.display = 'none';
-                }
-            }
-
-            async checkAvailableImages() {
-                const availableImages = [];
-                const traitIds = [...new Set(this.allTraits.map(t => t.id || t.tokenId))].sort((a, b) => a - b);
-                
-                console.log('🎮 Checking for local images for', traitIds.length, 'traits...');
-                
-                // Simplified approach - assume images exist and create URLs directly
-                // We know from the working example that the pattern is correct
-                const maxTraitsToCheck = Math.min(traitIds.length, 100); // Check first 100 traits
-                const traitsToCheck = traitIds.slice(0, maxTraitsToCheck);
-                
-                console.log(`🎮 Creating local image URLs for first ${maxTraitsToCheck} traits...`);
-                
-                // Create image URLs directly without checking each one
-                traitsToCheck.forEach(tokenId => {
-                    // Try SVG first (most common), then GIF, then PNG
-                    const formats = ['svg', 'gif', 'png'];
-                    for (const format of formats) {
-                        availableImages.push({
-                            tokenId: tokenId,
-                            format: format,
-                            url: `https://adrianzero.com/traitlab/assets/traits/${tokenId}.${format}`
-                        });
-                        break; // Only add one format per trait
-                    }
-                });
-                
-                console.log('🎮 Created local image URLs:', availableImages.length);
-                return availableImages;
-            }
 
             async loadTraitsDatabase() {
                 try {
-                    console.log('🎮 Fallback: Loading traits database...');
-                    
                     let response;
                     try {
                         response = await fetch('./json/traits.json');
-                        if (!response.ok) {
-                            throw new Error(`Local file not found: ${response.status}`);
-                        }
+                        if (!response.ok) throw new Error('Local file not found');
                     } catch (localError) {
-                        console.log('Local file failed, trying Vercel...');
                         response = await fetch('https://adrianlab.vercel.app/labmetadata/traits.json');
-                        if (!response.ok) {
-                            throw new Error(`Failed to load traits database: ${response.status}`);
-                        }
+                        if (!response.ok) throw new Error('Failed to load traits database');
                     }
                     
                     const data = await response.json();
                     this.allTraits = data.traits || [];
-                    console.log('🎮 Traits database loaded:', this.allTraits.length, 'traits');
-                    
-                    // Group traits by category
                     this.groupTraitsByCategory();
                     
                 } catch (error) {
-                    console.error('❌ Error loading traits database:', error);
                     this.allTraits = [];
                 }
             }
 
             groupTraitsByCategory() {
                 this.traitsByCategory = {};
-                
                 this.allTraits.forEach(trait => {
                     const category = trait.category || 'Other';
                     if (!this.traitsByCategory[category]) {
@@ -685,8 +545,6 @@
                     }
                     this.traitsByCategory[category].push(trait);
                 });
-                
-                console.log('🎮 Traits grouped by category:', Object.keys(this.traitsByCategory));
             }
 
             setupEventListeners() {
@@ -729,46 +587,38 @@
             }
 
             renderTraits() {
-                if (this.isRendering) {
-                    console.log('🎮 renderTraits() already in progress, skipping...');
-                    return;
-                }
-                
+                if (this.isRendering) return;
                 this.isRendering = true;
-                console.log('🎮 renderTraits() called');
                 
                 try {
                     const container = document.getElementById('traitsContainer');
-                    if (!container) {
-                        console.error('🎮 traitsContainer not found');
-                        return;
-                    }
+                    if (!container) return;
                     
                     container.innerHTML = '';
 
                     Object.keys(this.traitsByCategory).sort().forEach(category => {
-                    const categoryDiv = document.createElement('div');
-                    categoryDiv.className = 'trait-category';
-                    
-                    const title = document.createElement('div');
-                    title.className = 'category-title';
-                    title.textContent = category;
-                    categoryDiv.appendChild(title);
-                    
-                    const grid = document.createElement('div');
-                    grid.className = 'traits-grid';
-                    
-                    this.traitsByCategory[category].forEach(trait => {
-                        const traitItem = this.createTraitItem(trait);
-                        grid.appendChild(traitItem);
+                        const categoryDiv = document.createElement('div');
+                        categoryDiv.className = 'trait-category';
+                        
+                        const title = document.createElement('div');
+                        title.className = 'category-title';
+                        title.textContent = category;
+                        categoryDiv.appendChild(title);
+                        
+                        const grid = document.createElement('div');
+                        grid.className = 'traits-grid';
+                        
+                        this.traitsByCategory[category].forEach(trait => {
+                            const traitItem = this.createTraitItem(trait);
+                            grid.appendChild(traitItem);
+                        });
+                        
+                        categoryDiv.appendChild(grid);
+                        container.appendChild(categoryDiv);
                     });
-                    
-                    categoryDiv.appendChild(grid);
-                    container.appendChild(categoryDiv);
-                });
                 
                 } catch (error) {
-                    console.error('🎮 Error in renderTraits:', error);
+                    // Silent error handling
                 } finally {
                     this.isRendering = false;
                 }
@@ -779,26 +629,13 @@
                 item.className = 'trait-item';
                 item.setAttribute('data-trait-id', trait.id || trait.tokenId);
                 
-                // Use local image if available, otherwise fallback to TraitLAB pattern
                 const imageUrl = trait.image || `https://adrianlab.vercel.app/labmetadata/traits/${trait.id || trait.tokenId}.png`;
-                
-                // Debug logging for first few traits
-                if (trait.id <= 5 || trait.tokenId <= 5) {
-                    console.log(`🎮 Creating trait item for ${trait.name} (ID: ${trait.id || trait.tokenId}):`, {
-                        hasLocalImage: trait.localImage,
-                        imageFormat: trait.imageFormat,
-                        imageUrl: imageUrl,
-                        originalImage: trait.image
-                    });
-                }
-                
-                // Create format-specific styling
                 const formatClass = trait.imageFormat ? `trait-image-${trait.imageFormat}` : '';
                 const formatBadge = trait.localImage ? 
                     `<div class="local-badge" style="font-size: 0.6rem; color: #00ff00; margin-top: 2px;">LOCAL ${trait.imageFormat?.toUpperCase() || 'SVG'}</div>` : '';
                 
                 item.innerHTML = `
-                    <img src="${imageUrl}" alt="${trait.name}" class="trait-image ${formatClass}" onerror="console.log('Image failed to load:', '${imageUrl}'); this.style.display='none'">
+                    <img src="${imageUrl}" alt="${trait.name}" class="trait-image ${formatClass}" onerror="this.style.display='none'">
                     <div class="trait-name">${trait.name}</div>
                     <div class="trait-id">#${trait.id || trait.tokenId}</div>
                     ${formatBadge}
@@ -976,21 +813,14 @@
         let isInitializing = false;
         
         document.addEventListener('DOMContentLoaded', async () => {
-            if (isInitializing) {
-                console.log('🎮 Already initializing, skipping...');
-                return;
-            }
-            
+            if (isInitializing) return;
             isInitializing = true;
-            console.log('🎮 Initializing TraitLAB Playground with local assets...');
             
             try {
                 playgroundManager = new PlaygroundTraitManager();
                 await playgroundManager.init();
-                console.log('✅ TraitLAB Playground initialized successfully');
             } catch (error) {
-                console.error('❌ Error initializing playground:', error);
-                // Don't reload or redirect on error
+                // Silent error handling
             } finally {
                 isInitializing = false;
             }
@@ -998,14 +828,12 @@
 
         // Prevent page reload on errors
         window.addEventListener('error', (event) => {
-            console.error('🎮 Global error caught:', event.error);
             event.preventDefault();
             return false;
         });
 
         // Prevent unhandled promise rejections from causing page reload
         window.addEventListener('unhandledrejection', (event) => {
-            console.error('🎮 Unhandled promise rejection:', event.reason);
             event.preventDefault();
         });
     </script>
