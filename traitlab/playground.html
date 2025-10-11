@@ -483,10 +483,18 @@
                 this.traitsByCategory = {};
                 this.baseTokenId = 1; // Base AdrianZERO token for preview
                 this.galleryManager = null;
+                this.isRendering = false; // Flag to prevent multiple renders
+                this.isInitialized = false; // Flag to prevent multiple initializations
             }
 
             async init() {
+                if (this.isInitialized) {
+                    console.log('🎮 PlaygroundTraitManager: Already initialized, skipping...');
+                    return;
+                }
+                
                 console.log('🎮 PlaygroundTraitManager: Initializing with local assets...');
+                this.isInitialized = true;
                 await this.initializeLocal();
                 this.setupEventListeners();
             }
@@ -517,12 +525,14 @@
                     });
                     console.log(`🎮 FORCE TEST: Set local images for ALL ${this.allTraits.length} traits total`);
                     
-                    // Re-render immediately after force test
-                    console.log('🎮 Re-rendering after force test...');
-                    this.renderTraits();
-                    
                     // Skip automatic enhancement for now since we're using force test
                     console.log('🎮 Skipping automatic enhancement - using force test results');
+                    
+                    // Re-render after a short delay to prevent conflicts on mobile
+                    setTimeout(() => {
+                        console.log('🎮 Re-rendering after force test...');
+                        this.renderTraits();
+                    }, 100);
                     
                     // Test if local images are accessible
                     const testImage = this.allTraits.find(t => t.localImage);
@@ -721,11 +731,24 @@
             }
 
             renderTraits() {
+                if (this.isRendering) {
+                    console.log('🎮 renderTraits() already in progress, skipping...');
+                    return;
+                }
+                
+                this.isRendering = true;
                 console.log('🎮 renderTraits() called');
-                const container = document.getElementById('traitsContainer');
-                container.innerHTML = '';
+                
+                try {
+                    const container = document.getElementById('traitsContainer');
+                    if (!container) {
+                        console.error('🎮 traitsContainer not found');
+                        return;
+                    }
+                    
+                    container.innerHTML = '';
 
-                Object.keys(this.traitsByCategory).sort().forEach(category => {
+                    Object.keys(this.traitsByCategory).sort().forEach(category => {
                     const categoryDiv = document.createElement('div');
                     categoryDiv.className = 'trait-category';
                     
@@ -745,6 +768,12 @@
                     categoryDiv.appendChild(grid);
                     container.appendChild(categoryDiv);
                 });
+                
+                } catch (error) {
+                    console.error('🎮 Error in renderTraits:', error);
+                } finally {
+                    this.isRendering = false;
+                }
             }
 
             createTraitItem(trait) {
@@ -946,11 +975,26 @@
 
         // Initialize playground when DOM is ready
         let playgroundManager;
+        let isInitializing = false;
+        
         document.addEventListener('DOMContentLoaded', async () => {
+            if (isInitializing) {
+                console.log('🎮 Already initializing, skipping...');
+                return;
+            }
+            
+            isInitializing = true;
             console.log('🎮 Initializing TraitLAB Playground with local assets...');
-            playgroundManager = new PlaygroundTraitManager();
-            await playgroundManager.init();
-            console.log('✅ TraitLAB Playground initialized');
+            
+            try {
+                playgroundManager = new PlaygroundTraitManager();
+                await playgroundManager.init();
+                console.log('✅ TraitLAB Playground initialized');
+            } catch (error) {
+                console.error('❌ Error initializing playground:', error);
+            } finally {
+                isInitializing = false;
+            }
         });
     </script>
 </body>
