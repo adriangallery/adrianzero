@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AdrianLAB Play - Móvil</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .mobile-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .mobile-header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #00ffff;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .mobile-title {
+            color: #00ffff;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ffff;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-family: 'VT323', monospace;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Preview Section */
+        .preview-section {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #00ffff;
+        }
+
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            margin-bottom: 15px;
+        }
+
+        .preview-image.loading {
+            opacity: 0.7;
+            filter: blur(2px);
+        }
+
+        .selected-traits-mobile {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 15px;
+            min-height: 60px;
+        }
+
+        .selected-trait-mobile {
+            background: rgba(255, 0, 255, 0.2);
+            border: 1px solid #ff00ff;
+            border-radius: 8px;
+            padding: 8px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .trait-actions-mobile {
+            display: flex;
+            gap: 8px;
+        }
+
+        .buy-btn-mobile {
+            background: #00ff00;
+            color: #000;
+            text-decoration: none;
+            border-radius: 5px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .remove-btn-mobile {
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 1px solid #00ffff;
+            padding: 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .category-tab {
+            display: inline-block;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .category-tab.active {
+            background: #00ffff;
+            color: #000;
+        }
+
+        .category-tab:hover {
+            background: rgba(0, 255, 255, 0.3);
+        }
+
+        /* Traits Grid */
+        .traits-section {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .traits-grid-mobile {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .trait-item-mobile {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .trait-item-mobile:hover {
+            background: rgba(0, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .trait-item-mobile.selected {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+        }
+
+        .trait-image-mobile {
+            width: 100%;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            border-radius: 5px;
+        }
+
+        .trait-name-mobile {
+            font-size: 0.8rem;
+            color: #ffffff;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .trait-id-mobile {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .local-badge-mobile {
+            font-size: 0.6rem;
+            color: #00ff00;
+            margin-top: 4px;
+        }
+
+        /* Loading */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #00ffff;
+            margin-top: 10px;
+        }
+
+        /* No traits message */
+        .no-traits {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .traits-grid-mobile {
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+                gap: 8px;
+            }
+            
+            .trait-item-mobile {
+                min-height: 110px;
+                padding: 8px;
+            }
+            
+            .preview-image {
+                max-width: 150px;
+                max-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- Header -->
+        <div class="mobile-header">
+            <h1 class="mobile-title">AdrianLAB Play</h1>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Buscar traits...">
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section">
+            <img id="previewImage" class="preview-image" src="https://adrianlab.vercel.app/api/render/1.png" alt="AdrianZERO Preview">
+            
+            <div class="selected-traits-mobile" id="selectedTraitsMobile">
+                <div class="no-traits">No traits seleccionados</div>
+            </div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="category-tabs" id="categoryTabs">
+            <!-- Categories will be loaded here -->
+        </div>
+
+        <!-- Traits Section -->
+        <div class="traits-section">
+            <div class="traits-grid-mobile" id="traitsGrid">
+                <!-- Traits will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MobilePlayManager {
+            constructor() {
+                this.allTraits = [];
+                this.selectedTraits = [];
+                this.traitsByCategory = {};
+                this.currentCategory = null;
+                this.baseTokenId = 1;
+                this.isInitialized = false;
+            }
+
+            async init() {
+                if (this.isInitialized) return;
+                this.isInitialized = true;
+                
+                try {
+                    await this.loadTraits();
+                    this.setupEventListeners();
+                    this.renderCategories();
+                    this.renderTraits();
+                } catch (error) {
+                    // Silent error handling
+                }
+            }
+
+            async loadTraits() {
+                try {
+                    let response;
+                    try {
+                        response = await fetch('./json/traits.json');
+                        if (!response.ok) throw new Error('Local file not found');
+                    } catch (localError) {
+                        response = await fetch('https://adrianlab.vercel.app/labmetadata/traits.json');
+                        if (!response.ok) throw new Error('Failed to load traits database');
+                    }
+                    
+                    const data = await response.json();
+                    this.allTraits = data.traits || [];
+                    
+                    // Set local images for all traits
+                    this.allTraits.forEach(trait => {
+                        const tokenId = trait.id || trait.tokenId;
+                        trait.image = `https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`;
+                        trait.localImage = true;
+                        trait.imageFormat = 'svg';
+                    });
+                    
+                    this.groupTraitsByCategory();
+                } catch (error) {
+                    this.allTraits = [];
+                }
+            }
+
+            groupTraitsByCategory() {
+                this.traitsByCategory = {};
+                this.allTraits.forEach(trait => {
+                    const category = trait.category || 'Other';
+                    if (!this.traitsByCategory[category]) {
+                        this.traitsByCategory[category] = [];
+                    }
+                    this.traitsByCategory[category].push(trait);
+                });
+            }
+
+            setupEventListeners() {
+                // Search input
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterTraits(e.target.value);
+                });
+            }
+
+            renderCategories() {
+                const container = document.getElementById('categoryTabs');
+                const categories = Object.keys(this.traitsByCategory).sort();
+                
+                container.innerHTML = categories.map(category => 
+                    `<div class="category-tab" data-category="${category}">${category}</div>`
+                ).join('');
+
+                // Add click listeners
+                container.querySelectorAll('.category-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        this.selectCategory(tab.dataset.category);
+                    });
+                });
+
+                // Select first category by default
+                if (categories.length > 0) {
+                    this.selectCategory(categories[0]);
+                }
+            }
+
+            selectCategory(category) {
+                // Update active tab
+                document.querySelectorAll('.category-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-category="${category}"]`).classList.add('active');
+                
+                this.currentCategory = category;
+                this.renderTraits();
+            }
+
+            renderTraits() {
+                const container = document.getElementById('traitsGrid');
+                if (!this.currentCategory || !this.traitsByCategory[this.currentCategory]) {
+                    container.innerHTML = '<div class="no-traits">Selecciona una categoría</div>';
+                    return;
+                }
+
+                const traits = this.traitsByCategory[this.currentCategory];
+                container.innerHTML = traits.map(trait => this.createTraitItem(trait)).join('');
+            }
+
+            createTraitItem(trait) {
+                const isSelected = this.selectedTraits.some(t => (t.id || t.tokenId) === (trait.id || trait.tokenId));
+                const tokenId = trait.id || trait.tokenId;
+                const imageUrl = trait.image || `https://adrianlab.vercel.app/labmetadata/traits/${tokenId}.png`;
+                const formatClass = trait.imageFormat ? `trait-image-${trait.imageFormat}` : '';
+                const localBadge = trait.localImage ? 
+                    `<div class="local-badge-mobile">LOCAL ${trait.imageFormat?.toUpperCase() || 'SVG'}</div>` : '';
+
+                return `
+                    <div class="trait-item-mobile ${isSelected ? 'selected' : ''}" 
+                         data-trait-id="${tokenId}" 
+                         onclick="mobileManager.toggleTrait(${tokenId})">
+                        <img src="${imageUrl}" alt="${trait.name}" class="trait-image-mobile ${formatClass}" onerror="this.style.display='none'">
+                        <div class="trait-name-mobile">${trait.name}</div>
+                        <div class="trait-id-mobile">#${tokenId}</div>
+                        ${localBadge}
+                    </div>
+                `;
+            }
+
+            toggleTrait(tokenId) {
+                const trait = this.allTraits.find(t => (t.id || t.tokenId) === tokenId);
+                if (!trait) return;
+
+                const isSelected = this.selectedTraits.some(t => (t.id || t.tokenId) === tokenId);
+                
+                if (isSelected) {
+                    this.selectedTraits = this.selectedTraits.filter(t => (t.id || t.tokenId) !== tokenId);
+                } else {
+                    this.selectedTraits.push(trait);
+                }
+
+                this.updateSelectedTraits();
+                this.updatePreview();
+                this.renderTraits(); // Re-render to update selection state
+            }
+
+            updateSelectedTraits() {
+                const container = document.getElementById('selectedTraitsMobile');
+                
+                if (this.selectedTraits.length === 0) {
+                    container.innerHTML = '<div class="no-traits">No traits seleccionados</div>';
+                    return;
+                }
+
+                container.innerHTML = this.selectedTraits.map(trait => {
+                    const tokenId = trait.id || trait.tokenId;
+                    const openseaUrl = `https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/${tokenId}`;
+                    return `
+                        <div class="selected-trait-mobile">
+                            <span>${trait.name} (#${tokenId})</span>
+                            <div class="trait-actions-mobile">
+                                <a href="${openseaUrl}" target="_blank" class="buy-btn-mobile">🛒</a>
+                                <button class="remove-btn-mobile" onclick="mobileManager.removeTrait(${tokenId})">×</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            removeTrait(tokenId) {
+                this.selectedTraits = this.selectedTraits.filter(t => (t.id || t.tokenId) !== tokenId);
+                this.updateSelectedTraits();
+                this.updatePreview();
+                this.renderTraits(); // Re-render to update selection state
+            }
+
+            updatePreview() {
+                const previewImage = document.getElementById('previewImage');
+                
+                if (this.selectedTraits.length === 0) {
+                    previewImage.src = `https://adrianlab.vercel.app/api/render/${this.baseTokenId}.png`;
+                    return;
+                }
+
+                previewImage.classList.add('loading');
+                
+                const queryParams = this.selectedTraits.map(trait => `trait=${trait.id || trait.tokenId}`);
+                const queryString = queryParams.join('&');
+                const timestamp = Date.now();
+                const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}&_t=${timestamp}`;
+                
+                const img = new Image();
+                img.onload = () => {
+                    previewImage.src = imageUrl;
+                    previewImage.classList.remove('loading');
+                };
+                img.onerror = () => {
+                    previewImage.classList.remove('loading');
+                };
+                img.src = imageUrl;
+            }
+
+            filterTraits(searchTerm) {
+                const term = searchTerm.toLowerCase();
+                const traitItems = document.querySelectorAll('.trait-item-mobile');
+                
+                traitItems.forEach(item => {
+                    const traitName = item.querySelector('.trait-name-mobile').textContent.toLowerCase();
+                    const traitId = item.querySelector('.trait-id-mobile').textContent;
+                    
+                    if (traitName.includes(term) || traitId.includes(term)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Initialize
+        let mobileManager;
+        document.addEventListener('DOMContentLoaded', async () => {
+            mobileManager = new MobilePlayManager();
+            await mobileManager.init();
+        });
+    </script>
+</body>
+</html>
