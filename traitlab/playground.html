@@ -258,27 +258,57 @@
     
     <!-- TraitLAB Modules -->
     <script src="modules/config.js?v=3"></script>
+    <script src="modules/gallery-manager.js?v=9"></script>
     
     <script>
-        // Playground Trait Manager - Simplified version
+        // Playground Trait Manager - Using Alchemy like gallery2.html
         class PlaygroundTraitManager {
             constructor() {
                 this.allTraits = [];
                 this.selectedTraits = [];
                 this.traitsByCategory = {};
                 this.baseTokenId = 1; // Base AdrianZERO token for preview
+                this.galleryManager = null;
             }
 
             async init() {
-                console.log('🎮 PlaygroundTraitManager: Initializing...');
-                await this.loadTraitsDatabase();
+                console.log('🎮 PlaygroundTraitManager: Initializing with Alchemy...');
+                await this.initializeAlchemy();
                 this.setupEventListeners();
                 this.renderTraits();
             }
 
+            async initializeAlchemy() {
+                try {
+                    console.log('🎮 Initializing Alchemy connection...');
+                    
+                    // Initialize gallery manager
+                    this.galleryManager = new GalleryManager();
+                    
+                    // Use Alchemy RPC for better performance (same as gallery2.html)
+                    const alchemyRpcUrl = `https://base-mainnet.g.alchemy.com/v2/${this.galleryManager.alchemyApiKey}`;
+                    const provider = new ethers.providers.JsonRpcProvider(alchemyRpcUrl);
+                    await this.galleryManager.initialize(provider, null);
+
+                    console.log('🎮 Gallery manager initialized, loading traits...');
+                    
+                    // Load traits using Alchemy
+                    this.allTraits = await this.galleryManager.loadTraits();
+                    console.log('🎮 Traits loaded from Alchemy:', this.allTraits.length, 'traits');
+                    
+                    // Group traits by category
+                    this.groupTraitsByCategory();
+                    
+                } catch (error) {
+                    console.error('❌ Error initializing Alchemy:', error);
+                    // Fallback to JSON database
+                    await this.loadTraitsDatabase();
+                }
+            }
+
             async loadTraitsDatabase() {
                 try {
-                    console.log('🎮 Loading traits database...');
+                    console.log('🎮 Fallback: Loading traits database...');
                     
                     let response;
                     try {
@@ -378,15 +408,15 @@
             createTraitItem(trait) {
                 const item = document.createElement('div');
                 item.className = 'trait-item';
-                item.setAttribute('data-trait-id', trait.tokenId);
+                item.setAttribute('data-trait-id', trait.id || trait.tokenId);
                 
-                // Create image URL (using the same pattern as TraitLAB)
-                const imageUrl = `https://adrianlab.vercel.app/labmetadata/traits/${trait.tokenId}.png`;
+                // Use Alchemy image URL if available, otherwise fallback to TraitLAB pattern
+                const imageUrl = trait.image || `https://adrianlab.vercel.app/labmetadata/traits/${trait.id || trait.tokenId}.png`;
                 
                 item.innerHTML = `
                     <img src="${imageUrl}" alt="${trait.name}" class="trait-image" onerror="this.style.display='none'">
                     <div class="trait-name">${trait.name}</div>
-                    <div class="trait-id">#${trait.tokenId}</div>
+                    <div class="trait-id">#${trait.id || trait.tokenId}</div>
                 `;
                 
                 item.addEventListener('click', () => {
@@ -398,11 +428,12 @@
 
             toggleTraitSelection(trait, item) {
                 const isSelected = item.classList.contains('selected');
+                const traitId = trait.id || trait.tokenId;
                 
                 if (isSelected) {
                     // Remove trait
                     item.classList.remove('selected');
-                    this.selectedTraits = this.selectedTraits.filter(t => t.tokenId !== trait.tokenId);
+                    this.selectedTraits = this.selectedTraits.filter(t => (t.id || t.tokenId) !== traitId);
                 } else {
                     // Add trait
                     item.classList.add('selected');
@@ -422,16 +453,19 @@
                     return;
                 }
                 
-                container.innerHTML = this.selectedTraits.map(trait => `
-                    <div class="selected-trait">
-                        <span>${trait.name} (#${trait.tokenId})</span>
-                        <button class="remove-trait" onclick="playgroundManager.removeTrait(${trait.tokenId})">×</button>
-                    </div>
-                `).join('');
+                container.innerHTML = this.selectedTraits.map(trait => {
+                    const traitId = trait.id || trait.tokenId;
+                    return `
+                        <div class="selected-trait">
+                            <span>${trait.name} (#${traitId})</span>
+                            <button class="remove-trait" onclick="playgroundManager.removeTrait(${traitId})">×</button>
+                        </div>
+                    `;
+                }).join('');
             }
 
             removeTrait(tokenId) {
-                this.selectedTraits = this.selectedTraits.filter(t => t.tokenId !== tokenId);
+                this.selectedTraits = this.selectedTraits.filter(t => (t.id || t.tokenId) !== tokenId);
                 
                 // Update visual selection
                 const item = document.querySelector(`[data-trait-id="${tokenId}"]`);
@@ -465,7 +499,7 @@
                 loadingIndicator.style.display = 'block';
                 
                 // Build query parameters - format: trait=475&trait=482
-                const queryParams = this.selectedTraits.map(trait => `trait=${trait.tokenId}`);
+                const queryParams = this.selectedTraits.map(trait => `trait=${trait.id || trait.tokenId}`);
                 const queryString = queryParams.join('&');
                 
                 // Generate image URL with timestamp to prevent caching
@@ -495,7 +529,7 @@
             async generatePreview() {
                 if (this.selectedTraits.length === 0) return;
                 
-                console.log('🎮 Generating preview with traits:', this.selectedTraits.map(t => t.tokenId));
+                console.log('🎮 Generating preview with traits:', this.selectedTraits.map(t => t.id || t.tokenId));
                 
                 const previewImage = document.getElementById('previewImage');
                 const loadingIndicator = document.getElementById('loadingIndicator');
@@ -506,7 +540,7 @@
                 
                 try {
                     // Build query parameters - format: trait=475&trait=482
-                    const queryParams = this.selectedTraits.map(trait => `trait=${trait.tokenId}`);
+                    const queryParams = this.selectedTraits.map(trait => `trait=${trait.id || trait.tokenId}`);
                     const queryString = queryParams.join('&');
                     
                     // Generate image URL with timestamp to prevent caching
@@ -543,10 +577,15 @@
             }
         }
 
+        // Contract configuration (same as gallery2.html)
+        window.TRAITS_CONTRACT = "0x90546848474FB3c9fda3fdAd887969bB244E7e58"; // AdrianLAB Core contract (ERC1155)
+        const BASE_CHAIN_ID = 8453;
+        const BASE_CHAIN_ID_HEX = "0x2105";
+
         // Initialize playground when DOM is ready
         let playgroundManager;
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🎮 Initializing TraitLAB Playground...');
+            console.log('🎮 Initializing TraitLAB Playground with Alchemy...');
             playgroundManager = new PlaygroundTraitManager();
             await playgroundManager.init();
             console.log('✅ TraitLAB Playground initialized');
