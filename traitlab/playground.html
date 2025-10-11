@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>TraitLAB Playground - AdrianLAB</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -248,12 +248,182 @@
             border-color: #ffffff;
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
+
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: #00ffff;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .mobile-toggle:hover {
+            background: #00cc00;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+
+            .playground-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .traits-sidebar {
+                width: 100%;
+                max-height: 50vh;
+                border-right: none;
+                border-bottom: 2px solid #00ffff;
+                padding: 15px;
+                transition: max-height 0.3s ease;
+            }
+
+            .traits-sidebar.hidden {
+                max-height: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+
+            .preview-area {
+                padding: 15px;
+                min-height: 50vh;
+            }
+
+            .preview-image {
+                max-width: 300px;
+                max-height: 300px;
+            }
+
+            .traits-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+                gap: 8px;
+            }
+
+            .trait-item {
+                padding: 6px;
+            }
+
+            .trait-image {
+                height: 50px;
+            }
+
+            .trait-name {
+                font-size: 0.6rem;
+            }
+
+            .trait-id {
+                font-size: 0.5rem;
+            }
+
+            .selected-traits-info {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+
+            .selected-trait {
+                padding: 6px;
+                margin: 3px 0;
+            }
+
+            .trait-actions {
+                gap: 3px;
+            }
+
+            .buy-trait, .remove-trait {
+                padding: 1px 4px;
+                font-size: 0.6rem;
+            }
+
+            .category-title {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .base-image-info h3 {
+                font-size: 1.2rem;
+            }
+
+            .base-image-info p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .traits-sidebar {
+                padding: 10px;
+                max-height: 40vh;
+            }
+
+            .preview-area {
+                padding: 10px;
+                min-height: 60vh;
+            }
+
+            .preview-image {
+                max-width: 250px;
+                max-height: 250px;
+            }
+
+            .traits-grid {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+                gap: 6px;
+            }
+
+            .trait-item {
+                padding: 4px;
+            }
+
+            .trait-image {
+                height: 40px;
+            }
+
+            .trait-name {
+                font-size: 0.5rem;
+            }
+
+            .trait-id {
+                font-size: 0.4rem;
+            }
+
+            .selected-traits-info {
+                padding: 8px;
+            }
+
+            .selected-trait {
+                padding: 4px;
+                font-size: 0.8rem;
+            }
+
+            .buy-trait, .remove-trait {
+                padding: 1px 3px;
+                font-size: 0.5rem;
+            }
+
+            .search-box {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="playground-container">
+        <!-- Mobile Toggle Button -->
+        <button class="mobile-toggle" id="mobileToggle">Traits</button>
+        
         <!-- Traits Sidebar -->
-        <div class="traits-sidebar">
+        <div class="traits-sidebar" id="traitsSidebar">
             <h2 style="color: #00ffff; margin-bottom: 20px; text-align: center;">TraitLAB Playground</h2>
             
             <!-- Search Box -->
@@ -521,6 +691,17 @@
                 document.getElementById('generateBtn').addEventListener('click', () => {
                     this.generatePreview();
                 });
+
+                // Mobile toggle button
+                const mobileToggle = document.getElementById('mobileToggle');
+                const traitsSidebar = document.getElementById('traitsSidebar');
+                
+                if (mobileToggle && traitsSidebar) {
+                    mobileToggle.addEventListener('click', () => {
+                        traitsSidebar.classList.toggle('hidden');
+                        mobileToggle.textContent = traitsSidebar.classList.contains('hidden') ? 'Traits' : 'Hide';
+                    });
+                }
             }
 
             filterTraits(searchTerm) {
