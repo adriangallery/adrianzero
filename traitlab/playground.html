@@ -109,6 +109,26 @@
             border-radius: 4px;
         }
 
+        .trait-image[src$=".svg"] {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .trait-image-gif {
+            background: rgba(255, 0, 255, 0.05);
+            border: 1px solid rgba(255, 0, 255, 0.2);
+        }
+
+        .trait-image-png {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+        }
+
+        .trait-image-svg {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
         .trait-name {
             font-size: 0.7rem;
             color: #ffffff;
@@ -272,38 +292,110 @@
             }
 
             async init() {
-                console.log('🎮 PlaygroundTraitManager: Initializing with Alchemy...');
-                await this.initializeAlchemy();
+                console.log('🎮 PlaygroundTraitManager: Initializing with local assets...');
+                await this.initializeLocal();
                 this.setupEventListeners();
                 this.renderTraits();
             }
 
-            async initializeAlchemy() {
+            async initializeLocal() {
                 try {
-                    console.log('🎮 Initializing Alchemy connection...');
+                    console.log('🎮 Loading traits from local assets...');
                     
-                    // Initialize gallery manager
-                    this.galleryManager = new GalleryManager();
+                    // Load traits from JSON database first
+                    await this.loadTraitsDatabase();
                     
-                    // Use Alchemy RPC for better performance (same as gallery2.html)
-                    const alchemyRpcUrl = `https://base-mainnet.g.alchemy.com/v2/${this.galleryManager.alchemyApiKey}`;
-                    const provider = new ethers.providers.JsonRpcProvider(alchemyRpcUrl);
-                    await this.galleryManager.initialize(provider, null);
-
-                    console.log('🎮 Gallery manager initialized, loading traits...');
+                    // Then enhance with local SVG images
+                    await this.enhanceWithLocalImages();
                     
-                    // Load traits using Alchemy
-                    this.allTraits = await this.galleryManager.loadTraits();
-                    console.log('🎮 Traits loaded from Alchemy:', this.allTraits.length, 'traits');
-                    
-                    // Group traits by category
-                    this.groupTraitsByCategory();
+                    console.log('🎮 Traits loaded from local assets:', this.allTraits.length, 'traits');
                     
                 } catch (error) {
-                    console.error('❌ Error initializing Alchemy:', error);
-                    // Fallback to JSON database
+                    console.error('❌ Error loading local traits:', error);
+                    // Fallback to JSON database only
                     await this.loadTraitsDatabase();
                 }
+            }
+
+            async enhanceWithLocalImages() {
+                console.log('🎮 Enhancing traits with local images...');
+                
+                // Show loading indicator
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'block';
+                    loadingIndicator.innerHTML = `
+                        <div class="loading-spinner"></div>
+                        <p style="color: #00ffff; margin-top: 10px;">Scanning local assets...</p>
+                    `;
+                }
+                
+                // Check which image files are available locally
+                const availableImages = await this.checkAvailableImages();
+                console.log('🎮 Available local images:', availableImages.length);
+                
+                // Create a map for faster lookup
+                const imageMap = new Map();
+                availableImages.forEach(img => {
+                    imageMap.set(img.tokenId, img);
+                });
+                
+                // Update traits with local image URLs
+                this.allTraits = this.allTraits.map(trait => {
+                    const tokenId = trait.id || trait.tokenId;
+                    const localImage = imageMap.get(tokenId);
+                    
+                    if (localImage) {
+                        return {
+                            ...trait,
+                            image: localImage.url,
+                            localImage: true,
+                            imageFormat: localImage.format
+                        };
+                    }
+                    return trait;
+                });
+                
+                // Hide loading indicator
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+
+            async checkAvailableImages() {
+                const availableImages = [];
+                const traitIds = [...new Set(this.allTraits.map(t => t.id || t.tokenId))].sort((a, b) => a - b);
+                
+                console.log('🎮 Checking for local images for', traitIds.length, 'traits...');
+                
+                // Check for images only for existing trait IDs with multiple formats
+                for (const tokenId of traitIds) {
+                    const formats = ['svg', 'gif', 'png'];
+                    let foundFormat = null;
+                    
+                    for (const format of formats) {
+                        try {
+                            const response = await fetch(`./assets/traits/${tokenId}.${format}`, { method: 'HEAD' });
+                            if (response.ok) {
+                                foundFormat = format;
+                                break;
+                            }
+                        } catch (error) {
+                            // Image doesn't exist in this format, continue
+                        }
+                    }
+                    
+                    if (foundFormat) {
+                        availableImages.push({
+                            tokenId: tokenId,
+                            format: foundFormat,
+                            url: `./assets/traits/${tokenId}.${foundFormat}`
+                        });
+                    }
+                }
+                
+                console.log('🎮 Found local images:', availableImages.length);
+                return availableImages;
             }
 
             async loadTraitsDatabase() {
@@ -410,13 +502,19 @@
                 item.className = 'trait-item';
                 item.setAttribute('data-trait-id', trait.id || trait.tokenId);
                 
-                // Use Alchemy image URL if available, otherwise fallback to TraitLAB pattern
+                // Use local image if available, otherwise fallback to TraitLAB pattern
                 const imageUrl = trait.image || `https://adrianlab.vercel.app/labmetadata/traits/${trait.id || trait.tokenId}.png`;
                 
+                // Create format-specific styling
+                const formatClass = trait.imageFormat ? `trait-image-${trait.imageFormat}` : '';
+                const formatBadge = trait.localImage ? 
+                    `<div class="local-badge" style="font-size: 0.6rem; color: #00ff00; margin-top: 2px;">LOCAL ${trait.imageFormat?.toUpperCase() || 'SVG'}</div>` : '';
+                
                 item.innerHTML = `
-                    <img src="${imageUrl}" alt="${trait.name}" class="trait-image" onerror="this.style.display='none'">
+                    <img src="${imageUrl}" alt="${trait.name}" class="trait-image ${formatClass}" onerror="this.style.display='none'">
                     <div class="trait-name">${trait.name}</div>
                     <div class="trait-id">#${trait.id || trait.tokenId}</div>
+                    ${formatBadge}
                 `;
                 
                 item.addEventListener('click', () => {
@@ -585,7 +683,7 @@
         // Initialize playground when DOM is ready
         let playgroundManager;
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🎮 Initializing TraitLAB Playground with Alchemy...');
+            console.log('🎮 Initializing TraitLAB Playground with local assets...');
             playgroundManager = new PlaygroundTraitManager();
             await playgroundManager.init();
             console.log('✅ TraitLAB Playground initialized');
