@@ -154,6 +154,30 @@
             align-items: center;
         }
 
+        .trait-actions {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .buy-trait {
+            background: #00ff00;
+            color: #000;
+            text-decoration: none;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .buy-trait:hover {
+            background: #00cc00;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 255, 0, 0.3);
+        }
+
         .remove-trait {
             background: #ff4444;
             color: white;
@@ -608,10 +632,14 @@
                 
                 container.innerHTML = this.selectedTraits.map(trait => {
                     const traitId = trait.id || trait.tokenId;
+                    const openseaUrl = `https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/${traitId}`;
                     return `
                         <div class="selected-trait">
                             <span>${trait.name} (#${traitId})</span>
-                            <button class="remove-trait" onclick="playgroundManager.removeTrait(${traitId})">×</button>
+                            <div class="trait-actions">
+                                <a href="${openseaUrl}" target="_blank" class="buy-trait" title="Comprar en OpenSea">🛒</a>
+                                <button class="remove-trait" onclick="playgroundManager.removeTrait(${traitId})">×</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
