@@ -330,7 +330,9 @@
                             });
                     }
                     
+                    console.log('🎮 Re-rendering traits with local images...');
                     this.renderTraits(); // Re-render with local images
+                    console.log('🎮 Re-rendering completed');
                     }).catch(error => {
                         console.warn('⚠️ Local images enhancement failed, continuing with TraitLAB URLs:', error);
                     });
@@ -381,6 +383,7 @@
                         const localImage = imageMap.get(tokenId);
                         
                         if (localImage) {
+                            console.log(`🎮 Updating trait ${trait.name} (ID: ${tokenId}) with local image:`, localImage.url);
                             return {
                                 ...trait,
                                 image: localImage.url,
@@ -556,6 +559,7 @@
             }
 
             renderTraits() {
+                console.log('🎮 renderTraits() called');
                 const container = document.getElementById('traitsContainer');
                 container.innerHTML = '';
 
