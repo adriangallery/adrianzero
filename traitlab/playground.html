@@ -295,7 +295,6 @@
                 console.log('🎮 PlaygroundTraitManager: Initializing with local assets...');
                 await this.initializeLocal();
                 this.setupEventListeners();
-                this.renderTraits();
             }
 
             async initializeLocal() {
@@ -305,8 +304,16 @@
                     // Load traits from JSON database first
                     await this.loadTraitsDatabase();
                     
-                    // Then enhance with local SVG images
-                    await this.enhanceWithLocalImages();
+                    // Render traits immediately with TraitLAB URLs
+                    this.renderTraits();
+                    
+                    // Then enhance with local images in background
+                    this.enhanceWithLocalImages().then(() => {
+                        console.log('🎮 Local images enhancement completed, re-rendering...');
+                        this.renderTraits(); // Re-render with local images
+                    }).catch(error => {
+                        console.warn('⚠️ Local images enhancement failed, continuing with TraitLAB URLs:', error);
+                    });
                     
                     console.log('🎮 Traits loaded from local assets:', this.allTraits.length, 'traits');
                     
@@ -314,6 +321,7 @@
                     console.error('❌ Error loading local traits:', error);
                     // Fallback to JSON database only
                     await this.loadTraitsDatabase();
+                    this.renderTraits();
                 }
             }
 
@@ -330,31 +338,43 @@
                     `;
                 }
                 
-                // Check which image files are available locally
-                const availableImages = await this.checkAvailableImages();
-                console.log('🎮 Available local images:', availableImages.length);
-                
-                // Create a map for faster lookup
-                const imageMap = new Map();
-                availableImages.forEach(img => {
-                    imageMap.set(img.tokenId, img);
-                });
-                
-                // Update traits with local image URLs
-                this.allTraits = this.allTraits.map(trait => {
-                    const tokenId = trait.id || trait.tokenId;
-                    const localImage = imageMap.get(tokenId);
+                try {
+                    // Set a timeout for the entire process
+                    const timeoutPromise = new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error('Timeout scanning local assets')), 15000);
+                    });
                     
-                    if (localImage) {
-                        return {
-                            ...trait,
-                            image: localImage.url,
-                            localImage: true,
-                            imageFormat: localImage.format
-                        };
-                    }
-                    return trait;
-                });
+                    const scanPromise = this.checkAvailableImages();
+                    const availableImages = await Promise.race([scanPromise, timeoutPromise]);
+                    
+                    console.log('🎮 Available local images:', availableImages.length);
+                    
+                    // Create a map for faster lookup
+                    const imageMap = new Map();
+                    availableImages.forEach(img => {
+                        imageMap.set(img.tokenId, img);
+                    });
+                    
+                    // Update traits with local image URLs
+                    this.allTraits = this.allTraits.map(trait => {
+                        const tokenId = trait.id || trait.tokenId;
+                        const localImage = imageMap.get(tokenId);
+                        
+                        if (localImage) {
+                            return {
+                                ...trait,
+                                image: localImage.url,
+                                localImage: true,
+                                imageFormat: localImage.format
+                            };
+                        }
+                        return trait;
+                    });
+                    
+                } catch (error) {
+                    console.warn('⚠️ Timeout or error scanning local assets, using fallback:', error.message);
+                    // Continue without local images - traits will use TraitLAB URLs
+                }
                 
                 // Hide loading indicator
                 if (loadingIndicator) {
@@ -368,30 +388,74 @@
                 
                 console.log('🎮 Checking for local images for', traitIds.length, 'traits...');
                 
-                // Check for images only for existing trait IDs with multiple formats
-                for (const tokenId of traitIds) {
-                    const formats = ['svg', 'gif', 'png'];
-                    let foundFormat = null;
-                    
-                    for (const format of formats) {
-                        try {
-                            const response = await fetch(`./assets/traits/${tokenId}.${format}`, { method: 'HEAD' });
-                            if (response.ok) {
-                                foundFormat = format;
-                                break;
-                            }
-                        } catch (error) {
-                            // Image doesn't exist in this format, continue
+                // Try a simpler approach - check a few sample files first
+                const sampleIds = traitIds.slice(0, 5);
+                let hasLocalAssets = false;
+                
+                // Quick check if local assets exist
+                for (const tokenId of sampleIds) {
+                    try {
+                        const response = await fetch(`./assets/traits/${tokenId}.svg`, { method: 'HEAD' });
+                        if (response.ok) {
+                            hasLocalAssets = true;
+                            break;
                         }
+                    } catch (error) {
+                        // Continue checking
                     }
+                }
+                
+                if (!hasLocalAssets) {
+                    console.log('🎮 No local assets detected, skipping scan');
+                    return availableImages;
+                }
+                
+                // If we have local assets, do a more comprehensive but limited scan
+                const maxTraitsToCheck = Math.min(traitIds.length, 50); // Limit to first 50 traits for speed
+                const traitsToCheck = traitIds.slice(0, maxTraitsToCheck);
+                
+                console.log(`🎮 Scanning first ${maxTraitsToCheck} traits for local images...`);
+                
+                // Process in smaller batches
+                const batchSize = 5;
+                for (let i = 0; i < traitsToCheck.length; i += batchSize) {
+                    const batch = traitsToCheck.slice(i, i + batchSize);
                     
-                    if (foundFormat) {
-                        availableImages.push({
-                            tokenId: tokenId,
-                            format: foundFormat,
-                            url: `./assets/traits/${tokenId}.${foundFormat}`
-                        });
-                    }
+                    const batchPromises = batch.map(async (tokenId) => {
+                        const formats = ['svg', 'gif', 'png'];
+                        let foundFormat = null;
+                        
+                        for (const format of formats) {
+                            try {
+                                const response = await fetch(`./assets/traits/${tokenId}.${format}`, { 
+                                    method: 'HEAD',
+                                    cache: 'no-cache'
+                                });
+                                if (response.ok) {
+                                    foundFormat = format;
+                                    break;
+                                }
+                            } catch (error) {
+                                // Image doesn't exist in this format, continue
+                            }
+                        }
+                        
+                        if (foundFormat) {
+                            return {
+                                tokenId: tokenId,
+                                format: foundFormat,
+                                url: `./assets/traits/${tokenId}.${foundFormat}`
+                            };
+                        }
+                        return null;
+                    });
+                    
+                    const batchResults = await Promise.all(batchPromises);
+                    availableImages.push(...batchResults.filter(result => result !== null));
+                    
+                    // Update progress
+                    const progress = Math.round(((i + batchSize) / traitsToCheck.length) * 100);
+                    console.log(`🎮 Progress: ${progress}% (${availableImages.length} images found)`);
                 }
                 
                 console.log('🎮 Found local images:', availableImages.length);
