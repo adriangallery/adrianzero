@@ -310,49 +310,38 @@
                     // Then enhance with local images in background
                     console.log('🎮 Starting local images enhancement...');
                     
-                    // Force test with a few known traits
-                    console.log('🎮 FORCE TEST: Manually setting local images for first 5 traits...');
-                    this.allTraits.slice(0, 5).forEach(trait => {
+                    // Force test with more traits - expand to first 100
+                    console.log('🎮 FORCE TEST: Manually setting local images for first 100 traits...');
+                    this.allTraits.slice(0, 100).forEach(trait => {
                         const tokenId = trait.id || trait.tokenId;
                         trait.image = `https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`;
                         trait.localImage = true;
                         trait.imageFormat = 'svg';
-                        console.log(`🎮 FORCE TEST: Set local image for ${trait.name} (ID: ${tokenId}):`, trait.image);
+                        if (tokenId <= 10) { // Only log first 10 to avoid spam
+                            console.log(`🎮 FORCE TEST: Set local image for ${trait.name} (ID: ${tokenId}):`, trait.image);
+                        }
                     });
+                    console.log(`🎮 FORCE TEST: Set local images for ${Math.min(100, this.allTraits.length)} traits total`);
                     
                     // Re-render immediately after force test
                     console.log('🎮 Re-rendering after force test...');
                     this.renderTraits();
                     
-                    this.enhanceWithLocalImages().then(() => {
-                        console.log('🎮 Local images enhancement completed, re-rendering...');
-                        console.log('🎮 Sample enhanced traits:', this.allTraits.slice(0, 3).map(t => ({
-                            id: t.id || t.tokenId,
-                            name: t.name,
-                            hasLocalImage: t.localImage,
-                            imageUrl: t.image
-                        })));
-                        
-                        // Test if local images are accessible
-                        const testImage = this.allTraits.find(t => t.localImage);
-                        if (testImage) {
-                            console.log('🎮 Testing local image access:', testImage.image);
-                            fetch(testImage.image, { method: 'HEAD' })
-                                .then(response => {
-                                    console.log('🎮 Test image response:', response.status, response.ok);
-                                })
-                                .catch(error => {
-                                    console.error('🎮 Test image failed:', error);
-                                });
-                        }
-                        
-                        console.log('🎮 Re-rendering traits with local images...');
-                        this.renderTraits(); // Re-render with local images
-                        console.log('🎮 Re-rendering completed');
-                    }).catch(error => {
-                        console.error('❌ Local images enhancement failed:', error);
-                        console.warn('⚠️ Continuing with TraitLAB URLs');
-                    });
+                    // Skip automatic enhancement for now since we're using force test
+                    console.log('🎮 Skipping automatic enhancement - using force test results');
+                    
+                    // Test if local images are accessible
+                    const testImage = this.allTraits.find(t => t.localImage);
+                    if (testImage) {
+                        console.log('🎮 Testing local image access:', testImage.image);
+                        fetch(testImage.image, { method: 'HEAD' })
+                            .then(response => {
+                                console.log('🎮 Test image response:', response.status, response.ok);
+                            })
+                            .catch(error => {
+                                console.error('🎮 Test image failed:', error);
+                            });
+                    }
                     
                     console.log('🎮 Traits loaded from local assets:', this.allTraits.length, 'traits');
                     
