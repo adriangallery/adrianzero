@@ -320,6 +320,10 @@
                         console.log(`🎮 FORCE TEST: Set local image for ${trait.name} (ID: ${tokenId}):`, trait.image);
                     });
                     
+                    // Re-render immediately after force test
+                    console.log('🎮 Re-rendering after force test...');
+                    this.renderTraits();
+                    
                     this.enhanceWithLocalImages().then(() => {
                         console.log('🎮 Local images enhancement completed, re-rendering...');
                         console.log('🎮 Sample enhanced traits:', this.allTraits.slice(0, 3).map(t => ({
