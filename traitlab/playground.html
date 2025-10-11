@@ -418,7 +418,7 @@
                 // Quick check if local assets exist
                 for (const tokenId of sampleIds) {
                     try {
-                        const response = await fetch(`/traitlab/assets/traits/${tokenId}.svg`, { method: 'HEAD' });
+                        const response = await fetch(`https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`, { method: 'HEAD' });
                         if (response.ok) {
                             hasLocalAssets = true;
                             break;
@@ -450,7 +450,7 @@
                         
                         for (const format of formats) {
                             try {
-                                const response = await fetch(`/traitlab/assets/traits/${tokenId}.${format}`, { 
+                                const response = await fetch(`https://adrianzero.com/traitlab/assets/traits/${tokenId}.${format}`, { 
                                     method: 'HEAD',
                                     cache: 'no-cache'
                                 });
@@ -467,7 +467,7 @@
                             return {
                                 tokenId: tokenId,
                                 format: foundFormat,
-                                url: `/traitlab/assets/traits/${tokenId}.${foundFormat}`
+                                url: `https://adrianzero.com/traitlab/assets/traits/${tokenId}.${foundFormat}`
                             };
                         }
                         return null;
