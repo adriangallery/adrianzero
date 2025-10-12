@@ -75,6 +75,62 @@
             border-bottom: 2px solid #00ffff;
         }
 
+        /* AdrianZERO Base Selector Mobile */
+        .adrian-selector-mobile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .adrian-option-mobile {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .adrian-option-mobile:hover {
+            transform: translateY(-2px);
+        }
+
+        .adrian-option-mobile.selected {
+            transform: scale(1.05);
+        }
+
+        .adrian-image-mobile {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .adrian-option-mobile.selected .adrian-image-mobile {
+            border-color: #ff00ff;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+        }
+
+        .adrian-option-mobile:not(.selected) .adrian-image-mobile {
+            opacity: 0.7;
+            transform: scale(0.8);
+        }
+
+        .adrian-name-mobile {
+            color: #00ffff;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .adrian-option-mobile.selected .adrian-name-mobile {
+            color: #ff00ff;
+        }
+
         .preview-image {
             max-width: 200px;
             max-height: 200px;
@@ -292,6 +348,22 @@
 
         <!-- Preview Section -->
         <div class="preview-section">
+            <!-- AdrianZERO Base Selector Mobile -->
+            <div class="adrian-selector-mobile">
+                <div class="adrian-option-mobile selected" data-adrian-id="1">
+                    <img src="https://adrianlab.vercel.app/api/render/1.png" alt="AdrianZERO" class="adrian-image-mobile">
+                    <div class="adrian-name-mobile">AdrianZERO</div>
+                </div>
+                <div class="adrian-option-mobile" data-adrian-id="146">
+                    <img src="https://adrianlab.vercel.app/api/render/146.png" alt="AdrianGF" class="adrian-image-mobile">
+                    <div class="adrian-name-mobile">AdrianGF</div>
+                </div>
+                <div class="adrian-option-mobile" data-adrian-id="365">
+                    <img src="https://adrianlab.vercel.app/api/render/365.png" alt="DarkAdrian" class="adrian-image-mobile">
+                    <div class="adrian-name-mobile">DarkAdrian</div>
+                </div>
+            </div>
+            
             <img id="previewImage" class="preview-image" src="https://adrianlab.vercel.app/api/render/1.png" alt="AdrianZERO Preview">
             
             <div class="selected-traits-mobile" id="selectedTraitsMobile">
@@ -321,6 +393,11 @@
                 this.currentCategory = null;
                 this.baseTokenId = 1;
                 this.isInitialized = false;
+                this.adrianOptions = [
+                    { id: 1, name: 'AdrianZERO' },
+                    { id: 146, name: 'AdrianGF' },
+                    { id: 365, name: 'DarkAdrian' }
+                ];
             }
 
             async init() {
@@ -381,6 +458,27 @@
                 document.getElementById('searchInput').addEventListener('input', (e) => {
                     this.filterTraits(e.target.value);
                 });
+
+                // AdrianZERO base selector
+                document.querySelectorAll('.adrian-option-mobile').forEach(option => {
+                    option.addEventListener('click', () => {
+                        this.selectAdrianBase(parseInt(option.dataset.adrianId));
+                    });
+                });
+            }
+
+            selectAdrianBase(adrianId) {
+                // Update visual selection
+                document.querySelectorAll('.adrian-option-mobile').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                document.querySelector(`[data-adrian-id="${adrianId}"]`).classList.add('selected');
+                
+                // Update base token ID
+                this.baseTokenId = adrianId;
+                
+                // Update preview with current traits
+                this.updatePreview();
             }
 
             renderCategories() {
