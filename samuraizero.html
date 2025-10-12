@@ -1111,19 +1111,29 @@
                 adrianZeroPrice = batchInfo.price;
                 
                 const priceFormatted = ethers.utils.formatEther(adrianZeroPrice);
-                document.getElementById('adrianZeroPrice').textContent = 
-                    parseFloat(priceFormatted).toLocaleString();
+                const priceTag = document.querySelector('.price-tag');
+                const numericPrice = parseFloat(priceFormatted);
+                if (numericPrice === 0) {
+                    if (priceTag) priceTag.textContent = 'FREE';
+                } else {
+                    if (priceTag) {
+                        priceTag.innerHTML = `Price: <span id="adrianZeroPrice">${numericPrice.toLocaleString()}</span> $ADRIAN`;
+                    } else {
+                        const priceEl = document.getElementById('adrianZeroPrice');
+                        if (priceEl) priceEl.textContent = numericPrice.toLocaleString();
+                    }
+                }
                 
                 updateAllTotals();
             } catch (error) {
                 console.error('Error loading AdrianZero price:', error);
-                const priceEl = document.getElementById('adrianZeroPrice');
-                if (priceEl) {
+                const priceTag = document.querySelector('.price-tag');
+                if (priceTag) {
                     if (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) {
-                        priceEl.textContent = 'Network indexing...';
+                        priceTag.textContent = 'Network indexing...';
                         networkIssues = true;
                     } else {
-                        priceEl.textContent = 'Error loading';
+                        priceTag.textContent = 'Error loading';
                     }
                 }
             }
