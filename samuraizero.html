@@ -184,6 +184,13 @@
             filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
         }
 
+        .samurai-hero-title {
+            font-family: 'ADRIAN_ZERO', 'VT323', monospace;
+            font-size: 4rem;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
         .section-subtitle {
             text-align: center;
             font-size: 1.5rem;
@@ -784,18 +791,10 @@
 
     <!-- Steps Section -->
     <section class="steps-section" id="get-started">
-        <!-- Wallet Connection -->
-        <div class="wallet-section">
-            <button id="connectBtn" class="connect-btn">Connect Wallet</button>
-            <div id="walletInfo" class="wallet-info">
-                <div class="wallet-address" id="walletAddress"></div>
-            </div>
-        </div>
-        
+        <h1 class="section-title samurai-hero-title">SamuraiZERO</h1>
         <div class="steps-grid">
             <!-- SamuraiZERO Single Step -->
             <div class="step-card fade-in">
-                <h3 class="step-title samurai-title">SamuraiZERO</h3>
                 
                 <div class="nft-preview">
                     <img src="components/images/595.png" alt="SamuraiZERO Preview">
@@ -805,6 +804,14 @@
                     Mint your SamuraiZERO base NFT.
                 </p>
                 <div class="price-tag">Price: <span id="adrianZeroPrice">Loading...</span> $ADRIAN</div>
+
+                <!-- Wallet Connection (integrado en el bloque) -->
+                <div class="wallet-section" style="margin-top: 12px;">
+                    <button id="connectBtn" class="connect-btn" style="padding: 12px 24px;">Connect Wallet</button>
+                    <div id="walletInfo" class="wallet-info">
+                        <div class="wallet-address" id="walletAddress"></div>
+                    </div>
+                </div>
                 
                 <div class="mint-interface" style="display: none;" id="adrianZeroMint">
                     <div class="quantity-controls">
