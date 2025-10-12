@@ -317,6 +317,19 @@
             padding: 20px;
         }
 
+        /* Menu styles */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .mobile-container {
+            margin-top: 60px; /* Space for fixed menu */
+        }
+
         /* Responsive adjustments */
         @media (max-width: 480px) {
             .traits-grid-mobile {
@@ -337,6 +350,21 @@
     </style>
 </head>
 <body>
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    <script>
+      // Load the menu
+      fetch('../components/menu.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = '../components/menu.js';
+          document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    </script>
+
     <div class="mobile-container">
         <!-- Header -->
         <div class="mobile-header">

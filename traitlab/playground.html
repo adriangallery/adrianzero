@@ -303,6 +303,19 @@
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
 
+        /* Menu styles */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .playground-container {
+            margin-top: 60px; /* Space for fixed menu */
+        }
+
         .mobile-toggle {
             display: none;
             position: fixed;
@@ -472,6 +485,21 @@
     </style>
 </head>
 <body>
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    <script>
+      // Load the menu
+      fetch('../components/menu.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = '../components/menu.js';
+          document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    </script>
+
     <div class="playground-container">
         <!-- Mobile Toggle Button -->
         <button class="mobile-toggle" id="mobileToggle">Traits</button>
