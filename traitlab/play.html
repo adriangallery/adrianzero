@@ -342,7 +342,7 @@
         <div class="mobile-header">
             <h1 class="mobile-title">AdrianLAB Play</h1>
             <div class="search-container">
-                <input type="text" id="searchInput" class="search-input" placeholder="Buscar traits...">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search traits...">
             </div>
         </div>
 
@@ -578,7 +578,7 @@
                 const imageUrl = trait.image || `https://adrianlab.vercel.app/labmetadata/traits/${tokenId}.png`;
                 const formatClass = trait.imageFormat ? `trait-image-${trait.imageFormat}` : '';
                 const localBadge = trait.localImage ? 
-                    `<div class="local-badge-mobile">LOCAL ${trait.imageFormat?.toUpperCase() || 'SVG'}</div>` : '';
+                    `<div class="local-badge-mobile">AdrianLAB</div>` : '';
 
                 return `
                     <div class="trait-item-mobile ${isSelected ? 'selected' : ''}" 
