@@ -570,6 +570,23 @@
                     { id: 328, name: 'AdrianGOLD' },
                     { id: 393, name: 'AlbinoZERO' }
                 ];
+                
+                // ========================================
+                // FILTROS DE CATEGORÍAS - CONFIGURACIÓN
+                // ========================================
+                // Añade aquí las categorías que NO quieres mostrar
+                this.hiddenCategories = [
+                    'FLOPPY DISCS',
+                    'Other', 
+                    'PAGERS'
+                ];
+                
+                // Añade aquí traits específicos que NO quieres mostrar (por tokenId)
+                this.hiddenTraits = [
+                    // Ejemplo: 15005, // ActionPACK ya eliminado
+                    // Añade más tokenIds aquí si necesitas ocultar traits específicos
+                ];
+                // ========================================
             }
 
             async init() {
@@ -625,11 +642,32 @@
                 this.traitsByCategory = {};
                 this.allTraits.forEach(trait => {
                     const category = trait.category || 'Other';
+                    const tokenId = trait.id || trait.tokenId;
+                    
+                    // Aplicar filtros
+                    if (this.shouldHideTrait(trait, category, tokenId)) {
+                        return; // Saltar este trait
+                    }
+                    
                     if (!this.traitsByCategory[category]) {
                         this.traitsByCategory[category] = [];
                     }
                     this.traitsByCategory[category].push(trait);
                 });
+            }
+
+            shouldHideTrait(trait, category, tokenId) {
+                // Filtrar por categoría
+                if (this.hiddenCategories.includes(category)) {
+                    return true;
+                }
+                
+                // Filtrar por tokenId específico
+                if (this.hiddenTraits.includes(tokenId)) {
+                    return true;
+                }
+                
+                return false;
             }
 
             setupEventListeners() {
