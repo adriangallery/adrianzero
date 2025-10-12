@@ -511,8 +511,8 @@
             
             <!-- AdrianZERO Base Selector -->
             <div class="adrian-selector">
-                <div class="adrian-option selected" data-adrian-id="1">
-                    <img src="https://adrianlab.vercel.app/api/render/1.png" alt="AdrianZERO" class="adrian-image">
+                <div class="adrian-option selected" data-adrian-id="208">
+                    <img src="https://adrianlab.vercel.app/api/render/208.png" alt="AdrianZERO" class="adrian-image">
                     <div class="adrian-name">AdrianZERO</div>
                 </div>
                 <div class="adrian-option" data-adrian-id="146">
@@ -523,10 +523,18 @@
                     <img src="https://adrianlab.vercel.app/api/render/365.png" alt="DarkAdrian" class="adrian-image">
                     <div class="adrian-name">DarkAdrian</div>
                 </div>
+                <div class="adrian-option" data-adrian-id="328">
+                    <img src="https://adrianlab.vercel.app/api/render/328.png" alt="AdrianGOLD" class="adrian-image">
+                    <div class="adrian-name">AdrianGOLD</div>
+                </div>
+                <div class="adrian-option" data-adrian-id="393">
+                    <img src="https://adrianlab.vercel.app/api/render/393.png" alt="AlbinoZERO" class="adrian-image">
+                    <div class="adrian-name">AlbinoZERO</div>
+                </div>
             </div>
             
             <div class="preview-image-container">
-                <img id="previewImage" class="preview-image" src="https://adrianlab.vercel.app/api/render/1.png" alt="AdrianZERO Preview">
+                <img id="previewImage" class="preview-image" src="https://adrianlab.vercel.app/api/render/208.png" alt="AdrianZERO Preview">
             </div>
             
             <div id="loadingIndicator" style="display: none;">
@@ -551,14 +559,16 @@
                 this.allTraits = [];
                 this.selectedTraits = [];
                 this.traitsByCategory = {};
-                this.baseTokenId = 1;
+                this.baseTokenId = 208;
                 this.galleryManager = null;
                 this.isRendering = false;
                 this.isInitialized = false;
                 this.adrianOptions = [
-                    { id: 1, name: 'AdrianZERO' },
+                    { id: 208, name: 'AdrianZERO' },
                     { id: 146, name: 'AdrianGF' },
-                    { id: 365, name: 'DarkAdrian' }
+                    { id: 365, name: 'DarkAdrian' },
+                    { id: 328, name: 'AdrianGOLD' },
+                    { id: 393, name: 'AlbinoZERO' }
                 ];
             }
 
