@@ -11,6 +11,7 @@ class StickyPopupManager {
         this.currentFilter = 'adrianzero';
         this.currentTab = 'adrianzero';
         this.isInitialized = false;
+        this.isCloseupMode = false;
     }
 
     /**
@@ -65,6 +66,7 @@ class StickyPopupManager {
             // Botones de acción
             activateTokenBtn: document.getElementById('activateTokenBtn'),
             showRenameSectionBtn: document.getElementById('showRenameSectionBtn'),
+            zoomInBtn: document.getElementById('zoomInBtn'),
             applyTraitsBtn: document.getElementById('applyTraitsBtn'),
             openFloppyBtn: document.getElementById('openFloppyBtn'),
             openPackBtn: document.getElementById('openPackBtn'),
@@ -98,6 +100,10 @@ class StickyPopupManager {
         // Botones de acción principales
         if (this.elements.activateTokenBtn) {
             this.elements.activateTokenBtn.addEventListener('click', () => this.activateToken());
+        }
+
+        if (this.elements.zoomInBtn) {
+            this.elements.zoomInBtn.addEventListener('click', () => this.toggleCloseup());
         }
 
         if (this.elements.applyTraitsBtn) {
@@ -630,9 +636,25 @@ class StickyPopupManager {
     showBaseAdrianZeroImage() {
         if (!this.elements.generatedImage || !this.elements.combinedImage) return;
 
-        const baseImageUrl = this.selectedERC721.image || 
-                           this.selectedERC721.imageUrl || 
-                           `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
+        let baseImageUrl = this.selectedERC721.image || 
+                          this.selectedERC721.imageUrl || 
+                          `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
+
+        // Añadir ?closeup=true si está en modo closeup
+        if (this.isCloseupMode) {
+            // Si la URL ya tiene parámetros, añadir con &
+            if (baseImageUrl.includes('?')) {
+                baseImageUrl += '&closeup=true';
+            } else {
+                baseImageUrl += '?closeup=true';
+            }
+        }
+
+        console.log('🔍 StickyPopupManager: Mostrando imagen AdrianZERO:', {
+            tokenId: this.selectedERC721.tokenId,
+            isCloseupMode: this.isCloseupMode,
+            url: baseImageUrl
+        });
 
         // MOSTRAR loading overlay SIN mover elementos
         if (this.elements.imageLoadingOverlay) {
@@ -1000,6 +1022,28 @@ class StickyPopupManager {
     }
 
     /**
+     * Toggle closeup mode para AdrianZERO
+     */
+    toggleCloseup() {
+        if (!this.selectedERC721) {
+            console.warn('⚠️ StickyPopupManager: No hay AdrianZERO seleccionado para zoom');
+            return;
+        }
+
+        this.isCloseupMode = !this.isCloseupMode;
+        
+        // Actualizar texto del botón
+        if (this.elements.zoomInBtn) {
+            this.elements.zoomInBtn.textContent = this.isCloseupMode ? '🔍 Zoom out' : '🔍 Zoom in';
+        }
+
+        console.log('🔍 StickyPopupManager: Closeup mode:', this.isCloseupMode ? 'ON' : 'OFF');
+
+        // Refrescar la imagen con el nuevo modo
+        this.showBaseAdrianZeroImage();
+    }
+
+    /**
      * Debug: mostrar estado actual
      */
     debug() {
@@ -1010,7 +1054,8 @@ class StickyPopupManager {
             selectedFloppy: this.selectedFloppy?.tokenId,
             selectedSerum: this.selectedSerum?.tokenId,
             currentFilter: this.currentFilter,
-            currentTab: this.currentTab
+            currentTab: this.currentTab,
+            isCloseupMode: this.isCloseupMode
         });
         console.log('Elementos mapeados:', Object.keys(this.elements));
         console.log('Inicializado:', this.isInitialized);
