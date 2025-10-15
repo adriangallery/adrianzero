@@ -542,8 +542,8 @@ body {
 
 /* POPUP DERECHO: Contenido principal - ALTURA FIJA 380px */
 .visntent-popup {
-    background: rgba(0, 0, 0, 0.95) !important;
-    border: 2px solid #00ff00 !important;
+    background: transparent !important;
+    border: none !important;
     border-radius: 12px !important;
     padding: 12px !important; /* Padding reducido */
     height: var(--popup-principal-height) !important; /* Altura fija, no min-height */
