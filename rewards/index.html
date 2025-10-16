@@ -629,6 +629,22 @@
             return imageUrl;
         }
 
+        // Load campaign data from JSON file
+        async function loadCampaignData() {
+            try {
+                const response = await fetch('./campaigns.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('📋 Campaign data loaded:', data);
+                return data.campaigns;
+            } catch (error) {
+                console.warn('⚠️ Error loading campaign data:', error);
+                return [];
+            }
+        }
+
         // Retry contract call with limited retries and longer delays
         async function retryContractCall(contractCall, maxRetries = 2, baseDelay = 3000) {
             let lastError;
@@ -808,11 +824,11 @@
                     document.getElementById('punkCount').textContent = userPunks.length;
                     showError('⚠️ Usando datos en caché debido a problemas de red');
                 } else {
-                    // Check if it's a state indexing error
+                // Check if it's a state indexing error
                     if (error.message && error.message.includes('historical state')) {
-                        showError('⏳ La red está sincronizando. Por favor espera unos minutos y recarga la página.');
-                    } else {
-                        showError('Error loading AdrianPunks: ' + error.message);
+                    showError('⏳ La red está sincronizando. Por favor espera unos minutos y recarga la página.');
+                } else {
+                    showError('Error loading AdrianPunks: ' + error.message);
                     }
                 }
             } finally {
@@ -824,6 +840,9 @@
         async function loadCampaignsBasic() {
             try {
                 console.log('📋 Loading basic campaigns data...');
+                
+                // Load campaign metadata from JSON
+                const campaignMetadata = await loadCampaignData();
                 
                 // Usar Alchemy RPC para lecturas (más confiable)
                 const readProvider = window.RewardsConfig.getReadProvider();
@@ -841,6 +860,12 @@
                         const campaignData = await retryContractCall(() => readRewardsContract.getCampaign(i));
                         console.log(`Campaign ${i}:`, campaignData);
                         
+                        // Find metadata for this campaign
+                        const metadata = campaignMetadata.find(m => m.id === i) || {
+                            name: `Campaign ${i}`,
+                            description: `Asset ID: ${campaignData.assetId.toString()}, Amount: ${campaignData.amountPerToken.toString()}`
+                        };
+                        
                         // Convert BigNumber values to numbers
                         const campaign = {
                             id: i,
@@ -850,8 +875,8 @@
                             endTime: campaignData.endTime.toNumber(),
                             active: campaignData.active,
                             totalClaimed: campaignData.totalClaimed.toNumber(),
-                            name: `Campaign ${i}`,
-                            description: `Asset ID: ${campaignData.assetId.toString()}, Amount: ${campaignData.amountPerToken.toString()}`,
+                            name: metadata.name,
+                            description: metadata.description,
                             // Datos de usuario se añadirán después
                             userPunks: [],
                             canClaim: false,
@@ -937,11 +962,11 @@
                     renderCampaigns();
                     showError('⚠️ Usando datos en caché debido a problemas de red');
                 } else {
-                    // Check if it's a state indexing error
+                // Check if it's a state indexing error
                     if (error.message && error.message.includes('historical state')) {
-                        showError('⏳ La red está sincronizando. Por favor espera unos minutos y recarga la página.');
-                    } else {
-                        showError('Error loading campaigns from contract: ' + error.message);
+                    showError('⏳ La red está sincronizando. Por favor espera unos minutos y recarga la página.');
+                } else {
+                    showError('Error loading campaigns from contract: ' + error.message);
                     }
                 }
             } finally {
@@ -1294,6 +1319,92 @@
             return card;
         }
 
+        // Toggle select all punks
+        function toggleSelectAll(campaignId) {
+            const selectAllCheckbox = document.getElementById(`select-all-${campaignId}`);
+            const punkCheckboxes = document.querySelectorAll(`#punk-list-${campaignId} .punk-checkbox:not([disabled])`);
+            
+            punkCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        }
+
+        // Update select all state based on individual checkboxes
+        function updateSelectAllState(campaignId) {
+            const selectAllCheckbox = document.getElementById(`select-all-${campaignId}`);
+            const punkCheckboxes = document.querySelectorAll(`#punk-list-${campaignId} .punk-checkbox:not([disabled])`);
+            const checkedBoxes = document.querySelectorAll(`#punk-list-${campaignId} .punk-checkbox:not([disabled]):checked`);
+            
+            if (checkedBoxes.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedBoxes.length === punkCheckboxes.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        // Claim selected punks
+        async function claimSelectedPunks(campaignId) {
+            const selectedPunks = Array.from(document.querySelectorAll(`#punk-list-${campaignId} .punk-checkbox:checked`))
+                .map(checkbox => parseInt(checkbox.dataset.punkId));
+            
+            if (selectedPunks.length === 0) {
+                showError('Please select at least one punk to claim');
+                return;
+            }
+
+            try {
+                showLoading(true, `Claiming rewards for ${selectedPunks.length} punks...`);
+                
+                console.log(`Claiming reward for campaign ${campaignId} with selected punks:`, selectedPunks);
+                
+                // Use batchClaim for selected punks only
+                const tx = await rewardsContract.batchClaim(campaignId, selectedPunks);
+                console.log('Transaction sent:', tx.hash);
+                
+                showSuccess('Transaction sent. Waiting for confirmation...');
+                
+                // Wait for transaction confirmation
+                const receipt = await tx.wait();
+                console.log('Transaction confirmed:', receipt);
+                
+                showSuccess(`Successfully claimed rewards for ${selectedPunks.length} punks!`);
+                
+                // Refresh the punk list
+                await showPunkList(campaignId);
+                
+                // Refresh campaigns data
+                await updateCampaignsWithUserData();
+                renderCampaignsComplete();
+                
+            } catch (error) {
+                console.error('Error claiming selected punks:', error);
+                
+                let errorMessage = 'Error claiming reward: ';
+                if (error.code === 4001) {
+                    errorMessage += 'Transaction rejected by user.';
+                } else if (error.message && error.message.includes('Already claimed')) {
+                    errorMessage += 'You have already claimed this reward.';
+                } else if (error.message && error.message.includes('Not token owner')) {
+                    errorMessage += 'You are not the owner of these tokens.';
+                } else if (error.message && error.message.includes('Campaign not active')) {
+                    errorMessage += 'Campaign is not active.';
+                } else if (error.message && error.message.includes('Exceeds max supply')) {
+                    errorMessage += 'Exceeds maximum supply.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage);
+            } finally {
+                showLoading(false);
+            }
+        }
+
         // Show punk list for batch claim
         async function showPunkList(campaignId) {
             const punkList = document.getElementById(`punk-list-${campaignId}`);
@@ -1333,14 +1444,40 @@
 
                 punkList.innerHTML = '';
 
+                // Add header with select all functionality
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'punk-list-header';
+                headerDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="select-all-${campaignId}" onchange="toggleSelectAll(${campaignId})">
+                            <span>Select All Available</span>
+                        </label>
+                        <button onclick="claimSelectedPunks(${campaignId})" class="claim-selected-btn" style="padding: 8px 16px; background: #00ff88; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            Claim Selected
+                        </button>
+                    </div>
+                `;
+                punkList.appendChild(headerDiv);
+
                 punkStatuses.forEach(({ punkId, hasClaimed }) => {
                     const punkItem = document.createElement('div');
-                    punkItem.className = 'punk-item';
+                    punkItem.className = `punk-item ${hasClaimed ? 'claimed' : 'available'}`;
                     punkItem.innerHTML = `
-                        <span class="punk-id">Punk #${punkId}</span>
-                        <span class="punk-status ${hasClaimed ? 'status-claimed' : 'status-available'}">
-                            ${hasClaimed ? 'Claimed' : 'Available'}
-                        </span>
+                        <label style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; cursor: ${hasClaimed ? 'not-allowed' : 'pointer'}; background: ${hasClaimed ? 'rgba(255,0,0,0.1)' : 'rgba(0,255,136,0.1)'}; margin: 5px 0;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" 
+                                       class="punk-checkbox" 
+                                       data-punk-id="${punkId}" 
+                                       data-campaign-id="${campaignId}"
+                                       ${hasClaimed ? 'disabled' : ''}
+                                       onchange="updateSelectAllState(${campaignId})">
+                                <span class="punk-id">Punk #${punkId}</span>
+                            </div>
+                            <span class="punk-status ${hasClaimed ? 'status-claimed' : 'status-available'}">
+                                ${hasClaimed ? 'Claimed' : 'Available'}
+                            </span>
+                        </label>
                     `;
                     punkList.appendChild(punkItem);
                 });
