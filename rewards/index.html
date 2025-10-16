@@ -956,7 +956,7 @@
                            campaign.startTime <= Math.floor(Date.now() / 1000) && 
                            campaign.endTime >= Math.floor(Date.now() / 1000);
 
-            const imageUrl = generateRewardImageUrl(campaign.assetId);
+            const imageUrl = getRewardImageUrl(campaign.assetId);
 
             card.innerHTML = `
                 <div class="reward-image">
@@ -997,7 +997,7 @@
                            campaign.startTime <= Math.floor(Date.now() / 1000) && 
                            campaign.endTime >= Math.floor(Date.now() / 1000);
 
-            const imageUrl = generateRewardImageUrl(campaign.assetId);
+            const imageUrl = getRewardImageUrl(campaign.assetId);
 
             // Determinar estado de la campaña
             let statusText = '';
