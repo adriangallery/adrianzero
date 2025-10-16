@@ -86,7 +86,8 @@ class StickyPopupManager {
             useSerumStatus: document.getElementById('use-serum-status'),
             activateTokenStatus: document.getElementById('activate-token-status'),
             renameStatus: document.getElementById('rename-status'),
-            refreshMetadataStatus: document.getElementById('refresh-metadata-status')
+            refreshMetadataStatus: document.getElementById('refresh-metadata-status'),
+            commitStatus: document.getElementById('commit-status')
         };
         
         console.log('✅ StickyPopupManager: Elementos mapeados:', Object.keys(this.elements));
@@ -1049,11 +1050,115 @@ class StickyPopupManager {
     }
 
     /**
-     * Commit (funcionalidad pendiente)
+     * Commit toggle para AdrianZERO
      */
-    commit() {
-        console.log('💾 StickyPopupManager: Commit clicked - funcionalidad pendiente');
-        // TODO: Implementar funcionalidad de commit
+    async commit() {
+        if (!this.selectedERC721) {
+            console.warn('⚠️ StickyPopupManager: No hay AdrianZERO seleccionado para commit');
+            this.showStatus('❌ Selecciona un AdrianZERO primero', 'error', this.elements.commitStatus);
+            return;
+        }
+
+        try {
+            // Deshabilitar botón para evitar dobles clics
+            if (this.elements.commitBtn) {
+                this.elements.commitBtn.disabled = true;
+                this.elements.commitBtn.textContent = '⏳ Processing...';
+            }
+
+            // Mostrar estado de carga
+            this.showStatus('⏳ Procesando commit...', 'success', this.elements.commitStatus);
+
+            // Cargar ethers si no está disponible
+            let ethers = window.ethers;
+            if (typeof ethers === 'undefined') {
+                await this.loadEthers();
+                ethers = window.ethers;
+            }
+
+            // Crear provider y signer
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            // Verificar red
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                throw new Error('Please switch to Base network to use this feature.');
+            }
+
+            // Cargar ABI del contrato
+            const response = await fetch('./zoom-toggle-abi.json');
+            if (!response.ok) {
+                throw new Error('Failed to load contract ABI');
+            }
+            const contractABI = await response.json();
+
+            // Crear instancia del contrato
+            const contract = new ethers.Contract(
+                window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                contractABI,
+                signer
+            );
+
+            // Determinar toggleId basado en isCloseupMode
+            const toggleId = this.isCloseupMode ? 1 : 0;
+            const tokenId = this.selectedERC721.tokenId;
+
+            console.log('💾 StickyPopupManager: Ejecutando commit:', {
+                tokenId,
+                toggleId,
+                isCloseupMode: this.isCloseupMode
+            });
+
+            // Actualizar estado
+            this.showStatus('📝 Ejecutando transacción...', 'success', this.elements.commitStatus);
+
+            // Llamar al contrato
+            const tx = await contract.setToggle(tokenId, toggleId);
+            
+            // Actualizar estado
+            this.showStatus('⏳ Esperando confirmación...', 'success', this.elements.commitStatus);
+
+            // Esperar confirmación
+            const receipt = await tx.wait();
+
+            // Éxito
+            this.showStatus(`✅ Commit exitoso! TX: ${receipt.transactionHash}`, 'success', this.elements.commitStatus);
+            
+            console.log('✅ StickyPopupManager: Commit completado:', {
+                tokenId,
+                toggleId,
+                txHash: receipt.transactionHash
+            });
+
+        } catch (error) {
+            console.error('❌ StickyPopupManager: Error en commit:', error);
+            this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.commitStatus);
+        } finally {
+            // Rehabilitar botón
+            if (this.elements.commitBtn) {
+                this.elements.commitBtn.disabled = false;
+                this.elements.commitBtn.textContent = 'Commit';
+            }
+        }
+    }
+
+    /**
+     * Cargar ethers dinámicamente
+     */
+    async loadEthers() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+            script.onload = () => {
+                console.log('✅ Ethers cargado para commit');
+                resolve();
+            };
+            script.onerror = () => {
+                reject(new Error('Failed to load ethers library'));
+            };
+            document.head.appendChild(script);
+        });
     }
 
     /**

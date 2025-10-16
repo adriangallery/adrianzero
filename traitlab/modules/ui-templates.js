@@ -187,6 +187,7 @@ class UITemplates {
                                 <button id="zoomInBtn" class="action-btn zoom-btn">🔍 Zoom in</button>
                                 <button id="commitBtn" class="action-btn commit-btn">Commit</button>
                             </div>
+                            <div id="commit-status" class="apply-status" style="display: none;"></div>
                         </div>
                         
                         <!-- Traits Actions -->
