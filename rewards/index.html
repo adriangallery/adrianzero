@@ -307,31 +307,6 @@
             cursor: not-allowed;
         }
 
-        .batch-claim-btn {
-            background: linear-gradient(45deg, #ff6b35, #ff8c42);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .batch-claim-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
-        }
-
-        .batch-claim-btn:disabled {
-            background: #666;
-            color: #999;
-            cursor: not-allowed;
-        }
 
         .loading {
             display: none;
@@ -417,7 +392,7 @@
             gap: 10px;
         }
 
-        .claim-btn, .batch-claim-btn {
+        .claim-btn {
             padding: 10px 20px;
             border: none;
             border-radius: 8px;
@@ -444,15 +419,6 @@
             cursor: not-allowed;
         }
 
-        .batch-claim-btn {
-            background: linear-gradient(45deg, #ff6b35, #ff8c42);
-            color: #fff;
-        }
-
-        .batch-claim-btn:hover {
-            background: linear-gradient(45deg, #ff8c42, #ffa500);
-            transform: translateY(-2px);
-        }
 
         .error {
             background: rgba(255, 0, 0, 0.1);
@@ -474,43 +440,6 @@
             display: none;
         }
 
-        .punk-list {
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 10px;
-        }
-
-        .punk-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 0;
-            border-bottom: 1px solid #333;
-        }
-
-        .punk-item:last-child {
-            border-bottom: none;
-        }
-
-        .punk-id {
-            color: #00ff88;
-            font-weight: bold;
-        }
-
-        .punk-status {
-            font-size: 0.9rem;
-        }
-
-        .status-available {
-            color: #00ff88;
-        }
-
-        .status-claimed {
-            color: #ff6b35;
-        }
 
         /* Desktop: 4 cards per row */
         @media (min-width: 1200px) {
@@ -1163,9 +1092,6 @@
                         <button class="claim-btn" onclick="claimReward(${campaign.id})">
                             🎁 Claim Reward
                         </button>
-                        <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})">
-                            📋 Select Punks
-                        </button>
                     `;
                 } else {
                     statusText = '❌ No punks available to claim';
@@ -1195,9 +1121,6 @@
                     <div class="campaign-actions">
                         ${buttonHtml}
                     </div>
-                    <div class="punk-list" id="punk-list-${campaign.id}" style="display: none;">
-                        <!-- Punk list will be populated here -->
-                    </div>
                 </div>
             `;
 
@@ -1224,9 +1147,6 @@
                     buttonHtml = `
                         <button class="claim-btn" onclick="claimReward(${campaign.id})">
                             🎁 Claim Reward
-                        </button>
-                        <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})">
-                            📋 Select Punks
                         </button>
                     `;
                 } else {
@@ -1306,186 +1226,13 @@
                     <button class="claim-btn" onclick="claimReward(${campaign.id})" ${!isActive ? 'disabled' : ''}>
                         Claim All
                     </button>
-                    <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})" ${!isActive ? 'disabled' : ''}>
-                        Select Punks
-                    </button>
                 </div>
 
-                <div class="punk-list" id="punk-list-${campaign.id}" style="display: none;">
-                    <!-- Punk list will be populated here -->
-                </div>
             `;
 
             return card;
         }
 
-        // Toggle select all punks
-        function toggleSelectAll(campaignId) {
-            const selectAllCheckbox = document.getElementById(`select-all-${campaignId}`);
-            const punkCheckboxes = document.querySelectorAll(`#punk-list-${campaignId} .punk-checkbox:not([disabled])`);
-            
-            punkCheckboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
-        }
-
-        // Update select all state based on individual checkboxes
-        function updateSelectAllState(campaignId) {
-            const selectAllCheckbox = document.getElementById(`select-all-${campaignId}`);
-            const punkCheckboxes = document.querySelectorAll(`#punk-list-${campaignId} .punk-checkbox:not([disabled])`);
-            const checkedBoxes = document.querySelectorAll(`#punk-list-${campaignId} .punk-checkbox:not([disabled]):checked`);
-            
-            if (checkedBoxes.length === 0) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            } else if (checkedBoxes.length === punkCheckboxes.length) {
-                selectAllCheckbox.checked = true;
-                selectAllCheckbox.indeterminate = false;
-            } else {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = true;
-            }
-        }
-
-        // Claim selected punks
-        async function claimSelectedPunks(campaignId) {
-            const selectedPunks = Array.from(document.querySelectorAll(`#punk-list-${campaignId} .punk-checkbox:checked`))
-                .map(checkbox => parseInt(checkbox.dataset.punkId));
-            
-            if (selectedPunks.length === 0) {
-                showError('Please select at least one punk to claim');
-                return;
-            }
-
-            try {
-                showLoading(true, `Claiming rewards for ${selectedPunks.length} punks...`);
-                
-                console.log(`Claiming reward for campaign ${campaignId} with selected punks:`, selectedPunks);
-                
-                // Use batchClaim for selected punks only
-                const tx = await rewardsContract.batchClaim(campaignId, selectedPunks);
-                console.log('Transaction sent:', tx.hash);
-                
-                showSuccess('Transaction sent. Waiting for confirmation...');
-                
-                // Wait for transaction confirmation
-                const receipt = await tx.wait();
-                console.log('Transaction confirmed:', receipt);
-                
-                showSuccess(`Successfully claimed rewards for ${selectedPunks.length} punks!`);
-                
-                // Refresh the punk list
-                await showPunkList(campaignId);
-                
-                // Refresh campaigns data
-                await updateCampaignsWithUserData();
-                renderCampaignsComplete();
-                
-            } catch (error) {
-                console.error('Error claiming selected punks:', error);
-                
-                let errorMessage = 'Error claiming reward: ';
-                if (error.code === 4001) {
-                    errorMessage += 'Transaction rejected by user.';
-                } else if (error.message && error.message.includes('Already claimed')) {
-                    errorMessage += 'You have already claimed this reward.';
-                } else if (error.message && error.message.includes('Not token owner')) {
-                    errorMessage += 'You are not the owner of these tokens.';
-                } else if (error.message && error.message.includes('Campaign not active')) {
-                    errorMessage += 'Campaign is not active.';
-                } else if (error.message && error.message.includes('Exceeds max supply')) {
-                    errorMessage += 'Exceeds maximum supply.';
-                } else {
-                    errorMessage += error.message;
-                }
-                
-                showError(errorMessage);
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Show punk list for batch claim
-        async function showPunkList(campaignId) {
-            const punkList = document.getElementById(`punk-list-${campaignId}`);
-            const isVisible = punkList.style.display !== 'none';
-            
-            if (isVisible) {
-                punkList.style.display = 'none';
-                return;
-            }
-
-            // Hide other punk lists
-            document.querySelectorAll('.punk-list').forEach(list => {
-                list.style.display = 'none';
-            });
-
-            // Show this punk list
-            punkList.style.display = 'block';
-            punkList.innerHTML = '<div style="text-align: center; padding: 10px; color: #ccc;">Loading Punk status...</div>';
-
-            try {
-                // Usar Alchemy RPC para lecturas (más confiable)
-                const readProvider = window.RewardsConfig.getReadProvider();
-                const readRewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
-                
-                // Check claim status for each punk
-                const punkStatuses = await Promise.all(
-                    userPunks.map(async (punkId) => {
-                        try {
-                            const hasClaimed = await readRewardsContract.hasClaimed(campaignId, punkId);
-                            return { punkId, hasClaimed };
-                        } catch (error) {
-                            console.warn(`Error checking claim status for punk ${punkId}:`, error);
-                            return { punkId, hasClaimed: false };
-                        }
-                    })
-                );
-
-                punkList.innerHTML = '';
-
-                // Add header with select all functionality
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'punk-list-header';
-                headerDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" id="select-all-${campaignId}" onchange="toggleSelectAll(${campaignId})">
-                            <span>Select All Available</span>
-                        </label>
-                        <button onclick="claimSelectedPunks(${campaignId})" class="claim-selected-btn" style="padding: 8px 16px; background: #00ff88; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                            Claim Selected
-                        </button>
-                    </div>
-                `;
-                punkList.appendChild(headerDiv);
-
-                punkStatuses.forEach(({ punkId, hasClaimed }) => {
-                    const punkItem = document.createElement('div');
-                    punkItem.className = `punk-item ${hasClaimed ? 'claimed' : 'available'}`;
-                    punkItem.innerHTML = `
-                        <label style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; cursor: ${hasClaimed ? 'not-allowed' : 'pointer'}; background: ${hasClaimed ? 'rgba(255,0,0,0.1)' : 'rgba(0,255,136,0.1)'}; margin: 5px 0;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="checkbox" 
-                                       class="punk-checkbox" 
-                                       data-punk-id="${punkId}" 
-                                       data-campaign-id="${campaignId}"
-                                       ${hasClaimed ? 'disabled' : ''}
-                                       onchange="updateSelectAllState(${campaignId})">
-                                <span class="punk-id">Punk #${punkId}</span>
-                            </div>
-                            <span class="punk-status ${hasClaimed ? 'status-claimed' : 'status-available'}">
-                                ${hasClaimed ? 'Claimed' : 'Available'}
-                            </span>
-                        </label>
-                    `;
-                    punkList.appendChild(punkItem);
-                });
-            } catch (error) {
-                console.error('Error loading punk statuses:', error);
-                punkList.innerHTML = '<div style="text-align: center; padding: 10px; color: #ff6b35;">Error loading Punk status</div>';
-            }
-        }
 
         // Claim reward for all punks
         async function claimReward(campaignId) {
@@ -1522,7 +1269,6 @@
                 const card = document.getElementById(`campaign-${campaignId}`);
                 card.classList.add('claimed');
                 card.querySelector('.claim-btn').disabled = true;
-                card.querySelector('.batch-claim-btn').disabled = true;
                 
                 // Reload campaigns to update totalClaimed
                 await loadCampaigns();
