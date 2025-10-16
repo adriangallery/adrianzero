@@ -17,6 +17,14 @@ class RewardsConfig {
             rpcUrl: "https://mainnet.base.org"
         };
         
+        // Alchemy configuration (como TraitLAB)
+        this.ALCHEMY_API_KEY = "5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot";
+        this.ALCHEMY_RPC_URL = `https://base-mainnet.g.alchemy.com/v2/${this.ALCHEMY_API_KEY}`;
+        
+        // Cache configuration
+        this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+        this.CACHE_KEY = 'rewards_cache';
+        
         // Contract ABIs
         this.REWARDS_ABI = [
             "function getCampaign(uint256 campaignId) external view returns (tuple(uint256 assetId, uint256 amountPerToken, uint64 startTime, uint64 endTime, bool active, uint256 totalClaimed))",
@@ -126,6 +134,77 @@ class RewardsConfig {
     updateRewardsContract(address) {
         this.REWARDS_CONTRACT = address;
         console.log('✅ Rewards contract address updated:', address);
+    }
+
+    /**
+     * Obtener provider para lecturas (Alchemy RPC)
+     */
+    getReadProvider() {
+        if (typeof window.ethers === 'undefined') {
+            throw new Error('Ethers library not loaded');
+        }
+        return new window.ethers.providers.JsonRpcProvider(this.ALCHEMY_RPC_URL);
+    }
+
+    /**
+     * Obtener provider para transacciones (Web3Provider)
+     */
+    async getWriteProvider() {
+        if (typeof window.ethereum === 'undefined') {
+            throw new Error('MetaMask is not installed');
+        }
+        if (typeof window.ethers === 'undefined') {
+            throw new Error('Ethers library not loaded');
+        }
+        const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        return provider;
+    }
+
+    /**
+     * Obtener datos del caché
+     */
+    getCachedData() {
+        try {
+            const cached = localStorage.getItem(this.CACHE_KEY);
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (Date.now() - data.timestamp < this.CACHE_DURATION) {
+                    console.log('📦 Using cached data');
+                    return data;
+                }
+            }
+        } catch (error) {
+            console.warn('Error reading cache:', error);
+        }
+        return null;
+    }
+
+    /**
+     * Guardar datos en caché
+     */
+    setCachedData(data) {
+        try {
+            localStorage.setItem(this.CACHE_KEY, JSON.stringify({
+                ...data,
+                timestamp: Date.now()
+            }));
+            console.log('💾 Data cached successfully');
+        } catch (error) {
+            console.warn('Error saving cache:', error);
+        }
+    }
+
+    /**
+     * Limpiar caché
+     */
+    clearCache() {
+        try {
+            localStorage.removeItem(this.CACHE_KEY);
+            console.log('🗑️ Cache cleared');
+        } catch (error) {
+            console.warn('Error clearing cache:', error);
+        }
     }
 }
 
