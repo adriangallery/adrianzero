@@ -10,6 +10,10 @@ class ZeroManager {
         this.namePrice = null;
         this.eventListeners = new Map();
         
+        // Active toggles management
+        this.activeToggles = new Map();
+        this.activeTogglesLoaded = false;
+        
         // Bind methods
         this.loadTokens = this.loadTokens.bind(this);
         this.loadCustomNames = this.loadCustomNames.bind(this);
@@ -65,6 +69,84 @@ class ZeroManager {
     }
 
     /**
+     * Load active toggles from Zoom Toggle contract
+     */
+    async loadActiveToggles() {
+        try {
+            console.log('🔍 Loading active toggles from contract...');
+            
+            // Cargar ethers si no está disponible
+            let ethers = window.ethers;
+            if (typeof ethers === 'undefined') {
+                await this.loadEthers();
+                ethers = window.ethers;
+            }
+
+            const provider = new ethers.providers.JsonRpcProvider(window.TraitLABConfig.NETWORK.rpcUrl);
+            const contract = new ethers.Contract(
+                window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                [{
+                    "inputs": [],
+                    "name": "getAllActiveToggles",
+                    "outputs": [{
+                        "components": [
+                            {"internalType": "uint256", "name": "tokenId", "type": "uint256"}, 
+                            {"internalType": "uint256", "name": "toggleId", "type": "uint256"}
+                        ], 
+                        "internalType": "struct ZoomInZEROS.TokenToggle[]", 
+                        "name": "", 
+                        "type": "tuple[]"
+                    }],
+                    "stateMutability": "view",
+                    "type": "function"
+                }],
+                provider
+            );
+
+            const activeToggles = await contract.getAllActiveToggles();
+            console.log('🔍 Active toggles loaded:', activeToggles);
+            
+            // Crear mapa de tokenId -> toggleId para acceso rápido
+            const toggleMap = new Map();
+            activeToggles.forEach(toggle => {
+                const tokenId = parseInt(toggle.tokenId.toString());
+                const toggleId = parseInt(toggle.toggleId.toString());
+                toggleMap.set(tokenId, toggleId);
+                console.log(`🔍 Token ${tokenId} has toggle ${toggleId}`);
+            });
+            
+            return toggleMap;
+        } catch (error) {
+            console.warn('⚠️ Error loading active toggles:', error);
+            return new Map(); // Fallback: continuar sin cambios
+        }
+    }
+
+    /**
+     * Load ethers library dynamically
+     */
+    async loadEthers() {
+        return new Promise((resolve, reject) => {
+            if (typeof window.ethers !== 'undefined') {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+            script.onload = () => {
+                console.log('✅ Ethers library loaded');
+                resolve();
+            };
+            script.onerror = () => {
+                console.error('❌ Failed to load ethers library');
+                reject(new Error('Failed to load ethers library'));
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    /**
      * Check if token ID is a floppy token
      */
     isFloppyToken(tokenId) {
@@ -95,6 +177,13 @@ class ZeroManager {
             const tokenType = isERC721 ? "ERC721" : "ERC1155";
             
             console.log(`Loading ${tokenType} tokens from contract: ${contractAddress}`);
+            
+            // Cargar toggles activos para AdrianZERO tokens
+            if (isERC721 && !this.activeTogglesLoaded) {
+                console.log('🔍 Loading active toggles for AdrianZERO tokens...');
+                this.activeToggles = await this.loadActiveToggles();
+                this.activeTogglesLoaded = true;
+            }
             
             // Load all tokens with pagination
             let allNfts = [];
@@ -196,8 +285,16 @@ class ZeroManager {
                         
                         // For ERC721 tokens (AdrianZERO), use the specific render API format
                         if (isERC721) {
-                            // Use the working format for AdrianZERO tokens
-                            mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
+                            // Verificar si el token tiene toggle activo (toggleId = 1 = zoom in)
+                            const hasZoomToggle = this.activeToggles.has(tokenIdInt) && 
+                                                 this.activeToggles.get(tokenIdInt) === 1;
+                            
+                            if (hasZoomToggle) {
+                                mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png?closeup=true`;
+                                console.log(`🔍 Token ${tokenIdInt} has zoom toggle - using closeup=true`);
+                            } else {
+                                mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
+                            }
                         } else {
                             // For ERC1155 tokens, check if it's a floppy disc or serum first
                             if (this.isFloppyToken(tokenIdInt)) {
@@ -1139,7 +1236,20 @@ class ZeroManager {
         if (img) {
             // Create new URL with timestamp to force refresh
             const timestamp = Date.now();
-            const newUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png?v=${timestamp}`;
+            
+            // Verificar si el token tiene toggle activo (toggleId = 1 = zoom in)
+            const hasZoomToggle = this.activeToggles.has(tokenId) && 
+                                 this.activeToggles.get(tokenId) === 1;
+            
+            let baseUrl;
+            if (hasZoomToggle) {
+                baseUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png?closeup=true`;
+                console.log(`🔍 Refreshing token ${tokenId} with zoom toggle - using closeup=true`);
+            } else {
+                baseUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+            }
+            
+            const newUrl = `${baseUrl}&v=${timestamp}`;
             
             // Preload new image
             const preloadImg = new Image();
