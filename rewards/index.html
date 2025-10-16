@@ -383,6 +383,23 @@
             margin: 10px 0;
             font-size: 0.9rem;
             color: #ccc;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .amount {
+            color: #00ff88;
+            font-weight: 600;
+        }
+
+        .user-claimed {
+            color: #ffaa00;
+            font-weight: 600;
+        }
+
+        .total-claimed {
+            color: #ff6b35;
+            font-weight: 600;
         }
 
         .campaign-actions {
@@ -808,6 +825,7 @@
                             description: metadata.description,
                             // Datos de usuario se añadirán después
                             userPunks: [],
+                            userClaimed: 0, // Claims específicos del usuario
                             canClaim: false,
                             loading: true,
                             userDataLoaded: false
@@ -929,8 +947,14 @@
                             .filter(data => !data.hasClaimed)
                             .map(data => data.punkId);
                         
+                        // Calcular cuántos claims ha hecho el usuario
+                        const userClaimedCount = claimsData
+                            .filter(data => data.hasClaimed)
+                            .length;
+                        
                         // Actualizar campaña
                         campaign.userPunks = userPunksForCampaign;
+                        campaign.userClaimed = userClaimedCount;
                         campaign.canClaim = userPunksForCampaign.length > 0;
                         campaign.loading = false;
                         campaign.userDataLoaded = true;
@@ -1036,7 +1060,8 @@
                     <p>${campaign.description}</p>
                     <div class="reward-stats">
                         <span class="amount">Amount: ${campaign.amountPerToken}</span>
-                        <span class="claimed">Claimed: ${campaign.totalClaimed}</span>
+                        <span class="user-claimed">Your Claims: ${campaign.userClaimed || 0}</span>
+                        <span class="total-claimed">Total: ${campaign.totalClaimed}/1000</span>
                     </div>
                     <div class="user-data">
                         <div class="loading-state">
@@ -1111,7 +1136,8 @@
                     <p>${campaign.description}</p>
                     <div class="reward-stats">
                         <span class="amount">Amount: ${campaign.amountPerToken}</span>
-                        <span class="claimed">Claimed: ${campaign.totalClaimed}</span>
+                        <span class="user-claimed">Your Claims: ${campaign.userClaimed || 0}</span>
+                        <span class="total-claimed">Total: ${campaign.totalClaimed}/1000</span>
                     </div>
                     <div class="user-data">
                         <div class="user-status">
@@ -1134,8 +1160,16 @@
 
             const userDataDiv = card.querySelector('.user-data');
             const actionsDiv = card.querySelector('.campaign-actions');
+            const statsDiv = card.querySelector('.reward-stats');
             
-            if (!userDataDiv || !actionsDiv) return;
+            if (!userDataDiv || !actionsDiv || !statsDiv) return;
+
+            // Actualizar estadísticas
+            statsDiv.innerHTML = `
+                <span class="amount">Amount: ${campaign.amountPerToken}</span>
+                <span class="user-claimed">Your Claims: ${campaign.userClaimed || 0}</span>
+                <span class="total-claimed">Total: ${campaign.totalClaimed}/1000</span>
+            `;
 
             // Actualizar estado de usuario
             let statusText = '';
