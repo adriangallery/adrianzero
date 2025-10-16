@@ -259,6 +259,60 @@
             box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
         }
 
+        .trait-item-mobile.blocked {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            cursor: not-allowed;
+            opacity: 0.6;
+            position: relative;
+        }
+
+        .trait-item-mobile.blocked:hover {
+            background: rgba(255, 0, 0, 0.1);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .trait-item-mobile.blocked::after {
+            content: "BLOCKED";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .error-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .error-icon {
+            font-size: 1.2rem;
+        }
+
+        .error-text {
+            color: #ff6666;
+            font-size: 0.9rem;
+        }
+
         .trait-image-mobile {
             width: 100%;
             height: 60px;
@@ -437,6 +491,13 @@
             
             <div class="selected-traits-mobile" id="selectedTraitsMobile">
                 <div class="no-traits">No traits selected</div>
+            </div>
+            
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <div class="error-content">
+                    <span class="error-icon">⚠️</span>
+                    <span class="error-text">No se pueden usar traits bloqueados (maxSupply ≤ 5)</span>
+                </div>
             </div>
         </div>
 
@@ -641,10 +702,16 @@
                 const localBadge = trait.localImage ? 
                     `<div class="local-badge-mobile">${trait.floppy || 'N/A'}</div>` : '';
 
+                // Verificar si el trait está bloqueado (maxSupply <= 5)
+                const isBlocked = trait.maxSupply && trait.maxSupply <= 5;
+                const blockedClass = isBlocked ? 'blocked' : '';
+                const clickHandler = isBlocked ? '' : `onclick="mobileManager.toggleTrait(${tokenId})"`;
+
                 return `
-                    <div class="trait-item-mobile ${isSelected ? 'selected' : ''}" 
+                    <div class="trait-item-mobile ${isSelected ? 'selected' : ''} ${blockedClass}" 
                          data-trait-id="${tokenId}" 
-                         onclick="mobileManager.toggleTrait(${tokenId})">
+                         data-blocked="${isBlocked}"
+                         ${clickHandler}>
                         <img src="${imageUrl}" alt="${trait.name}" class="trait-image-mobile ${formatClass}" onerror="this.style.display='none'">
                         <div class="trait-name-mobile">${trait.name}</div>
                         <div class="trait-id-mobile">#${tokenId}</div>
@@ -656,6 +723,13 @@
             toggleTrait(tokenId) {
                 const trait = this.allTraits.find(t => (t.id || t.tokenId) === tokenId);
                 if (!trait) return;
+
+                // Verificar si el trait está bloqueado
+                const isBlocked = trait.maxSupply && trait.maxSupply <= 5;
+                if (isBlocked) {
+                    console.warn(`Trait ${trait.name} (#${tokenId}) está bloqueado (maxSupply: ${trait.maxSupply})`);
+                    return;
+                }
 
                 const isSelected = this.selectedTraits.some(t => (t.id || t.tokenId) === tokenId);
                 
@@ -704,10 +778,21 @@
                 const previewImage = document.getElementById('previewImage');
                 
                 if (this.selectedTraits.length === 0) {
+                    this.hideError();
                     previewImage.src = `https://adrianlab.vercel.app/api/render/${this.baseTokenId}.png`;
                     return;
                 }
 
+                // Verificar si hay traits bloqueados en la selección
+                const hasBlockedTraits = this.selectedTraits.some(trait => trait.maxSupply && trait.maxSupply <= 5);
+                if (hasBlockedTraits) {
+                    console.warn('No se puede generar imagen: hay traits bloqueados en la selección');
+                    this.showError();
+                    previewImage.src = `https://adrianlab.vercel.app/api/render/${this.baseTokenId}.png`;
+                    return;
+                }
+
+                this.hideError();
                 previewImage.classList.add('loading');
                 
                 const queryParams = this.selectedTraits.map(trait => `trait=${trait.id || trait.tokenId}`);
@@ -724,6 +809,20 @@
                     previewImage.classList.remove('loading');
                 };
                 img.src = imageUrl;
+            }
+
+            showError() {
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) {
+                    errorMessage.style.display = 'block';
+                }
+            }
+
+            hideError() {
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) {
+                    errorMessage.style.display = 'none';
+                }
             }
 
             filterTraits(searchTerm) {
