@@ -67,6 +67,7 @@ class StickyPopupManager {
             activateTokenBtn: document.getElementById('activateTokenBtn'),
             showRenameSectionBtn: document.getElementById('showRenameSectionBtn'),
             zoomInBtn: document.getElementById('zoomInBtn'),
+            commitBtn: document.getElementById('commitBtn'),
             applyTraitsBtn: document.getElementById('applyTraitsBtn'),
             openFloppyBtn: document.getElementById('openFloppyBtn'),
             openPackBtn: document.getElementById('openPackBtn'),
@@ -104,6 +105,10 @@ class StickyPopupManager {
 
         if (this.elements.zoomInBtn) {
             this.elements.zoomInBtn.addEventListener('click', () => this.toggleCloseup());
+        }
+
+        if (this.elements.commitBtn) {
+            this.elements.commitBtn.addEventListener('click', () => this.commit());
         }
 
         if (this.elements.applyTraitsBtn) {
@@ -1041,6 +1046,14 @@ class StickyPopupManager {
 
         // Refrescar la imagen con el nuevo modo
         this.showBaseAdrianZeroImage();
+    }
+
+    /**
+     * Commit (funcionalidad pendiente)
+     */
+    commit() {
+        console.log('💾 StickyPopupManager: Commit clicked - funcionalidad pendiente');
+        // TODO: Implementar funcionalidad de commit
     }
 
     /**

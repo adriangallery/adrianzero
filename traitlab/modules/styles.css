@@ -1045,6 +1045,39 @@ body {
     transform: translateY(-1px);
 }
 
+/* Botones Zoom y Commit lado a lado */
+.zoom-commit-buttons {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+}
+
+.zoom-commit-buttons .action-btn {
+    flex: 1;
+    width: auto;
+    margin: 2px 0;
+    font-size: 0.8rem;
+    padding: 1px 8px;
+}
+
+.zoom-commit-buttons .zoom-btn {
+    background: #00ff00;
+    color: #000;
+}
+
+.zoom-commit-buttons .commit-btn {
+    background: #ff8800;
+    color: #000;
+}
+
+.zoom-commit-buttons .zoom-btn:hover {
+    background: #00cc00;
+}
+
+.zoom-commit-buttons .commit-btn:hover {
+    background: #ff6600;
+}
+
 
 
 

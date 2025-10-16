@@ -183,7 +183,10 @@ class UITemplates {
                         <div id="erc721-actions-section" class="action-section" style="display: none;">
                             <button id="activateTokenBtn" class="action-btn">Assign SKIN</button>
                             <button id="showRenameSectionBtn" class="action-btn">Rename Token</button>
-                            <button id="zoomInBtn" class="action-btn">🔍 Zoom in</button>
+                            <div class="zoom-commit-buttons">
+                                <button id="zoomInBtn" class="action-btn zoom-btn">🔍 Zoom in</button>
+                                <button id="commitBtn" class="action-btn commit-btn">Commit</button>
+                            </div>
                         </div>
                         
                         <!-- Traits Actions -->
