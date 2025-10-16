@@ -184,6 +184,9 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin-top: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .reward-card {
@@ -196,6 +199,8 @@
             overflow: hidden;
             max-width: 400px;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .reward-card:hover {
@@ -372,6 +377,83 @@
             font-weight: 500;
         }
 
+        .reward-image {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .reward-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .reward-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reward-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .campaign-actions {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .claim-btn, .batch-claim-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .claim-btn {
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            color: #000;
+        }
+
+        .claim-btn:hover:not(:disabled) {
+            background: linear-gradient(45deg, #00cc6a, #00aa55);
+            transform: translateY(-2px);
+        }
+
+        .claim-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .batch-claim-btn {
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+            color: #fff;
+        }
+
+        .batch-claim-btn:hover {
+            background: linear-gradient(45deg, #ff8c42, #ffa500);
+            transform: translateY(-2px);
+        }
+
         .error {
             background: rgba(255, 0, 0, 0.1);
             border: 1px solid #ff0000;
@@ -430,13 +512,34 @@
             color: #ff6b35;
         }
 
-        @media (max-width: 768px) {
+        /* Desktop: 4 cards per row */
+        @media (min-width: 1200px) {
+            .rewards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* Tablet: 2-3 cards per row */
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .rewards-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+
+        /* Mobile: 1 card per row */
+        @media (max-width: 767px) {
             .header h1 {
                 font-size: 3rem;
             }
             
             .rewards-grid {
                 grid-template-columns: 1fr;
+                padding: 0 10px;
+            }
+            
+            .reward-card {
+                max-width: 100%;
+                margin: 0;
             }
             
             .account-info {
@@ -568,12 +671,12 @@
                 }
 
                 // FASE 1: Cargar campañas básicas inmediatamente
-                console.log('🚀 FASE 1: Cargando campañas básicas...');
-                showLoading(true, '📋 Cargando campañas...');
+                console.log('🚀 PHASE 1: Loading basic campaigns...');
+                showLoading(true, '📋 Loading campaigns...');
                 await loadCampaignsBasic();
                 renderCampaignsBasic();
                 showLoading(false);
-                console.log('✅ FASE 1: Campañas mostradas');
+                console.log('✅ PHASE 1: Campaigns displayed');
 
                 // Verificar si hay datos en caché para mostrar inmediatamente
                 const cachedData = window.RewardsConfig.getCachedData();
@@ -642,13 +745,13 @@
         async function loadUserPunksAndUpdateCampaigns() {
             try {
                 // 1. Cargar punks
-                console.log('👥 Cargando punks del usuario...');
-                showLoading(true, '👥 Cargando tus punks...');
+                console.log('👥 Loading user punks...');
+                showLoading(true, '👥 Loading your punks...');
                 await loadUserPunks();
                 
                 // 2. Actualizar campañas con datos de usuario
-                console.log('✅ Actualizando campañas con datos de usuario...');
-                showLoading(true, '✅ Verificando recompensas...');
+                console.log('✅ Updating campaigns with user data...');
+                showLoading(true, '✅ Verifying rewards...');
                 await updateCampaignsWithUserData();
                 
                 // 3. Re-renderizar con datos completos
@@ -856,7 +959,7 @@
                 // Procesar campañas en paralelo para mejor rendimiento
                 const campaignUpdates = campaigns.map(async (campaign) => {
                     try {
-                        console.log(`🔄 Procesando campaña ${campaign.id}...`);
+                        console.log(`🔄 Processing campaign ${campaign.id}...`);
                         
                         // Verificar claims en lote (más eficiente que uno por uno)
                         const claimsData = await Promise.all(
@@ -878,7 +981,7 @@
                         campaign.loading = false;
                         campaign.userDataLoaded = true;
                         
-                        console.log(`✅ Campaña ${campaign.id}: ${userPunksForCampaign.length} punks disponibles`);
+                        console.log(`✅ Campaign ${campaign.id}: ${userPunksForCampaign.length} punks available`);
                         
                         // Actualizar UI inmediatamente para esta campaña
                         updateCampaignCard(campaign);
@@ -984,13 +1087,13 @@
                     <div class="user-data">
                         <div class="loading-state">
                             <span class="loading-spinner">⏳</span>
-                            <span>Cargando datos de usuario...</span>
+                            <span>Loading user data...</span>
                         </div>
                     </div>
                     <div class="campaign-actions">
                         <button class="claim-btn" disabled>
                             <span class="loading-spinner">⏳</span>
-                            Cargando...
+                            Loading...
                         </button>
                     </div>
                 </div>
@@ -1026,26 +1129,26 @@
             let buttonHtml = '';
             
             if (!isActive) {
-                statusText = '⏸️ Campaña inactiva';
-                buttonHtml = '<button class="claim-btn" disabled>Inactiva</button>';
+                statusText = '⏸️ Campaign inactive';
+                buttonHtml = '<button class="claim-btn" disabled>Inactive</button>';
             } else if (campaign.userDataLoaded) {
                 if (campaign.canClaim) {
-                    statusText = `✅ ${campaign.userPunks.length} punks disponibles para reclamar`;
+                    statusText = `✅ ${campaign.userPunks.length} punks available to claim`;
                     buttonHtml = `
                         <button class="claim-btn" onclick="claimReward(${campaign.id})">
-                            🎁 Reclamar Recompensa
+                            🎁 Claim Reward
                         </button>
                         <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})">
-                            📋 Seleccionar Punks
+                            📋 Select Punks
                         </button>
                     `;
                 } else {
-                    statusText = '❌ No hay punks disponibles para reclamar';
-                    buttonHtml = '<button class="claim-btn" disabled>No disponible</button>';
+                    statusText = '❌ No punks available to claim';
+                    buttonHtml = '<button class="claim-btn" disabled>Not available</button>';
                 }
             } else {
-                statusText = '⏳ Cargando datos de usuario...';
-                buttonHtml = '<button class="claim-btn" disabled>Cargando...</button>';
+                statusText = '⏳ Loading user data...';
+                buttonHtml = '<button class="claim-btn" disabled>Loading...</button>';
             }
 
             card.innerHTML = `
@@ -1092,22 +1195,22 @@
             
             if (campaign.userDataLoaded) {
                 if (campaign.canClaim) {
-                    statusText = `✅ ${campaign.userPunks.length} punks disponibles para reclamar`;
+                    statusText = `✅ ${campaign.userPunks.length} punks available to claim`;
                     buttonHtml = `
                         <button class="claim-btn" onclick="claimReward(${campaign.id})">
-                            🎁 Reclamar Recompensa
+                            🎁 Claim Reward
                         </button>
                         <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})">
-                            📋 Seleccionar Punks
+                            📋 Select Punks
                         </button>
                     `;
                 } else {
-                    statusText = '❌ No hay punks disponibles para reclamar';
-                    buttonHtml = '<button class="claim-btn" disabled>No disponible</button>';
+                    statusText = '❌ No punks available to claim';
+                    buttonHtml = '<button class="claim-btn" disabled>Not available</button>';
                 }
             } else {
-                statusText = '⏳ Cargando datos de usuario...';
-                buttonHtml = '<button class="claim-btn" disabled>Cargando...</button>';
+                statusText = '⏳ Loading user data...';
+                buttonHtml = '<button class="claim-btn" disabled>Loading...</button>';
             }
 
             userDataDiv.innerHTML = `
@@ -1250,17 +1353,24 @@
         // Claim reward for all punks
         async function claimReward(campaignId) {
             try {
-                if (userPunks.length === 0) {
-                    showError('You don\'t have AdrianPunks to claim');
+                // Find the campaign to get available punks
+                const campaign = campaigns.find(c => c.id === campaignId);
+                if (!campaign) {
+                    showError('Campaign not found');
+                    return;
+                }
+
+                if (campaign.userPunks.length === 0) {
+                    showError('No punks available to claim for this campaign');
                     return;
                 }
 
                 showLoading(true);
                 
-                console.log(`Claiming reward for campaign ${campaignId} with ${userPunks.length} punks`);
+                console.log(`Claiming reward for campaign ${campaignId} with ${campaign.userPunks.length} available punks`);
                 
-                // Use batchClaim for all user punks
-                const tx = await rewardsContract.batchClaim(campaignId, userPunks);
+                // Use batchClaim for available punks only
+                const tx = await rewardsContract.batchClaim(campaignId, campaign.userPunks);
                 console.log('Transaction sent:', tx.hash);
                 
                 showSuccess('Transaction sent. Waiting for confirmation...');
