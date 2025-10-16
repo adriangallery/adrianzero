@@ -952,9 +952,19 @@
             card.className = 'reward-card';
             card.id = `campaign-${campaign.id}`;
 
+            const now = Math.floor(Date.now() / 1000);
             const isActive = campaign.active && 
-                           campaign.startTime <= Math.floor(Date.now() / 1000) && 
-                           campaign.endTime >= Math.floor(Date.now() / 1000);
+                           (campaign.startTime === 0 || now >= campaign.startTime) &&
+                           (campaign.endTime === 0 || now <= campaign.endTime);
+            
+            // Debug logs
+            console.log(`🔍 Campaign ${campaign.id} debug:`, {
+                active: campaign.active,
+                startTime: campaign.startTime,
+                endTime: campaign.endTime,
+                now: now,
+                isActive: isActive
+            });
 
             const imageUrl = getRewardImageUrl(campaign.assetId);
 
@@ -993,9 +1003,19 @@
             card.className = 'reward-card';
             card.id = `campaign-${campaign.id}`;
 
+            const now = Math.floor(Date.now() / 1000);
             const isActive = campaign.active && 
-                           campaign.startTime <= Math.floor(Date.now() / 1000) && 
-                           campaign.endTime >= Math.floor(Date.now() / 1000);
+                           (campaign.startTime === 0 || now >= campaign.startTime) &&
+                           (campaign.endTime === 0 || now <= campaign.endTime);
+            
+            // Debug logs
+            console.log(`🔍 Campaign ${campaign.id} debug:`, {
+                active: campaign.active,
+                startTime: campaign.startTime,
+                endTime: campaign.endTime,
+                now: now,
+                isActive: isActive
+            });
 
             const imageUrl = getRewardImageUrl(campaign.assetId);
 
