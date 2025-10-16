@@ -334,6 +334,42 @@
             font-size: 1.2rem;
         }
 
+        .loading-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loading-spinner {
+            font-size: 1.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            color: #00ff88;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-state {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffaa00;
+            font-size: 0.9rem;
+        }
+
+        .user-status {
+            color: #00ff88;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
         .error {
             background: rgba(255, 0, 0, 0.1);
             border: 1px solid #ff0000;
@@ -521,7 +557,7 @@
             throw lastError;
         }
 
-        // Initialize the app
+        // Initialize the app with progressive loading
         async function init() {
             try {
                 // Verificar que la configuración esté cargada
@@ -529,21 +565,30 @@
                     throw new Error('RewardsConfig not loaded');
                 }
 
-                // Verificar si hay datos en caché
+                // FASE 1: Cargar campañas básicas inmediatamente
+                console.log('🚀 FASE 1: Cargando campañas básicas...');
+                showLoading(true, '📋 Cargando campañas...');
+                await loadCampaignsBasic();
+                renderCampaignsBasic();
+                showLoading(false);
+                console.log('✅ FASE 1: Campañas mostradas');
+
+                // Verificar si hay datos en caché para mostrar inmediatamente
                 const cachedData = window.RewardsConfig.getCachedData();
-                if (cachedData) {
-                    console.log('📦 Using cached data for initial display');
-                    userPunks = cachedData.userPunks || [];
-                    campaigns = cachedData.campaigns || [];
-                    if (cachedData.currentAccount) {
-                        currentAccount = cachedData.currentAccount;
-                        showAccountSection();
-                        displayCampaigns();
-                    }
+                if (cachedData && cachedData.userPunks && cachedData.currentAccount) {
+                    console.log('📦 Usando datos en caché para display inmediato');
+                    userPunks = cachedData.userPunks;
+                    currentAccount = cachedData.currentAccount;
+                    showAccountSection();
+                    await updateCampaignsWithUserData();
+                    renderCampaignsComplete();
                 }
 
-                // Intentar cargar datos frescos
+                // FASE 2: Cargar datos de usuario en background
                 if (typeof window.ethereum !== 'undefined') {
+                    console.log('🚀 FASE 2: Conectando wallet y cargando datos de usuario...');
+                    showLoading(true, '🔗 Conectando wallet...');
+                    
                     // Usar Web3Provider solo para transacciones
                     provider = await window.RewardsConfig.getWriteProvider();
                     signer = provider.getSigner();
@@ -553,14 +598,18 @@
                     rewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, signer);
                     
                     showAccountSection();
-                    await loadUserPunks();
-                    await loadCampaigns();
+                    
+                    // Cargar punks y actualizar campañas progresivamente
+                    await loadUserPunksAndUpdateCampaigns();
+                    showLoading(false);
+                    console.log('✅ FASE 2: Datos de usuario cargados');
                 } else {
                     showError('MetaMask is not installed. Please install MetaMask to continue.');
                 }
             } catch (error) {
                 console.error('Error initializing app:', error);
-                showError('Error connecting to MetaMask: ' + error.message);
+                showError('Error: ' + error.message);
+                showLoading(false);
             }
         }
 
@@ -585,6 +634,31 @@
             document.getElementById('accountSection').style.display = 'block';
             document.getElementById('rewardsSection').style.display = 'block';
             document.getElementById('accountAddress').textContent = currentAccount;
+        }
+
+        // Load user punks and update campaigns progressively
+        async function loadUserPunksAndUpdateCampaigns() {
+            try {
+                // 1. Cargar punks
+                console.log('👥 Cargando punks del usuario...');
+                showLoading(true, '👥 Cargando tus punks...');
+                await loadUserPunks();
+                
+                // 2. Actualizar campañas con datos de usuario
+                console.log('✅ Actualizando campañas con datos de usuario...');
+                showLoading(true, '✅ Verificando recompensas...');
+                await updateCampaignsWithUserData();
+                
+                // 3. Re-renderizar con datos completos
+                renderCampaignsComplete();
+                showLoading(false);
+                console.log('🎉 Carga progresiva completada');
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError('Error cargando datos de usuario: ' + error.message);
+                showLoading(false);
+            }
         }
 
         // Load user's AdrianPunks with Alchemy RPC
@@ -638,6 +712,60 @@
                 }
             } finally {
                 showLoading(false);
+            }
+        }
+
+        // Load campaigns basic data (without user-specific data)
+        async function loadCampaignsBasic() {
+            try {
+                console.log('📋 Loading basic campaigns data...');
+                
+                // Usar Alchemy RPC para lecturas (más confiable)
+                const readProvider = window.RewardsConfig.getReadProvider();
+                const readRewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
+                
+                // Get current campaign ID from contract with retry
+                const currentCampaignId = await retryContractCall(() => readRewardsContract.currentCampaignId());
+                console.log('Current campaign ID:', currentCampaignId.toString());
+                
+                campaigns = [];
+                
+                // Load all campaigns from the contract
+                for (let i = 1; i <= currentCampaignId.toNumber(); i++) {
+                    try {
+                        const campaignData = await retryContractCall(() => readRewardsContract.getCampaign(i));
+                        console.log(`Campaign ${i}:`, campaignData);
+                        
+                        // Convert BigNumber values to numbers
+                        const campaign = {
+                            id: i,
+                            assetId: campaignData.assetId.toNumber(),
+                            amountPerToken: campaignData.amountPerToken.toNumber(),
+                            startTime: campaignData.startTime.toNumber(),
+                            endTime: campaignData.endTime.toNumber(),
+                            active: campaignData.active,
+                            totalClaimed: campaignData.totalClaimed.toNumber(),
+                            name: `Campaign ${i}`,
+                            description: `Asset ID: ${campaignData.assetId.toString()}, Amount: ${campaignData.amountPerToken.toString()}`,
+                            // Datos de usuario se añadirán después
+                            userPunks: [],
+                            canClaim: false,
+                            loading: true,
+                            userDataLoaded: false
+                        };
+                        
+                        campaigns.push(campaign);
+                    } catch (error) {
+                        console.warn(`Error loading campaign ${i}:`, error);
+                        // Continue with other campaigns
+                    }
+                }
+                
+                console.log('📋 Basic campaigns loaded:', campaigns.length);
+                
+            } catch (error) {
+                console.error('Error loading basic campaigns:', error);
+                throw error;
             }
         }
 
@@ -716,7 +844,98 @@
             }
         }
 
-        // Render campaigns
+        // Update campaigns with user data progressively
+        async function updateCampaignsWithUserData() {
+            try {
+                console.log('🔄 Actualizando campañas con datos de usuario...');
+                const readProvider = window.RewardsConfig.getReadProvider();
+                const readRewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
+                
+                // Procesar campañas en paralelo para mejor rendimiento
+                const campaignUpdates = campaigns.map(async (campaign) => {
+                    try {
+                        console.log(`🔄 Procesando campaña ${campaign.id}...`);
+                        
+                        // Verificar claims en lote (más eficiente que uno por uno)
+                        const claimsData = await Promise.all(
+                            userPunks.map(punkId => 
+                                readRewardsContract.hasClaimed(campaign.id, punkId)
+                                    .then(hasClaimed => ({ punkId, hasClaimed }))
+                                    .catch(() => ({ punkId, hasClaimed: false }))
+                            )
+                        );
+                        
+                        // Filtrar punks que pueden reclamar
+                        const userPunksForCampaign = claimsData
+                            .filter(data => !data.hasClaimed)
+                            .map(data => data.punkId);
+                        
+                        // Actualizar campaña
+                        campaign.userPunks = userPunksForCampaign;
+                        campaign.canClaim = userPunksForCampaign.length > 0;
+                        campaign.loading = false;
+                        campaign.userDataLoaded = true;
+                        
+                        console.log(`✅ Campaña ${campaign.id}: ${userPunksForCampaign.length} punks disponibles`);
+                        
+                        // Actualizar UI inmediatamente para esta campaña
+                        updateCampaignCard(campaign);
+                        
+                    } catch (error) {
+                        console.warn(`⚠️ Error actualizando campaña ${campaign.id}:`, error);
+                        campaign.loading = false;
+                        campaign.userDataLoaded = false;
+                        updateCampaignCard(campaign);
+                    }
+                });
+                
+                // Esperar a que todas las campañas se actualicen
+                await Promise.all(campaignUpdates);
+                
+                // Guardar en caché
+                const cachedData = window.RewardsConfig.getCachedData() || {};
+                window.RewardsConfig.setCachedData({
+                    ...cachedData,
+                    campaigns: campaigns,
+                    userPunks: userPunks,
+                    currentAccount: currentAccount
+                });
+                
+                console.log('✅ Todas las campañas actualizadas con datos de usuario');
+                
+            } catch (error) {
+                console.error('Error updating campaigns with user data:', error);
+                throw error;
+            }
+        }
+
+        // Render campaigns basic (without user data)
+        function renderCampaignsBasic() {
+            console.log('🎨 Renderizando campañas básicas...');
+            const grid = document.getElementById('rewardsGrid');
+            grid.innerHTML = '';
+
+            campaigns.forEach(campaign => {
+                const card = createCampaignCardBasic(campaign);
+                grid.appendChild(card);
+            });
+            console.log(`✅ ${campaigns.length} campañas básicas renderizadas`);
+        }
+
+        // Render campaigns complete (with user data)
+        function renderCampaignsComplete() {
+            console.log('🎨 Renderizando campañas completas...');
+            const grid = document.getElementById('rewardsGrid');
+            grid.innerHTML = '';
+
+            campaigns.forEach(campaign => {
+                const card = createCampaignCardComplete(campaign);
+                grid.appendChild(card);
+            });
+            console.log(`✅ ${campaigns.length} campañas completas renderizadas`);
+        }
+
+        // Render campaigns (legacy function)
         function renderCampaigns() {
             const grid = document.getElementById('rewardsGrid');
             grid.innerHTML = '';
@@ -727,7 +946,158 @@
             });
         }
 
-        // Create campaign card
+        // Create campaign card basic (loading state)
+        function createCampaignCardBasic(campaign) {
+            const card = document.createElement('div');
+            card.className = 'reward-card';
+            card.id = `campaign-${campaign.id}`;
+
+            const isActive = campaign.active && 
+                           campaign.startTime <= Math.floor(Date.now() / 1000) && 
+                           campaign.endTime >= Math.floor(Date.now() / 1000);
+
+            const imageUrl = generateRewardImageUrl(campaign.assetId);
+
+            card.innerHTML = `
+                <div class="reward-image">
+                    <img src="${imageUrl}" alt="${campaign.name}" onload="console.log('✅ Reward image loaded for asset ${campaign.assetId}:', this.src)" onerror="console.error('❌ Error loading reward image for asset ${campaign.assetId}:', this.src)">
+                </div>
+                <div class="reward-info">
+                    <h3>${campaign.name}</h3>
+                    <p>${campaign.description}</p>
+                    <div class="reward-stats">
+                        <span class="amount">Amount: ${campaign.amountPerToken}</span>
+                        <span class="claimed">Claimed: ${campaign.totalClaimed}</span>
+                    </div>
+                    <div class="user-data">
+                        <div class="loading-state">
+                            <span class="loading-spinner">⏳</span>
+                            <span>Cargando datos de usuario...</span>
+                        </div>
+                    </div>
+                    <div class="campaign-actions">
+                        <button class="claim-btn" disabled>
+                            <span class="loading-spinner">⏳</span>
+                            Cargando...
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Create campaign card complete (with user data)
+        function createCampaignCardComplete(campaign) {
+            const card = document.createElement('div');
+            card.className = 'reward-card';
+            card.id = `campaign-${campaign.id}`;
+
+            const isActive = campaign.active && 
+                           campaign.startTime <= Math.floor(Date.now() / 1000) && 
+                           campaign.endTime >= Math.floor(Date.now() / 1000);
+
+            const imageUrl = generateRewardImageUrl(campaign.assetId);
+
+            // Determinar estado de la campaña
+            let statusText = '';
+            let buttonHtml = '';
+            
+            if (!isActive) {
+                statusText = '⏸️ Campaña inactiva';
+                buttonHtml = '<button class="claim-btn" disabled>Inactiva</button>';
+            } else if (campaign.userDataLoaded) {
+                if (campaign.canClaim) {
+                    statusText = `✅ ${campaign.userPunks.length} punks disponibles para reclamar`;
+                    buttonHtml = `
+                        <button class="claim-btn" onclick="claimReward(${campaign.id})">
+                            🎁 Reclamar Recompensa
+                        </button>
+                        <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})">
+                            📋 Seleccionar Punks
+                        </button>
+                    `;
+                } else {
+                    statusText = '❌ No hay punks disponibles para reclamar';
+                    buttonHtml = '<button class="claim-btn" disabled>No disponible</button>';
+                }
+            } else {
+                statusText = '⏳ Cargando datos de usuario...';
+                buttonHtml = '<button class="claim-btn" disabled>Cargando...</button>';
+            }
+
+            card.innerHTML = `
+                <div class="reward-image">
+                    <img src="${imageUrl}" alt="${campaign.name}" onload="console.log('✅ Reward image loaded for asset ${campaign.assetId}:', this.src)" onerror="console.error('❌ Error loading reward image for asset ${campaign.assetId}:', this.src)">
+                </div>
+                <div class="reward-info">
+                    <h3>${campaign.name}</h3>
+                    <p>${campaign.description}</p>
+                    <div class="reward-stats">
+                        <span class="amount">Amount: ${campaign.amountPerToken}</span>
+                        <span class="claimed">Claimed: ${campaign.totalClaimed}</span>
+                    </div>
+                    <div class="user-data">
+                        <div class="user-status">
+                            <span>${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="campaign-actions">
+                        ${buttonHtml}
+                    </div>
+                    <div class="punk-list" id="punk-list-${campaign.id}" style="display: none;">
+                        <!-- Punk list will be populated here -->
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Update individual campaign card
+        function updateCampaignCard(campaign) {
+            const card = document.getElementById(`campaign-${campaign.id}`);
+            if (!card) return;
+
+            const userDataDiv = card.querySelector('.user-data');
+            const actionsDiv = card.querySelector('.campaign-actions');
+            
+            if (!userDataDiv || !actionsDiv) return;
+
+            // Actualizar estado de usuario
+            let statusText = '';
+            let buttonHtml = '';
+            
+            if (campaign.userDataLoaded) {
+                if (campaign.canClaim) {
+                    statusText = `✅ ${campaign.userPunks.length} punks disponibles para reclamar`;
+                    buttonHtml = `
+                        <button class="claim-btn" onclick="claimReward(${campaign.id})">
+                            🎁 Reclamar Recompensa
+                        </button>
+                        <button class="batch-claim-btn" onclick="showPunkList(${campaign.id})">
+                            📋 Seleccionar Punks
+                        </button>
+                    `;
+                } else {
+                    statusText = '❌ No hay punks disponibles para reclamar';
+                    buttonHtml = '<button class="claim-btn" disabled>No disponible</button>';
+                }
+            } else {
+                statusText = '⏳ Cargando datos de usuario...';
+                buttonHtml = '<button class="claim-btn" disabled>Cargando...</button>';
+            }
+
+            userDataDiv.innerHTML = `
+                <div class="user-status">
+                    <span>${statusText}</span>
+                </div>
+            `;
+            
+            actionsDiv.innerHTML = buttonHtml;
+        }
+
+        // Create campaign card (legacy function)
         function createCampaignCard(campaign) {
             const card = document.createElement('div');
             card.className = 'reward-card';
@@ -963,9 +1333,20 @@
             }
         }
 
-        // Show loading
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        // Show loading with custom message
+        function showLoading(show, message = 'Loading...') {
+            const loadingDiv = document.getElementById('loading');
+            if (show) {
+                loadingDiv.innerHTML = `
+                    <div class="loading-content">
+                        <div class="loading-spinner">⏳</div>
+                        <div class="loading-text">${message}</div>
+                    </div>
+                `;
+                loadingDiv.style.display = 'block';
+            } else {
+                loadingDiv.style.display = 'none';
+            }
         }
 
         // Show error message
