@@ -429,6 +429,14 @@ class UIManager {
                 window.app.modules.stickyPopupManager.showRenameSection();
             }
         }
+        
+        // Si estamos en tab lambo y se selecciona un ERC721, manejar selección de AdrianZERO
+        if (this.currentFilter === 'lambo' && token.tokenType === 'ERC721') {
+            if (window.app && window.app.modules.lambo) {
+                window.app.modules.lambo.selectAdrianZero(token);
+                this.showLamboColorSelector();
+            }
+        }
     }
 
     /**
@@ -736,6 +744,121 @@ class UIManager {
             selectedSerum: this.selectedSerum,
             currentFilter: this.currentFilter
         };
+    }
+
+    /**
+     * Show Lambo color selector
+     */
+    showLamboColorSelector() {
+        console.log('🚗 Mostrando selector de colores de Lambo...');
+        
+        const selectionText = this.domElements.get('selection-text');
+        if (!selectionText) return;
+        
+        const lamboManager = window.app?.modules?.lambo;
+        if (!lamboManager) return;
+        
+        const colors = lamboManager.getLamboColors();
+        const selectedToken = lamboManager.getSelectedAdrianZero();
+        
+        if (!selectedToken) return;
+        
+        // Create color selector HTML
+        const colorButtons = colors.map(color => 
+            `<button class="lambo-color-btn" data-color="${color.name}" title="${color.display}">
+                ${color.emoji} ${color.display}
+            </button>`
+        ).join('');
+        
+        selectionText.innerHTML = `
+            <div class="lambo-selection">
+                <h3>🚗 Selecciona tu AdrianZERO + Color de Lambo</h3>
+                <div class="selected-token">
+                    <strong>AdrianZERO seleccionado:</strong> ${selectedToken.title} (ID: ${selectedToken.tokenId})
+                </div>
+                <div class="color-selector">
+                    <h4>Elige el color de tu Lambo:</h4>
+                    <div class="color-buttons">
+                        ${colorButtons}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners to color buttons
+        const colorButtonsElements = selectionText.querySelectorAll('.lambo-color-btn');
+        colorButtonsElements.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const colorName = btn.dataset.color;
+                this.selectLamboColor(colorName);
+            });
+        });
+    }
+
+    /**
+     * Select Lambo color
+     */
+    selectLamboColor(colorName) {
+        console.log('🚗 Color de Lambo seleccionado:', colorName);
+        
+        const lamboManager = window.app?.modules?.lambo;
+        if (!lamboManager) return;
+        
+        lamboManager.selectLamboColor(colorName);
+        
+        // Update UI to show selected color
+        const colorButtons = document.querySelectorAll('.lambo-color-btn');
+        colorButtons.forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.dataset.color === colorName) {
+                btn.classList.add('selected');
+            }
+        });
+    }
+
+    /**
+     * Display generated Lambo image
+     */
+    displayLamboImage(imageUrl, token, color) {
+        console.log('🚗 Mostrando imagen de Lambo generada:', imageUrl);
+        
+        const generatedImage = this.domElements.get('generated-image');
+        const combinedImage = this.domElements.get('combined-image');
+        const imageLoadingOverlay = this.domElements.get('image-loading-overlay');
+        
+        if (!generatedImage || !combinedImage) return;
+        
+        // Show loading overlay
+        if (imageLoadingOverlay) {
+            imageLoadingOverlay.style.display = 'block';
+        }
+        
+        // Preload image
+        const img = new Image();
+        img.onload = () => {
+            // Hide loading overlay
+            if (imageLoadingOverlay) {
+                imageLoadingOverlay.style.display = 'none';
+            }
+            
+            // Set image source
+            combinedImage.src = imageUrl;
+            combinedImage.alt = `AdrianZERO ${token.tokenId} con Lambo ${color}`;
+            
+            // Show generated image section
+            generatedImage.style.display = 'block';
+            
+            console.log('✅ Imagen de Lambo cargada correctamente');
+        };
+        
+        img.onerror = () => {
+            console.error('❌ Error cargando imagen de Lambo');
+            if (imageLoadingOverlay) {
+                imageLoadingOverlay.style.display = 'none';
+            }
+        };
+        
+        img.src = imageUrl;
     }
 
     /**

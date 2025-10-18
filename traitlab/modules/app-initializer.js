@@ -73,6 +73,10 @@ class AppInitializer {
             this.app.modules.crafting = new window.TraitLABCrafting();
             this.app.modules.crafting.init();
             
+            // Lambo Manager
+            this.app.modules.lambo = new window.TraitLABLambo();
+            this.app.modules.lambo.init();
+            
             console.log('✅ AppInitializer: Todos los módulos inicializados');
             
         } catch (error) {
@@ -95,6 +99,11 @@ class AppInitializer {
             // UI events
             this.app.modules.ui.on('tokenSelected', (data) => {
                 this.app.modules.tokenSelection.onTokenSelected(data.token, data.filter);
+            });
+            
+            // Lambo events
+            this.app.modules.lambo.on('lamboImageGenerated', (data) => {
+                this.app.modules.ui.displayLamboImage(data.imageUrl, data.token, data.color);
             });
             
             // Connect button

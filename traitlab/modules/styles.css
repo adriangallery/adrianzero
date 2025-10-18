@@ -1743,3 +1743,83 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Lambo Color Selector Styles */
+.lambo-selection {
+    padding: 20px;
+    text-align: center;
+}
+
+.lambo-selection h3 {
+    color: #00ff00;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.lambo-selection h4 {
+    color: #ffffff;
+    margin: 15px 0 10px 0;
+    font-size: 1.2rem;
+}
+
+.selected-token {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #00ff00;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+    color: #00ff00;
+}
+
+.color-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.lambo-color-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+    color: #fff;
+    font-family: 'VT323', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.lambo-color-btn:hover {
+    border-color: #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 255, 0, 0.2);
+}
+
+.lambo-color-btn.selected {
+    border-color: #00ff00;
+    background: rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 0 2px rgba(0, 255, 0, 0.3);
+}
+
+.lambo-color-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive design for color buttons */
+@media (max-width: 768px) {
+    .color-buttons {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+    }
+    
+    .lambo-color-btn {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+}
