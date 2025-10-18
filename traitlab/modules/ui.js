@@ -434,7 +434,7 @@ class UIManager {
         if (this.currentFilter === 'lambo' && token.tokenType === 'ERC721') {
             if (window.app && window.app.modules.lambo) {
                 window.app.modules.lambo.selectAdrianZero(token);
-                this.showLamboColorSelector();
+                this.showLamboModal(token);
             }
         }
     }
@@ -747,52 +747,78 @@ class UIManager {
     }
 
     /**
-     * Show Lambo color selector
+     * Show Lambo modal
      */
-    showLamboColorSelector() {
-        console.log('🚗 Showing Lambo color selector...');
+    showLamboModal(selectedToken) {
+        console.log('🚗 Showing Lambo modal...');
         
-        const selectionText = this.domElements.get('selection-text');
-        if (!selectionText) return;
+        const modal = document.getElementById('lambo-modal');
+        if (!modal) return;
         
         const lamboManager = window.app?.modules?.lambo;
         if (!lamboManager) return;
         
         const colors = lamboManager.getLamboColors();
-        const selectedToken = lamboManager.getSelectedAdrianZero();
         
-        if (!selectedToken) return;
+        // Update selected token info
+        const tokenInfo = modal.querySelector('#lambo-selected-token');
+        if (tokenInfo) {
+            tokenInfo.textContent = `${selectedToken.title} (ID: ${selectedToken.tokenId})`;
+        }
         
-        // Create color selector HTML
-        const colorButtons = colors.map(color => 
-            `<button class="lambo-color-btn" data-color="${color.name}" title="${color.display}">
-                ${color.emoji} ${color.display}
-            </button>`
-        ).join('');
+        // Generate color buttons
+        const colorGrid = modal.querySelector('.lambo-color-grid');
+        if (colorGrid) {
+            colorGrid.innerHTML = colors.map(color => 
+                `<button class="lambo-color-btn" data-color="${color.name}" title="${color.display}">
+                    ${color.emoji} ${color.display}
+                </button>`
+            ).join('');
+        }
         
-        selectionText.innerHTML = `
-            <div class="lambo-selection">
-                <h3>🚗 Select your AdrianZERO + Lambo Color</h3>
-                <div class="selected-token">
-                    <strong>Selected AdrianZERO:</strong> ${selectedToken.title} (ID: ${selectedToken.tokenId})
-                </div>
-                <div class="color-selector">
-                    <h4>Choose your Lambo color:</h4>
-                    <div class="color-buttons">
-                        ${colorButtons}
-                    </div>
-                </div>
-            </div>
-        `;
+        // Show modal
+        modal.style.display = 'flex';
         
-        // Add event listeners to color buttons
-        const colorButtonsElements = selectionText.querySelectorAll('.lambo-color-btn');
-        colorButtonsElements.forEach(btn => {
-            btn.addEventListener('click', () => {
+        // Setup event listeners
+        this.setupLamboModalEvents();
+    }
+
+    /**
+     * Setup Lambo modal event listeners
+     */
+    setupLamboModalEvents() {
+        const modal = document.getElementById('lambo-modal');
+        if (!modal) return;
+        
+        const closeBtn = modal.querySelector('.lambo-modal-close');
+        const colorBtns = modal.querySelectorAll('.lambo-color-btn');
+        
+        // Close modal events
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeLamboModal();
+        }
+        
+        modal.onclick = (e) => {
+            if (e.target === modal) this.closeLamboModal();
+        };
+        
+        // Color selection events
+        colorBtns.forEach(btn => {
+            btn.onclick = () => {
                 const colorName = btn.dataset.color;
                 this.selectLamboColor(colorName);
-            });
+            };
         });
+    }
+
+    /**
+     * Close Lambo modal
+     */
+    closeLamboModal() {
+        const modal = document.getElementById('lambo-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 
     /**
@@ -822,40 +848,35 @@ class UIManager {
     displayLamboImage(imageUrl, token, color) {
         console.log('🚗 Displaying generated Lambo image:', imageUrl);
         
-        const generatedImage = this.domElements.get('generated-image');
-        const combinedImage = this.domElements.get('combined-image');
-        const imageLoadingOverlay = this.domElements.get('image-loading-overlay');
+        const modal = document.getElementById('lambo-modal');
+        const previewImage = modal?.querySelector('#lambo-preview-image');
+        const loadingOverlay = modal?.querySelector('#lambo-loading');
         
-        if (!generatedImage || !combinedImage) return;
+        if (!previewImage || !loadingOverlay) return;
         
         // Show loading overlay
-        if (imageLoadingOverlay) {
-            imageLoadingOverlay.style.display = 'block';
-        }
+        loadingOverlay.style.display = 'flex';
+        previewImage.style.display = 'none';
         
         // Preload image
         const img = new Image();
         img.onload = () => {
             // Hide loading overlay
-            if (imageLoadingOverlay) {
-                imageLoadingOverlay.style.display = 'none';
-            }
+            loadingOverlay.style.display = 'none';
             
             // Set image source
-            combinedImage.src = imageUrl;
-            combinedImage.alt = `AdrianZERO ${token.tokenId} with Lambo ${color}`;
+            previewImage.src = imageUrl;
+            previewImage.alt = `AdrianZERO ${token.tokenId} with Lambo ${color}`;
             
-            // Show generated image section
-            generatedImage.style.display = 'block';
+            // Show generated image
+            previewImage.style.display = 'block';
             
             console.log('✅ Lambo image loaded successfully');
         };
         
         img.onerror = () => {
             console.error('❌ Error loading Lambo image');
-            if (imageLoadingOverlay) {
-                imageLoadingOverlay.style.display = 'none';
-            }
+            loadingOverlay.style.display = 'none';
         };
         
         img.src = imageUrl;

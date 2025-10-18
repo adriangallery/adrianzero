@@ -248,6 +248,41 @@ class UITemplates {
     }
 
     /**
+     * Obtener template del modal de Lambo
+     */
+    getLamboModalTemplate() {
+        return `
+            <!-- Modal específico para Lambo -->
+            <div id="lambo-modal" class="lambo-modal" style="display: none;">
+                <div class="lambo-modal-content">
+                    <div class="lambo-modal-header">
+                        <h3>🚗 Select your AdrianZERO + Lambo Color</h3>
+                        <button class="lambo-modal-close">&times;</button>
+                    </div>
+                    
+                    <div class="lambo-modal-body">
+                        <div class="selected-token-info">
+                            <strong>Selected AdrianZERO:</strong> <span id="lambo-selected-token">None</span>
+                        </div>
+                        
+                        <div class="lambo-color-grid">
+                            <!-- Color buttons will be generated dynamically -->
+                        </div>
+                        
+                        <div class="lambo-preview">
+                            <img id="lambo-preview-image" src="" alt="Lambo Preview" style="display: none;">
+                            <div id="lambo-loading" class="lambo-loading" style="display: none;">
+                                <div class="pixelated-spinner"></div>
+                                <p>Generating Lambo image...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
      * Renderizar todos los templates en el contenedor
      */
     renderAllTemplates(container) {
@@ -280,6 +315,9 @@ class UITemplates {
             
             // Renderizar información de selección INMEDIATAMENTE después del container (como en indexref.html)
             container.innerHTML += this.getSelectionInfoTemplate();
+            
+            // Renderizar modal de Lambo
+            container.innerHTML += this.getLamboModalTemplate();
             
             // Agregar footer
             container.innerHTML += '<div class="footer">Powered by $ADRIAN</div>';
