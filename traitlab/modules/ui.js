@@ -759,6 +759,7 @@ class UIManager {
         if (!lamboManager) return;
         
         const colors = lamboManager.getLamboColors();
+        const previouslySelectedColor = lamboManager.getSelectedLamboColor();
         
         // Update selected token info
         const tokenInfo = modal.querySelector('#lambo-selected-token');
@@ -766,14 +767,15 @@ class UIManager {
             tokenInfo.textContent = `${selectedToken.title} (ID: ${selectedToken.tokenId})`;
         }
         
-        // Generate color buttons
+        // Generate color buttons with previous selection
         const colorGrid = modal.querySelector('.lambo-color-grid');
         if (colorGrid) {
-            colorGrid.innerHTML = colors.map(color => 
-                `<button class="lambo-color-btn" data-color="${color.name}" title="${color.display}">
+            colorGrid.innerHTML = colors.map(color => {
+                const isSelected = previouslySelectedColor === color.name ? 'selected' : '';
+                return `<button class="lambo-color-btn ${isSelected}" data-color="${color.name}" title="${color.display}">
                     ${color.emoji} ${color.display}
-                </button>`
-            ).join('');
+                </button>`;
+            }).join('');
         }
         
         // Show modal
@@ -781,6 +783,13 @@ class UIManager {
         
         // Setup event listeners
         this.setupLamboModalEvents();
+        
+        // If there was a previously selected color, generate the image automatically
+        if (previouslySelectedColor) {
+            console.log('🚗 Auto-generating image with previously selected color:', previouslySelectedColor);
+            this.selectLamboColor(previouslySelectedColor, false); // Don't auto-generate here
+            lamboManager.generateLamboImage(); // Generate manually
+        }
     }
 
     /**
@@ -824,7 +833,7 @@ class UIManager {
     /**
      * Select Lambo color
      */
-    selectLamboColor(colorName) {
+    selectLamboColor(colorName, autoGenerate = true) {
         console.log('🚗 Lambo color selected:', colorName);
         
         const lamboManager = window.app?.modules?.lambo;
@@ -840,6 +849,11 @@ class UIManager {
                 btn.classList.add('selected');
             }
         });
+        
+        // Generate image automatically unless explicitly disabled
+        if (autoGenerate) {
+            lamboManager.generateLamboImage();
+        }
     }
 
     /**
