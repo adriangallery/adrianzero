@@ -9,19 +9,19 @@ class LamboManager {
         this.selectedLamboColor = null;
         this.eventListeners = new Map();
         
-        // Colores disponibles de Lambo
+        // Available Lambo colors
         this.lamboColors = [
-            { name: 'Lambo_Variant_Yellow', display: 'Amarillo', emoji: '🟡' },
-            { name: 'Lambo_Variant_Red', display: 'Rojo', emoji: '🔴' },
-            { name: 'Lambo_Variant_Blue', display: 'Azul', emoji: '🔵' },
-            { name: 'Lambo_Variant_Cyan', display: 'Cian', emoji: '🔵' },
-            { name: 'Lambo_Variant_Green', display: 'Verde', emoji: '🟢' },
-            { name: 'Lambo_Variant_Indigo', display: 'Índigo', emoji: '🟣' },
-            { name: 'Lambo_Variant_Lila', display: 'Lila', emoji: '🟣' },
-            { name: 'Lambo_Variant_Orange', display: 'Naranja', emoji: '🟠' },
-            { name: 'Lambo_Variant_Pink', display: 'Rosa', emoji: '🩷' },
-            { name: 'Lambo_Variant_Purple', display: 'Púrpura', emoji: '🟣' },
-            { name: 'Lambo_Rainbow', display: 'Arcoíris', emoji: '🌈' }
+            { name: 'Lambo_Variant_Yellow', display: 'Yellow', emoji: '🟡' },
+            { name: 'Lambo_Variant_Red', display: 'Red', emoji: '🔴' },
+            { name: 'Lambo_Variant_Blue', display: 'Blue', emoji: '🔵' },
+            { name: 'Lambo_Variant_Cyan', display: 'Cyan', emoji: '🔵' },
+            { name: 'Lambo_Variant_Green', display: 'Green', emoji: '🟢' },
+            { name: 'Lambo_Variant_Indigo', display: 'Indigo', emoji: '🟣' },
+            { name: 'Lambo_Variant_Lila', display: 'Lilac', emoji: '🟣' },
+            { name: 'Lambo_Variant_Orange', display: 'Orange', emoji: '🟠' },
+            { name: 'Lambo_Variant_Pink', display: 'Pink', emoji: '🩷' },
+            { name: 'Lambo_Variant_Purple', display: 'Purple', emoji: '🟣' },
+            { name: 'Lambo_Rainbow', display: 'Rainbow', emoji: '🌈' }
         ];
         
         // Bind methods
@@ -36,14 +36,14 @@ class LamboManager {
      * Initialize lambo manager
      */
     init() {
-        console.log('🚗 LamboManager inicializado');
+        console.log('🚗 LamboManager initialized');
     }
 
     /**
      * Load AdrianZERO tokens for Lambo selection
      */
     async loadAdrianZeroTokens(userAddress) {
-        console.log('🚗 Cargando AdrianZERO tokens para Lambo...');
+        console.log('🚗 Loading AdrianZERO tokens for Lambo...');
         
         if (!userAddress) {
             throw new Error('User address is required');
@@ -58,7 +58,7 @@ class LamboManager {
                     'adrianzero'
                 );
                 
-                console.log(`🚗 Cargados ${tokens.length} AdrianZERO tokens para Lambo`);
+                console.log(`🚗 Loaded ${tokens.length} AdrianZERO tokens for Lambo`);
                 this.emit('adrianZeroTokensLoaded', { tokens });
                 return tokens;
             } else {
@@ -75,7 +75,7 @@ class LamboManager {
      * Select AdrianZERO token for Lambo
      */
     selectAdrianZero(token) {
-        console.log('🚗 AdrianZERO seleccionado para Lambo:', token);
+        console.log('🚗 AdrianZERO selected for Lambo:', token);
         this.selectedAdrianZero = token;
         this.emit('adrianZeroSelected', { token });
     }
@@ -84,7 +84,7 @@ class LamboManager {
      * Select Lambo color
      */
     selectLamboColor(colorName) {
-        console.log('🚗 Color de Lambo seleccionado:', colorName);
+        console.log('🚗 Lambo color selected:', colorName);
         this.selectedLamboColor = colorName;
         this.emit('lamboColorSelected', { colorName });
         
@@ -99,14 +99,14 @@ class LamboManager {
      */
     generateLamboImage() {
         if (!this.selectedAdrianZero || !this.selectedLamboColor) {
-            console.log('🚗 No se puede generar imagen: faltan selecciones');
+            console.log('🚗 Cannot generate image: missing selections');
             return;
         }
 
         const tokenId = this.selectedAdrianZero.tokenId;
         const lamboUrl = `https://adrianlab.vercel.app/api/render/lambo/${tokenId}?lambo=${this.selectedLamboColor}`;
         
-        console.log('🚗 Generando imagen de Lambo:', lamboUrl);
+        console.log('🚗 Generating Lambo image:', lamboUrl);
         
         this.emit('lamboImageGenerated', { 
             tokenId, 

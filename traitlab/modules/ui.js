@@ -430,7 +430,7 @@ class UIManager {
             }
         }
         
-        // Si estamos en tab lambo y se selecciona un ERC721, manejar selección de AdrianZERO
+        // If we're in lambo tab and an ERC721 is selected, handle AdrianZERO selection
         if (this.currentFilter === 'lambo' && token.tokenType === 'ERC721') {
             if (window.app && window.app.modules.lambo) {
                 window.app.modules.lambo.selectAdrianZero(token);
@@ -750,7 +750,7 @@ class UIManager {
      * Show Lambo color selector
      */
     showLamboColorSelector() {
-        console.log('🚗 Mostrando selector de colores de Lambo...');
+        console.log('🚗 Showing Lambo color selector...');
         
         const selectionText = this.domElements.get('selection-text');
         if (!selectionText) return;
@@ -772,12 +772,12 @@ class UIManager {
         
         selectionText.innerHTML = `
             <div class="lambo-selection">
-                <h3>🚗 Selecciona tu AdrianZERO + Color de Lambo</h3>
+                <h3>🚗 Select your AdrianZERO + Lambo Color</h3>
                 <div class="selected-token">
-                    <strong>AdrianZERO seleccionado:</strong> ${selectedToken.title} (ID: ${selectedToken.tokenId})
+                    <strong>Selected AdrianZERO:</strong> ${selectedToken.title} (ID: ${selectedToken.tokenId})
                 </div>
                 <div class="color-selector">
-                    <h4>Elige el color de tu Lambo:</h4>
+                    <h4>Choose your Lambo color:</h4>
                     <div class="color-buttons">
                         ${colorButtons}
                     </div>
@@ -799,7 +799,7 @@ class UIManager {
      * Select Lambo color
      */
     selectLamboColor(colorName) {
-        console.log('🚗 Color de Lambo seleccionado:', colorName);
+        console.log('🚗 Lambo color selected:', colorName);
         
         const lamboManager = window.app?.modules?.lambo;
         if (!lamboManager) return;
@@ -820,7 +820,7 @@ class UIManager {
      * Display generated Lambo image
      */
     displayLamboImage(imageUrl, token, color) {
-        console.log('🚗 Mostrando imagen de Lambo generada:', imageUrl);
+        console.log('🚗 Displaying generated Lambo image:', imageUrl);
         
         const generatedImage = this.domElements.get('generated-image');
         const combinedImage = this.domElements.get('combined-image');
@@ -843,16 +843,16 @@ class UIManager {
             
             // Set image source
             combinedImage.src = imageUrl;
-            combinedImage.alt = `AdrianZERO ${token.tokenId} con Lambo ${color}`;
+            combinedImage.alt = `AdrianZERO ${token.tokenId} with Lambo ${color}`;
             
             // Show generated image section
             generatedImage.style.display = 'block';
             
-            console.log('✅ Imagen de Lambo cargada correctamente');
+            console.log('✅ Lambo image loaded successfully');
         };
         
         img.onerror = () => {
-            console.error('❌ Error cargando imagen de Lambo');
+            console.error('❌ Error loading Lambo image');
             if (imageLoadingOverlay) {
                 imageLoadingOverlay.style.display = 'none';
             }
