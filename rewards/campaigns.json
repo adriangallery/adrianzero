@@ -6,6 +6,13 @@
       "description": "Original Gangster Cap - Exclusive reward for early supporters",
       "assetId": 850,
       "amountPerToken": 1
+    },
+    {
+      "id": 2,
+      "name": "Red-Candle",
+      "description": "Part of the Hello-WEN 2025 season series - what is scarier for a degen than a red candle?",
+      "assetId": 971,
+      "amountPerToken": 1
     }
   ]
 }
