@@ -218,7 +218,7 @@
     <meta property="og:title" content="Shitdrop - AdrianLAB">
     <meta property="og:description" content="Weekly drop on Base. Track active and previous drops.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="components/images/983.png">
+    <meta property="og:image" content="shitdrop/images/983.png">
 </head>
 <body>
     <nav class="navbar">
@@ -254,7 +254,7 @@
                 <div class="col-12 col-lg-6">
                     <div class="card-dark h-100">
                         <div class="nft-preview mb-3">
-                            <img src="components/images/983.png" alt="Current Drop Preview" id="previewImage">
+                            <img src="shitdrop/images/983.png" alt="Current Drop Preview" id="previewImage">
                         </div>
                         <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
                             <span class="pill">FREE</span>
@@ -278,17 +278,7 @@
                         <div class="mt-3">
                             <h3 style="font-family:'ADRIAN_ZERO','VT323',monospace; color:#e6d5b8; margin-bottom:8px; font-size:1.6rem;">Previous Drops</h3>
                             <p class="info-line mb-3">A few of our recent weekly drops.</p>
-                            <div class="row g-3 samples">
-                                <div class="col-4">
-                                    <img src="components/images/983.png" alt="Sample 983">
-                                </div>
-                                <div class="col-4">
-                                    <img src="components/images/989.png" alt="Sample 989">
-                                </div>
-                                <div class="col-4">
-                                    <img src="components/images/1011.png" alt="Sample 1011">
-                                </div>
-                    </div>
+                            <div class="row g-3 samples" id="previousDrops"></div>
                 </div>
                 
                         <div class="mt-auto">
@@ -347,6 +337,7 @@
             document.getElementById('mintBtn').addEventListener('click', doMint);
             initPublicState();
             tryAutoConnect();
+            loadPreviousDrops();
         });
 
         async function initPublicState() {
@@ -356,6 +347,36 @@
                 await refreshPublicState();
             } catch (e) {
                 console.warn('Public state init failed:', e.message || e);
+            }
+        }
+
+        async function loadPreviousDrops() {
+            try {
+                const res = await fetch('shitdrop/drops.json', { cache: 'no-store' });
+                if (!res.ok) throw new Error('Failed to load drops.json');
+                const data = await res.json();
+                const list = Array.isArray(data.drops) ? data.drops : [];
+                const container = document.getElementById('previousDrops');
+                if (!container) return;
+                container.innerHTML = '';
+                list
+                  .sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')))
+                  .forEach(drop => {
+                    const col = document.createElement('div');
+                    col.className = 'col-4 col-md-3 col-lg-4';
+                    const card = document.createElement('div');
+                    card.innerHTML = `
+                      <img src="${drop.image}" alt="${drop.title || 'Previous drop'}">
+                      <div style="margin-top:6px;">
+                        <div style="color:#e6d5b8;font-weight:700;">${(drop.title||'').slice(0,60)}</div>
+                        <div class="info-line" style="font-size:1rem;opacity:.9;">${(drop.short||'').slice(0,90)}</div>
+                      </div>
+                    `;
+                    col.appendChild(card);
+                    container.appendChild(col);
+                  });
+            } catch (e) {
+                console.warn('loadPreviousDrops error:', e.message || e);
             }
         }
 
