@@ -79,6 +79,13 @@
             text-shadow: 0 0 25px rgba(255, 102, 0, 0.25);
         }
 
+        .hero-logo {
+            width: 340px;
+            max-width: 80%;
+            height: auto;
+            filter: drop-shadow(0 0 16px rgba(255, 102, 0, 0.35));
+        }
+
         .subtitle {
             font-size: 1.6rem;
             color: #cccccc;
@@ -216,7 +223,9 @@
 
     <section class="hero">
         <div class="container">
-            <h1>Hello-WEN 25</h1>
+            <h1 style="margin-bottom: 16px;">
+                <img class="hero-logo" src="components/images/hellowenlogo.png" alt="Hello-WEN 25">
+            </h1>
             <p class="subtitle">Halloween 2025 special — Free mint, 1 per wallet, on Base</p>
 
             <div class="row g-4 align-items-stretch">
@@ -406,8 +415,10 @@
                 document.getElementById('mintStatus').textContent = `Status: ${active ? 'active' : 'inactive'}`;
                 document.getElementById('userMinted').textContent = `You minted: ${userMinted.toString()} / 1`;
                 const tokenId = cfg.tokenId?.toString?.() ?? cfg[0]?.toString?.() ?? '--';
-                const startTime = cfg.startTime?.toNumber?.() ?? cfg[1]?.toNumber?.() ?? 0;
-                const endTime = cfg.endTime?.toNumber?.() ?? cfg[2]?.toNumber?.() ?? 0;
+                const rawStart = cfg.startTime ?? cfg[1] ?? 0;
+                const rawEnd = cfg.endTime ?? cfg[2] ?? 0;
+                const startTime = normalizeTs(rawStart);
+                const endTime = normalizeTs(rawEnd);
                 document.getElementById('tokenInfo').textContent = `Token ID: ${tokenId}`;
 
                 // Update countdown/time info
@@ -475,6 +486,19 @@
             parts.push(`${String(m).padStart(2,'0')}m`);
             parts.push(`${String(s).padStart(2,'0')}s`);
             return parts.join(' ');
+        }
+
+        function normalizeTs(value) {
+            // Accept BigNumber or number-like. Return seconds epoch as number
+            let n;
+            if (value && (value._isBigNumber || (typeof ethers !== 'undefined' && ethers.BigNumber && ethers.BigNumber.isBigNumber && ethers.BigNumber.isBigNumber(value)))) {
+                try { n = value.toNumber(); } catch(_) { n = Number(value.toString()); }
+            } else {
+                n = Number(value || 0);
+            }
+            // If looks like milliseconds (> 1e12), convert to seconds
+            if (n > 1e12) return Math.floor(n / 1000);
+            return n;
         }
 
         async function doMint() {
