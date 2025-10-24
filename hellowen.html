@@ -211,6 +211,11 @@
         @media (max-width: 768px) {
             .hero h1 { font-size: 3rem; }
         }
+
+        /* Small spacing tweak on mobile for the mint button */
+        @media (max-width: 480px) {
+            #mintBtn { margin-top: 2px; }
+        }
     </style>
     <meta name="description" content="Hello-WEN 25 - Halloween 2025 special free mint. 1 per wallet.">
     <meta property="og:title" content="Hello-WEN 25 - AdrianLAB">
@@ -274,7 +279,7 @@
                             <button class="connect-btn" id="connectBtn">Connect Wallet</button>
                             <div class="mt-2" id="walletShort" style="display:none; color:#ff7a00;"></div>
                 </div>
-
+                
                         <div class="mt-3">
                             <h3 style="font-family:'ADRIAN_ZERO','VT323',monospace; color:#ff7a00; margin-bottom:8px; font-size:1.6rem;">Sample Traits</h3>
                             <p class="info-line mb-3">A few of the spooky traits you might randomly get inside the floppy.</p>
@@ -288,19 +293,19 @@
                                 <div class="col-4">
                                     <img src="components/images/1011.png" alt="Sample 1011">
                                 </div>
-                            </div>
-                        </div>
+                    </div>
+                </div>
                 
                         <div class="mt-auto">
                             <button class="action-btn w-100" id="mintBtn" disabled>Connect Wallet to Mint</button>
                             <div class="status-message" id="statusBox"></div>
-                        </div>
                     </div>
                     </div>
                 </div>
+            </div>
+
                 
-            
-                    </div>
+                </div>
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -448,7 +453,7 @@
                     userAddress = null;
                     document.getElementById('walletShort').style.display = 'none';
                     updateButtons(false, false);
-                            } else {
+                    } else {
                     userAddress = accounts[0];
                     document.getElementById('walletShort').style.display = 'block';
                     document.getElementById('walletShort').textContent = shortAddr(userAddress);
@@ -528,10 +533,10 @@
                     // Starts in ...
                     updateCountdown(timeEl, 'Starts in', startTime);
                     countdownInterval = setInterval(() => updateCountdown(timeEl, 'Starts in', startTime), 1000);
-                } else {
+                            } else {
                     timeEl.textContent = 'Time: --';
-                }
-            } else {
+                            }
+                            } else {
                 timeEl.textContent = 'Time: No end time';
             }
         }
@@ -607,9 +612,9 @@
                 const mintedByUser = await minter.getUserMinted(userAddress);
                 if (maxPerWallet > 0 && (mintedByUser.toNumber ? mintedByUser.toNumber() : Number(mintedByUser)) >= maxPerWallet) {
                     showStatus('You have reached the per-wallet limit', 'error');
-                    return;
-                }
-
+                return;
+            }
+            
                 // Authorization check on core (if view exists)
                 try {
                     const coreAddr = await minter.traitsCore();
@@ -618,16 +623,16 @@
                         const isAuth = await core.authorizedExtensions(FREE_MINTER_ADDRESS);
                         if (!isAuth) {
                             showStatus('Mint contract not authorized in core', 'error');
-                            return;
-                        }
+                return;
+            }
                         // Optional supply check
                         try {
                             const coreSupply = new ethers.Contract(coreAddr, TRAITS_CORE_SUPPLY_ABI, provider || signer);
                             const available = await coreSupply.getAvailableSupply(tokenId);
                             if ((available.toNumber ? available.toNumber() : Number(available)) < 1) {
                                 showStatus('Insufficient core supply', 'error');
-                                return;
-                            }
+                    return;
+                }
                         } catch {}
                     }
                 } catch {}
