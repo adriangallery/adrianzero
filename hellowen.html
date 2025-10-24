@@ -110,23 +110,45 @@
             box-shadow: 0 10px 30px rgba(255, 102, 0, 0.25);
         }
 
-        .connect-btn, .action-btn {
+        .action-btn {
             background: linear-gradient(45deg, #ff7a00, #ff3b3b);
             color: #000;
             border: none;
             padding: 16px 28px;
             font-size: 1.4rem;
             font-weight: bold;
-            border-radius: 50px;
+            border-radius: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(255, 102, 0, 0.3);
             font-family: 'VT323', monospace;
         }
 
-        .connect-btn:hover, .action-btn:hover:not(:disabled) {
+        .action-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 15px 40px rgba(255, 102, 0, 0.4);
+        }
+
+        /* Refined Connect button to match the theme without pill borders */
+        .connect-btn {
+            background: rgba(255, 102, 0, 0.10);
+            border: 1px solid rgba(255, 102, 0, 0.45);
+            color: #ff7a00;
+            padding: 14px 24px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+            font-family: 'VT323', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-1px);
+            background: linear-gradient(180deg, rgba(255, 122, 0, 0.18), rgba(255, 59, 59, 0.18));
+            box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.15), 0 10px 26px rgba(0, 0, 0, 0.45);
         }
 
         .action-btn:disabled {
