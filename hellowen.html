@@ -285,13 +285,30 @@
     <script>
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
+        const BASE_PUBLIC_RPC = 'https://mainnet.base.org';
         const FREE_MINTER_ADDRESS = "0x22E3616e6c4Eff5B94A85483b60D80798aCd892d";
 
         const FREE_MINTER_ABI = [
             "function mint(uint256 quantity) external",
             "function isActiveNow() external view returns (bool)",
             "function getUserMinted(address user) external view returns (uint256)",
-            "function config() external view returns (uint256 tokenId, uint256 startTime, uint256 endTime, uint256 maxPerWallet)"
+            "function config() external view returns (uint256 tokenId, uint256 startTime, uint256 endTime, uint256 maxPerWallet)",
+            "function traitsCore() external view returns (address)",
+            // Custom errors for better decoding
+            "error InvalidQuantity()",
+            "error OutsideWindow()",
+            "error ExceedsPerWallet()",
+            "error NotAuthorizedExtension()",
+            "error InsufficientCoreSupply()",
+            "error InvalidTokenId()"
+        ];
+
+        // Minimal ABIs for TraitsCore checks
+        const TRAITS_CORE_ABI = [
+            "function authorizedExtensions(address extension) external view returns (bool)"
+        ];
+        const TRAITS_CORE_SUPPLY_ABI = [
+            "function getAvailableSupply(uint256 id) external view returns (uint256)"
         ];
 
         let provider = null;
@@ -299,12 +316,44 @@
         let userAddress = null;
         let minter = null;
         let countdownInterval = null;
+        // Public read-only
+        let providerPublic = null;
+        let minterRead = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connectBtn').addEventListener('click', connectWallet);
             document.getElementById('mintBtn').addEventListener('click', doMint);
+            initPublicState();
             tryAutoConnect();
         });
+
+        async function initPublicState() {
+            try {
+                providerPublic = new ethers.providers.JsonRpcProvider(BASE_PUBLIC_RPC);
+                minterRead = new ethers.Contract(FREE_MINTER_ADDRESS, FREE_MINTER_ABI, providerPublic);
+                await refreshPublicState();
+            } catch (e) {
+                console.warn('Public state init failed:', e.message || e);
+            }
+        }
+
+        async function refreshPublicState() {
+            if (!minterRead) return;
+            try {
+                const [active, cfg] = await Promise.all([
+                    minterRead.isActiveNow(),
+                    minterRead.config()
+                ]);
+                const rawStart = cfg.startTime ?? cfg[1] ?? 0;
+                const rawEnd = cfg.endTime ?? cfg[2] ?? 0;
+                const startTime = normalizeTs(rawStart);
+                const endTime = normalizeTs(rawEnd);
+                document.getElementById('mintStatus').textContent = `Status: ${active ? 'active' : 'inactive'}`;
+                setupTimeDisplay({ active, startTime, endTime });
+            } catch (e) {
+                console.warn('refreshPublicState error:', e.message || e);
+            }
+        }
 
         function shortAddr(addr) {
             return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -404,7 +453,11 @@
         }
 
         async function refreshState() {
-            if (!minter || !userAddress) return;
+            if (!minter || !userAddress) {
+                // Still refresh public info
+                await refreshPublicState();
+                return;
+            }
             try {
                 const [active, userMinted, cfg] = await Promise.all([
                     minter.isActiveNow(),
@@ -508,13 +561,63 @@
             }
             try {
                 showStatus('Minting your Hello-WEN 25...', 'loading');
-                const tx = await minter.mint(1);
+                // Pre-validate conditions to avoid reverts
+                const cfg = await minter.config();
+                const rawStart = cfg.startTime ?? cfg[1] ?? 0;
+                const rawEnd = cfg.endTime ?? cfg[2] ?? 0;
+                const rawMax = cfg.maxPerWallet ?? cfg[3] ?? 0;
+                const tokenId = (cfg.tokenId ?? cfg[0] ?? 0).toString();
+                const startTime = normalizeTs(rawStart);
+                const endTime = normalizeTs(rawEnd);
+                const maxPerWallet = Number(rawMax.toString ? rawMax.toString() : rawMax) || 0;
+
+                const nowSec = Math.floor(Date.now() / 1000);
+                if (startTime > 0 && nowSec < startTime) {
+                    showStatus('Sale not started yet', 'error');
+                    return;
+                }
+                if (endTime > 0 && nowSec > endTime) {
+                    showStatus('Sale is closed', 'error');
+                    return;
+                }
+
+                // Per-wallet check
+                const mintedByUser = await minter.getUserMinted(userAddress);
+                if (maxPerWallet > 0 && (mintedByUser.toNumber ? mintedByUser.toNumber() : Number(mintedByUser)) >= maxPerWallet) {
+                    showStatus('You have reached the per-wallet limit', 'error');
+                    return;
+                }
+
+                // Authorization check on core (if view exists)
+                try {
+                    const coreAddr = await minter.traitsCore();
+                    if (coreAddr && coreAddr !== ethers.constants.AddressZero) {
+                        const core = new ethers.Contract(coreAddr, TRAITS_CORE_ABI, provider || signer);
+                        const isAuth = await core.authorizedExtensions(FREE_MINTER_ADDRESS);
+                        if (!isAuth) {
+                            showStatus('Mint contract not authorized in core', 'error');
+                            return;
+                        }
+                        // Optional supply check
+                        try {
+                            const coreSupply = new ethers.Contract(coreAddr, TRAITS_CORE_SUPPLY_ABI, provider || signer);
+                            const available = await coreSupply.getAvailableSupply(tokenId);
+                            if ((available.toNumber ? available.toNumber() : Number(available)) < 1) {
+                                showStatus('Insufficient core supply', 'error');
+                                return;
+                            }
+                        } catch {}
+                    }
+                } catch {}
+
+                // Proceed with mint, set manual gas limit to bypass estimation issues
+                const tx = await minter.mint(1, { gasLimit: ethers.BigNumber.from('300000') });
                 await tx.wait();
                 showStatus('🎃 Success! You minted Hello-WEN 25.', 'success');
                 await refreshState();
             } catch (e) {
                 console.error('mint error:', e);
-                showStatus('Mint failed: ' + parseError(e), 'error');
+                showStatus('Mint failed: ' + prettyError(e), 'error');
             }
         }
 
@@ -531,6 +634,34 @@
             if (error?.error?.message) return error.error.message;
             if (error?.message) return error.message;
             return 'Unknown error';
+        }
+
+        function prettyError(err) {
+            // Try decode custom errors
+            const data = err?.error?.data || err?.data;
+            if (data && minter && minter.interface && minter.interface.parseError) {
+                try {
+                    const decoded = minter.interface.parseError(data);
+                    const name = decoded?.name || '';
+                    switch (name) {
+                        case 'OutsideWindow': return 'Sale not active';
+                        case 'ExceedsPerWallet': return 'Per-wallet limit reached';
+                        case 'NotAuthorizedExtension': return 'Mint contract not authorized';
+                        case 'InsufficientCoreSupply': return 'Sold out';
+                        case 'InvalidTokenId': return 'Invalid token configuration';
+                        case 'InvalidQuantity': return 'Invalid quantity';
+                    }
+                } catch {}
+            }
+            // Fallback
+            const msg = parseError(err);
+            if (/UNPREDICTABLE_GAS_LIMIT/i.test(msg)) {
+                return 'Cannot estimate gas (contract may revert). Check window, per-wallet limit, or supply.';
+            }
+            if (/execution reverted/i.test(msg)) {
+                return 'Execution reverted. Check sale window or limits.';
+            }
+            return msg;
         }
     </script>
 </body>
