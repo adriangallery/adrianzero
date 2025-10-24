@@ -228,10 +228,11 @@
                         <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
                             <span class="pill">FREE</span>
                             <span class="pill">1 per wallet</span>
-                            <span class="pill">Base Mainnet</span>
+                            <span class="pill">Base</span>
                         </div>
                         <p class="info-line mb-2" id="mintStatus">Status: loading...</p>
                         <p class="info-line mb-2" id="userMinted">You minted: -- / 1</p>
+                        <p class="info-line mb-2" id="timeRemaining">Time: --</p>
                         <p class="info-line mb-0" id="tokenInfo">Token ID: --</p>
                     </div>
     </div>
@@ -288,6 +289,7 @@
         let signer = null;
         let userAddress = null;
         let minter = null;
+        let countdownInterval = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connectBtn').addEventListener('click', connectWallet);
@@ -403,13 +405,76 @@
 
                 document.getElementById('mintStatus').textContent = `Status: ${active ? 'active' : 'inactive'}`;
                 document.getElementById('userMinted').textContent = `You minted: ${userMinted.toString()} / 1`;
-                document.getElementById('tokenInfo').textContent = `Token ID: ${cfg.tokenId?.toString?.() ?? cfg[0]?.toString?.() ?? '--'}`;
+                const tokenId = cfg.tokenId?.toString?.() ?? cfg[0]?.toString?.() ?? '--';
+                const startTime = cfg.startTime?.toNumber?.() ?? cfg[1]?.toNumber?.() ?? 0;
+                const endTime = cfg.endTime?.toNumber?.() ?? cfg[2]?.toNumber?.() ?? 0;
+                document.getElementById('tokenInfo').textContent = `Token ID: ${tokenId}`;
+
+                // Update countdown/time info
+                setupTimeDisplay({ active, startTime, endTime });
 
                 updateButtons(true, active);
             } catch (e) {
                 console.error('refreshState error:', e);
                 showStatus('Failed to load mint state', 'error');
             }
+        }
+
+        function setupTimeDisplay({ active, startTime, endTime }) {
+            const timeEl = document.getElementById('timeRemaining');
+            if (!timeEl) return;
+
+            // Clear previous interval
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+
+            const nowSec = Math.floor(Date.now() / 1000);
+            if (endTime && endTime > 0) {
+                if (active && nowSec < endTime) {
+                    // Ends in ...
+                    updateCountdown(timeEl, 'Ends in', endTime);
+                    countdownInterval = setInterval(() => updateCountdown(timeEl, 'Ends in', endTime), 1000);
+                } else if (nowSec >= endTime) {
+                    timeEl.textContent = 'Time: Mint closed';
+                } else if (startTime > nowSec) {
+                    // Starts in ...
+                    updateCountdown(timeEl, 'Starts in', startTime);
+                    countdownInterval = setInterval(() => updateCountdown(timeEl, 'Starts in', startTime), 1000);
+                } else {
+                    timeEl.textContent = 'Time: --';
+                }
+            } else {
+                timeEl.textContent = 'Time: No end time';
+            }
+        }
+
+        function updateCountdown(el, label, targetTs) {
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = Math.max(0, targetTs - now);
+            if (remaining <= 0) {
+                el.textContent = label === 'Ends in' ? 'Time: Mint closed' : 'Time: Active';
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                return;
+            }
+            el.textContent = `Time: ${label} ${formatDuration(remaining)}`;
+        }
+
+        function formatDuration(totalSeconds) {
+            let s = Math.floor(totalSeconds);
+            const d = Math.floor(s / 86400); s %= 86400;
+            const h = Math.floor(s / 3600); s %= 3600;
+            const m = Math.floor(s / 60); s %= 60;
+            const parts = [];
+            if (d > 0) parts.push(`${d}d`);
+            parts.push(`${String(h).padStart(2,'0')}h`);
+            parts.push(`${String(m).padStart(2,'0')}m`);
+            parts.push(`${String(s).padStart(2,'0')}s`);
+            return parts.join(' ');
         }
 
         async function doMint() {
