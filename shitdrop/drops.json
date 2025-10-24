@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "updatedAt": "2025-10-24T00:00:00Z",
+  "drops": [
+    {
+      "id": 983,
+      "title": "Hello-WEN 25 Preview 983",
+      "short": "Spooky floppy trait — limited teaser.",
+      "image": "components/images/983.png",
+      "date": "2025-10-17"
+    },
+    {
+      "id": 989,
+      "title": "Hello-WEN 25 Preview 989",
+      "short": "Teaser from the Halloween series.",
+      "image": "components/images/989.png",
+      "date": "2025-10-10"
+    },
+    {
+      "id": 1011,
+      "title": "Hello-WEN 25 Preview 1011",
+      "short": "Another spooky sample trait.",
+      "image": "components/images/1011.png",
+      "date": "2025-10-03"
+    }
+  ]
+}
+
+
