@@ -111,6 +111,8 @@ class FloppyManager {
             return this.getImagePath(10011, '.gif');
         } else if (tokenId === 10012) {
             return this.getImagePath(10012, '.gif');
+        } else if (tokenId === 10013) {
+            return this.getImagePath(10013, '.gif');
         }
         
         // Fallback to default image
@@ -144,7 +146,7 @@ class FloppyManager {
      * Check if token is a floppy token
      */
     isFloppyToken(tokenId) {
-        return (tokenId >= 10000 && tokenId <= 10010) || 
+        return (tokenId >= 10000 && tokenId <= 10013) || 
                (tokenId >= 15000 && tokenId <= 15015);
     }
 
