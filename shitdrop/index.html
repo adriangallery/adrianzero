@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shitdrop - AdrianLAB</title>
+    <title>ShitDROP - AdrianLAB</title>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -215,7 +215,7 @@
         }
     </style>
     <meta name="description" content="Shitdrop - Weekly drop on Base. 1 per wallet when active.">
-    <meta property="og:title" content="Shitdrop - AdrianLAB">
+    <meta property="og:title" content="ShitDROP - AdrianLAB">
     <meta property="og:description" content="Weekly drop on Base. Track active and previous drops.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="images/983.png">
@@ -247,7 +247,7 @@
 
     <section class="hero">
         <div class="container">
-            <h1 style="margin-bottom: 16px;">Shitdrop</h1>
+            <h1 style="margin-bottom: 16px;">ShitDROP</h1>
             <p class="subtitle">Weekly-ish drops — whenever the artist is inspired</p>
 
             <div class="row g-4 align-items-stretch">
@@ -366,14 +366,17 @@
                     col.className = 'col-6 col-md-4';
                     const card = document.createElement('div');
                     card.className = 'previous-drop-card';
+                    const href = drop.opensea || '#';
                     card.innerHTML = `
-                      <div class="nft-preview" style="margin-bottom:8px;">
-                        <img src="${drop.image}" alt="${drop.title || 'Previous drop'}">
-                      </div>
-                      <div>
-                        <div style="color:#e6d5b8;font-weight:700; font-size:1.1rem;">${(drop.title||'').slice(0,80)}</div>
-                        <div class="info-line" style="font-size:1rem;opacity:.9;">${(drop.short||'').slice(0,120)}</div>
-                      </div>
+                      <a href="${href}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+                        <div class="nft-preview" style="margin-bottom:8px;">
+                          <img src="${drop.image}" alt="${drop.title || 'Previous drop'}">
+                        </div>
+                        <div>
+                          <div style="color:#e6d5b8;font-weight:700; font-size:1.1rem;">${(drop.title||'').slice(0,80)}</div>
+                          <div class="info-line" style="font-size:1rem;opacity:.9;">${(drop.short||'').slice(0,120)}</div>
+                        </div>
+                      </a>
                     `;
                     col.appendChild(card);
                     container.appendChild(col);
