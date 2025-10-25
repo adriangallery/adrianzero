@@ -218,7 +218,7 @@
     <meta property="og:title" content="Shitdrop - AdrianLAB">
     <meta property="og:description" content="Weekly drop on Base. Track active and previous drops.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="shitdrop/images/983.png">
+    <meta property="og:image" content="images/983.png">
 </head>
 <body>
     <nav class="navbar">
@@ -248,13 +248,13 @@
     <section class="hero">
         <div class="container">
             <h1 style="margin-bottom: 16px;">Shitdrop</h1>
-            <p class="subtitle">Weekly drop — 1 per wallet, on Base</p>
+            <p class="subtitle">Weekly-ish drops — whenever the artist is inspired</p>
 
             <div class="row g-4 align-items-stretch">
                 <div class="col-12 col-lg-6">
                     <div class="card-dark h-100">
                         <div class="nft-preview mb-3">
-                            <img src="shitdrop/images/983.png" alt="Current Drop Preview" id="previewImage">
+                            <img src="images/983.png" alt="Current Drop Preview" id="previewImage">
                         </div>
                         <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
                             <span class="pill">FREE</span>
@@ -265,26 +265,26 @@
                         <p class="info-line mb-2" id="userMinted">You minted: -- / 1</p>
                         <p class="info-line mb-2" id="timeRemaining">Time: --</p>
                         <p class="info-line mb-0" id="tokenInfo">Token ID: --</p>
+
+                        <div class="mt-3 text-center">
+                            <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+                            <div class="mt-2" id="walletShort" style="display:none; color:#e6d5b8;"></div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button class="action-btn w-100" id="mintBtn" disabled>Connect Wallet to Mint</button>
+                            <div class="status-message" id="statusBox"></div>
+                        </div>
                     </div>
     </div>
 
                 <div class="col-12 col-lg-6">
                     <div class="card-dark h-100 d-flex flex-column">
-                        <div class="mb-3 text-center">
-                            <button class="connect-btn" id="connectBtn">Connect Wallet</button>
-                            <div class="mt-2" id="walletShort" style="display:none; color:#e6d5b8;"></div>
-                </div>
-                
-                        <div class="mt-3">
+                        <div class="mt-1">
                             <h3 style="font-family:'ADRIAN_ZERO','VT323',monospace; color:#e6d5b8; margin-bottom:8px; font-size:1.6rem;">Previous Drops</h3>
-                            <p class="info-line mb-3">A few of our recent weekly drops.</p>
+                            <p class="info-line mb-3">A few of our recent drops.</p>
                             <div class="row g-3 samples" id="previousDrops"></div>
-                </div>
-                
-                        <div class="mt-auto">
-                            <button class="action-btn w-100" id="mintBtn" disabled>Connect Wallet to Mint</button>
-                            <div class="status-message" id="statusBox"></div>
-                    </div>
+                        </div>
                     </div>
                 </div>
             </div>
