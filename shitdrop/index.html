@@ -363,13 +363,16 @@
                   .sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')))
                   .forEach(drop => {
                     const col = document.createElement('div');
-                    col.className = 'col-4 col-md-3 col-lg-4';
+                    col.className = 'col-6 col-md-4';
                     const card = document.createElement('div');
+                    card.className = 'previous-drop-card';
                     card.innerHTML = `
-                      <img src="${drop.image}" alt="${drop.title || 'Previous drop'}">
-                      <div style="margin-top:6px;">
-                        <div style="color:#e6d5b8;font-weight:700;">${(drop.title||'').slice(0,60)}</div>
-                        <div class="info-line" style="font-size:1rem;opacity:.9;">${(drop.short||'').slice(0,90)}</div>
+                      <div class="nft-preview" style="margin-bottom:8px;">
+                        <img src="${drop.image}" alt="${drop.title || 'Previous drop'}">
+                      </div>
+                      <div>
+                        <div style="color:#e6d5b8;font-weight:700; font-size:1.1rem;">${(drop.title||'').slice(0,80)}</div>
+                        <div class="info-line" style="font-size:1rem;opacity:.9;">${(drop.short||'').slice(0,120)}</div>
                       </div>
                     `;
                     col.appendChild(card);
@@ -492,7 +495,7 @@
                 return;
             }
             btn.disabled = false;
-            btn.textContent = 'Mint Hello-WEN 25 (FREE)';
+            btn.textContent = 'Mint Shitdrop (FREE)';
         }
 
         async function refreshState() {
