@@ -352,7 +352,7 @@
 
         async function loadPreviousDrops() {
             try {
-                const res = await fetch('shitdrop/drops.json', { cache: 'no-store' });
+                const res = await fetch('/shitdrop/drops.json', { cache: 'no-store' });
                 if (!res.ok) throw new Error('Failed to load drops.json');
                 const data = await res.json();
                 const list = Array.isArray(data.drops) ? data.drops : [];
