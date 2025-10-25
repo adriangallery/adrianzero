@@ -188,21 +188,27 @@ class ZeroManager {
             // Load all tokens with pagination
             let allNfts = [];
             let pageKey = null;
+            let previousPageKey = null;
             let hasMore = true;
             let pageCount = 0;
+            const MAX_PAGES = 1000; // Límite de seguridad para páginas
+            const MAX_TOKENS = 10000; // Límite de tokens (10k)
             
-            while (hasMore) {
+            console.log(`🚀 Iniciando carga de tokens ${tokenType} con límites: max ${MAX_PAGES} páginas, max ${MAX_TOKENS} tokens`);
+            
+            while (hasMore && pageCount < MAX_PAGES && allNfts.length < MAX_TOKENS) {
                 pageCount++;
-                console.log(`Loading page ${pageCount}...`);
+                console.log(`📄 Loading page ${pageCount}/${MAX_PAGES}... (tokens: ${allNfts.length}/${MAX_TOKENS})`);
                 
                 // Build URL with pagination and correct endpoint
                 let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTsForOwner?owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=100&tokenType=${tokenType}`;
                 
                 if (pageKey) {
                     alchemyUrl += `&pageKey=${pageKey}`;
+                    console.log(`🔗 Using pageKey: ${pageKey.substring(0, 20)}...`);
                 }
                 
-                console.log(`Requesting NFTs with URL: ${alchemyUrl}`);
+                console.log(`🌐 Requesting NFTs with URL: ${alchemyUrl}`);
                 
                 const alchemyResponse = await fetch(alchemyUrl);
                 
@@ -211,7 +217,8 @@ class ZeroManager {
                 }
                 
                 const nftsData = await alchemyResponse.json();
-                console.log(`Page ${pageCount}: ${nftsData.ownedNfts?.length || 0} tokens received`);
+                const tokensInPage = nftsData.ownedNfts?.length || 0;
+                console.log(`📦 Page ${pageCount}: ${tokensInPage} tokens received`);
                 
                 // Add tokens from this page
                 if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
@@ -219,15 +226,40 @@ class ZeroManager {
                 }
                 
                 // Check if there are more pages
-                pageKey = nftsData.pageKey;
-                hasMore = !!pageKey;
+                const newPageKey = nftsData.pageKey;
                 
-                console.log(`Total tokens loaded so far: ${allNfts.length}. Has more: ${hasMore}`);
+                // NUEVA VALIDACIÓN: Verificar si el pageKey es diferente al anterior
+                if (newPageKey && newPageKey === previousPageKey) {
+                    console.warn('⚠️ PageKey duplicado detectado, deteniendo paginación para evitar bucle infinito');
+                    console.warn(`🔄 PageKey anterior: ${previousPageKey?.substring(0, 20)}...`);
+                    console.warn(`🔄 PageKey actual: ${newPageKey?.substring(0, 20)}...`);
+                    hasMore = false;
+                } else {
+                    pageKey = newPageKey;
+                    hasMore = !!pageKey;
+                }
+                
+                previousPageKey = newPageKey;
+                
+                console.log(`📊 Total tokens loaded so far: ${allNfts.length}/${MAX_TOKENS}. Has more: ${hasMore}`);
+                
+                // Log de progreso cada 10 páginas
+                if (pageCount % 10 === 0) {
+                    console.log(`📈 Progreso: ${pageCount} páginas, ${allNfts.length} tokens cargados`);
+                }
                 
                 // Optional: Add a small delay to avoid rate limiting
                 if (hasMore) {
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
+            }
+            
+            // Validaciones finales
+            if (pageCount >= MAX_PAGES) {
+                console.warn(`⚠️ Límite de páginas alcanzado (${MAX_PAGES}), deteniendo carga`);
+            }
+            if (allNfts.length >= MAX_TOKENS) {
+                console.warn(`⚠️ Límite de tokens alcanzado (${MAX_TOKENS}), deteniendo carga`);
             }
             
             console.log(`Total tokens loaded: ${allNfts.length} from ${pageCount} pages`);
