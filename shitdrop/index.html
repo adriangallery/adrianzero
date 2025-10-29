@@ -218,7 +218,7 @@
     <meta property="og:title" content="ShitDROP - AdrianLAB">
     <meta property="og:description" content="Weekly drop on Base. Track active and previous drops.">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="images/983.png">
+    <meta property="og:image" content="images/1023.png">
 </head>
 <body>
     <nav class="navbar">
@@ -254,7 +254,7 @@
                 <div class="col-12 col-lg-6">
                     <div class="card-dark h-100">
                         <div class="nft-preview mb-3">
-                            <img src="images/983.png" alt="Current Drop Preview" id="previewImage">
+                            <img src="images/1023.png" alt="Current Drop Preview" id="previewImage">
                         </div>
                         <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
                             <span class="pill">FREE</span>
@@ -609,7 +609,7 @@
                 return;
             }
             try {
-                showStatus('Minting your Hello-WEN 25...', 'loading');
+                showStatus('Minting your ShitDROP...', 'loading');
                 // Pre-validate conditions to avoid reverts
                 const cfg = await minter.config();
                 const rawStart = cfg.startTime ?? cfg[1] ?? 0;
@@ -662,7 +662,7 @@
                 // Proceed with mint, set manual gas limit to bypass estimation issues
                 const tx = await minter.mint(1, { gasLimit: ethers.BigNumber.from('300000') });
                 await tx.wait();
-                showStatus('🎃 Success! You minted Hello-WEN 25.', 'success');
+                showStatus('✅ Success! You minted ShitDROP.', 'success');
                 await refreshState();
             } catch (e) {
                 console.error('mint error:', e);
