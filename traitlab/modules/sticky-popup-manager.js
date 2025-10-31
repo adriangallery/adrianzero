@@ -60,7 +60,6 @@ class StickyPopupManager {
             openPackSection: document.getElementById('open-pack-section'),
             useSerumSection: document.getElementById('use-serum-section'),
             renameSection: document.getElementById('rename-section'),
-            customiseSection: document.getElementById('customise-section'),
             applyTraitsSection: document.getElementById('apply-traits-section'),
             refreshMetadataSection: document.getElementById('refresh-metadata-section'),
             
@@ -80,6 +79,13 @@ class StickyPopupManager {
             // Inputs
             newTokenName: document.getElementById('newTokenName'),
             customiseNewTokenName: document.getElementById('customise-newTokenName'),
+            
+            // Customise modal elements
+            customiseModal: document.getElementById('customise-modal'),
+            customiseModalClose: document.querySelector('.customise-modal-close'),
+            customiseSelectedToken: document.getElementById('customise-selected-token'),
+            customisePreviewImage: document.getElementById('customise-preview-image'),
+            customiseLoading: document.getElementById('customise-loading'),
             
             // Customise buttons
             customiseZoomBtn: document.getElementById('customise-zoomBtn'),
@@ -171,6 +177,20 @@ class StickyPopupManager {
 
         if (this.elements.customiseRenameTokenBtn) {
             this.elements.customiseRenameTokenBtn.addEventListener('click', () => this.customiseRenameToken());
+        }
+
+        // Customise modal close button
+        if (this.elements.customiseModalClose) {
+            this.elements.customiseModalClose.addEventListener('click', () => this.closeCustomiseModal());
+        }
+
+        // Close modal on background click
+        if (this.elements.customiseModal) {
+            this.elements.customiseModal.addEventListener('click', (e) => {
+                if (e.target === this.elements.customiseModal) {
+                    this.closeCustomiseModal();
+                }
+            });
         }
 
         console.log('✅ StickyPopupManager: Event listeners configurados');
@@ -291,30 +311,12 @@ class StickyPopupManager {
                 break;
             case 'customise':
                 if (this.selectedERC721) {
-                    // En tab Customise: mostrar sección de customise
-                    if (this.elements.customiseSection) {
-                        this.elements.customiseSection.style.display = 'block';
-                    }
-                    // Ocultar otras secciones
-                    if (this.elements.erc721ActionsSection) this.elements.erc721ActionsSection.style.display = 'none';
-                    if (this.elements.renameSection) this.elements.renameSection.style.display = 'none';
-                    // Limpiar selección y UI de floppy/serum/traits
-                    this.selectedFloppy = null;
-                    this.selectedSerum = null;
-                    this.selectedERC1155 = [];
-                    if (this.elements.openFloppySection) this.elements.openFloppySection.style.display = 'none';
-                    if (this.elements.openPackSection) this.elements.openPackSection.style.display = 'none';
-                    // Sincronizar con customise module
-                    if (window.app?.modules?.customise) {
-                        window.app.modules.customise.setSelectedERC721(this.selectedERC721);
-                        // Actualizar estado visual de los botones
-                        this.updateCustomiseButtonsState();
-                    }
-                    // Mostrar imagen del AdrianZERO con toggles
-                    this.updateCustomiseImage();
-                    // Precargar precio del nombre
-                    if (window.app?.modules?.zero?.loadNamePrice) {
-                        window.app.modules.zero.loadNamePrice().catch(() => {});
+                    // Abrir modal de Customise
+                    this.openCustomiseModal();
+                } else {
+                    // Si no hay token seleccionado, ocultar sticky popup
+                    if (this.elements.selectionInfo) {
+                        this.elements.selectionInfo.style.display = 'none';
                     }
                 }
                 break;
@@ -377,30 +379,8 @@ class StickyPopupManager {
                 this.showBaseAdrianZeroImage();
                 // No continuar con flujo normal
             } else if (this.currentFilter === 'customise') {
-                // En tab customise, mostrar sección de customise
-                if (this.elements.customiseSection) {
-                    this.elements.customiseSection.style.display = 'block';
-                }
-                if (this.elements.erc721ActionsSection) {
-                    this.elements.erc721ActionsSection.style.display = 'none';
-                }
-                if (this.elements.renameSection) {
-                    this.elements.renameSection.style.display = 'none';
-                }
-                // Limpiar selección y UI de floppy/serum/traits
-                this.selectedFloppy = null;
-                this.selectedSerum = null;
-                this.selectedERC1155 = [];
-                if (this.elements.openFloppySection) this.elements.openFloppySection.style.display = 'none';
-                if (this.elements.openPackSection) this.elements.openPackSection.style.display = 'none';
-                // Sincronizar con customise module
-                if (window.app?.modules?.customise) {
-                    window.app.modules.customise.setSelectedERC721(this.selectedERC721);
-                    // Actualizar estado visual de los botones
-                    this.updateCustomiseButtonsState();
-                }
-                // Mostrar imagen con toggles
-                this.updateCustomiseImage();
+                // En tab customise, abrir modal
+                this.openCustomiseModal();
             } else
             // 🚨 NUEVO: Verificar si estamos en tab traits para mostrar botones correctos
             if (this.currentFilter === 'traits') {
@@ -470,7 +450,6 @@ class StickyPopupManager {
             'openPackSection',
             'useSerumSection',
             'renameSection',
-            'customiseSection',
             'applyTraitsSection',
             'refreshMetadataSection'
         ];
@@ -1287,6 +1266,56 @@ class StickyPopupManager {
     }
 
     /**
+     * 🎨 Customise: Abrir modal
+     */
+    openCustomiseModal() {
+        if (!this.selectedERC721) {
+            console.warn('⚠️ StickyPopupManager: No hay AdrianZERO seleccionado para customise');
+            return;
+        }
+
+        if (!this.elements.customiseModal) {
+            console.error('❌ StickyPopupManager: Modal de Customise no encontrado');
+            return;
+        }
+
+        // Sincronizar con customise module
+        if (window.app?.modules?.customise) {
+            window.app.modules.customise.setSelectedERC721(this.selectedERC721);
+            // Actualizar estado visual de los botones
+            this.updateCustomiseButtonsState();
+        }
+
+        // Actualizar información del token seleccionado
+        if (this.elements.customiseSelectedToken) {
+            this.elements.customiseSelectedToken.textContent = `Token #${this.selectedERC721.tokenId}`;
+        }
+
+        // Mostrar imagen con toggles
+        this.updateCustomiseImage();
+
+        // Precargar precio del nombre
+        if (window.app?.modules?.zero?.loadNamePrice) {
+            window.app.modules.zero.loadNamePrice().catch(() => {});
+        }
+
+        // Mostrar modal
+        this.elements.customiseModal.style.display = 'flex';
+        
+        console.log('🎨 StickyPopupManager: Modal de Customise abierto');
+    }
+
+    /**
+     * 🎨 Customise: Cerrar modal
+     */
+    closeCustomiseModal() {
+        if (this.elements.customiseModal) {
+            this.elements.customiseModal.style.display = 'none';
+            console.log('🎨 StickyPopupManager: Modal de Customise cerrado');
+        }
+    }
+
+    /**
      * 🎨 Customise: Toggle closeup
      */
     toggleCustomiseCloseup() {
@@ -1328,7 +1357,7 @@ class StickyPopupManager {
      */
     updateCustomiseImage() {
         if (!this.selectedERC721 || !window.app?.modules?.customise) return;
-        if (!this.elements.generatedImage || !this.elements.combinedImage) return;
+        if (!this.elements.customisePreviewImage) return;
 
         const imageUrl = window.app.modules.customise.getImageUrl(this.selectedERC721.tokenId);
         
@@ -1337,25 +1366,31 @@ class StickyPopupManager {
             url: imageUrl
         });
 
-        // Mostrar loading overlay
-        if (this.elements.imageLoadingOverlay) {
-            this.elements.imageLoadingOverlay.style.display = 'flex';
+        // Mostrar loading
+        if (this.elements.customiseLoading) {
+            this.elements.customiseLoading.style.display = 'flex';
+        }
+        if (this.elements.customisePreviewImage) {
+            this.elements.customisePreviewImage.style.display = 'none';
         }
 
         // Cargar imagen
-        this.elements.combinedImage.src = imageUrl;
+        this.elements.customisePreviewImage.src = imageUrl;
         
         // Ocultar loading cuando esté lista
-        this.elements.combinedImage.onload = () => {
-            if (this.elements.imageLoadingOverlay) {
-                this.elements.imageLoadingOverlay.style.display = 'none';
+        this.elements.customisePreviewImage.onload = () => {
+            if (this.elements.customiseLoading) {
+                this.elements.customiseLoading.style.display = 'none';
+            }
+            if (this.elements.customisePreviewImage) {
+                this.elements.customisePreviewImage.style.display = 'block';
             }
             console.log('✅ Imagen customise cargada');
         };
 
-        this.elements.combinedImage.onerror = () => {
-            if (this.elements.imageLoadingOverlay) {
-                this.elements.imageLoadingOverlay.style.display = 'none';
+        this.elements.customisePreviewImage.onerror = () => {
+            if (this.elements.customiseLoading) {
+                this.elements.customiseLoading.style.display = 'none';
             }
             console.error('❌ Error cargando imagen customise');
         };

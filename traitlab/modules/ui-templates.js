@@ -244,28 +244,6 @@ class UITemplates {
                             <div id="rename-status" class="apply-status" style="display: none;"></div>
                         </div>
                         
-                        <!-- Customise Section -->
-                        <div id="customise-section" class="action-section" style="display: none;">
-                            <!-- Toggles -->
-                            <div style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
-                                <button id="customise-zoomBtn" class="action-btn zoom-btn">🔍 Zoom in</button>
-                                <button id="customise-shadowBtn" class="action-btn">🌑 Shadow</button>
-                                <button id="customise-commitBtn" class="action-btn commit-btn">Commit</button>
-                            </div>
-                            
-                            <!-- Rename -->
-                            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
-                                <div style="margin-bottom: 8px;">
-                                    <input type="text" id="customise-newTokenName" placeholder="Ingresa el nuevo nombre para tu AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
-                                </div>
-                                <button id="customise-approveRenameBtn" class="action-btn" style="margin-right: 10px;">Approve $ADRIAN</button>
-                                <button id="customise-renameTokenBtn" class="action-btn">Rename Token</button>
-                            </div>
-                            
-                            <!-- Status messages -->
-                            <div id="customise-commit-status" class="apply-status" style="display: none;"></div>
-                            <div id="customise-rename-status" class="apply-status" style="display: none;"></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -300,6 +278,62 @@ class UITemplates {
                                 <div class="pixelated-spinner"></div>
                                 <p>Generating Lambo image...</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Obtener template del modal de Customise
+     */
+    getCustomiseModalTemplate() {
+        return `
+            <!-- Modal específico para Customise -->
+            <div id="customise-modal" class="customise-modal" style="display: none;">
+                <div class="customise-modal-content">
+                    <div class="customise-modal-header">
+                        <h3>🎨 Customise your AdrianZERO</h3>
+                        <button class="customise-modal-close">&times;</button>
+                    </div>
+                    
+                    <div class="customise-modal-body">
+                        <div class="selected-token-info">
+                            <strong>Selected AdrianZERO:</strong> <span id="customise-selected-token">None</span>
+                        </div>
+                        
+                        <!-- Preview Image -->
+                        <div class="customise-preview">
+                            <img id="customise-preview-image" src="" alt="Customise Preview">
+                            <div id="customise-loading" class="customise-loading" style="display: none;">
+                                <div class="pixelated-spinner"></div>
+                                <p>Loading image...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Toggles Section -->
+                        <div class="customise-toggles">
+                            <h4>Visual Options</h4>
+                            <div class="toggle-buttons">
+                                <button id="customise-zoomBtn" class="action-btn zoom-btn">🔍 Zoom in</button>
+                                <button id="customise-shadowBtn" class="action-btn">🌑 Shadow OFF</button>
+                                <button id="customise-commitBtn" class="action-btn commit-btn">Commit Toggles</button>
+                            </div>
+                            <div id="customise-commit-status" class="apply-status" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Rename Section -->
+                        <div class="customise-rename">
+                            <h4>Rename Token</h4>
+                            <div class="rename-input">
+                                <input type="text" id="customise-newTokenName" placeholder="Ingresa el nuevo nombre para tu AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
+                            </div>
+                            <div class="rename-buttons">
+                                <button id="customise-approveRenameBtn" class="action-btn">Approve $ADRIAN</button>
+                                <button id="customise-renameTokenBtn" class="action-btn">Rename Token</button>
+                            </div>
+                            <div id="customise-rename-status" class="apply-status" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
@@ -343,6 +377,9 @@ class UITemplates {
             
             // Renderizar modal de Lambo
             container.innerHTML += this.getLamboModalTemplate();
+            
+            // Renderizar modal de Customise
+            container.innerHTML += this.getCustomiseModalTemplate();
             
             // Agregar footer
             container.innerHTML += '<div class="footer">Powered by $ADRIAN</div>';

@@ -156,6 +156,14 @@ class TokenSelectionManager {
      * Actualizar información de selección
      */
     updateSelectionInfo() {
+        // Si el filter es customise, abrir el modal en lugar del sticky popup
+        if (this.currentFilter === 'customise' && this.selectedERC721) {
+            if (window.app?.modules?.stickyPopupManager?.openCustomiseModal) {
+                window.app.modules.stickyPopupManager.openCustomiseModal();
+                return; // No continuar con el sticky popup
+            }
+        }
+        
         const selectionInfo = document.getElementById('selection-info');
         const selectionText = document.getElementById('selection-text');
         
