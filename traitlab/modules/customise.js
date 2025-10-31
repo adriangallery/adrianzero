@@ -184,41 +184,53 @@ class CustomiseManager {
             const tokenId = this.selectedERC721.tokenId;
             const receipts = [];
 
-            // Commit closeup toggle (ID=1)
-            if (this.isCloseupMode) {
+            // Determinar qué toggles activar
+            // Solo activar los toggles que están ON, no desactivar los que están OFF
+            // Si ambos están OFF, enviar toggleId 0 para desactivar todo
+            
+            if (this.isCloseupMode && this.isShadowMode) {
+                // Ambos activados: enviar primero shadow (ID=2), luego closeup (ID=1)
+                // Nota: El orden puede importar según el contrato
+                console.log('💾 CustomiseManager: Ambos toggles activados, commiteando shadow primero (ID=2)');
+                const txShadow = await contract.setToggle(tokenId, 2);
+                const receiptShadow = await txShadow.wait();
+                receipts.push({ toggleId: 2, receipt: receiptShadow });
+                console.log('✅ CustomiseManager: Shadow toggle commiteado');
+                
+                console.log('💾 CustomiseManager: Commiteando closeup (ID=1)');
+                const txCloseup = await contract.setToggle(tokenId, 1);
+                const receiptCloseup = await txCloseup.wait();
+                receipts.push({ toggleId: 1, receipt: receiptCloseup });
+                console.log('✅ CustomiseManager: Closeup toggle commiteado');
+            } else if (this.isShadowMode) {
+                // Solo shadow activado: enviar toggleId 2 directamente
+                console.log('💾 CustomiseManager: Commiteando shadow toggle (ID=2)');
+                const txShadow = await contract.setToggle(tokenId, 2);
+                const receiptShadow = await txShadow.wait();
+                receipts.push({ toggleId: 2, receipt: receiptShadow });
+                console.log('✅ CustomiseManager: Shadow toggle commiteado');
+            } else if (this.isCloseupMode) {
+                // Solo closeup activado: enviar toggleId 1 directamente
                 console.log('💾 CustomiseManager: Commiteando closeup toggle (ID=1)');
                 const txCloseup = await contract.setToggle(tokenId, 1);
                 const receiptCloseup = await txCloseup.wait();
                 receipts.push({ toggleId: 1, receipt: receiptCloseup });
                 console.log('✅ CustomiseManager: Closeup toggle commiteado');
             } else {
-                // Si closeup está OFF, necesitamos desactivarlo (toggleId = 0)
-                console.log('💾 CustomiseManager: Desactivando closeup toggle (ID=1 -> 0)');
-                const txCloseup = await contract.setToggle(tokenId, 0);
-                const receiptCloseup = await txCloseup.wait();
-                receipts.push({ toggleId: 0, receipt: receiptCloseup });
-                console.log('✅ CustomiseManager: Closeup toggle desactivado');
+                // Ambos desactivados: enviar toggleId 0 para desactivar todo
+                console.log('💾 CustomiseManager: Ambos toggles desactivados, enviando toggleId 0');
+                const tx = await contract.setToggle(tokenId, 0);
+                const receipt = await tx.wait();
+                receipts.push({ toggleId: 0, receipt });
+                console.log('✅ CustomiseManager: Todos los toggles desactivados');
             }
 
-            // Commit shadow toggle (ID=2)
-            if (this.isShadowMode) {
-                console.log('💾 CustomiseManager: Commiteando shadow toggle (ID=2)');
-                const txShadow = await contract.setToggle(tokenId, 2);
-                const receiptShadow = await txShadow.wait();
-                receipts.push({ toggleId: 2, receipt: receiptShadow });
-                console.log('✅ CustomiseManager: Shadow toggle commiteado');
-            } else {
-                // Si shadow está OFF, necesitamos desactivarlo (pero primero verificar si estaba activo)
-                // Por ahora, si shadow está OFF, no hacemos nada para evitar desactivar si nunca estuvo activo
-                // TODO: Verificar estado actual del toggle antes de desactivar si es necesario
-                console.log('💾 CustomiseManager: Shadow toggle está OFF (no se commitea)');
-            }
-
+            const toggleIdsSent = receipts.map(r => r.toggleId);
             console.log('💾 CustomiseManager: Ejecutando commit:', {
                 tokenId,
                 isCloseupMode: this.isCloseupMode,
                 isShadowMode: this.isShadowMode,
-                toggleIds: [this.isCloseupMode ? 1 : null, this.isShadowMode ? 2 : null].filter(x => x !== null)
+                toggleIdsSent: toggleIdsSent
             });
 
             this.emit('commitCompleted', { tokenId, receipts });
