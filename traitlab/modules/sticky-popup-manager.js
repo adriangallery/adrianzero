@@ -60,6 +60,7 @@ class StickyPopupManager {
             openPackSection: document.getElementById('open-pack-section'),
             useSerumSection: document.getElementById('use-serum-section'),
             renameSection: document.getElementById('rename-section'),
+            customiseSection: document.getElementById('customise-section'),
             applyTraitsSection: document.getElementById('apply-traits-section'),
             refreshMetadataSection: document.getElementById('refresh-metadata-section'),
             
@@ -78,6 +79,14 @@ class StickyPopupManager {
             
             // Inputs
             newTokenName: document.getElementById('newTokenName'),
+            customiseNewTokenName: document.getElementById('customise-newTokenName'),
+            
+            // Customise buttons
+            customiseZoomBtn: document.getElementById('customise-zoomBtn'),
+            customiseShadowBtn: document.getElementById('customise-shadowBtn'),
+            customiseCommitBtn: document.getElementById('customise-commitBtn'),
+            customiseApproveRenameBtn: document.getElementById('customise-approveRenameBtn'),
+            customiseRenameTokenBtn: document.getElementById('customise-renameTokenBtn'),
             
             // Status elements
             applyStatus: document.getElementById('apply-status'),
@@ -86,6 +95,8 @@ class StickyPopupManager {
             useSerumStatus: document.getElementById('use-serum-status'),
             activateTokenStatus: document.getElementById('activate-token-status'),
             renameStatus: document.getElementById('rename-status'),
+            customiseCommitStatus: document.getElementById('customise-commit-status'),
+            customiseRenameStatus: document.getElementById('customise-rename-status'),
             refreshMetadataStatus: document.getElementById('refresh-metadata-status'),
             commitStatus: document.getElementById('commit-status')
         };
@@ -139,6 +150,27 @@ class StickyPopupManager {
 
         if (this.elements.renameTokenBtn) {
             this.elements.renameTokenBtn.addEventListener('click', () => this.renameToken());
+        }
+
+        // Botones de customise
+        if (this.elements.customiseZoomBtn) {
+            this.elements.customiseZoomBtn.addEventListener('click', () => this.toggleCustomiseCloseup());
+        }
+
+        if (this.elements.customiseShadowBtn) {
+            this.elements.customiseShadowBtn.addEventListener('click', () => this.toggleCustomiseShadow());
+        }
+
+        if (this.elements.customiseCommitBtn) {
+            this.elements.customiseCommitBtn.addEventListener('click', () => this.customiseCommit());
+        }
+
+        if (this.elements.customiseApproveRenameBtn) {
+            this.elements.customiseApproveRenameBtn.addEventListener('click', () => this.customiseApproveRename());
+        }
+
+        if (this.elements.customiseRenameTokenBtn) {
+            this.elements.customiseRenameTokenBtn.addEventListener('click', () => this.customiseRenameToken());
         }
 
         console.log('✅ StickyPopupManager: Event listeners configurados');
@@ -257,6 +289,35 @@ class StickyPopupManager {
                     }
                 }
                 break;
+            case 'customise':
+                if (this.selectedERC721) {
+                    // En tab Customise: mostrar sección de customise
+                    if (this.elements.customiseSection) {
+                        this.elements.customiseSection.style.display = 'block';
+                    }
+                    // Ocultar otras secciones
+                    if (this.elements.erc721ActionsSection) this.elements.erc721ActionsSection.style.display = 'none';
+                    if (this.elements.renameSection) this.elements.renameSection.style.display = 'none';
+                    // Limpiar selección y UI de floppy/serum/traits
+                    this.selectedFloppy = null;
+                    this.selectedSerum = null;
+                    this.selectedERC1155 = [];
+                    if (this.elements.openFloppySection) this.elements.openFloppySection.style.display = 'none';
+                    if (this.elements.openPackSection) this.elements.openPackSection.style.display = 'none';
+                    // Sincronizar con customise module
+                    if (window.app?.modules?.customise) {
+                        window.app.modules.customise.setSelectedERC721(this.selectedERC721);
+                        // Actualizar estado visual de los botones
+                        this.updateCustomiseButtonsState();
+                    }
+                    // Mostrar imagen del AdrianZERO con toggles
+                    this.updateCustomiseImage();
+                    // Precargar precio del nombre
+                    if (window.app?.modules?.zero?.loadNamePrice) {
+                        window.app.modules.zero.loadNamePrice().catch(() => {});
+                    }
+                }
+                break;
         }
         
         // Actualizar texto de selección
@@ -315,6 +376,31 @@ class StickyPopupManager {
                 if (this.elements.openPackSection) this.elements.openPackSection.style.display = 'none';
                 this.showBaseAdrianZeroImage();
                 // No continuar con flujo normal
+            } else if (this.currentFilter === 'customise') {
+                // En tab customise, mostrar sección de customise
+                if (this.elements.customiseSection) {
+                    this.elements.customiseSection.style.display = 'block';
+                }
+                if (this.elements.erc721ActionsSection) {
+                    this.elements.erc721ActionsSection.style.display = 'none';
+                }
+                if (this.elements.renameSection) {
+                    this.elements.renameSection.style.display = 'none';
+                }
+                // Limpiar selección y UI de floppy/serum/traits
+                this.selectedFloppy = null;
+                this.selectedSerum = null;
+                this.selectedERC1155 = [];
+                if (this.elements.openFloppySection) this.elements.openFloppySection.style.display = 'none';
+                if (this.elements.openPackSection) this.elements.openPackSection.style.display = 'none';
+                // Sincronizar con customise module
+                if (window.app?.modules?.customise) {
+                    window.app.modules.customise.setSelectedERC721(this.selectedERC721);
+                    // Actualizar estado visual de los botones
+                    this.updateCustomiseButtonsState();
+                }
+                // Mostrar imagen con toggles
+                this.updateCustomiseImage();
             } else
             // 🚨 NUEVO: Verificar si estamos en tab traits para mostrar botones correctos
             if (this.currentFilter === 'traits') {
@@ -384,6 +470,7 @@ class StickyPopupManager {
             'openPackSection',
             'useSerumSection',
             'renameSection',
+            'customiseSection',
             'applyTraitsSection',
             'refreshMetadataSection'
         ];
@@ -1177,6 +1264,214 @@ class StickyPopupManager {
         });
         console.log('Elementos mapeados:', Object.keys(this.elements));
         console.log('Inicializado:', this.isInitialized);
+    }
+
+    /**
+     * 🎨 Customise: Update buttons state
+     */
+    updateCustomiseButtonsState() {
+        if (!window.app?.modules?.customise) return;
+
+        const customiseModule = window.app.modules.customise;
+        
+        // Actualizar botón zoom
+        if (this.elements.customiseZoomBtn) {
+            this.elements.customiseZoomBtn.textContent = customiseModule.isCloseupMode ? '🔍 Zoom out' : '🔍 Zoom in';
+        }
+        
+        // Actualizar botón shadow
+        if (this.elements.customiseShadowBtn) {
+            this.elements.customiseShadowBtn.textContent = customiseModule.isShadowMode ? '🌑 Shadow ON' : '🌑 Shadow OFF';
+        }
+    }
+
+    /**
+     * 🎨 Customise: Toggle closeup
+     */
+    toggleCustomiseCloseup() {
+        if (!window.app?.modules?.customise) return;
+        
+        window.app.modules.customise.toggleCloseup();
+        
+        // Actualizar texto del botón
+        if (this.elements.customiseZoomBtn) {
+            const isCloseup = window.app.modules.customise.isCloseupMode;
+            this.elements.customiseZoomBtn.textContent = isCloseup ? '🔍 Zoom out' : '🔍 Zoom in';
+        }
+        
+        // Actualizar imagen
+        this.updateCustomiseImage();
+    }
+
+    /**
+     * 🎨 Customise: Toggle shadow
+     */
+    toggleCustomiseShadow() {
+        if (!window.app?.modules?.customise) return;
+        
+        window.app.modules.customise.toggleShadow();
+        
+        // Actualizar texto del botón
+        if (this.elements.customiseShadowBtn) {
+            const isShadow = window.app.modules.customise.isShadowMode;
+            this.elements.customiseShadowBtn.textContent = isShadow ? '🌑 Shadow ON' : '🌑 Shadow OFF';
+        }
+        
+        // Actualizar imagen
+        this.updateCustomiseImage();
+    }
+
+    /**
+     * 🎨 Customise: Update image with toggles
+     */
+    updateCustomiseImage() {
+        if (!this.selectedERC721 || !window.app?.modules?.customise) return;
+        if (!this.elements.generatedImage || !this.elements.combinedImage) return;
+
+        const imageUrl = window.app.modules.customise.getImageUrl(this.selectedERC721.tokenId);
+        
+        console.log('🎨 StickyPopupManager: Actualizando imagen customise:', {
+            tokenId: this.selectedERC721.tokenId,
+            url: imageUrl
+        });
+
+        // Mostrar loading overlay
+        if (this.elements.imageLoadingOverlay) {
+            this.elements.imageLoadingOverlay.style.display = 'flex';
+        }
+
+        // Cargar imagen
+        this.elements.combinedImage.src = imageUrl;
+        
+        // Ocultar loading cuando esté lista
+        this.elements.combinedImage.onload = () => {
+            if (this.elements.imageLoadingOverlay) {
+                this.elements.imageLoadingOverlay.style.display = 'none';
+            }
+            console.log('✅ Imagen customise cargada');
+        };
+
+        this.elements.combinedImage.onerror = () => {
+            if (this.elements.imageLoadingOverlay) {
+                this.elements.imageLoadingOverlay.style.display = 'none';
+            }
+            console.error('❌ Error cargando imagen customise');
+        };
+    }
+
+    /**
+     * 🎨 Customise: Commit toggles
+     */
+    async customiseCommit() {
+        if (!window.app?.modules?.customise) {
+            this.showStatus('❌ Módulo customise no disponible', 'error', this.elements.customiseCommitStatus);
+            return;
+        }
+
+        try {
+            if (this.elements.customiseCommitBtn) {
+                this.elements.customiseCommitBtn.disabled = true;
+                this.elements.customiseCommitBtn.textContent = '⏳ Processing...';
+            }
+
+            this.showStatus('📝 Ejecutando transacción...', 'success', this.elements.customiseCommitStatus);
+
+            const receipt = await window.app.modules.customise.commit();
+
+            this.showStatus(`✅ Commit exitoso! TX: ${receipt.transactionHash}`, 'success', this.elements.customiseCommitStatus);
+        } catch (error) {
+            console.error('❌ Error en customise commit:', error);
+            this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.customiseCommitStatus);
+        } finally {
+            if (this.elements.customiseCommitBtn) {
+                this.elements.customiseCommitBtn.disabled = false;
+                this.elements.customiseCommitBtn.textContent = 'Commit';
+            }
+        }
+    }
+
+    /**
+     * 🎨 Customise: Approve rename
+     */
+    async customiseApproveRename() {
+        if (!window.app?.modules?.customise) {
+            this.showStatus('❌ Módulo customise no disponible', 'error', this.elements.customiseRenameStatus);
+            return;
+        }
+
+        try {
+            if (this.elements.customiseApproveRenameBtn) {
+                this.elements.customiseApproveRenameBtn.disabled = true;
+            }
+
+            this.showStatus('🪙 Aprobando gasto de ADRIAN...', 'success', this.elements.customiseRenameStatus);
+
+            await window.app.modules.customise.approveRename();
+
+            this.showStatus('✅ ADRIAN aprobado correctamente', 'success', this.elements.customiseRenameStatus);
+        } catch (error) {
+            console.error('❌ Error aprobando rename en customise:', error);
+            this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.customiseRenameStatus);
+        } finally {
+            if (this.elements.customiseApproveRenameBtn) {
+                this.elements.customiseApproveRenameBtn.disabled = false;
+            }
+        }
+    }
+
+    /**
+     * 🎨 Customise: Rename token
+     */
+    async customiseRenameToken() {
+        if (!window.app?.modules?.customise) {
+            this.showStatus('❌ Módulo customise no disponible', 'error', this.elements.customiseRenameStatus);
+            return;
+        }
+
+        const newName = this.elements.customiseNewTokenName?.value?.trim();
+        if (!newName) {
+            this.showStatus('❌ Por favor ingresa un nombre para el token', 'error', this.elements.customiseRenameStatus);
+            return;
+        }
+
+        try {
+            if (this.elements.customiseRenameTokenBtn) {
+                this.elements.customiseRenameTokenBtn.disabled = true;
+            }
+
+            // Asegurar que customise tenga el token seleccionado
+            if (this.selectedERC721 && window.app.modules.customise.setSelectedERC721) {
+                window.app.modules.customise.setSelectedERC721(this.selectedERC721);
+            }
+
+            // Asegurar precio cargado
+            if (window.app?.modules?.zero?.loadNamePrice && !window.app.modules.zero.namePrice) {
+                this.showStatus('⏳ Cargando precio de nombre...', 'success', this.elements.customiseRenameStatus);
+                try {
+                    await window.app.modules.zero.loadNamePrice();
+                } catch (e) {
+                    // Continuar
+                }
+            }
+
+            // Paso 1: Approve si es necesario
+            this.showStatus('🪙 Aprobando gasto de ADRIAN...', 'success', this.elements.customiseRenameStatus);
+            await window.app.modules.customise.approveRename();
+
+            // Paso 2: Ejecutar rename
+            this.showStatus('✍️ Ejecutando rename en blockchain...', 'success', this.elements.customiseRenameStatus);
+            const receipt = await window.app.modules.customise.renameToken(newName);
+
+            // Éxito
+            this.showStatus(`✅ Rename completado! TX: ${receipt?.transactionHash || ''}`, 'success', this.elements.customiseRenameStatus);
+        } catch (error) {
+            console.error('❌ Error en customise rename:', error);
+            this.showStatus(error?.message || '❌ Error en rename', 'error', this.elements.customiseRenameStatus);
+        } finally {
+            if (this.elements.customiseRenameTokenBtn) {
+                this.elements.customiseRenameTokenBtn.disabled = false;
+            }
+        }
     }
 }
 

@@ -77,6 +77,10 @@ class AppInitializer {
             this.app.modules.lambo = new window.TraitLABLambo();
             this.app.modules.lambo.init();
             
+            // Customise Manager
+            this.app.modules.customise = new window.TraitLABCustomise();
+            this.app.modules.customise.init();
+            
             console.log('✅ AppInitializer: Todos los módulos inicializados');
             
         } catch (error) {

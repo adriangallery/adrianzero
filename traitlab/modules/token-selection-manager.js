@@ -110,6 +110,22 @@ class TokenSelectionManager {
                 console.log('🎯 TokenSelectionManager: Sincronizando selectedERC721 con zero module para rename');
                 window.app.modules.zero.setSelectedERC721(token);
             }
+        } else if (filter === 'customise') {
+            console.log('🎨 Setting as Customise token (AdrianZERO)');
+            this.selectedERC721 = token;
+            this.selectedERC1155 = [];
+            this.selectedFloppy = null;
+            this.selectedSerum = null;
+            
+            // Propagar selección a CustomiseManager y ZeroManager
+            if (window.app && window.app.modules.customise && window.app.modules.customise.setSelectedERC721) {
+                console.log('🎯 TokenSelectionManager: Sincronizando selectedERC721 con customise module');
+                window.app.modules.customise.setSelectedERC721(token);
+            }
+            if (window.app && window.app.modules.zero && window.app.modules.zero.setSelectedERC721) {
+                console.log('🎯 TokenSelectionManager: Sincronizando selectedERC721 con zero module para customise');
+                window.app.modules.zero.setSelectedERC721(token);
+            }
         } else {
             // AdrianLAB - traits
             console.log('🎭 Setting as Traits token');

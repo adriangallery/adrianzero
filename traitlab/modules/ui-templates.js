@@ -131,6 +131,7 @@ class UITemplates {
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">Serum</button>
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">Crafting</button>
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="rename">RENAME</button>
+                    <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="customise">Customise</button>
                     <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="lambo">Lambo</button>
                 </div>
                 
@@ -160,6 +161,7 @@ class UITemplates {
                         <button class="contract-btn" data-filter="serum">🧪</button>
                         <button class="contract-btn" data-filter="crafting">⚒️</button>
                         <button class="contract-btn" data-filter="rename">✍️</button>
+                        <button class="contract-btn" data-filter="customise">🎨</button>
                         <button class="contract-btn" data-filter="lambo">🚗</button>
                     </div>
                 </div>
@@ -240,6 +242,29 @@ class UITemplates {
                             <button id="approveRenameBtn" class="action-btn" style="margin-right: 10px;">Approve $ADRIAN</button>
                             <button id="renameTokenBtn" class="action-btn">Rename Token</button>
                             <div id="rename-status" class="apply-status" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- Customise Section -->
+                        <div id="customise-section" class="action-section" style="display: none;">
+                            <!-- Toggles -->
+                            <div style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+                                <button id="customise-zoomBtn" class="action-btn zoom-btn">🔍 Zoom in</button>
+                                <button id="customise-shadowBtn" class="action-btn">🌑 Shadow</button>
+                                <button id="customise-commitBtn" class="action-btn commit-btn">Commit</button>
+                            </div>
+                            
+                            <!-- Rename -->
+                            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <div style="margin-bottom: 8px;">
+                                    <input type="text" id="customise-newTokenName" placeholder="Ingresa el nuevo nombre para tu AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
+                                </div>
+                                <button id="customise-approveRenameBtn" class="action-btn" style="margin-right: 10px;">Approve $ADRIAN</button>
+                                <button id="customise-renameTokenBtn" class="action-btn">Rename Token</button>
+                            </div>
+                            
+                            <!-- Status messages -->
+                            <div id="customise-commit-status" class="apply-status" style="display: none;"></div>
+                            <div id="customise-rename-status" class="apply-status" style="display: none;"></div>
                         </div>
                     </div>
                 </div>

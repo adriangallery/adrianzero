@@ -28,6 +28,9 @@ class TokenFilters {
                 return this.filterTraitTokens(tokens);
             case 'adrianzero':
                 return this.filterAdrianZeroTokens(tokens);
+            case 'customise':
+                // Customise usa los mismos tokens que adrianzero (ERC721)
+                return this.filterAdrianZeroTokens(tokens);
             default:
                 console.log(`🔍 Filtro no reconocido: ${filterType}, retornando todos los tokens`);
                 return tokens;
