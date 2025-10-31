@@ -439,6 +439,15 @@ class UIManager {
                 this.showLamboModal(token);
             }
         }
+        
+        // If we're in customise tab and an ERC721 is selected, open Customise modal
+        if (this.currentFilter === 'customise' && token.tokenType === 'ERC721') {
+            if (window.app && window.app.modules.stickyPopupManager) {
+                // Set the selected token first
+                window.app.modules.stickyPopupManager.selectedERC721 = token;
+                window.app.modules.stickyPopupManager.openCustomiseModal();
+            }
+        }
     }
 
     /**

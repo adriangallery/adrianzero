@@ -1147,8 +1147,9 @@ class ZeroManager {
             try {
                 currentAllowance = await contract.allowance(userAddress, window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
             } catch (error) {
-                // If historical state error, assume no allowance and proceed with approval
-                console.warn('⚠️ Error checking allowance (historical state may be unavailable), proceeding with approval:', error.message);
+                // If historical state error or RPC error, assume no allowance and proceed with approval
+                // The approve transaction will work regardless of current allowance check
+                console.warn('⚠️ Cannot check allowance (RPC may have issues), proceeding with approval:', error.message);
                 currentAllowance = ethers.BigNumber.from(0);
             }
             

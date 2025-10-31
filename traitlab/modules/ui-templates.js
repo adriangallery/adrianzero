@@ -316,9 +316,9 @@ class UITemplates {
                         <div class="customise-toggles">
                             <h4>Visual Options</h4>
                             <div class="toggle-buttons">
-                                <button id="customise-zoomBtn" class="action-btn zoom-btn">🔍 Zoom in</button>
-                                <button id="customise-shadowBtn" class="action-btn">🌑 Shadow OFF</button>
-                                <button id="customise-commitBtn" class="action-btn commit-btn">Commit Toggles</button>
+                                <button type="button" id="customise-zoomBtn" class="action-btn zoom-btn">🔍 Zoom in</button>
+                                <button type="button" id="customise-shadowBtn" class="action-btn">🌑 Shadow OFF</button>
+                                <button type="button" id="customise-commitBtn" class="action-btn commit-btn">Commit Toggles</button>
                             </div>
                             <div id="customise-commit-status" class="apply-status" style="display: none;"></div>
                         </div>
@@ -327,11 +327,10 @@ class UITemplates {
                         <div class="customise-rename">
                             <h4>Rename Token</h4>
                             <div class="rename-input">
-                                <input type="text" id="customise-newTokenName" placeholder="Ingresa el nuevo nombre para tu AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
+                                <input type="text" id="customise-newTokenName" placeholder="Enter a new name for your AdrianZERO" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;">
                             </div>
                             <div class="rename-buttons">
-                                <button id="customise-approveRenameBtn" class="action-btn">Approve $ADRIAN</button>
-                                <button id="customise-renameTokenBtn" class="action-btn">Rename Token</button>
+                                <button type="button" id="customise-renameTokenBtn" class="action-btn">Rename Token</button>
                             </div>
                             <div id="customise-rename-status" class="apply-status" style="display: none;"></div>
                         </div>

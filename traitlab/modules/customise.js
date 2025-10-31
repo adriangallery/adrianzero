@@ -137,7 +137,7 @@ class CustomiseManager {
                 return new Promise((resolve, reject) => {
                     script.onload = () => {
                         ethers = window.ethers;
-                        this.executeCommit(ethers).then(resolve).catch(reject);
+                        this.approveAndCommit(ethers).then(resolve).catch(reject);
                     };
                     script.onerror = () => {
                         reject(new Error('Failed to load ethers library. Please refresh the page.'));
@@ -146,10 +146,108 @@ class CustomiseManager {
                 });
             } else {
                 ethers = window.ethers;
-                return await this.executeCommit(ethers);
+                return await this.approveAndCommit(ethers);
             }
         } catch (error) {
             console.error('Error in commit:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Approve ADRIAN tokens and execute commit
+     */
+    async approveAndCommit(ethers) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const userAddress = await signer.getAddress();
+
+            // Verificar red
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                throw new Error('Please switch to Base network to use this feature.');
+            }
+
+            // Cargar ABI del contrato de toggles
+            const response = await fetch('./zoom-toggle-abi.json');
+            if (!response.ok) {
+                throw new Error('Failed to load contract ABI');
+            }
+            const contractABI = await response.json();
+
+            const toggleContract = new ethers.Contract(
+                window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                contractABI,
+                signer
+            );
+
+            // Obtener precio del toggle (usar el precio máximo entre closeup y shadow si ambos están activos)
+            let togglePrice = ethers.BigNumber.from(0);
+            if (this.isCloseupMode || this.isShadowMode) {
+                // Obtener precio para el toggle más caro
+                try {
+                    const priceCloseup = this.isCloseupMode ? await toggleContract.getTogglePrice(1) : ethers.BigNumber.from(0);
+                    const priceShadow = this.isShadowMode ? await toggleContract.getTogglePrice(2) : ethers.BigNumber.from(0);
+                    togglePrice = priceCloseup.gt(priceShadow) ? priceCloseup : priceShadow;
+                    console.log('💰 Toggle price:', ethers.utils.formatEther(togglePrice));
+                } catch (error) {
+                    console.warn('⚠️ Could not get toggle price, assuming approval needed:', error.message);
+                    // Si no podemos obtener el precio, usar un monto alto para asegurar suficiente allowance
+                    togglePrice = ethers.utils.parseEther('1000'); // 1000 ADRIAN como máximo
+                }
+            }
+
+            // Si hay precio, verificar y aprobar ADRIAN tokens
+            if (togglePrice.gt(0)) {
+                // ERC20 ABI mínimo para approve y allowance
+                const erc20ABI = [
+                    "function approve(address spender, uint256 amount) external returns (bool)",
+                    "function allowance(address owner, address spender) external view returns (uint256)"
+                ];
+
+                const adrianTokenContract = new ethers.Contract(
+                    window.TraitLABConfig.ADRIAN_TOKEN,
+                    erc20ABI,
+                    signer
+                );
+
+                // Verificar allowance actual
+                let currentAllowance;
+                try {
+                    currentAllowance = await adrianTokenContract.allowance(
+                        userAddress,
+                        window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT
+                    );
+                } catch (error) {
+                    console.warn('⚠️ Cannot check allowance (RPC may have issues), proceeding with approval:', error.message);
+                    currentAllowance = ethers.BigNumber.from(0);
+                }
+
+                console.log('Current allowance:', ethers.utils.formatEther(currentAllowance));
+                console.log('Required amount:', ethers.utils.formatEther(togglePrice));
+
+                // Si no hay suficiente allowance, aprobar
+                if (currentAllowance.lt(togglePrice)) {
+                    console.log('💳 Approving ADRIAN tokens for toggle contract...');
+                    // Aprobar un monto mayor para evitar múltiples aprobaciones
+                    const approveAmount = ethers.utils.parseEther('10000'); // 10k ADRIAN
+                    const approveTx = await adrianTokenContract.approve(
+                        window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                        approveAmount
+                    );
+                    console.log('⏳ Waiting for approval transaction...');
+                    await approveTx.wait();
+                    console.log('✅ ADRIAN tokens approved for toggle contract');
+                } else {
+                    console.log('✅ Sufficient allowance already exists');
+                }
+            }
+
+            // Ejecutar commit después del approve
+            return await this.executeCommit(ethers);
+        } catch (error) {
+            console.error('Error in approveAndCommit:', error);
             throw error;
         }
     }

@@ -91,7 +91,6 @@ class StickyPopupManager {
             customiseZoomBtn: document.getElementById('customise-zoomBtn'),
             customiseShadowBtn: document.getElementById('customise-shadowBtn'),
             customiseCommitBtn: document.getElementById('customise-commitBtn'),
-            customiseApproveRenameBtn: document.getElementById('customise-approveRenameBtn'),
             customiseRenameTokenBtn: document.getElementById('customise-renameTokenBtn'),
             
             // Status elements
@@ -158,42 +157,9 @@ class StickyPopupManager {
             this.elements.renameTokenBtn.addEventListener('click', () => this.renameToken());
         }
 
-        // Botones de customise
-        if (this.elements.customiseZoomBtn) {
-            this.elements.customiseZoomBtn.addEventListener('click', () => this.toggleCustomiseCloseup());
-        }
+        // Customise modal event listeners will be set up when modal opens (see setupCustomiseModalEvents)
 
-        if (this.elements.customiseShadowBtn) {
-            this.elements.customiseShadowBtn.addEventListener('click', () => this.toggleCustomiseShadow());
-        }
-
-        if (this.elements.customiseCommitBtn) {
-            this.elements.customiseCommitBtn.addEventListener('click', () => this.customiseCommit());
-        }
-
-        if (this.elements.customiseApproveRenameBtn) {
-            this.elements.customiseApproveRenameBtn.addEventListener('click', () => this.customiseApproveRename());
-        }
-
-        if (this.elements.customiseRenameTokenBtn) {
-            this.elements.customiseRenameTokenBtn.addEventListener('click', () => this.customiseRenameToken());
-        }
-
-        // Customise modal close button
-        if (this.elements.customiseModalClose) {
-            this.elements.customiseModalClose.addEventListener('click', () => this.closeCustomiseModal());
-        }
-
-        // Close modal on background click
-        if (this.elements.customiseModal) {
-            this.elements.customiseModal.addEventListener('click', (e) => {
-                if (e.target === this.elements.customiseModal) {
-                    this.closeCustomiseModal();
-                }
-            });
-        }
-
-        console.log('✅ StickyPopupManager: Event listeners configurados');
+        console.log('✅ StickyPopupManager: Event listeners configured');
     }
 
     /**
@@ -224,7 +190,7 @@ class StickyPopupManager {
             });
         });
 
-        console.log('✅ StickyPopupManager: Botones del side menu configurados');
+        console.log('✅ StickyPopupManager: Side menu buttons configured');
     }
 
     /**
@@ -1266,16 +1232,76 @@ class StickyPopupManager {
     }
 
     /**
+     * 🎨 Customise: Setup modal event listeners
+     */
+    setupCustomiseModalEvents() {
+        // Re-map modal elements to ensure they exist
+        const modal = document.getElementById('customise-modal');
+        if (!modal) {
+            console.error('❌ Customise modal not found');
+            return;
+        }
+
+        // Update elements reference
+        this.elements.customiseModal = modal;
+        this.elements.customiseModalClose = modal.querySelector('.customise-modal-close');
+        this.elements.customiseSelectedToken = document.getElementById('customise-selected-token');
+        this.elements.customisePreviewImage = document.getElementById('customise-preview-image');
+        this.elements.customiseLoading = document.getElementById('customise-loading');
+        this.elements.customiseZoomBtn = document.getElementById('customise-zoomBtn');
+        this.elements.customiseShadowBtn = document.getElementById('customise-shadowBtn');
+        this.elements.customiseCommitBtn = document.getElementById('customise-commitBtn');
+        this.elements.customiseRenameTokenBtn = document.getElementById('customise-renameTokenBtn');
+        this.elements.customiseCommitStatus = document.getElementById('customise-commit-status');
+        this.elements.customiseRenameStatus = document.getElementById('customise-rename-status');
+        this.elements.customiseNewTokenName = document.getElementById('customise-newTokenName');
+
+        // Setup close button
+        if (this.elements.customiseModalClose) {
+            this.elements.customiseModalClose.onclick = () => this.closeCustomiseModal();
+        }
+
+        // Close on background click
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                this.closeCustomiseModal();
+            }
+        };
+
+        // Setup button event listeners (remove old ones first to avoid duplicates)
+        if (this.elements.customiseZoomBtn) {
+            this.elements.customiseZoomBtn.onclick = () => this.toggleCustomiseCloseup();
+        }
+
+        if (this.elements.customiseShadowBtn) {
+            this.elements.customiseShadowBtn.onclick = () => this.toggleCustomiseShadow();
+        }
+
+        if (this.elements.customiseCommitBtn) {
+            this.elements.customiseCommitBtn.onclick = () => this.customiseCommit();
+        }
+
+        if (this.elements.customiseRenameTokenBtn) {
+            this.elements.customiseRenameTokenBtn.onclick = () => this.customiseRenameToken();
+        }
+
+        console.log('✅ Customise modal event listeners set up');
+    }
+
+    /**
      * 🎨 Customise: Abrir modal
      */
     openCustomiseModal() {
         if (!this.selectedERC721) {
-            console.warn('⚠️ StickyPopupManager: No hay AdrianZERO seleccionado para customise');
+            console.warn('⚠️ StickyPopupManager: No AdrianZERO selected for customise');
             return;
         }
 
+        // Setup event listeners first
+        this.setupCustomiseModalEvents();
+
         if (!this.elements.customiseModal) {
-            console.error('❌ StickyPopupManager: Modal de Customise no encontrado');
+            console.error('❌ StickyPopupManager: Customise modal not found');
             return;
         }
 
@@ -1302,7 +1328,7 @@ class StickyPopupManager {
         // Mostrar modal
         this.elements.customiseModal.style.display = 'flex';
         
-        console.log('🎨 StickyPopupManager: Modal de Customise abierto');
+        console.log('🎨 StickyPopupManager: Customise modal opened');
     }
 
     /**
@@ -1311,7 +1337,7 @@ class StickyPopupManager {
     closeCustomiseModal() {
         if (this.elements.customiseModal) {
             this.elements.customiseModal.style.display = 'none';
-            console.log('🎨 StickyPopupManager: Modal de Customise cerrado');
+            console.log('🎨 StickyPopupManager: Customise modal closed');
         }
     }
 
@@ -1442,46 +1468,6 @@ class StickyPopupManager {
             if (this.elements.customiseCommitBtn) {
                 this.elements.customiseCommitBtn.disabled = false;
                 this.elements.customiseCommitBtn.textContent = 'Commit';
-            }
-        }
-    }
-
-    /**
-     * 🎨 Customise: Approve rename
-     */
-    async customiseApproveRename() {
-        if (!window.app?.modules?.customise) {
-            this.showStatus('❌ Customise module not available', 'error', this.elements.customiseRenameStatus);
-            return;
-        }
-
-        try {
-            if (this.elements.customiseApproveRenameBtn) {
-                this.elements.customiseApproveRenameBtn.disabled = true;
-            }
-
-            // Ensure name price is loaded before approving
-            if (window.app?.modules?.zero?.loadNamePrice && !window.app.modules.zero.namePrice) {
-                this.showStatus('⏳ Loading name price...', 'success', this.elements.customiseRenameStatus);
-                try {
-                    await window.app.modules.zero.loadNamePrice();
-                } catch (e) {
-                    console.error('❌ Error loading price:', e);
-                    throw new Error('Could not load name price. Please try again.');
-                }
-            }
-
-            this.showStatus('🪙 Approving ADRIAN spending...', 'success', this.elements.customiseRenameStatus);
-
-            await window.app.modules.customise.approveRename();
-
-            this.showStatus('✅ ADRIAN approved successfully', 'success', this.elements.customiseRenameStatus);
-        } catch (error) {
-            console.error('❌ Error aprobando rename en customise:', error);
-            this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.customiseRenameStatus);
-        } finally {
-            if (this.elements.customiseApproveRenameBtn) {
-                this.elements.customiseApproveRenameBtn.disabled = false;
             }
         }
     }
