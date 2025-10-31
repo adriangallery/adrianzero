@@ -1279,8 +1279,9 @@ class StickyPopupManager {
             this.elements.customiseZoomBtn.textContent = customiseModule.isCloseupMode ? '🔍 Zoom out' : '🔍 Zoom in';
         }
         
-        // Actualizar botón shadow
+        // Actualizar botón shadow (Shadow ON cuando está activo - corregido)
         if (this.elements.customiseShadowBtn) {
+            // Corregido: Shadow ON cuando isShadowMode es true (activado), Shadow OFF cuando es false
             this.elements.customiseShadowBtn.textContent = customiseModule.isShadowMode ? '🌑 Shadow ON' : '🌑 Shadow OFF';
         }
     }
@@ -1311,9 +1312,10 @@ class StickyPopupManager {
         
         window.app.modules.customise.toggleShadow();
         
-        // Actualizar texto del botón
+        // Actualizar texto del botón (corregido: Shadow ON cuando está activo)
         if (this.elements.customiseShadowBtn) {
             const isShadow = window.app.modules.customise.isShadowMode;
+            // Corregido: Shadow ON cuando isShadow es true (activado), Shadow OFF cuando es false
             this.elements.customiseShadowBtn.textContent = isShadow ? '🌑 Shadow ON' : '🌑 Shadow OFF';
         }
         
@@ -1374,11 +1376,30 @@ class StickyPopupManager {
                 this.elements.customiseCommitBtn.textContent = '⏳ Processing...';
             }
 
-            this.showStatus('📝 Ejecutando transacción...', 'success', this.elements.customiseCommitStatus);
+            const customiseModule = window.app.modules.customise;
+            const hasCloseup = customiseModule.isCloseupMode;
+            const hasShadow = customiseModule.isShadowMode;
+            
+            if (!hasCloseup && !hasShadow) {
+                this.showStatus('⚠️ Activa al menos un toggle (Closeup o Shadow) antes de commitear', 'error', this.elements.customiseCommitStatus);
+                if (this.elements.customiseCommitBtn) {
+                    this.elements.customiseCommitBtn.disabled = false;
+                    this.elements.customiseCommitBtn.textContent = 'Commit';
+                }
+                return;
+            }
+
+            this.showStatus('📝 Ejecutando transacción(es)...', 'success', this.elements.customiseCommitStatus);
 
             const receipt = await window.app.modules.customise.commit();
 
-            this.showStatus(`✅ Commit exitoso! TX: ${receipt.transactionHash}`, 'success', this.elements.customiseCommitStatus);
+            // Mostrar todas las transacciones si hay múltiples
+            const txHashes = receipt?.receipt?.transactionHash || receipt?.transactionHash;
+            const statusMsg = txHashes ? 
+                `✅ Commit exitoso! TX: ${Array.isArray(txHashes) ? txHashes.join(', ') : txHashes}` :
+                `✅ Commit exitoso!`;
+            
+            this.showStatus(statusMsg, 'success', this.elements.customiseCommitStatus);
         } catch (error) {
             console.error('❌ Error en customise commit:', error);
             this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.customiseCommitStatus);

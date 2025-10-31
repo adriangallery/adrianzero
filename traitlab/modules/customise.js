@@ -155,16 +155,21 @@ class CustomiseManager {
     }
 
     /**
-     * Execute commit transaction (solo closeup, shadow es parámetro de URL)
+     * Execute commit transaction (closeup ID=1, shadow ID=2)
      */
     async executeCommit(ethers) {
         try {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
-            // ZOOM_TOGGLE_CONTRACT ABI - cargar desde GitHub
-            const abiUrl = 'https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlab/modules/contracts/ZoomToggle.json';
-            const response = await fetch(abiUrl);
+            // Verificar red
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                throw new Error('Please switch to Base network to use this feature.');
+            }
+
+            // ZOOM_TOGGLE_CONTRACT ABI - cargar desde archivo local (mismo path que sticky-popup-manager)
+            const response = await fetch('./zoom-toggle-abi.json');
             if (!response.ok) {
                 throw new Error('Failed to load contract ABI');
             }
@@ -176,26 +181,49 @@ class CustomiseManager {
                 signer
             );
 
-            // Determinar toggleId: 0=off, 1=closeup (shadow es solo URL, no se commitea)
-            const toggleId = this.isCloseupMode ? 1 : 0;
             const tokenId = this.selectedERC721.tokenId;
+            const receipts = [];
+
+            // Commit closeup toggle (ID=1)
+            if (this.isCloseupMode) {
+                console.log('💾 CustomiseManager: Commiteando closeup toggle (ID=1)');
+                const txCloseup = await contract.setToggle(tokenId, 1);
+                const receiptCloseup = await txCloseup.wait();
+                receipts.push({ toggleId: 1, receipt: receiptCloseup });
+                console.log('✅ CustomiseManager: Closeup toggle commiteado');
+            } else {
+                // Si closeup está OFF, necesitamos desactivarlo (toggleId = 0)
+                console.log('💾 CustomiseManager: Desactivando closeup toggle (ID=1 -> 0)');
+                const txCloseup = await contract.setToggle(tokenId, 0);
+                const receiptCloseup = await txCloseup.wait();
+                receipts.push({ toggleId: 0, receipt: receiptCloseup });
+                console.log('✅ CustomiseManager: Closeup toggle desactivado');
+            }
+
+            // Commit shadow toggle (ID=2)
+            if (this.isShadowMode) {
+                console.log('💾 CustomiseManager: Commiteando shadow toggle (ID=2)');
+                const txShadow = await contract.setToggle(tokenId, 2);
+                const receiptShadow = await txShadow.wait();
+                receipts.push({ toggleId: 2, receipt: receiptShadow });
+                console.log('✅ CustomiseManager: Shadow toggle commiteado');
+            } else {
+                // Si shadow está OFF, necesitamos desactivarlo (pero primero verificar si estaba activo)
+                // Por ahora, si shadow está OFF, no hacemos nada para evitar desactivar si nunca estuvo activo
+                // TODO: Verificar estado actual del toggle antes de desactivar si es necesario
+                console.log('💾 CustomiseManager: Shadow toggle está OFF (no se commitea)');
+            }
 
             console.log('💾 CustomiseManager: Ejecutando commit:', {
                 tokenId,
-                toggleId,
                 isCloseupMode: this.isCloseupMode,
                 isShadowMode: this.isShadowMode,
-                note: 'Shadow es solo parámetro de URL, no se commitea'
+                toggleIds: [this.isCloseupMode ? 1 : null, this.isShadowMode ? 2 : null].filter(x => x !== null)
             });
 
-            const tx = await contract.setToggle(tokenId, toggleId);
-            const receipt = await tx.wait();
+            this.emit('commitCompleted', { tokenId, receipts });
 
-            console.log('✅ CustomiseManager: Commit completado:', receipt);
-
-            this.emit('commitCompleted', { tokenId, toggleId, receipt });
-
-            return receipt;
+            return receipts[0]?.receipt || receipts[receipts.length - 1]?.receipt;
         } catch (error) {
             console.error('Error in commit transaction:', error);
             throw error;
