@@ -1279,10 +1279,10 @@ class StickyPopupManager {
             this.elements.customiseZoomBtn.textContent = customiseModule.isCloseupMode ? '🔍 Zoom out' : '🔍 Zoom in';
         }
         
-        // Actualizar botón shadow (Shadow ON cuando está activo - corregido)
+        // Actualizar botón shadow (Shadow ON cuando está desactivado - para activarlo)
         if (this.elements.customiseShadowBtn) {
-            // Corregido: Shadow ON cuando isShadowMode es true (activado), Shadow OFF cuando es false
-            this.elements.customiseShadowBtn.textContent = customiseModule.isShadowMode ? '🌑 Shadow ON' : '🌑 Shadow OFF';
+            // Shadow ON cuando está desactivado (para activarlo), Shadow OFF cuando está activado (para desactivarlo)
+            this.elements.customiseShadowBtn.textContent = customiseModule.isShadowMode ? '🌑 Shadow OFF' : '🌑 Shadow ON';
         }
     }
 
@@ -1312,11 +1312,11 @@ class StickyPopupManager {
         
         window.app.modules.customise.toggleShadow();
         
-        // Actualizar texto del botón (corregido: Shadow ON cuando está activo)
+        // Actualizar texto del botón (Shadow ON cuando está desactivado - para activarlo)
         if (this.elements.customiseShadowBtn) {
             const isShadow = window.app.modules.customise.isShadowMode;
-            // Corregido: Shadow ON cuando isShadow es true (activado), Shadow OFF cuando es false
-            this.elements.customiseShadowBtn.textContent = isShadow ? '🌑 Shadow ON' : '🌑 Shadow OFF';
+            // Shadow ON cuando está desactivado (para activarlo), Shadow OFF cuando está activado (para desactivarlo)
+            this.elements.customiseShadowBtn.textContent = isShadow ? '🌑 Shadow OFF' : '🌑 Shadow ON';
         }
         
         // Actualizar imagen
