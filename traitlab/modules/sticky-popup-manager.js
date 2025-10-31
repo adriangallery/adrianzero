@@ -1425,6 +1425,17 @@ class StickyPopupManager {
                 this.elements.customiseApproveRenameBtn.disabled = true;
             }
 
+            // Asegurar que el precio del nombre esté cargado antes de aprobar
+            if (window.app?.modules?.zero?.loadNamePrice && !window.app.modules.zero.namePrice) {
+                this.showStatus('⏳ Cargando precio de nombre...', 'success', this.elements.customiseRenameStatus);
+                try {
+                    await window.app.modules.zero.loadNamePrice();
+                } catch (e) {
+                    console.error('❌ Error cargando precio:', e);
+                    throw new Error('No se pudo cargar el precio del nombre. Por favor, intenta de nuevo.');
+                }
+            }
+
             this.showStatus('🪙 Aprobando gasto de ADRIAN...', 'success', this.elements.customiseRenameStatus);
 
             await window.app.modules.customise.approveRename();
