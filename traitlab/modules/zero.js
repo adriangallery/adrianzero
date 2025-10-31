@@ -1141,9 +1141,16 @@ class ZeroManager {
             // Create contract instance
             const contract = new ethers.Contract(ADRIAN_TOKEN, erc20ABI, signer);
 
-            // Check current allowance
+            // Check current allowance (handle historical state errors)
             const userAddress = await signer.getAddress();
-            const currentAllowance = await contract.allowance(userAddress, window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            let currentAllowance;
+            try {
+                currentAllowance = await contract.allowance(userAddress, window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT);
+            } catch (error) {
+                // If historical state error, assume no allowance and proceed with approval
+                console.warn('⚠️ Error checking allowance (historical state may be unavailable), proceeding with approval:', error.message);
+                currentAllowance = ethers.BigNumber.from(0);
+            }
             
             console.log('Current allowance:', ethers.utils.formatEther(currentAllowance));
             console.log('Required amount:', ethers.utils.formatEther(this.namePrice));

@@ -953,46 +953,46 @@ class StickyPopupManager {
     async renameToken() {
         console.log('🎯 StickyPopupManager: Renombrar token (cascada approve → rename)');
         
-        // Obtener el nombre del input
+        // Get name from input
         const newName = this.elements.newTokenName?.value?.trim();
         if (!newName) {
-            console.error('❌ No se proporcionó un nombre para el token');
-            this.showError('Por favor ingresa un nombre para el token');
+            console.error('❌ No name provided for token');
+            this.showError('Please enter a name for the token');
             return;
         }
         
         const zero = window.app?.modules?.zero;
         if (!zero) {
-            console.error('❌ Módulo zero no disponible para renameToken');
+            console.error('❌ Zero module not available for renameToken');
             return;
         }
 
-        // 🎯 Asegurar que zero tenga el token seleccionado
+        // 🎯 Ensure zero has the token selected
         if (this.selectedERC721 && zero.setSelectedERC721) {
-            console.log('🎯 StickyPopupManager: Sincronizando selectedERC721 con zero module');
+            console.log('🎯 StickyPopupManager: Syncing selectedERC721 with zero module');
             zero.setSelectedERC721(this.selectedERC721);
         }
         
         try {
-            // Deshabilitar botón para evitar dobles clics
+            // Disable button to prevent double clicks
             if (this.elements.renameTokenBtn) this.elements.renameTokenBtn.disabled = true;
             
-            // Asegurar precio cargado
+            // Ensure price is loaded
             if (!zero.namePrice && zero.loadNamePrice) {
-                this.showStatus('⏳ Cargando precio de nombre...', 'success', this.elements.renameStatus);
-                try { await zero.loadNamePrice(); } catch (e) { /* continuar */ }
+                this.showStatus('⏳ Loading name price...', 'success', this.elements.renameStatus);
+                try { await zero.loadNamePrice(); } catch (e) { /* continue */ }
             }
             
-            // Paso 1: Approve si es necesario
-            this.showStatus('🪙 Aprobando gasto de ADRIAN...', 'success', this.elements.renameStatus);
+            // Step 1: Approve if needed
+            this.showStatus('🪙 Approving ADRIAN spending...', 'success', this.elements.renameStatus);
             await zero.approveRename();
             
-            // Paso 2: Ejecutar rename
-            this.showStatus('✍️ Ejecutando rename en blockchain...', 'success', this.elements.renameStatus);
+            // Step 2: Execute rename
+            this.showStatus('✍️ Executing rename on blockchain...', 'success', this.elements.renameStatus);
             const receipt = await zero.renameToken(newName);
             
-            // Éxito
-            this.showStatus(`✅ Rename completado! TX: ${receipt?.transactionHash || ''}`, 'success', this.elements.renameStatus);
+            // Success
+            this.showStatus(`✅ Rename completed! TX: ${receipt?.transactionHash || ''}`, 'success', this.elements.renameStatus);
         } catch (error) {
             console.error('❌ Error en cascada de rename:', error);
             this.showStatus(error?.message || '❌ Error en rename', 'error', this.elements.renameStatus);
@@ -1176,20 +1176,20 @@ class StickyPopupManager {
                 isCloseupMode: this.isCloseupMode
             });
 
-            // Actualizar estado
-            this.showStatus('📝 Ejecutando transacción...', 'success', this.elements.commitStatus);
+            // Update status
+            this.showStatus('📝 Executing transaction...', 'success', this.elements.commitStatus);
 
-            // Llamar al contrato
+            // Call contract
             const tx = await contract.setToggle(tokenId, toggleId);
             
-            // Actualizar estado
-            this.showStatus('⏳ Esperando confirmación...', 'success', this.elements.commitStatus);
+            // Update status
+            this.showStatus('⏳ Waiting for confirmation...', 'success', this.elements.commitStatus);
 
-            // Esperar confirmación
+            // Wait for confirmation
             const receipt = await tx.wait();
 
-            // Éxito
-            this.showStatus(`✅ Commit exitoso! TX: ${receipt.transactionHash}`, 'success', this.elements.commitStatus);
+            // Success
+            this.showStatus(`✅ Commit successful! TX: ${receipt.transactionHash}`, 'success', this.elements.commitStatus);
             
             console.log('✅ StickyPopupManager: Commit completado:', {
                 tokenId,
@@ -1401,7 +1401,7 @@ class StickyPopupManager {
      */
     async customiseCommit() {
         if (!window.app?.modules?.customise) {
-            this.showStatus('❌ Módulo customise no disponible', 'error', this.elements.customiseCommitStatus);
+            this.showStatus('❌ Customise module not available', 'error', this.elements.customiseCommitStatus);
             return;
         }
 
@@ -1416,7 +1416,7 @@ class StickyPopupManager {
             const hasShadow = customiseModule.isShadowMode;
             
             if (!hasCloseup && !hasShadow) {
-                this.showStatus('⚠️ Activa al menos un toggle (Closeup o Shadow) antes de commitear', 'error', this.elements.customiseCommitStatus);
+                this.showStatus('⚠️ Please activate at least one toggle (Closeup or Shadow) before committing', 'error', this.elements.customiseCommitStatus);
                 if (this.elements.customiseCommitBtn) {
                     this.elements.customiseCommitBtn.disabled = false;
                     this.elements.customiseCommitBtn.textContent = 'Commit';
@@ -1424,15 +1424,15 @@ class StickyPopupManager {
                 return;
             }
 
-            this.showStatus('📝 Ejecutando transacción(es)...', 'success', this.elements.customiseCommitStatus);
+            this.showStatus('📝 Executing transaction(s)...', 'success', this.elements.customiseCommitStatus);
 
             const receipt = await window.app.modules.customise.commit();
 
             // Mostrar todas las transacciones si hay múltiples
             const txHashes = receipt?.receipt?.transactionHash || receipt?.transactionHash;
             const statusMsg = txHashes ? 
-                `✅ Commit exitoso! TX: ${Array.isArray(txHashes) ? txHashes.join(', ') : txHashes}` :
-                `✅ Commit exitoso!`;
+                `✅ Commit successful! TX: ${Array.isArray(txHashes) ? txHashes.join(', ') : txHashes}` :
+                `✅ Commit successful!`;
             
             this.showStatus(statusMsg, 'success', this.elements.customiseCommitStatus);
         } catch (error) {
@@ -1451,7 +1451,7 @@ class StickyPopupManager {
      */
     async customiseApproveRename() {
         if (!window.app?.modules?.customise) {
-            this.showStatus('❌ Módulo customise no disponible', 'error', this.elements.customiseRenameStatus);
+            this.showStatus('❌ Customise module not available', 'error', this.elements.customiseRenameStatus);
             return;
         }
 
@@ -1460,22 +1460,22 @@ class StickyPopupManager {
                 this.elements.customiseApproveRenameBtn.disabled = true;
             }
 
-            // Asegurar que el precio del nombre esté cargado antes de aprobar
+            // Ensure name price is loaded before approving
             if (window.app?.modules?.zero?.loadNamePrice && !window.app.modules.zero.namePrice) {
-                this.showStatus('⏳ Cargando precio de nombre...', 'success', this.elements.customiseRenameStatus);
+                this.showStatus('⏳ Loading name price...', 'success', this.elements.customiseRenameStatus);
                 try {
                     await window.app.modules.zero.loadNamePrice();
                 } catch (e) {
-                    console.error('❌ Error cargando precio:', e);
-                    throw new Error('No se pudo cargar el precio del nombre. Por favor, intenta de nuevo.');
+                    console.error('❌ Error loading price:', e);
+                    throw new Error('Could not load name price. Please try again.');
                 }
             }
 
-            this.showStatus('🪙 Aprobando gasto de ADRIAN...', 'success', this.elements.customiseRenameStatus);
+            this.showStatus('🪙 Approving ADRIAN spending...', 'success', this.elements.customiseRenameStatus);
 
             await window.app.modules.customise.approveRename();
 
-            this.showStatus('✅ ADRIAN aprobado correctamente', 'success', this.elements.customiseRenameStatus);
+            this.showStatus('✅ ADRIAN approved successfully', 'success', this.elements.customiseRenameStatus);
         } catch (error) {
             console.error('❌ Error aprobando rename en customise:', error);
             this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.customiseRenameStatus);
@@ -1491,13 +1491,13 @@ class StickyPopupManager {
      */
     async customiseRenameToken() {
         if (!window.app?.modules?.customise) {
-            this.showStatus('❌ Módulo customise no disponible', 'error', this.elements.customiseRenameStatus);
+            this.showStatus('❌ Customise module not available', 'error', this.elements.customiseRenameStatus);
             return;
         }
 
         const newName = this.elements.customiseNewTokenName?.value?.trim();
         if (!newName) {
-            this.showStatus('❌ Por favor ingresa un nombre para el token', 'error', this.elements.customiseRenameStatus);
+            this.showStatus('❌ Please enter a name for the token', 'error', this.elements.customiseRenameStatus);
             return;
         }
 
@@ -1506,31 +1506,31 @@ class StickyPopupManager {
                 this.elements.customiseRenameTokenBtn.disabled = true;
             }
 
-            // Asegurar que customise tenga el token seleccionado
+            // Ensure customise has the token selected
             if (this.selectedERC721 && window.app.modules.customise.setSelectedERC721) {
                 window.app.modules.customise.setSelectedERC721(this.selectedERC721);
             }
 
-            // Asegurar precio cargado
+            // Ensure price is loaded
             if (window.app?.modules?.zero?.loadNamePrice && !window.app.modules.zero.namePrice) {
-                this.showStatus('⏳ Cargando precio de nombre...', 'success', this.elements.customiseRenameStatus);
+                this.showStatus('⏳ Loading name price...', 'success', this.elements.customiseRenameStatus);
                 try {
                     await window.app.modules.zero.loadNamePrice();
                 } catch (e) {
-                    // Continuar
+                    // Continue
                 }
             }
 
-            // Paso 1: Approve si es necesario
-            this.showStatus('🪙 Aprobando gasto de ADRIAN...', 'success', this.elements.customiseRenameStatus);
+            // Step 1: Approve if needed
+            this.showStatus('🪙 Approving ADRIAN spending...', 'success', this.elements.customiseRenameStatus);
             await window.app.modules.customise.approveRename();
 
-            // Paso 2: Ejecutar rename
-            this.showStatus('✍️ Ejecutando rename en blockchain...', 'success', this.elements.customiseRenameStatus);
+            // Step 2: Execute rename
+            this.showStatus('✍️ Executing rename on blockchain...', 'success', this.elements.customiseRenameStatus);
             const receipt = await window.app.modules.customise.renameToken(newName);
 
-            // Éxito
-            this.showStatus(`✅ Rename completado! TX: ${receipt?.transactionHash || ''}`, 'success', this.elements.customiseRenameStatus);
+            // Success
+            this.showStatus(`✅ Rename completed! TX: ${receipt?.transactionHash || ''}`, 'success', this.elements.customiseRenameStatus);
         } catch (error) {
             console.error('❌ Error en customise rename:', error);
             this.showStatus(error?.message || '❌ Error en rename', 'error', this.elements.customiseRenameStatus);
