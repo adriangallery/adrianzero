@@ -13,6 +13,7 @@ class UIManager {
         this.selectedERC721 = null;
         this.selectedERC1155 = [];
         this.selectedFloppy = null;
+        this.selectedPacks = []; // Array para selección múltiple de packs (hasta 4)
         this.selectedSerum = null;
         
         // Bind methods
@@ -370,18 +371,45 @@ class UIManager {
         } else {
             // Handle ERC1155 selection based on current filter
             if (this.currentFilter === 'floppy') {
-                // Single selection for Floppy Discs
-                if (this.selectedFloppy && this.selectedFloppy.tokenId === token.tokenId) {
-                    this.selectedFloppy = null;
-                    tokenCard.classList.remove('selected');
-                } else {
-                    // Deselect previous floppy
-                    const prevSelected = tokensGrid.querySelector('.token-card.selected');
-                    if (prevSelected) prevSelected.classList.remove('selected');
-                    
-                    this.selectedFloppy = token;
-                    tokenCard.classList.add('selected');
+                // Multiple selection for Packs (up to 4) - SOLO del mismo packId
+                const currentPackId = this.selectedPacks.length > 0 ? this.selectedPacks[0].tokenId : null;
+                
+                // Si ya hay packs seleccionados y son de diferente ID, no permitir seleccionar otro diferente
+                if (currentPackId && token.tokenId !== currentPackId) {
+                    console.log('Only packs with the same ID can be selected together');
+                    return; // No permitir seleccionar packs de diferente ID
                 }
+                
+                const packIndex = this.selectedPacks.findIndex(p => p.tokenId === token.tokenId);
+                if (packIndex !== -1) {
+                    // Deselect pack
+                    this.selectedPacks.splice(packIndex, 1);
+                    tokenCard.classList.remove('selected');
+                    // Mantener selectedFloppy para compatibilidad si solo hay uno
+                    if (this.selectedPacks.length === 1) {
+                        this.selectedFloppy = this.selectedPacks[0];
+                    } else {
+                        this.selectedFloppy = this.selectedPacks.length > 0 ? this.selectedPacks[0] : null;
+                    }
+                } else {
+                    // Select pack (up to 4 del mismo ID)
+                    if (this.selectedPacks.length < 4) {
+                        this.selectedPacks.push(token);
+                        tokenCard.classList.add('selected');
+                        // Mantener selectedFloppy para compatibilidad
+                        this.selectedFloppy = this.selectedPacks[0];
+                    } else {
+                        // Ya hay 4 packs seleccionados
+                        console.log('Maximum 4 packs of the same ID can be selected');
+                        return; // No emitir evento si ya hay 4 seleccionados
+                    }
+                }
+                
+                // Notificar cambio de selección para actualizar UI
+                this.emit('packsSelectionChanged', { 
+                    selectedPacks: this.selectedPacks,
+                    selectedFloppy: this.selectedFloppy 
+                });
             } else if (this.currentFilter === 'serum') {
                 // Single selection for Serums
                 if (this.selectedSerum && this.selectedSerum.tokenId === token.tokenId) {
@@ -752,6 +780,7 @@ class UIManager {
             selectedERC721: this.selectedERC721,
             selectedERC1155: this.selectedERC1155,
             selectedFloppy: this.selectedFloppy,
+            selectedPacks: this.selectedPacks,
             selectedSerum: this.selectedSerum,
             currentFilter: this.currentFilter
         };

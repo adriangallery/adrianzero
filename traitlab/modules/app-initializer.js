@@ -105,6 +105,15 @@ class AppInitializer {
                 this.app.modules.tokenSelection.onTokenSelected(data.token, data.filter);
             });
             
+            // Packs selection changed event
+            this.app.modules.ui.on('packsSelectionChanged', (data) => {
+                // Actualizar sticky popup manager
+                if (this.app.stickyPopupManager) {
+                    this.app.stickyPopupManager.configureFloppyButtons();
+                    this.app.stickyPopupManager.updateSelectionInfo();
+                }
+            });
+            
             // Lambo events
             this.app.modules.lambo.on('lamboImageGenerated', (data) => {
                 this.app.modules.ui.displayLamboImage(data.imageUrl, data.token, data.color);
