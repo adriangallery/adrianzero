@@ -353,9 +353,63 @@ class FloppyManager {
     }
 
     /**
+     * Open Pack V4 with custom quantity
+     * Opens multiple packs (1-4) of the same packId
+     */
+    async openPackV4WithQuantity(quantity) {
+        console.log('openPackV4WithQuantity called with quantity:', quantity);
+        if (!this.selectedFloppy) {
+            throw new Error('Please select a pack first.');
+        }
+        
+        if (quantity < 1 || quantity > 4) {
+            throw new Error('Quantity must be between 1 and 4.');
+        }
+        
+        // Check if this pack is supported by OpenPackV4
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013];
+        if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
+            throw new Error('This pack is not supported by OpenPackV4.');
+        }
+        
+        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+            throw new Error('Please connect your wallet first.');
+        }
+
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        this.executeOpenPackV4Transaction(ethers, quantity)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library. Please refresh the page.'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeOpenPackV4Transaction(ethers, quantity);
+            }
+        } catch (error) {
+            console.error('Error in openPackV4WithQuantity:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Execute the open pack V4 transaction
      */
-    async executeOpenPackV4Transaction(ethers) {
+    async executeOpenPackV4Transaction(ethers, quantity = 1) {
         try {
             // Get provider and signer
             const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -375,7 +429,6 @@ class FloppyManager {
 
             // Prepare parameters
             const packId = this.selectedFloppy.tokenId;
-            const quantity = 1; // Hardcoded to 1 as requested
 
             console.log('Contract address:', window.TraitLABConfig.OPENPACK_V4_CONTRACT);
             console.log('Pack ID:', packId);
@@ -394,6 +447,7 @@ class FloppyManager {
             // Emit success event
             this.emit('floppyOpened', { 
                 tokenId: packId, 
+                quantity: quantity,
                 transactionHash: receipt.transactionHash,
                 receipt 
             });

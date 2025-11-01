@@ -71,6 +71,8 @@ class StickyPopupManager {
             applyTraitsBtn: document.getElementById('applyTraitsBtn'),
             openFloppyBtn: document.getElementById('openFloppyBtn'),
             openPackBtn: document.getElementById('openPackBtn'),
+            openMultiplePacksBtn: document.getElementById('openMultiplePacksBtn'),
+            packQuantity: document.getElementById('pack-quantity'),
             useSerumBtn: document.getElementById('useSerumBtn'),
             approveRenameBtn: document.getElementById('approveRenameBtn'),
             renameTokenBtn: document.getElementById('renameTokenBtn'),
@@ -138,6 +140,10 @@ class StickyPopupManager {
 
         if (this.elements.openPackBtn) {
             this.elements.openPackBtn.addEventListener('click', () => this.openPack());
+        }
+
+        if (this.elements.openMultiplePacksBtn) {
+            this.elements.openMultiplePacksBtn.addEventListener('click', () => this.openMultiplePacks());
         }
 
         if (this.elements.useSerumBtn) {
@@ -884,6 +890,41 @@ class StickyPopupManager {
             window.app.modules.floppy.openSelectedPack();
         } else {
             console.error('❌ Módulo floppy no disponible para openSelectedPack');
+        }
+    }
+
+    async openMultiplePacks() {
+        console.log('🎯 StickyPopupManager: Abrir múltiples packs');
+        
+        if (!this.selectedFloppy) {
+            this.showStatus('❌ Selecciona un pack primero', 'error', this.elements.openPackStatus);
+            return;
+        }
+
+        // Obtener cantidad del input
+        const quantityInput = this.elements.packQuantity;
+        let quantity = 1;
+        
+        if (quantityInput) {
+            quantity = parseInt(quantityInput.value) || 1;
+            if (quantity < 1 || quantity > 4) {
+                this.showStatus('❌ La cantidad debe estar entre 1 y 4', 'error', this.elements.openPackStatus);
+                return;
+            }
+        }
+
+        if (window.app && window.app.modules.floppy && window.app.modules.floppy.openPackV4WithQuantity) {
+            try {
+                this.showStatus('⏳ Abriendo packs...', 'success', this.elements.openPackStatus);
+                await window.app.modules.floppy.openPackV4WithQuantity(quantity);
+                this.showStatus(`✅ ${quantity} pack(s) abierto(s) correctamente!`, 'success', this.elements.openPackStatus);
+            } catch (error) {
+                console.error('❌ Error abriendo múltiples packs:', error);
+                this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.openPackStatus);
+            }
+        } else {
+            console.error('❌ Módulo floppy no disponible para openPackV4WithQuantity');
+            this.showStatus('❌ Función no disponible', 'error', this.elements.openPackStatus);
         }
     }
 

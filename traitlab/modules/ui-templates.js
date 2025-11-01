@@ -212,6 +212,11 @@ class UITemplates {
                         <!-- Open Pack -->
                         <div id="open-pack-section" class="action-section" style="display: none;">
                             <button id="openPackBtn" class="action-btn">Open Pack</button>
+                            <div style="margin-top: 15px;">
+                                <label for="pack-quantity" style="display: block; margin-bottom: 5px; font-size: 12px; color: #ccc;">Quantity (1-4):</label>
+                                <input type="number" id="pack-quantity" min="1" max="4" value="1" style="width: 100%; padding: 8px; border: 1px solid #333; border-radius: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 14px;">
+                            </div>
+                            <button id="openMultiplePacksBtn" class="action-btn" style="margin-top: 10px;">Open Multiple Packs</button>
                             <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                         </div>
                         
