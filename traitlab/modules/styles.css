@@ -2175,8 +2175,8 @@ body {
 
 .toggle-buttons,
 .rename-buttons {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
 
@@ -2185,6 +2185,11 @@ body {
     width: 100%;
     padding: 12px;
     font-size: 1rem;
+}
+
+/* El botón de commit ocupa toda la fila */
+.toggle-buttons .commit-btn {
+    grid-column: 1 / -1;
 }
 
 .rename-input {
@@ -2213,5 +2218,14 @@ body {
     
     .customise-preview img {
         max-height: 200px;
+    }
+    
+    /* En móvil, los botones vuelven a una columna */
+    .toggle-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .toggle-buttons .commit-btn {
+        grid-column: 1;
     }
 }
