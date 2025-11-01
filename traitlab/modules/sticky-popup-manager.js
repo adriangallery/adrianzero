@@ -92,6 +92,7 @@ class StickyPopupManager {
             customiseZoomBtn: document.getElementById('customise-zoomBtn'),
             customiseShadowBtn: document.getElementById('customise-shadowBtn'),
             customiseGlowBtn: document.getElementById('customise-glowBtn'),
+            customiseBnBtn: document.getElementById('customise-bnBtn'),
             customiseCommitBtn: document.getElementById('customise-commitBtn'),
             customiseRenameTokenBtn: document.getElementById('customise-renameTokenBtn'),
             
@@ -1342,6 +1343,12 @@ class StickyPopupManager {
             // GLOW ON cuando está desactivado (para activarlo), GLOW OFF cuando está activado (para desactivarlo)
             this.elements.customiseGlowBtn.textContent = customiseModule.isGlowMode ? '✨ GLOW OFF' : '✨ GLOW ON';
         }
+        
+        // Actualizar botón BN (BN ON cuando está desactivado - para activarlo)
+        if (this.elements.customiseBnBtn) {
+            // BN ON cuando está desactivado (para activarlo), BN OFF cuando está activado (para desactivarlo)
+            this.elements.customiseBnBtn.textContent = customiseModule.isBnMode ? '⚫⚪ BN OFF' : '⚫⚪ BN ON';
+        }
     }
 
     /**
@@ -1364,6 +1371,7 @@ class StickyPopupManager {
         this.elements.customiseZoomBtn = document.getElementById('customise-zoomBtn');
         this.elements.customiseShadowBtn = document.getElementById('customise-shadowBtn');
         this.elements.customiseGlowBtn = document.getElementById('customise-glowBtn');
+        this.elements.customiseBnBtn = document.getElementById('customise-bnBtn');
         this.elements.customiseCommitBtn = document.getElementById('customise-commitBtn');
         this.elements.customiseRenameTokenBtn = document.getElementById('customise-renameTokenBtn');
         this.elements.customiseCommitStatus = document.getElementById('customise-commit-status');
@@ -1393,6 +1401,10 @@ class StickyPopupManager {
 
         if (this.elements.customiseGlowBtn) {
             this.elements.customiseGlowBtn.onclick = () => this.toggleCustomiseGlow();
+        }
+
+        if (this.elements.customiseBnBtn) {
+            this.elements.customiseBnBtn.onclick = () => this.toggleCustomiseBn();
         }
 
         if (this.elements.customiseCommitBtn) {
@@ -1516,6 +1528,25 @@ class StickyPopupManager {
     }
 
     /**
+     * 🎨 Customise: Toggle black and white
+     */
+    toggleCustomiseBn() {
+        if (!window.app?.modules?.customise) return;
+        
+        window.app.modules.customise.toggleBn();
+        
+        // Actualizar texto del botón (BN ON cuando está desactivado - para activarlo)
+        if (this.elements.customiseBnBtn) {
+            const isBn = window.app.modules.customise.isBnMode;
+            // BN ON cuando está desactivado (para activarlo), BN OFF cuando está activado (para desactivarlo)
+            this.elements.customiseBnBtn.textContent = isBn ? '⚫⚪ BN OFF' : '⚫⚪ BN ON';
+        }
+        
+        // Actualizar imagen
+        this.updateCustomiseImage();
+    }
+
+    /**
      * 🎨 Customise: Update image with toggles
      */
     updateCustomiseImage() {
@@ -1578,9 +1609,10 @@ class StickyPopupManager {
             const hasCloseup = customiseModule.isCloseupMode;
             const hasShadow = customiseModule.isShadowMode;
             const hasGlow = customiseModule.isGlowMode;
+            const hasBn = customiseModule.isBnMode;
             
-            if (!hasCloseup && !hasShadow && !hasGlow) {
-                this.showStatus('⚠️ Please activate at least one toggle (Closeup, Shadow, or GLOW) before committing', 'error', this.elements.customiseCommitStatus);
+            if (!hasCloseup && !hasShadow && !hasGlow && !hasBn) {
+                this.showStatus('⚠️ Please activate at least one toggle (Closeup, Shadow, GLOW, or BN) before committing', 'error', this.elements.customiseCommitStatus);
                 if (this.elements.customiseCommitBtn) {
                     this.elements.customiseCommitBtn.disabled = false;
                     this.elements.customiseCommitBtn.textContent = 'Commit';

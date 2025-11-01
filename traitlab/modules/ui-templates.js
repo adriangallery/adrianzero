@@ -334,6 +334,7 @@ class UITemplates {
                                 <button type="button" id="customise-zoomBtn" class="action-btn zoom-btn">🔍 Zoom in</button>
                                 <button type="button" id="customise-shadowBtn" class="action-btn">🌑 Shadow OFF</button>
                                 <button type="button" id="customise-glowBtn" class="action-btn">✨ GLOW OFF</button>
+                                <button type="button" id="customise-bnBtn" class="action-btn">⚫⚪ BN OFF</button>
                                 <button type="button" id="customise-commitBtn" class="action-btn commit-btn">Commit Toggles</button>
                             </div>
                             <div id="customise-commit-status" class="apply-status" style="display: none;"></div>

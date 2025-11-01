@@ -9,12 +9,14 @@ class CustomiseManager {
         this.isCloseupMode = false;
         this.isShadowMode = false;
         this.isGlowMode = false;
+        this.isBnMode = false;
         this.eventListeners = new Map();
         
         // Bind methods
         this.toggleCloseup = this.toggleCloseup.bind(this);
         this.toggleShadow = this.toggleShadow.bind(this);
         this.toggleGlow = this.toggleGlow.bind(this);
+        this.toggleBn = this.toggleBn.bind(this);
         this.commit = this.commit.bind(this);
         this.approveRename = this.approveRename.bind(this);
         this.renameToken = this.renameToken.bind(this);
@@ -53,6 +55,7 @@ class CustomiseManager {
         this.isCloseupMode = false;
         this.isShadowMode = false;
         this.isGlowMode = false;
+        this.isBnMode = false;
     }
 
     /**
@@ -116,6 +119,26 @@ class CustomiseManager {
     }
 
     /**
+     * Toggle black and white mode
+     */
+    toggleBn() {
+        if (!this.selectedERC721) {
+            console.warn('⚠️ CustomiseManager: No hay AdrianZERO seleccionado para BN');
+            return;
+        }
+
+        this.isBnMode = !this.isBnMode;
+        console.log('⚫⚪ CustomiseManager: BN mode:', this.isBnMode ? 'ON' : 'OFF');
+        
+        // Actualizar imagen si hay sticky popup manager
+        if (window.app?.stickyPopupManager) {
+            window.app.stickyPopupManager.updateCustomiseImage();
+        }
+        
+        this.emit('bnToggled', { isBn: this.isBnMode });
+    }
+
+    /**
      * Get image URL with toggles applied
      */
     getImageUrl(tokenId) {
@@ -132,6 +155,10 @@ class CustomiseManager {
         
         if (this.isGlowMode) {
             params.push('glow=true');
+        }
+        
+        if (this.isBnMode) {
+            params.push('bn=true');
         }
         
         if (params.length > 0) {
@@ -209,16 +236,18 @@ class CustomiseManager {
                 signer
             );
 
-            // Obtener precio del toggle (usar el precio máximo entre closeup, shadow y glow si están activos)
+            // Obtener precio del toggle (usar el precio máximo entre closeup, shadow, glow y BN si están activos)
             let togglePrice = ethers.BigNumber.from(0);
-            if (this.isCloseupMode || this.isShadowMode || this.isGlowMode) {
+            if (this.isCloseupMode || this.isShadowMode || this.isGlowMode || this.isBnMode) {
                 // Obtener precio para el toggle más caro
                 try {
                     const priceCloseup = this.isCloseupMode ? await toggleContract.getTogglePrice(1) : ethers.BigNumber.from(0);
                     const priceShadow = this.isShadowMode ? await toggleContract.getTogglePrice(2) : ethers.BigNumber.from(0);
                     const priceGlow = this.isGlowMode ? await toggleContract.getTogglePrice(3) : ethers.BigNumber.from(0);
+                    const priceBn = this.isBnMode ? await toggleContract.getTogglePrice(4) : ethers.BigNumber.from(0);
                     togglePrice = priceCloseup.gt(priceShadow) ? priceCloseup : priceShadow;
                     togglePrice = togglePrice.gt(priceGlow) ? togglePrice : priceGlow;
+                    togglePrice = togglePrice.gt(priceBn) ? togglePrice : priceBn;
                     console.log('💰 Toggle price:', ethers.utils.formatEther(togglePrice));
                 } catch (error) {
                     console.warn('⚠️ Could not get toggle price, assuming approval needed:', error.message);
@@ -282,7 +311,7 @@ class CustomiseManager {
     }
 
     /**
-     * Execute commit transaction (closeup ID=1, shadow ID=2, glow ID=3)
+     * Execute commit transaction (closeup ID=1, shadow ID=2, glow ID=3, BN ID=4)
      */
     async executeCommit(ethers) {
         try {
@@ -312,10 +341,11 @@ class CustomiseManager {
             const receipts = [];
 
             // Determinar qué toggles activar
-            // Activar toggles en orden: glow (3), shadow (2), closeup (1)
+            // Activar toggles en orden: BN (4), glow (3), shadow (2), closeup (1)
             // Si todos están OFF, enviar toggleId 0 para desactivar todo
             
             const activeToggles = [];
+            if (this.isBnMode) activeToggles.push(4);
             if (this.isGlowMode) activeToggles.push(3);
             if (this.isShadowMode) activeToggles.push(2);
             if (this.isCloseupMode) activeToggles.push(1);
@@ -328,9 +358,9 @@ class CustomiseManager {
                 receipts.push({ toggleId: 0, receipt });
                 console.log('✅ CustomiseManager: Todos los toggles desactivados');
             } else {
-                // Activar toggles en orden descendente (3, 2, 1)
+                // Activar toggles en orden descendente (4, 3, 2, 1)
                 for (const toggleId of activeToggles) {
-                    const toggleName = toggleId === 3 ? 'Glow' : toggleId === 2 ? 'Shadow' : 'Closeup';
+                    const toggleName = toggleId === 4 ? 'BN' : toggleId === 3 ? 'Glow' : toggleId === 2 ? 'Shadow' : 'Closeup';
                     console.log(`💾 CustomiseManager: Commiteando ${toggleName} toggle (ID=${toggleId})`);
                     const tx = await contract.setToggle(tokenId, toggleId);
                     const receipt = await tx.wait();
@@ -345,6 +375,7 @@ class CustomiseManager {
                 isCloseupMode: this.isCloseupMode,
                 isShadowMode: this.isShadowMode,
                 isGlowMode: this.isGlowMode,
+                isBnMode: this.isBnMode,
                 toggleIdsSent: toggleIdsSent
             });
 
