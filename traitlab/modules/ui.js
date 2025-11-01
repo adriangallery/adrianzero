@@ -371,38 +371,27 @@ class UIManager {
         } else {
             // Handle ERC1155 selection based on current filter
             if (this.currentFilter === 'floppy') {
-                // Multiple selection for Packs (up to 4) - SOLO del mismo packId
-                const currentPackId = this.selectedPacks.length > 0 ? this.selectedPacks[0].tokenId : null;
-                
-                // Si ya hay packs seleccionados y son de diferente ID, no permitir seleccionar otro diferente
-                if (currentPackId && token.tokenId !== currentPackId) {
-                    console.log('Only packs with the same ID can be selected together');
-                    return; // No permitir seleccionar packs de diferente ID
-                }
-                
+                // Single selection for Packs - deseleccionar automáticamente el anterior
                 const packIndex = this.selectedPacks.findIndex(p => p.tokenId === token.tokenId);
                 if (packIndex !== -1) {
-                    // Deselect pack
+                    // Deselect pack si ya está seleccionado
                     this.selectedPacks.splice(packIndex, 1);
                     tokenCard.classList.remove('selected');
-                    // Mantener selectedFloppy para compatibilidad si solo hay uno
-                    if (this.selectedPacks.length === 1) {
-                        this.selectedFloppy = this.selectedPacks[0];
-                    } else {
-                        this.selectedFloppy = this.selectedPacks.length > 0 ? this.selectedPacks[0] : null;
-                    }
+                    this.selectedFloppy = null;
                 } else {
-                    // Select pack (up to 4 del mismo ID)
-                    if (this.selectedPacks.length < 4) {
-                        this.selectedPacks.push(token);
-                        tokenCard.classList.add('selected');
-                        // Mantener selectedFloppy para compatibilidad
-                        this.selectedFloppy = this.selectedPacks[0];
-                    } else {
-                        // Ya hay 4 packs seleccionados
-                        console.log('Maximum 4 packs of the same ID can be selected');
-                        return; // No emitir evento si ya hay 4 seleccionados
+                    // Deseleccionar pack anterior si existe
+                    if (this.selectedPacks.length > 0) {
+                        const prevSelectedCard = tokensGrid.querySelector('.token-card.selected');
+                        if (prevSelectedCard) {
+                            prevSelectedCard.classList.remove('selected');
+                        }
+                        this.selectedPacks = [];
                     }
+                    
+                    // Seleccionar el nuevo pack
+                    this.selectedPacks = [token];
+                    tokenCard.classList.add('selected');
+                    this.selectedFloppy = token;
                 }
                 
                 // Notificar cambio de selección para actualizar UI

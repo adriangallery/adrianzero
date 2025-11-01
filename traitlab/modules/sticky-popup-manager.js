@@ -146,6 +146,20 @@ class StickyPopupManager {
             this.elements.openMultiplePacksBtn.addEventListener('click', () => this.openMultiplePacks());
         }
 
+        if (this.elements.packQuantity) {
+            this.elements.packQuantity.addEventListener('input', () => {
+                // Validar que no exceda el máximo
+                const max = parseInt(this.elements.packQuantity.max) || 4;
+                const value = parseInt(this.elements.packQuantity.value) || 1;
+                if (value > max) {
+                    this.elements.packQuantity.value = max;
+                } else if (value < 1) {
+                    this.elements.packQuantity.value = 1;
+                }
+                this.updateMultiplePacksButtonText();
+            });
+        }
+
         if (this.elements.useSerumBtn) {
             this.elements.useSerumBtn.addEventListener('click', () => this.useSerum());
         }
@@ -492,7 +506,7 @@ class StickyPopupManager {
     /**
      * 🚨 NUEVO: Configurar botones específicos de floppy (Open Pack/Open Floppy)
      */
-    configureFloppyButtons() {
+    async configureFloppyButtons() {
         if (this.selectedFloppy) {
             const contractInfo = window.app?.modules?.floppy?.getContractForFloppy?.(this.selectedFloppy.tokenId);
             
@@ -506,7 +520,24 @@ class StickyPopupManager {
                     if (this.elements.openFloppySection) {
                         this.elements.openFloppySection.style.display = 'none';
                     }
-                    console.log('🎯 Mostrando botón Open Pack para floppy tipo pack:', this.selectedFloppy.tokenId);
+                    
+                    // Obtener balance del usuario para este pack
+                    let userBalance = this.selectedFloppy.balance || 0;
+                    const maxQuantity = Math.min(userBalance, 4);
+                    
+                    // Actualizar el input de cantidad
+                    if (this.elements.packQuantity) {
+                        this.elements.packQuantity.max = maxQuantity;
+                        const currentValue = parseInt(this.elements.packQuantity.value) || 1;
+                        if (currentValue > maxQuantity) {
+                            this.elements.packQuantity.value = maxQuantity;
+                        }
+                    }
+                    
+                    // Actualizar el texto del botón con la cantidad
+                    this.updateMultiplePacksButtonText();
+                    
+                    console.log('🎯 Mostrando botón Open Pack para floppy tipo pack:', this.selectedFloppy.tokenId, 'Balance:', userBalance, 'Max:', maxQuantity);
                 } else {
                     // Mostrar botón "Open Floppy"
                     if (this.elements.openFloppySection) {
@@ -925,6 +956,13 @@ class StickyPopupManager {
         } else {
             console.error('❌ Módulo floppy no disponible para openPackV4WithQuantity');
             this.showStatus('❌ Función no disponible', 'error', this.elements.openPackStatus);
+        }
+    }
+
+    updateMultiplePacksButtonText() {
+        if (this.elements.openMultiplePacksBtn && this.elements.packQuantity) {
+            const quantity = parseInt(this.elements.packQuantity.value) || 1;
+            this.elements.openMultiplePacksBtn.textContent = `Open ${quantity} Pack${quantity > 1 ? 's' : ''}`;
         }
     }
 

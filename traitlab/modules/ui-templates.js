@@ -127,7 +127,7 @@ class UITemplates {
                 <div class="contract-filter">
                     <button class="contract-btn active" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="adrianzero">AdrianZERO</button>
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="traits">Traits</button>
-                    <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">Floppy</button>
+                    <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">Packs</button>
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">Serum</button>
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">Crafting</button>
                     <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="customise">Customise</button>
@@ -156,7 +156,7 @@ class UITemplates {
                     <div class="side-emoji-menu">
                         <button class="contract-btn active" data-filter="adrianzero">🧑‍🔬</button>
                         <button class="contract-btn" data-filter="traits">🎭</button>
-                        <button class="contract-btn" data-filter="floppy">💾</button>
+                        <button class="contract-btn" data-filter="floppy">📦</button>
                         <button class="contract-btn" data-filter="serum">🧪</button>
                         <button class="contract-btn" data-filter="crafting">⚒️</button>
                         <button class="contract-btn" data-filter="customise">✍️</button>
@@ -212,11 +212,24 @@ class UITemplates {
                         <!-- Open Pack -->
                         <div id="open-pack-section" class="action-section" style="display: none;">
                             <button id="openPackBtn" class="action-btn">Open Pack</button>
-                            <div style="margin-top: 15px;">
-                                <label for="pack-quantity" style="display: block; margin-bottom: 5px; font-size: 12px; color: #ccc;">Quantity (1-4):</label>
-                                <input type="number" id="pack-quantity" min="1" max="4" value="1" style="width: 100%; padding: 8px; border: 1px solid #333; border-radius: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 14px;">
+                            <div style="margin-top: 15px; display: flex; gap: 10px; align-items: stretch;">
+                                <input type="number" id="pack-quantity" min="1" max="4" value="1" style="flex: 0 0 auto; width: 80px; padding: 10px; border: 2px solid #333; border-radius: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 14px; text-align: center; font-weight: bold; cursor: pointer; -moz-appearance: textfield;">
+                                <button id="openMultiplePacksBtn" class="action-btn" style="flex: 1 1 auto; margin: 0;">Open x Packs</button>
                             </div>
-                            <button id="openMultiplePacksBtn" class="action-btn" style="margin-top: 10px;">Open Multiple Packs</button>
+                            <style>
+                                #pack-quantity::-webkit-inner-spin-button,
+                                #pack-quantity::-webkit-outer-spin-button {
+                                    -webkit-appearance: none;
+                                    margin: 0;
+                                }
+                                #pack-quantity:hover {
+                                    background: rgba(255, 255, 255, 0.15);
+                                }
+                                #pack-quantity:focus {
+                                    outline: none;
+                                    border-color: #00ff00;
+                                }
+                            </style>
                             <div id="open-pack-status" class="apply-status" style="display: none;"></div>
                         </div>
                         
