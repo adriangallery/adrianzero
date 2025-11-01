@@ -140,25 +140,56 @@ class CustomiseManager {
 
     /**
      * Get image URL with toggles applied
+     * Usa URLs combinadas según los IDs de toggle combinados
      */
     getImageUrl(tokenId) {
         let baseUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
         const params = [];
         
-        if (this.isCloseupMode) {
-            params.push('closeup=true');
-        }
+        // Determinar si usar URL combinada o individual
+        // Combinaciones específicas con IDs combinados:
         
-        if (this.isShadowMode) {
-            params.push('shadow=true');
+        // ID 10: glow+bn+closeup
+        if (this.isGlowMode && this.isBnMode && this.isCloseupMode && !this.isShadowMode) {
+            params.push('closeup=true', 'glow=true', 'bn=true');
         }
-        
-        if (this.isGlowMode) {
-            params.push('glow=true');
+        // ID 9: glow+bn
+        else if (this.isGlowMode && this.isBnMode && !this.isCloseupMode && !this.isShadowMode) {
+            params.push('glow=true', 'bn=true');
         }
-        
-        if (this.isBnMode) {
-            params.push('bn=true');
+        // ID 8: glow+closeup
+        else if (this.isGlowMode && this.isCloseupMode && !this.isBnMode && !this.isShadowMode) {
+            params.push('closeup=true', 'glow=true');
+        }
+        // ID 7: shadow+closeup
+        else if (this.isShadowMode && this.isCloseupMode && !this.isGlowMode && !this.isBnMode) {
+            params.push('closeup=true', 'shadow=true');
+        }
+        // ID 6: bn+shadow+closeup
+        else if (this.isBnMode && this.isShadowMode && this.isCloseupMode && !this.isGlowMode) {
+            params.push('closeup=true', 'bn=true', 'shadow=true');
+        }
+        // ID 5: bn+shadow
+        else if (this.isBnMode && this.isShadowMode && !this.isCloseupMode && !this.isGlowMode) {
+            params.push('bn=true', 'shadow=true');
+        }
+        // Toggles individuales (IDs 1-4)
+        else {
+            if (this.isCloseupMode) {
+                params.push('closeup=true');
+            }
+            
+            if (this.isShadowMode) {
+                params.push('shadow=true');
+            }
+            
+            if (this.isGlowMode) {
+                params.push('glow=true');
+            }
+            
+            if (this.isBnMode) {
+                params.push('bn=true');
+            }
         }
         
         if (params.length > 0) {
@@ -166,6 +197,39 @@ class CustomiseManager {
         }
         
         return baseUrl;
+    }
+    
+    /**
+     * Determinar el toggleId combinado basado en los toggles activos
+     * Retorna el ID combinado si existe, o null si hay que usar IDs individuales
+     */
+    getCombinedToggleId() {
+        // ID 10: glow+bn+closeup (sin shadow)
+        if (this.isGlowMode && this.isBnMode && this.isCloseupMode && !this.isShadowMode) {
+            return 10;
+        }
+        // ID 9: glow+bn (sin closeup, sin shadow)
+        else if (this.isGlowMode && this.isBnMode && !this.isCloseupMode && !this.isShadowMode) {
+            return 9;
+        }
+        // ID 8: glow+closeup (sin bn, sin shadow)
+        else if (this.isGlowMode && this.isCloseupMode && !this.isBnMode && !this.isShadowMode) {
+            return 8;
+        }
+        // ID 7: shadow+closeup (sin glow, sin bn)
+        else if (this.isShadowMode && this.isCloseupMode && !this.isGlowMode && !this.isBnMode) {
+            return 7;
+        }
+        // ID 6: bn+shadow+closeup (sin glow)
+        else if (this.isBnMode && this.isShadowMode && this.isCloseupMode && !this.isGlowMode) {
+            return 6;
+        }
+        // ID 5: bn+shadow (sin closeup, sin glow)
+        else if (this.isBnMode && this.isShadowMode && !this.isCloseupMode && !this.isGlowMode) {
+            return 5;
+        }
+        // No hay combinación específica, retornar null para usar IDs individuales
+        return null;
     }
 
     /**
@@ -236,19 +300,28 @@ class CustomiseManager {
                 signer
             );
 
-            // Obtener precio del toggle (usar el precio máximo entre closeup, shadow, glow y BN si están activos)
+            // Obtener precio del toggle
+            // Primero verificar si hay un toggle combinado, si no usar el precio máximo de los individuales
             let togglePrice = ethers.BigNumber.from(0);
             if (this.isCloseupMode || this.isShadowMode || this.isGlowMode || this.isBnMode) {
-                // Obtener precio para el toggle más caro
                 try {
-                    const priceCloseup = this.isCloseupMode ? await toggleContract.getTogglePrice(1) : ethers.BigNumber.from(0);
-                    const priceShadow = this.isShadowMode ? await toggleContract.getTogglePrice(2) : ethers.BigNumber.from(0);
-                    const priceGlow = this.isGlowMode ? await toggleContract.getTogglePrice(3) : ethers.BigNumber.from(0);
-                    const priceBn = this.isBnMode ? await toggleContract.getTogglePrice(4) : ethers.BigNumber.from(0);
-                    togglePrice = priceCloseup.gt(priceShadow) ? priceCloseup : priceShadow;
-                    togglePrice = togglePrice.gt(priceGlow) ? togglePrice : priceGlow;
-                    togglePrice = togglePrice.gt(priceBn) ? togglePrice : priceBn;
-                    console.log('💰 Toggle price:', ethers.utils.formatEther(togglePrice));
+                    // Verificar si hay combinación y obtener su precio
+                    const combinedToggleId = this.getCombinedToggleId();
+                    if (combinedToggleId !== null) {
+                        // Usar precio del toggle combinado
+                        togglePrice = await toggleContract.getTogglePrice(combinedToggleId);
+                        console.log(`💰 Toggle price (combinado ID=${combinedToggleId}):`, ethers.utils.formatEther(togglePrice));
+                    } else {
+                        // Usar precio máximo entre los toggles individuales activos
+                        const priceCloseup = this.isCloseupMode ? await toggleContract.getTogglePrice(1) : ethers.BigNumber.from(0);
+                        const priceShadow = this.isShadowMode ? await toggleContract.getTogglePrice(2) : ethers.BigNumber.from(0);
+                        const priceGlow = this.isGlowMode ? await toggleContract.getTogglePrice(3) : ethers.BigNumber.from(0);
+                        const priceBn = this.isBnMode ? await toggleContract.getTogglePrice(4) : ethers.BigNumber.from(0);
+                        togglePrice = priceCloseup.gt(priceShadow) ? priceCloseup : priceShadow;
+                        togglePrice = togglePrice.gt(priceGlow) ? togglePrice : priceGlow;
+                        togglePrice = togglePrice.gt(priceBn) ? togglePrice : priceBn;
+                        console.log('💰 Toggle price (individual):', ethers.utils.formatEther(togglePrice));
+                    }
                 } catch (error) {
                     console.warn('⚠️ Could not get toggle price, assuming approval needed:', error.message);
                     // Si no podemos obtener el precio, usar un monto alto para asegurar suficiente allowance
@@ -311,7 +384,8 @@ class CustomiseManager {
     }
 
     /**
-     * Execute commit transaction (closeup ID=1, shadow ID=2, glow ID=3, BN ID=4)
+     * Execute commit transaction
+     * Usa IDs combinados (5-10) cuando corresponda, o IDs individuales (1-4)
      */
     async executeCommit(ethers) {
         try {
@@ -340,25 +414,41 @@ class CustomiseManager {
             const tokenId = this.selectedERC721.tokenId;
             const receipts = [];
 
-            // Determinar qué toggles activar
-            // Activar toggles en orden: BN (4), glow (3), shadow (2), closeup (1)
-            // Si todos están OFF, enviar toggleId 0 para desactivar todo
+            // Verificar si hay combinación específica
+            const combinedToggleId = this.getCombinedToggleId();
             
-            const activeToggles = [];
-            if (this.isBnMode) activeToggles.push(4);
-            if (this.isGlowMode) activeToggles.push(3);
-            if (this.isShadowMode) activeToggles.push(2);
-            if (this.isCloseupMode) activeToggles.push(1);
-            
-            if (activeToggles.length === 0) {
+            if (this.isCloseupMode === false && this.isShadowMode === false && 
+                this.isGlowMode === false && this.isBnMode === false) {
                 // Todos desactivados: enviar toggleId 0 para desactivar todo
                 console.log('💾 CustomiseManager: Todos los toggles desactivados, enviando toggleId 0');
                 const tx = await contract.setToggle(tokenId, 0);
                 const receipt = await tx.wait();
                 receipts.push({ toggleId: 0, receipt });
                 console.log('✅ CustomiseManager: Todos los toggles desactivados');
+            } else if (combinedToggleId !== null) {
+                // Usar ID combinado
+                const toggleNames = {
+                    5: 'BN+Shadow',
+                    6: 'BN+Shadow+Closeup',
+                    7: 'Shadow+Closeup',
+                    8: 'Glow+Closeup',
+                    9: 'Glow+BN',
+                    10: 'Glow+BN+Closeup'
+                };
+                const toggleName = toggleNames[combinedToggleId] || `Combined (ID=${combinedToggleId})`;
+                console.log(`💾 CustomiseManager: Commiteando toggle combinado ${toggleName} (ID=${combinedToggleId})`);
+                const tx = await contract.setToggle(tokenId, combinedToggleId);
+                const receipt = await tx.wait();
+                receipts.push({ toggleId: combinedToggleId, receipt });
+                console.log(`✅ CustomiseManager: ${toggleName} toggle commiteado`);
             } else {
-                // Activar toggles en orden descendente (4, 3, 2, 1)
+                // Usar IDs individuales en orden descendente (4, 3, 2, 1)
+                const activeToggles = [];
+                if (this.isBnMode) activeToggles.push(4);
+                if (this.isGlowMode) activeToggles.push(3);
+                if (this.isShadowMode) activeToggles.push(2);
+                if (this.isCloseupMode) activeToggles.push(1);
+                
                 for (const toggleId of activeToggles) {
                     const toggleName = toggleId === 4 ? 'BN' : toggleId === 3 ? 'Glow' : toggleId === 2 ? 'Shadow' : 'Closeup';
                     console.log(`💾 CustomiseManager: Commiteando ${toggleName} toggle (ID=${toggleId})`);
@@ -376,6 +466,7 @@ class CustomiseManager {
                 isShadowMode: this.isShadowMode,
                 isGlowMode: this.isGlowMode,
                 isBnMode: this.isBnMode,
+                combinedToggleId: combinedToggleId,
                 toggleIdsSent: toggleIdsSent
             });
 
