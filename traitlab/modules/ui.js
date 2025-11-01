@@ -65,7 +65,7 @@ class UIManager {
             'apply-traits-section', 'applyTraitsBtn', 'apply-status',
             'refresh-metadata-section', 'refreshMetadataBtn', 'refresh-metadata-status',
             'open-floppy-section', 'openFloppyBtn', 'open-floppy-status',
-            'open-pack-section', 'openPackBtn', 'open-pack-status',
+            'open-pack-section', 'open-pack-status',
             'use-serum-section', 'useSerumBtn', 'use-serum-status',
             'activate-token-section', 'activateTokenBtn', 'activate-token-status',
             'rename-section', 'newTokenName', 'approveRenameBtn', 'renameTokenBtn', 'rename-status'

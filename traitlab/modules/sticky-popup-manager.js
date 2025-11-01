@@ -70,7 +70,6 @@ class StickyPopupManager {
             commitBtn: document.getElementById('commitBtn'),
             applyTraitsBtn: document.getElementById('applyTraitsBtn'),
             openFloppyBtn: document.getElementById('openFloppyBtn'),
-            openPackBtn: document.getElementById('openPackBtn'),
             openMultiplePacksBtn: document.getElementById('openMultiplePacksBtn'),
             packQuantity: document.getElementById('pack-quantity'),
             useSerumBtn: document.getElementById('useSerumBtn'),
@@ -136,10 +135,6 @@ class StickyPopupManager {
 
         if (this.elements.openFloppyBtn) {
             this.elements.openFloppyBtn.addEventListener('click', () => this.openFloppy());
-        }
-
-        if (this.elements.openPackBtn) {
-            this.elements.openPackBtn.addEventListener('click', () => this.openPack());
         }
 
         if (this.elements.openMultiplePacksBtn) {
@@ -534,8 +529,25 @@ class StickyPopupManager {
                         }
                     }
                     
-                    // Actualizar el texto del botón con la cantidad
-                    this.updateMultiplePacksButtonText();
+                    // Actualizar el texto del botón con la cantidad (solo si es OpenPackV4)
+                    const contractInfo = window.app?.modules?.floppy?.getContractForFloppy?.(this.selectedFloppy.tokenId);
+                    const isOpenPackV4 = contractInfo && contractInfo.function === 'openPacks';
+                    
+                    if (isOpenPackV4 && maxQuantity > 1) {
+                        // Si puede abrir múltiples, mostrar selector y actualizar texto
+                        if (this.elements.packQuantity) {
+                            this.elements.packQuantity.style.display = 'block';
+                        }
+                        this.updateMultiplePacksButtonText();
+                    } else {
+                        // Si solo puede abrir 1, ocultar selector y mostrar texto simple
+                        if (this.elements.packQuantity) {
+                            this.elements.packQuantity.style.display = 'none';
+                        }
+                        if (this.elements.openMultiplePacksBtn) {
+                            this.elements.openMultiplePacksBtn.textContent = 'Open Pack';
+                        }
+                    }
                     
                     console.log('🎯 Mostrando botón Open Pack para floppy tipo pack:', this.selectedFloppy.tokenId, 'Balance:', userBalance, 'Max:', maxQuantity);
                 } else {
@@ -915,17 +927,8 @@ class StickyPopupManager {
         }
     }
 
-    openPack() {
-        console.log('🎯 StickyPopupManager: Abrir pack');
-        if (window.app && window.app.modules.floppy && window.app.modules.floppy.openSelectedPack) {
-            window.app.modules.floppy.openSelectedPack();
-        } else {
-            console.error('❌ Módulo floppy no disponible para openSelectedPack');
-        }
-    }
-
     async openMultiplePacks() {
-        console.log('🎯 StickyPopupManager: Abrir múltiples packs');
+        console.log('🎯 StickyPopupManager: Abrir pack(s)');
         
         if (!this.selectedFloppy) {
             this.showStatus('❌ Selecciona un pack primero', 'error', this.elements.openPackStatus);
@@ -938,31 +941,55 @@ class StickyPopupManager {
         
         if (quantityInput) {
             quantity = parseInt(quantityInput.value) || 1;
-            if (quantity < 1 || quantity > 4) {
-                this.showStatus('❌ La cantidad debe estar entre 1 y 4', 'error', this.elements.openPackStatus);
+            const max = parseInt(quantityInput.max) || 4;
+            if (quantity < 1 || quantity > max) {
+                this.showStatus(`❌ La cantidad debe estar entre 1 y ${max}`, 'error', this.elements.openPackStatus);
                 return;
             }
         }
 
-        if (window.app && window.app.modules.floppy && window.app.modules.floppy.openPackV4WithQuantity) {
+        // Verificar si el pack es compatible con OpenPackV4
+        const contractInfo = window.app?.modules?.floppy?.getContractForFloppy?.(this.selectedFloppy.tokenId);
+        const isOpenPackV4 = contractInfo && contractInfo.type === 'pack' && contractInfo.function === 'openPacks';
+        
+        if (isOpenPackV4 && window.app && window.app.modules.floppy && window.app.modules.floppy.openPackV4WithQuantity) {
+            // Usar OpenPackV4 para packs compatibles (puede abrir múltiples)
             try {
                 this.showStatus('⏳ Abriendo packs...', 'success', this.elements.openPackStatus);
                 await window.app.modules.floppy.openPackV4WithQuantity(quantity);
                 this.showStatus(`✅ ${quantity} pack(s) abierto(s) correctamente!`, 'success', this.elements.openPackStatus);
             } catch (error) {
-                console.error('❌ Error abriendo múltiples packs:', error);
+                console.error('❌ Error abriendo packs:', error);
+                this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.openPackStatus);
+            }
+        } else if (quantity === 1 && window.app && window.app.modules.floppy && window.app.modules.floppy.openSelectedPack) {
+            // Para packs que no son OpenPackV4 o cuando quantity es 1, usar la función original
+            try {
+                this.showStatus('⏳ Abriendo pack...', 'success', this.elements.openPackStatus);
+                await window.app.modules.floppy.openSelectedPack();
+                this.showStatus('✅ Pack abierto correctamente!', 'success', this.elements.openPackStatus);
+            } catch (error) {
+                console.error('❌ Error abriendo pack:', error);
                 this.showStatus(`❌ Error: ${error.message}`, 'error', this.elements.openPackStatus);
             }
         } else {
-            console.error('❌ Módulo floppy no disponible para openPackV4WithQuantity');
-            this.showStatus('❌ Función no disponible', 'error', this.elements.openPackStatus);
+            if (quantity > 1) {
+                this.showStatus('❌ Este tipo de pack solo permite abrir 1 a la vez', 'error', this.elements.openPackStatus);
+            } else {
+                console.error('❌ Módulo floppy no disponible');
+                this.showStatus('❌ Función no disponible', 'error', this.elements.openPackStatus);
+            }
         }
     }
 
     updateMultiplePacksButtonText() {
         if (this.elements.openMultiplePacksBtn && this.elements.packQuantity) {
             const quantity = parseInt(this.elements.packQuantity.value) || 1;
-            this.elements.openMultiplePacksBtn.textContent = `Open ${quantity} Pack${quantity > 1 ? 's' : ''}`;
+            if (quantity === 1) {
+                this.elements.openMultiplePacksBtn.textContent = 'Open Pack';
+            } else {
+                this.elements.openMultiplePacksBtn.textContent = `Open ${quantity} Packs`;
+            }
         }
     }
 

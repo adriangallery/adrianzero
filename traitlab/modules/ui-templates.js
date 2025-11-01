@@ -211,10 +211,9 @@ class UITemplates {
                         
                         <!-- Open Pack -->
                         <div id="open-pack-section" class="action-section" style="display: none;">
-                            <button id="openPackBtn" class="action-btn">Open Pack</button>
-                            <div style="margin-top: 15px; display: flex; gap: 10px; align-items: stretch;">
-                                <input type="number" id="pack-quantity" min="1" max="4" value="1" style="flex: 0 0 auto; width: 80px; padding: 10px; border: 2px solid #333; border-radius: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 14px; text-align: center; font-weight: bold; cursor: pointer; -moz-appearance: textfield;">
-                                <button id="openMultiplePacksBtn" class="action-btn" style="flex: 1 1 auto; margin: 0;">Open x Packs</button>
+                            <button id="openMultiplePacksBtn" class="action-btn">Open Pack</button>
+                            <div style="margin-top: 10px;">
+                                <input type="number" id="pack-quantity" min="1" max="4" value="1" style="width: 100%; padding: 10px; border: 2px solid #333; border-radius: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 14px; text-align: center; font-weight: bold; cursor: pointer; -moz-appearance: textfield;">
                             </div>
                             <style>
                                 #pack-quantity::-webkit-inner-spin-button,
