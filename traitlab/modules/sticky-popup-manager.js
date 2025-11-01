@@ -451,6 +451,20 @@ class StickyPopupManager {
     showERC721Actions() {
         if (this.elements.erc721ActionsSection) {
             this.elements.erc721ActionsSection.style.display = 'block';
+            
+            // Ocultar botones Zoom in y Commit en el tab adrianzero
+            if (this.currentFilter === 'adrianzero') {
+                const zoomCommitButtons = this.elements.erc721ActionsSection.querySelector('.zoom-commit-buttons');
+                if (zoomCommitButtons) {
+                    zoomCommitButtons.style.display = 'none';
+                }
+            } else {
+                // Mostrar botones si estamos en otro tab
+                const zoomCommitButtons = this.elements.erc721ActionsSection.querySelector('.zoom-commit-buttons');
+                if (zoomCommitButtons) {
+                    zoomCommitButtons.style.display = 'flex';
+                }
+            }
         }
     }
 
