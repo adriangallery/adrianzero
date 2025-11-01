@@ -91,6 +91,7 @@ class StickyPopupManager {
             // Customise buttons
             customiseZoomBtn: document.getElementById('customise-zoomBtn'),
             customiseShadowBtn: document.getElementById('customise-shadowBtn'),
+            customiseGlowBtn: document.getElementById('customise-glowBtn'),
             customiseCommitBtn: document.getElementById('customise-commitBtn'),
             customiseRenameTokenBtn: document.getElementById('customise-renameTokenBtn'),
             
@@ -1335,6 +1336,12 @@ class StickyPopupManager {
             // Shadow ON cuando está desactivado (para activarlo), Shadow OFF cuando está activado (para desactivarlo)
             this.elements.customiseShadowBtn.textContent = customiseModule.isShadowMode ? '🌑 Shadow OFF' : '🌑 Shadow ON';
         }
+        
+        // Actualizar botón glow (GLOW ON cuando está desactivado - para activarlo)
+        if (this.elements.customiseGlowBtn) {
+            // GLOW ON cuando está desactivado (para activarlo), GLOW OFF cuando está activado (para desactivarlo)
+            this.elements.customiseGlowBtn.textContent = customiseModule.isGlowMode ? '✨ GLOW OFF' : '✨ GLOW ON';
+        }
     }
 
     /**
@@ -1356,6 +1363,7 @@ class StickyPopupManager {
         this.elements.customiseLoading = document.getElementById('customise-loading');
         this.elements.customiseZoomBtn = document.getElementById('customise-zoomBtn');
         this.elements.customiseShadowBtn = document.getElementById('customise-shadowBtn');
+        this.elements.customiseGlowBtn = document.getElementById('customise-glowBtn');
         this.elements.customiseCommitBtn = document.getElementById('customise-commitBtn');
         this.elements.customiseRenameTokenBtn = document.getElementById('customise-renameTokenBtn');
         this.elements.customiseCommitStatus = document.getElementById('customise-commit-status');
@@ -1381,6 +1389,10 @@ class StickyPopupManager {
 
         if (this.elements.customiseShadowBtn) {
             this.elements.customiseShadowBtn.onclick = () => this.toggleCustomiseShadow();
+        }
+
+        if (this.elements.customiseGlowBtn) {
+            this.elements.customiseGlowBtn.onclick = () => this.toggleCustomiseGlow();
         }
 
         if (this.elements.customiseCommitBtn) {
@@ -1485,6 +1497,25 @@ class StickyPopupManager {
     }
 
     /**
+     * 🎨 Customise: Toggle glow
+     */
+    toggleCustomiseGlow() {
+        if (!window.app?.modules?.customise) return;
+        
+        window.app.modules.customise.toggleGlow();
+        
+        // Actualizar texto del botón (GLOW ON cuando está desactivado - para activarlo)
+        if (this.elements.customiseGlowBtn) {
+            const isGlow = window.app.modules.customise.isGlowMode;
+            // GLOW ON cuando está desactivado (para activarlo), GLOW OFF cuando está activado (para desactivarlo)
+            this.elements.customiseGlowBtn.textContent = isGlow ? '✨ GLOW OFF' : '✨ GLOW ON';
+        }
+        
+        // Actualizar imagen
+        this.updateCustomiseImage();
+    }
+
+    /**
      * 🎨 Customise: Update image with toggles
      */
     updateCustomiseImage() {
@@ -1546,9 +1577,10 @@ class StickyPopupManager {
             const customiseModule = window.app.modules.customise;
             const hasCloseup = customiseModule.isCloseupMode;
             const hasShadow = customiseModule.isShadowMode;
+            const hasGlow = customiseModule.isGlowMode;
             
-            if (!hasCloseup && !hasShadow) {
-                this.showStatus('⚠️ Please activate at least one toggle (Closeup or Shadow) before committing', 'error', this.elements.customiseCommitStatus);
+            if (!hasCloseup && !hasShadow && !hasGlow) {
+                this.showStatus('⚠️ Please activate at least one toggle (Closeup, Shadow, or GLOW) before committing', 'error', this.elements.customiseCommitStatus);
                 if (this.elements.customiseCommitBtn) {
                     this.elements.customiseCommitBtn.disabled = false;
                     this.elements.customiseCommitBtn.textContent = 'Commit';

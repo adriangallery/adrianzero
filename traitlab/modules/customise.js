@@ -8,11 +8,13 @@ class CustomiseManager {
         this.selectedERC721 = null;
         this.isCloseupMode = false;
         this.isShadowMode = false;
+        this.isGlowMode = false;
         this.eventListeners = new Map();
         
         // Bind methods
         this.toggleCloseup = this.toggleCloseup.bind(this);
         this.toggleShadow = this.toggleShadow.bind(this);
+        this.toggleGlow = this.toggleGlow.bind(this);
         this.commit = this.commit.bind(this);
         this.approveRename = this.approveRename.bind(this);
         this.renameToken = this.renameToken.bind(this);
@@ -50,6 +52,7 @@ class CustomiseManager {
         this.selectedERC721 = null;
         this.isCloseupMode = false;
         this.isShadowMode = false;
+        this.isGlowMode = false;
     }
 
     /**
@@ -93,6 +96,26 @@ class CustomiseManager {
     }
 
     /**
+     * Toggle glow mode
+     */
+    toggleGlow() {
+        if (!this.selectedERC721) {
+            console.warn('⚠️ CustomiseManager: No hay AdrianZERO seleccionado para glow');
+            return;
+        }
+
+        this.isGlowMode = !this.isGlowMode;
+        console.log('✨ CustomiseManager: Glow mode:', this.isGlowMode ? 'ON' : 'OFF');
+        
+        // Actualizar imagen si hay sticky popup manager
+        if (window.app?.stickyPopupManager) {
+            window.app.stickyPopupManager.updateCustomiseImage();
+        }
+        
+        this.emit('glowToggled', { isGlow: this.isGlowMode });
+    }
+
+    /**
      * Get image URL with toggles applied
      */
     getImageUrl(tokenId) {
@@ -105,6 +128,10 @@ class CustomiseManager {
         
         if (this.isShadowMode) {
             params.push('shadow=true');
+        }
+        
+        if (this.isGlowMode) {
+            params.push('glow=true');
         }
         
         if (params.length > 0) {
@@ -182,14 +209,16 @@ class CustomiseManager {
                 signer
             );
 
-            // Obtener precio del toggle (usar el precio máximo entre closeup y shadow si ambos están activos)
+            // Obtener precio del toggle (usar el precio máximo entre closeup, shadow y glow si están activos)
             let togglePrice = ethers.BigNumber.from(0);
-            if (this.isCloseupMode || this.isShadowMode) {
+            if (this.isCloseupMode || this.isShadowMode || this.isGlowMode) {
                 // Obtener precio para el toggle más caro
                 try {
                     const priceCloseup = this.isCloseupMode ? await toggleContract.getTogglePrice(1) : ethers.BigNumber.from(0);
                     const priceShadow = this.isShadowMode ? await toggleContract.getTogglePrice(2) : ethers.BigNumber.from(0);
+                    const priceGlow = this.isGlowMode ? await toggleContract.getTogglePrice(3) : ethers.BigNumber.from(0);
                     togglePrice = priceCloseup.gt(priceShadow) ? priceCloseup : priceShadow;
+                    togglePrice = togglePrice.gt(priceGlow) ? togglePrice : priceGlow;
                     console.log('💰 Toggle price:', ethers.utils.formatEther(togglePrice));
                 } catch (error) {
                     console.warn('⚠️ Could not get toggle price, assuming approval needed:', error.message);
@@ -253,7 +282,7 @@ class CustomiseManager {
     }
 
     /**
-     * Execute commit transaction (closeup ID=1, shadow ID=2)
+     * Execute commit transaction (closeup ID=1, shadow ID=2, glow ID=3)
      */
     async executeCommit(ethers) {
         try {
@@ -283,44 +312,31 @@ class CustomiseManager {
             const receipts = [];
 
             // Determinar qué toggles activar
-            // Solo activar los toggles que están ON, no desactivar los que están OFF
-            // Si ambos están OFF, enviar toggleId 0 para desactivar todo
+            // Activar toggles en orden: glow (3), shadow (2), closeup (1)
+            // Si todos están OFF, enviar toggleId 0 para desactivar todo
             
-            if (this.isCloseupMode && this.isShadowMode) {
-                // Ambos activados: enviar primero shadow (ID=2), luego closeup (ID=1)
-                // Nota: El orden puede importar según el contrato
-                console.log('💾 CustomiseManager: Ambos toggles activados, commiteando shadow primero (ID=2)');
-                const txShadow = await contract.setToggle(tokenId, 2);
-                const receiptShadow = await txShadow.wait();
-                receipts.push({ toggleId: 2, receipt: receiptShadow });
-                console.log('✅ CustomiseManager: Shadow toggle commiteado');
-                
-                console.log('💾 CustomiseManager: Commiteando closeup (ID=1)');
-                const txCloseup = await contract.setToggle(tokenId, 1);
-                const receiptCloseup = await txCloseup.wait();
-                receipts.push({ toggleId: 1, receipt: receiptCloseup });
-                console.log('✅ CustomiseManager: Closeup toggle commiteado');
-            } else if (this.isShadowMode) {
-                // Solo shadow activado: enviar toggleId 2 directamente
-                console.log('💾 CustomiseManager: Commiteando shadow toggle (ID=2)');
-                const txShadow = await contract.setToggle(tokenId, 2);
-                const receiptShadow = await txShadow.wait();
-                receipts.push({ toggleId: 2, receipt: receiptShadow });
-                console.log('✅ CustomiseManager: Shadow toggle commiteado');
-            } else if (this.isCloseupMode) {
-                // Solo closeup activado: enviar toggleId 1 directamente
-                console.log('💾 CustomiseManager: Commiteando closeup toggle (ID=1)');
-                const txCloseup = await contract.setToggle(tokenId, 1);
-                const receiptCloseup = await txCloseup.wait();
-                receipts.push({ toggleId: 1, receipt: receiptCloseup });
-                console.log('✅ CustomiseManager: Closeup toggle commiteado');
-            } else {
-                // Ambos desactivados: enviar toggleId 0 para desactivar todo
-                console.log('💾 CustomiseManager: Ambos toggles desactivados, enviando toggleId 0');
+            const activeToggles = [];
+            if (this.isGlowMode) activeToggles.push(3);
+            if (this.isShadowMode) activeToggles.push(2);
+            if (this.isCloseupMode) activeToggles.push(1);
+            
+            if (activeToggles.length === 0) {
+                // Todos desactivados: enviar toggleId 0 para desactivar todo
+                console.log('💾 CustomiseManager: Todos los toggles desactivados, enviando toggleId 0');
                 const tx = await contract.setToggle(tokenId, 0);
                 const receipt = await tx.wait();
                 receipts.push({ toggleId: 0, receipt });
                 console.log('✅ CustomiseManager: Todos los toggles desactivados');
+            } else {
+                // Activar toggles en orden descendente (3, 2, 1)
+                for (const toggleId of activeToggles) {
+                    const toggleName = toggleId === 3 ? 'Glow' : toggleId === 2 ? 'Shadow' : 'Closeup';
+                    console.log(`💾 CustomiseManager: Commiteando ${toggleName} toggle (ID=${toggleId})`);
+                    const tx = await contract.setToggle(tokenId, toggleId);
+                    const receipt = await tx.wait();
+                    receipts.push({ toggleId, receipt });
+                    console.log(`✅ CustomiseManager: ${toggleName} toggle commiteado`);
+                }
             }
 
             const toggleIdsSent = receipts.map(r => r.toggleId);
@@ -328,6 +344,7 @@ class CustomiseManager {
                 tokenId,
                 isCloseupMode: this.isCloseupMode,
                 isShadowMode: this.isShadowMode,
+                isGlowMode: this.isGlowMode,
                 toggleIdsSent: toggleIdsSent
             });
 
