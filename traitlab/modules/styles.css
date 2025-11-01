@@ -2220,12 +2220,18 @@ body {
         max-height: 200px;
     }
     
-    /* En móvil, los botones vuelven a una columna */
+    /* En móvil, mantener 2 columnas pero ajustar tamaño */
     .toggle-buttons {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .toggle-buttons .action-btn {
+        padding: 10px 8px;
+        font-size: 0.9rem;
     }
     
     .toggle-buttons .commit-btn {
-        grid-column: 1;
+        grid-column: 1 / -1;
     }
 }
