@@ -127,7 +127,7 @@ class UITemplates {
                 <div class="contract-filter">
                     <button class="contract-btn active" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="adrianzero">AdrianZERO</button>
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="traits">Traits</button>
-                    <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">Floppy</button>
+                    <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="floppy">Packs</button>
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="serum">Serum</button>
                     <button class="contract-btn" data-contract="0x90546848474fb3c9fda3fdad887969bb244e7e58" data-filter="crafting">Crafting</button>
                     <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="customise">Customise</button>
@@ -156,7 +156,7 @@ class UITemplates {
                     <div class="side-emoji-menu">
                         <button class="contract-btn active" data-filter="adrianzero">🧑‍🔬</button>
                         <button class="contract-btn" data-filter="traits">🎭</button>
-                        <button class="contract-btn" data-filter="floppy">💾</button>
+                        <button class="contract-btn" data-filter="floppy">📦</button>
                         <button class="contract-btn" data-filter="serum">🧪</button>
                         <button class="contract-btn" data-filter="crafting">⚒️</button>
                         <button class="contract-btn" data-filter="customise">✍️</button>
@@ -212,7 +212,11 @@ class UITemplates {
                         <!-- Open Pack -->
                         <div id="open-pack-section" class="action-section" style="display: none;">
                             <button id="openPackBtn" class="action-btn">Open Pack</button>
+                            <button id="openMultiplePacksBtn" class="action-btn" style="margin-top: 10px; display: none;">Open Multiple Packs</button>
                             <div id="open-pack-status" class="apply-status" style="display: none;"></div>
+                            <div id="selected-packs-info" style="margin-top: 10px; font-size: 12px; color: #ccc; display: none;">
+                                <div>Selected: <span id="selected-packs-count">0</span>/4 (same pack ID)</div>
+                            </div>
                         </div>
                         
                         <!-- Activate Token -->

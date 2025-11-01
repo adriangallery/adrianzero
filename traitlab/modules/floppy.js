@@ -353,7 +353,70 @@ class FloppyManager {
     }
 
     /**
-     * Execute the open pack V4 transaction
+     * Open Multiple Packs V4 function
+     * Opens multiple packs of the SAME packId (up to 4) in a single transaction
+     */
+    async openMultiplePacksV4(selectedPacks) {
+        console.log('openMultiplePacksV4 called with packs:', selectedPacks);
+        
+        if (!selectedPacks || selectedPacks.length === 0) {
+            throw new Error('Please select at least one pack.');
+        }
+
+        if (selectedPacks.length > 4) {
+            throw new Error('Maximum 4 packs can be opened at once.');
+        }
+
+        // Validar que todos los packs sean del mismo ID
+        const packId = selectedPacks[0].tokenId;
+        const allSameId = selectedPacks.every(pack => pack.tokenId === packId);
+        
+        if (!allSameId) {
+            throw new Error('All selected packs must have the same ID to open them together.');
+        }
+
+        // Check if this pack is supported by OpenPackV4
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013];
+        if (!supportedPacks.includes(packId)) {
+            throw new Error(`Pack ${packId} is not supported by OpenPackV4.`);
+        }
+        
+        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+            throw new Error('Please connect your wallet first.');
+        }
+
+        try {
+            // Load ethers dynamically only when needed
+            let ethers;
+            if (typeof window.ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                
+                return new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        console.log('Ethers loaded successfully');
+                        this.executeOpenMultiplePacksV4Transaction(ethers, selectedPacks)
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    script.onerror = () => {
+                        reject(new Error('Failed to load ethers library. Please refresh the page.'));
+                    };
+                    document.head.appendChild(script);
+                });
+            } else {
+                ethers = window.ethers;
+                return await this.executeOpenMultiplePacksV4Transaction(ethers, selectedPacks);
+            }
+        } catch (error) {
+            console.error('Error in openMultiplePacksV4:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute the open pack V4 transaction (single pack)
      */
     async executeOpenPackV4Transaction(ethers) {
         try {
@@ -361,7 +424,7 @@ class FloppyManager {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
-            // OpenPackV4 ABI - función openPacks
+            // OpenPackV4 ABI - función openPacks (single)
             const openPackV4ABI = [
                 'function openPacks(uint256 packId, uint32 quantity) external'
             ];
@@ -404,6 +467,88 @@ class FloppyManager {
             console.error('Error in transaction:', error);
             
             let errorMessage = 'Failed to open pack.';
+            
+            // Handle specific error cases
+            if (error.code === 4001) {
+                errorMessage = 'Transaction was rejected by user.';
+            } else if (error.message) {
+                errorMessage = `Error: ${error.message}`;
+            }
+            
+            throw new Error(errorMessage);
+        }
+    }
+
+    /**
+     * Execute the open multiple packs V4 transaction
+     * Opens multiple packs of the SAME packId (up to 4) in a single transaction
+     */
+    async executeOpenMultiplePacksV4Transaction(ethers, selectedPacks) {
+        try {
+            if (!selectedPacks || selectedPacks.length === 0) {
+                throw new Error('No packs selected');
+            }
+
+            if (selectedPacks.length > 4) {
+                throw new Error('Maximum 4 packs can be opened at once');
+            }
+
+            // Validar que todos los packs sean del mismo ID
+            const packId = selectedPacks[0].tokenId;
+            const allSameId = selectedPacks.every(pack => pack.tokenId === packId);
+            
+            if (!allSameId) {
+                throw new Error('All packs must have the same ID to open them together');
+            }
+
+            // Get provider and signer
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            // OpenPackV4 ABI - función openPacks
+            // Acepta un packId y una cantidad (quantity) que puede ser de 1 a 4
+            const openPackV4ABI = [
+                'function openPacks(uint256 packId, uint32 quantity) external'
+            ];
+
+            // Create contract instance
+            const contract = new ethers.Contract(
+                window.TraitLABConfig.OPENPACK_V4_CONTRACT, 
+                openPackV4ABI, 
+                signer
+            );
+
+            // Prepare parameters - mismo packId, cantidad = número de packs seleccionados
+            const quantity = selectedPacks.length;
+
+            console.log('Contract address:', window.TraitLABConfig.OPENPACK_V4_CONTRACT);
+            console.log('Pack ID:', packId);
+            console.log('Quantity:', quantity);
+
+            // Call the contract function - un solo packId con quantity = número de packs
+            const tx = await contract.openPacks(packId, quantity);
+            
+            console.log('Transaction hash:', tx.hash);
+
+            // Wait for transaction confirmation
+            const receipt = await tx.wait();
+            
+            console.log('Transaction confirmed:', receipt);
+
+            // Emit success event
+            this.emit('floppyOpened', { 
+                tokenId: packId, 
+                quantity: quantity,
+                transactionHash: receipt.transactionHash,
+                receipt 
+            });
+
+            return receipt;
+
+        } catch (error) {
+            console.error('Error in multiple packs transaction:', error);
+            
+            let errorMessage = 'Failed to open packs.';
             
             // Handle specific error cases
             if (error.code === 4001) {
