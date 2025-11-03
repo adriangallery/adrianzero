@@ -4,11 +4,12 @@
   "drops": [
     {
       "id": 1023,
-      "title": "Neo-ZERO",
-      "short": "Celebrating the beginning of the machine rebellion",
-      "image": "https://adrianzero.com/shitdrop/images/1023.png",
+      "title": "Back to Work pack",
+      "short": "Includes a T-shirt, soda, cap & that drive-thru headset",
+      "image": "https://adrianzero.com/shitdrop/images/15010.png",
       "opensea": "https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/1023",
-      "date": "2025-10-29"
+      "date": "2025-10-29",
+      "totalMinted": 35
     }
   ]
 }
