@@ -210,8 +210,8 @@ class FloppyManager {
                 type: 'pack',
                 name: 'Action Pack 10007'
             };
-        } else if (tokenId >= 15008 && tokenId <= 15015) {
-            // Action Packs 15008-15015
+        } else if (tokenId >= 15008 && tokenId <= 15015 && tokenId !== 15010) {
+            // Action Packs 15008-15015 (except 15010 which uses OpenPackV4)
             return {
                 address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
                 type: 'pack',
@@ -291,7 +291,7 @@ class FloppyManager {
         } else if (this.selectedFloppy.tokenId === 10012) {
             console.log('Redirecting to openActionPack() for PACK10012', this.selectedFloppy.tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015) {
+        } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015 && this.selectedFloppy.tokenId !== 15010) {
             console.log('Redirecting to openActionPack() for token', this.selectedFloppy.tokenId);
             return await this.openActionPack();
         } else if (this.selectedFloppy.tokenId === 10006) {
