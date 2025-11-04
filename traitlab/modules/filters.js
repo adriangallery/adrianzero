@@ -84,6 +84,9 @@ class TokenFilters {
                 } else if (tokenId === 10013) {
                     token.displayName = 'PACK10013';
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
+                } else if (tokenId === 15010) {
+                    token.displayName = 'Back to Work';
+                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
                 } else {
                     // Otros floppys usan PACK_TOKEN_MINTER_CONTRACT
                     token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;

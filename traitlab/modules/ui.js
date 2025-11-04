@@ -180,6 +180,8 @@ class UIManager {
                     displayTitle = 'PUNKSfloppy';
                 } else if (token.tokenId === 10010) {
                     displayTitle = 'ComradesUSB';
+                } else if (token.tokenId === 15010) {
+                    displayTitle = 'Back to Work';
                 } else {
                     // 🚨 NUEVO: Limpiar el título quitando números al inicio
                     displayTitle = token.title.replace(/^\d+\s*/, '');
