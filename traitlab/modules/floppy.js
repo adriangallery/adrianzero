@@ -192,10 +192,11 @@ class FloppyManager {
      * Updated to use OpenPackV4 for specified packs
      */
     getContractForFloppy(tokenId) {
-        // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013
+        // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 15010
         if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || 
             tokenId === 10003 || tokenId === 10004 || tokenId === 10005 || 
-            tokenId === 10009 || tokenId === 10010 || tokenId === 10013) {
+            tokenId === 10009 || tokenId === 10010 || tokenId === 10013 || 
+            tokenId === 15010) {
             return {
                 address: window.TraitLABConfig.OPENPACK_V4_CONTRACT,
                 type: 'pack',
@@ -304,7 +305,7 @@ class FloppyManager {
 
     /**
      * Open Pack V4 function for OpenPackV4 contract
-     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010
+     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 15010
      */
     async openPackV4() {
         console.log('openPackV4 called');
@@ -313,7 +314,7 @@ class FloppyManager {
         }
         
         // Check if this pack is supported by OpenPackV4
-        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013];
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 15010];
         if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is not supported by OpenPackV4.');
         }
@@ -367,7 +368,7 @@ class FloppyManager {
         }
         
         // Check if this pack is supported by OpenPackV4
-        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013];
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 15010];
         if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is not supported by OpenPackV4.');
         }
@@ -480,7 +481,7 @@ class FloppyManager {
             throw new Error('Please select a pack first.');
         }
         // This function is now only for legacy packs not handled by OpenPackV4
-        const openPackV4Packs = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010];
+        const openPackV4Packs = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 15010];
         if (openPackV4Packs.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is now handled by OpenPackV4. Please use the correct function.');
         }
