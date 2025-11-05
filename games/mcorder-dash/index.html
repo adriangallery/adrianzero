@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adrian's McOrder Dash (Game & Watch Style)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for retro/blocky look */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        :root {
+            --lcd-bg: #c8d8ae; /* Pale green/yellow G&W background, mainly for borders */
+            --lcd-fg: #1a1a1a; /* Dark 'ink' color */
+            --lcd-accent: #e53e3e; /* McDonald's Red accent */
+            --game-width: 400px;
+            --game-height: 550px;
+        }
+
+        body {
+            background-color: #f7f3e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .game-watch-container {
+            width: var(--game-width);
+            height: var(--game-height);
+            background-color: var(--lcd-bg);
+            border: 10px solid var(--lcd-fg);
+            border-radius: 15px;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 0, 0, 0.4), 
+                0 10px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen-area {
+            flex-grow: 1;
+            position: relative;
+            padding: 10px;
+            overflow: hidden;
+            /* === UPDATED BACKGROUND STYLES === */
+            background-image: url('Back.jpg');
+            background-size: cover; 
+            background-position: center center;
+            background-repeat: no-repeat;
+            /* ============================ */
+        }
+
+        .info-bar {
+            background-color: var(--lcd-accent);
+            color: #fff;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 0.5rem;
+            border-bottom: 5px solid var(--lcd-fg);
+        }
+
+        .control-panel {
+            background-color: var(--lcd-fg);
+            padding: 15px 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 5px solid var(--lcd-bg);
+        }
+
+        .btn-control {
+            background-color: var(--lcd-accent);
+            color: white;
+            padding: 12px 18px;
+            border: 4px solid #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.6rem;
+            box-shadow: 0 4px #a00000;
+            transition: all 0.1s;
+        }
+
+        .btn-control:active {
+            box-shadow: 0 1px #a00000;
+            transform: translateY(3px);
+        }
+
+        .game-element {
+            position: absolute;
+            transition: left 0.1s linear; /* Smooth player movement */
+            text-shadow: 1px 1px 0 var(--lcd-fg); /* Outline for LCD effect */
+        }
+
+        .falling-item {
+            width: 50px; /* Give the container a fixed size for the PNG */
+            height: 50px;
+        }
+        
+        /* Ensure images inside the falling item fill the container */
+        .falling-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Maintain aspect ratio */
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+        }
+
+        .player {
+            width: 123px; /* Width for the manager sprite */
+            height: 123px; /* Height for the manager sprite */
+            bottom: 0px; /* Adjust slightly up */
+            background: none;
+            text-align: center;
+        }
+        
+        /* Ensure the manager image fills the player container */
+        .player img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Maintain aspect ratio */
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+        }
+
+        .order-item-icon {
+            opacity: 0.4; /* Default unfulfilled, slightly higher opacity for visibility */
+            transition: opacity 0.3s;
+            width: 40px; /* Fixed size for item display */
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Ensure images inside the order display fill the container */
+        .order-item-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Maintain aspect ratio */
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+        }
+
+        .order-item-icon.fulfilled {
+            opacity: 1; /* Fulfilled */
+            color: var(--lcd-accent);
+            text-shadow: 0 0 5px rgba(229, 62, 62, 0.8);
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 1rem;
+            z-index: 100;
+        }
+
+        .game-over-overlay button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f6d10c; /* McDonald's Yellow */
+            color: var(--lcd-fg);
+            border-radius: 5px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            box-shadow: 0 3px #ccaf0a;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game" class="game-watch-container">
+        
+        <div class="info-bar flex justify-between">
+            <div id="status-message">FULFILL THE ORDERS!</div>
+            <div>
+                SCORE: <span id="score-display">0</span> | LIVES: <span id="lives-display">3</span>
+            </div>
+        </div>
+
+        <div class="screen-area">
+            
+            <div id="game-over-overlay" class="game-over-overlay">
+                <div id="overlay-title">ADRIAN'S MCORDER DASH</div>
+                <div class="text-sm my-2">Score: <span id="final-score">0</span></div>
+                <button id="overlay-button" onclick="startGame()">START GAME</button>
+            </div>
+
+            <div id="order-display" class="order-display">
+                <div class="mb-1 text-xs">ORDER UP!</div>
+                <div id="current-order" class="flex justify-center space-x-2 text-3xl">
+                    </div>
+            </div>
+
+            <div id="player" class="game-element player" style="left: calc(33.33% - 61.5px + 16.66%);">
+                </div>
+
+            <div id="falling-items">
+                </div>
+
+        </div>
+
+        <div class="control-panel">
+            <button class="btn-control" onclick="movePlayer('left')">LEFT &lt;</button>
+            <button class="btn-control" onclick="movePlayer('right')">RIGHT &gt;</button>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Global variables for Firebase setup (required even if not used in this specific game)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+        // --- PNG ASSETS (REPLACED SVG WITH PNG) ---
+        
+        // Manager PNGs (Player Sprite)
+        const MANAGER_R_PNG = '<img src="Manager_R.png" width="100%" height="100%" alt="Manager Right">';
+        const MANAGER_L_PNG = '<img src="Manager_L.png" width="100%" height="100%" alt="Manager Left">';
+        
+        // Food Item PNGs
+        const BURGER_PNG = '<img src="Burger.png" width="100%" height="100%" alt="Burger">';
+        const FRIES_PNG = '<img src="Fries.png" width="100%" height="100%" alt="Fries">';
+        const COKE_PNG = '<img src="Coke.png" width="100%" height="100%" alt="Coke">';
+        const NUGGETS_PNG = '<img src="Nuggets.png" width="100%" height="100%" alt="Nuggets">';
+        const ICECREAM_PNG = '<img src="Ice.png" width="100%" height="100%" alt="Ice Cream">';
+        
+        // --- Game Configuration ---
+        const GAME_CONFIG = {
+            LANE_COUNT: 3,
+            ITEM_HEIGHT: 40,
+            PLAYER_Y: 500, // Fixed Y position for player
+            FALL_SPEED_INITIAL: 2.0,
+            
+            // DIFFICULTY TIERS: Increases every 3 orders
+            // Inside GAME_CONFIG
+            FALL_SPEED_INCREMENT_PER_TIER: 0.5, // How much the speed increases
+            FAST_FALL_MULTIPLIER: 2.5, // Multiplies fall speed when holding down
+            DROP_INTERVAL_INITIAL: 1500,
+            DROP_INTERVAL_DECREMENT_PER_TIER: 200, // Increased decrement for faster item density
+            SCORE_PER_ITEM: 10,
+            SCORE_PER_ORDER: 100,
+            ITEM_TYPES: {
+                'B': { emoji: BURGER_PNG, name: 'Burger' },
+                'F': { emoji: FRIES_PNG, name: 'Fries' },
+                'N': { emoji: NUGGETS_PNG, name: 'Nuggets' },
+                'D': { emoji: COKE_PNG, name: 'Drink' },
+                'I': { emoji: ICECREAM_PNG, name: 'Icecream' },
+            },
+            ORDERS: [
+                ['B', 'F'], // Simple Tutorial Order (Index 0)
+                ['B', 'F', 'D'], // Meal 1 
+                ['N', 'I'], // Dessert Snack
+                ['F', 'D', 'B', 'N'], // Big Family Order
+                ['I', 'B'], // Simple combo
+            ]
+        };
+
+        // --- Audio Configuration ---
+        const AUDIO_SETTINGS = {
+            background: { src: 'Let%20Me%20See%20Ya%20Bounce.mp3', volume: 0.35, loop: true },
+            gameOver: { src: 'Game%20Over%20Music%201.mp3', volume: 0.45, loop: false },
+            catch: { src: 'Triple%20Bleep.mp3', volume: 0.55 },
+            miss: { src: 'Drop.mp3', volume: 0.6 }
+        };
+
+        const backgroundMusic = new Audio(AUDIO_SETTINGS.background.src);
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = AUDIO_SETTINGS.background.volume;
+
+        const gameOverMusic = new Audio(AUDIO_SETTINGS.gameOver.src);
+        gameOverMusic.loop = false;
+        gameOverMusic.volume = AUDIO_SETTINGS.gameOver.volume;
+
+        let audioUnlocked = false;
+
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            backgroundMusic.play()
+                .then(() => {
+                    backgroundMusic.pause();
+                    backgroundMusic.currentTime = 0;
+                })
+                .catch(() => {
+                    audioUnlocked = false;
+                });
+        }
+
+        function stopBackgroundMusic() {
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0;
+        }
+
+        function playBackgroundMusic() {
+            if (!audioUnlocked) {
+                unlockAudio();
+            }
+            if (!audioUnlocked) return;
+
+            gameOverMusic.pause();
+            gameOverMusic.currentTime = 0;
+
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play().catch(() => {
+                audioUnlocked = false;
+            });
+        }
+
+        function playGameOverMusic() {
+            if (!audioUnlocked) return;
+            gameOverMusic.currentTime = 0;
+            gameOverMusic.play().catch(() => {
+                audioUnlocked = false;
+            });
+        }
+
+        function playSfx(type) {
+            if (!audioUnlocked) {
+                unlockAudio();
+            }
+            if (!audioUnlocked) return;
+
+            const setting = AUDIO_SETTINGS[type];
+            if (!setting) return;
+
+            const audio = new Audio(setting.src);
+            audio.volume = setting.volume ?? 0.5;
+            audio.play().catch(() => {
+                // If playback fails, allow future attempts by keeping audioUnlocked true.
+            });
+        }
+
+        document.addEventListener('pointerdown', unlockAudio);
+        document.addEventListener('keydown', unlockAudio);
+
+        // --- Game State ---
+        let score = 0;
+        let lives = 3;
+        let playerLane = 1; // 0, 1, or 2 (Left, Center, Right)
+        let playerDirection = 'right'; // Added state for player sprite
+        let fallingItems = [];
+        let currentOrder = [];
+        let orderProgress = 0;
+        let fallSpeed = GAME_CONFIG.FALL_SPEED_INITIAL;
+        let dropInterval = GAME_CONFIG.DROP_INTERVAL_INITIAL;
+        let gameLoopId = null;
+        let itemDropTimer = null;
+        let isGameOver = true;
+        let orderCount = 0; // Tracks how many orders have been issued
+        let isFastFallActive = false; // Fast fall state flag
+
+        // --- DOM Elements ---
+        const playerEl = document.getElementById('player');
+        const scoreDisplayEl = document.getElementById('score-display');
+        const livesDisplayEl = document.getElementById('lives-display');
+        const orderDisplayEl = document.getElementById('current-order');
+        const fallingItemsEl = document.getElementById('falling-items');
+        const gameOverOverlayEl = document.getElementById('game-over-overlay');
+        const finalScoreEl = document.getElementById('final-score');
+        const statusMessageEl = document.getElementById('status-message');
+        const screenAreaEl = document.querySelector('.screen-area');
+        const overlayTitleEl = document.getElementById('overlay-title');
+        const overlayButtonEl = document.getElementById('overlay-button');
+
+        // Helper function to get the X position for a given lane (0, 1, 2)
+        function getLaneX(laneIndex) {
+            const gameWidth = screenAreaEl.clientWidth;
+            const laneWidth = gameWidth / GAME_CONFIG.LANE_COUNT;
+            const playerOffset = playerEl.clientWidth / 2;
+            
+            // Calculate center of the lane and subtract half player width
+            return (laneIndex * laneWidth) + (laneWidth / 2) - playerOffset;
+        }
+        
+        // --- Core Game Functions ---
+
+        function updateUI() {
+            scoreDisplayEl.textContent = score;
+            livesDisplayEl.textContent = lives;
+            
+            // 1. Update player position
+            playerEl.style.left = `${getLaneX(playerLane)}px`;
+            
+            // 2. Update player PNG based on direction
+            if (playerDirection === 'left') {
+                playerEl.innerHTML = MANAGER_L_PNG;
+            } else {
+                playerEl.innerHTML = MANAGER_R_PNG;
+            }
+
+            // 3. Update order display
+            if (currentOrder.length > 0) {
+                orderDisplayEl.innerHTML = currentOrder.map((itemCode, index) => {
+                    const item = GAME_CONFIG.ITEM_TYPES[itemCode];
+                    const fulfilledClass = index < orderProgress ? 'fulfilled' : '';
+                    
+                    // Use innerHTML to correctly render the PNG images
+                    return `<span class="order-item-icon ${fulfilledClass}">${item.emoji}</span>`;
+                }).join('');
+            }
+        }
+
+        function newOrder() {
+            // Increment the order count FIRST
+            orderCount++;
+
+            // --- TIER INCREASE LOGIC (Every 3 orders, starting after tutorial) ---
+            if (orderCount > 1 && (orderCount - 1) % 3 === 0) {
+                statusMessageEl.textContent = "DIFFICULTY UP! Speed + Density!";
+                
+                // Apply the speed increase
+                fallSpeed = Math.min(fallSpeed + GAME_CONFIG.FALL_SPEED_INCREMENT_PER_TIER, 8.0); 
+                // Apply the interval decrease (density increase)
+                dropInterval = Math.max(dropInterval - GAME_CONFIG.DROP_INTERVAL_DECREMENT_PER_TIER, 300);
+            }
+
+            if (orderCount === 1) {
+                // TUTORIAL MODE: Use the fixed, simple order
+                currentOrder = GAME_CONFIG.ORDERS[0];
+            } else {
+                // Select a random order from the list (starting from index 1 to avoid re-using the tutorial order)
+                const randomIndex = Math.floor(Math.random() * (GAME_CONFIG.ORDERS.length - 1)) + 1;
+                currentOrder = GAME_CONFIG.ORDERS[randomIndex];
+            }
+
+            orderProgress = 0;
+            updateUI();
+            
+            // Re-arm the item dropper with the potentially new interval
+            clearInterval(itemDropTimer);
+            itemDropTimer = setInterval(spawnItem, dropInterval);
+            
+            // Initial message
+            if (orderCount > 1) {
+                statusMessageEl.textContent = "NEW ORDER! QUICK!";
+            } else {
+                statusMessageEl.textContent = "TUTORIAL ORDER! Match the B then the F!";
+            }
+        }
+
+        function spawnItem() {
+            if (isGameOver) return;
+            
+            // Don't spawn if there's already an item falling
+            if (fallingItems.length > 0) return;
+        
+            let randomItemCode;
+            const randomLane = Math.floor(Math.random() * GAME_CONFIG.LANE_COUNT);
+            
+            const isOrderPending = orderProgress < currentOrder.length;
+        
+            if (isOrderPending) {
+                const requiredItemCode = currentOrder[orderProgress];
+        
+                if (orderCount === 1) {
+                    // TUTORIAL MODE: Always drop the next required item.
+                    randomItemCode = requiredItemCode;
+                } else {
+                    // WEIGHTED MODE: Required item is significantly more likely to drop (4 parts vs 1 part for others)
+                    const itemCodes = Object.keys(GAME_CONFIG.ITEM_TYPES);
+                    let weightedDrops = [];
+                    
+                    // Add required item 4 times (making it the primary drop)
+                    weightedDrops.push(requiredItemCode, requiredItemCode, requiredItemCode, requiredItemCode);
+                    
+                    // Add all other items 1 time
+                    itemCodes.forEach(code => {
+                        if (code !== requiredItemCode) {
+                            weightedDrops.push(code);
+                        }
+                    });
+                    
+                    const randomIndex = Math.floor(Math.random() * weightedDrops.length);
+                    randomItemCode = weightedDrops[randomIndex];
+                }
+            } else {
+                // RANDOM MODE: Order is complete. Drop a fully random item.
+                const itemCodes = Object.keys(GAME_CONFIG.ITEM_TYPES);
+                randomItemCode = itemCodes[Math.floor(Math.random() * itemCodes.length)];
+            }
+            
+            const item = {
+                id: Date.now() + Math.random(),
+                code: randomItemCode,
+                lane: randomLane,
+                y: -GAME_CONFIG.ITEM_HEIGHT,
+                element: document.createElement('div')
+            };
+        
+            item.element.className = 'game-element falling-item';
+            // Use innerHTML to inject PNG content
+            item.element.innerHTML = GAME_CONFIG.ITEM_TYPES[randomItemCode].emoji;
+            item.element.style.left = `${getLaneX(randomLane) + playerEl.clientWidth / 4}px`; // Center item in the lane
+            item.element.style.top = `${item.y}px`;
+            
+            fallingItemsEl.appendChild(item.element);
+            fallingItems.push(item);
+            
+            // The interval is reset in newOrder, but we need to re-arm the timer here 
+            // because the game loop clears and sets it every time this function is called.
+            clearInterval(itemDropTimer);
+            itemDropTimer = setInterval(spawnItem, dropInterval);
+        }
+
+        function processCatch(caughtItem) {
+            // Check if the current order is already complete
+            if (orderProgress === currentOrder.length) {
+                // If the order is fulfilled, ignore subsequent catches (don't fail, don't score)
+                statusMessageEl.textContent = `ORDER FULFILLED! Awaiting new ticket...`;
+                return;
+            }
+
+            const requiredItemCode = currentOrder[orderProgress];
+
+            if (caughtItem.code === requiredItemCode) {
+                // Correct catch!
+                orderProgress++;
+                score += GAME_CONFIG.SCORE_PER_ITEM;
+                statusMessageEl.textContent = "CORRECT ITEM! ✅";
+                playSfx('catch');
+
+                if (orderProgress === currentOrder.length) {
+                    // Order fulfilled!
+                    score += GAME_CONFIG.SCORE_PER_ORDER;
+                    statusMessageEl.textContent = "ORDER FULFILLED! 🌟";
+                    
+                    // Wait a moment before starting the new order (which also applies speed/density increase)
+                    setTimeout(newOrder, 500); 
+                }
+            } else {
+                // Incorrect catch when an item is actually needed
+                loseLife(`Wrong item caught! Expected ${GAME_CONFIG.ITEM_TYPES[requiredItemCode].name}`);
+            }
+        }
+
+        function loseLife(reason) {
+            if (isGameOver) return;
+
+            lives--;
+            playSfx('miss');
+            statusMessageEl.textContent = `MISTAKE! ${reason}`;
+            updateUI();
+
+            if (lives <= 0) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            isGameOver = true;
+            stopBackgroundMusic();
+            cancelAnimationFrame(gameLoopId);
+            clearInterval(itemDropTimer);
+
+            // Clear all existing falling items from the DOM
+            fallingItemsEl.innerHTML = '';
+            fallingItems = [];
+
+            playGameOverMusic();
+
+            // Update Game Over Overlay content
+            overlayTitleEl.textContent = "GAME OVER!";
+            finalScoreEl.textContent = score;
+            overlayButtonEl.textContent = "RETRY";
+            
+            // Show the overlay
+            gameOverOverlayEl.style.display = 'flex';
+        }
+
+        // Player movement function
+        window.movePlayer = function(direction) {
+            if (isGameOver) return;
+
+            if (direction === 'left' && playerLane > 0) {
+                playerLane--;
+                playerDirection = 'left';
+            } else if (direction === 'right' && playerLane < GAME_CONFIG.LANE_COUNT - 1) {
+                playerLane++;
+                playerDirection = 'right';
+            }
+            updateUI();
+        }
+
+        // The main game loop handles physics and collisions
+        function gameLoop() {
+            if (isGameOver) return;
+
+            // Get player collision box details (for simplicity, only y position matters for the catch height)
+            const playerYTop = screenAreaEl.clientHeight - playerEl.clientHeight - 5; // Y position of player top (bottom of screen area)
+            const playerYBottom = screenAreaEl.clientHeight - 5; // Y position of player bottom (bottom of screen area)
+
+            fallingItems = fallingItems.filter(item => {
+                // 1. Update position
+                const effectiveFallSpeed = isFastFallActive
+                    ? fallSpeed * GAME_CONFIG.FAST_FALL_MULTIPLIER
+                    : fallSpeed;
+                item.y += effectiveFallSpeed;
+                item.element.style.top = `${item.y}px`;
+
+                // 2. Check for CATCH (Collision)
+                const itemYBottom = item.y + item.element.clientHeight;
+                
+                if (item.lane === playerLane && itemYBottom >= playerYTop && item.y <= playerYBottom) {
+                    processCatch(item);
+                    item.element.remove();
+                    return false; // Remove item from array (caught)
+                }
+
+                // 3. Check for MISS (Item dropped off screen)
+                if (item.y > screenAreaEl.clientHeight) {
+                    const requiredItemCode = currentOrder[orderProgress];
+                    
+                    if (item.code === requiredItemCode && orderProgress < currentOrder.length) {
+                        loseLife(`Missed the required ${GAME_CONFIG.ITEM_TYPES[requiredItemCode].name}!`);
+                    } else if (orderProgress === currentOrder.length) {
+                        // If order is complete, any item is "extra". Don't penalize.
+                        statusMessageEl.textContent = `Phew! Extra ${GAME_CONFIG.ITEM_TYPES[item.code].name} cleaned up.`;
+                    }
+
+                    item.element.remove();
+                    return false; // Remove item from array (missed)
+                }
+
+                return true; // Keep item in array (still falling)
+            });
+
+            updateUI();
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        // Global function to start/restart the game
+        window.startGame = function() {
+            // Reset state
+            score = 0;
+            lives = 3;
+            playerLane = 1;
+            fallingItems = [];
+            currentOrder = [];
+            orderProgress = 0;
+            fallSpeed = GAME_CONFIG.FALL_SPEED_INITIAL;
+            dropInterval = GAME_CONFIG.DROP_INTERVAL_INITIAL;
+            isGameOver = false;
+            orderCount = 0;
+            isFastFallActive = false; // ensure fast fall is off when starting
+            
+            unlockAudio();
+            gameOverMusic.pause();
+            gameOverMusic.currentTime = 0;
+            playBackgroundMusic();
+
+            gameOverOverlayEl.style.display = 'none';
+            fallingItemsEl.innerHTML = ''; // Clear all visuals
+
+            // Start the game logic
+            newOrder(); // Triggers first order and starts the item drop timer
+            gameLoopId = requestAnimationFrame(gameLoop); // Start the animation loop
+        }
+        
+        // --- Keyboard Controls ---
+        window.onkeydown = function(e) {
+            if (isGameOver && (e.key === ' ' || e.key === 'Enter')) {
+                startGame();
+                return;
+            }
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+                movePlayer('left');
+            } else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+                movePlayer('right');
+            } else if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') {
+                isFastFallActive = true;
+            }
+        };
+        
+        window.onkeyup = function(e) {
+            if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') {
+                isFastFallActive = false;
+            }
+        };
+        // Initial Setup on load
+        updateUI();
+        gameOverOverlayEl.style.display = 'flex';
+        overlayTitleEl.textContent = "ADRIAN'S MCORDER DASH";
+        overlayButtonEl.textContent = "START GAME";
+        statusMessageEl.textContent = "Welcome, Manager!";
+    </script>
+
+</body>
+</html>
