@@ -185,6 +185,46 @@
             cursor: pointer;
             box-shadow: 0 3px #ccaf0a;
         }
+
+        .share-button {
+            margin-top: 12px;
+            padding: 10px 20px;
+            background-color: #1d9bf0;
+            color: white;
+            border-radius: 5px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            box-shadow: 0 3px rgba(29, 155, 240, 0.4);
+            border: none;
+        }
+
+        .share-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .share-reminder {
+            margin-top: 12px;
+            font-size: 0.5rem;
+            opacity: 0.7;
+            max-width: 260px;
+            line-height: 1.4;
+        }
+
+        #overlay-stats {
+            display: none;
+            text-align: center;
+        }
+
+        .overlay-splash {
+            width: 85%;
+            max-width: 280px;
+            height: auto;
+            margin-bottom: 16px;
+            border: 4px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -194,16 +234,21 @@
         <div class="info-bar flex justify-between">
             <div id="status-message">FULFILL THE ORDERS!</div>
             <div>
-                SCORE: <span id="score-display">0</span> | LIVES: <span id="lives-display">3</span>
+                SCORE: <span id="score-display">0</span> | LIVES: <span id="lives-display">3</span> | HI: <span id="high-score-display">0</span>
             </div>
         </div>
 
         <div class="screen-area">
             
             <div id="game-over-overlay" class="game-over-overlay">
-                <div id="overlay-title">ADRIAN'S MCORDER DASH</div>
-                <div class="text-sm my-2">Score: <span id="final-score">0</span></div>
+                <img id="overlay-splash" class="overlay-splash" src="splash.png" alt="Adrian's McOrder Dash Splash">
+                <div id="overlay-stats" class="overlay-stats">
+                    <div class="text-sm my-2">Score: <span id="final-score">0</span></div>
+                    <div class="text-xs opacity-80">High Score: <span id="overlay-high-score">0</span></div>
+                </div>
                 <button id="overlay-button" onclick="startGame()">START GAME</button>
+                <div id="share-reminder" class="share-reminder">Remember to grab a screenshot before sharing!</div>
+                <button id="share-button" class="share-button" onclick="shareOnX()" disabled>SHARE ON X</button>
             </div>
 
             <div id="order-display" class="order-display">
@@ -374,14 +419,22 @@
         const playerEl = document.getElementById('player');
         const scoreDisplayEl = document.getElementById('score-display');
         const livesDisplayEl = document.getElementById('lives-display');
+        const highScoreDisplayEl = document.getElementById('high-score-display');
         const orderDisplayEl = document.getElementById('current-order');
         const fallingItemsEl = document.getElementById('falling-items');
         const gameOverOverlayEl = document.getElementById('game-over-overlay');
         const finalScoreEl = document.getElementById('final-score');
+        const overlayHighScoreEl = document.getElementById('overlay-high-score');
+        const overlaySplashEl = document.getElementById('overlay-splash');
+        const overlayStatsEl = document.getElementById('overlay-stats');
         const statusMessageEl = document.getElementById('status-message');
         const screenAreaEl = document.querySelector('.screen-area');
-        const overlayTitleEl = document.getElementById('overlay-title');
         const overlayButtonEl = document.getElementById('overlay-button');
+        const shareReminderEl = document.getElementById('share-reminder');
+        const shareButtonEl = document.getElementById('share-button');
+
+        const HIGH_SCORE_STORAGE_KEY = 'mcorderDashV2HighScore';
+        let overlayState = 'start';
 
         // Helper function to get the X position for a given lane (0, 1, 2)
         function getLaneX(laneIndex) {
@@ -395,9 +448,54 @@
         
         // --- Core Game Functions ---
 
+        let highScore = Number.parseInt(localStorage.getItem(HIGH_SCORE_STORAGE_KEY) || '0', 10);
+
+        function syncHighScoreDisplay() {
+            highScoreDisplayEl.textContent = highScore;
+            overlayHighScoreEl.textContent = highScore;
+            shareButtonEl.disabled = highScore === 0;
+            if (overlayState === 'gameover') {
+                const canShare = highScore > 0;
+                shareReminderEl.style.display = canShare ? 'block' : 'none';
+                shareButtonEl.style.display = canShare ? 'inline-block' : 'none';
+            }
+        }
+
+        function updateHighScoreIfNeeded(candidateScore) {
+            if (candidateScore > highScore) {
+                highScore = candidateScore;
+                localStorage.setItem(HIGH_SCORE_STORAGE_KEY, String(highScore));
+            }
+            syncHighScoreDisplay();
+        }
+
+        function setOverlayState(state) {
+            overlayState = state;
+            if (state === 'start') {
+                overlaySplashEl.style.display = 'block';
+                overlayStatsEl.style.display = 'none';
+                shareReminderEl.style.display = 'none';
+                shareButtonEl.style.display = 'none';
+                shareButtonEl.disabled = highScore === 0;
+                overlayButtonEl.textContent = 'START GAME';
+            } else if (state === 'gameover') {
+                overlaySplashEl.style.display = 'none';
+                overlayStatsEl.style.display = 'block';
+                const canShare = highScore > 0;
+                shareReminderEl.style.display = canShare ? 'block' : 'none';
+                shareButtonEl.style.display = canShare ? 'inline-block' : 'none';
+                shareButtonEl.disabled = highScore === 0;
+                overlayButtonEl.textContent = 'RETRY';
+            }
+        }
+
+        syncHighScoreDisplay();
+        setOverlayState('start');
+
         function updateUI() {
             scoreDisplayEl.textContent = score;
             livesDisplayEl.textContent = lives;
+            updateHighScoreIfNeeded(score);
             
             // 1. Update player position
             playerEl.style.left = `${getLaneX(playerLane)}px`;
@@ -580,9 +678,9 @@
             playGameOverMusic();
 
             // Update Game Over Overlay content
-            overlayTitleEl.textContent = "GAME OVER!";
             finalScoreEl.textContent = score;
-            overlayButtonEl.textContent = "RETRY";
+            updateHighScoreIfNeeded(score);
+            setOverlayState('gameover');
             
             // Show the overlay
             gameOverOverlayEl.style.display = 'flex';
@@ -669,6 +767,9 @@
             gameOverMusic.currentTime = 0;
             playBackgroundMusic();
 
+            setOverlayState('start');
+            syncHighScoreDisplay();
+
             gameOverOverlayEl.style.display = 'none';
             fallingItemsEl.innerHTML = ''; // Clear all visuals
 
@@ -676,6 +777,28 @@
             newOrder(); // Triggers first order and starts the item drop timer
             gameLoopId = requestAnimationFrame(gameLoop); // Start the animation loop
         }
+        
+        window.shareOnX = function() {
+            if (highScore === 0) return;
+
+            alert("Reminder: capture a screenshot of your score before you share it on X.");
+
+            const baseUrl = window.location.href.split('#')[0].split('?')[0];
+            const shareText = `My high score on Adrian's McOrder Dash is ${highScore}! @adriancerda @halfxtiger`;
+            const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(baseUrl)}`;
+
+            window.open(intentUrl, '_blank', 'noopener');
+        }
+
+        document.documentElement.style.touchAction = 'manipulation';
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
         
         // --- Keyboard Controls ---
         window.onkeydown = function(e) {
