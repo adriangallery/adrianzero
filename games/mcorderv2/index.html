@@ -211,6 +211,20 @@
             max-width: 260px;
             line-height: 1.4;
         }
+
+        #overlay-stats {
+            display: none;
+            text-align: center;
+        }
+
+        .overlay-splash {
+            width: 85%;
+            max-width: 280px;
+            height: auto;
+            margin-bottom: 16px;
+            border: 4px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -227,9 +241,11 @@
         <div class="screen-area">
             
             <div id="game-over-overlay" class="game-over-overlay">
-                <div id="overlay-title">ADRIAN'S MCORDER DASH</div>
-                <div class="text-sm my-2">Score: <span id="final-score">0</span></div>
-                <div class="text-xs opacity-80">High Score: <span id="overlay-high-score">0</span></div>
+                <img id="overlay-splash" class="overlay-splash" src="splash.png" alt="Adrian's McOrder Dash Splash">
+                <div id="overlay-stats" class="overlay-stats">
+                    <div class="text-sm my-2">Score: <span id="final-score">0</span></div>
+                    <div class="text-xs opacity-80">High Score: <span id="overlay-high-score">0</span></div>
+                </div>
                 <button id="overlay-button" onclick="startGame()">START GAME</button>
                 <div id="share-reminder" class="share-reminder">Remember to grab a screenshot before sharing!</div>
                 <button id="share-button" class="share-button" onclick="shareOnX()" disabled>SHARE ON X</button>
@@ -409,13 +425,16 @@
         const gameOverOverlayEl = document.getElementById('game-over-overlay');
         const finalScoreEl = document.getElementById('final-score');
         const overlayHighScoreEl = document.getElementById('overlay-high-score');
+        const overlaySplashEl = document.getElementById('overlay-splash');
+        const overlayStatsEl = document.getElementById('overlay-stats');
         const statusMessageEl = document.getElementById('status-message');
         const screenAreaEl = document.querySelector('.screen-area');
-        const overlayTitleEl = document.getElementById('overlay-title');
         const overlayButtonEl = document.getElementById('overlay-button');
+        const shareReminderEl = document.getElementById('share-reminder');
         const shareButtonEl = document.getElementById('share-button');
 
         const HIGH_SCORE_STORAGE_KEY = 'mcorderDashV2HighScore';
+        let overlayState = 'start';
 
         // Helper function to get the X position for a given lane (0, 1, 2)
         function getLaneX(laneIndex) {
@@ -435,6 +454,11 @@
             highScoreDisplayEl.textContent = highScore;
             overlayHighScoreEl.textContent = highScore;
             shareButtonEl.disabled = highScore === 0;
+            if (overlayState === 'gameover') {
+                const canShare = highScore > 0;
+                shareReminderEl.style.display = canShare ? 'block' : 'none';
+                shareButtonEl.style.display = canShare ? 'inline-block' : 'none';
+            }
         }
 
         function updateHighScoreIfNeeded(candidateScore) {
@@ -445,7 +469,28 @@
             syncHighScoreDisplay();
         }
 
+        function setOverlayState(state) {
+            overlayState = state;
+            if (state === 'start') {
+                overlaySplashEl.style.display = 'block';
+                overlayStatsEl.style.display = 'none';
+                shareReminderEl.style.display = 'none';
+                shareButtonEl.style.display = 'none';
+                shareButtonEl.disabled = highScore === 0;
+                overlayButtonEl.textContent = 'START GAME';
+            } else if (state === 'gameover') {
+                overlaySplashEl.style.display = 'none';
+                overlayStatsEl.style.display = 'block';
+                const canShare = highScore > 0;
+                shareReminderEl.style.display = canShare ? 'block' : 'none';
+                shareButtonEl.style.display = canShare ? 'inline-block' : 'none';
+                shareButtonEl.disabled = highScore === 0;
+                overlayButtonEl.textContent = 'RETRY';
+            }
+        }
+
         syncHighScoreDisplay();
+        setOverlayState('start');
 
         function updateUI() {
             scoreDisplayEl.textContent = score;
@@ -633,10 +678,9 @@
             playGameOverMusic();
 
             // Update Game Over Overlay content
-            overlayTitleEl.textContent = "GAME OVER!";
             finalScoreEl.textContent = score;
             updateHighScoreIfNeeded(score);
-            overlayButtonEl.textContent = "RETRY";
+            setOverlayState('gameover');
             
             // Show the overlay
             gameOverOverlayEl.style.display = 'flex';
@@ -723,6 +767,7 @@
             gameOverMusic.currentTime = 0;
             playBackgroundMusic();
 
+            setOverlayState('start');
             syncHighScoreDisplay();
 
             gameOverOverlayEl.style.display = 'none';
