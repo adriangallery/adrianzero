@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adrian's McOrder Dash (Game & Watch Style)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
     <style>
         /* Custom font for retro/blocky look */
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -204,6 +203,14 @@
             cursor: not-allowed;
             box-shadow: none;
         }
+
+        .share-reminder {
+            margin-top: 12px;
+            font-size: 0.5rem;
+            opacity: 0.7;
+            max-width: 260px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -224,6 +231,7 @@
                 <div class="text-sm my-2">Score: <span id="final-score">0</span></div>
                 <div class="text-xs opacity-80">High Score: <span id="overlay-high-score">0</span></div>
                 <button id="overlay-button" onclick="startGame()">START GAME</button>
+                <div id="share-reminder" class="share-reminder">Remember to grab a screenshot before sharing!</div>
                 <button id="share-button" class="share-button" onclick="shareOnX()" disabled>SHARE ON X</button>
             </div>
 
@@ -725,50 +733,16 @@
             gameLoopId = requestAnimationFrame(gameLoop); // Start the animation loop
         }
         
-        window.shareOnX = async function() {
-            if (highScore === 0 || shareButtonEl.disabled) return;
+        window.shareOnX = function() {
+            if (highScore === 0) return;
+
+            alert("Reminder: capture a screenshot of your score before you share it on X.");
 
             const baseUrl = window.location.href.split('#')[0].split('?')[0];
             const shareText = `My high score on Adrian's McOrder Dash is ${highScore}! @adriancerda @halfxtiger`;
-
-            const restoreButton = () => {
-                shareButtonEl.textContent = 'SHARE ON X';
-                shareButtonEl.disabled = highScore === 0;
-            };
-
-            shareButtonEl.textContent = 'PREPARING…';
-            shareButtonEl.disabled = true;
-
-            try {
-                const html2canvas = window.html2canvas;
-                if (html2canvas && navigator.share) {
-                    const target = document.querySelector('.game-watch-container');
-                    const canvas = await html2canvas(target, {
-                        backgroundColor: '#f7f3e0',
-                        scale: window.devicePixelRatio || 2
-                    });
-                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-
-                    if (blob) {
-                        const file = new File([blob], 'mcorder-high-score.png', { type: 'image/png' });
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            await navigator.share({
-                                text: `${shareText}\n${baseUrl}`,
-                                files: [file]
-                            });
-                            shareButtonEl.textContent = 'SHARED!';
-                            setTimeout(restoreButton, 1500);
-                            return;
-                        }
-                    }
-                }
-            } catch (error) {
-                console.warn('Share with screenshot failed, falling back to X intent', error);
-            }
-
             const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(baseUrl)}`;
+
             window.open(intentUrl, '_blank', 'noopener');
-            restoreButton();
         }
 
         document.documentElement.style.touchAction = 'manipulation';
