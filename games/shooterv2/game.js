@@ -69,16 +69,38 @@ class TargetRushGame {
         
         selectedNumbers.forEach((imageNumber, index) => {
             const img = new Image();
-            const promise = new Promise((resolve, reject) => {
+            const promise = new Promise((resolve) => {
+                // Try different path formats
+                const paths = [
+                    `../shooter/Images/filthyfeetsecrets${imageNumber}.png`,
+                    `./../shooter/Images/filthyfeetsecrets${imageNumber}.png`,
+                    `/games/shooter/Images/filthyfeetsecrets${imageNumber}.png`
+                ];
+                
+                let pathIndex = 0;
+                
+                const tryLoad = () => {
+                    if (pathIndex < paths.length) {
+                        img.src = paths[pathIndex];
+                    }
+                };
+                
                 img.onload = () => {
                     console.log(`Loaded foot image ${index + 1}/10: ${imageNumber}`);
                     resolve(img);
                 };
+                
                 img.onerror = () => {
-                    console.warn(`Failed to load image: ${imageNumber}`);
-                    resolve(null);
+                    pathIndex++;
+                    if (pathIndex < paths.length) {
+                        tryLoad();
+                    } else {
+                        console.warn(`Failed to load image: ${imageNumber} (tried all paths)`);
+                        resolve(null);
+                    }
                 };
-                img.src = `../shooter/Images/filthyfeetsecrets${imageNumber}.png`;
+                
+                tryLoad();
             });
             imagePromises.push(promise);
         });
@@ -105,12 +127,21 @@ class TargetRushGame {
     }
     
     selectRandomImages(count) {
-        const totalImages = 4200;
-        const selected = new Set();
-        while (selected.size < count) {
-            selected.add(Math.floor(Math.random() * totalImages) + 1);
+        // Only use images that actually exist (1-25, with some missing)
+        const availableImages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25];
+        const selected = [];
+        const used = new Set();
+        
+        while (selected.length < count && selected.length < availableImages.length) {
+            const randomIndex = Math.floor(Math.random() * availableImages.length);
+            const imageNum = availableImages[randomIndex];
+            if (!used.has(imageNum)) {
+                selected.push(imageNum);
+                used.add(imageNum);
+            }
         }
-        return Array.from(selected);
+        
+        return selected;
     }
     
     updateUI() {
@@ -547,13 +578,16 @@ class TargetRushGame {
             this.ctx.save();
             this.ctx.translate(target.x, target.y);
             
-            if (target.image) {
+            if (target.image && target.image.complete && target.image.naturalWidth > 0) {
                 // Draw image
                 const size = target.size;
                 this.ctx.drawImage(target.image, -size / 2, -size / 2, size, size);
             } else {
-                // Fallback circle
-                this.ctx.fillStyle = '#e53e3e';
+                // Fallback circle with gradient
+                const gradient = this.ctx.createRadialGradient(0, 0, 0, 0, 0, target.size / 2);
+                gradient.addColorStop(0, '#ff6b6b');
+                gradient.addColorStop(1, '#e53e3e');
+                this.ctx.fillStyle = gradient;
                 this.ctx.beginPath();
                 this.ctx.arc(0, 0, target.size / 2, 0, Math.PI * 2);
                 this.ctx.fill();
