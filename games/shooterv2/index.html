@@ -32,6 +32,7 @@
         
         window.addEventListener('DOMContentLoaded', () => {
             window.gameInstance = game;
+            console.log('Game instance created:', window.gameInstance);
             
             if (typeof game.init === 'function') {
                 game.init();
@@ -48,58 +49,85 @@
                 });
             }
 
-            const controlPanel = document.querySelector('.control-panel');
-            if (controlPanel) {
-                console.log('Control panel found, setting up listeners');
-                controlPanel.addEventListener('click', (event) => {
-                    console.log('Control panel clicked', event.target);
-                    const button = event.target.closest('button[data-action]');
-                    if (!button) {
-                        console.log('No button found');
-                        return;
-                    }
-                    if (!window.gameInstance) {
-                        console.log('Game instance not found');
-                        return;
-                    }
-
-                    const action = button.getAttribute('data-action');
-                    console.log('Button action:', action);
-                    if (action === 'start' && typeof window.gameInstance.startGame === 'function') {
-                        console.log('Starting game...');
-                        window.gameInstance.startGame();
-                    } else if (action === 'reset' && typeof window.gameInstance.resetGame === 'function') {
-                        console.log('Resetting game...');
-                        window.gameInstance.resetGame();
-                    }
-                });
-                
-                // Also add direct button listeners as backup
+            // Wait a bit for everything to be ready
+            setTimeout(() => {
+                const controlPanel = document.querySelector('.control-panel');
                 const startBtn = document.querySelector('button[data-action="start"]');
                 const resetBtn = document.querySelector('button[data-action="reset"]');
                 
-                if (startBtn) {
-                    startBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        console.log('START button clicked directly');
-                        if (window.gameInstance && typeof window.gameInstance.startGame === 'function') {
-                            window.gameInstance.startGame();
+                console.log('Control panel:', controlPanel);
+                console.log('Start button:', startBtn);
+                console.log('Reset button:', resetBtn);
+                console.log('Game instance:', window.gameInstance);
+                console.log('Has startGame?', typeof window.gameInstance?.startGame);
+                
+                if (controlPanel) {
+                    console.log('Control panel found, setting up listeners');
+                    
+                    // Add click listener to control panel
+                    controlPanel.addEventListener('click', (event) => {
+                        console.log('Control panel clicked!', event.target, event.currentTarget);
+                        event.stopPropagation();
+                        const button = event.target.closest('button[data-action]');
+                        if (!button) {
+                            console.log('No button found in event.target.closest');
+                            return;
                         }
-                    });
+                        if (!window.gameInstance) {
+                            console.log('Game instance not found');
+                            return;
+                        }
+
+                        const action = button.getAttribute('data-action');
+                        console.log('Button action:', action);
+                        if (action === 'start' && typeof window.gameInstance.startGame === 'function') {
+                            console.log('Starting game...');
+                            window.gameInstance.startGame();
+                        } else if (action === 'reset' && typeof window.gameInstance.resetGame === 'function') {
+                            console.log('Resetting game...');
+                            window.gameInstance.resetGame();
+                        }
+                    }, true); // Use capture phase
+                } else {
+                    console.error('Control panel not found!');
+                }
+                
+                // Also add direct button listeners as backup
+                if (startBtn) {
+                    console.log('Adding direct listener to START button');
+                    startBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('START button clicked directly!');
+                        console.log('Game instance:', window.gameInstance);
+                        if (window.gameInstance && typeof window.gameInstance.startGame === 'function') {
+                            console.log('Calling startGame...');
+                            window.gameInstance.startGame();
+                        } else {
+                            console.error('Cannot start game - instance or method missing');
+                        }
+                    }, true);
+                } else {
+                    console.error('START button not found!');
                 }
                 
                 if (resetBtn) {
+                    console.log('Adding direct listener to RESET button');
                     resetBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        console.log('RESET button clicked directly');
+                        console.log('RESET button clicked directly!');
                         if (window.gameInstance && typeof window.gameInstance.resetGame === 'function') {
+                            console.log('Calling resetGame...');
                             window.gameInstance.resetGame();
+                        } else {
+                            console.error('Cannot reset game - instance or method missing');
                         }
-                    });
+                    }, true);
+                } else {
+                    console.error('RESET button not found!');
                 }
-            } else {
-                console.error('Control panel not found!');
-            }
+            }, 100);
         });
     </script>
 </body>
