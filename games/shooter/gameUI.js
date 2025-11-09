@@ -27,7 +27,7 @@ export function createUIElements() {
 
         const startHint = document.createElement('p');
         startHint.className = 'overlay-hint';
-        startHint.textContent = 'Haz clic en cada pie para limpiarlo antes de que escape.';
+        startHint.textContent = 'Click on each foot to clean it before it escapes.';
         startScreen.appendChild(startHint);
    
         const startButton = document.createElement('button');
@@ -54,7 +54,7 @@ export function createUIElements() {
 
         const gameOverHint = document.createElement('p');
         gameOverHint.className = 'overlay-hint';
-        gameOverHint.textContent = 'Los pies más sucios regresarán pronto. ¿Listo para otra ronda?';
+        gameOverHint.textContent = 'The filthiest feet will return soon. Ready for another round?';
         gameOverScreen.appendChild(gameOverHint);
         
         const scoreText = document.createElement('p');

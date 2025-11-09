@@ -28,13 +28,10 @@ class FilthyFeetGame {
             return;
         }
         
-        // Set canvas to window size
-        this.resizeCanvas();
-        window.addEventListener('resize', this.resizeCanvas.bind(this));
-        
-        // Update canvas size to 1920x1080
-        this.canvas.width = 1920 * 0.5;
-        this.canvas.height = 1080 * 0.5;
+        // Set canvas to vertical Game & Watch format (mobile/portrait)
+        // Game & Watch dimensions: 520x720, but canvas should be smaller to fit
+        this.canvas.width = 480;
+        this.canvas.height = 640;
         
         // Add background layers for parallax effect
         this.backgroundLayers = [

@@ -24,7 +24,7 @@ export function findImageForType(metadata, typeName) {
     const imageNumber = this.selectedImageNumbers[randomIndex];
     
     // Use image number as-is, no leading zeros
-    const imagePath = `./images/filthyfeetsecrets${imageNumber}.png`;
+    const imagePath = `./Images/filthyfeetsecrets${imageNumber}.png`;
     
     console.log(`Using image: ${imagePath} (${randomIndex + 1}/20)`);
     
@@ -78,7 +78,7 @@ export function loadImages() {
     // Load all 20 selected images
     this.selectedImageNumbers.forEach((imageNumber, index) => {
         // Use image number as-is, no leading zeros
-        const imagePath = `./images/filthyfeetsecrets${imageNumber}.png`;
+        const imagePath = `./Images/filthyfeetsecrets${imageNumber}.png`;
         
         // Determine foot type and points based on image number
         let footType = 'Light';
