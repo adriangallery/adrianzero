@@ -292,9 +292,37 @@ class TraitsManager {
             const erc721TokenId = selectedERC721.tokenId;
             const traitIds = this.selectedERC1155.map(token => token.tokenId);
 
+            // Validate categories before sending to contract
+            const categoriesMap = new Map();
+            const duplicateCategories = [];
+            
+            traitIds.forEach(traitId => {
+                const category = this.getTraitCategory(traitId);
+                if (category) {
+                    if (categoriesMap.has(category)) {
+                        duplicateCategories.push({
+                            category,
+                            traitId1: categoriesMap.get(category),
+                            traitId2: traitId
+                        });
+                    } else {
+                        categoriesMap.set(category, traitId);
+                    }
+                }
+            });
+
+            if (duplicateCategories.length > 0) {
+                const errorMsg = `❌ Duplicate categories detected: ${duplicateCategories.map(d => 
+                    `${d.category} (traits: ${d.traitId1}, ${d.traitId2})`
+                ).join(', ')}`;
+                console.error('Category validation failed:', duplicateCategories);
+                throw new Error(errorMsg);
+            }
+
             console.log('Contract address:', window.TraitLABConfig.TRAITS_EXTENSIONS_CONTRACT);
             console.log('ERC721 Token ID:', erc721TokenId);
             console.log('Trait IDs:', traitIds);
+            console.log('Categories:', Array.from(categoriesMap.entries()).map(([cat, id]) => `${cat}: ${id}`));
 
             // Call the contract function
             const tx = await contract.applyTraitMultiple(erc721TokenId, traitIds);
