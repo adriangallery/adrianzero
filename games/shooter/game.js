@@ -68,11 +68,12 @@ class FilthyFeetGame {
         this.timeLeft = 60;
         this.gameActive = false;
         this.feet = [];
+        // Adjusted sizes for vertical format (480x640)
         this.feetTypes = [
-            { name: 'small', points: 10, width: 60, height: 60, speed: 3, yPosition: 112 },
-            { name: 'medium', points: 20, width: 80, height: 80, speed: 2, yPosition: 205 },
-            { name: 'large', points: 30, width: 100, height: 100, speed: 1, yPosition: 275 },
-            { name: 'Xlarge', points: 40, width: 120, height: 120, speed: 0.5, yPosition: 350 }
+            { name: 'small', points: 10, width: 45, height: 45, speed: 3, yPosition: 100 },
+            { name: 'medium', points: 20, width: 60, height: 60, speed: 2, yPosition: 200 },
+            { name: 'large', points: 30, width: 75, height: 75, speed: 1, yPosition: 300 },
+            { name: 'Xlarge', points: 40, width: 90, height: 90, speed: 0.5, yPosition: 400 }
         ];
         
         this.feetImages = {
@@ -502,8 +503,16 @@ class FilthyFeetGame {
     spawnFoot() {
         if (!this.gameActive) return;
         
+        // Don't spawn if we already have too many feet on screen
+        const visibleFeet = this.feet.filter(f => f.visible && !f.cleaned).length;
+        if (visibleFeet >= 5) return;
+        
         const typeIndex = Math.floor(Math.random() * this.feetTypes.length);
         const type = this.feetTypes[typeIndex];
+        
+        // Distribute feet horizontally across the canvas
+        const maxX = this.canvas.width - type.width;
+        const x = Math.max(0, Math.min(maxX, Math.random() * maxX));
         
         // Use a random loaded image if available
         if (this.loadedImages && this.loadedImages.length > 0) {
@@ -523,7 +532,7 @@ class FilthyFeetGame {
             
             // Create the foot object with metadata from the image
             const foot = {
-                x: Math.random() * (this.canvas.width - type.width),
+                x: x,
                 y: this.canvas.height,
                 width: type.width,
                 height: type.height,
@@ -538,7 +547,7 @@ class FilthyFeetGame {
                 // Add movement state properties
                 movementState: this.footMovementStates.RISING,
                 targetY: type.yPosition, // Use the specific yPosition for this type
-                waitTime: 1000 + Math.random() * 3000, // Random wait time between 1-4 seconds
+                waitTime: 1000 + Math.random() * 2000, // Random wait time between 1-3 seconds
                 waitStart: 0
             };
             
@@ -546,7 +555,7 @@ class FilthyFeetGame {
         } else {
             // Fallback to using the default images
             const foot = {
-                x: Math.random() * (this.canvas.width - type.width),
+                x: x,
                 y: this.canvas.height,
                 width: type.width,
                 height: type.height,
@@ -559,7 +568,7 @@ class FilthyFeetGame {
                 // Add movement state properties
                 movementState: this.footMovementStates.RISING,
                 targetY: type.yPosition, // Use the specific yPosition for this type
-                waitTime: 1000 + Math.random() * 3000, // Random wait time between 1-4 seconds
+                waitTime: 1000 + Math.random() * 2000, // Random wait time between 1-3 seconds
                 waitStart: 0
             };
             
@@ -696,10 +705,17 @@ class FilthyFeetGame {
         // Start game loop
         this.gameLoop();
         
-        // Start spawning feet
+        // Start spawning feet - spawn more frequently to keep 3-5 feet on screen
         this.spawnTimer = setInterval(() => {
             this.spawnFoot();
-        }, 1000);
+        }, 600); // Reduced from 1000ms to 600ms
+        
+        // Spawn initial feet to have multiple on screen from the start
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                this.spawnFoot();
+            }, i * 200); // Stagger initial spawns
+        }
         
         // Start countdown timer
         this.timer = setInterval(() => {

@@ -41,31 +41,20 @@ export function render() {
     
     // Render background layer 0 (back)
     if (this.backgroundLayers[0].image) {
-        // Calculate parallax offset based on mouse position with reduced effect
-        const parallaxX = (this.mouseX - (this.canvas.width / 2)) * this.backgroundLayers[0].speed * 0.6;
-        
-        // For vertical format, crop the panoramic image to fit the canvas height
-        // Calculate source crop from center of panoramic image
         const sourceImg = this.backgroundLayers[0].image;
-        const sourceAspect = sourceImg.width / sourceImg.height;
-        const targetAspect = this.canvas.width / this.canvas.height;
+        const targetWidth = 480; // Canvas width
+        const targetHeight = 640; // Canvas height
         
-        let sourceX = 0;
-        let sourceWidth = sourceImg.width;
-        let sourceHeight = sourceImg.height;
-        
-        // If image is wider than needed, crop from center
-        if (sourceAspect > targetAspect) {
-            sourceHeight = sourceImg.height;
-            sourceWidth = sourceImg.height * targetAspect;
-            sourceX = (sourceImg.width - sourceWidth) / 2;
-        }
+        // Crop 480px width from center of panoramic image
+        const sourceX = Math.max(0, (sourceImg.width - targetWidth) / 2);
+        const sourceWidth = Math.min(targetWidth, sourceImg.width);
+        const sourceHeight = sourceImg.height;
         
         // Draw cropped image to fill canvas
         this.ctx.drawImage(
-            this.backgroundLayers[0].image,
-            sourceX, 0, sourceWidth, sourceHeight, // Source crop
-            0, 0, this.canvas.width, this.canvas.height // Destination
+            sourceImg,
+            sourceX, 0, sourceWidth, sourceHeight, // Source crop: 480px from center
+            0, 0, targetWidth, targetHeight // Destination: full canvas
         );
     }
     
@@ -74,28 +63,19 @@ export function render() {
     
     // Render background layer 1
     if (this.backgroundLayers[1].image) {
-        // Calculate parallax offset based on mouse position with reduced effect
-        const parallaxX = (this.mouseX - (this.canvas.width / 2)) * this.backgroundLayers[1].speed * 0.6;
-        
-        // For vertical format, crop the panoramic image to fit the canvas height
         const sourceImg = this.backgroundLayers[1].image;
-        const sourceAspect = sourceImg.width / sourceImg.height;
-        const targetAspect = this.canvas.width / this.canvas.height;
+        const targetWidth = 480;
+        const targetHeight = 640;
         
-        let sourceX = 0;
-        let sourceWidth = sourceImg.width;
-        let sourceHeight = sourceImg.height;
-        
-        if (sourceAspect > targetAspect) {
-            sourceHeight = sourceImg.height;
-            sourceWidth = sourceImg.height * targetAspect;
-            sourceX = (sourceImg.width - sourceWidth) / 2;
-        }
+        // Crop 480px width from center
+        const sourceX = Math.max(0, (sourceImg.width - targetWidth) / 2);
+        const sourceWidth = Math.min(targetWidth, sourceImg.width);
+        const sourceHeight = sourceImg.height;
         
         this.ctx.drawImage(
-            this.backgroundLayers[1].image,
+            sourceImg,
             sourceX, 0, sourceWidth, sourceHeight,
-            0, 0, this.canvas.width, this.canvas.height
+            0, 0, targetWidth, targetHeight
         );
     }
     
@@ -104,28 +84,19 @@ export function render() {
     
     // Render background layer 2
     if (this.backgroundLayers[2].image) {
-        // Calculate parallax offset based on mouse position with reduced effect
-        const parallaxX = (this.mouseX - (this.canvas.width / 2)) * this.backgroundLayers[2].speed * 0.6;
-        
-        // For vertical format, crop the panoramic image
         const sourceImg = this.backgroundLayers[2].image;
-        const sourceAspect = sourceImg.width / sourceImg.height;
-        const targetAspect = this.canvas.width / this.canvas.height;
+        const targetWidth = 480;
+        const targetHeight = 640;
         
-        let sourceX = 0;
-        let sourceWidth = sourceImg.width;
-        let sourceHeight = sourceImg.height;
-        
-        if (sourceAspect > targetAspect) {
-            sourceHeight = sourceImg.height;
-            sourceWidth = sourceImg.height * targetAspect;
-            sourceX = (sourceImg.width - sourceWidth) / 2;
-        }
+        // Crop 480px width from center
+        const sourceX = Math.max(0, (sourceImg.width - targetWidth) / 2);
+        const sourceWidth = Math.min(targetWidth, sourceImg.width);
+        const sourceHeight = sourceImg.height;
         
         this.ctx.drawImage(
-            this.backgroundLayers[2].image,
+            sourceImg,
             sourceX, 0, sourceWidth, sourceHeight,
-            0, 0, this.canvas.width, this.canvas.height
+            0, 0, targetWidth, targetHeight
         );
     }
     
@@ -134,28 +105,19 @@ export function render() {
     
     // Render background layer 3
     if (this.backgroundLayers[3].image) {
-        // Calculate parallax offset based on mouse position with reduced effect
-        const parallaxX = (this.mouseX - (this.canvas.width / 2)) * this.backgroundLayers[3].speed * 0.6;
-        
-        // For vertical format, crop the panoramic image
         const sourceImg = this.backgroundLayers[3].image;
-        const sourceAspect = sourceImg.width / sourceImg.height;
-        const targetAspect = this.canvas.width / this.canvas.height;
+        const targetWidth = 480;
+        const targetHeight = 640;
         
-        let sourceX = 0;
-        let sourceWidth = sourceImg.width;
-        let sourceHeight = sourceImg.height;
-        
-        if (sourceAspect > targetAspect) {
-            sourceHeight = sourceImg.height;
-            sourceWidth = sourceImg.height * targetAspect;
-            sourceX = (sourceImg.width - sourceWidth) / 2;
-        }
+        // Crop 480px width from center
+        const sourceX = Math.max(0, (sourceImg.width - targetWidth) / 2);
+        const sourceWidth = Math.min(targetWidth, sourceImg.width);
+        const sourceHeight = sourceImg.height;
         
         this.ctx.drawImage(
-            this.backgroundLayers[3].image,
+            sourceImg,
             sourceX, 0, sourceWidth, sourceHeight,
-            0, 0, this.canvas.width, this.canvas.height
+            0, 0, targetWidth, targetHeight
         );
     }
     
@@ -164,28 +126,19 @@ export function render() {
     
     // Render background layer 4 (front)
     if (this.backgroundLayers[4].image) {
-        // Calculate parallax offset based on mouse position with reduced effect
-        const parallaxX = (this.mouseX - (this.canvas.width / 2)) * this.backgroundLayers[4].speed * 0.6;
-        
-        // For vertical format, crop the panoramic image
         const sourceImg = this.backgroundLayers[4].image;
-        const sourceAspect = sourceImg.width / sourceImg.height;
-        const targetAspect = this.canvas.width / this.canvas.height;
+        const targetWidth = 480;
+        const targetHeight = 640;
         
-        let sourceX = 0;
-        let sourceWidth = sourceImg.width;
-        let sourceHeight = sourceImg.height;
-        
-        if (sourceAspect > targetAspect) {
-            sourceHeight = sourceImg.height;
-            sourceWidth = sourceImg.height * targetAspect;
-            sourceX = (sourceImg.width - sourceWidth) / 2;
-        }
+        // Crop 480px width from center
+        const sourceX = Math.max(0, (sourceImg.width - targetWidth) / 2);
+        const sourceWidth = Math.min(targetWidth, sourceImg.width);
+        const sourceHeight = sourceImg.height;
         
         this.ctx.drawImage(
-            this.backgroundLayers[4].image,
+            sourceImg,
             sourceX, 0, sourceWidth, sourceHeight,
-            0, 0, this.canvas.width, this.canvas.height
+            0, 0, targetWidth, targetHeight
         );
     }
     
