@@ -60,6 +60,20 @@ class TargetRushGame {
         
         // Update UI
         this.updateUI();
+        
+        // Start render loop even when game is not active
+        this.renderLoop();
+    }
+    
+    renderLoop() {
+        // Update game logic if active
+        if (this.gameActive) {
+            this.update();
+        }
+        
+        // Always render
+        this.render();
+        requestAnimationFrame(() => this.renderLoop());
     }
     
     async loadImages() {
@@ -177,7 +191,9 @@ class TargetRushGame {
         
         // Start spawning
         this.startWave();
-        this.gameLoop();
+        
+        // Update loop is handled by renderLoop, but we need to call update
+        // The update will be called from renderLoop when gameActive is true
     }
     
     startWave() {
@@ -544,6 +560,24 @@ class TargetRushGame {
         this.ctx.arc(this.canvas.width / 2, this.canvas.height / 2, 50, 0, Math.PI * 2);
         this.ctx.stroke();
         
+        // Show start message if game is not active
+        if (!this.gameActive) {
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            this.ctx.fillRect(this.canvas.width / 2 - 150, this.canvas.height / 2 - 40, 300, 80);
+            this.ctx.strokeStyle = '#fff';
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeRect(this.canvas.width / 2 - 150, this.canvas.height / 2 - 40, 300, 80);
+            
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = 'bold 16px "Press Start 2P"';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText('PRESS START', this.canvas.width / 2, this.canvas.height / 2 - 10);
+            this.ctx.font = 'bold 10px "Press Start 2P"';
+            this.ctx.fillText('Click targets to score!', this.canvas.width / 2, this.canvas.height / 2 + 15);
+            return; // Don't render game elements if not active
+        }
+        
         // Draw power-ups
         this.powerUps.forEach(powerUp => {
             this.ctx.save();
@@ -622,14 +656,7 @@ class TargetRushGame {
         }
     }
     
-    gameLoop() {
-        if (!this.gameActive) return;
-        
-        this.update();
-        this.render();
-        
-        requestAnimationFrame(() => this.gameLoop());
-    }
+    // gameLoop is no longer needed - renderLoop handles everything
     
     endGame() {
         this.gameActive = false;
