@@ -50,17 +50,55 @@
 
             const controlPanel = document.querySelector('.control-panel');
             if (controlPanel) {
+                console.log('Control panel found, setting up listeners');
                 controlPanel.addEventListener('click', (event) => {
+                    console.log('Control panel clicked', event.target);
                     const button = event.target.closest('button[data-action]');
-                    if (!button || !window.gameInstance) return;
+                    if (!button) {
+                        console.log('No button found');
+                        return;
+                    }
+                    if (!window.gameInstance) {
+                        console.log('Game instance not found');
+                        return;
+                    }
 
                     const action = button.getAttribute('data-action');
+                    console.log('Button action:', action);
                     if (action === 'start' && typeof window.gameInstance.startGame === 'function') {
+                        console.log('Starting game...');
                         window.gameInstance.startGame();
                     } else if (action === 'reset' && typeof window.gameInstance.resetGame === 'function') {
+                        console.log('Resetting game...');
                         window.gameInstance.resetGame();
                     }
                 });
+                
+                // Also add direct button listeners as backup
+                const startBtn = document.querySelector('button[data-action="start"]');
+                const resetBtn = document.querySelector('button[data-action="reset"]');
+                
+                if (startBtn) {
+                    startBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log('START button clicked directly');
+                        if (window.gameInstance && typeof window.gameInstance.startGame === 'function') {
+                            window.gameInstance.startGame();
+                        }
+                    });
+                }
+                
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log('RESET button clicked directly');
+                        if (window.gameInstance && typeof window.gameInstance.resetGame === 'function') {
+                            window.gameInstance.resetGame();
+                        }
+                    });
+                }
+            } else {
+                console.error('Control panel not found!');
             }
         });
     </script>

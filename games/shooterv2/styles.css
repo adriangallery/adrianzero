@@ -105,6 +105,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 18px;
+    position: relative;
+    z-index: 10;
 }
 
 .btn-control {
@@ -119,6 +121,9 @@ body {
     text-transform: uppercase;
     transition: transform 0.1s ease, box-shadow 0.1s ease;
     font-family: 'Press Start 2P', cursive;
+    position: relative;
+    z-index: 11;
+    pointer-events: auto;
 }
 
 .btn-control:hover {
