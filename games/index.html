@@ -3,27 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adrian Zero Games</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>Adrian's Game Room</title>
     <style>
-        :root { color-scheme: dark light; }
-        body { font-family: 'Press Start 2P', system-ui, sans-serif; background:#070b12; color:#f6f6f6; margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; }
-        main { text-align:center; padding:2rem; }
-        h1 { font-size:1.25rem; letter-spacing:0.1em; margin-bottom:1.5rem; }
-        ul { list-style:none; padding:0; margin:0; display:grid; gap:1rem; }
-        a { display:inline-block; padding:1rem 2rem; border:2px solid #f6d10c; color:#f6d10c; text-decoration:none; transition:transform 0.2s ease, box-shadow 0.2s ease; }
-        a:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(246, 209, 12, 0.25); }
+        :root {
+            color-scheme: light dark;
+            --bg: #111;
+            --fg: #f6f6f6;
+            --accent: #f6d10c;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', system-ui, sans-serif;
+            background: radial-gradient(circle at top, #fdf7c0 0%, #f7f3e0 45%, #2c2a22 100%);
+            color: #1a1a1a;
+            padding: 32px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 18px;
+            border: 4px solid #1a1a1a;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 480px;
+            width: 100%;
+            padding: 32px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0 0 18px;
+            font-size: 1.4rem;
+        }
+        p { margin: 0 0 24px; font-size: 0.68rem; line-height: 1.6; }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 14px;
+        }
+        a.game-link {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            border: 3px solid #1a1a1a;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            font-size: 0.72rem;
+            background: linear-gradient(135deg, #faf5d7 0%, #f6d10c 100%);
+            box-shadow: 0 8px 0 #b18a05;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        a.game-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #b18a05;
+        }
+        a.game-link:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #b18a05;
+        }
+        footer {
+            margin-top: 28px;
+            font-size: 0.55rem;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
-    <main>
-        <h1>ADRIAN ZERO GAMES</h1>
+    <div class="card">
+        <h1>Adrian's Game Room</h1>
+        <p>Selecciona un juego tipo Game & Watch para jugar directamente en el navegador.</p>
         <ul>
-            <li><a href="/games/mcorder/">Adrian's McOrder Dash</a></li>
-            <li><a href="/games/mcorderv2/">Adrian's McOrder Dash (Preview / Testing)</a></li>
+            <li><a class="game-link" href="mcorder/">McOrder Dash</a></li>
+            <li><a class="game-link" href="shooter/">Filthy Feet Shooter</a></li>
         </ul>
-    </main>
+        <footer>Más juegos próximamente.</footer>
+    </div>
 </body>
 </html>

@@ -1,0 +1,22 @@
+# Configuración de directorio por defecto para todos los subdirectorios
+DirectoryIndex index.html index.htm
+
+# Habilitar motor de reescritura
+RewriteEngine On
+
+# Redirección de mcorderv2 a mcorder (para mantener compatibilidad)
+RewriteRule ^mcorderv2/?$ mcorder/ [R=301,L]
+RewriteRule ^mcorderv2/(.*)$ mcorder/$1 [R=301,L]
+
+# Asegurar que las solicitudes a directorios sin barra final redirijan con barra
+# Esto es necesario para que DirectoryIndex funcione correctamente
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteCond %{REQUEST_URI} !/$
+RewriteRule ^(.*)$ $1/ [R=301,L]
+
+# Si se accede a un directorio y existe index.html, servirlo internamente
+# Esto es un fallback en caso de que DirectoryIndex no funcione
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteCond %{REQUEST_FILENAME}/index.html -f
+RewriteRule ^(.*)$ $1/index.html [L]
+

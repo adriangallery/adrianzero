@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filthy Feet Game & Watch Edition</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="filthy-feet-game" class="game-watch-container">
+        <div class="info-bar">
+            <div id="status-message">FILTHY FEET DASH</div>
+            <div class="info-readout">SCORE <span id="score">0</span> · TIME <span id="time">60</span></div>
+        </div>
+
+        <div id="screen-area" class="screen-area">
+            <canvas id="gameCanvas" width="960" height="576"></canvas>
+        </div>
+
+        <div class="control-panel">
+            <button class="btn-control" data-action="start">START</button>
+            <button class="btn-control" data-action="reset">RESET</button>
+        </div>
+    </div>
+    
+    <!-- Make sure the script is loaded properly -->
+    <script type="module">
+        import game from './game.js';
+        
+        // Explicitly initialize the game when DOM is loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            // Make game accessible for debugging
+            window.gameInstance = game;
+            
+            // Initialize the game
+            if (typeof game.init === 'function') {
+                game.init();
+            } else {
+                console.error('Game initialization function not found');
+            }
+            
+            // Add click handler to the canvas for all interactions
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.addEventListener('click', (event) => {
+                    if (typeof game.handleClick === 'function') {
+                        game.handleClick(event);
+                    }
+                });
+                
+                // Add mouse move handler
+                canvas.addEventListener('mousemove', (event) => {
+                    if (typeof game.handleMouseMove === 'function') {
+                        game.handleMouseMove(event);
+                    }
+                });
+            }
+
+            const controlPanel = document.querySelector('.control-panel');
+            if (controlPanel) {
+                controlPanel.addEventListener('click', (event) => {
+                    const button = event.target.closest('button[data-action]');
+                    if (!button || !window.gameInstance) return;
+
+                    const action = button.getAttribute('data-action');
+                    if (action === 'start' && typeof window.gameInstance.startGame === 'function') {
+                        window.gameInstance.startGame();
+                    } else if (action === 'reset' && typeof window.gameInstance.resetGame === 'function') {
+                        window.gameInstance.resetGame();
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Add console logging for debugging -->
+    <script>
+        console.log('Page loaded, checking game elements...');
+        window.addEventListener('load', function() {
+            // Check if canvas is accessible
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) {
+                console.error('Canvas element not found');
+            } else {
+                console.log('Canvas found:', canvas.width + 'x' + canvas.height);
+            }
+        });
+    </script>
+</body>
+</html>

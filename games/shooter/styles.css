@@ -1,0 +1,220 @@
+:root {
+    --lcd-bg: #c8d8ae;
+    --lcd-fg: #1a1a1a;
+    --lcd-accent: #e53e3e;
+    --lcd-secondary: #f6d10c;
+    --lcd-highlight: #fdf7c0;
+    --lcd-shadow: rgba(0, 0, 0, 0.35);
+    --game-width: 520px;
+    --game-height: 720px;
+    --panel-padding: 18px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at top, #fdf7c0 0%, #f7f3e0 45%, #e5d8b1 100%);
+    font-family: 'Press Start 2P', cursive;
+    color: var(--lcd-fg);
+}
+
+.game-watch-container {
+    width: var(--game-width);
+    height: var(--game-height);
+    background-color: var(--lcd-bg);
+    border: 12px solid var(--lcd-fg);
+    border-radius: 20px;
+    box-shadow:
+        inset 0 0 18px rgba(0, 0, 0, 0.35),
+        0 28px 30px -20px rgba(0, 0, 0, 0.55);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.info-bar {
+    background-color: var(--lcd-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 6px solid var(--lcd-fg);
+    font-size: 0.55rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.info-readout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-readout span {
+    display: inline-block;
+    min-width: 38px;
+    text-align: right;
+}
+
+.screen-area {
+    position: relative;
+    padding: var(--panel-padding);
+    background: linear-gradient(135deg, rgba(253, 247, 192, 0.6) 0%, rgba(200, 216, 174, 0.6) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#gameCanvas {
+    width: 100%;
+    max-height: 100%;
+    aspect-ratio: 16 / 9;
+    background: rgba(0, 0, 0, 0.08);
+    border: 6px inset rgba(0, 0, 0, 0.2);
+    border-radius: 14px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.2);
+}
+
+.control-panel {
+    background-color: var(--lcd-fg);
+    border-top: 6px solid var(--lcd-bg);
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+}
+
+.btn-control {
+    background-color: var(--lcd-accent);
+    border: 4px solid #fff;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 14px 22px;
+    cursor: pointer;
+    box-shadow: 0 6px #a00000;
+    text-transform: uppercase;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.btn-control:hover {
+    transform: translateY(-2px);
+}
+
+.btn-control:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px #a00000;
+}
+
+.ui-layer {
+    position: absolute;
+    inset: var(--panel-padding);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay-panel {
+    position: relative;
+    width: min(360px, 90%);
+    padding: 24px;
+    background: rgba(253, 247, 192, 0.9);
+    border: 4px solid var(--lcd-fg);
+    border-radius: 14px;
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    pointer-events: auto;
+}
+
+.overlay-title {
+    font-size: 0.9rem;
+    color: var(--lcd-fg);
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.4);
+    margin: 0;
+}
+
+.overlay-hint {
+    font-size: 0.5rem;
+    margin: 0;
+    line-height: 1.4;
+    color: rgba(26, 26, 26, 0.8);
+}
+
+.overlay-stat {
+    font-size: 0.55rem;
+    margin: 0;
+}
+
+.overlay-button {
+    font-size: 0.55rem;
+    padding: 12px 18px;
+    background-color: var(--lcd-secondary);
+    color: var(--lcd-fg);
+    border-color: #fff4a3;
+    box-shadow: 0 5px #d1b306;
+}
+
+.overlay-button:hover {
+    transform: translateY(-2px);
+}
+
+.overlay-button:active {
+    box-shadow: 0 2px #d1b306;
+}
+
+.hud-fallback {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.45rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 600px) {
+    :root {
+        --game-width: 92vw;
+        --game-height: 150vw;
+    }
+
+    body {
+        padding: 12px;
+    }
+
+    .info-bar {
+        font-size: 0.48rem;
+    }
+
+    .btn-control {
+        font-size: 0.5rem;
+        padding: 12px 18px;
+    }
+
+    .overlay-panel {
+        gap: 12px;
+        padding: 18px;
+    }
+}

@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "games",
+			"path": ".."
+		},
+		{
+			"name": "McOrder-Dash",
+			"path": "../../../../Downloads/McOrder-Dash"
+		}
+	],
+	"settings": {}
+}
