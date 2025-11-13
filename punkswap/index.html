@@ -398,6 +398,17 @@
 </head>
 <body>
     <div id="menu-container"></div>
+    <script>
+      fetch('../components/menu.html')
+        .then(r => r.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const s = document.createElement('script');
+          s.src = '../components/menu.js';
+          document.head.appendChild(s);
+        })
+        .catch(err => console.error('Error loading menu:', err));
+    </script>
     <div class="container">
         <div class="header">
             <h1><span class="punk">Punk</span><span class="swap">Swap</span></h1>
@@ -524,17 +535,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Load menu
-            fetch('../components/menu.html')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('menu-container').innerHTML = html;
-                    const script = document.createElement('script');
-                    script.src = '../components/menu.js';
-                    document.head.appendChild(script);
-                })
-                .catch(error => console.error('Error loading menu:', error));
-
             // Check auto-connect
             if (window.ethereum) {
                 window.ethereum.request({ method: 'eth_accounts' })
@@ -682,12 +682,15 @@
                             // Get unit weight from contract
                             const readSwapContract = new ethers.Contract(SWAP_CONTRACT, config.SWAP_ABI, readProvider);
                             const units = await readSwapContract.unitById(tokenInfo.id);
+                            
+                            // Handle both BigNumber and number types
+                            const unitsNum = ethers.BigNumber.isBigNumber(units) ? units.toNumber() : (typeof units === 'number' ? units : parseInt(units, 10));
 
                             userTokens.push({
                                 id: tokenInfo.id,
                                 name: tokenInfo.name,
                                 balance: balanceNum,
-                                units: units.toNumber(),
+                                units: unitsNum,
                                 imageUrl: `https://adrianlab.vercel.app/api/render/floppy/${tokenInfo.id}.png`
                             });
                         }
