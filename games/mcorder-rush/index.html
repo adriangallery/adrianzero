@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>McOrder Platform Rush</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
@@ -180,6 +179,16 @@
             pointer-events: none;
             z-index: 100;
         }
+
+        .game-over-text {
+            font-size: 0.6rem;
+            margin: 8px 0;
+        }
+
+        .game-over-text-small {
+            font-size: 0.5rem;
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body>
@@ -198,9 +207,9 @@
 
             <div id="game-over-overlay" class="game-over-overlay">
                 <div id="overlay-title">MCORDER PLATFORM RUSH</div>
-                <div class="text-sm my-2">Score: <span id="final-score">0</span></div>
-                <div class="text-xs my-1">Distance: <span id="final-distance">0</span>m</div>
-                <div class="text-xs my-1">Best: <span id="best-score">0</span></div>
+                <div class="game-over-text">Score: <span id="final-score">0</span></div>
+                <div class="game-over-text-small">Distance: <span id="final-distance">0</span>m</div>
+                <div class="game-over-text-small">Best: <span id="best-score">0</span></div>
                 <button id="overlay-button" onclick="startGame()">START GAME</button>
             </div>
         </div>
