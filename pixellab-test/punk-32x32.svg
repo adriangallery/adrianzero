@@ -1,0 +1,31 @@
+<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo -->
+  <rect width="32" height="32" fill="#1a1a1a"/>
+  
+  <!-- Cabeza -->
+  <rect x="8" y="4" width="16" height="18" fill="#ffdbac"/>
+  
+  <!-- Ojos -->
+  <rect x="10" y="8" width="2" height="2" fill="#000"/>
+  <rect x="20" y="8" width="2" height="2" fill="#000"/>
+  
+  <!-- Nariz -->
+  <rect x="15" y="12" width="2" height="2" fill="#d4a574"/>
+  
+  <!-- Boca -->
+  <rect x="12" y="16" width="8" height="2" fill="#8b4513"/>
+  
+  <!-- Cabello punk (mohawk) -->
+  <rect x="12" y="2" width="8" height="4" fill="#ff00ff"/>
+  <rect x="13" y="1" width="6" height="2" fill="#ff00ff"/>
+  
+  <!-- Cuerpo -->
+  <rect x="10" y="22" width="12" height="8" fill="#e53e3e"/>
+  
+  <!-- Detalles del cuerpo -->
+  <rect x="12" y="24" width="8" height="2" fill="#c8d8ae"/>
+  
+  <!-- Piernas -->
+  <rect x="12" y="30" width="3" height="2" fill="#1a1a1a"/>
+  <rect x="17" y="30" width="3" height="2" fill="#1a1a1a"/>
+</svg>
