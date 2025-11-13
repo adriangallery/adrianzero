@@ -420,7 +420,7 @@
         <div class="connect-section" id="connectSection">
             <h3>Connect Your Wallet</h3>
             <p style="margin: 20px 0;">Connect your MetaMask wallet to start swapping</p>
-            <button class="connect-btn" id="connectBtn">Connect Wallet</button>
+            <button class="connect-btn" id="connectBtnPunkswap">Connect Wallet</button>
         </div>
 
         <!-- Account Section -->
@@ -533,7 +533,7 @@
         const loading = document.getElementById('loading');
         const loadingText = document.getElementById('loadingText');
 
-        // Connect wallet function (renamed to avoid conflict with menu.js)
+        // Connect wallet function (must be defined before DOMContentLoaded to avoid menu.js conflict)
         async function connectPunkswapWallet() {
             try {
                 if (!window.ethereum) {
@@ -912,6 +912,32 @@
                 successDiv.style.display = 'none';
             }, 5000);
         }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Attach event listener to connect button
+            const connectBtn = document.getElementById('connectBtnPunkswap');
+            if (connectBtn) {
+                connectBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    connectPunkswapWallet();
+                });
+            }
+
+            // Load contract stats on page load
+            loadContractStats();
+        });
+
+        // Load menu (outside DOMContentLoaded to load earlier)
+        fetch('../components/menu.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('menu-container').innerHTML = html;
+                const s = document.createElement('script');
+                s.src = '../components/menu.js';
+                document.head.appendChild(s);
+            })
+            .catch(error => console.error('Error loading menu:', error));
     </script>
 </body>
 </html>
