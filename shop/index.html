@@ -913,13 +913,14 @@
                 // Production - use absolute path from root
                 return '/components/images/' + assetId + extension;
             }
+        }
+
         // Function to check if an item uses local images
         function isLocalItem(assetId) {
             // Check if assetId is in the range of local items
             return (assetId >= 262144 && assetId <= 262147) || 
                    (assetId >= 10000 && assetId <= 20000) || 
                    assetId === 150 || assetId === 559;
-        }
         }
         var pagination = document.getElementById('pagination');
         var cartItemsEl = document.getElementById('cart-items');
@@ -1046,6 +1047,9 @@
             
             // Filter and display items
             filterAndDisplayItems();
+            
+            // Load metadata for newly visible items
+            loadMetadataForItems();
         }
 
         // Filter items based on current tab
@@ -1194,15 +1198,11 @@
                 // Set initial items based on current tab
                 allItems = allTraitsItems;
                 
-                // Load metadata for all items (with error handling)
-                try {
-                    await loadMetadataForItems();
-                } catch (metadataErr) {
-                    console.warn('Some metadata failed to load:', metadataErr);
-                    showInfo('Items loaded, some details may be incomplete due to CORS restrictions');
-                }
-                
+                // Display items immediately with basic data (don't wait for metadata)
                 displayItems();
+                
+                // Load metadata for visible items first, then background
+                loadMetadataForItems();
                 
             } catch (err) {
                 console.error("Error loading shop items:", err);
@@ -1220,48 +1220,94 @@
             }
         }
 
-        // Load metadata for all items with better error handling
+        // Cache for metadata to avoid redundant requests
+        var metadataCache = {};
+        
+        // Load metadata with priority: visible items first, then background
         async function loadMetadataForItems() {
             console.log('Loading metadata for traits:', allTraitsItems.length, 'serums:', allSerumsItems.length, 'and packs:', allPacksItems.length);
             
-            // Load metadata for traits items
-            var traitsMetadataPromises = allTraitsItems.map(function(item, index) {
-                return new Promise(function(resolve) {
-                    setTimeout(function() {
-                        loadItemMetadata(item).then(resolve).catch(resolve);
-                    }, index * 200);
-                });
+            // Get items currently visible on page
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const visibleItems = allItems.slice(startIndex, endIndex);
+            
+            // Load metadata for visible items first (priority)
+            await loadMetadataBatch(visibleItems, true);
+            
+            // Then load metadata for remaining items in background
+            const allItemsList = [...allTraitsItems, ...allSerumsItems, ...allPacksItems];
+            const remainingItems = allItemsList.filter(function(item) {
+                return visibleItems.indexOf(item) === -1;
             });
             
-            // Load metadata for serums items
-            var serumsMetadataPromises = allSerumsItems.map(function(item, index) {
-                return new Promise(function(resolve) {
-                    setTimeout(function() {
-                        loadItemMetadata(item).then(resolve).catch(resolve);
-                    }, index * 200);
-                });
+            // Load remaining items in background with lower priority
+            loadMetadataBatch(remainingItems, false).catch(function(err) {
+                console.log('Background metadata loading completed with some errors:', err);
             });
+        }
+        
+        // Load metadata for a batch of items with concurrency limit
+        async function loadMetadataBatch(items, updateUI) {
+            const CONCURRENCY_LIMIT = 5;
+            const batches = [];
             
-            // Load metadata for packs items
-            var packsMetadataPromises = allPacksItems.map(function(item, index) {
-                return new Promise(function(resolve) {
-                    setTimeout(function() {
-                        loadItemMetadata(item).then(resolve).catch(resolve);
-                    }, index * 200);
+            // Split items into batches
+            for (let i = 0; i < items.length; i += CONCURRENCY_LIMIT) {
+                batches.push(items.slice(i, i + CONCURRENCY_LIMIT));
+            }
+            
+            // Process batches sequentially, items within batch in parallel
+            for (let i = 0; i < batches.length; i++) {
+                const batch = batches[i];
+                const promises = batch.map(function(item) {
+                    return loadItemMetadata(item, updateUI);
                 });
-            });
-            
-            try {
-                await Promise.all([...traitsMetadataPromises, ...serumsMetadataPromises, ...packsMetadataPromises]);
-                console.log('All metadata loading attempts completed');
-            } catch (err) {
-                console.error('Error in metadata loading:', err);
+                
+                await Promise.allSettled(promises);
+                
+                // Small delay between batches to avoid overwhelming the server
+                if (i < batches.length - 1) {
+                    await new Promise(function(resolve) {
+                        setTimeout(resolve, 100);
+                    });
+                }
             }
         }
 
-        // Load metadata for a single item with CORS handling
-        async function loadItemMetadata(item) {
+        // Load metadata for a single item with CORS handling and cache
+        async function loadItemMetadata(item, updateUI) {
             try {
+                // Check cache first
+                const cacheKey = 'metadata_' + item.assetId;
+                const cached = metadataCache[cacheKey];
+                if (cached) {
+                    applyMetadataToItem(item, cached);
+                    if (updateUI) {
+                        updateItemCard(item);
+                    }
+                    return;
+                }
+                
+                // Try localStorage cache
+                try {
+                    const stored = localStorage.getItem(cacheKey);
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        // Cache expires after 1 hour
+                        if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
+                            metadataCache[cacheKey] = parsed.data;
+                            applyMetadataToItem(item, parsed.data);
+                            if (updateUI) {
+                                updateItemCard(item);
+                            }
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    // Ignore localStorage errors
+                }
+                
                 console.log('Loading metadata for item', item.assetId);
                 
                 // Try to load metadata with CORS handling
@@ -1280,18 +1326,23 @@
                 var metadata = await response.json();
                 console.log('Metadata loaded for item', item.assetId, ':', metadata);
                 
+                // Store in cache
+                metadataCache[cacheKey] = metadata;
+                try {
+                    localStorage.setItem(cacheKey, JSON.stringify({
+                        data: metadata,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {
+                    // Ignore localStorage errors
+                }
+                
                 // Update item with metadata
-                if (metadata.name) {
-                    item.name = metadata.name;
-                }
-                if (metadata.description) {
-                    item.description = metadata.description;
-                }
-                if (metadata.image && !isLocalItem(item.assetId)) {
-                    item.imageUrl = metadata.image;
-                }
-                if (metadata.attributes) {
-                    item.attributes = metadata.attributes;
+                applyMetadataToItem(item, metadata);
+                
+                // Update UI if this is a visible item
+                if (updateUI) {
+                    updateItemCard(item);
                 }
                 
             } catch (err) {
@@ -1302,6 +1353,119 @@
                     console.log('CORS error detected, using fallback metadata for item', item.assetId);
                     // Keep the default name and image
                     item.description = 'Official AdrianLAB trait item';
+                }
+            }
+        }
+        
+        // Apply metadata to item object
+        function applyMetadataToItem(item, metadata) {
+            if (metadata.name) {
+                item.name = metadata.name;
+            }
+            if (metadata.description) {
+                item.description = metadata.description;
+            }
+            if (metadata.image && !isLocalItem(item.assetId)) {
+                item.imageUrl = metadata.image;
+            }
+            if (metadata.attributes) {
+                item.attributes = metadata.attributes;
+            }
+        }
+        
+        // Update a single item card in the DOM
+        function updateItemCard(item) {
+            const card = document.querySelector('.item-card[data-asset-id="' + item.assetId + '"]');
+            if (!card) return;
+            
+            // Find the item name element
+            const nameEl = card.querySelector('.item-name');
+            if (nameEl && nameEl.textContent !== item.name) {
+                nameEl.textContent = item.name;
+            }
+            
+            // Update image if changed
+            const img = card.querySelector('.item-image');
+            if (img && img.src !== item.imageUrl && !isLocalItem(item.assetId)) {
+                img.src = item.imageUrl;
+            }
+            
+            // Update description if available
+            if (item.description) {
+                let descEl = card.querySelector('.item-description');
+                if (!descEl) {
+                    const priceEl = card.querySelector('.item-price');
+                    if (priceEl) {
+                        descEl = document.createElement('div');
+                        descEl.className = 'item-description';
+                        descEl.style.cssText = 'font-size: 0.8rem; color: #555; margin-bottom: 8px; font-style: italic;';
+                        priceEl.parentNode.insertBefore(descEl, priceEl.nextSibling);
+                    }
+                }
+                if (descEl) {
+                    const shortDesc = item.description.length > 80 ? 
+                        item.description.substring(0, 80) + '...' : 
+                        item.description;
+                    descEl.textContent = shortDesc;
+                }
+            }
+            
+            // Update attributes display if available
+            if (item.attributes && item.attributes.length > 0) {
+                // Remove old metadata indicator if name was updated
+                const metadataIndicator = card.querySelector('div[style*="Limited info"]');
+                if (metadataIndicator && !item.name.startsWith('Trait #')) {
+                    metadataIndicator.remove();
+                }
+                
+                // Find category and rarity from attributes
+                let categoryValue = null;
+                let rarityValue = null;
+                
+                for (var k = 0; k < item.attributes.length; k++) {
+                    var attr = item.attributes[k];
+                    if (attr.trait_type && attr.value) {
+                        if (attr.trait_type.toLowerCase() === 'category') {
+                            categoryValue = attr.value;
+                        } else if (attr.trait_type.toLowerCase() === 'rarity') {
+                            rarityValue = attr.value;
+                        }
+                    }
+                }
+                
+                // Insert category if it doesn't exist
+                if (categoryValue && !card.querySelector('.item-category')) {
+                    const priceEl = card.querySelector('.item-price');
+                    if (priceEl) {
+                        const categoryDiv = document.createElement('div');
+                        categoryDiv.className = 'item-category';
+                        categoryDiv.textContent = '📂 ' + categoryValue;
+                        priceEl.parentNode.insertBefore(categoryDiv, priceEl.nextSibling);
+                    }
+                }
+                
+                // Insert rarity if it doesn't exist
+                if (rarityValue && !card.querySelector('.item-rarity')) {
+                    const categoryEl = card.querySelector('.item-category');
+                    const priceEl = card.querySelector('.item-price');
+                    const insertAfter = categoryEl || priceEl;
+                    if (insertAfter) {
+                        const rarityDiv = document.createElement('div');
+                        rarityDiv.className = 'item-rarity';
+                        rarityDiv.textContent = '💎 ' + rarityValue;
+                        
+                        // Set color based on rarity
+                        var rarityColor = '#666';
+                        var rarityLower = rarityValue.toLowerCase();
+                        if (rarityLower === 'common') rarityColor = '#999';
+                        else if (rarityLower === 'rare') rarityColor = '#0066cc';
+                        else if (rarityLower === 'epic') rarityColor = '#9933cc';
+                        else if (rarityLower === 'legendary') rarityColor = '#ff6600';
+                        
+                        rarityDiv.style.color = rarityColor;
+                        rarityDiv.style.fontWeight = 'bold';
+                        insertAfter.parentNode.insertBefore(rarityDiv, insertAfter.nextSibling);
+                    }
                 }
             }
         }
@@ -1498,8 +1662,15 @@
                     actionButtons += '<button class="action-btn remove" onclick="removeFromCart(' + item.assetId + ')">Remove</button>';
                 }
                 
+                // Use data attribute to identify item for updates
+                itemCard.setAttribute('data-asset-id', item.assetId);
+                
+                // Preload first image, lazy load others
+                const isFirstImage = startIndex === 0 && pageItems.indexOf(item) === 0;
+                const loadingAttr = isFirstImage ? '' : 'loading="lazy"';
+                
                 itemCard.innerHTML = 
-                    '<img src="' + item.imageUrl + '" alt="' + item.name + '" class="item-image" ' +
+                    '<img src="' + item.imageUrl + '" alt="' + item.name + ' #' + item.assetId + '" class="item-image" ' + loadingAttr + ' ' +
                          'onerror="this.src=\'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGNUY1RjUiLz48dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5OTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+\';">' +
                     '<div class="item-info">' +
                         '<div class="item-name">' + item.name + '</div>' +
@@ -1519,6 +1690,12 @@
             
             // Update pagination
             updatePagination(totalPages);
+            
+            // Load metadata for visible items on this page
+            const visibleItems = pageItems;
+            loadMetadataBatch(visibleItems, true).catch(function(err) {
+                console.log('Metadata loading for page completed with some errors:', err);
+            });
         }
 
         // Update pagination controls
