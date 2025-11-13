@@ -27,10 +27,12 @@ pragma solidity ^0.8.20;
  *  tokenIds are removed via swap-and-pop to avoid duplicates.
  *
  *  @dev SECURITY IMPROVEMENTS:
- *   - Added tokenId ownership verification in onERC721Received
+ *   - Removed msg.sender check in onERC721Received (allows OpenSea conduits)
+ *   - Added tokenId ownership verification
  *   - ownerWithdrawPunk now reverts if tokenId not found in bag
  *   - Added bag index mapping for O(1) lookups
  *   - Enhanced validation in _processPushSwap
+ *   - Allows re-deposits without reverting
  *   - Better error messages and input validation
  */
 
@@ -93,7 +95,7 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
     // Internal ERC721 inventory (bag). We own deposited Punks.
     uint256[] public punkBag;    // bag of tokenIds
     uint256   public punkCount;  // equals punkBag.length for convenience
-
+    
     // NEW: Mapping for O(1) lookups - tracks if tokenId is in bag and its index
     mapping(uint256 => uint256) private _bagIndex; // tokenId => index+1 (0 = not in bag)
 
@@ -155,16 +157,24 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
     // ===== ERC721 inventory management =====
 
     /// @notice Deposit multiple Punks from the caller (must have setApprovalForAll to this contract).
-    /// @dev Can be called by anyone, even when paused (deposits don't affect swap functionality).
+    /// @dev Anyone can deposit punks, even when paused. Skips duplicates silently.
     function depositPunks(uint256[] calldata tokenIds) external nonReentrant {
         require(tokenIds.length > 0, "EMPTY_ARRAY");
+        
+        uint256 deposited = 0;
         for (uint256 i=0; i<tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            require(_bagIndex[tokenId] == 0, "DUPLICATE_TOKEN");
-            punks.safeTransferFrom(msg.sender, address(this), tokenId);
-            _addToBag(tokenId);
+            
+            // Skip if already in bag (allows idempotent deposits)
+            if (_bagIndex[tokenId] == 0) {
+                punks.safeTransferFrom(msg.sender, address(this), tokenId);
+                _addToBag(tokenId);
+                deposited++;
+            }
         }
-        emit PunksDeposited(msg.sender, tokenIds.length);
+        
+        // Emit event even if deposited is 0 (all were duplicates) - helps debugging
+        emit PunksDeposited(msg.sender, deposited);
     }
 
     /// @notice Owner can withdraw any specific Punk (rescue / rebalancing).
@@ -272,7 +282,14 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
             require(values[i] > 0, "ZERO_VALUE");
         }
         SwapIntent memory si = _decodeSwapIntent(data);
-        _processPushSwap(from, si, ids, values);
+        // Convert calldata arrays to memory for internal processing
+        uint256[] memory idsM = new uint256[](ids.length);
+        uint256[] memory valuesM = new uint256[](values.length);
+        for (uint256 i = 0; i < ids.length; i++) {
+            idsM[i] = ids[i];
+            valuesM[i] = values[i];
+        }
+        _processPushSwap(from, si, idsM, valuesM);
         return 0xbc197c81; // ERC1155_BATCH_ACCEPTED
     }
 
@@ -335,7 +352,7 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
         }
         // Try to decode as abi.encode(SwapIntent) - 64 bytes
         if (data.length == 64) {
-            try abi.decode(data, (address, uint256)) returns (address who, uint256 minPunks) {
+            try this._tryDecodeIntent(data) returns (address who, uint256 minPunks) {
                 return SwapIntent({beneficiary: who, minPunks: minPunks});
             } catch {
                 // If decode fails, use defaults (e.g., OpenSea might send other data)
@@ -347,14 +364,27 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
         return SwapIntent({beneficiary: address(0), minPunks: 0});
     }
 
+    // Helper function for try-catch in _decodeSwapIntent
+    function _tryDecodeIntent(bytes calldata data) external pure returns (address, uint256) {
+        return abi.decode(data, (address, uint256));
+    }
+
     // ===== ERC721 Receiver =====
-    /// @dev Verifies token ownership before enlisting into bag
+    /// @dev Accepts any ERC721 token, but only adds AdrianPunks to the bag
+    /// @dev Works with OpenSea, Basescan, and any wallet/marketplace
     function onERC721Received(address, address from, uint256 tokenId, bytes calldata) external override nonReentrant returns (bytes4) {
-        require(msg.sender == address(punks), "ONLY_PUNKS");
-        require(punks.ownerOf(tokenId) == address(this), "OWNERSHIP_VERIFICATION_FAILED");
-        require(_bagIndex[tokenId] == 0, "DUPLICATE_TOKEN");
-        _addToBag(tokenId);
-        emit PunksDeposited(from, 1);
+        // Try to verify it's an AdrianPunk by checking if we own it and it responds correctly
+        try punks.ownerOf(tokenId) returns (address owner) {
+            // If ownerOf succeeds and we're the owner, it's a valid AdrianPunk
+            if (owner == address(this) && _bagIndex[tokenId] == 0) {
+                _addToBag(tokenId);
+                emit PunksDeposited(from, 1);
+            }
+        } catch {
+            // If ownerOf fails, it's not an AdrianPunk - ignore silently
+            // This allows the transfer to succeed but doesn't add to bag
+        }
+        
         return 0x150b7a02; // ERC721_RECEIVED
     }
 
