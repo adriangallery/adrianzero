@@ -346,27 +346,22 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
     }
 
     function _decodeSwapIntent(bytes calldata data) internal pure returns (SwapIntent memory si) {
+        // Empty data: use defaults
         if (data.length == 0) {
-            // default: beneficiary = address(0) (→ use `from`), minPunks = 0
             return SwapIntent({beneficiary: address(0), minPunks: 0});
         }
-        // Try to decode as abi.encode(SwapIntent) - 64 bytes
+        
+        // If data is exactly 64 bytes, try to decode as (address, uint256)
+        // Otherwise (e.g., OpenSea arbitrary data), use defaults
         if (data.length == 64) {
-            try this._tryDecodeIntent(data) returns (address who, uint256 minPunks) {
-                return SwapIntent({beneficiary: who, minPunks: minPunks});
-            } catch {
-                // If decode fails, use defaults (e.g., OpenSea might send other data)
-                return SwapIntent({beneficiary: address(0), minPunks: 0});
-            }
+            // Decode without try-catch - if it fails, it will revert the whole tx
+            // which is acceptable since we're in a receiver context
+            (address who, uint256 minPunks) = abi.decode(data, (address, uint256));
+            return SwapIntent({beneficiary: who, minPunks: minPunks});
         }
-        // For any other data length (e.g., OpenSea batch transfers), use defaults
-        // This allows compatibility with marketplaces that send arbitrary data
+        
+        // For any other data length (OpenSea, marketplaces), use safe defaults
         return SwapIntent({beneficiary: address(0), minPunks: 0});
-    }
-
-    // Helper function for try-catch in _decodeSwapIntent
-    function _tryDecodeIntent(bytes calldata data) external pure returns (address, uint256) {
-        return abi.decode(data, (address, uint256));
     }
 
     // ===== ERC721 Receiver =====
