@@ -155,8 +155,8 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
     // ===== ERC721 inventory management =====
 
     /// @notice Deposit multiple Punks from the caller (must have setApprovalForAll to this contract).
+    /// @dev Can be called by anyone, even when paused (deposits don't affect swap functionality).
     function depositPunks(uint256[] calldata tokenIds) external nonReentrant {
-        require(!paused, "PAUSED");
         require(tokenIds.length > 0, "EMPTY_ARRAY");
         for (uint256 i=0; i<tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
@@ -333,10 +333,18 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
             // default: beneficiary = address(0) (→ use `from`), minPunks = 0
             return SwapIntent({beneficiary: address(0), minPunks: 0});
         }
-        // Expect abi.encode(SwapIntent)
-        require(data.length == 64, "BAD_DATA_LENGTH");
-        (address who, uint256 minPunks) = abi.decode(data, (address, uint256));
-        si = SwapIntent({beneficiary: who, minPunks: minPunks});
+        // Try to decode as abi.encode(SwapIntent) - 64 bytes
+        if (data.length == 64) {
+            try abi.decode(data, (address, uint256)) returns (address who, uint256 minPunks) {
+                return SwapIntent({beneficiary: who, minPunks: minPunks});
+            } catch {
+                // If decode fails, use defaults (e.g., OpenSea might send other data)
+                return SwapIntent({beneficiary: address(0), minPunks: 0});
+            }
+        }
+        // For any other data length (e.g., OpenSea batch transfers), use defaults
+        // This allows compatibility with marketplaces that send arbitrary data
+        return SwapIntent({beneficiary: address(0), minPunks: 0});
     }
 
     // ===== ERC721 Receiver =====

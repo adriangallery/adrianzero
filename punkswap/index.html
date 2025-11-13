@@ -244,16 +244,58 @@
             font-size: 0.95rem;
         }
 
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
         .quantity-input {
-            width: 100%;
-            padding: 10px;
+            flex: 1;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid #333;
             background: #2a2a2a;
             color: #fff;
             font-family: 'VT323', monospace;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .quantity-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            border: 2px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            font-family: 'VT323', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .quantity-btn:hover:not(:disabled) {
+            background: rgba(0, 255, 0, 0.3);
+            transform: scale(1.1);
+        }
+
+        .quantity-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: #666;
+            color: #666;
         }
 
         .preview-section {
@@ -393,6 +435,17 @@
                 flex-direction: column;
                 text-align: center;
             }
+
+            .quantity-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8rem;
+            }
+
+            .quantity-input {
+                font-size: 1.3rem;
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -487,8 +540,7 @@
                 </div>
             </div>
             <div class="swap-actions">
-                <button class="action-btn approve" id="approveBtn" onclick="approveGallery()">Approve Gallery</button>
-                <button class="action-btn" id="swapBtn" onclick="executeSwap()" disabled>Execute Swap</button>
+                <button class="action-btn" id="swapBtn" onclick="approveAndSwap()">Approve & Swap</button>
             </div>
         </div>
 
@@ -642,6 +694,32 @@
             }
         }
 
+        // Get token image from Alchemy
+        async function getTokenImageFromAlchemy(tokenId) {
+            try {
+                const alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${config.ALCHEMY_API_KEY}/getNFTMetadata?contractAddress=${GALLERY_CONTRACT}&tokenId=${tokenId}&tokenType=ERC1155`;
+                const response = await fetch(alchemyUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Try different image paths from Alchemy response
+                    if (data.image?.originalUrl) {
+                        return data.image.originalUrl;
+                    } else if (data.image?.pngUrl) {
+                        return data.image.pngUrl;
+                    } else if (data.image?.url) {
+                        return data.image.url;
+                    } else if (data.metadata?.image) {
+                        return data.metadata.image;
+                    }
+                }
+            } catch (err) {
+                console.warn(`Error fetching image from Alchemy for token ${tokenId}:`, err);
+            }
+            // Fallback to default image
+            return '../components/images/adrianzero.png';
+        }
+
         // Load user's Gallery tokens
         async function loadUserTokens() {
             try {
@@ -667,12 +745,15 @@
                             // Handle both BigNumber and number types
                             const unitsNum = ethers.BigNumber.isBigNumber(units) ? units.toNumber() : (typeof units === 'number' ? units : parseInt(units, 10));
 
+                            // Get image from Alchemy
+                            const imageUrl = await getTokenImageFromAlchemy(tokenInfo.id);
+
                             userTokens.push({
                                 id: tokenInfo.id,
                                 name: tokenInfo.name,
                                 balance: balanceNum,
                                 units: unitsNum,
-                                imageUrl: `https://adrianlab.vercel.app/api/render/floppy/${tokenInfo.id}.png`
+                                imageUrl: imageUrl
                             });
                         }
                     } catch (err) {
@@ -724,22 +805,51 @@
                         </div>
                         <div class="token-detail">
                             <span>Punks per token:</span>
-                            <span>${(token.units / 2).toFixed(1)}</span>
+                            <span>${formatPunksPerToken(token.units)}</span>
                         </div>
                     </div>
-                    <input type="number" 
-                           class="quantity-input" 
-                           min="0" 
-                           max="${token.balance}" 
-                           value="${selectedQty}"
-                           placeholder="Quantity"
-                           onchange="updateSelection(${token.id}, this.value)">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="adjustQuantity(${token.id}, -1)" ${selectedQty <= 0 ? 'disabled' : ''}>-</button>
+                        <input type="number" 
+                               class="quantity-input" 
+                               id="qty-input-${token.id}"
+                               min="0" 
+                               max="${token.balance}" 
+                               value="${selectedQty}"
+                               placeholder="0"
+                               onchange="updateSelection(${token.id}, this.value)">
+                        <button class="quantity-btn" onclick="adjustQuantity(${token.id}, 1)" ${selectedQty >= token.balance ? 'disabled' : ''}>+</button>
+                    </div>
                 `;
 
                 tokensGrid.appendChild(card);
             });
 
             updatePreview();
+        }
+
+        // Format punks per token display
+        function formatPunksPerToken(units) {
+            const punks = units / 2;
+            // If it's a whole number, show without decimals
+            if (punks === Math.floor(punks)) {
+                return punks.toString();
+            }
+            // Otherwise show with .5
+            return punks.toFixed(1);
+        }
+
+        // Adjust quantity with +/- buttons
+        function adjustQuantity(tokenId, delta) {
+            const input = document.getElementById(`qty-input-${tokenId}`);
+            if (!input) return;
+            
+            const current = parseInt(input.value) || 0;
+            const max = parseInt(input.max) || 0;
+            const newValue = Math.max(0, Math.min(max, current + delta));
+            
+            input.value = newValue;
+            updateSelection(tokenId, newValue);
         }
 
         // Update selection
@@ -778,7 +888,7 @@
                 document.getElementById('minPunksInput').max = punksOut;
 
                 previewSection.style.display = 'block';
-                document.getElementById('swapBtn').disabled = !isApproved || contractStats.paused || punksOut === 0;
+                document.getElementById('swapBtn').disabled = contractStats.paused || punksOut === 0;
 
             } catch (err) {
                 console.error('Error updating preview:', err);
@@ -794,45 +904,16 @@
                 
                 isApproved = await readGalleryContract.isApprovedForAll(currentAccount, SWAP_CONTRACT);
                 
-                const approveBtn = document.getElementById('approveBtn');
                 const swapBtn = document.getElementById('swapBtn');
+                swapBtn.disabled = contractStats.paused || selectedTokens.size === 0;
                 
-                if (isApproved) {
-                    approveBtn.style.display = 'none';
-                    swapBtn.disabled = contractStats.paused || selectedTokens.size === 0;
-                } else {
-                    approveBtn.style.display = 'block';
-                    swapBtn.disabled = true;
-                }
             } catch (err) {
                 console.error('Error checking approval:', err);
             }
         }
 
-        // Approve Gallery
-        async function approveGallery() {
-            try {
-                showLoading(true, 'Approving Gallery tokens...');
-                
-                const tx = await galleryContract.setApprovalForAll(SWAP_CONTRACT, true);
-                showSuccess('Approval transaction sent: ' + tx.hash);
-                
-                await tx.wait();
-                showSuccess('Gallery tokens approved successfully!');
-                
-                isApproved = true;
-                await checkApproval();
-                showLoading(false);
-
-            } catch (err) {
-                console.error('Error approving:', err);
-                showError('Error approving tokens: ' + parseError(err));
-                showLoading(false);
-            }
-        }
-
-        // Execute swap
-        async function executeSwap() {
+        // Approve and Swap in one function (cascading)
+        async function approveAndSwap() {
             try {
                 if (selectedTokens.size === 0) {
                     showError('Please select tokens to swap');
@@ -844,6 +925,31 @@
                     return;
                 }
 
+                const swapBtn = document.getElementById('swapBtn');
+                swapBtn.disabled = true;
+
+                // Step 1: Check if approval is needed
+                if (!isApproved) {
+                    showLoading(true, 'Approving Gallery tokens...');
+                    
+                    try {
+                        const tx = await galleryContract.setApprovalForAll(SWAP_CONTRACT, true);
+                        showSuccess('Approval transaction sent: ' + tx.hash);
+                        
+                        await tx.wait();
+                        showSuccess('Gallery tokens approved successfully!');
+                        
+                        isApproved = true;
+                    } catch (err) {
+                        console.error('Error approving:', err);
+                        showError('Error approving tokens: ' + parseError(err));
+                        showLoading(false);
+                        swapBtn.disabled = false;
+                        return;
+                    }
+                }
+
+                // Step 2: Execute swap
                 const ids = Array.from(selectedTokens.keys());
                 const amounts = Array.from(selectedTokens.values());
                 const minPunks = parseInt(document.getElementById('minPunksInput').value) || 0;
@@ -862,11 +968,14 @@
                 await loadUserTokens();
                 await checkApproval();
                 showLoading(false);
+                swapBtn.disabled = false;
 
             } catch (err) {
-                console.error('Error executing swap:', err);
+                console.error('Error in approve and swap:', err);
                 showError('Error executing swap: ' + parseError(err));
                 showLoading(false);
+                const swapBtn = document.getElementById('swapBtn');
+                swapBtn.disabled = false;
             }
         }
 
