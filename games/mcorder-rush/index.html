@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McOrder Platform Rush</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        :root {
+            --lcd-bg: #c8d8ae;
+            --lcd-fg: #1a1a1a;
+            --lcd-accent: #e53e3e;
+            --game-width: 400px;
+            --game-height: 550px;
+        }
+
+        body {
+            background-color: #f7f3e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .game-watch-container {
+            width: var(--game-width);
+            height: var(--game-height);
+            background-color: var(--lcd-bg);
+            border: 10px solid var(--lcd-fg);
+            border-radius: 15px;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 0, 0, 0.4), 
+                0 10px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen-area {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            background-image: url('../mcorder/Back.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .game-world {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform: translateX(0);
+            transition: none;
+        }
+
+        .info-bar {
+            background-color: var(--lcd-accent);
+            color: #fff;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 0.5rem;
+            border-bottom: 5px solid var(--lcd-fg);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-panel {
+            background-color: var(--lcd-fg);
+            padding: 15px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top: 5px solid var(--lcd-bg);
+        }
+
+        .btn-control {
+            background-color: var(--lcd-accent);
+            color: white;
+            padding: 12px 24px;
+            border: 4px solid #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.6rem;
+            box-shadow: 0 4px #a00000;
+            transition: all 0.1s;
+        }
+
+        .btn-control:active {
+            box-shadow: 0 1px #a00000;
+            transform: translateY(3px);
+        }
+
+        .player {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            transition: none;
+        }
+
+        .player img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .platform {
+            position: absolute;
+            background-color: #8b7355;
+            border: 3px solid #5a4a3a;
+            border-radius: 5px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .item {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            transition: none;
+        }
+
+        .item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .item.collected {
+            opacity: 0;
+            transform: scale(1.5);
+            transition: all 0.2s;
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+
+        .game-over-overlay button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f6d10c;
+            color: var(--lcd-fg);
+            border-radius: 5px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            box-shadow: 0 3px #ccaf0a;
+        }
+
+        .combo-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: #f6d10c;
+            text-shadow: 2px 2px 0 var(--lcd-fg);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div id="game" class="game-watch-container">
+        <div class="info-bar">
+            <div>SCORE: <span id="score-display">0</span></div>
+            <div>DIST: <span id="distance-display">0</span>m</div>
+            <div>LIVES: <span id="lives-display">3</span></div>
+        </div>
+
+        <div class="screen-area">
+            <div id="game-world" class="game-world">
+                <div id="player" class="player"></div>
+                <div id="combo-indicator" class="combo-indicator"></div>
+            </div>
+
+            <div id="game-over-overlay" class="game-over-overlay">
+                <div id="overlay-title">MCORDER PLATFORM RUSH</div>
+                <div class="text-sm my-2">Score: <span id="final-score">0</span></div>
+                <div class="text-xs my-1">Distance: <span id="final-distance">0</span>m</div>
+                <div class="text-xs my-1">Best: <span id="best-score">0</span></div>
+                <button id="overlay-button" onclick="startGame()">START GAME</button>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button class="btn-control" onclick="jump()">JUMP ↑</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Asset paths (relative to mcorder folder)
+        const MANAGER_R = '../mcorder/Manager_R.png';
+        const MANAGER_L = '../mcorder/Manager_L.png';
+        const BURGER = '../mcorder/Burger.png';
+        const FRIES = '../mcorder/Fries.png';
+        const COKE = '../mcorder/Coke.png';
+        const NUGGETS = '../mcorder/Nuggets.png';
+        const ICE = '../mcorder/Ice.png';
+
+        // Audio paths
+        const AUDIO_SETTINGS = {
+            background: { src: '../mcorder/Let%20Me%20See%20Ya%20Bounce.mp3', volume: 0.35, loop: true },
+            gameOver: { src: '../mcorder/Game%20Over%20Music%201.mp3', volume: 0.45, loop: false },
+            collect: { src: '../mcorder/Triple%20Bleep.mp3', volume: 0.55 },
+            fall: { src: '../mcorder/Drop.mp3', volume: 0.6 }
+        };
+
+        // Game Configuration
+        const GAME_CONFIG = {
+            GRAVITY: 0.8,
+            JUMP_FORCE: -12,
+            RUN_SPEED: 3,
+            PLATFORM_HEIGHT: 20,
+            PLATFORM_MIN_WIDTH: 100,
+            PLATFORM_MAX_WIDTH: 200,
+            PLATFORM_SPACING: 250,
+            ITEM_SPAWN_CHANCE: 0.6,
+            ITEM_TYPES: [
+                { img: BURGER, points: 10, name: 'Burger' },
+                { img: FRIES, points: 15, name: 'Fries' },
+                { img: COKE, points: 12, name: 'Coke' },
+                { img: NUGGETS, points: 20, name: 'Nuggets' },
+                { img: ICE, points: 18, name: 'Ice' }
+            ],
+            PLATFORM_LEVELS: [350, 280, 210], // Y positions for platform levels
+            SCROLL_SPEED_INITIAL: 2,
+            SCROLL_SPEED_INCREMENT: 0.1,
+            SCROLL_SPEED_MAX: 6
+        };
+
+        // Audio setup
+        const backgroundMusic = new Audio(AUDIO_SETTINGS.background.src);
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = AUDIO_SETTINGS.background.volume;
+
+        const gameOverMusic = new Audio(AUDIO_SETTINGS.gameOver.src);
+        gameOverMusic.loop = false;
+        gameOverMusic.volume = AUDIO_SETTINGS.gameOver.volume;
+
+        let audioUnlocked = false;
+
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            backgroundMusic.play().then(() => {
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0;
+            }).catch(() => {
+                audioUnlocked = false;
+            });
+        }
+
+        function playBackgroundMusic() {
+            if (!audioUnlocked) unlockAudio();
+            if (!audioUnlocked) return;
+            gameOverMusic.pause();
+            gameOverMusic.currentTime = 0;
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play().catch(() => {
+                audioUnlocked = false;
+            });
+        }
+
+        function playGameOverMusic() {
+            if (!audioUnlocked) return;
+            gameOverMusic.currentTime = 0;
+            gameOverMusic.play().catch(() => {});
+        }
+
+        function playSfx(type) {
+            if (!audioUnlocked) unlockAudio();
+            if (!audioUnlocked) return;
+            const setting = AUDIO_SETTINGS[type];
+            if (!setting) return;
+            const audio = new Audio(setting.src);
+            audio.volume = setting.volume ?? 0.5;
+            audio.play().catch(() => {});
+        }
+
+        document.addEventListener('pointerdown', unlockAudio);
+        document.addEventListener('keydown', unlockAudio);
+
+        // Game State
+        let score = 0;
+        let distance = 0;
+        let lives = 3;
+        let isGameOver = true;
+        let gameLoopId = null;
+
+        // Player state
+        let player = {
+            x: 100,
+            y: GAME_CONFIG.PLATFORM_LEVELS[0] - 80,
+            velocityY: 0,
+            isJumping: false,
+            onPlatform: true,
+            currentPlatform: null,
+            direction: 'right'
+        };
+
+        // World state
+        let platforms = [];
+        let items = [];
+        let cameraOffset = 0;
+        let scrollSpeed = GAME_CONFIG.SCROLL_SPEED_INITIAL;
+        let nextPlatformX = 400;
+        let comboCount = 0;
+        let lastCollectTime = 0;
+
+        // DOM Elements
+        const gameWorld = document.getElementById('game-world');
+        const playerEl = document.getElementById('player');
+        const scoreDisplay = document.getElementById('score-display');
+        const distanceDisplay = document.getElementById('distance-display');
+        const livesDisplay = document.getElementById('lives-display');
+        const gameOverOverlay = document.getElementById('game-over-overlay');
+        const finalScore = document.getElementById('final-score');
+        const finalDistance = document.getElementById('final-distance');
+        const bestScore = document.getElementById('best-score');
+        const comboIndicator = document.getElementById('combo-indicator');
+
+        // Initialize platforms
+        function initPlatforms() {
+            platforms = [];
+            items = [];
+            
+            // Create initial ground platform
+            const groundPlatform = {
+                x: 0,
+                y: GAME_CONFIG.PLATFORM_LEVELS[0],
+                width: 400,
+                height: GAME_CONFIG.PLATFORM_HEIGHT,
+                element: createPlatformElement(0, GAME_CONFIG.PLATFORM_LEVELS[0], 400)
+            };
+            platforms.push(groundPlatform);
+            gameWorld.appendChild(groundPlatform.element);
+            
+            // Create initial platforms ahead
+            for (let i = 0; i < 5; i++) {
+                spawnPlatform();
+            }
+        }
+
+        function createPlatformElement(x, y, width) {
+            const platform = document.createElement('div');
+            platform.className = 'platform';
+            platform.style.left = x + 'px';
+            platform.style.top = y + 'px';
+            platform.style.width = width + 'px';
+            platform.style.height = GAME_CONFIG.PLATFORM_HEIGHT + 'px';
+            return platform;
+        }
+
+        function spawnPlatform() {
+            const level = Math.floor(Math.random() * GAME_CONFIG.PLATFORM_LEVELS.length);
+            const y = GAME_CONFIG.PLATFORM_LEVELS[level];
+            const width = GAME_CONFIG.PLATFORM_MIN_WIDTH + 
+                         Math.random() * (GAME_CONFIG.PLATFORM_MAX_WIDTH - GAME_CONFIG.PLATFORM_MIN_WIDTH);
+            
+            const platform = {
+                x: nextPlatformX,
+                y: y,
+                width: width,
+                height: GAME_CONFIG.PLATFORM_HEIGHT,
+                element: createPlatformElement(nextPlatformX, y, width)
+            };
+            
+            platforms.push(platform);
+            gameWorld.appendChild(platform.element);
+            
+            // Spawn item on platform
+            if (Math.random() < GAME_CONFIG.ITEM_SPAWN_CHANCE) {
+                spawnItem(platform);
+            }
+            
+            nextPlatformX += width + GAME_CONFIG.PLATFORM_SPACING;
+        }
+
+        function spawnItem(platform) {
+            const itemType = GAME_CONFIG.ITEM_TYPES[Math.floor(Math.random() * GAME_CONFIG.ITEM_TYPES.length)];
+            const itemX = platform.x + platform.width / 2 - 20;
+            const itemY = platform.y - 40;
+            
+            const item = {
+                x: itemX,
+                y: itemY,
+                type: itemType,
+                collected: false,
+                element: document.createElement('div')
+            };
+            
+            item.element.className = 'item';
+            item.element.style.left = item.x + 'px';
+            item.element.style.top = item.y + 'px';
+            item.element.innerHTML = `<img src="${itemType.img}" alt="${itemType.name}">`;
+            
+            items.push(item);
+            gameWorld.appendChild(item.element);
+        }
+
+        function jump() {
+            if (isGameOver) {
+                startGame();
+                return;
+            }
+            
+            if (player.isJumping || !player.onPlatform) return;
+            
+            player.velocityY = GAME_CONFIG.JUMP_FORCE;
+            player.isJumping = true;
+            player.onPlatform = false;
+            player.currentPlatform = null;
+        }
+
+        function checkCollisions() {
+            // Check platform collisions
+            player.onPlatform = false;
+            player.currentPlatform = null;
+            
+            for (let platform of platforms) {
+                if (player.x + 80 > platform.x && 
+                    player.x < platform.x + platform.width &&
+                    player.y + 80 > platform.y &&
+                    player.y + 80 < platform.y + 30 &&
+                    player.velocityY >= 0) {
+                    player.y = platform.y - 80;
+                    player.velocityY = 0;
+                    player.isJumping = false;
+                    player.onPlatform = true;
+                    player.currentPlatform = platform;
+                    break;
+                }
+            }
+            
+            // Check item collisions
+            for (let item of items) {
+                if (item.collected) continue;
+                
+                if (player.x + 40 > item.x &&
+                    player.x < item.x + 40 &&
+                    player.y + 40 > item.y &&
+                    player.y < item.y + 40) {
+                    collectItem(item);
+                }
+            }
+            
+            // Check if player fell off screen
+            if (player.y > 550) {
+                loseLife();
+            }
+        }
+
+        function collectItem(item) {
+            if (item.collected) return;
+            
+            item.collected = true;
+            item.element.classList.add('collected');
+            
+            // Combo system
+            const now = Date.now();
+            if (now - lastCollectTime < 1000) {
+                comboCount++;
+            } else {
+                comboCount = 1;
+            }
+            lastCollectTime = now;
+            
+            // Calculate points with combo bonus
+            let points = item.type.points;
+            if (comboCount > 1) {
+                points = Math.floor(points * (1 + comboCount * 0.2));
+                showCombo(comboCount);
+            }
+            
+            score += points;
+            playSfx('collect');
+            
+            setTimeout(() => {
+                item.element.remove();
+            }, 200);
+        }
+
+        function showCombo(count) {
+            comboIndicator.textContent = `COMBO x${count}!`;
+            comboIndicator.style.opacity = '1';
+            comboIndicator.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            
+            setTimeout(() => {
+                comboIndicator.style.opacity = '0';
+                comboIndicator.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 500);
+        }
+
+        function loseLife() {
+            lives--;
+            playSfx('fall');
+            player.y = GAME_CONFIG.PLATFORM_LEVELS[0] - 80;
+            player.velocityY = 0;
+            player.isJumping = false;
+            player.onPlatform = true;
+            
+            if (lives <= 0) {
+                endGame();
+            }
+        }
+
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            distanceDisplay.textContent = Math.floor(distance / 10);
+            livesDisplay.textContent = lives;
+        }
+
+        function updateCamera() {
+            // Camera follows player, but with some offset
+            const targetOffset = player.x - 100;
+            cameraOffset = targetOffset;
+            gameWorld.style.transform = `translateX(-${cameraOffset}px)`;
+        }
+
+        function cleanupOffscreen() {
+            // Remove platforms and items that are off screen
+            const screenLeft = cameraOffset;
+            const screenRight = cameraOffset + 400;
+            
+            platforms = platforms.filter(platform => {
+                if (platform.x + platform.width < screenLeft - 200) {
+                    platform.element.remove();
+                    return false;
+                }
+                return true;
+            });
+            
+            items = items.filter(item => {
+                if (item.x < screenLeft - 100) {
+                    if (!item.collected) item.element.remove();
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        function gameLoop() {
+            if (isGameOver) return;
+            
+            // Update distance
+            distance += scrollSpeed;
+            
+            // Apply gravity
+            if (!player.onPlatform) {
+                player.velocityY += GAME_CONFIG.GRAVITY;
+            }
+            
+            // Update player position
+            player.y += player.velocityY;
+            player.x += GAME_CONFIG.RUN_SPEED;
+            
+            // Update scroll speed (progressive difficulty)
+            scrollSpeed = Math.min(
+                GAME_CONFIG.SCROLL_SPEED_INITIAL + (distance / 1000) * GAME_CONFIG.SCROLL_SPEED_INCREMENT,
+                GAME_CONFIG.SCROLL_SPEED_MAX
+            );
+            
+            // Move platforms and items
+            for (let platform of platforms) {
+                platform.x -= scrollSpeed;
+                platform.element.style.left = platform.x + 'px';
+            }
+            
+            for (let item of items) {
+                if (!item.collected) {
+                    item.x -= scrollSpeed;
+                    item.element.style.left = item.x + 'px';
+                }
+            }
+            
+            // Spawn new platforms
+            const lastPlatform = platforms[platforms.length - 1];
+            if (lastPlatform && lastPlatform.x < cameraOffset + 600) {
+                spawnPlatform();
+            }
+            
+            // Check collisions
+            checkCollisions();
+            
+            // Update camera
+            updateCamera();
+            
+            // Cleanup offscreen elements
+            cleanupOffscreen();
+            
+            // Update player sprite position
+            playerEl.style.left = (player.x - cameraOffset) + 'px';
+            playerEl.style.top = player.y + 'px';
+            
+            // Update player direction/sprite
+            if (player.velocityY < 0) {
+                playerEl.innerHTML = `<img src="${MANAGER_R}" alt="Manager">`;
+            } else if (player.velocityY > 0) {
+                playerEl.innerHTML = `<img src="${MANAGER_L}" alt="Manager">`;
+            } else {
+                playerEl.innerHTML = `<img src="${MANAGER_R}" alt="Manager">`;
+            }
+            
+            updateUI();
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            isGameOver = true;
+            cancelAnimationFrame(gameLoopId);
+            playBackgroundMusic();
+            playGameOverMusic();
+            
+            // Save best score
+            const best = localStorage.getItem('mcorder-rush-best') || 0;
+            if (score > best) {
+                localStorage.setItem('mcorder-rush-best', score);
+            }
+            
+            finalScore.textContent = score;
+            finalDistance.textContent = Math.floor(distance / 10);
+            bestScore.textContent = Math.max(score, best);
+            
+            gameOverOverlay.style.display = 'flex';
+        }
+
+        window.startGame = function() {
+            // Reset state
+            score = 0;
+            distance = 0;
+            lives = 3;
+            isGameOver = false;
+            scrollSpeed = GAME_CONFIG.SCROLL_SPEED_INITIAL;
+            comboCount = 0;
+            lastCollectTime = 0;
+            nextPlatformX = 400;
+            cameraOffset = 0;
+            
+            // Reset player
+            player = {
+                x: 100,
+                y: GAME_CONFIG.PLATFORM_LEVELS[0] - 80,
+                velocityY: 0,
+                isJumping: false,
+                onPlatform: true,
+                currentPlatform: null,
+                direction: 'right'
+            };
+            
+            // Clear world
+            gameWorld.innerHTML = '';
+            gameWorld.appendChild(playerEl);
+            gameWorld.appendChild(comboIndicator);
+            
+            // Initialize
+            initPlatforms();
+            updateUI();
+            gameOverOverlay.style.display = 'none';
+            
+            unlockAudio();
+            playBackgroundMusic();
+            
+            gameLoopId = requestAnimationFrame(gameLoop);
+        };
+
+        window.jump = jump;
+
+        // Keyboard controls
+        window.onkeydown = function(e) {
+            if (e.key === ' ' || e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') {
+                e.preventDefault();
+                jump();
+            }
+        };
+
+        // Initialize
+        updateUI();
+        gameOverOverlay.style.display = 'flex';
+        const best = localStorage.getItem('mcorder-rush-best') || 0;
+        bestScore.textContent = best;
+    </script>
+</body>
+</html>
