@@ -310,9 +310,10 @@
         let isGameOver = true;
         let gameLoopId = null;
 
-        // Player state
+        // Player state (fixed X position on screen, only Y changes)
         let player = {
-            x: 100,
+            screenX: 100, // Fixed position on screen
+            worldX: 0, // World position for collision detection
             y: GAME_CONFIG.PLATFORM_LEVELS[0] - 80,
             velocityY: 0,
             isJumping: false,
@@ -324,7 +325,7 @@
         // World state
         let platforms = [];
         let items = [];
-        let cameraOffset = 0;
+        let worldOffset = 0; // How much the world has scrolled
         let scrollSpeed = GAME_CONFIG.SCROLL_SPEED_INITIAL;
         let nextPlatformX = 400;
         let comboCount = 0;
@@ -440,9 +441,12 @@
             player.onPlatform = false;
             player.currentPlatform = null;
             
+            // Player world position = screen position + world offset
+            const playerWorldX = player.screenX + worldOffset;
+            
             for (let platform of platforms) {
-                if (player.x + 80 > platform.x && 
-                    player.x < platform.x + platform.width &&
+                if (playerWorldX + 80 > platform.x && 
+                    playerWorldX < platform.x + platform.width &&
                     player.y + 80 > platform.y &&
                     player.y + 80 < platform.y + 30 &&
                     player.velocityY >= 0) {
@@ -459,8 +463,8 @@
             for (let item of items) {
                 if (item.collected) continue;
                 
-                if (player.x + 40 > item.x &&
-                    player.x < item.x + 40 &&
+                if (playerWorldX + 40 > item.x &&
+                    playerWorldX < item.x + 40 &&
                     player.y + 40 > item.y &&
                     player.y < item.y + 40) {
                     collectItem(item);
@@ -533,17 +537,9 @@
             livesDisplay.textContent = lives;
         }
 
-        function updateCamera() {
-            // Camera follows player, but with some offset
-            const targetOffset = player.x - 100;
-            cameraOffset = targetOffset;
-            gameWorld.style.transform = `translateX(-${cameraOffset}px)`;
-        }
-
         function cleanupOffscreen() {
-            // Remove platforms and items that are off screen
-            const screenLeft = cameraOffset;
-            const screenRight = cameraOffset + 400;
+            // Remove platforms and items that are off screen (to the left)
+            const screenLeft = worldOffset;
             
             platforms = platforms.filter(platform => {
                 if (platform.x + platform.width < screenLeft - 200) {
@@ -573,9 +569,11 @@
                 player.velocityY += GAME_CONFIG.GRAVITY;
             }
             
-            // Update player position
+            // Update player Y position (only vertical movement)
             player.y += player.velocityY;
-            player.x += GAME_CONFIG.RUN_SPEED;
+            
+            // Update world offset (world moves left, creating runner effect)
+            worldOffset += scrollSpeed;
             
             // Update scroll speed (progressive difficulty)
             scrollSpeed = Math.min(
@@ -583,36 +581,31 @@
                 GAME_CONFIG.SCROLL_SPEED_MAX
             );
             
-            // Move platforms and items
+            // Move platforms and items visually (they stay in world coordinates)
             for (let platform of platforms) {
-                platform.x -= scrollSpeed;
-                platform.element.style.left = platform.x + 'px';
+                platform.element.style.left = (platform.x - worldOffset) + 'px';
             }
             
             for (let item of items) {
                 if (!item.collected) {
-                    item.x -= scrollSpeed;
-                    item.element.style.left = item.x + 'px';
+                    item.element.style.left = (item.x - worldOffset) + 'px';
                 }
             }
             
             // Spawn new platforms
             const lastPlatform = platforms[platforms.length - 1];
-            if (lastPlatform && lastPlatform.x < cameraOffset + 600) {
+            if (lastPlatform && lastPlatform.x < worldOffset + 600) {
                 spawnPlatform();
             }
             
             // Check collisions
             checkCollisions();
             
-            // Update camera
-            updateCamera();
-            
             // Cleanup offscreen elements
             cleanupOffscreen();
             
-            // Update player sprite position
-            playerEl.style.left = (player.x - cameraOffset) + 'px';
+            // Update player sprite position (fixed X on screen)
+            playerEl.style.left = player.screenX + 'px';
             playerEl.style.top = player.y + 'px';
             
             // Update player direction/sprite
@@ -661,7 +654,8 @@
             
             // Reset player
             player = {
-                x: 100,
+                screenX: 100,
+                worldX: 0,
                 y: GAME_CONFIG.PLATFORM_LEVELS[0] - 80,
                 velocityY: 0,
                 isJumping: false,
@@ -669,6 +663,10 @@
                 currentPlatform: null,
                 direction: 'right'
             };
+            
+            // Reset world
+            worldOffset = 0;
+            nextPlatformX = 400;
             
             // Clear world
             gameWorld.innerHTML = '';
