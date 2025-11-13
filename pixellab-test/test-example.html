@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelLab Test - Ejemplo de Pixel Art</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 30px;
+        }
+        
+        .pixel-art-display {
+            background: #2a2a2a;
+            border: 3px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        
+        .pixel-art-display img {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            max-width: 100%;
+            border: 2px solid #00ff00;
+        }
+        
+        .info {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 PIXELLAB TEST</h1>
+        
+        <div class="info">
+            <p>Esta página muestra ejemplos de pixel art generados con PixelLab AI.</p>
+            <p>Los archivos se generan usando las herramientas MCP de PixelLab.</p>
+        </div>
+        
+        <div class="pixel-art-display">
+            <h2>Sprites Generados</h2>
+            <p>Los sprites generados aparecerán aquí...</p>
+            <!-- Los sprites generados se mostrarán aquí -->
+        </div>
+        
+        <div class="info">
+            <p>Para generar nuevos sprites, usa las herramientas MCP de PixelLab en Cursor.</p>
+        </div>
+    </div>
+</body>
+</html>
