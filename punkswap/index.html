@@ -420,7 +420,7 @@
         <div class="connect-section" id="connectSection">
             <h3>Connect Your Wallet</h3>
             <p style="margin: 20px 0;">Connect your MetaMask wallet to start swapping</p>
-            <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+            <button class="connect-btn" id="connectBtn">Connect Wallet</button>
         </div>
 
         <!-- Account Section -->
@@ -533,27 +533,8 @@
         const loading = document.getElementById('loading');
         const loadingText = document.getElementById('loadingText');
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check auto-connect
-            if (window.ethereum) {
-                window.ethereum.request({ method: 'eth_accounts' })
-                    .then(accounts => {
-                        if (accounts.length > 0) {
-                            connectWallet();
-                        }
-                    });
-            }
-
-            // Listen for account/chain changes
-            if (window.ethereum) {
-                window.ethereum.on('accountsChanged', () => window.location.reload());
-                window.ethereum.on('chainChanged', () => window.location.reload());
-            }
-        });
-
-        // Connect wallet
-        async function connectWallet() {
+        // Connect wallet function (renamed to avoid conflict with menu.js)
+        async function connectPunkswapWallet() {
             try {
                 if (!window.ethereum) {
                     showError('MetaMask is not installed. Please install MetaMask to continue.');
