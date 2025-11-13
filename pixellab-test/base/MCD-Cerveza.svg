@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1025" height="1025" viewBox="0 0 1025 1025" style="image-rendering: pixelated; shape-rendering: crispEdges;">
+  <defs>
+    <style><![CDATA[
+      image { image-rendering: pixelated; }
+    ]]></style>
+  </defs>
+  <!-- Cerveza - pixel art -->
+  <!-- Cuerpo de la botella/lata -->
+  <rect x="400" y="200" width="225" height="600" fill="#ffd700"/>
+  <rect x="400" y="200" width="225" height="50" fill="#daa520"/>
+  <rect x="400" y="250" width="225" height="500" fill="#ffed4e"/>
+  <rect x="400" y="700" width="225" height="100" fill="#daa520"/>
+  
+  <!-- Etiqueta -->
+  <rect x="450" y="350" width="125" height="200" fill="#8b4513"/>
+  <rect x="475" y="380" width="75" height="20" fill="#ffffff"/>
+  <rect x="475" y="410" width="75" height="15" fill="#ffd700"/>
+  <rect x="475" y="435" width="75" height="15" fill="#ffd700"/>
+  <rect x="475" y="460" width="75" height="20" fill="#ffffff"/>
+  <rect x="475" y="490" width="75" height="15" fill="#ffd700"/>
+  <rect x="475" y="515" width="75" height="15" fill="#ffd700"/>
+  
+  <!-- Anillo superior -->
+  <rect x="380" y="190" width="265" height="20" fill="#2c2c2c"/>
+  <rect x="390" y="200" width="245" height="10" fill="#1a1a1a"/>
+  
+  <!-- Anillo inferior -->
+  <rect x="380" y="800" width="265" height="20" fill="#2c2c2c"/>
+  <rect x="390" y="800" width="245" height="10" fill="#1a1a1a"/>
+  
+  <!-- Apertura superior (tapa) -->
+  <rect x="480" y="150" width="65" height="50" fill="#1a1a1a"/>
+  <rect x="490" y="160" width="45" height="30" fill="#000000"/>
+  
+  <!-- Espuma (si es botella) -->
+  <rect x="420" y="200" width="185" height="30" fill="#ffffff" opacity="0.8"/>
+  <rect x="430" y="210" width="165" height="15" fill="#ffffff" opacity="0.9"/>
+  
+  <!-- Reflejos -->
+  <rect x="420" y="250" width="30" height="400" fill="#fffacd" opacity="0.4"/>
+  <rect x="575" y="250" width="20" height="400" fill="#fffacd" opacity="0.3"/>
+</svg>

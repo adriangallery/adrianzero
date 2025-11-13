@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1025" height="1025" viewBox="0 0 1025 1025" style="image-rendering: pixelated; shape-rendering: crispEdges;">
+  <defs>
+    <style><![CDATA[
+      image { image-rendering: pixelated; }
+    ]]></style>
+  </defs>
+  <image x="0" y="0" width="1025" height="1025" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACUAAAAlCAYAAADFniADAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA3klEQVRYhe2XMQrCQBBF36pREhAtUnoBr2DjCWxsLDyLxxHsvYVXsBUrC4NFQBPWJkLiKkw3W8yrlj/NY2aXZZz3ntjoaQv8wqSkmJQUk5JiUlJMSopJSTEpKSYlxaSkmJSUGKSCdUpd6jLKg0xdanZbBJmLYBn1gGsH6p26rbdBpi6V7+dBFuX4NKUOwBlYAtfmvAMYKAmtyrLcfIdpmp6Ao1qniqLwAFmWkSTJJ3ageNHrugYgeQzbPoDy65vUU17jJ5SO9m+j3ikA0m5NTaqqqr811fEV/Xtz6j62NxCzNfcs4BaNAAAAAElFTkSuQmCC" preserveAspectRatio="xMidYMid meet" />
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1025" height="1025" viewBox="0 0 1025 1025" style="image-rendering: pixelated; shape-rendering: crispEdges;">
+  <defs>
+    <style><![CDATA[
+      image { image-rendering: pixelated; }
+    ]]></style>
+  </defs>
+  <!-- Lata de cola - pixel art -->
+  <!-- Cuerpo de la lata -->
+  <rect x="400" y="200" width="225" height="600" fill="#c41e3a"/>
+  <rect x="400" y="200" width="225" height="50" fill="#8b0000"/>
+  <rect x="400" y="250" width="225" height="550" fill="#dc143c"/>
+  <rect x="400" y="700" width="225" height="100" fill="#8b0000"/>
+  
+  <!-- Etiqueta/logo -->
+  <rect x="450" y="300" width="125" height="200" fill="#ffffff"/>
+  <rect x="475" y="320" width="75" height="30" fill="#c41e3a"/>
+  <rect x="475" y="360" width="75" height="20" fill="#000000"/>
+  <rect x="475" y="390" width="75" height="20" fill="#000000"/>
+  <rect x="475" y="420" width="75" height="20" fill="#000000"/>
+  
+  <!-- Anillo superior -->
+  <rect x="380" y="190" width="265" height="20" fill="#2c2c2c"/>
+  <rect x="390" y="200" width="245" height="10" fill="#1a1a1a"/>
+  
+  <!-- Anillo inferior -->
+  <rect x="380" y="800" width="265" height="20" fill="#2c2c2c"/>
+  <rect x="390" y="800" width="245" height="10" fill="#1a1a1a"/>
+  
+  <!-- Apertura superior -->
+  <rect x="480" y="150" width="65" height="50" fill="#1a1a1a"/>
+  <rect x="490" y="160" width="45" height="30" fill="#000000"/>
+  
+  <!-- Reflejos -->
+  <rect x="420" y="250" width="30" height="400" fill="#ff6b6b" opacity="0.3"/>
+  <rect x="575" y="250" width="20" height="400" fill="#ff6b6b" opacity="0.2"/>
+</svg>
