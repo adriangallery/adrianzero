@@ -6,7 +6,7 @@
 class PunkswapConfig {
     constructor() {
         // Contract addresses
-        this.SWAP_CONTRACT = "0xaD794B2289b4272C0A4aDD639034AEfD9Cf2dE89"; // AdrianGallerySwap
+        this.SWAP_CONTRACT = "0xd184A1153fb6970250c58BB3c5C282140D1c5701"; // AdrianGallerySwap
         this.GALLERY_CONTRACT = "0xa92a8F5A47efC77da796dfD0827D07872E7D0429"; // AdrianGallery (ERC1155)
         this.PUNKS_CONTRACT = "0x79BE8AcdD339C7b92918fcC3fd3875b5Aaad7566"; // AdrianPunks (ERC721)
         
