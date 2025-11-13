@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PunkSwap - Gallery to Punks Swap</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="config.js"></script>
+    <link rel="icon" href="../components/images/adrianzero.png">
+    <style>
+        @font-face {
+            font-family: 'ADRIAN_ZERO_FONT';
+            src: url('../components/fonts/ADRIAN_ZERO.otf') format('opentype');
+            font-display: swap;
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: #1a1a1a;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        /* Menu */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff00;
+            font-family: 'VT323', monospace;
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #00ff00 !important;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 80px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
+            font-size: 4.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header h1 .punk {
+            color: #ffffff;
+            font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
+        }
+
+        .header h1 .swap {
+            color: #00ff00;
+            font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
+        }
+
+        .header .subtitle {
+            font-size: 1.45rem;
+            color: #cccccc;
+            margin-bottom: 20px;
+            font-family: 'VT323', monospace;
+        }
+
+        .connect-section {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #00cc00, #009900);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-family: 'VT323', monospace;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .account-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .account-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .account-address {
+            font-size: 1.1rem;
+            color: #00ff00;
+            font-family: 'VT323', monospace;
+        }
+
+        .stats-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+
+        .stat-title {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            color: #00ff00;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .swap-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .token-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .token-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff00;
+        }
+
+        .token-card.selected {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .token-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background: #2a2a2a;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .token-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .token-details {
+            margin-bottom: 15px;
+        }
+
+        .token-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .quantity-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2a2a2a;
+            color: #fff;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .preview-section {
+            display: none;
+            background: rgba(0, 255, 0, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #00ff00;
+            margin-bottom: 30px;
+        }
+
+        .preview-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #00ff00;
+        }
+
+        .preview-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .preview-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .preview-label {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .preview-value {
+            color: #00ff00;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .swap-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 150px;
+            background: linear-gradient(45deg, #00cc00, #009900);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .action-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .action-btn.approve {
+            background: linear-gradient(45deg, #ff6b35, #ff8c42);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #00ff00;
+            font-size: 1.2rem;
+        }
+
+        .error, .success {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: 'VT323', monospace;
+            display: none;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-active {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .status-paused {
+            background: #ff6b35;
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 3rem;
+            }
+            
+            .tokens-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .account-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="menu-container"></div>
+    <div class="container">
+        <div class="header">
+            <h1><span class="punk">Punk</span><span class="swap">Swap</span></h1>
+            <div class="subtitle">Swap Gallery Tokens for Random Punks</div>
+            <p>Trade your AdrianGallery ERC1155 tokens for random AdrianPunks ERC721</p>
+        </div>
+
+        <!-- Connect Section -->
+        <div class="connect-section" id="connectSection">
+            <h3>Connect Your Wallet</h3>
+            <p style="margin: 20px 0;">Connect your MetaMask wallet to start swapping</p>
+            <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+        </div>
+
+        <!-- Account Section -->
+        <div class="account-section" id="accountSection">
+            <div class="account-info">
+                <div>
+                    <strong>Connected:</strong>
+                    <span class="account-address" id="accountAddress"></span>
+                </div>
+                <div>
+                    <strong>Status:</strong>
+                    <span id="contractStatus" class="status-badge status-paused">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-section" id="statsSection">
+            <h3>Contract Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Punks in Bag</div>
+                    <div class="stat-value" id="bagSize">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Punks Out</div>
+                    <div class="stat-value" id="totalPunksOut">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Max Punks Out</div>
+                    <div class="stat-value" id="maxPunksOut">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Progress</div>
+                    <div class="stat-value" id="progress">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Swap Section -->
+        <div class="swap-section" id="swapSection">
+            <h3>Your Gallery Tokens</h3>
+            <p>Select tokens and quantities to swap for random Punks</p>
+            <div class="tokens-grid" id="tokensGrid">
+                <!-- Tokens will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection">
+            <div class="preview-title">Swap Preview</div>
+            <div class="preview-details">
+                <div class="preview-item">
+                    <div class="preview-label">Total Units</div>
+                    <div class="preview-value" id="previewUnits">0</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-label">Punks You'll Receive</div>
+                    <div class="preview-value" id="previewPunks">0</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-label">Min Punks (Slippage)</div>
+                    <input type="number" id="minPunksInput" class="quantity-input" value="0" min="0" placeholder="Min punks">
+                </div>
+            </div>
+            <div class="swap-actions">
+                <button class="action-btn approve" id="approveBtn" onclick="approveGallery()">Approve Gallery</button>
+                <button class="action-btn" id="swapBtn" onclick="executeSwap()" disabled>Execute Swap</button>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p id="loadingText">Loading...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error" id="errorMessage"></div>
+
+        <!-- Success Message -->
+        <div class="success" id="successMessage"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const config = window.PunkswapConfig;
+        const SWAP_CONTRACT = config.SWAP_CONTRACT;
+        const GALLERY_CONTRACT = config.GALLERY_CONTRACT;
+        const PUNKS_CONTRACT = config.PUNKS_CONTRACT;
+        const BASE_CHAIN_ID = config.NETWORK.chainIdHex;
+
+        // Global state
+        let provider, signer, currentAccount;
+        let swapContract, galleryContract;
+        let userTokens = [];
+        let selectedTokens = new Map(); // tokenId -> quantity
+        let contractStats = {};
+        let isApproved = false;
+
+        // DOM elements
+        const connectSection = document.getElementById('connectSection');
+        const accountSection = document.getElementById('accountSection');
+        const statsSection = document.getElementById('statsSection');
+        const swapSection = document.getElementById('swapSection');
+        const previewSection = document.getElementById('previewSection');
+        const tokensGrid = document.getElementById('tokensGrid');
+        const loading = document.getElementById('loading');
+        const loadingText = document.getElementById('loadingText');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load menu
+            fetch('../components/menu.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('menu-container').innerHTML = html;
+                    const script = document.createElement('script');
+                    script.src = '../components/menu.js';
+                    document.head.appendChild(script);
+                })
+                .catch(error => console.error('Error loading menu:', error));
+
+            // Check auto-connect
+            if (window.ethereum) {
+                window.ethereum.request({ method: 'eth_accounts' })
+                    .then(accounts => {
+                        if (accounts.length > 0) {
+                            connectWallet();
+                        }
+                    });
+            }
+
+            // Listen for account/chain changes
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', () => window.location.reload());
+                window.ethereum.on('chainChanged', () => window.location.reload());
+            }
+        });
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    showError('MetaMask is not installed. Please install MetaMask to continue.');
+                    return;
+                }
+
+                showLoading(true, 'Connecting wallet...');
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                currentAccount = accounts[0];
+
+                // Check network
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== BASE_CHAIN_ID) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: BASE_CHAIN_ID }],
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: BASE_CHAIN_ID,
+                                    chainName: 'Base Mainnet',
+                                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                    rpcUrls: [config.NETWORK.rpcUrl],
+                                    blockExplorerUrls: ['https://basescan.org']
+                                }],
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+
+                // Setup providers
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                swapContract = new ethers.Contract(SWAP_CONTRACT, config.SWAP_ABI, signer);
+                galleryContract = new ethers.Contract(GALLERY_CONTRACT, config.GALLERY_ABI, signer);
+
+                // Update UI
+                connectSection.style.display = 'none';
+                accountSection.style.display = 'block';
+                statsSection.style.display = 'block';
+                swapSection.style.display = 'block';
+                document.getElementById('accountAddress').textContent = 
+                    currentAccount.slice(0, 6) + '...' + currentAccount.slice(-4);
+
+                // Load data
+                await loadContractStats();
+                await loadUserTokens();
+                await checkApproval();
+
+                showLoading(false);
+                showSuccess('Wallet connected successfully!');
+
+            } catch (err) {
+                console.error('Connection error:', err);
+                showError('Error connecting wallet: ' + err.message);
+                showLoading(false);
+            }
+        }
+
+        // Load contract statistics
+        async function loadContractStats() {
+            try {
+                const readProvider = config.getReadProvider();
+                const readSwapContract = new ethers.Contract(SWAP_CONTRACT, config.SWAP_ABI, readProvider);
+
+                const [paused, bagSize, totalOut, maxOut] = await Promise.all([
+                    readSwapContract.paused(),
+                    readSwapContract.bagSize(),
+                    readSwapContract.totalPunksOut(),
+                    readSwapContract.maxPunksOut()
+                ]);
+
+                contractStats = { paused, bagSize: bagSize.toNumber(), totalOut: totalOut.toNumber(), maxOut: maxOut.toNumber() };
+
+                // Update UI
+                document.getElementById('bagSize').textContent = contractStats.bagSize;
+                document.getElementById('totalPunksOut').textContent = contractStats.totalOut;
+                document.getElementById('maxPunksOut').textContent = contractStats.maxOut === 0 ? 'Unlimited' : contractStats.maxOut;
+                
+                const progress = contractStats.maxOut > 0 
+                    ? ((contractStats.totalOut / contractStats.maxOut) * 100).toFixed(1) + '%'
+                    : 'N/A';
+                document.getElementById('progress').textContent = progress;
+
+                // Update status badge
+                const statusEl = document.getElementById('contractStatus');
+                if (contractStats.paused) {
+                    statusEl.textContent = 'PAUSED';
+                    statusEl.className = 'status-badge status-paused';
+                } else {
+                    statusEl.textContent = 'ACTIVE';
+                    statusEl.className = 'status-badge status-active';
+                }
+
+            } catch (err) {
+                console.error('Error loading contract stats:', err);
+            }
+        }
+
+        // Load user's Gallery tokens
+        async function loadUserTokens() {
+            try {
+                showLoading(true, 'Loading your Gallery tokens...');
+
+                const readProvider = config.getReadProvider();
+                const readGalleryContract = new ethers.Contract(GALLERY_CONTRACT, config.GALLERY_ABI, readProvider);
+
+                userTokens = [];
+                const allowedIds = config.ALLOWED_IDS;
+
+                // Check balances for all allowed IDs
+                for (const tokenInfo of allowedIds) {
+                    try {
+                        const balance = await readGalleryContract.balanceOf(currentAccount, tokenInfo.id);
+                        const balanceNum = balance.toNumber();
+
+                        if (balanceNum > 0) {
+                            // Get unit weight from contract
+                            const readSwapContract = new ethers.Contract(SWAP_CONTRACT, config.SWAP_ABI, readProvider);
+                            const units = await readSwapContract.unitById(tokenInfo.id);
+
+                            userTokens.push({
+                                id: tokenInfo.id,
+                                name: tokenInfo.name,
+                                balance: balanceNum,
+                                units: units.toNumber(),
+                                imageUrl: `https://adrianlab.vercel.app/api/render/floppy/${tokenInfo.id}.png`
+                            });
+                        }
+                    } catch (err) {
+                        console.warn(`Error loading token ${tokenInfo.id}:`, err);
+                    }
+                }
+
+                renderTokens();
+                showLoading(false);
+
+            } catch (err) {
+                console.error('Error loading user tokens:', err);
+                showError('Error loading Gallery tokens: ' + err.message);
+                showLoading(false);
+            }
+        }
+
+        // Render tokens grid
+        function renderTokens() {
+            tokensGrid.innerHTML = '';
+
+            if (userTokens.length === 0) {
+                tokensGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">No eligible Gallery tokens found in your wallet</div>';
+                return;
+            }
+
+            userTokens.forEach(token => {
+                const card = document.createElement('div');
+                card.className = 'token-card';
+                card.id = `token-${token.id}`;
+
+                const selectedQty = selectedTokens.get(token.id) || 0;
+                if (selectedQty > 0) {
+                    card.classList.add('selected');
+                }
+
+                card.innerHTML = `
+                    <img src="${token.imageUrl}" alt="${token.name}" class="token-image" 
+                         onerror="this.src='../components/images/adrianzero.png'">
+                    <div class="token-name">${token.name} #${token.id}</div>
+                    <div class="token-details">
+                        <div class="token-detail">
+                            <span>Balance:</span>
+                            <span>${token.balance}</span>
+                        </div>
+                        <div class="token-detail">
+                            <span>Units per token:</span>
+                            <span>${token.units}</span>
+                        </div>
+                        <div class="token-detail">
+                            <span>Punks per token:</span>
+                            <span>${(token.units / 2).toFixed(1)}</span>
+                        </div>
+                    </div>
+                    <input type="number" 
+                           class="quantity-input" 
+                           min="0" 
+                           max="${token.balance}" 
+                           value="${selectedQty}"
+                           placeholder="Quantity"
+                           onchange="updateSelection(${token.id}, this.value)">
+                `;
+
+                tokensGrid.appendChild(card);
+            });
+
+            updatePreview();
+        }
+
+        // Update selection
+        function updateSelection(tokenId, quantity) {
+            const qty = parseInt(quantity) || 0;
+            if (qty > 0) {
+                selectedTokens.set(tokenId, qty);
+            } else {
+                selectedTokens.delete(tokenId);
+            }
+            renderTokens();
+            updatePreview();
+        }
+
+        // Update preview
+        async function updatePreview() {
+            if (selectedTokens.size === 0) {
+                previewSection.style.display = 'none';
+                return;
+            }
+
+            try {
+                const ids = Array.from(selectedTokens.keys());
+                const amounts = Array.from(selectedTokens.values());
+
+                const readProvider = config.getReadProvider();
+                const readSwapContract = new ethers.Contract(SWAP_CONTRACT, config.SWAP_ABI, readProvider);
+
+                const quote = await readSwapContract.quoteUnits(ids, amounts);
+                const units = quote.units.toNumber();
+                const punksOut = quote.punksOut.toNumber();
+
+                document.getElementById('previewUnits').textContent = units;
+                document.getElementById('previewPunks').textContent = punksOut;
+                document.getElementById('minPunksInput').value = punksOut;
+                document.getElementById('minPunksInput').max = punksOut;
+
+                previewSection.style.display = 'block';
+                document.getElementById('swapBtn').disabled = !isApproved || contractStats.paused || punksOut === 0;
+
+            } catch (err) {
+                console.error('Error updating preview:', err);
+                showError('Error calculating quote: ' + err.message);
+            }
+        }
+
+        // Check approval
+        async function checkApproval() {
+            try {
+                const readProvider = config.getReadProvider();
+                const readGalleryContract = new ethers.Contract(GALLERY_CONTRACT, config.GALLERY_ABI, readProvider);
+                
+                isApproved = await readGalleryContract.isApprovedForAll(currentAccount, SWAP_CONTRACT);
+                
+                const approveBtn = document.getElementById('approveBtn');
+                const swapBtn = document.getElementById('swapBtn');
+                
+                if (isApproved) {
+                    approveBtn.style.display = 'none';
+                    swapBtn.disabled = contractStats.paused || selectedTokens.size === 0;
+                } else {
+                    approveBtn.style.display = 'block';
+                    swapBtn.disabled = true;
+                }
+            } catch (err) {
+                console.error('Error checking approval:', err);
+            }
+        }
+
+        // Approve Gallery
+        async function approveGallery() {
+            try {
+                showLoading(true, 'Approving Gallery tokens...');
+                
+                const tx = await galleryContract.setApprovalForAll(SWAP_CONTRACT, true);
+                showSuccess('Approval transaction sent: ' + tx.hash);
+                
+                await tx.wait();
+                showSuccess('Gallery tokens approved successfully!');
+                
+                isApproved = true;
+                await checkApproval();
+                showLoading(false);
+
+            } catch (err) {
+                console.error('Error approving:', err);
+                showError('Error approving tokens: ' + parseError(err));
+                showLoading(false);
+            }
+        }
+
+        // Execute swap
+        async function executeSwap() {
+            try {
+                if (selectedTokens.size === 0) {
+                    showError('Please select tokens to swap');
+                    return;
+                }
+
+                if (contractStats.paused) {
+                    showError('Swap is currently paused');
+                    return;
+                }
+
+                const ids = Array.from(selectedTokens.keys());
+                const amounts = Array.from(selectedTokens.values());
+                const minPunks = parseInt(document.getElementById('minPunksInput').value) || 0;
+
+                showLoading(true, 'Executing swap...');
+
+                const tx = await swapContract.swap(ids, amounts, minPunks);
+                showSuccess('Swap transaction sent: ' + tx.hash);
+
+                await tx.wait();
+                showSuccess('Swap executed successfully! You received random Punks. TX: ' + tx.hash);
+
+                // Clear selection and reload
+                selectedTokens.clear();
+                await loadContractStats();
+                await loadUserTokens();
+                await checkApproval();
+                showLoading(false);
+
+            } catch (err) {
+                console.error('Error executing swap:', err);
+                showError('Error executing swap: ' + parseError(err));
+                showLoading(false);
+            }
+        }
+
+        // Parse error messages
+        function parseError(error) {
+            if (!error) return 'Unknown error';
+            if (error.code === 4001) return 'Transaction rejected by user';
+            
+            const msg = error.message || String(error);
+            if (msg.includes('GALLERY_NOT_APPROVED')) return 'Please approve Gallery tokens first';
+            if (msg.includes('PAUSED')) return 'Swap is currently paused';
+            if (msg.includes('SLIPPAGE')) return 'Slippage protection: received fewer punks than minimum';
+            if (msg.includes('INSUFFICIENT_INVENTORY')) return 'Not enough punks in the bag';
+            if (msg.includes('EXCEEDS_CAP')) return 'Swap would exceed maximum punks out limit';
+            if (msg.includes('ID_NOT_ALLOWED')) return 'One or more token IDs are not allowed';
+            if (msg.includes('UNITS_EVEN')) return 'Total units must be even (2 units = 1 punk)';
+            
+            return msg;
+        }
+
+        // Show loading
+        function showLoading(show, text = 'Loading...') {
+            loading.style.display = show ? 'block' : 'none';
+            loadingText.textContent = text;
+        }
+
+        // Show error
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 8000);
+        }
+
+        // Show success
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+
