@@ -54,6 +54,8 @@ interface IERC721 is IERC165 {
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
     function isApprovedForAll(address owner, address operator) external view returns (bool);
     function ownerOf(uint256 tokenId) external view returns (address);
+    function balanceOf(address owner) external view returns (uint256);
+    function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256);
 }
 
 interface IERC721Receiver is IERC165 {
@@ -91,13 +93,6 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
     // Allowed Gallery IDs and their unit weights (2 units = 1 Punk)
     mapping(uint256 => uint8) public unitById;
     mapping(uint256 => bool)  public allowedId;
-
-    // Internal ERC721 inventory (bag). We own deposited Punks.
-    uint256[] public punkBag;    // bag of tokenIds
-    uint256   public punkCount;  // equals punkBag.length for convenience
-    
-    // NEW: Mapping for O(1) lookups - tracks if tokenId is in bag and its index
-    mapping(uint256 => uint256) private _bagIndex; // tokenId => index+1 (0 = not in bag)
 
     // Events
     event Paused(bool status);
@@ -157,63 +152,28 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
     // ===== ERC721 inventory management =====
 
     /// @notice Deposit multiple Punks from the caller (must have setApprovalForAll to this contract).
-    /// @dev Anyone can deposit punks, even when paused. Skips duplicates silently.
+    /// @dev Simple transfer - no bag management needed, ERC721Enumerable handles it.
     function depositPunks(uint256[] calldata tokenIds) external nonReentrant {
         require(tokenIds.length > 0, "EMPTY_ARRAY");
         
-        uint256 deposited = 0;
         for (uint256 i=0; i<tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-            
-            // Skip if already in bag (allows idempotent deposits)
-            if (_bagIndex[tokenId] == 0) {
-                punks.safeTransferFrom(msg.sender, address(this), tokenId);
-                _addToBag(tokenId);
-                deposited++;
-            }
+            punks.safeTransferFrom(msg.sender, address(this), tokenIds[i]);
         }
         
-        // Emit event even if deposited is 0 (all were duplicates) - helps debugging
-        emit PunksDeposited(msg.sender, deposited);
+        emit PunksDeposited(msg.sender, tokenIds.length);
     }
 
     /// @notice Owner can withdraw any specific Punk (rescue / rebalancing).
-    /// @dev Reverts if tokenId is not in bag.
     function ownerWithdrawPunk(uint256 tokenId, address to) external onlyOwner {
         require(to != address(0), "ZERO");
-        require(_bagIndex[tokenId] > 0, "TOKEN_NOT_IN_BAG");
-        _removeFromBag(tokenId);
+        require(punks.ownerOf(tokenId) == address(this), "TOKEN_NOT_OWNED");
         punks.safeTransferFrom(address(this), to, tokenId);
         emit PunkWithdrawn(tokenId, to);
     }
 
-    /// @notice Check if a tokenId is in the bag
-    function isInBag(uint256 tokenId) external view returns (bool) {
-        return _bagIndex[tokenId] > 0;
-    }
-
-    function bagSize() external view returns (uint256) { return punkBag.length; }
-
-    // ===== Internal bag management with O(1) lookups =====
-    function _addToBag(uint256 tokenId) internal {
-        punkBag.push(tokenId);
-        _bagIndex[tokenId] = punkBag.length; // Store index+1
-        punkCount = punkBag.length;
-    }
-
-    function _removeFromBag(uint256 tokenId) internal {
-        uint256 indexPlusOne = _bagIndex[tokenId];
-        require(indexPlusOne > 0, "TOKEN_NOT_IN_BAG");
-        uint256 index = indexPlusOne - 1;
-        uint256 lastIndex = punkBag.length - 1;
-        if (index != lastIndex) {
-            uint256 lastTokenId = punkBag[lastIndex];
-            punkBag[index] = lastTokenId;
-            _bagIndex[lastTokenId] = indexPlusOne; // Update moved token's index
-        }
-        punkBag.pop();
-        delete _bagIndex[tokenId];
-        punkCount = punkBag.length;
+    /// @notice Get the number of Punks in inventory
+    function bagSize() external view returns (uint256) {
+        return punks.balanceOf(address(this));
     }
 
     // ===== View helpers =====
@@ -314,26 +274,23 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
     }
 
     function _precheckInventoryAndCap(uint256 punksOut) internal view {
-        require(punkBag.length >= punksOut, "INSUFFICIENT_INVENTORY");
+        uint256 balance = punks.balanceOf(address(this));
+        require(balance >= punksOut, "INSUFFICIENT_INVENTORY");
         if (maxPunksOut>0) { require(totalPunksOut + punksOut <= maxPunksOut, "EXCEEDS_CAP"); }
     }
 
     function _deliverRandomPunks(address to, uint256 n) internal {
         for (uint256 i=0; i<n; i++) {
-            uint256 idx = _rand(punkBag.length);
-            uint256 tokenId = punkBag[idx];
-
-            // Remove from bag using optimized method (swap & pop + index map)
-            uint256 lastIndex = punkBag.length - 1;
-            if (idx != lastIndex) {
-                uint256 lastTokenId = punkBag[lastIndex];
-                punkBag[idx] = lastTokenId;
-                _bagIndex[lastTokenId] = idx + 1;
-            }
-            punkBag.pop();
-            delete _bagIndex[tokenId];
-            punkCount = punkBag.length;
-
+            uint256 balance = punks.balanceOf(address(this));
+            require(balance > 0, "NO_PUNKS_LEFT");
+            
+            // Get random index from available tokens
+            uint256 idx = _rand(balance);
+            
+            // Get tokenId at that index using ERC721Enumerable
+            uint256 tokenId = punks.tokenOfOwnerByIndex(address(this), idx);
+            
+            // Transfer the punk
             punks.safeTransferFrom(address(this), to, tokenId);
             totalPunksOut += 1;
         }
@@ -365,19 +322,13 @@ contract AdrianGallerySwap is Ownable, ReentrancyGuard, IERC1155Receiver, IERC72
     }
 
     // ===== ERC721 Receiver =====
-    /// @dev Accepts any ERC721 token, but only adds AdrianPunks to the bag
+    /// @dev Accepts any ERC721 token - ERC721Enumerable tracks ownership automatically
     /// @dev Works with OpenSea, Basescan, and any wallet/marketplace
-    function onERC721Received(address, address from, uint256 tokenId, bytes calldata) external override nonReentrant returns (bytes4) {
-        // Try to verify it's an AdrianPunk by checking if we own it and it responds correctly
-        try punks.ownerOf(tokenId) returns (address owner) {
-            // If ownerOf succeeds and we're the owner, it's a valid AdrianPunk
-            if (owner == address(this) && _bagIndex[tokenId] == 0) {
-                _addToBag(tokenId);
-                emit PunksDeposited(from, 1);
-            }
-        } catch {
-            // If ownerOf fails, it's not an AdrianPunk - ignore silently
-            // This allows the transfer to succeed but doesn't add to bag
+    function onERC721Received(address, address from, uint256, bytes calldata) external override returns (bytes4) {
+        // Simple receiver - just emit event if it's from AdrianPunks
+        // ERC721Enumerable automatically tracks the token
+        if (msg.sender == address(punks)) {
+            emit PunksDeposited(from, 1);
         }
         
         return 0x150b7a02; // ERC721_RECEIVED
