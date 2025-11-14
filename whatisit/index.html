@@ -231,12 +231,18 @@
             padding: 20px;
             text-align: center;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 280px;
         }
 
         .pillar-link {
             text-decoration: none;
             color: inherit;
             display: block;
+            height: 100%;
         }
 
         .pillar-card:hover {
@@ -246,9 +252,22 @@
             cursor: pointer;
         }
 
+        .pillar-card img {
+            width: 100%;
+            max-width: 150px;
+            height: 150px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
         .pillar-emoji {
             font-size: 3rem;
             margin-bottom: 10px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .pillar-name {
@@ -455,22 +474,22 @@
             <div class="section fade-in">
                 <div class="pillars-grid">
                     <a href="#section-adrian" class="pillar-card pillar-link">
-                        <img src="../components/images/ADRIAN_Coin.gif" alt="$ADRIAN Token" style="width: 80px; height: 80px; margin-bottom: 15px; image-rendering: pixelated;">
+                        <img src="../components/images/ADRIAN_Coin.gif" alt="$ADRIAN Token" style="image-rendering: pixelated;">
                         <div class="pillar-name">$ADRIAN</div>
                         <div class="pillar-desc">The token</div>
                     </a>
                     <a href="#section-punks" class="pillar-card pillar-link">
-                        <img src="IMG_5771.png" alt="AdrianPunk" style="width: 100%; max-width: 150px; height: auto; margin-bottom: 15px; border-radius: 5px;">
+                        <img src="IMG_5771.png" alt="AdrianPunk">
                         <div class="pillar-name">AdrianPunks</div>
                         <div class="pillar-desc">The OG roots</div>
                     </a>
                     <a href="#section-zero" class="pillar-card pillar-link">
-                        <img src="146 (1).png" alt="AdrianZERO" style="width: 100%; max-width: 150px; height: auto; margin-bottom: 15px; border-radius: 5px;">
+                        <img src="146 (1).png" alt="AdrianZERO">
                         <div class="pillar-name">AdrianZERO</div>
                         <div class="pillar-desc">The living avatars</div>
                     </a>
                     <a href="#section-lab" class="pillar-card pillar-link">
-                        <img src="850 (1).png" alt="AdrianLAB Trait" style="width: 100%; max-width: 150px; height: auto; margin-bottom: 15px; border-radius: 5px;">
+                        <img src="850 (1).png" alt="AdrianLAB Trait">
                         <div class="pillar-name">AdrianLAB</div>
                         <div class="pillar-desc">The machine behind the chaos</div>
                     </a>
