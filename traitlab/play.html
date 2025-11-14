@@ -719,9 +719,16 @@
             }
 
             createTraitItem(trait) {
-                const isSelected = this.selectedTraits.some(t => (t.id || t.tokenId) === (trait.id || trait.tokenId));
                 const tokenId = trait.id || trait.tokenId;
-                const imageUrl = trait.image || `https://adrianlab.vercel.app/labmetadata/traits/${tokenId}.png`;
+                
+                // Validar que el trait tiene un tokenId válido
+                if (tokenId === undefined || tokenId === null) {
+                    console.warn('Trait sin tokenId en createTraitItem:', trait);
+                    return ''; // Retornar string vacío si no tiene tokenId
+                }
+                
+                const isSelected = this.selectedTraits.some(t => (t.id || t.tokenId) === tokenId);
+                const imageUrl = trait.image || `https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`;
                 const formatClass = trait.imageFormat ? `trait-image-${trait.imageFormat}` : '';
                 const localBadge = trait.localImage ? 
                     `<div class="local-badge-mobile">${trait.floppy || 'N/A'}</div>` : '';
@@ -736,8 +743,8 @@
                          data-trait-id="${tokenId}" 
                          data-blocked="${isBlocked}"
                          ${clickHandler}>
-                        <img src="${imageUrl}" alt="${trait.name}" class="trait-image-mobile ${formatClass}" onerror="this.style.display='none'">
-                        <div class="trait-name-mobile">${trait.name}</div>
+                        <img src="${imageUrl}" alt="${trait.name || 'Trait'}" class="trait-image-mobile ${formatClass}" onerror="this.style.display='none'">
+                        <div class="trait-name-mobile">${trait.name || 'Unnamed'}</div>
                         <div class="trait-id-mobile">#${tokenId}</div>
                         ${localBadge}
                     </div>
