@@ -808,6 +808,29 @@
     </div>
 
     <script>
+        // Calculate days since Jan 21, 2025
+        function calculateDaysBuilding() {
+            const startDate = new Date('2025-01-21');
+            const today = new Date();
+            const diffTime = Math.abs(today - startDate);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        // Update days building text
+        function updateDaysBuilding() {
+            const days = calculateDaysBuilding();
+            const daysElement = document.getElementById('days-building');
+            if (daysElement) {
+                daysElement.textContent = `${days} days building $ADRIAN`;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDaysBuilding();
+        });
+
         // Scroll animations
         const observerOptions = {
             threshold: 0.1,
