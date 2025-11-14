@@ -796,27 +796,34 @@
             });
           }
 
-          // Ensure dropdown works properly
-          const dropdownToggle = document.querySelector('#moreShitDropdown');
-          if (dropdownToggle) {
-            dropdownToggle.addEventListener('click', function(e) {
-              e.stopPropagation();
-              // Bootstrap will handle the dropdown toggle
-            });
-          }
-
-          // Close dropdown when clicking outside
-          document.addEventListener('click', function(e) {
-            if (!e.target.closest('.dropdown')) {
-              const dropdown = document.querySelector('.dropdown-menu.show');
-              if (dropdown) {
-                const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
-                if (bsDropdown) {
-                  bsDropdown.hide();
+          // Initialize Bootstrap dropdown after menu loads
+          setTimeout(() => {
+            const dropdownToggle = document.querySelector('#moreShitDropdown');
+            if (dropdownToggle && typeof bootstrap !== 'undefined') {
+              // Initialize Bootstrap dropdown
+              new bootstrap.Dropdown(dropdownToggle);
+              
+              // Ensure click events work
+              dropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                if (dropdown) {
+                  dropdown.toggle();
                 }
-              }
+              });
+            } else if (dropdownToggle) {
+              // Fallback if Bootstrap is not loaded yet
+              dropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const menu = this.nextElementSibling;
+                if (menu) {
+                  menu.classList.toggle('show');
+                }
+              });
             }
-          });
+          }, 100);
         })
         .catch(error => console.error('Error loading menu:', error));
     </script>
