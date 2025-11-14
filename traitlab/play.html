@@ -59,6 +59,43 @@
             font-family: 'VT323', monospace;
         }
 
+        .floppy-filter-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+
+        .floppy-filter-label {
+            color: #888;
+            font-size: 0.7rem;
+        }
+
+        .floppy-filter-select {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ffff;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .floppy-filter-select:focus {
+            outline: none;
+            border-color: #ffffff;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+        }
+
+        .floppy-filter-select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
         .search-input:focus {
             outline: none;
             border-color: #ffffff;
@@ -459,6 +496,12 @@
             <div class="search-container">
                 <input type="text" id="searchInput" class="search-input" placeholder="Search traits...">
             </div>
+            <div class="floppy-filter-container">
+                <span class="floppy-filter-label">Floppy:</span>
+                <select id="floppyFilter" class="floppy-filter-select">
+                    <option value="">All Floppies</option>
+                </select>
+            </div>
         </div>
 
         <!-- Preview Section -->
@@ -521,6 +564,8 @@
                 this.selectedTraits = [];
                 this.traitsByCategory = {};
                 this.currentCategory = null;
+                this.currentFloppy = null;
+                this.availableFloppies = [];
                 this.baseTokenId = 208;
                 this.isInitialized = false;
                 this.adrianOptions = [
@@ -620,10 +665,39 @@
                         console.log('Traits cerca de 1014:', nearby.map(t => ({id: t.id || t.tokenId, name: t.name})));
                     }
                     
+                    // Recopilar floppies únicos
+                    this.collectFloppies();
+                    this.populateFloppyFilter();
                     this.groupTraitsByCategory();
                 } catch (error) {
                     this.allTraits = [];
                 }
+            }
+
+            collectFloppies() {
+                const floppySet = new Set();
+                this.allTraits.forEach(trait => {
+                    if (trait.floppy && trait.floppy.trim()) {
+                        floppySet.add(trait.floppy.trim());
+                    }
+                });
+                this.availableFloppies = Array.from(floppySet).sort();
+            }
+
+            populateFloppyFilter() {
+                const select = document.getElementById('floppyFilter');
+                if (!select) return;
+                
+                // Limpiar opciones existentes (excepto "All Floppies")
+                select.innerHTML = '<option value="">All Floppies</option>';
+                
+                // Añadir cada floppy como opción
+                this.availableFloppies.forEach(floppy => {
+                    const option = document.createElement('option');
+                    option.value = floppy;
+                    option.textContent = floppy;
+                    select.appendChild(option);
+                });
             }
 
             normalizeCategory(category) {
@@ -662,6 +736,14 @@
                     if (tokenId === undefined || tokenId === null) {
                         console.warn('Trait sin tokenId válido:', trait);
                         return; // Saltar este trait
+                    }
+                    
+                    // Filtrar por floppy si hay uno seleccionado
+                    if (this.currentFloppy && this.currentFloppy !== '') {
+                        const traitFloppy = (trait.floppy || '').trim();
+                        if (traitFloppy !== this.currentFloppy) {
+                            return; // Saltar este trait si no coincide con el floppy seleccionado
+                        }
                     }
                     
                     // Actualizar la categoría del trait a la normalizada
