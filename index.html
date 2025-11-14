@@ -368,6 +368,42 @@
             display: block;
         }
 
+        /* Dropdown styles */
+        #menu-container .dropdown-menu {
+            background: rgba(0, 0, 0, 0.95) !important;
+            border: 2px solid #00ff00 !important;
+            border-radius: 8px !important;
+            z-index: 1050 !important;
+            min-width: 200px;
+        }
+
+        #menu-container .dropdown-item {
+            color: #00ff00 !important;
+            font-family: 'VT323', monospace !important;
+            font-size: 1rem !important;
+            padding: 10px 20px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        #menu-container .dropdown-item:hover {
+            background: rgba(0, 255, 0, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        #menu-container .dropdown-toggle {
+            cursor: pointer !important;
+        }
+
+        #menu-container .dropdown-toggle::after {
+            margin-left: 8px;
+        }
+
+        /* Ensure dropdown is clickable */
+        #menu-container .nav-item.dropdown {
+            position: relative;
+            z-index: 1050;
+        }
+
         /* Mobile menu styles */
         @media (max-width: 991.98px) {
             #menu-container .navbar-collapse {
@@ -754,10 +790,33 @@
           const navbarCollapse = document.querySelector('.navbar-collapse');
           
           if (navbarToggler && navbarCollapse) {
-            navbarToggler.addEventListener('click', function() {
+            navbarToggler.addEventListener('click', function(e) {
+              e.stopPropagation();
               navbarCollapse.classList.toggle('show');
             });
           }
+
+          // Ensure dropdown works properly
+          const dropdownToggle = document.querySelector('#moreShitDropdown');
+          if (dropdownToggle) {
+            dropdownToggle.addEventListener('click', function(e) {
+              e.stopPropagation();
+              // Bootstrap will handle the dropdown toggle
+            });
+          }
+
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+              const dropdown = document.querySelector('.dropdown-menu.show');
+              if (dropdown) {
+                const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                if (bsDropdown) {
+                  bsDropdown.hide();
+                }
+              }
+            }
+          });
         })
         .catch(error => console.error('Error loading menu:', error));
     </script>
