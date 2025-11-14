@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What is $ADRIAN? — Welcome to the Ecosystem</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="../components/images/adrianzero.png">
+    
+    <style>
+        @font-face {
+            font-family: 'ADRIAN_ZERO_FONT';
+            src: url('../components/fonts/ADRIAN_ZERO.otf') format('opentype');
+            font-display: swap;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #ffffff;
+            line-height: 1.8;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Grid pattern de fondo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Menu styles */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ffff;
+            font-family: 'VT323', monospace;
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #00ffff !important;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        #menu-container .token-symbol {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.4rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            padding-top: 80px;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            padding: 60px 20px 40px;
+            position: relative;
+        }
+
+        .hero-title {
+            font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff00, #00ccff, #ff0088);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite alternate;
+            letter-spacing: 2px;
+        }
+
+        @keyframes glow {
+            from { 
+                filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
+            }
+            to { 
+                filter: drop-shadow(0 0 40px rgba(0, 255, 0, 0.8));
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #cccccc;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Container principal */
+        .main-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* Secciones */
+        .section {
+            margin-bottom: 60px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+
+        .section-title {
+            font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-emoji {
+            font-size: 2rem;
+        }
+
+        .section-content {
+            font-size: 1.3rem;
+            color: #e0e0e0;
+            line-height: 1.9;
+        }
+
+        .section-content p {
+            margin-bottom: 15px;
+        }
+
+        .section-content ul {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+
+        .section-content li {
+            margin-bottom: 10px;
+        }
+
+        /* Badges y highlights */
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin: 5px;
+            font-weight: bold;
+        }
+
+        .badge-green {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .badge-cyan {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+        }
+
+        .badge-pink {
+            background: rgba(255, 0, 136, 0.2);
+            border: 1px solid #ff0088;
+            color: #ff0088;
+        }
+
+        .badge-orange {
+            background: rgba(255, 136, 0, 0.2);
+            border: 1px solid #ff8800;
+            color: #ff8800;
+        }
+
+        /* Pillars grid */
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .pillar-card {
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pillar-card:hover {
+            border-color: rgba(0, 255, 255, 0.6);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .pillar-emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .pillar-name {
+            font-size: 1.5rem;
+            color: #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .pillar-desc {
+            font-size: 1.1rem;
+            color: #cccccc;
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 4px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .highlight-box-cyan {
+            background: rgba(0, 255, 255, 0.1);
+            border-left-color: #00ffff;
+        }
+
+        .highlight-box-pink {
+            background: rgba(255, 0, 136, 0.1);
+            border-left-color: #ff0088;
+        }
+
+        /* Numbers section */
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .number-card {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .number-value {
+            font-size: 2.5rem;
+            color: #00ffff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .number-label {
+            font-size: 1.1rem;
+            color: #cccccc;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 70%);
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 15px;
+            margin-top: 40px;
+        }
+
+        .cta-title {
+            font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
+            font-size: 2.5rem;
+            color: #00ff00;
+            margin-bottom: 20px;
+        }
+
+        .cta-text {
+            font-size: 1.3rem;
+            color: #cccccc;
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: 'VT323', monospace;
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: translateY(-2px);
+            color: #ffffff;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+            font-size: 1.2rem;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            margin-top: 60px;
+        }
+
+        .footer-tagline {
+            font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
+            font-size: 1.5rem;
+            color: #00ff00;
+            margin-top: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .section-content {
+                font-size: 1.1rem;
+            }
+
+            .pillars-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .numbers-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    <script>
+      // Load the menu
+      fetch('../components/menu.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = '../components/menu.js';
+          document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    </script>
+
+    <div class="content-wrapper">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">Welcome to the $ADRIAN World 🚀</h1>
+            <p class="hero-subtitle">A quick guide to understand what this whole thing is — even if you just landed here today.</p>
+            <p class="hero-subtitle" style="font-size: 1.2rem; color: #888;">We'll keep it simple and focus on the 4 pillars ⚡</p>
+        </div>
+
+        <div class="main-container">
+            <!-- Pillars Overview -->
+            <div class="section fade-in">
+                <div class="pillars-grid">
+                    <div class="pillar-card">
+                        <div class="pillar-emoji">💸</div>
+                        <div class="pillar-name">$ADRIAN</div>
+                        <div class="pillar-desc">The token</div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-emoji">👾</div>
+                        <div class="pillar-name">AdrianPunks</div>
+                        <div class="pillar-desc">The OG roots</div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-emoji">🧬</div>
+                        <div class="pillar-name">AdrianZERO</div>
+                        <div class="pillar-desc">The living avatars</div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-emoji">🧪</div>
+                        <div class="pillar-name">AdrianLAB</div>
+                        <div class="pillar-desc">The machine behind the chaos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 0. The Very Short Version -->
+            <div class="section fade-in">
+                <h2 class="section-title">
+                    <span class="section-emoji">⚡</span>
+                    <span>0. The Very Short Version</span>
+                </h2>
+                <div class="section-content">
+                    <p><strong>$ADRIAN</strong> → the native token on Base used for almost everything.</p>
+                    <p><strong>AdrianPunks</strong> → original pixel PFPs + OG pass of the entire universe.</p>
+                    <p><strong>AdrianZERO</strong> → dynamic PFPs with evolving looks.</p>
+                    <p><strong>AdrianLAB</strong> → the modular engine of traits, packs, serums and tools.</p>
+                    <div class="highlight-box">
+                        <p>You mint or buy a Punk/ZERO, get or spend $ADRIAN, open packs, burn traits, and slowly build your own micro-lore inside this world. 🌱</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. $ADRIAN -->
+            <div class="section fade-in">
+                <h2 class="section-title">
+                    <span class="section-emoji">💸</span>
+                    <span>1. $ADRIAN — The Fuel of the System</span>
+                </h2>
+                <div class="section-content">
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">What it is</h3>
+                    <ul>
+                        <li>ERC-20 token on Base.</li>
+                        <li>No VC funding, no launchpad, no big team — just an indie dev + artist building in public 😎</li>
+                    </ul>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">What it's used for</h3>
+                    <ul>
+                        <li>Paying for mints (ZERO, Floppys, serums, etc.).</li>
+                        <li>Auctions, offers and marketplace interactions.</li>
+                        <li>Buying traits in the <span class="badge badge-green">TraitSHOP 🛒</span></li>
+                        <li>Rewards, prizes, airdrops, bounties, games, experiments <span class="badge badge-cyan">🎯</span></li>
+                    </ul>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">Tax System (current)</h3>
+                    <p>Every buy/sell → 1% tax:</p>
+                    <ul>
+                        <li><span class="badge badge-orange">🔥 0.1%</span> Burned (deflationary)</li>
+                        <li><span class="badge badge-pink">💀 0.1%</span> → THE TAX REAPER NFT</li>
+                        <li><span class="badge badge-cyan">🌊 0.8%</span> → Liquidity</li>
+                    </ul>
+
+                    <div class="highlight-box-cyan">
+                        <p><strong>For newcomers:</strong> just know $ADRIAN powers every action in the ecosystem. ⚙️</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. AdrianPunks -->
+            <div class="section fade-in">
+                <h2 class="section-title">
+                    <span class="section-emoji">👾</span>
+                    <span>2. AdrianPunks — The OG Roots</span>
+                </h2>
+                <div class="section-content">
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">Supply & style</h3>
+                    <ul>
+                        <li>1,000 PFPs, pixel art, with 10 unique 1/1s.</li>
+                        <li>The starting point of the entire visual universe.</li>
+                    </ul>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">Why they matter</h3>
+                    <ul>
+                        <li>They're the foundation of everything.</li>
+                        <li>They get ongoing free rewards.</li>
+                        <li>They're connected to both AdrianLAB and AdrianZERO.</li>
+                    </ul>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">Key Perks</h3>
+                    <ul>
+                        <li><span class="badge badge-green">🎁 OG Rewards</span> — periodic free trait claims (1 per Punk).</li>
+                        <li><span class="badge badge-cyan">🃏 OG TraitCARDs</span> — reproduce your Punk as a TOP trait in ZERO.</li>
+                        <li><span class="badge badge-pink">🔄 PunkSwap</span> — Gallery NFTs convert into real AdrianPunks for simpler, future-proof perks.</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <p>If you like symbolic OG status plus pixel PFPs → this is the root collection.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. AdrianZERO -->
+            <div class="section fade-in">
+                <h2 class="section-title">
+                    <span class="section-emoji">🧬</span>
+                    <span>3. AdrianZERO — Living Avatars</span>
+                </h2>
+                <div class="section-content">
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">What is an AdrianZERO?</h3>
+                    <p>Dynamic characters whose appearance evolves over time.</p>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">What you can do</h3>
+                    <ul>
+                        <li>Change clothes, skins, backgrounds, accessories.</li>
+                        <li>Use serums to transform male ZERO → <span class="badge badge-pink">AdrianGF ❤️</span></li>
+                        <li>Apply gold skins, optical effects, glitch traits, etc.</li>
+                        <li>Toggle Zoom-in ZEROS (close-up PFP view).</li>
+                        <li>Add shadows, use AdrianLAMBO banners, and more.</li>
+                    </ul>
+
+                    <div class="highlight-box-cyan">
+                        <p>All rendered live — marketplaces update as traits change.</p>
+                    </div>
+
+                    <p style="margin-top: 20px;"><strong>AdrianZERO is the main playground for daily chaos, traits, games, ShitDROPs and bounties 🔥</strong></p>
+                </div>
+            </div>
+
+            <!-- 4. AdrianLAB -->
+            <div class="section fade-in">
+                <h2 class="section-title">
+                    <span class="section-emoji">🧪</span>
+                    <span>4. AdrianLAB — The Machine Behind the Chaos</span>
+                </h2>
+                <div class="section-content">
+                    <p>A modular smart contract + trait system powering all AdrianZERO evolution.</p>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">Includes:</h3>
+                    <ul>
+                        <li>Core + extensions</li>
+                        <li>Pack minter</li>
+                        <li>Serum module</li>
+                        <li>Crafting</li>
+                        <li>Vercel dynamic renderer</li>
+                    </ul>
+
+                    <p style="margin: 20px 0;">Public side shows up mostly as:</p>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">🧭 4.1 TraitLAB</h3>
+                    <ul>
+                        <li>Open packs</li>
+                        <li>View traits</li>
+                        <li>Apply traits (burning them)</li>
+                        <li>Multi-pack opening</li>
+                    </ul>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">📦 4.2 Floppys, Packs & USBs</h3>
+                    <p>More than 10 product lines:</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;">
+                        <span class="badge badge-green">OG Floppys</span>
+                        <span class="badge badge-cyan">Starter Floppys</span>
+                        <span class="badge badge-pink">Golden Floppy</span>
+                        <span class="badge badge-orange">GF Floppy</span>
+                        <span class="badge badge-green">GLITCH</span>
+                        <span class="badge badge-cyan">Samurai</span>
+                        <span class="badge badge-pink">USB Comrades</span>
+                        <span class="badge badge-orange">NEON backgrounds</span>
+                        <span class="badge badge-green">OPTICAL backgrounds</span>
+                        <span class="badge badge-cyan">BORED ADRIAN</span>
+                        <span class="badge badge-pink">MUTANT ADRIAN</span>
+                        <span class="badge badge-orange">etc.</span>
+                    </div>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">🎨 4.3 Traits — The Real Content</h3>
+                    <ul>
+                        <li>1,000+ traits created</li>
+                        <li>Thousands burnt</li>
+                        <li>TraitCARDs, premium traits, 1/1s (Dracula, NEO-ZERO, THE MANAGER…)</li>
+                    </ul>
+
+                    <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">💩 4.4 ShitDROPs, Bounties & Games</h3>
+                    <ul>
+                        <li><strong>ShitDROPs</strong> — 24h free mints tied to trends</li>
+                        <li><strong>PatientZERO / Rehab Center</strong> — bounty puzzles</li>
+                        <li><strong>BuilderBattles</strong> — design competitions</li>
+                        <li><strong>Mini-games</strong> — like <span class="badge badge-green">McOrder Dash 🍔</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 5. How It All Connects -->
+            <div class="section fade-in">
+                <h2 class="section-title">
+                    <span class="section-emoji">🔗</span>
+                    <span>5. How It All Connects</span>
+                </h2>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>$ADRIAN</strong> → powers everything</li>
+                        <li><strong>AdrianPunks</strong> → OG backbone</li>
+                        <li><strong>AdrianZERO ↔ AdrianLAB</strong> → trait loop</li>
+                        <li><strong>Auctions & 1/1s</strong> → special ecosystem events</li>
+                    </ul>
+
+                    <div class="highlight-box-pink" style="margin-top: 30px;">
+                        <p><strong>Closed-loop economy where:</strong></p>
+                        <ul style="margin-top: 15px;">
+                            <li>$ADRIAN burns</li>
+                            <li>Punks & ZEROS evolve</li>
+                            <li>Traits circulate & die (burnt)</li>
+                            <li>Lore grows every week</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Numbers So Far -->
+            <div class="section fade-in">
+                <h2 class="section-title">
+                    <span class="section-emoji">📊</span>
+                    <span>6. Numbers So Far</span>
+                </h2>
+                <div class="numbers-grid">
+                    <div class="number-card">
+                        <div class="number-value">$ADRIAN</div>
+                        <div class="number-label">Thousands of transactions on Base</div>
+                    </div>
+                    <div class="number-card">
+                        <div class="number-value">1,000</div>
+                        <div class="number-label">AdrianPunks supply</div>
+                    </div>
+                    <div class="number-card">
+                        <div class="number-value">300+</div>
+                        <div class="number-label">Active holders</div>
+                    </div>
+                    <div class="number-card">
+                        <div class="number-value">300+</div>
+                        <div class="number-label">AdrianZERO minted & evolving</div>
+                    </div>
+                    <div class="number-card">
+                        <div class="number-value">1,000+</div>
+                        <div class="number-label">Traits created</div>
+                    </div>
+                    <div class="number-card">
+                        <div class="number-value">10+</div>
+                        <div class="number-label">Product lines</div>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 20px; color: #888;">Events → multiple 1/1s, games, ShitDROPs, BuilderBattles</p>
+            </div>
+
+            <!-- 7. How to Get Started -->
+            <div class="section fade-in">
+                <h2 class="section-title">
+                    <span class="section-emoji">🚀</span>
+                    <span>7. How to Get Started</span>
+                </h2>
+                <div class="section-content">
+                    <ol style="margin-left: 30px;">
+                        <li style="margin-bottom: 15px;"><strong>Get some $ADRIAN</strong></li>
+                        <li style="margin-bottom: 15px;"><strong>Pick a path:</strong>
+                            <ul style="margin-top: 10px; margin-left: 20px;">
+                                <li><span class="badge badge-cyan">👾 Punks</span> → OG, slow-burn value</li>
+                                <li><span class="badge badge-pink">🧬 ZERO</span> → custom chaos</li>
+                            </ul>
+                        </li>
+                        <li style="margin-bottom: 15px;"><strong>Play the loop:</strong>
+                            <p style="margin-top: 10px; margin-left: 20px;">Mint → open packs → burn traits → customise → join drops → repeat</p>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section fade-in">
+                <h2 class="cta-title">If you remember only one thing:</h2>
+                <p class="cta-text">$ADRIAN is not just a token — it's the fuel behind a living, ever-changing world.</p>
+                <div class="cta-buttons">
+                    <a href="https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea" target="_blank" class="cta-button">Buy $ADRIAN</a>
+                    <a href="../traitlab" class="cta-button">Explore TraitLAB</a>
+                    <a href="../ogclaim.html" class="cta-button">OG Claim</a>
+                    <a href="../shop" class="cta-button">TraitSHOP</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>BE REAL | BE $ADRIAN</p>
+            <p class="footer-tagline">Powered by $ADRIAN</p>
+        </div>
+    </div>
+
+    <script>
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
