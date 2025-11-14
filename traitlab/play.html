@@ -566,16 +566,21 @@
             async loadTraits() {
                 try {
                     let response;
+                    let source = 'local';
                     try {
                         response = await fetch('./json/traits.json');
                         if (!response.ok) throw new Error('Local file not found');
                     } catch (localError) {
-                        response = await fetch('https://adrianlab.vercel.app/labmetadata/traits.json');
+                        console.warn('Local traits.json not found, trying remote...');
+                        source = 'remote';
+                        response = await fetch('https://adrianzero.com/traitlab/json/traits.json');
                         if (!response.ok) throw new Error('Failed to load traits database');
                     }
                     
+                    console.log(`Loading traits from ${source} source`);
                     const data = await response.json();
                     this.allTraits = data.traits || [];
+                    console.log(`Loaded ${this.allTraits.length} traits from JSON`);
                     
                     // Set local images for all traits
                     this.allTraits.forEach(trait => {
