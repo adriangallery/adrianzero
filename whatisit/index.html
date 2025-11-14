@@ -14,6 +14,21 @@
             src: url('../components/fonts/ADRIAN_ZERO.otf') format('opentype');
             font-display: swap;
         }
+
+        .days-building-text {
+            font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
+            font-size: 2.5rem;
+            color: #00ffff;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .days-building-text {
+                font-size: 1.8rem;
+            }
+        }
         
         * {
             margin: 0;
@@ -495,6 +510,11 @@
                         <div class="pillar-desc">The machine behind the chaos</div>
                     </a>
                 </div>
+            </div>
+
+            <!-- Days Building Counter -->
+            <div class="section fade-in" style="text-align: center; padding: 40px 30px;">
+                <p id="days-building" class="days-building-text"></p>
             </div>
 
             <!-- 0. The Very Short Version -->
