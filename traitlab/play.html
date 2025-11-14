@@ -580,11 +580,25 @@
                     // Set local images for all traits
                     this.allTraits.forEach(trait => {
                         const tokenId = trait.id || trait.tokenId;
-                        trait.image = `https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`;
-                        trait.localImage = true;
-                        trait.imageFormat = 'svg';
+                        // Validar que tokenId existe y es un número válido
+                        if (tokenId !== undefined && tokenId !== null) {
+                            trait.image = `https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`;
+                            trait.localImage = true;
+                            trait.imageFormat = 'svg';
+                            // Asegurar que tenemos el tokenId disponible
+                            if (!trait.tokenId && !trait.id) {
+                                trait.tokenId = tokenId;
+                            }
+                        }
                     });
                     
+                    // Filtrar traits sin tokenId válido
+                    this.allTraits = this.allTraits.filter(trait => {
+                        const tokenId = trait.id || trait.tokenId;
+                        return tokenId !== undefined && tokenId !== null;
+                    });
+                    
+                    console.log(`Loaded ${this.allTraits.length} traits`);
                     this.groupTraitsByCategory();
                 } catch (error) {
                     this.allTraits = [];
@@ -597,6 +611,12 @@
                     const category = trait.category || 'Other';
                     const tokenId = trait.id || trait.tokenId;
                     
+                    // Validar que el trait tiene un tokenId válido
+                    if (tokenId === undefined || tokenId === null) {
+                        console.warn('Trait sin tokenId válido:', trait);
+                        return; // Saltar este trait
+                    }
+                    
                     // Aplicar filtros
                     if (this.shouldHideTrait(trait, category, tokenId)) {
                         return; // Saltar este trait
@@ -607,6 +627,10 @@
                     }
                     this.traitsByCategory[category].push(trait);
                 });
+                
+                // Log para debugging
+                const totalInCategories = Object.values(this.traitsByCategory).reduce((sum, arr) => sum + arr.length, 0);
+                console.log(`Grouped ${totalInCategories} traits into ${Object.keys(this.traitsByCategory).length} categories`);
             }
 
             shouldHideTrait(trait, category, tokenId) {
