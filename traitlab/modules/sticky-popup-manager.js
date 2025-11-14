@@ -18,6 +18,8 @@ class StickyPopupManager {
         this.isScrolling = false;
         this.isMobile = false;
         this.scrollThrottle = null;
+        this.handleScroll = null;
+        this.handleResize = null;
     }
 
     /**
@@ -192,6 +194,16 @@ class StickyPopupManager {
      * Configurar comportamiento de ocultar popup durante scroll en móviles
      */
     setupScrollHideBehavior() {
+        // Remover listeners anteriores si existen
+        if (this.handleScroll) {
+            window.removeEventListener('scroll', this.handleScroll);
+            this.handleScroll = null;
+        }
+        if (this.handleResize) {
+            window.removeEventListener('resize', this.handleResize);
+            this.handleResize = null;
+        }
+        
         // Detectar si es móvil
         this.isMobile = window.innerWidth <= 767;
         
@@ -201,20 +213,16 @@ class StickyPopupManager {
         }
         
         // Listener para cambios de tamaño de ventana
-        window.addEventListener('resize', () => {
+        this.handleResize = () => {
             const wasMobile = this.isMobile;
             this.isMobile = window.innerWidth <= 767;
             
             // Si cambió de móvil a desktop o viceversa, reconfigurar
             if (wasMobile !== this.isMobile) {
-                if (this.isMobile) {
-                    this.setupScrollHideBehavior();
-                } else {
-                    // Remover listeners si ya no es móvil
-                    window.removeEventListener('scroll', this.handleScroll);
-                }
+                this.setupScrollHideBehavior();
             }
-        });
+        };
+        window.addEventListener('resize', this.handleResize);
         
         // Añadir listener de scroll con throttling
         this.handleScroll = this.throttleScroll(() => {
