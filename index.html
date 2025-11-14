@@ -780,51 +780,14 @@
     <!-- Include the menu -->
     <div id="menu-container"></div>
     <script>
-      // Load the menu with inline script to avoid conflicts
+      // Load the menu
       fetch('components/menu.html')
         .then(response => response.text())
         .then(html => {
           document.getElementById('menu-container').innerHTML = html;
-          
-          // Add Bootstrap functionality for menu toggle
-          const navbarToggler = document.querySelector('.navbar-toggler');
-          const navbarCollapse = document.querySelector('.navbar-collapse');
-          
-          if (navbarToggler && navbarCollapse) {
-            navbarToggler.addEventListener('click', function(e) {
-              e.stopPropagation();
-              navbarCollapse.classList.toggle('show');
-            });
-          }
-
-          // Initialize Bootstrap dropdown after menu loads
-          setTimeout(() => {
-            const dropdownToggle = document.querySelector('#moreShitDropdown');
-            if (dropdownToggle && typeof bootstrap !== 'undefined') {
-              // Initialize Bootstrap dropdown
-              new bootstrap.Dropdown(dropdownToggle);
-              
-              // Ensure click events work
-              dropdownToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
-                if (dropdown) {
-                  dropdown.toggle();
-                }
-              });
-            } else if (dropdownToggle) {
-              // Fallback if Bootstrap is not loaded yet
-              dropdownToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const menu = this.nextElementSibling;
-                if (menu) {
-                  menu.classList.toggle('show');
-                }
-              });
-            }
-          }, 100);
+          const script = document.createElement('script');
+          script.src = 'components/menu.js';
+          document.head.appendChild(script);
         })
         .catch(error => console.error('Error loading menu:', error));
     </script>
