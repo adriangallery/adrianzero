@@ -796,12 +796,27 @@
                     this.filterTraits(e.target.value);
                 });
 
+                // Floppy filter
+                const floppyFilter = document.getElementById('floppyFilter');
+                if (floppyFilter) {
+                    floppyFilter.addEventListener('change', (e) => {
+                        this.selectFloppy(e.target.value);
+                    });
+                }
+
                 // AdrianZERO base selector
                 document.querySelectorAll('.adrian-option-mobile').forEach(option => {
                     option.addEventListener('click', () => {
                         this.selectAdrianBase(parseInt(option.dataset.adrianId));
                     });
                 });
+            }
+
+            selectFloppy(floppy) {
+                this.currentFloppy = floppy || null;
+                this.groupTraitsByCategory();
+                this.renderCategories();
+                this.renderTraits();
             }
 
             selectAdrianBase(adrianId) {
