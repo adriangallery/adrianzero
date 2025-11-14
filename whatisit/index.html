@@ -233,10 +233,17 @@
             transition: all 0.3s ease;
         }
 
+        .pillar-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
         .pillar-card:hover {
             border-color: rgba(0, 255, 255, 0.6);
             transform: translateY(-5px);
             box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+            cursor: pointer;
         }
 
         .pillar-emoji {
@@ -406,6 +413,16 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Section offset for fixed menu */
+        .section {
+            scroll-margin-top: 100px;
+        }
     </style>
 </head>
 <body>
@@ -427,6 +444,7 @@
     <div class="content-wrapper">
         <!-- Hero Section -->
         <div class="hero-section">
+            <img src="../components/images/ADRIAN_ZERO_Banner.gif" alt="ADRIAN ZERO Banner" style="max-width: 100%; height: auto; margin-bottom: 30px; border-radius: 10px;">
             <h1 class="hero-title">Welcome to the $ADRIAN World 🚀</h1>
             <p class="hero-subtitle">A quick guide to understand what this whole thing is — even if you just landed here today.</p>
             <p class="hero-subtitle" style="font-size: 1.2rem; color: #888;">We'll keep it simple and focus on the 4 pillars ⚡</p>
@@ -436,26 +454,26 @@
             <!-- Pillars Overview -->
             <div class="section fade-in">
                 <div class="pillars-grid">
-                    <div class="pillar-card">
-                        <div class="pillar-emoji">💸</div>
+                    <a href="#section-adrian" class="pillar-card pillar-link">
+                        <img src="../components/images/ADRIAN_Coin.gif" alt="$ADRIAN Token" style="width: 80px; height: 80px; margin-bottom: 15px; image-rendering: pixelated;">
                         <div class="pillar-name">$ADRIAN</div>
                         <div class="pillar-desc">The token</div>
-                    </div>
-                    <div class="pillar-card">
+                    </a>
+                    <a href="#section-punks" class="pillar-card pillar-link">
                         <div class="pillar-emoji">👾</div>
                         <div class="pillar-name">AdrianPunks</div>
                         <div class="pillar-desc">The OG roots</div>
-                    </div>
-                    <div class="pillar-card">
-                        <div class="pillar-emoji">🧬</div>
+                    </a>
+                    <a href="#section-zero" class="pillar-card pillar-link">
+                        <img src="../components/images/ADRIAN_ZERO_Banner.gif" alt="AdrianZERO" style="width: 100%; max-width: 200px; height: auto; margin-bottom: 15px; border-radius: 5px;">
                         <div class="pillar-name">AdrianZERO</div>
                         <div class="pillar-desc">The living avatars</div>
-                    </div>
-                    <div class="pillar-card">
+                    </a>
+                    <a href="#section-lab" class="pillar-card pillar-link">
                         <div class="pillar-emoji">🧪</div>
                         <div class="pillar-name">AdrianLAB</div>
                         <div class="pillar-desc">The machine behind the chaos</div>
-                    </div>
+                    </a>
                 </div>
             </div>
 
@@ -477,11 +495,14 @@
             </div>
 
             <!-- 1. $ADRIAN -->
-            <div class="section fade-in">
+            <div id="section-adrian" class="section fade-in">
                 <h2 class="section-title">
                     <span class="section-emoji">💸</span>
                     <span>1. $ADRIAN — The Fuel of the System</span>
                 </h2>
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="../components/images/ADRIAN_Coin.gif" alt="$ADRIAN Token" style="width: 150px; height: 150px; image-rendering: pixelated;">
+                </div>
                 <div class="section-content">
                     <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">What it is</h3>
                     <ul>
@@ -512,11 +533,14 @@
             </div>
 
             <!-- 2. AdrianPunks -->
-            <div class="section fade-in">
+            <div id="section-punks" class="section fade-in">
                 <h2 class="section-title">
                     <span class="section-emoji">👾</span>
                     <span>2. AdrianPunks — The OG Roots</span>
                 </h2>
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="../components/images/adrianzero.png" alt="AdrianPunks" style="max-width: 300px; height: auto; border-radius: 10px;">
+                </div>
                 <div class="section-content">
                     <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">Supply & style</h3>
                     <ul>
@@ -545,11 +569,14 @@
             </div>
 
             <!-- 3. AdrianZERO -->
-            <div class="section fade-in">
+            <div id="section-zero" class="section fade-in">
                 <h2 class="section-title">
                     <span class="section-emoji">🧬</span>
                     <span>3. AdrianZERO — Living Avatars</span>
                 </h2>
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="../components/images/ADRIAN_ZERO_Banner.gif" alt="AdrianZERO" style="max-width: 100%; height: auto; border-radius: 10px;">
+                </div>
                 <div class="section-content">
                     <h3 style="color: #00ffff; font-size: 1.8rem; margin: 20px 0 15px;">What is an AdrianZERO?</h3>
                     <p>Dynamic characters whose appearance evolves over time.</p>
@@ -572,11 +599,14 @@
             </div>
 
             <!-- 4. AdrianLAB -->
-            <div class="section fade-in">
+            <div id="section-lab" class="section fade-in">
                 <h2 class="section-title">
                     <span class="section-emoji">🧪</span>
                     <span>4. AdrianLAB — The Machine Behind the Chaos</span>
                 </h2>
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="../components/images/10002.gif" alt="Floppy Disc" style="width: 200px; height: 200px; image-rendering: pixelated;">
+                </div>
                 <div class="section-content">
                     <p>A modular smart contract + trait system powering all AdrianZERO evolution.</p>
 
