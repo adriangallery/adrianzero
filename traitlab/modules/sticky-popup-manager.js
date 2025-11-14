@@ -12,6 +12,12 @@ class StickyPopupManager {
         this.currentTab = 'adrianzero';
         this.isInitialized = false;
         this.isCloseupMode = false;
+        
+        // Propiedades para ocultar durante scroll en móviles
+        this.scrollHideTimeout = null;
+        this.isScrolling = false;
+        this.isMobile = false;
+        this.scrollThrottle = null;
     }
 
     /**
@@ -31,6 +37,9 @@ class StickyPopupManager {
             
             // Configurar botones del side menu
             this.setupSideMenuButtons();
+            
+            // Configurar comportamiento de ocultar durante scroll en móviles
+            this.setupScrollHideBehavior();
             
             this.isInitialized = true;
             console.log('✅ StickyPopupManager: Inicializado correctamente');
@@ -177,6 +186,110 @@ class StickyPopupManager {
         // Customise modal event listeners will be set up when modal opens (see setupCustomiseModalEvents)
 
         console.log('✅ StickyPopupManager: Event listeners configured');
+    }
+
+    /**
+     * Configurar comportamiento de ocultar popup durante scroll en móviles
+     */
+    setupScrollHideBehavior() {
+        // Detectar si es móvil
+        this.isMobile = window.innerWidth <= 767;
+        
+        // Solo configurar en móviles
+        if (!this.isMobile) {
+            return;
+        }
+        
+        // Listener para cambios de tamaño de ventana
+        window.addEventListener('resize', () => {
+            const wasMobile = this.isMobile;
+            this.isMobile = window.innerWidth <= 767;
+            
+            // Si cambió de móvil a desktop o viceversa, reconfigurar
+            if (wasMobile !== this.isMobile) {
+                if (this.isMobile) {
+                    this.setupScrollHideBehavior();
+                } else {
+                    // Remover listeners si ya no es móvil
+                    window.removeEventListener('scroll', this.handleScroll);
+                }
+            }
+        });
+        
+        // Añadir listener de scroll con throttling
+        this.handleScroll = this.throttleScroll(() => {
+            if (!this.elements.selectionInfo) return;
+            
+            // Solo ocultar si el popup está visible (tiene clase .show)
+            if (this.elements.selectionInfo.classList.contains('show')) {
+                this.hidePopupDuringScroll();
+            }
+        }, 100);
+        
+        window.addEventListener('scroll', this.handleScroll, { passive: true });
+        
+        console.log('✅ StickyPopupManager: Scroll hide behavior configurado para móviles');
+    }
+
+    /**
+     * Throttle para el evento de scroll
+     */
+    throttleScroll(func, delay) {
+        let timeoutId;
+        let lastExecTime = 0;
+        return function(...args) {
+            const currentTime = Date.now();
+            
+            if (currentTime - lastExecTime > delay) {
+                func.apply(this, args);
+                lastExecTime = currentTime;
+            } else {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(this, args);
+                    lastExecTime = Date.now();
+                }, delay - (currentTime - lastExecTime));
+            }
+        };
+    }
+
+    /**
+     * Ocultar popup durante scroll (solo CSS, no remover clase .show)
+     */
+    hidePopupDuringScroll() {
+        if (!this.elements.selectionInfo) return;
+        
+        // Marcar que está scrollando
+        this.isScrolling = true;
+        
+        // Añadir clase para ocultar
+        this.elements.selectionInfo.classList.add('scrolling-hidden');
+        
+        // Limpiar timeout anterior si existe
+        if (this.scrollHideTimeout) {
+            clearTimeout(this.scrollHideTimeout);
+        }
+        
+        // Configurar timeout para mostrar después de 1 segundo sin scroll
+        this.scrollHideTimeout = setTimeout(() => {
+            this.showPopupAfterScroll();
+        }, 1000);
+    }
+
+    /**
+     * Mostrar popup después de que el scroll se detenga
+     */
+    showPopupAfterScroll() {
+        if (!this.elements.selectionInfo) return;
+        
+        // Marcar que ya no está scrollando
+        this.isScrolling = false;
+        
+        // Remover clase de ocultar
+        this.elements.selectionInfo.classList.remove('scrolling-hidden');
+        
+        // Limpiar timeout
+        this.scrollHideTimeout = null;
     }
 
     /**

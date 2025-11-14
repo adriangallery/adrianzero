@@ -510,6 +510,13 @@ body {
     display: flex !important;
 }
 
+/* Ocultar popup durante scroll en móviles */
+.sticky-modal-container.scrolling-hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s ease-out;
+}
+
 /* Permitir clics a través de zonas transparentes del overlay (click-through) */
 .sticky-modal-container {
     pointer-events: none !important; /* Overlay no captura eventos por defecto */
@@ -766,6 +773,13 @@ body {
         right: 10px;
         left: 10px;
         justify-content: center; /* Centrar los popups */
+        transition: opacity 0.3s ease-out; /* Transición suave para ocultar/mostrar */
+    }
+    
+    /* Asegurar que la clase scrolling-hidden funcione en móviles */
+    .sticky-modal-container.scrolling-hidden {
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
     
     .sticky-side-menu-popup {
