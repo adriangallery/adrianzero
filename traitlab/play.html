@@ -599,6 +599,21 @@
                     });
                     
                     console.log(`Loaded ${this.allTraits.length} traits`);
+                    
+                    // Debug: verificar trait 1014
+                    const trait1014 = this.allTraits.find(t => (t.id || t.tokenId) === 1014);
+                    if (trait1014) {
+                        console.log('Trait 1014 encontrado:', trait1014);
+                    } else {
+                        console.warn('Trait 1014 NO encontrado en allTraits');
+                        // Buscar traits cerca de 1014
+                        const nearby = this.allTraits.filter(t => {
+                            const id = t.id || t.tokenId;
+                            return id >= 1010 && id <= 1020;
+                        });
+                        console.log('Traits cerca de 1014:', nearby.map(t => ({id: t.id || t.tokenId, name: t.name})));
+                    }
+                    
                     this.groupTraitsByCategory();
                 } catch (error) {
                     this.allTraits = [];
@@ -631,6 +646,17 @@
                 // Log para debugging
                 const totalInCategories = Object.values(this.traitsByCategory).reduce((sum, arr) => sum + arr.length, 0);
                 console.log(`Grouped ${totalInCategories} traits into ${Object.keys(this.traitsByCategory).length} categories`);
+                
+                // Debug: verificar trait 1014 en categorías
+                if (this.traitsByCategory['GEAR']) {
+                    const gear1014 = this.traitsByCategory['GEAR'].find(t => (t.id || t.tokenId) === 1014);
+                    if (gear1014) {
+                        console.log('Trait 1014 encontrado en categoría GEAR:', gear1014);
+                    } else {
+                        console.warn('Trait 1014 NO encontrado en categoría GEAR');
+                        console.log('GEAR traits IDs:', this.traitsByCategory['GEAR'].map(t => t.id || t.tokenId));
+                    }
+                }
             }
 
             shouldHideTrait(trait, category, tokenId) {
