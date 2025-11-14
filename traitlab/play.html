@@ -848,6 +848,16 @@
 
             renderCategories() {
                 const container = document.getElementById('categoryTabs');
+                
+                // Si hay un floppy seleccionado, ocultar los tabs de categorías
+                if (this.currentFloppy && this.currentFloppy !== '') {
+                    container.innerHTML = '';
+                    container.style.display = 'none';
+                    return;
+                }
+                
+                // Mostrar tabs de categorías cuando no hay floppy seleccionado
+                container.style.display = 'block';
                 const categories = Object.keys(this.traitsByCategory).sort();
                 
                 container.innerHTML = categories.map(category => 
@@ -880,6 +890,30 @@
 
             renderTraits() {
                 const container = document.getElementById('traitsGrid');
+                
+                // Si hay un floppy seleccionado, mostrar todos los traits del floppy sin categorías
+                if (this.currentFloppy && this.currentFloppy !== '') {
+                    // Obtener todos los traits del floppy seleccionado de todas las categorías
+                    const allFloppyTraits = [];
+                    Object.values(this.traitsByCategory).forEach(categoryTraits => {
+                        categoryTraits.forEach(trait => {
+                            const traitFloppy = (trait.floppy || '').trim();
+                            if (traitFloppy === this.currentFloppy) {
+                                allFloppyTraits.push(trait);
+                            }
+                        });
+                    });
+                    
+                    if (allFloppyTraits.length === 0) {
+                        container.innerHTML = '<div class="no-traits">No hay traits para este floppy</div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = allFloppyTraits.map(trait => this.createTraitItem(trait)).join('');
+                    return;
+                }
+                
+                // Vista normal con categorías
                 if (!this.currentCategory || !this.traitsByCategory[this.currentCategory]) {
                     container.innerHTML = '<div class="no-traits">Selecciona una categoría</div>';
                     return;
