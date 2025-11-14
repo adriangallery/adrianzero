@@ -538,7 +538,8 @@
                 this.hiddenCategories = [
                     'FLOPPY DISCS',
                     'Other', 
-                    'PAGERS'
+                    'PAGERS',
+                    'ACTION PACKS'
                 ];
                 
                 // Añade aquí traits específicos que NO quieres mostrar (por tokenId)
@@ -625,10 +626,36 @@
                 }
             }
 
+            normalizeCategory(category) {
+                // Normalizar categorías: combinar variaciones en una sola
+                const normalized = category || 'Other';
+                const lower = normalized.toLowerCase().trim();
+                
+                // Combinar Beard y BEARD en BEARD
+                if (lower === 'beard') {
+                    return 'BEARD';
+                }
+                
+                // Combinar eyes y EYES en EYES
+                if (lower === 'eyes') {
+                    return 'EYES';
+                }
+                
+                // Combinar 3d, skin y skintrait en SKIN
+                if (lower === '3d' || lower === 'skin' || lower === 'skintrait') {
+                    return 'SKIN';
+                }
+                
+                // Mantener el resto como está (pero normalizar mayúsculas si es necesario)
+                return normalized;
+            }
+
             groupTraitsByCategory() {
                 this.traitsByCategory = {};
                 this.allTraits.forEach(trait => {
-                    const category = trait.category || 'Other';
+                    const originalCategory = trait.category || 'Other';
+                    // Normalizar la categoría antes de procesar
+                    const category = this.normalizeCategory(originalCategory);
                     const tokenId = trait.id || trait.tokenId;
                     
                     // Validar que el trait tiene un tokenId válido
@@ -636,6 +663,9 @@
                         console.warn('Trait sin tokenId válido:', trait);
                         return; // Saltar este trait
                     }
+                    
+                    // Actualizar la categoría del trait a la normalizada
+                    trait.category = category;
                     
                     // Aplicar filtros
                     if (this.shouldHideTrait(trait, category, tokenId)) {
