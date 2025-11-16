@@ -928,19 +928,29 @@ class StickyPopupManager {
         // Generar URL de imagen combinada usando el formato correcto
         const baseTokenId = this.selectedERC721.tokenId;
         
-        // Construir URL con formato correcto: /custom/{tokenId}?trait={trait1}&trait={trait2}
-        let combinedImageUrl = `https://adrianlab.vercel.app/api/render/custom/${baseTokenId}`;
+        // Construir URLs: Railway como principal, Vercel como fallback
+        const primaryBaseUrl = 'https://adrianlab-production.up.railway.app/api/render/custom';
+        const fallbackBaseUrl = 'https://adrianlab.vercel.app/api/render/custom';
+        const timestamp = Date.now();
+        
+        let primaryImageUrl = `${primaryBaseUrl}/${baseTokenId}`;
+        let fallbackImageUrl = `${fallbackBaseUrl}/${baseTokenId}`;
         
         if (this.selectedERC1155.length > 0) {
             const traitParams = this.selectedERC1155.map(t => `trait=${t.tokenId}`).join('&');
-            combinedImageUrl += `?${traitParams}`;
+            primaryImageUrl += `?${traitParams}&_t=${timestamp}`;
+            fallbackImageUrl += `?${traitParams}&_t=${timestamp}`;
+        } else {
+            primaryImageUrl += `?_t=${timestamp}`;
+            fallbackImageUrl += `?_t=${timestamp}`;
         }
         
         console.log('🖼️ StickyPopupManager: Generando imagen combinada:', {
             baseTokenId,
             selectedERC1155: this.selectedERC1155,
             traitIds: this.selectedERC1155.map(t => t.tokenId),
-            url: combinedImageUrl
+            primaryUrl: primaryImageUrl,
+            fallbackUrl: fallbackImageUrl
         });
         
         // Debug: verificar que no haya traits duplicados o incorrectos
@@ -952,23 +962,44 @@ class StickyPopupManager {
             });
         }
 
-        // Cargar imagen combinada (mantener loading overlay visible)
-        this.elements.combinedImage.src = combinedImageUrl;
+        // Cargar imagen combinada con fallback (mantener loading overlay visible)
+        const img = new Image();
         
-        // Solo ocultar loading cuando la imagen esté lista
-        this.elements.combinedImage.onload = () => {
+        // Intentar primero con Railway (principal)
+        img.onload = () => {
+            this.elements.combinedImage.src = primaryImageUrl;
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
             }
-            console.log('✅ Imagen combinada generada y cargada correctamente');
+            console.log('✅ Imagen combinada generada y cargada correctamente (Railway)');
         };
-
-        this.elements.combinedImage.onerror = () => {
-            if (this.elements.imageLoadingOverlay) {
-                this.elements.imageLoadingOverlay.style.display = 'none';
-            }
-            console.error('❌ Error generando imagen combinada:', combinedImageUrl);
+        
+        img.onerror = () => {
+            // Si falla Railway, usar Vercel como fallback
+            console.warn('⚠️ Railway falló, usando Vercel como fallback');
+            this.elements.combinedImage.src = fallbackImageUrl;
+            
+            // Verificar que el fallback también funcione
+            const fallbackImg = new Image();
+            fallbackImg.onload = () => {
+                if (this.elements.imageLoadingOverlay) {
+                    this.elements.imageLoadingOverlay.style.display = 'none';
+                }
+                console.log('✅ Imagen combinada cargada con fallback (Vercel)');
+            };
+            fallbackImg.onerror = () => {
+                if (this.elements.imageLoadingOverlay) {
+                    this.elements.imageLoadingOverlay.style.display = 'none';
+                }
+                console.error('❌ Error generando imagen combinada (ambos fallaron):', {
+                    primary: primaryImageUrl,
+                    fallback: fallbackImageUrl
+                });
+            };
+            fallbackImg.src = fallbackImageUrl;
         };
+        
+        img.src = primaryImageUrl;
     }
 
     /**

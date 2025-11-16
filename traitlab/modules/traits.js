@@ -188,17 +188,22 @@ class TraitsManager {
             return;
         }
 
-        // Create the URL with correct format (same as index.html)
-        const baseUrl = 'https://adrianlab.vercel.app/api/render/custom';
+        // Create the URL with correct format - Railway as primary, Vercel as fallback
+        const primaryBaseUrl = 'https://adrianlab-production.up.railway.app/api/render/custom';
+        const fallbackBaseUrl = 'https://adrianlab.vercel.app/api/render/custom';
         const erc721TokenId = selectedERC721.tokenId;
         const queryString = queryParams.join('&');
-        const imageUrl = `${baseUrl}/${erc721TokenId}?${queryString}`;
+        const timestamp = Date.now();
+        const primaryImageUrl = `${primaryBaseUrl}/${erc721TokenId}?${queryString}&_t=${timestamp}`;
+        const fallbackImageUrl = `${fallbackBaseUrl}/${erc721TokenId}?${queryString}&_t=${timestamp}`;
         
-        console.log('Generated combined image URL:', imageUrl);
+        console.log('Generated combined image URL (primary):', primaryImageUrl);
+        console.log('Fallback URL:', fallbackImageUrl);
 
-        // Emit event for UI to display the image
+        // Emit event for UI to display the image with fallback support
         this.emit('imageGenerated', { 
-            imageUrl, 
+            imageUrl: primaryImageUrl,
+            fallbackUrl: fallbackImageUrl,
             tokenId: selectedERC721.tokenId, 
             traitIds: this.selectedERC1155.map(t => t.tokenId),
             queryParams: queryParams
