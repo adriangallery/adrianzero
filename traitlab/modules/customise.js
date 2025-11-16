@@ -10,6 +10,7 @@ class CustomiseManager {
         this.isShadowMode = false;
         this.isGlowMode = false;
         this.isBnMode = false;
+        this.isBlackoutMode = false;
         this.eventListeners = new Map();
         
         // Bind methods
@@ -17,6 +18,7 @@ class CustomiseManager {
         this.toggleShadow = this.toggleShadow.bind(this);
         this.toggleGlow = this.toggleGlow.bind(this);
         this.toggleBn = this.toggleBn.bind(this);
+        this.toggleBlackout = this.toggleBlackout.bind(this);
         this.commit = this.commit.bind(this);
         this.approveRename = this.approveRename.bind(this);
         this.renameToken = this.renameToken.bind(this);
@@ -56,6 +58,7 @@ class CustomiseManager {
         this.isShadowMode = false;
         this.isGlowMode = false;
         this.isBnMode = false;
+        this.isBlackoutMode = false;
     }
 
     /**
@@ -139,6 +142,26 @@ class CustomiseManager {
     }
 
     /**
+     * Toggle blackout mode
+     */
+    toggleBlackout() {
+        if (!this.selectedERC721) {
+            console.warn('⚠️ CustomiseManager: No hay AdrianZERO seleccionado para Blackout');
+            return;
+        }
+
+        this.isBlackoutMode = !this.isBlackoutMode;
+        console.log('🌑 CustomiseManager: Blackout mode:', this.isBlackoutMode ? 'ON' : 'OFF');
+        
+        // Actualizar imagen si hay sticky popup manager
+        if (window.app?.stickyPopupManager) {
+            window.app.stickyPopupManager.updateCustomiseImage();
+        }
+        
+        this.emit('blackoutToggled', { isBlackout: this.isBlackoutMode });
+    }
+
+    /**
      * Get image URL with toggles applied
      * Usa URLs combinadas según los IDs de toggle combinados
      */
@@ -190,6 +213,11 @@ class CustomiseManager {
             if (this.isBnMode) {
                 params.push('bn=true');
             }
+        }
+        
+        // Blackout es independiente y se añade siempre si está activo
+        if (this.isBlackoutMode) {
+            params.push('blackout=true');
         }
         
         if (params.length > 0) {
@@ -303,7 +331,7 @@ class CustomiseManager {
             // Obtener precio del toggle
             // Primero verificar si hay un toggle combinado, si no usar el precio máximo de los individuales
             let togglePrice = ethers.BigNumber.from(0);
-            if (this.isCloseupMode || this.isShadowMode || this.isGlowMode || this.isBnMode) {
+            if (this.isCloseupMode || this.isShadowMode || this.isGlowMode || this.isBnMode || this.isBlackoutMode) {
                 try {
                     // Verificar si hay combinación y obtener su precio
                     const combinedToggleId = this.getCombinedToggleId();
@@ -317,9 +345,11 @@ class CustomiseManager {
                         const priceShadow = this.isShadowMode ? await toggleContract.getTogglePrice(2) : ethers.BigNumber.from(0);
                         const priceGlow = this.isGlowMode ? await toggleContract.getTogglePrice(3) : ethers.BigNumber.from(0);
                         const priceBn = this.isBnMode ? await toggleContract.getTogglePrice(4) : ethers.BigNumber.from(0);
+                        const priceBlackout = this.isBlackoutMode ? await toggleContract.getTogglePrice(12) : ethers.BigNumber.from(0);
                         togglePrice = priceCloseup.gt(priceShadow) ? priceCloseup : priceShadow;
                         togglePrice = togglePrice.gt(priceGlow) ? togglePrice : priceGlow;
                         togglePrice = togglePrice.gt(priceBn) ? togglePrice : priceBn;
+                        togglePrice = togglePrice.gt(priceBlackout) ? togglePrice : priceBlackout;
                         console.log('💰 Toggle price (individual):', ethers.utils.formatEther(togglePrice));
                     }
                 } catch (error) {
@@ -418,7 +448,7 @@ class CustomiseManager {
             const combinedToggleId = this.getCombinedToggleId();
             
             if (this.isCloseupMode === false && this.isShadowMode === false && 
-                this.isGlowMode === false && this.isBnMode === false) {
+                this.isGlowMode === false && this.isBnMode === false && this.isBlackoutMode === false) {
                 // Todos desactivados: enviar toggleId 0 para desactivar todo
                 console.log('💾 CustomiseManager: Todos los toggles desactivados, enviando toggleId 0');
                 const tx = await contract.setToggle(tokenId, 0);
@@ -442,15 +472,16 @@ class CustomiseManager {
                 receipts.push({ toggleId: combinedToggleId, receipt });
                 console.log(`✅ CustomiseManager: ${toggleName} toggle commiteado`);
             } else {
-                // Usar IDs individuales en orden descendente (4, 3, 2, 1)
+                // Usar IDs individuales en orden descendente (12, 4, 3, 2, 1)
                 const activeToggles = [];
+                if (this.isBlackoutMode) activeToggles.push(12);
                 if (this.isBnMode) activeToggles.push(4);
                 if (this.isGlowMode) activeToggles.push(3);
                 if (this.isShadowMode) activeToggles.push(2);
                 if (this.isCloseupMode) activeToggles.push(1);
                 
                 for (const toggleId of activeToggles) {
-                    const toggleName = toggleId === 4 ? 'BN' : toggleId === 3 ? 'Glow' : toggleId === 2 ? 'Shadow' : 'Closeup';
+                    const toggleName = toggleId === 12 ? 'Blackout' : toggleId === 4 ? 'BN' : toggleId === 3 ? 'Glow' : toggleId === 2 ? 'Shadow' : 'Closeup';
                     console.log(`💾 CustomiseManager: Commiteando ${toggleName} toggle (ID=${toggleId})`);
                     const tx = await contract.setToggle(tokenId, toggleId);
                     const receipt = await tx.wait();
@@ -466,6 +497,7 @@ class CustomiseManager {
                 isShadowMode: this.isShadowMode,
                 isGlowMode: this.isGlowMode,
                 isBnMode: this.isBnMode,
+                isBlackoutMode: this.isBlackoutMode,
                 combinedToggleId: combinedToggleId,
                 toggleIdsSent: toggleIdsSent
             });

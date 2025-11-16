@@ -104,6 +104,7 @@ class StickyPopupManager {
             customiseShadowBtn: document.getElementById('customise-shadowBtn'),
             customiseGlowBtn: document.getElementById('customise-glowBtn'),
             customiseBnBtn: document.getElementById('customise-bnBtn'),
+            customiseBlackoutBtn: document.getElementById('customise-blackoutBtn'),
             customiseCommitBtn: document.getElementById('customise-commitBtn'),
             customiseRenameTokenBtn: document.getElementById('customise-renameTokenBtn'),
             
@@ -1515,6 +1516,12 @@ class StickyPopupManager {
             // BN ON cuando está desactivado (para activarlo), BN OFF cuando está activado (para desactivarlo)
             this.elements.customiseBnBtn.textContent = customiseModule.isBnMode ? '⚫⚪ BN OFF' : '⚫⚪ BN ON';
         }
+        
+        // Actualizar botón Blackout (Blackout ON cuando está desactivado - para activarlo)
+        if (this.elements.customiseBlackoutBtn) {
+            // Blackout ON cuando está desactivado (para activarlo), Blackout OFF cuando está activado (para desactivarlo)
+            this.elements.customiseBlackoutBtn.textContent = customiseModule.isBlackoutMode ? '🌑 Blackout OFF' : '🌑 Blackout ON';
+        }
     }
 
     /**
@@ -1538,6 +1545,7 @@ class StickyPopupManager {
         this.elements.customiseShadowBtn = document.getElementById('customise-shadowBtn');
         this.elements.customiseGlowBtn = document.getElementById('customise-glowBtn');
         this.elements.customiseBnBtn = document.getElementById('customise-bnBtn');
+        this.elements.customiseBlackoutBtn = document.getElementById('customise-blackoutBtn');
         this.elements.customiseCommitBtn = document.getElementById('customise-commitBtn');
         this.elements.customiseRenameTokenBtn = document.getElementById('customise-renameTokenBtn');
         this.elements.customiseCommitStatus = document.getElementById('customise-commit-status');
@@ -1571,6 +1579,10 @@ class StickyPopupManager {
 
         if (this.elements.customiseBnBtn) {
             this.elements.customiseBnBtn.onclick = () => this.toggleCustomiseBn();
+        }
+
+        if (this.elements.customiseBlackoutBtn) {
+            this.elements.customiseBlackoutBtn.onclick = () => this.toggleCustomiseBlackout();
         }
 
         if (this.elements.customiseCommitBtn) {
@@ -1706,6 +1718,25 @@ class StickyPopupManager {
             const isBn = window.app.modules.customise.isBnMode;
             // BN ON cuando está desactivado (para activarlo), BN OFF cuando está activado (para desactivarlo)
             this.elements.customiseBnBtn.textContent = isBn ? '⚫⚪ BN OFF' : '⚫⚪ BN ON';
+        }
+        
+        // Actualizar imagen
+        this.updateCustomiseImage();
+    }
+
+    /**
+     * 🎨 Customise: Toggle blackout
+     */
+    toggleCustomiseBlackout() {
+        if (!window.app?.modules?.customise) return;
+        
+        window.app.modules.customise.toggleBlackout();
+        
+        // Actualizar texto del botón (Blackout ON cuando está desactivado - para activarlo)
+        if (this.elements.customiseBlackoutBtn) {
+            const isBlackout = window.app.modules.customise.isBlackoutMode;
+            // Blackout ON cuando está desactivado (para activarlo), Blackout OFF cuando está activado (para desactivarlo)
+            this.elements.customiseBlackoutBtn.textContent = isBlackout ? '🌑 Blackout OFF' : '🌑 Blackout ON';
         }
         
         // Actualizar imagen
