@@ -271,7 +271,7 @@ class ZeroManager {
             }
             
             // Process all NFTs
-            const tokens = allNfts.map(nft => {
+            let tokens = allNfts.map(nft => {
                     try {
                         // Extract tokenId
                         let tokenId;
