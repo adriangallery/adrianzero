@@ -30,19 +30,19 @@ class TraitLABDataManager {
     async init() {
         if (this.isInitialized) return;
         
-        console.log('📊 TraitLABDataManager: Iniciando carga secuencial...');
+        console.log('📊 TraitLABDataManager: Iniciando carga en paralelo...');
         this.isInitialized = true;
         
-        // 1. Cargar AdrianZERO primero (solo carga básica)
-        await this.loadAdrianZeroTokensBasic();
+        // 1. Cargar AdrianZERO y AdrianLAB en paralelo
+        await Promise.all([
+            this.loadAdrianZeroTokensBasic(),
+            this.loadAdrianLabTokens()
+        ]);
         
-        // 2. Cargar AdrianLAB (ERC1155) inmediatamente después
-        await this.loadAdrianLabTokens();
-        
-        // 3. Mejorar nombres AdrianZERO en background (no bloquea)
+        // 2. Mejorar nombres AdrianZERO en background (no bloquea)
         this.improveAdrianZeroNamesInBackground();
         
-        console.log('📊 TraitLABDataManager: Carga secuencial completada');
+        console.log('📊 TraitLABDataManager: Carga en paralelo completada');
     }
 
     /**
@@ -167,6 +167,27 @@ class TraitLABDataManager {
             this.cache.ready.adrianLab = true;
             this.emit('adrianLabReady', { tokens: this.cache.adrianLab });
         }
+    }
+
+    /**
+     * Cargar tokens AdrianLAB bajo demanda (desde fuera del módulo)
+     * Útil cuando el usuario hace clic en el tab "traits" antes de que termine la carga inicial
+     */
+    async loadAdrianLabTokensOnDemand() {
+        // Si ya están cargados o cargando, no hacer nada
+        if (this.cache.ready.adrianLab) {
+            console.log('📊 Traits ya están cargados');
+            return;
+        }
+        
+        if (this.cache.loading.adrianLab) {
+            console.log('📊 Traits ya están en proceso de carga');
+            return;
+        }
+        
+        // Iniciar carga inmediatamente
+        console.log('📊 Iniciando carga de traits bajo demanda...');
+        await this.loadAdrianLabTokens();
     }
 
     /**

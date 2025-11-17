@@ -434,8 +434,45 @@
                             console.error('🔨 CRAFTING: Módulo de crafting no disponible');
                             throw new Error('Módulo de crafting no disponible');
                         }
+                    } else if (this.currentFilter === 'traits') {
+                        // 🎯 CASO ESPECIAL: Traits - Iniciar carga bajo demanda si es necesario
+                        console.log('🎨 TRAITS: Verificando estado de carga de traits...');
+                        
+                        // Verificar si los traits ya están cargados
+                        const filteredTokens = this.modules.dataManager.getFilteredTokens('traits');
+                        console.log(`📊 Traits disponibles actualmente: ${filteredTokens.length}`);
+                        
+                        if (filteredTokens.length > 0) {
+                            // Traits ya están cargados, mostrar inmediatamente
+                            console.log('✅ Mostrando traits disponibles inmediatamente');
+                            this.modules.ui.displayTokens(filteredTokens, 'traits');
+                            this.hideLoading();
+                        } else {
+                            // Traits no están cargados, iniciar carga bajo demanda
+                            console.log('⏳ Traits no están cargados, iniciando carga bajo demanda...');
+                            try {
+                                // Iniciar carga de traits inmediatamente
+                                await this.modules.dataManager.loadAdrianLabTokensOnDemand();
+                                
+                                // Intentar obtener traits nuevamente después de iniciar la carga
+                                const traitsAfterLoad = this.modules.dataManager.getFilteredTokens('traits');
+                                if (traitsAfterLoad.length > 0) {
+                                    console.log('✅ Traits cargados, mostrando:', traitsAfterLoad.length);
+                                    this.modules.ui.displayTokens(traitsAfterLoad, 'traits');
+                                    this.hideLoading();
+                                } else {
+                                    // Los traits aún se están cargando, mostrar loading
+                                    // Se mostrarán automáticamente cuando estén listos vía onTokensLoaded
+                                    console.log('⏳ Traits en proceso de carga, mostrando loading...');
+                                }
+                            } catch (error) {
+                                console.error('❌ Error iniciando carga de traits:', error);
+                                this.hideLoading();
+                                this.showError(`Error cargando traits: ${error.message}`);
+                            }
+                        }
                     } else {
-                        // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE
+                        // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE (para otros tabs)
                         const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
                         console.log(`📊 Tokens filtrados obtenidos: ${filteredTokens.length}`);
                         
