@@ -314,6 +314,7 @@ class ZeroManager {
                         
                         // Extract image URL
                         let mediaUrl = "";
+                        let fallbackImageUrl = null; // Initialize fallback URL for traits
                         
                         // For ERC721 tokens (AdrianZERO), use the specific render API format
                         if (isERC721) {
@@ -358,7 +359,6 @@ class ZeroManager {
                                 }
                                 
                                 // Use TraitImageLoader to get local URL with fallback
-                                let fallbackImageUrl = null;
                                 if (window.traitImageLoader) {
                                     const imageUrls = window.traitImageLoader.getTraitImageUrl(
                                         tokenIdInt,
