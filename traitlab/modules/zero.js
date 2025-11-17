@@ -346,14 +346,31 @@ class ZeroManager {
                                     mediaUrl = `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
                                 }
                             } else {
-                                // For other ERC1155 tokens, use the original logic
-                                // Try multiple locations for image URL
+                                // For other ERC1155 tokens (traits), prioritize local assets
+                                // Get fallback URL from Alchemy metadata first
+                                let alchemyImageUrl = '';
                                 if (nft.raw && nft.raw.metadata && nft.raw.metadata.image) {
-                                    mediaUrl = nft.raw.metadata.image;
+                                    alchemyImageUrl = nft.raw.metadata.image;
                                 } else if (nft.media && Array.isArray(nft.media) && nft.media.length > 0) {
-                                    mediaUrl = nft.media[0].gateway || nft.media[0].raw || '';
+                                    alchemyImageUrl = nft.media[0].gateway || nft.media[0].raw || '';
                                 } else if (nft.metadata && nft.metadata.image) {
-                                    mediaUrl = nft.metadata.image;
+                                    alchemyImageUrl = nft.metadata.image;
+                                }
+                                
+                                // Use TraitImageLoader to get local URL with fallback
+                                let fallbackImageUrl = null;
+                                if (window.traitImageLoader) {
+                                    const imageUrls = window.traitImageLoader.getTraitImageUrl(
+                                        tokenIdInt,
+                                        alchemyImageUrl || `https://adrianlab.vercel.app/api/render/floppy/${tokenIdInt}.png`
+                                    );
+                                    // Set local URL as primary
+                                    mediaUrl = imageUrls.localUrl;
+                                    // Store fallback URL for ui.js to use if local fails
+                                    fallbackImageUrl = imageUrls.fallbackUrl;
+                                } else {
+                                    // Fallback to original logic if TraitImageLoader not available
+                                    mediaUrl = alchemyImageUrl;
                                 }
                             }
                         }
@@ -376,7 +393,7 @@ class ZeroManager {
                             }
                         }
                         
-                        return {
+                        const tokenObj = {
                             tokenId: tokenIdInt,
                             title: title,
                             imageUrl: mediaUrl,
@@ -387,6 +404,13 @@ class ZeroManager {
                             balance: balance,
                             metadata: nft.metadata || {}
                         };
+                        
+                        // Add fallback image URL for traits if available
+                        if (fallbackImageUrl && tokenType === 'ERC1155' && !this.isFloppyToken(tokenIdInt) && !this.isSerumToken(tokenIdInt)) {
+                            tokenObj.fallbackImageUrl = fallbackImageUrl;
+                        }
+                        
+                        return tokenObj;
                     } catch (err) {
                         console.error("Error processing NFT:", err, nft);
                         return null;

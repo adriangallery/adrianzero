@@ -9,6 +9,30 @@ class DisplayManager {
     }
 
     /**
+     * Get recipe output image tag with local assets priority
+     * @param {number} traitId - The trait ID for the recipe output
+     * @returns {string} HTML img tag with fallback support
+     */
+    getRecipeOutputImageTag(traitId) {
+        const traitIdInt = parseInt(traitId);
+        const fallbackUrl = `https://adrianlab.vercel.app/api/render/floppy/${traitIdInt}.png`;
+        
+        // Get local URL using TraitImageLoader if available
+        let localUrl = fallbackUrl;
+        if (window.traitImageLoader) {
+            const imageUrls = window.traitImageLoader.getTraitImageUrl(traitIdInt, fallbackUrl);
+            localUrl = imageUrls.localUrl;
+        }
+        
+        // Create img tag with fallback support
+        return `<img src="${localUrl}" 
+                     alt="Trait ${traitIdInt}" 
+                     style="max-width: 80px; max-height: 80px; border-radius: 8px; border: 2px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);"
+                     onload="console.log('✅ Recipe output image loaded for trait ${traitIdInt}:', this.src)"
+                     onerror="if('${fallbackUrl}' !== '${localUrl}') { console.warn('⚠️ Local image failed, trying fallback for trait ${traitIdInt}'); this.src='${fallbackUrl}'; } else { console.error('❌ Recipe output image failed to load for trait ${traitIdInt}:', this.src); this.style.display='none'; }">`;
+    }
+
+    /**
      * Mostrar contenido de crafting
      */
     displayCraftingContent(grid, craftingModule, dataManager) {
@@ -148,11 +172,7 @@ class DisplayManager {
                     <div class="recipe-output">
                         <h5>Output:</h5>
                         <div class="output-image" style="text-align: center; margin: 10px 0;">
-                            <img src="https://adrianlab.vercel.app/api/render/floppy/${recipe.output.id}" 
-                                 alt="Trait ${recipe.output.id}" 
-                                 style="max-width: 80px; max-height: 80px; border-radius: 8px; border: 2px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);"
-                                 onload="console.log('✅ Recipe output image loaded for trait ${recipe.output.id}:', this.src)"
-                                 onerror="console.error('❌ Recipe output image failed to load for trait ${recipe.output.id}:', this.src); this.style.display='none'">
+                            ${this.getRecipeOutputImageTag(recipe.output.id)}
                         </div>
                         <div class="output-info">
                             <span>Trait #${recipe.output.id}</span>
@@ -178,11 +198,7 @@ class DisplayManager {
                     <div class="recipe-output">
                         <h5>Output:</h5>
                         <div class="output-image" style="text-align: center; margin: 10px 0;">
-                            <img src="https://adrianlab.vercel.app/api/render/floppy/${recipe.output.id}" 
-                                 alt="Trait ${recipe.output.id}" 
-                                 style="max-width: 80px; max-height: 80px; border-radius: 8px; border: 2px solid #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);"
-                                 onload="console.log('✅ Recipe output image loaded for trait ${recipe.output.id}:', this.src)"
-                                 onerror="console.error('❌ Recipe output image failed to load for trait ${recipe.output.id}:', this.src); this.style.display='none'">
+                            ${this.getRecipeOutputImageTag(recipe.output.id)}
                         </div>
                         <div class="output-info">
                             <span>Trait #${recipe.output.id}</span>

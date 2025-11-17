@@ -265,14 +265,21 @@ class GalleryManager {
     processDatabaseTraitWithAlchemy(trait) {
         const tokenId = parseInt(trait.tokenId);
         
-        // Use Alchemy-style URL with tokenId
-        const imageUrl = `https://adrianlab-exzt7o3dy-adrianlab.vercel.app/api/render/floppy/${tokenId}.png`;
+        // Use TraitImageLoader to prioritize local assets
+        const fallbackUrl = `https://adrianlab.vercel.app/api/render/floppy/${tokenId}.png`;
+        let imageUrl = fallbackUrl;
+        
+        if (window.traitImageLoader) {
+            const imageUrls = window.traitImageLoader.getTraitImageUrl(tokenId, fallbackUrl);
+            imageUrl = imageUrls.localUrl;
+        }
         
         return {
             id: tokenId,
             name: trait.name || `Trait ${tokenId}`,
             description: trait.description || '',
             image: imageUrl,
+            fallbackImageUrl: fallbackUrl, // Store fallback for UI to use if local fails
             category: trait.category || 'Other',
             totalSupply: '0', // Not available in database
             maxSupply: trait.maxSupply || '1000',
