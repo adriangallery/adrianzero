@@ -19,7 +19,7 @@ class PunkswapConfig {
         };
         
         // Alchemy configuration
-        this.ALCHEMY_API_KEY = "5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot";
+        this.ALCHEMY_API_KEY = "pqRmKgTaLqm2eak9iML1f";
         this.ALCHEMY_RPC_URL = `https://base-mainnet.g.alchemy.com/v2/${this.ALCHEMY_API_KEY}`;
         
         // Cache configuration
