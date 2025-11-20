@@ -13,7 +13,7 @@ class GalleryManager {
         this.isLoading = false;
         this.currentPage = 0;
         this.hasMoreTraits = true;
-        this.alchemyApiKey = "5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot";
+        this.alchemyApiKey = "pqRmKgTaLqm2eak9iML1f";
         this.alchemyBaseUrl = "https://base-mainnet.g.alchemy.com/nft/v3";
     }
 

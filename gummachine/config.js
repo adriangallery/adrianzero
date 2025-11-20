@@ -51,7 +51,7 @@ const CONFIG = {
     
     // API Configuration
     API: {
-        ALCHEMY_KEY: '5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot', // Same as traitlab
+        ALCHEMY_KEY: 'pqRmKgTaLqm2eak9iML1f', // Same as traitlab
         ALCHEMY_RPC: 'https://base-mainnet.g.alchemy.com/v2/',
         IPFS_GATEWAY: 'https://ipfs.io/ipfs/'
     },

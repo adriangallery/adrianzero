@@ -25,7 +25,7 @@ class TraitLABConfig {
         this.ZOOM_TOGGLE_CONTRACT = "0x568933634be4027339c80F126C91742d41A515A0";
         this.ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
         
-        this.ALCHEMY_API_KEY = "5qIXA1UZxOAzi8b9l0nrYmsQBO9-W7Ot";
+        this.ALCHEMY_API_KEY = "pqRmKgTaLqm2eak9iML1f";
         this.ALCHEMY_BASE_URL = "https://base-mainnet.g.alchemy.com/nft/v3";
         
         this.NETWORK = {
