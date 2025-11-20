@@ -1,7 +1,15 @@
 {
   "version": 1,
-  "updatedAt": "2025-10-29T00:00:00Z",
+  "updatedAt": "2025-11-20T00:00:00Z",
   "drops": [
+    {
+      "id": 1118,
+      "title": "Red-Day",
+      "short": "Bitcoin bleeding under 87K, Mint it. Flex it. Survive the red day.",
+      "image": "https://adrianzero.com/shitdrop/images/1118f.png",
+      "opensea": "https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/1118",
+      "date": "2025-11-20"
+    },
     {
       "id": 1023,
       "title": "Neo-ZERO",
