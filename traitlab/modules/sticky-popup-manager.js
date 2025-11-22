@@ -929,29 +929,21 @@ class StickyPopupManager {
         // Generar URL de imagen combinada usando el formato correcto
         const baseTokenId = this.selectedERC721.tokenId;
         
-        // Construir URLs: Railway como principal, Vercel como fallback
-        const primaryBaseUrl = 'https://adrianlab-production.up.railway.app/api/render/custom';
-        const fallbackBaseUrl = 'https://adrianlab.vercel.app/api/render/custom';
-        const timestamp = Date.now();
+        // Construir URL: Vercel custom-external
+        const primaryBaseUrl = 'https://adrianlab.vercel.app/api/render/custom-external';
         
         let primaryImageUrl = `${primaryBaseUrl}/${baseTokenId}`;
-        let fallbackImageUrl = `${fallbackBaseUrl}/${baseTokenId}`;
         
         if (this.selectedERC1155.length > 0) {
             const traitParams = this.selectedERC1155.map(t => `trait=${t.tokenId}`).join('&');
-            primaryImageUrl += `?${traitParams}&_t=${timestamp}`;
-            fallbackImageUrl += `?${traitParams}&_t=${timestamp}`;
-        } else {
-            primaryImageUrl += `?_t=${timestamp}`;
-            fallbackImageUrl += `?_t=${timestamp}`;
+            primaryImageUrl += `?${traitParams}`;
         }
         
         console.log('🖼️ StickyPopupManager: Generando imagen combinada:', {
             baseTokenId,
             selectedERC1155: this.selectedERC1155,
             traitIds: this.selectedERC1155.map(t => t.tokenId),
-            primaryUrl: primaryImageUrl,
-            fallbackUrl: fallbackImageUrl
+            primaryUrl: primaryImageUrl
         });
         
         // Debug: verificar que no haya traits duplicados o incorrectos
@@ -966,38 +958,22 @@ class StickyPopupManager {
         // Cargar imagen combinada con fallback (mantener loading overlay visible)
         const img = new Image();
         
-        // Intentar primero con Railway (principal)
+        // Cargar imagen
         img.onload = () => {
             this.elements.combinedImage.src = primaryImageUrl;
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
             }
-            console.log('✅ Imagen combinada generada y cargada correctamente (Railway)');
+            console.log('✅ Imagen combinada generada y cargada correctamente');
         };
         
         img.onerror = () => {
-            // Si falla Railway, usar Vercel como fallback
-            console.warn('⚠️ Railway falló, usando Vercel como fallback');
-            this.elements.combinedImage.src = fallbackImageUrl;
-            
-            // Verificar que el fallback también funcione
-            const fallbackImg = new Image();
-            fallbackImg.onload = () => {
-                if (this.elements.imageLoadingOverlay) {
-                    this.elements.imageLoadingOverlay.style.display = 'none';
-                }
-                console.log('✅ Imagen combinada cargada con fallback (Vercel)');
-            };
-            fallbackImg.onerror = () => {
-                if (this.elements.imageLoadingOverlay) {
-                    this.elements.imageLoadingOverlay.style.display = 'none';
-                }
-                console.error('❌ Error generando imagen combinada (ambos fallaron):', {
-                    primary: primaryImageUrl,
-                    fallback: fallbackImageUrl
-                });
-            };
-            fallbackImg.src = fallbackImageUrl;
+            if (this.elements.imageLoadingOverlay) {
+                this.elements.imageLoadingOverlay.style.display = 'none';
+            }
+            console.error('❌ Error generando imagen combinada:', {
+                url: primaryImageUrl
+            });
         };
         
         img.src = primaryImageUrl;
