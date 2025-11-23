@@ -339,12 +339,33 @@ class TraitLABDataManager {
                 return;
             }
             
-            // Verificar red Base
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const network = await provider.getNetwork();
-            if (network.chainId !== 8453) {
-                console.log('No estamos en Base network, saltando mejora de nombres');
-                return;
+            // Usar provider con fallbacks para evitar saturación de MetaMask RPC
+            let provider = window.TraitLABConfig?.getBaseProviderWithFallback();
+            if (!provider) {
+                console.log('No se pudo crear provider con fallback, usando MetaMask como fallback');
+                // Fallback a MetaMask si no se puede crear el provider con fallbacks
+                if (!window.ethereum) {
+                    console.log('MetaMask no disponible, saltando mejora de nombres');
+                    return;
+                }
+                const fallbackProvider = new ethers.providers.Web3Provider(window.ethereum);
+                const network = await fallbackProvider.getNetwork();
+                if (network.chainId !== 8453) {
+                    console.log('No estamos en Base network, saltando mejora de nombres');
+                    return;
+                }
+                provider = fallbackProvider;
+            } else {
+                // Verificar que estamos en Base (usando el primer provider del fallback)
+                try {
+                    const network = await provider.getNetwork();
+                    if (network.chainId !== 8453) {
+                        console.log('No estamos en Base network, saltando mejora de nombres');
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('Error verificando red, continuando de todas formas:', error.message);
+                }
             }
             
             // Cargar ABI del contrato de nombres
@@ -353,7 +374,7 @@ class TraitLABDataManager {
             
             // Crear instancia del contrato
             const nameRegistryContract = new ethers.Contract(
-                "0x90546848474fb3c9fda3fdad887969bb244e7e58", // ADRIAN_NAME_REGISTRY_CONTRACT
+                window.TraitLABConfig?.ADRIAN_NAME_REGISTRY_CONTRACT || "0xaeC5ED33c88c1943BB7452aC4B571ad0b4c4068C",
                 contractABI, 
                 provider
             );

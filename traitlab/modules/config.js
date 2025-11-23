@@ -33,6 +33,14 @@ class TraitLABConfig {
             chainId: 8453,
             rpcUrl: "https://mainnet.base.org"
         };
+        
+        // Múltiples RPC providers para Base con fallback
+        this.BASE_RPC_URLS = [
+            "https://mainnet.base.org",
+            "https://base-mainnet.g.alchemy.com/v2/pqRmKgTaLqm2eak9iML1f",
+            "https://base.llamarpc.com",
+            "https://base-rpc.publicnode.com"
+        ];
 
         // ABI mínimos necesarios
         this.ERC20_ABI = [
@@ -78,6 +86,24 @@ class TraitLABConfig {
      */
     getNetwork() {
         return this.NETWORK;
+    }
+
+    /**
+     * Crear provider con fallbacks para Base
+     * Usa múltiples RPC endpoints para mayor confiabilidad
+     */
+    getBaseProviderWithFallback() {
+        if (typeof ethers === 'undefined') {
+            console.warn('Ethers no disponible para crear provider con fallback');
+            return null;
+        }
+        
+        const providers = this.BASE_RPC_URLS.map(url => 
+            new ethers.providers.JsonRpcProvider(url)
+        );
+        
+        // FallbackProvider intenta cada provider en orden hasta que uno funcione
+        return new ethers.providers.FallbackProvider(providers, 1);
     }
 }
 
