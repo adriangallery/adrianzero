@@ -1575,7 +1575,7 @@ class StickyPopupManager {
     /**
      * 🎨 Customise: Abrir modal
      */
-    openCustomiseModal() {
+    async openCustomiseModal() {
         if (!this.selectedERC721) {
             console.warn('⚠️ StickyPopupManager: No AdrianZERO selected for customise');
             return;
@@ -1589,10 +1589,10 @@ class StickyPopupManager {
             return;
         }
 
-        // Sincronizar con customise module
+        // Sincronizar con customise module y cargar estados desde contrato
         if (window.app?.modules?.customise) {
-            window.app.modules.customise.setSelectedERC721(this.selectedERC721);
-            // Actualizar estado visual de los botones
+            await window.app.modules.customise.setSelectedERC721(this.selectedERC721);
+            // Actualizar estado visual de los botones (ya se actualiza en loadToggleStateFromContract, pero por si acaso)
             this.updateCustomiseButtonsState();
         }
 
@@ -1837,7 +1837,7 @@ class StickyPopupManager {
 
             // Ensure customise has the token selected
             if (this.selectedERC721 && window.app.modules.customise.setSelectedERC721) {
-                window.app.modules.customise.setSelectedERC721(this.selectedERC721);
+                await window.app.modules.customise.setSelectedERC721(this.selectedERC721);
             }
 
             // Ensure price is loaded

@@ -37,9 +37,132 @@ class CustomiseManager {
     /**
      * Set selected ERC721 token
      */
-    setSelectedERC721(token) {
+    async setSelectedERC721(token) {
         this.selectedERC721 = token;
+        
+        // Cargar estado de toggles desde el contrato
+        await this.loadToggleStateFromContract(token.tokenId);
+        
         this.emit('tokenSelected', { token });
+    }
+
+    /**
+     * Load toggle state from contract for a given token
+     */
+    async loadToggleStateFromContract(tokenId) {
+        try {
+            // Reset todos los estados primero
+            this.isCloseupMode = false;
+            this.isShadowMode = false;
+            this.isGlowMode = false;
+            this.isBnMode = false;
+            this.isBlackoutMode = false;
+
+            // Cargar ethers si no está disponible
+            let ethers = window.ethers;
+            if (typeof ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                await new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        resolve();
+                    };
+                    script.onerror = () => reject(new Error('Failed to load ethers'));
+                    document.head.appendChild(script);
+                });
+            }
+
+            const provider = new ethers.providers.JsonRpcProvider(window.TraitLABConfig.NETWORK.rpcUrl);
+            
+            // Cargar ABI del contrato
+            const response = await fetch('./zoom-toggle-abi.json');
+            if (!response.ok) {
+                console.warn('⚠️ CustomiseManager: Could not load contract ABI, skipping toggle state load');
+                return;
+            }
+            const contractABI = await response.json();
+
+            const contract = new ethers.Contract(
+                window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                contractABI,
+                provider
+            );
+
+            // Obtener toggleId del token
+            const toggleId = await contract.getTokenToggle(tokenId);
+            const toggleIdInt = parseInt(toggleId.toString());
+
+            console.log(`🔍 CustomiseManager: Token ${tokenId} tiene toggleId ${toggleIdInt}`);
+
+            // Si toggleId es 0, no hay toggles activos
+            if (toggleIdInt === 0) {
+                console.log('🔍 CustomiseManager: No hay toggles activos para este token');
+                return;
+            }
+
+            // Interpretar toggleId y configurar estados
+            // IDs combinados (5-10)
+            if (toggleIdInt === 5) {
+                // BN+Shadow
+                this.isBnMode = true;
+                this.isShadowMode = true;
+            } else if (toggleIdInt === 6) {
+                // BN+Shadow+Closeup
+                this.isBnMode = true;
+                this.isShadowMode = true;
+                this.isCloseupMode = true;
+            } else if (toggleIdInt === 7) {
+                // Shadow+Closeup
+                this.isShadowMode = true;
+                this.isCloseupMode = true;
+            } else if (toggleIdInt === 8) {
+                // Glow+Closeup
+                this.isGlowMode = true;
+                this.isCloseupMode = true;
+            } else if (toggleIdInt === 9) {
+                // Glow+BN
+                this.isGlowMode = true;
+                this.isBnMode = true;
+            } else if (toggleIdInt === 10) {
+                // Glow+BN+Closeup
+                this.isGlowMode = true;
+                this.isBnMode = true;
+                this.isCloseupMode = true;
+            } else if (toggleIdInt === 12) {
+                // Blackout
+                this.isBlackoutMode = true;
+            } else {
+                // IDs individuales (1-4)
+                if (toggleIdInt === 1) {
+                    this.isCloseupMode = true;
+                } else if (toggleIdInt === 2) {
+                    this.isShadowMode = true;
+                } else if (toggleIdInt === 3) {
+                    this.isGlowMode = true;
+                } else if (toggleIdInt === 4) {
+                    this.isBnMode = true;
+                }
+            }
+
+            console.log('🔍 CustomiseManager: Estados de toggles cargados:', {
+                isCloseupMode: this.isCloseupMode,
+                isShadowMode: this.isShadowMode,
+                isGlowMode: this.isGlowMode,
+                isBnMode: this.isBnMode,
+                isBlackoutMode: this.isBlackoutMode
+            });
+
+            // Emitir evento para actualizar UI
+            if (window.app?.stickyPopupManager) {
+                window.app.stickyPopupManager.updateCustomiseButtonsState();
+                window.app.stickyPopupManager.updateCustomiseImage();
+            }
+
+        } catch (error) {
+            console.warn('⚠️ CustomiseManager: Error cargando estado de toggles desde contrato:', error);
+            // En caso de error, mantener estados en false (ya reseteados arriba)
+        }
     }
 
     /**

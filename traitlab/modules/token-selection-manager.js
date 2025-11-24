@@ -22,7 +22,7 @@ class TokenSelectionManager {
     /**
      * Manejar selección de token
      */
-    onTokenSelected(token, filter) {
+    async onTokenSelected(token, filter) {
         console.log('🎯 TokenSelectionManager: Token seleccionado:', token.tokenId, 'Filter:', filter);
         console.log('🎯 Token completo:', token);
         
@@ -120,7 +120,7 @@ class TokenSelectionManager {
             // Propagar selección a CustomiseManager y ZeroManager
             if (window.app && window.app.modules.customise && window.app.modules.customise.setSelectedERC721) {
                 console.log('🎯 TokenSelectionManager: Sincronizando selectedERC721 con customise module');
-                window.app.modules.customise.setSelectedERC721(token);
+                await window.app.modules.customise.setSelectedERC721(token);
             }
             if (window.app && window.app.modules.zero && window.app.modules.zero.setSelectedERC721) {
                 console.log('🎯 TokenSelectionManager: Sincronizando selectedERC721 con zero module para customise');
