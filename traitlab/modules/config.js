@@ -25,7 +25,9 @@ class TraitLABConfig {
         this.ZOOM_TOGGLE_CONTRACT = "0x568933634be4027339c80F126C91742d41A515A0";
         this.ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
         
-        this.ALCHEMY_API_KEY = "pqRmKgTaLqm2eak9iML1f";
+        // API keys de Alchemy - se cargarán desde config-keys.js si está disponible
+        this.ALCHEMY_API_KEYS = ["pqRmKgTaLqm2eak9iML1f"]; // Fallback keys (sin primary key hardcodeada)
+        this.ALCHEMY_API_KEY = "pqRmKgTaLqm2eak9iML1f"; // Mantener para compatibilidad
         this.ALCHEMY_BASE_URL = "https://base-mainnet.g.alchemy.com/nft/v3";
         
         this.NETWORK = {
@@ -41,6 +43,9 @@ class TraitLABConfig {
             "https://base.llamarpc.com",
             "https://base-rpc.publicnode.com"
         ];
+        
+        // Cargar keys desde config-keys.js si está disponible
+        this.loadAlchemyKeysFromConfig();
 
         // ABI mínimos necesarios
         this.ERC20_ABI = [
@@ -75,10 +80,57 @@ class TraitLABConfig {
     }
 
     /**
-     * Obtener API key de Alchemy
+     * Cargar API keys desde config-keys.js (generado por GitHub Actions)
+     * Si no está disponible, usa las keys de fallback
+     */
+    loadAlchemyKeysFromConfig() {
+        try {
+            if (window.ALCHEMY_KEYS_CONFIG) {
+                const config = window.ALCHEMY_KEYS_CONFIG;
+                // Construir array con primary primero, luego fallbacks
+                this.ALCHEMY_API_KEYS = [];
+                if (config.primary) {
+                    this.ALCHEMY_API_KEYS.push(config.primary);
+                }
+                if (config.fallbacks && Array.isArray(config.fallbacks)) {
+                    this.ALCHEMY_API_KEYS.push(...config.fallbacks);
+                }
+                // Actualizar también ALCHEMY_API_KEY para compatibilidad
+                this.ALCHEMY_API_KEY = this.ALCHEMY_API_KEYS[0] || "pqRmKgTaLqm2eak9iML1f";
+                console.log('✅ TraitLABConfig: API keys cargadas desde config-keys.js');
+            } else {
+                console.log('⚠️ TraitLABConfig: config-keys.js no disponible, usando keys de fallback');
+            }
+        } catch (error) {
+            console.warn('⚠️ TraitLABConfig: Error cargando config-keys.js:', error.message);
+        }
+    }
+
+    /**
+     * Obtener API key de Alchemy (compatibilidad)
      */
     getAlchemyApiKey() {
         return this.ALCHEMY_API_KEY;
+    }
+
+    /**
+     * Obtener API key de Alchemy por índice (para fallback)
+     * @param {number} index - Índice de la key (0 = primaria)
+     * @returns {string|null} API key o null si el índice no existe
+     */
+    getAlchemyApiKeyWithFallback(index = 0) {
+        if (index >= 0 && index < this.ALCHEMY_API_KEYS.length) {
+            return this.ALCHEMY_API_KEYS[index];
+        }
+        return this.ALCHEMY_API_KEYS[0] || null;
+    }
+
+    /**
+     * Obtener todas las API keys disponibles
+     * @returns {string[]} Array de API keys
+     */
+    getAllAlchemyApiKeys() {
+        return [...this.ALCHEMY_API_KEYS];
     }
 
     /**

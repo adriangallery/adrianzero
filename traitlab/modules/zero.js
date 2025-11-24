@@ -162,6 +162,112 @@ class ZeroManager {
     }
 
     /**
+     * Fetch con fallback secuencial de API keys de Alchemy
+     * @param {string} urlTemplate - Template de URL sin API key (ej: "https://base-mainnet.g.alchemy.com/nft/v3/{API_KEY}/getNFTsForOwner?...")
+     * @param {string[]} apiKeys - Array de API keys a probar
+     * @param {number} timeout - Timeout en ms (default 15000 para móviles)
+     * @returns {Promise<Response>} Response de la petición exitosa
+     */
+    async fetchWithAlchemyFallback(urlTemplate, apiKeys, timeout = 15000) {
+        const maxRetriesPerKey = 2;
+        const retryDelays = [1000, 2000, 4000]; // Exponential backoff
+        
+        for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
+            const apiKey = apiKeys[keyIndex];
+            const url = urlTemplate.replace('{API_KEY}', apiKey);
+            
+            for (let retry = 0; retry <= maxRetriesPerKey; retry++) {
+                try {
+                    console.log(`🌐 Intentando con API key ${keyIndex + 1}/${apiKeys.length}${retry > 0 ? ` (retry ${retry}/${maxRetriesPerKey})` : ''}`);
+                    
+                    // Crear AbortController para timeout
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeout);
+                    
+                    const response = await fetch(url, { 
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    // Si es rate limit (429), cambiar inmediatamente a siguiente key
+                    if (response.status === 429) {
+                        console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        break; // Salir del loop de retry y probar siguiente key
+                    }
+                    
+                    // Si es error del servidor (5xx), retry con misma key o cambiar
+                    if (response.status >= 500 && response.status < 600) {
+                        if (retry < maxRetriesPerKey) {
+                            const delay = retryDelays[retry] || 4000;
+                            console.warn(`⚠️ Error del servidor (${response.status}), retry en ${delay}ms...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue; // Retry con misma key
+                        } else {
+                            console.warn(`⚠️ Error del servidor (${response.status}) después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
+                            break; // Cambiar a siguiente key
+                        }
+                    }
+                    
+                    // Si la respuesta es OK, retornarla
+                    if (response.ok) {
+                        console.log(`✅ Petición exitosa con API key ${keyIndex + 1}`);
+                        return response;
+                    }
+                    
+                    // Si es otro error (4xx), cambiar a siguiente key
+                    if (response.status >= 400 && response.status < 500) {
+                        console.warn(`⚠️ Error ${response.status} con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        break;
+                    }
+                    
+                    // Si llegamos aquí, retry
+                    if (retry < maxRetriesPerKey) {
+                        const delay = retryDelays[retry] || 4000;
+                        console.warn(`⚠️ Respuesta no exitosa, retry en ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                    
+                } catch (error) {
+                    // Limpiar timeout si existe
+                    if (typeof timeoutId !== 'undefined') {
+                        clearTimeout(timeoutId);
+                    }
+                    
+                    // Timeout o abort
+                    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+                        console.warn(`⏱️ Timeout (${timeout}ms) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        break; // Cambiar a siguiente key
+                    }
+                    
+                    // Network error - retry con exponential backoff
+                    if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
+                        if (retry < maxRetriesPerKey) {
+                            const delay = retryDelays[retry] || 4000;
+                            console.warn(`🌐 Error de red, retry en ${delay}ms...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        } else {
+                            console.warn(`🌐 Error de red después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
+                            break;
+                        }
+                    }
+                    
+                    // Otro error - cambiar a siguiente key
+                    console.warn(`⚠️ Error con key ${keyIndex + 1}: ${error.message}, cambiando a siguiente key`);
+                    break;
+                }
+            }
+        }
+        
+        // Si todas las keys fallaron
+        throw new Error(`Todas las API keys de Alchemy fallaron después de ${maxRetriesPerKey + 1} intentos cada una`);
+    }
+
+    /**
      * Load tokens for specific contract using direct API calls with pagination
      */
     async loadTokens(userAddress, contractAddress, filter = null, skipIndividualMetadata = false) {
@@ -200,21 +306,23 @@ class ZeroManager {
                 pageCount++;
                 console.log(`📄 Loading page ${pageCount}/${MAX_PAGES}... (tokens: ${allNfts.length}/${MAX_TOKENS})`);
                 
-                // Build URL with pagination and correct endpoint
-                let alchemyUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTsForOwner?owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=100&tokenType=${tokenType}`;
+                // Build URL template with pagination (sin API key, se inyectará en fetchWithAlchemyFallback)
+                let urlParams = `owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=100&tokenType=${tokenType}`;
                 
                 if (pageKey) {
-                    alchemyUrl += `&pageKey=${pageKey}`;
+                    urlParams += `&pageKey=${encodeURIComponent(pageKey)}`;
                     console.log(`🔗 Using pageKey: ${pageKey.substring(0, 20)}...`);
                 }
                 
-                console.log(`🌐 Requesting NFTs with URL: ${alchemyUrl}`);
+                const urlTemplate = `https://base-mainnet.g.alchemy.com/nft/v3/{API_KEY}/getNFTsForOwner?${urlParams}`;
                 
-                const alchemyResponse = await fetch(alchemyUrl);
+                // Obtener todas las API keys disponibles
+                const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
                 
-                if (!alchemyResponse.ok) {
-                    throw new Error(`Error getting NFTs from Alchemy API: ${alchemyResponse.status}`);
-                }
+                console.log(`🌐 Requesting NFTs con ${apiKeys.length} API key(s) disponibles`);
+                
+                // Usar fetchWithAlchemyFallback para manejar fallback automático
+                const alchemyResponse = await this.fetchWithAlchemyFallback(urlTemplate, apiKeys, 15000);
                 
                 const nftsData = await alchemyResponse.json();
                 const tokensInPage = nftsData.ownedNfts?.length || 0;
@@ -448,8 +556,10 @@ class ZeroManager {
                             if (!token.metadata || Object.keys(token.metadata).length === 0) {
                                 console.log(`Fetching individual metadata for token ${token.tokenId}`);
                                 try {
-                                    const metadataUrl = `https://base-mainnet.g.alchemy.com/nft/v3/${window.TraitLABConfig.ALCHEMY_API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=ERC1155`;
-                                    const metadataResponse = await fetch(metadataUrl);
+                                    const metadataUrlTemplate = `https://base-mainnet.g.alchemy.com/nft/v3/{API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=ERC1155`;
+                                    const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+                                    
+                                    const metadataResponse = await this.fetchWithAlchemyFallback(metadataUrlTemplate, apiKeys, 15000);
                                     
                                     if (metadataResponse.ok) {
                                         const metadataData = await metadataResponse.json();

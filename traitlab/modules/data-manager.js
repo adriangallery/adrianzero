@@ -158,10 +158,17 @@ class TraitLABDataManager {
                     // 🚀 CARGAR TOKENS PROGRESIVAMENTE
                     console.log('📊 Cargando tokens ERC1155 progresivamente...');
                     await this.loadTokensProgressive(userAddress, contractAddress);
+                } else {
+                    console.warn('📊 No hay wallet conectada, no se pueden cargar tokens AdrianLAB');
                 }
+            } else {
+                console.warn('📊 Módulo zero no disponible, no se pueden cargar tokens AdrianLAB');
             }
         } catch (error) {
-            console.warn('📊 Error cargando AdrianLAB tokens:', error);
+            console.error('📊 Error cargando AdrianLAB tokens:', error);
+            // Emitir evento de error para que la UI pueda manejarlo
+            this.emit('adrianLabError', { error: error.message || 'Error desconocido cargando tokens' });
+            // No lanzar el error para evitar crashes, solo loguearlo
         } finally {
             this.cache.loading.adrianLab = false;
             this.cache.ready.adrianLab = true;
@@ -174,20 +181,26 @@ class TraitLABDataManager {
      * Útil cuando el usuario hace clic en el tab "traits" antes de que termine la carga inicial
      */
     async loadAdrianLabTokensOnDemand() {
-        // Si ya están cargados o cargando, no hacer nada
-        if (this.cache.ready.adrianLab) {
-            console.log('📊 Traits ya están cargados');
-            return;
+        try {
+            // Si ya están cargados o cargando, no hacer nada
+            if (this.cache.ready.adrianLab) {
+                console.log('📊 Traits ya están cargados');
+                return;
+            }
+            
+            if (this.cache.loading.adrianLab) {
+                console.log('📊 Traits ya están en proceso de carga');
+                return;
+            }
+            
+            // Iniciar carga inmediatamente
+            console.log('📊 Iniciando carga de traits bajo demanda...');
+            await this.loadAdrianLabTokens();
+        } catch (error) {
+            console.error('📊 Error en loadAdrianLabTokensOnDemand:', error);
+            // No lanzar el error para evitar crashes, solo loguearlo
+            // El error ya fue manejado en loadAdrianLabTokens
         }
-        
-        if (this.cache.loading.adrianLab) {
-            console.log('📊 Traits ya están en proceso de carga');
-            return;
-        }
-        
-        // Iniciar carga inmediatamente
-        console.log('📊 Iniciando carga de traits bajo demanda...');
-        await this.loadAdrianLabTokens();
     }
 
     /**
@@ -664,50 +677,89 @@ class TraitLABDataManager {
         try {
             // Cargar tokens básicos primero (sin metadata individual)
             console.log('📊 Cargando tokens básicos ERC1155...');
-            const basicTokens = await this.loadBasicTokens(userAddress, contractAddress);
+            
+            let basicTokens = [];
+            try {
+                basicTokens = await this.loadBasicTokens(userAddress, contractAddress);
+            } catch (error) {
+                console.error('📊 Error cargando tokens básicos ERC1155:', error);
+                // Emitir evento de error
+                this.emit('adrianLabError', { 
+                    error: error.message || 'Error cargando tokens básicos',
+                    step: 'loadBasicTokens'
+                });
+                // Retornar array vacío en lugar de fallar
+                basicTokens = [];
+            }
             
             if (basicTokens.length === 0) {
                 console.log('📊 No hay tokens ERC1155 básicos');
+                // Emitir evento indicando que no hay tokens
+                this.emit('adrianLabTokensReady', {
+                    floppys: [],
+                    serums: [],
+                    traits: []
+                });
                 return;
             }
             
             // Separar por tipo usando filters.js
-            if (window.app && window.app.modules.filters) {
-                const traits = window.app.modules.filters.filterTraitTokens(basicTokens);
-                const floppys = window.app.modules.filters.filterFloppyTokens(basicTokens);
-                const serums = window.app.modules.filters.filterSerumTokens(basicTokens);
-                
-                this.cache.adrianLab = {
-                    all: basicTokens,
-                    traits: traits,
-                    floppys: floppys,
-                    packs: [], // Por ahora vacío
-                    serums: serums
-                };
-                
-                console.log('📊 Tokens ERC1155 básicos separados:', {
-                    total: basicTokens.length,
-                    traits: traits.length,
-                    floppys: floppys.length,
-                    packs: 0,
-                    serums: serums.length
+            try {
+                if (window.app && window.app.modules.filters) {
+                    const traits = window.app.modules.filters.filterTraitTokens(basicTokens);
+                    const floppys = window.app.modules.filters.filterFloppyTokens(basicTokens);
+                    const serums = window.app.modules.filters.filterSerumTokens(basicTokens);
+                    
+                    this.cache.adrianLab = {
+                        all: basicTokens,
+                        traits: traits,
+                        floppys: floppys,
+                        packs: [], // Por ahora vacío
+                        serums: serums
+                    };
+                    
+                    console.log('📊 Tokens ERC1155 básicos separados:', {
+                        total: basicTokens.length,
+                        traits: traits.length,
+                        floppys: floppys.length,
+                        packs: 0,
+                        serums: serums.length
+                    });
+                    
+                    // 🚀 NO MOSTRAR TOKENS AQUÍ - se mostrarán cuando el usuario cambie de tab
+                    // Los tokens se mostrarán automáticamente via getFilteredTokens() cuando sea necesario
+                    
+                    // 🚨 NUEVO: Emitir evento para notificar que los tokens están listos
+                    this.emit('adrianLabTokensReady', {
+                        floppys: floppys,
+                        serums: serums,
+                        traits: traits
+                    });
+                    
+                    // 🔄 MEJORAR METADATA EN BACKGROUND (no bloquear si falla)
+                    try {
+                        this.improveERC1155MetadataInBackground(basicTokens);
+                    } catch (metadataError) {
+                        console.warn('📊 Error mejorando metadata en background (no crítico):', metadataError);
+                    }
+                } else {
+                    console.warn('📊 Módulo filters no disponible');
+                }
+            } catch (error) {
+                console.error('📊 Error procesando tokens ERC1155:', error);
+                this.emit('adrianLabError', { 
+                    error: error.message || 'Error procesando tokens',
+                    step: 'filterTokens'
                 });
-                
-                // 🚀 NO MOSTRAR TOKENS AQUÍ - se mostrarán cuando el usuario cambie de tab
-                // Los tokens se mostrarán automáticamente via getFilteredTokens() cuando sea necesario
-                
-                // 🚨 NUEVO: Emitir evento para notificar que los tokens están listos
-                this.emit('adrianLabTokensReady', {
-                    floppys: floppys,
-                    serums: serums,
-                    traits: traits
-                });
-                
-                // 🔄 MEJORAR METADATA EN BACKGROUND
-                this.improveERC1155MetadataInBackground(basicTokens);
             }
         } catch (error) {
-            console.warn('📊 Error en carga progresiva:', error);
+            console.error('📊 Error crítico en carga progresiva:', error);
+            // Emitir evento de error crítico
+            this.emit('adrianLabError', { 
+                error: error.message || 'Error crítico en carga progresiva',
+                step: 'loadTokensProgressive'
+            });
+            // No lanzar el error para evitar crashes
         }
     }
 

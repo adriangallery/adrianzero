@@ -13,8 +13,89 @@ class GalleryManager {
         this.isLoading = false;
         this.currentPage = 0;
         this.hasMoreTraits = true;
-        this.alchemyApiKey = "pqRmKgTaLqm2eak9iML1f";
+        // Usar keys desde TraitLABConfig en lugar de hardcodeada
         this.alchemyBaseUrl = "https://base-mainnet.g.alchemy.com/nft/v3";
+    }
+
+    /**
+     * Fetch con fallback secuencial de API keys de Alchemy
+     * @param {string} urlTemplate - Template de URL sin API key
+     * @param {string[]} apiKeys - Array de API keys a probar
+     * @param {number} timeout - Timeout en ms (default 15000 para móviles)
+     * @returns {Promise<Response>} Response de la petición exitosa
+     */
+    async fetchWithAlchemyFallback(urlTemplate, apiKeys, timeout = 15000) {
+        const maxRetriesPerKey = 2;
+        const retryDelays = [1000, 2000, 4000];
+        
+        for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
+            const apiKey = apiKeys[keyIndex];
+            const url = urlTemplate.replace('{API_KEY}', apiKey);
+            
+            for (let retry = 0; retry <= maxRetriesPerKey; retry++) {
+                let timeoutId;
+                try {
+                    const controller = new AbortController();
+                    timeoutId = setTimeout(() => controller.abort(), timeout);
+                    
+                    const response = await fetch(url, { 
+                        signal: controller.signal,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    
+                    if (timeoutId) clearTimeout(timeoutId);
+                    
+                    if (response.status === 429) {
+                        console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        break;
+                    }
+                    
+                    if (response.status >= 500 && response.status < 600) {
+                        if (retry < maxRetriesPerKey) {
+                            const delay = retryDelays[retry] || 4000;
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    if (response.ok) {
+                        return response;
+                    }
+                    
+                    if (response.status >= 400 && response.status < 500) {
+                        break;
+                    }
+                    
+                    if (retry < maxRetriesPerKey) {
+                        const delay = retryDelays[retry] || 4000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                    
+                } catch (error) {
+                    if (timeoutId) clearTimeout(timeoutId);
+                    
+                    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+                        console.warn(`⏱️ Timeout con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        break;
+                    }
+                    
+                    if (error.message.includes('fetch') || error.message.includes('network')) {
+                        if (retry < maxRetriesPerKey) {
+                            const delay = retryDelays[retry] || 4000;
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        } else {
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        
+        throw new Error(`Todas las API keys de Alchemy fallaron`);
     }
 
     async initialize(provider, signer) {
@@ -135,18 +216,17 @@ class GalleryManager {
             const contractAddress = window.ADRIANZERO_CONTRACT || "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
             const pageKey = this.currentPage > 0 ? this.pageKey : null;
             
-            let alchemyUrl = `${this.alchemyBaseUrl}/${this.alchemyApiKey}/getNFTsForCollection?contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC721`;
-            
+            let urlParams = `contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC721`;
             if (pageKey) {
-                alchemyUrl += `&pageKey=${pageKey}`;
+                urlParams += `&pageKey=${encodeURIComponent(pageKey)}`;
             }
-
-            console.log(`Requesting AdrianZERO NFTs from Alchemy: ${alchemyUrl}`);
             
-            const response = await fetch(alchemyUrl);
-            if (!response.ok) {
-                throw new Error(`Alchemy API error: ${response.status}`);
-            }
+            const urlTemplate = `${this.alchemyBaseUrl}/{API_KEY}/getNFTsForCollection?${urlParams}`;
+            const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+
+            console.log(`Requesting AdrianZERO NFTs from Alchemy con ${apiKeys.length} key(s)`);
+            
+            const response = await this.fetchWithAlchemyFallback(urlTemplate, apiKeys, 15000);
 
             const data = await response.json();
             console.log(`Alchemy response:`, data);
@@ -180,18 +260,17 @@ class GalleryManager {
             const contractAddress = window.TRAITS_CONTRACT || "0x90546848474FB3c9fda3fdAd887969bB244E7e58";
             const pageKey = this.currentPage > 0 ? this.pageKey : null;
             
-            let alchemyUrl = `${this.alchemyBaseUrl}/${this.alchemyApiKey}/getNFTsForCollection?contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC1155`;
-            
+            let urlParams = `contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC1155`;
             if (pageKey) {
-                alchemyUrl += `&pageKey=${pageKey}`;
+                urlParams += `&pageKey=${encodeURIComponent(pageKey)}`;
             }
-
-            console.log(`Requesting traits from Alchemy: ${alchemyUrl}`);
             
-            const response = await fetch(alchemyUrl);
-            if (!response.ok) {
-                throw new Error(`Alchemy API error: ${response.status}`);
-            }
+            const urlTemplate = `${this.alchemyBaseUrl}/{API_KEY}/getNFTsForCollection?${urlParams}`;
+            const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+
+            console.log(`Requesting traits from Alchemy con ${apiKeys.length} key(s)`);
+            
+            const response = await this.fetchWithAlchemyFallback(urlTemplate, apiKeys, 15000);
 
             const data = await response.json();
             console.log(`Alchemy response:`, data);

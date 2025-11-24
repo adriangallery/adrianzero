@@ -260,6 +260,8 @@
     <div id="app-container"></div>
 
     <!-- Scripts de módulos -->
+    <!-- Cargar config-keys.js primero (generado por GitHub Actions, fallback silencioso si no existe) -->
+    <script src="config-keys.js" onerror="console.log('ℹ️ config-keys.js no disponible, usando keys de fallback')"></script>
     <script src="modules/config.js?v=12"></script>
     <script src="modules/utils/image-loader.js?v=1"></script>
     <script src="modules/wallet.js?v=12"></script>
