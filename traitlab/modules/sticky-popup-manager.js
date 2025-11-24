@@ -1783,9 +1783,10 @@ class StickyPopupManager {
             const hasShadow = customiseModule.isShadowMode;
             const hasGlow = customiseModule.isGlowMode;
             const hasBn = customiseModule.isBnMode;
+            const hasBlackout = customiseModule.isBlackoutMode;
             
-            if (!hasCloseup && !hasShadow && !hasGlow && !hasBn) {
-                this.showStatus('⚠️ Please activate at least one toggle (Closeup, Shadow, GLOW, or BN) before committing', 'error', this.elements.customiseCommitStatus);
+            if (!hasCloseup && !hasShadow && !hasGlow && !hasBn && !hasBlackout) {
+                this.showStatus('⚠️ Please activate at least one toggle (Closeup, Shadow, GLOW, BN, or Blackout) before committing', 'error', this.elements.customiseCommitStatus);
                 if (this.elements.customiseCommitBtn) {
                     this.elements.customiseCommitBtn.disabled = false;
                     this.elements.customiseCommitBtn.textContent = 'Commit';
