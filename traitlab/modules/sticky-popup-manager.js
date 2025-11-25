@@ -798,64 +798,70 @@ class StickyPopupManager {
                        (tokenId >= 15000 && tokenId <= 15015) || 
                        tokenId === 1123;
         
-        if (isPack && window.app && window.app.modules.floppy) {
-            // Intentar .gif primero
-            const gifUrl = window.app.modules.floppy.getImagePath(tokenId, '.gif');
-            const pngUrl = window.app.modules.floppy.getImagePath(tokenId, '.png');
-            
-            // Crear imagen temporal para verificar si .gif existe
-            const testImg = new Image();
-            testImg.onload = () => {
-                // .gif existe, usarlo
-                this.elements.combinedImage.src = gifUrl;
-                console.log('✅ Imagen de pack cargada (GIF):', gifUrl);
-            };
-            testImg.onerror = () => {
-                // .gif no existe, usar .png
-                this.elements.combinedImage.src = pngUrl;
-                console.log('✅ Imagen de pack cargada (PNG fallback):', pngUrl);
-            };
-            testImg.src = gifUrl;
-            
-            // Ocultar loading cuando la imagen esté lista (usando el evento del combinedImage)
-            this.elements.combinedImage.onload = () => {
-                if (this.elements.imageLoadingOverlay) {
-                    this.elements.imageLoadingOverlay.style.display = 'none';
-                }
-                console.log('✅ Imagen de pack cargada');
-            };
-            
-            this.elements.combinedImage.onerror = () => {
-                // Si también falla el fallback, intentar con la URL del render API
-                this.elements.combinedImage.src = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
-                console.log('⚠️ Intentando con render API como último fallback');
-            };
-        } else {
-            // Para otros casos, usar la URL normal
-            this.elements.combinedImage.src = floppyImageUrl;
-            
-            // Ocultar loading cuando la imagen esté lista
-            this.elements.combinedImage.onload = () => {
-                if (this.elements.imageLoadingOverlay) {
-                    this.elements.imageLoadingOverlay.style.display = 'none';
-                }
-                console.log('✅ Imagen de floppy cargada');
-            };
-            
-            this.elements.combinedImage.onerror = () => {
-                if (this.elements.imageLoadingOverlay) {
-                    this.elements.imageLoadingOverlay.style.display = 'none';
-                }
-                console.error('❌ Error cargando imagen de floppy');
-            };
-        }
+        // Configurar event handlers una sola vez
+        let fallbackAttempted = false;
         
-        this.elements.combinedImage.onerror = () => {
+        this.elements.combinedImage.onload = () => {
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
             }
-            console.error('❌ Error cargando imagen de floppy');
+            console.log('✅ Imagen de floppy/pack cargada:', this.elements.combinedImage.src);
         };
+        
+        this.elements.combinedImage.onerror = () => {
+            if (isPack && window.app && window.app.modules.floppy && !fallbackAttempted) {
+                // Intentar PNG como fallback
+                const pngUrl = window.app.modules.floppy.getImagePath(tokenId, '.png');
+                if (!this.elements.combinedImage.src.includes('.png') || this.elements.combinedImage.src.includes('.gif')) {
+                    fallbackAttempted = true;
+                    this.elements.combinedImage.src = pngUrl;
+                    console.log('⚠️ Intentando PNG como fallback:', pngUrl);
+                    return;
+                }
+            }
+            
+            // Si ya intentamos PNG o no es pack, usar render API como último fallback
+            if (!this.elements.combinedImage.src.includes('adrianlab.vercel.app')) {
+                this.elements.combinedImage.src = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+                console.log('⚠️ Intentando con render API como último fallback');
+            } else {
+                // Ya intentamos todo, ocultar loading
+                if (this.elements.imageLoadingOverlay) {
+                    this.elements.imageLoadingOverlay.style.display = 'none';
+                }
+                console.error('❌ Error cargando imagen - todos los fallbacks fallaron');
+            }
+        };
+        
+        if (isPack && window.app && window.app.modules.floppy) {
+            // Para 1123, usar directamente PNG ya que sabemos que existe
+            if (tokenId === 1123) {
+                const pngUrl = window.app.modules.floppy.getImagePath(tokenId, '.png');
+                this.elements.combinedImage.src = pngUrl;
+                console.log('✅ Cargando CensorPACK (PNG):', pngUrl);
+            } else {
+                // Para otros packs, intentar .gif primero
+                const gifUrl = window.app.modules.floppy.getImagePath(tokenId, '.gif');
+                const pngUrl = window.app.modules.floppy.getImagePath(tokenId, '.png');
+                
+                // Crear imagen temporal para verificar si .gif existe
+                const testImg = new Image();
+                testImg.onload = () => {
+                    // .gif existe, usarlo
+                    this.elements.combinedImage.src = gifUrl;
+                    console.log('✅ Imagen de pack cargada (GIF):', gifUrl);
+                };
+                testImg.onerror = () => {
+                    // .gif no existe, usar .png directamente
+                    this.elements.combinedImage.src = pngUrl;
+                    console.log('✅ Imagen de pack cargada (PNG fallback):', pngUrl);
+                };
+                testImg.src = gifUrl;
+            }
+        } else {
+            // Para otros casos, usar la URL normal
+            this.elements.combinedImage.src = floppyImageUrl;
+        }
     }
 
     /**
