@@ -238,6 +238,13 @@ class FloppyManager {
                 type: 'pack',
                 name: 'PACK10012'
             };
+        } else if (tokenId === 1123) {
+            // PACK1123 - ActionPack contract
+            return {
+                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
+                type: 'pack',
+                name: 'PACK1123'
+            };
         } else if (tokenId === 10009) {
             // PUNKSfloppy - now uses OpenPackV4 contract
             return {
@@ -290,6 +297,9 @@ class FloppyManager {
             return await this.openActionPack();
         } else if (this.selectedFloppy.tokenId === 10012) {
             console.log('Redirecting to openActionPack() for PACK10012', this.selectedFloppy.tokenId);
+            return await this.openActionPack();
+        } else if (this.selectedFloppy.tokenId === 1123) {
+            console.log('Redirecting to openActionPack() for PACK1123', this.selectedFloppy.tokenId);
             return await this.openActionPack();
         } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015 && this.selectedFloppy.tokenId !== 15010) {
             console.log('Redirecting to openActionPack() for token', this.selectedFloppy.tokenId);
@@ -701,8 +711,8 @@ class FloppyManager {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
-            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 15008-15015).');
+        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
+            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 1123, 15008-15015).');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');

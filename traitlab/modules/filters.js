@@ -46,9 +46,10 @@ class TokenFilters {
         const floppyTokens = tokens.filter(token => {
             const tokenId = parseInt(token.tokenId);
             
-            // Solo usar rangos específicos de index.html: 10000-10013, 15000-15015
+            // Solo usar rangos específicos de index.html: 10000-10013, 15000-15015, y pack 1123
             const isFloppyById = (tokenId >= 10000 && tokenId <= 10013) || 
-                                 (tokenId >= 15000 && tokenId <= 15015);
+                                 (tokenId >= 15000 && tokenId <= 15015) ||
+                                 tokenId === 1123;
             
             if (isFloppyById) {
                 console.log(`💾 Floppy encontrado por ID: ${tokenId}`);
@@ -83,6 +84,9 @@ class TokenFilters {
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
                 } else if (tokenId === 10013) {
                     token.displayName = 'PACK10013';
+                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
+                } else if (tokenId === 1123) {
+                    token.displayName = 'PACK1123';
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
                 } else if (tokenId === 15010) {
                     token.displayName = 'Back to Work';
