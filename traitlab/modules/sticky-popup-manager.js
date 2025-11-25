@@ -792,16 +792,63 @@ class StickyPopupManager {
             this.elements.imageLoadingOverlay.style.display = 'flex';
         }
 
-        // Cargar imagen del floppy
-        this.elements.combinedImage.src = floppyImageUrl;
+        // Para packs, intentar .gif primero y luego .png como fallback
+        const tokenId = parseInt(this.selectedFloppy.tokenId);
+        const isPack = (tokenId >= 10000 && tokenId <= 10013) || 
+                       (tokenId >= 15000 && tokenId <= 15015) || 
+                       tokenId === 1123;
         
-        // Ocultar loading cuando la imagen esté lista
-        this.elements.combinedImage.onload = () => {
-            if (this.elements.imageLoadingOverlay) {
-                this.elements.imageLoadingOverlay.style.display = 'none';
-            }
-            console.log('✅ Imagen de floppy cargada');
-        };
+        if (isPack && window.app && window.app.modules.floppy) {
+            // Intentar .gif primero
+            const gifUrl = window.app.modules.floppy.getImagePath(tokenId, '.gif');
+            const pngUrl = window.app.modules.floppy.getImagePath(tokenId, '.png');
+            
+            // Crear imagen temporal para verificar si .gif existe
+            const testImg = new Image();
+            testImg.onload = () => {
+                // .gif existe, usarlo
+                this.elements.combinedImage.src = gifUrl;
+                console.log('✅ Imagen de pack cargada (GIF):', gifUrl);
+            };
+            testImg.onerror = () => {
+                // .gif no existe, usar .png
+                this.elements.combinedImage.src = pngUrl;
+                console.log('✅ Imagen de pack cargada (PNG fallback):', pngUrl);
+            };
+            testImg.src = gifUrl;
+            
+            // Ocultar loading cuando la imagen esté lista (usando el evento del combinedImage)
+            this.elements.combinedImage.onload = () => {
+                if (this.elements.imageLoadingOverlay) {
+                    this.elements.imageLoadingOverlay.style.display = 'none';
+                }
+                console.log('✅ Imagen de pack cargada');
+            };
+            
+            this.elements.combinedImage.onerror = () => {
+                // Si también falla el fallback, intentar con la URL del render API
+                this.elements.combinedImage.src = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+                console.log('⚠️ Intentando con render API como último fallback');
+            };
+        } else {
+            // Para otros casos, usar la URL normal
+            this.elements.combinedImage.src = floppyImageUrl;
+            
+            // Ocultar loading cuando la imagen esté lista
+            this.elements.combinedImage.onload = () => {
+                if (this.elements.imageLoadingOverlay) {
+                    this.elements.imageLoadingOverlay.style.display = 'none';
+                }
+                console.log('✅ Imagen de floppy cargada');
+            };
+            
+            this.elements.combinedImage.onerror = () => {
+                if (this.elements.imageLoadingOverlay) {
+                    this.elements.imageLoadingOverlay.style.display = 'none';
+                }
+                console.error('❌ Error cargando imagen de floppy');
+            };
+        }
         
         this.elements.combinedImage.onerror = () => {
             if (this.elements.imageLoadingOverlay) {

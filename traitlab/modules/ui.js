@@ -187,7 +187,7 @@ class UIManager {
                 } else if (token.tokenId === 10010) {
                     displayTitle = 'ComradesUSB';
                 } else if (token.tokenId === 1123) {
-                    displayTitle = 'PACK1123';
+                    displayTitle = 'CensorPACK';
                 } else if (token.tokenId === 15010) {
                     displayTitle = 'Back to Work';
                 } else {

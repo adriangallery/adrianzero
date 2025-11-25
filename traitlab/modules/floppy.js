@@ -113,6 +113,13 @@ class FloppyManager {
             return this.getImagePath(10012, '.gif');
         } else if (tokenId === 10013) {
             return this.getImagePath(10013, '.gif');
+        } else if (tokenId === 1123) {
+            // CensorPACK: intentar .gif primero, luego .png como fallback
+            const gifPath = this.getImagePath(1123, '.gif');
+            const pngPath = this.getImagePath(1123, '.png');
+            // Retornar ambos paths - el código que lo use debería intentar gif primero
+            // Por ahora retornamos png ya que sabemos que existe
+            return pngPath;
         }
         
         // Fallback to default image
@@ -239,11 +246,11 @@ class FloppyManager {
                 name: 'PACK10012'
             };
         } else if (tokenId === 1123) {
-            // PACK1123 - ActionPack contract
+            // CensorPACK - ActionPack contract
             return {
                 address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
                 type: 'pack',
-                name: 'PACK1123'
+                name: 'CensorPACK'
             };
         } else if (tokenId === 10009) {
             // PUNKSfloppy - now uses OpenPackV4 contract
