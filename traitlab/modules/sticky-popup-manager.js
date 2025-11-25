@@ -834,9 +834,13 @@ class StickyPopupManager {
         };
         
         if (isPack && window.app && window.app.modules.floppy) {
-            // Para 1123, usar directamente PNG ya que sabemos que existe
+            // Para 1123, usar la imagen desde traitlab/assets/traits
             if (tokenId === 1123) {
-                const pngUrl = window.app.modules.floppy.getImagePath(tokenId, '.png');
+                // La imagen está en traitlab/assets/traits/1123.png
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const pngUrl = isLocal 
+                    ? './assets/traits/1123.png'
+                    : 'https://adrianzero.com/traitlab/assets/traits/1123.png';
                 this.elements.combinedImage.src = pngUrl;
                 console.log('✅ Cargando CensorPACK (PNG):', pngUrl);
             } else {
