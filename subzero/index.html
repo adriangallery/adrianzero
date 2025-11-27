@@ -775,108 +775,74 @@
             transform: translateY(0);
         }
 
-        /* Traits Modal */
-        .traits-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-        }
-
-        .traits-modal-content {
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
-            margin: 50px auto;
-            padding: 30px;
-            border: 3px solid #00ff00;
-            border-radius: 20px;
-            max-width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 255, 0, 0.5);
-            position: relative;
-        }
-
-        .traits-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #00ff00;
-            padding-bottom: 15px;
-        }
-
-        .traits-modal-title {
-            font-size: 2.5rem;
-            color: #00ff00;
-            text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-        }
-
-        .traits-modal-close {
-            color: #00ff00;
-            font-size: 3rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            line-height: 1;
-            background: none;
-            border: none;
-            padding: 0;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .traits-modal-close:hover {
-            color: #ffffff;
-            text-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
-            transform: scale(1.2);
-        }
-
-        .traits-images-container {
+        /* Traits Section */
+        .traits-section {
+            min-height: auto;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            justify-content: center;
             align-items: center;
+            text-align: center;
+            padding: 60px 20px;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        .traits-image-wrapper {
+        .traits-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .traits-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
             width: 100%;
-            max-width: 800px;
-            border: 2px solid #00ff00;
-            border-radius: 15px;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .traits-image-card {
+            width: 100%;
+            border: 3px solid #00ff00;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
-            transition: all 0.3s ease;
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.3);
+            transition: all 0.4s ease;
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        .traits-image-wrapper:hover {
-            transform: scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
+        .traits-image-card:hover {
+            transform: translateY(-10px) scale(1.01);
+            box-shadow: 0 25px 60px rgba(0, 255, 0, 0.5);
+            border-color: #00ff88;
         }
 
-        .traits-image-wrapper img {
+        .traits-image-card img {
             width: 100%;
             height: auto;
             display: block;
         }
 
         @media (max-width: 768px) {
-            .traits-modal-content {
-                margin: 20px auto;
-                padding: 20px;
-                max-width: 95%;
+            .traits-section {
+                padding: 40px 20px;
             }
 
-            .traits-modal-title {
-                font-size: 1.8rem;
+            .traits-gallery {
+                gap: 30px;
             }
         }
     </style>
@@ -910,9 +876,6 @@
             Mint your SubZERO NFT (with eyes closer together!), get a Blue-Check trait to try TraitLAB, 
             and receive 100 $ADRIAN tokens to buy a Shake in the AdrianSHOP. All FREE!
         </p>
-        <button class="connect-btn" onclick="openTraitsModal()" style="margin-top: 20px;">
-            🎨 View SubZERO Traits Examples
-        </button>
     </section>
 
     <!-- Network Warning -->
@@ -948,7 +911,7 @@
                 
                 <div class="kit-item fade-in">
                     <div class="kit-item-image">
-                        <img src="images/adriancoin.png" alt="$ADRIAN Tokens">
+                        <img src="images/adriancoin.gif" alt="$ADRIAN Tokens">
                 </div>
                     <h3 class="kit-item-title">$ADRIAN Tokens</h3>
                     <p class="kit-item-desc">Buy a Shake in AdrianSHOP</p>
@@ -1033,10 +996,27 @@
                 </div>
                 <div class="preview-item">
                     <div class="preview-image">
-                        <img src="images/adriancoin.png" alt="Tokens">
+                        <img src="images/adriancoin.gif" alt="Tokens">
                     </div>
                     <div class="preview-label">100 $ADRIAN</div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Traits Examples Section -->
+    <section class="traits-section">
+        <h2 class="section-title">SubZERO Traits Examples</h2>
+        <p class="section-subtitle">See how your SubZERO can look with different traits applied</p>
+        <div class="traits-gallery">
+            <div class="traits-image-card fade-in">
+                <img src="images/subzerotraits.png" alt="SubZERO Traits Examples">
+            </div>
+            <div class="traits-image-card fade-in">
+                <img src="images/subzerotraits2.png" alt="SubZERO Traits Examples 2">
+            </div>
+            <div class="traits-image-card fade-in">
+                <img src="images/subzerotraits3.png" alt="SubZERO Traits Examples 3">
             </div>
         </div>
     </section>
@@ -1489,50 +1469,5 @@
         }
     </script>
 
-    <!-- Traits Modal -->
-    <div id="traitsModal" class="traits-modal">
-        <div class="traits-modal-content">
-            <div class="traits-modal-header">
-                <h2 class="traits-modal-title">SubZERO Traits Examples</h2>
-                <button class="traits-modal-close" onclick="closeTraitsModal()">&times;</button>
-            </div>
-            <div class="traits-images-container">
-                <div class="traits-image-wrapper">
-                    <img src="images/subzerotraits.png" alt="SubZERO Traits Examples">
-                </div>
-                <div class="traits-image-wrapper">
-                    <img src="images/subzerotraits2.png" alt="SubZERO Traits Examples 2">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Modal functions
-        function openTraitsModal() {
-            document.getElementById('traitsModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeTraitsModal() {
-            document.getElementById('traitsModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('traitsModal');
-            if (event.target === modal) {
-                closeTraitsModal();
-            }
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeTraitsModal();
-            }
-        });
-    </script>
 </body>
 </html>
