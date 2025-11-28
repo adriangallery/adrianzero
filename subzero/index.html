@@ -1001,7 +1001,7 @@
                         <strong>Status:</strong> <span id="kitStatusInfo">Loading...</span>
                 </div>
                     <div class="contract-detail">
-                        <strong>Contract:</strong> <span id="contractAddress" class="contract-address">0xF278a1060900005aD5b9077602b09A513541f5d2</span>
+                        <strong>Contract:</strong> <span id="contractAddress" class="contract-address">0x20700BE61f2b94E08B16ebD82eE0BA46189B7305</span>
             </div>
         </div>
             </div>
@@ -1035,22 +1035,21 @@
 
     <script>
         // Contract configuration
-        const KIT_SALE_CONTRACT = "0xF278a1060900005aD5b9077602b09A513541f5d2";
+        const KIT_SALE_CONTRACT = "0x20700BE61f2b94E08B16ebD82eE0BA46189B7305";
+        const KIT_ID = 3; // FREE mint kit
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
 
-        // Contract ABI - Correct functions from the actual contract
+        // Contract ABI - New contract with kitId parameter
         const KIT_SALE_ABI = [
-            "function buyKit() payable",
-            "function buyMultipleKits(uint256 quantity) payable",
-            "function getKitConfig() view returns (tuple(uint256 priceInETH, uint256 adrianTokenAmount, uint256 floppyTokenId, uint256 erc721Amount, bool active))",
-            "function getKitPrice() view returns (uint256)",
-            "function getKitTotalCost(uint256 quantity) view returns (uint256)",
-            "function canBuyKit(address user, uint256 quantity) view returns (tuple(bool canPurchase, string error, uint256 totalCost, uint256 contractAdrianBalance, uint256 maxKitsAvailable))",
+            "function buyKit(uint256 kitId) payable",
+            "function buyMultipleKits(uint256 kitId, uint256 quantity) payable",
+            "function getKitInfo(uint256 kitId) view returns (tuple(uint256 id, string name, uint256 priceInETH, uint256 adrianTokenAmount, uint256 floppyTokenId, uint256 erc721Amount, uint256 maxPerWallet, uint256 maxSupply, uint256 sold, bool active, string tag))",
+            "function userCanBuyKit(address user, uint256 kitId, uint256 quantity) view returns (bool, string)",
             "function kitSalePaused() view returns (bool)",
             "function maxKitsPerTransaction() view returns (uint256)",
             "function getAdrianTokenBalance() view returns (uint256)",
-            "function getSystemStats() view returns (tuple(uint256 totalKitsSold, uint256 totalETHReceived, uint256 adrianTokenBalance, bool systemPaused, bool kitActive, address treasuryWallet))"
+            "function getSystemStats() view returns (tuple(uint256 totalBatchMinted, uint256 totalKitsSold, uint256 totalETHReceived, uint256 adrianTokenBalance, bool batchPaused, bool kitPaused, address treasuryWallet, uint256 totalMintedTokens))"
         ];
 
         // Global state
@@ -1208,9 +1207,9 @@
                 console.log('📱 Device:', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
                 console.log('🌐 Network:', navigator.connection ? navigator.connection.effectiveType : 'Unknown');
                 
-                // Load kit configuration using getKitConfig
-                console.log('📋 Fetching kit config...');
-                const kitConfig = await kitSaleContract.getKitConfig();
+                // Load kit configuration using getKitInfo with kitId
+                console.log('📋 Fetching kit config for kitId:', KIT_ID);
+                const kitConfig = await kitSaleContract.getKitInfo(KIT_ID);
                 console.log('📊 Kit config received:', kitConfig);
                 
                 kitPrice = kitConfig.priceInETH;
@@ -1266,7 +1265,7 @@
         async function loadContractInfo() {
             try {
                 const isPaused = await kitSaleContract.kitSalePaused();
-                const kitConfig = await kitSaleContract.getKitConfig();
+                const kitConfig = await kitSaleContract.getKitInfo(KIT_ID);
                 
                 const priceEth = parseFloat(ethers.utils.formatEther(kitPrice));
                 if (priceEth === 0) {
@@ -1375,15 +1374,15 @@
                 
                 // Validate purchase
                 showStatus('Validating purchase...', 'loading');
-                const validation = await kitSaleContract.canBuyKit(userAddress, currentQuantity);
+                const [canPurchase, errorMessage] = await kitSaleContract.userCanBuyKit(userAddress, KIT_ID, currentQuantity);
                 
-                if (!validation.canPurchase) {
-                    showStatus(`Cannot purchase: ${validation.error}`, 'error');
+                if (!canPurchase) {
+                    showStatus(`Cannot purchase: ${errorMessage}`, 'error');
                     return;
                 }
                 
-                // Calculate total cost
-                const totalCost = await kitSaleContract.getKitTotalCost(currentQuantity);
+                // Calculate total cost (kitPrice * quantity)
+                const totalCost = kitPrice.mul(currentQuantity);
                 
                 // For FREE mint, skip balance check if cost is 0
                 if (!totalCost.isZero()) {
@@ -1400,9 +1399,9 @@
                 
                 let tx;
                 if (currentQuantity === 1) {
-                    tx = await kitSaleContract.buyKit({ value: totalCost });
+                    tx = await kitSaleContract.buyKit(KIT_ID, { value: totalCost });
                 } else {
-                    tx = await kitSaleContract.buyMultipleKits(currentQuantity, { value: totalCost });
+                    tx = await kitSaleContract.buyMultipleKits(KIT_ID, currentQuantity, { value: totalCost });
                 }
                 
                 showStatus('Transaction submitted. Waiting for confirmation...', 'loading');
