@@ -1212,11 +1212,13 @@
                 const adrianAmount = ethers.utils.formatEther(adrianTokenAmount);
                 
                 // For FREE mint, show "FREE" instead of price
-                if (parseFloat(priceEth) === 0) {
-                    document.getElementById('pricePerKit').textContent = 'FREE';
-                    document.getElementById('usdPrice').textContent = '';
-                } else {
-                    document.getElementById('pricePerKit').textContent = `${parseFloat(priceEth).toFixed(4)} ETH`;
+                const pricePerKitEl = document.getElementById('pricePerKit');
+                if (pricePerKitEl) {
+                    if (parseFloat(priceEth) === 0) {
+                        pricePerKitEl.textContent = 'FREE';
+                    } else {
+                        pricePerKitEl.textContent = `${parseFloat(priceEth).toFixed(4)} ETH`;
+                    }
                 }
                 // Update token preview label if element exists
                 const tokenPreviewLabel = document.getElementById('tokenPreviewLabel');
@@ -1228,17 +1230,23 @@
                 
                 // Check if contract is paused and kit is active
                 const isPaused = await kitSaleContract.kitSalePaused();
+                console.log('⏸️ Kit sale paused:', isPaused);
+                console.log('✅ Kit active:', kitConfig.active);
                 
                 // Enable purchase button if contract is not paused and kit is active
-                if (!isPaused && kitConfig.active) {
-                    document.getElementById('purchaseBtn').disabled = false;
-                } else {
-                    document.getElementById('purchaseBtn').disabled = true;
-                    if (isPaused) {
-                        showStatus('Kit sales are currently paused', 'error');
-                    } else if (!kitConfig.active) {
-                        showStatus('Kit sales are not active', 'error');
-        }
+                const purchaseBtn = document.getElementById('purchaseBtn');
+                if (purchaseBtn) {
+                    if (!isPaused && kitConfig.active) {
+                        purchaseBtn.disabled = false;
+                        console.log('✅ Purchase button enabled');
+                    } else {
+                        purchaseBtn.disabled = true;
+                        if (isPaused) {
+                            showStatus('Kit sales are currently paused', 'error');
+                        } else if (!kitConfig.active) {
+                            showStatus('Kit sales are not active', 'error');
+                        }
+                    }
                 }
                 
                 // Load additional info
@@ -1275,13 +1283,16 @@
             if (!kitPrice) return;
             
             // For FREE mint, always show "FREE"
-            const totalEth = ethers.utils.formatEther(kitPrice);
-            if (parseFloat(totalEth) === 0) {
-                document.getElementById('pricePerKit').textContent = 'FREE';
-            } else {
-                document.getElementById('pricePerKit').textContent = `${parseFloat(totalEth).toFixed(4)} ETH`;
-                // Update USD prices if available
-                updateUSDPrices();
+            const pricePerKitEl = document.getElementById('pricePerKit');
+            if (pricePerKitEl) {
+                const totalEth = ethers.utils.formatEther(kitPrice);
+                if (parseFloat(totalEth) === 0) {
+                    pricePerKitEl.textContent = 'FREE';
+                } else {
+                    pricePerKitEl.textContent = `${parseFloat(totalEth).toFixed(4)} ETH`;
+                    // Update USD prices if available
+                    updateUSDPrices();
+                }
             }
         }
                 
@@ -1341,49 +1352,82 @@
             }
             
             try {
+                console.log('🛒 Starting purchase process...');
+                console.log('👤 User address:', userAddress);
+                console.log('📦 Kit ID:', KIT_ID);
+                console.log('💰 Kit price:', ethers.utils.formatEther(kitPrice));
+                
                 const button = document.getElementById('purchaseBtn');
+                if (!button) {
+                    console.error('❌ Purchase button not found!');
+                    showStatus('Purchase button not found', 'error');
+                    return;
+                }
+                
                 button.disabled = true;
                 button.classList.add('btn-loading');
                 
                 // Validate purchase
                 showStatus('Validating purchase...', 'loading');
+                console.log('🔍 Validating purchase...');
                 const [canPurchase, errorMessage] = await kitSaleContract.userCanBuyKit(userAddress, KIT_ID, currentQuantity);
+                console.log('✅ Can purchase:', canPurchase);
+                console.log('📝 Error message:', errorMessage);
                 
                 if (!canPurchase) {
                     showStatus(`Cannot purchase: ${errorMessage}`, 'error');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
                     return;
                 }
                 
                 // Calculate total cost (kitPrice * quantity)
                 const totalCost = kitPrice.mul(currentQuantity);
+                console.log('💵 Total cost (wei):', totalCost.toString());
+                console.log('💵 Total cost (ETH):', ethers.utils.formatEther(totalCost));
                 
                 // For FREE mint, skip balance check if cost is 0
                 if (!totalCost.isZero()) {
                     // Check user balance
                     const balance = await provider.getBalance(userAddress);
+                    console.log('💰 User balance (wei):', balance.toString());
+                    console.log('💰 User balance (ETH):', ethers.utils.formatEther(balance));
                     if (balance.lt(totalCost)) {
                         showStatus('Insufficient ETH balance', 'error');
+                        button.disabled = false;
+                        button.classList.remove('btn-loading');
                         return;
                     }
                 }
                 
                 // Execute purchase (always 1 kit for FREE mint)
                 showStatus('Purchasing kit...', 'loading');
+                console.log('📤 Sending transaction...');
                 
                 const tx = await kitSaleContract.buyKit(KIT_ID, { value: totalCost });
+                console.log('📋 Transaction hash:', tx.hash);
                 
                 showStatus('Transaction submitted. Waiting for confirmation...', 'loading');
-                await tx.wait();
+                const receipt = await tx.wait();
+                console.log('✅ Transaction confirmed:', receipt.transactionHash);
                 
                 showStatus('🎉 Successfully purchased kit! Check your wallet for your new assets.', 'success');
                 
             } catch (error) {
-                console.error('Purchase error:', error);
+                console.error('❌ Purchase error:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    code: error.code,
+                    data: error.data,
+                    reason: error.reason
+                });
                 showStatus('Purchase failed: ' + parseError(error), 'error');
             } finally {
                 const button = document.getElementById('purchaseBtn');
-                button.disabled = false;
-                button.classList.remove('btn-loading');
+                if (button) {
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                }
             }
         }
 
