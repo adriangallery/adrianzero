@@ -952,28 +952,15 @@
             <div class="purchase-interface fade-in">
                 <h3 class="purchase-title">Mint FREE Kit</h3>
                 
-                    <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="changeQuantity(-1)" id="decreaseBtn">-</button>
-                    <div class="quantity-display" id="quantity">1</div>
-                    <button class="quantity-btn" onclick="changeQuantity(1)" id="increaseBtn">+</button>
-                    </div>
-
                 <div class="cost-breakdown">
                     <div class="cost-row">
-                        <span class="cost-label">Price per kit:</span>
-                        <span class="cost-value" id="pricePerKit">Loading...</span>
-                        <span class="usd-price" id="usdPrice">(Loading USD)</span>
+                        <span class="cost-label">Price:</span>
+                        <span class="cost-value total-cost" id="pricePerKit">Loading...</span>
                     </div>
-                    <div class="cost-row">
-                        <span class="cost-label">Quantity:</span>
-                        <span class="cost-value" id="quantityDisplay">1</span>
+                    <div class="cost-row" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.2);">
+                        <span class="cost-label" style="font-size: 1.1rem; color: #888;">Limit: 1 kit per wallet</span>
                     </div>
-                    <div class="cost-row">
-                        <span class="cost-label">Total Cost:</span>
-                        <span class="cost-value total-cost" id="totalCost">Loading...</span>
-                        <span class="usd-price" id="totalUsdPrice">(Loading USD)</span>
                 </div>
-            </div>
 
                 <!-- Wallet Connection -->
                 <div class="wallet-section">
@@ -1057,10 +1044,9 @@
         let signer;
         let userAddress;
         let kitSaleContract;
-        let currentQuantity = 1;
+        let currentQuantity = 1; // Always 1 for FREE kit (limited to 1 per wallet)
         let kitPrice = ethers.utils.parseEther("0");
         let adrianTokenAmount = ethers.utils.parseEther("0");
-        let maxKitsPerTransaction = 10;
         let ethPriceUSD = 0;
 
 
@@ -1214,13 +1200,12 @@
                 
                 kitPrice = kitConfig.priceInETH;
                 adrianTokenAmount = kitConfig.adrianTokenAmount;
-                maxKitsPerTransaction = await kitSaleContract.maxKitsPerTransaction();
                 
                 console.log('💰 Kit price (wei):', kitPrice.toString());
                 console.log('💰 Kit price (ETH):', ethers.utils.formatEther(kitPrice));
                 console.log('🪙 Adrian amount (wei):', adrianTokenAmount.toString());
                 console.log('🪙 Adrian amount (tokens):', ethers.utils.formatEther(adrianTokenAmount));
-                console.log('📦 Max kits per transaction:', maxKitsPerTransaction.toString());
+                console.log('📦 FREE kit: Limited to 1 per wallet');
                 
                 // Update UI with kit info
                 const priceEth = ethers.utils.formatEther(kitPrice);
@@ -1233,8 +1218,11 @@
                 } else {
                     document.getElementById('pricePerKit').textContent = `${parseFloat(priceEth).toFixed(4)} ETH`;
                 }
-                document.getElementById('adrianTokenAmount').textContent = '100 $ADRIAN';
-                document.getElementById('tokenPreviewLabel').textContent = '100 $ADRIAN';
+                // Update token preview label if element exists
+                const tokenPreviewLabel = document.getElementById('tokenPreviewLabel');
+                if (tokenPreviewLabel) {
+                    tokenPreviewLabel.textContent = '100 $ADRIAN';
+                }
                 
                 updateTotalCost();
                 
@@ -1283,32 +1271,19 @@
             }
         }
 
-        function changeQuantity(delta) {
-            const newQuantity = currentQuantity + delta;
-            if (newQuantity >= 1 && newQuantity <= maxKitsPerTransaction) {
-                currentQuantity = newQuantity;
-                document.getElementById('quantity').textContent = currentQuantity;
-                document.getElementById('quantityDisplay').textContent = currentQuantity;
-                updateTotalCost();
-            }
-        }
-
         function updateTotalCost() {
             if (!kitPrice) return;
             
-            const totalWei = kitPrice.mul(currentQuantity);
-            const totalEth = ethers.utils.formatEther(totalWei);
-            
-            // For FREE mint, show "FREE" instead of price
+            // For FREE mint, always show "FREE"
+            const totalEth = ethers.utils.formatEther(kitPrice);
             if (parseFloat(totalEth) === 0) {
-                document.getElementById('totalCost').textContent = 'FREE';
-                document.getElementById('totalUsdPrice').textContent = '';
+                document.getElementById('pricePerKit').textContent = 'FREE';
             } else {
-                document.getElementById('totalCost').textContent = `${parseFloat(totalEth).toFixed(4)} ETH`;
+                document.getElementById('pricePerKit').textContent = `${parseFloat(totalEth).toFixed(4)} ETH`;
                 // Update USD prices if available
                 updateUSDPrices();
             }
-                }
+        }
                 
         // Fetch ETH price from CoinGecko API
         async function fetchETHPrice() {
@@ -1342,20 +1317,18 @@
             }
                 }
                 
-        // Update USD prices display
+        // Update USD prices display (not needed for FREE mint, but kept for consistency)
         function updateUSDPrices() {
             if (ethPriceUSD > 0 && kitPrice) {
                 // Calculate kit price in USD
                 const kitPriceEth = parseFloat(ethers.utils.formatEther(kitPrice));
                 const kitPriceUSD = kitPriceEth * ethPriceUSD;
                 
-                // Calculate total price in USD
-                const totalPriceEth = parseFloat(ethers.utils.formatEther(kitPrice.mul(currentQuantity)));
-                const totalPriceUSD = totalPriceEth * ethPriceUSD;
-                
-                // Update displays
-                document.getElementById('usdPrice').textContent = `($${kitPriceUSD.toFixed(2)} USD)`;
-                document.getElementById('totalUsdPrice').textContent = `($${totalPriceUSD.toFixed(2)} USD)`;
+                // Update display if element exists
+                const usdPriceEl = document.getElementById('usdPrice');
+                if (usdPriceEl) {
+                    usdPriceEl.textContent = `($${kitPriceUSD.toFixed(2)} USD)`;
+                }
             }
         }
 
@@ -1394,20 +1367,15 @@
                     }
                 }
                 
-                // Execute purchase
-                showStatus(`Purchasing ${currentQuantity} kit(s)...`, 'loading');
+                // Execute purchase (always 1 kit for FREE mint)
+                showStatus('Purchasing kit...', 'loading');
                 
-                let tx;
-                if (currentQuantity === 1) {
-                    tx = await kitSaleContract.buyKit(KIT_ID, { value: totalCost });
-                } else {
-                    tx = await kitSaleContract.buyMultipleKits(KIT_ID, currentQuantity, { value: totalCost });
-                }
+                const tx = await kitSaleContract.buyKit(KIT_ID, { value: totalCost });
                 
                 showStatus('Transaction submitted. Waiting for confirmation...', 'loading');
                 await tx.wait();
                 
-                showStatus(`🎉 Successfully purchased ${currentQuantity} kit(s)! Check your wallet for your new assets.`, 'success');
+                showStatus('🎉 Successfully purchased kit! Check your wallet for your new assets.', 'success');
                 
             } catch (error) {
                 console.error('Purchase error:', error);
