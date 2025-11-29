@@ -1419,12 +1419,28 @@
                 }
                 
                 const totalCost = paidKitPrice.mul(paidCurrentQuantity);
-                    const balance = await provider.getBalance(userAddress);
-                    if (balance.lt(totalCost)) {
-                    showStatus('Insufficient ETH balance', 'error', 'paid');
-                        button.disabled = false;
-                        button.classList.remove('btn-loading');
-                        return;
+                
+                // Ensure provider is available
+                if (!provider) {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                }
+                
+                const balance = await provider.getBalance(userAddress);
+                console.log('ETH Balance check:', {
+                    balance: balance.toString(),
+                    balanceEth: ethers.utils.formatEther(balance),
+                    totalCost: totalCost.toString(),
+                    totalCostEth: ethers.utils.formatEther(totalCost),
+                    comparison: balance.lt(totalCost)
+                });
+                
+                if (balance.lt(totalCost)) {
+                    const balanceEth = parseFloat(ethers.utils.formatEther(balance));
+                    const costEth = parseFloat(ethers.utils.formatEther(totalCost));
+                    showStatus(`Insufficient ETH balance. You have ${balanceEth.toFixed(4)} ETH, need ${costEth.toFixed(4)} ETH`, 'error', 'paid');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                    return;
                 }
                 
                 showStatus(`Purchasing ${paidCurrentQuantity} kit(s)...`, 'loading', 'paid');
