@@ -962,6 +962,7 @@
         let batchMaxSupply = 0;
         let batchMinted = 0;
         let batchMaxPerWallet = 50;
+        let batchInfo = null; // Store batch info for validation
         
         // Network status
         let networkIssues = false;
@@ -1151,7 +1152,7 @@
                 await new Promise(resolve => setTimeout(resolve, 800));
                 
                 // Use getBatchInfo(BATCH_ID) directly since getCurrentBatchInfo may not exist
-                const batchInfo = await batchContract.getBatchInfo(BATCH_ID);
+                batchInfo = await batchContract.getBatchInfo(BATCH_ID);
                 batchPrice = batchInfo.price;
                 batchMaxSupply = batchInfo.maxSupply.toNumber();
                 batchMinted = batchInfo.minted.toNumber();
@@ -1332,7 +1333,58 @@
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
                 
-                // Step 2: Process the mint (button still disabled from start)
+                // Step 2: Validate mint conditions before attempting
+                showStatus('adrianZero', 'Validating mint conditions...', 'loading');
+                
+                // Refresh batch info to get latest state
+                await loadBatchInfo();
+                
+                // Check if batch is paused
+                const isPaused = await batchContract.batchMintPaused();
+                if (isPaused) {
+                    showStatus('adrianZero', 'Batch minting is currently paused', 'error');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                    return;
+                }
+                
+                // Check if batch is active
+                if (!batchInfo || !batchInfo.active) {
+                    showStatus('adrianZero', 'Batch is not active', 'error');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                    return;
+                }
+                
+                // Check supply
+                if (batchMinted + currentQuantity > batchMaxSupply) {
+                    showStatus('adrianZero', `Insufficient supply. Only ${batchMaxSupply - batchMinted} available.`, 'error');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                    return;
+                }
+                
+                // Check wallet limit
+                const userMints = await batchContract.mintedPerWalletPerBatch(BATCH_ID, userAddress);
+                const userMintsNum = userMints.toNumber();
+                if (userMintsNum + currentQuantity > batchMaxPerWallet) {
+                    showStatus('adrianZero', `Exceeds wallet limit. You can mint ${batchMaxPerWallet - userMintsNum} more.`, 'error');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                    return;
+                }
+                
+                // Verify allowance again after refresh
+                const currentAllowance = await adrianToken.allowance(userAddress, BATCH_CONTRACT);
+                const currentAllowanceEther = parseFloat(ethers.utils.formatEther(currentAllowance));
+                if (currentAllowanceEther < totalCostEther) {
+                    showStatus('adrianZero', 'Insufficient allowance. Please try again.', 'error');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                    return;
+                }
+                
+                // Step 3: Process the mint (button still disabled from start)
                 showStatus('adrianZero', `Minting ${currentQuantity} SamuraiZERO NFT(s)... Please confirm in MetaMask.`, 'loading');
                 
                 // Small delay before mint transaction
