@@ -3,13 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdrianLAB Kit Sale - Get Everything in One Purchase</title>
+    <title>Choose Your ZERO - FREE vs Premium</title>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <style>
+        @font-face {
+            font-family: 'ADRIAN ZERO';
+            src: url('components/fonts/ADRIAN_ZERO.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        @font-face {
+            font-family: 'ADRIAN';
+            src: url('components/fonts/ADRIAN-Regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -46,7 +60,7 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 80px 20px 20px 20px;
+            padding: 40px 20px 40px 20px;
             position: relative;
             background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
         }
@@ -67,7 +81,8 @@
         }
 
         .hero h1 {
-            font-size: 4rem;
+            font-family: 'ADRIAN ZERO', 'VT323', monospace;
+            font-size: 5rem;
             margin-bottom: 20px;
             background: linear-gradient(45deg, #00ff00, #00ccff, #ff0088);
             -webkit-background-clip: text;
@@ -87,22 +102,312 @@
         }
 
         .hero .subtitle {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: #cccccc;
             margin-bottom: 30px;
-            max-width: 600px;
+            max-width: 800px;
         }
 
         .hero .description {
             font-size: 1.4rem;
             color: #888888;
             margin-bottom: 20px;
-            max-width: 800px;
+            max-width: 900px;
         }
 
-        /* Wallet Connection */
+        /* Comparison Section */
+        .comparison-section {
+            padding: 60px 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .comparison-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        /* Mobile Switch */
+        .kit-switch {
+            display: none;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .switch-container {
+            display: inline-flex;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ff00;
+            border-radius: 50px;
+            padding: 5px;
+            gap: 5px;
+        }
+
+        .switch-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            background: transparent;
+            color: #888;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .switch-btn.active {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Comparison Grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .kit-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #333;
+            border-radius: 25px;
+            padding: 40px;
+            position: relative;
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+
+        .kit-card.free-kit {
+            border-color: #00ff00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+        }
+
+        .kit-card.paid-kit {
+            border-color: #ffaa00;
+            box-shadow: 0 0 30px rgba(255, 170, 0, 0.2);
+        }
+
+        .kit-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 255, 0, 0.4);
+        }
+
+        .kit-card.paid-kit:hover {
+            box-shadow: 0 20px 60px rgba(255, 170, 0, 0.4);
+        }
+
+        .kit-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: 'VT323', monospace;
+        }
+
+        .kit-badge.free {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+        }
+
+        .kit-badge.premium {
+            background: linear-gradient(45deg, #ffaa00, #ff8800);
+            color: #000;
+        }
+
+        .kit-title {
+            font-family: 'ADRIAN ZERO', 'VT323', monospace;
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .kit-card.free-kit .kit-title {
+            color: #00ff00;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .kit-card.paid-kit .kit-title {
+            color: #ffaa00;
+            text-shadow: 0 0 20px rgba(255, 170, 0, 0.5);
+        }
+
+        .kit-subtitle {
+            font-size: 1.3rem;
+            color: #888;
+            text-align: center;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .kit-features {
+            margin: 30px 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .feature-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+
+        .kit-contents-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .content-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .content-item:hover {
+            border-color: #00ff00;
+            transform: scale(1.05);
+        }
+
+        .content-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 2px solid #00ff00;
+        }
+
+        .content-label {
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        .kit-price {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+        }
+
+        .price-amount {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .kit-card.free-kit .price-amount {
+            color: #00ff00;
+        }
+
+        .kit-card.paid-kit .price-amount {
+            color: #ffaa00;
+        }
+
+        .price-usd {
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        .kit-limit {
+            text-align: center;
+            font-size: 1rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .mint-btn {
+            width: 100%;
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .mint-btn.free {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
+        }
+
+        .mint-btn.free:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
+        }
+
+        .mint-btn.premium {
+            background: linear-gradient(45deg, #ffaa00, #ff8800);
+            color: #000;
+            box-shadow: 0 10px 30px rgba(255, 170, 0, 0.3);
+        }
+
+        .mint-btn.premium:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 170, 0, 0.5);
+        }
+
+        .mint-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-loading {
+            color: transparent !important;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            top: 50%;
+            left: 50%;
+            margin-left: -12px;
+            margin-top: -12px;
+            border: 3px solid transparent;
+            border-top: 3px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         .wallet-section {
-            margin-bottom: 25px;
+            margin: 30px 0;
             text-align: center;
         }
 
@@ -110,25 +415,20 @@
             background: linear-gradient(45deg, #00ff00, #00cc00);
             color: #000;
             border: none;
-            padding: 20px 40px;
-            font-size: 1.5rem;
+            padding: 15px 30px;
+            font-size: 1.3rem;
             border-radius: 15px;
             cursor: pointer;
             font-family: 'VT323', monospace;
             transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
-            text-decoration: none;
-            display: inline-block;
-            margin: 0;
             font-weight: bold;
         }
 
         .connect-btn:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
-            background: linear-gradient(45deg, #00ff44, #00ee00);
         }
-
 
         .wallet-info {
             display: none;
@@ -144,169 +444,284 @@
             font-family: monospace;
             font-size: 1.2rem;
             color: #00aaff;
-            margin-bottom: 10px;
         }
 
-        /* Kit Sale Section */
-        .kit-section {
-            min-height: auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        .status-message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
             text-align: center;
-            padding: 20px 20px 20px;
-            position: relative;
-            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
-            max-width: 1400px;
-            margin: 0 auto;
+            display: none;
         }
 
-        .kit-section::before {
-            content: '';
-            position: absolute;
+        .status-message.loading {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid rgba(255, 255, 0, 0.3);
+            color: #ffff00;
+        }
+
+        .status-message.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .status-message.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff4444;
+        }
+
+        .network-warning {
+            background: rgba(255, 136, 0, 0.1);
+            border: 1px solid rgba(255, 136, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 800px;
+            color: #ff8800;
+            text-align: center;
+            display: none;
+        }
+
+        .network-warning button {
+            background: rgba(255, 136, 0, 0.2);
+            border: 1px solid rgba(255, 136, 0, 0.5);
+            color: #ff8800;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: 600;
+            font-family: 'VT323', monospace;
+        }
+
+        /* Popup Modal */
+        .popup-overlay {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: 
-                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
-            background-size: 20px 20px;
-            opacity: 0.5;
-            z-index: -1;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: #00ff00;
-            filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.5));
-        }
-
-        .section-subtitle {
-            text-align: center;
-            font-size: 1.5rem;
-            color: #888;
-            margin-bottom: 60px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Kit Container */
-        .kit-container {
-            display: flex;
-            flex-direction: column;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
             align-items: center;
-            max-width: 1200px;
-            margin-bottom: 20px;
-            gap: 40px;
+            justify-content: center;
         }
 
-        .kit-contents {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            max-width: 800px;
-            width: 100%;
-        }
-
-        .kit-item {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #333;
-            border-radius: 20px;
-            padding: 25px 20px;
+        .popup-content {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%);
+            border: 3px solid #00ff00;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
             text-align: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
-            overflow: hidden;
-
+            box-shadow: 0 20px 60px rgba(0, 255, 0, 0.5);
+            animation: popupSlide 0.5s ease;
         }
 
-
-
-        .kit-item:hover {
-            border-color: #00ff00;
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 255, 0, 0.3);
-
+        @keyframes popupSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
-
-
-        .kit-item-image {
-            width: 180px;
-            height: 180px;
-            margin: 0 auto 15px;
-            border: 2px solid #00ff00;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0, 255, 0, 0.2);
-            transition: all 0.3s ease;
-
-        }
-
-        .kit-item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: all 0.3s ease;
-        }
-
-        .kit-item:hover .kit-item-image {
-            transform: scale(1.1);
-            box-shadow: 0 12px 30px rgba(0, 255, 0, 0.4);
-
-        }
-
-        .kit-item:hover .kit-item-image img {
-            transform: scale(1.05);
-        }
-
-
-
-        .kit-item-title {
-            font-size: 1.5rem;
-            color: #ffffff;
-            margin-bottom: 8px;
-            transition: all 0.3s ease;
-
-        }
-
-        .kit-item-desc {
-            font-size: 1.1rem;
-            color: #cccccc;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .kit-item-amount {
-            font-size: 1.3rem;
-            color: #00ff88;
-            font-weight: bold;
-            transition: all 0.3s ease;
-
-        }
-
-        .kit-item:hover .kit-item-title {
+        .popup-title {
+            font-family: 'ADRIAN ZERO', 'VT323', monospace;
+            font-size: 2.5rem;
             color: #00ff00;
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            transform: scale(1.05);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
         }
 
-        .kit-item:hover .kit-item-desc {
-            color: #ffffff;
+        .popup-message {
+            font-size: 1.3rem;
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.8;
         }
 
-        .kit-item:hover .kit-item-amount {
-            color: #00ffaa;
-            text-shadow: 0 0 15px rgba(0, 255, 170, 0.6);
+        .popup-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .popup-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .popup-btn.primary {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
+        }
+
+        .popup-btn.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.5);
+        }
+
+        .popup-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #00ff00;
+            border: 2px solid #00ff00;
+        }
+
+        .popup-btn.secondary:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #00ff00;
+            font-size: 2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .popup-close:hover {
+            background: rgba(0, 255, 0, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .cross-sell {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid rgba(255, 170, 0, 0.3);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .cross-sell.free {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: rgba(0, 255, 0, 0.3);
+        }
+
+        .cross-sell-title {
+            font-size: 1.3rem;
+            color: #ffaa00;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .cross-sell.free .cross-sell-title {
+            color: #00ff00;
+        }
+
+        .cross-sell-text {
+            font-size: 1.1rem;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+
+        .cross-sell-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #ffaa00, #ff8800);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: 'VT323', monospace;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .cross-sell.free .cross-sell-btn {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+        }
+
+        .cross-sell-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 170, 0, 0.4);
+        }
+
+        .cross-sell.free .cross-sell-btn:hover {
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.4);
+        }
+
+        /* Quantity Controls for Paid Kit */
+        .quantity-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+                gap: 20px;
+            margin: 20px 0;
+        }
+
+        .quantity-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 170, 0, 0.3);
+            background: rgba(255, 170, 0, 0.1);
+            color: #ffaa00;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'VT323', monospace;
+        }
+
+        .quantity-btn:hover:not(:disabled) {
+            background: rgba(255, 170, 0, 0.2);
+            border-color: rgba(255, 170, 0, 0.5);
             transform: scale(1.1);
         }
 
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
+        .quantity-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffaa00;
+            min-width: 60px;
+            text-align: center;
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid rgba(255, 170, 0, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+        }
 
         /* Menu Styles */
         #menu-container {
@@ -350,17 +765,6 @@
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
 
-        /* Adjust first section to account for fixed menu */
-        .hero {
-            padding-top: 80px;
-        }
-
-        /* Menu always collapsed - no responsive adjustments needed */
-        #menu-container .navbar-nav .nav-link {
-            font-size: 1rem;
-        }
-
-        /* Bootstrap collapse functionality */
         #menu-container .navbar-collapse {
             display: none;
         }
@@ -369,7 +773,6 @@
             display: block;
         }
 
-        /* Dropdown styles */
         #menu-container .dropdown-menu {
             background: rgba(0, 0, 0, 0.95) !important;
             border: 2px solid #00ff00 !important;
@@ -391,21 +794,6 @@
             color: #ffffff !important;
         }
 
-        #menu-container .dropdown-toggle {
-            cursor: pointer !important;
-        }
-
-        #menu-container .dropdown-toggle::after {
-            margin-left: 8px;
-        }
-
-        /* Ensure dropdown is clickable */
-        #menu-container .nav-item.dropdown {
-            position: relative;
-            z-index: 1050;
-        }
-
-        /* Mobile menu styles */
         @media (max-width: 991.98px) {
             #menu-container .navbar-collapse {
                 position: absolute;
@@ -417,353 +805,58 @@
                 border-top: 1px solid #00ff00;
                 padding: 1rem;
             }
-        }
 
-        /* Purchase Interface */
-        .purchase-interface {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid #00ff00;
-            border-radius: 25px;
-            padding: 40px;
-            width: 100%;
-            max-width: 800px;
-            box-shadow: 0 20px 40px rgba(0, 255, 0, 0.2);
-        }
-
-        .purchase-title {
-            font-size: 2.2rem;
-            color: #00ff00;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        .quantity-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .quantity-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 2px solid rgba(0, 255, 136, 0.3);
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
-            font-size: 1.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'VT323', monospace;
-        }
-
-        .quantity-btn:hover {
-            background: rgba(0, 255, 136, 0.2);
-            border-color: rgba(0, 255, 136, 0.5);
-            transform: scale(1.1);
-        }
-
-        .quantity-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .quantity-display {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #00ff88;
-            min-width: 60px;
-            text-align: center;
-            background: rgba(0, 255, 136, 0.1);
-            border: 2px solid rgba(0, 255, 136, 0.3);
-            border-radius: 12px;
-            padding: 10px;
-        }
-
-        .cost-breakdown {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-
-        .cost-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-        }
-
-        .cost-row:last-child {
-            margin-bottom: 0;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
-
-        .cost-label {
-            color: #cccccc;
-        }
-
-        .cost-value {
-            color: #00aaff;
-            font-weight: bold;
-        }
-
-        .total-cost {
-            color: #00ff88 !important;
-        }
-
-        .usd-price {
-            color: #888888;
-            font-size: 1.5rem;
-            margin-left: 8px;
-            font-style: italic;
-        }
-
-        .purchase-btn {
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 15px;
-            font-size: 1.4rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'VT323', monospace;
-            margin-bottom: 15px;
-            position: relative;
-            background: linear-gradient(45deg, #00ff88, #00aaff);
-            color: #000;
-        }
-
-        .purchase-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(0, 255, 136, 0.4);
-        }
-
-        .purchase-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn-loading {
-            color: transparent !important;
-        }
-
-        .btn-loading::after {
-            content: '';
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            top: 50%;
-            left: 50%;
-            margin-left: -12px;
-            margin-top: -12px;
-            border: 3px solid transparent;
-            border-top: 3px solid currentColor;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Status messages */
-        .status-message {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            text-align: center;
-            display: none;
-        }
-
-        .status-message.loading {
-            background: rgba(255, 255, 0, 0.1);
-            border: 1px solid rgba(255, 255, 0, 0.3);
-            color: #ffff00;
-        }
-
-        .status-message.success {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid rgba(0, 255, 0, 0.3);
-            color: #00ff00;
-        }
-
-        .status-message.error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            color: #ff4444;
-        }
-
-        /* Kit Preview */
-        .kit-preview {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .preview-title {
-            font-size: 1.8rem;
-            color: #00ff00;
-            margin-bottom: 15px;
-        }
-
-        .preview-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .preview-item {
-            text-align: center;
-        }
-
-        .preview-image {
-            width: 80px;
-            height: 80px;
-            border: 2px solid #00ff00;
-            border-radius: 10px;
-            margin: 0 auto 10px;
-            overflow: hidden;
-        }
-
-        .preview-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .preview-label {
-            font-size: 1rem;
-            color: #cccccc;
-        }
-
-        /* Network warning */
-        .network-warning {
-            background: rgba(255, 136, 0, 0.1);
-            border: 1px solid rgba(255, 136, 0, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            color: #ff8800;
-            text-align: center;
-            display: none;
-        }
-
-        .network-warning button {
-            background: rgba(255, 136, 0, 0.2);
-            border: 1px solid rgba(255, 136, 0, 0.5);
-            color: #ff8800;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-left: 10px;
-            font-weight: 600;
-            font-family: 'VT323', monospace;
-        }
-
-        .network-warning button:hover {
-            background: rgba(255, 136, 0, 0.3);
-        }
-
-
-
-        /* Contract Info */
-        .contract-info {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 30px;
-            text-align: left;
-            }
-
-        .contract-info h4 {
-            color: #00ff00;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-            }
-
-        .contract-detail {
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-            }
-
-        .contract-detail strong {
-            color: #00aaff;
-            }
-
-        .contract-address {
-            font-family: monospace;
-            color: #cccccc;
-            word-break: break-all;
-            }
-
-        /* Responsive */
-        @media (max-width: 992px) {
-            .kit-contents {
+            .comparison-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
-                max-width: 500px;
             }
 
-            .purchase-interface {
-                max-width: 500px;
-                margin: 0 auto;
+            .kit-switch {
+                display: block;
+            }
+
+            .kit-card {
+                display: none !important;
+            }
+
+            .kit-card.active {
+                display: block !important;
             }
         }
 
         @media (max-width: 768px) {
-            .hero {
-                padding: 60px 20px 30px 20px;
-            }
-
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 3rem;
             }
 
-            .section-title {
-                font-size: 2.5rem;
+            .hero .subtitle {
+                font-size: 1.5rem;
             }
 
+            .kit-title {
+                font-size: 2rem;
+            }
 
-
-            .kit-contents {
-                gap: 20px;
-        }
-
-            .kit-item {
-                padding: 20px;
-        }
-
-            .kit-item-image {
-                width: 160px;
-                height: 160px;
-        }
-
-            .purchase-interface {
-                padding: 25px;
-        }
-
-            .preview-grid {
+            .kit-contents-grid {
                 grid-template-columns: 1fr;
-                gap: 15px;
-        }
+            }
+
+            .popup-content {
+                padding: 30px 20px;
+            }
+
+            .popup-title {
+                font-size: 2rem;
+            }
+
+            .popup-buttons {
+                flex-direction: column;
+            }
+
+            .popup-btn {
+                width: 100%;
+            }
         }
 
-        /* Fade in animations */
         .fade-in {
             opacity: 0;
             transform: translateY(30px);
@@ -780,7 +873,6 @@
     <!-- Include the menu -->
     <div id="menu-container"></div>
     <script>
-      // Load the menu
       fetch('components/menu.html')
         .then(response => response.text())
         .then(html => {
@@ -799,14 +891,13 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1>AdrianLAB Starter Kit</h1>
-        <p class="subtitle">Everything you need to begin your digital evolution</p>
+        <h1>Choose Your ZERO</h1>
+        <p class="subtitle">The Quirky FREE One or The Premium Experience?</p>
         <p class="description">
-            Get your AdrianZERO NFT, Floppy Disc with traits, and $ADRIAN tokens all in one purchase. 
-            Pay with ETH and receive everything instantly!
+            Pick your path! Go FREE with SubZERO (eyes a bit too close together, but hey, it's FREE!) 
+            or level up with AdrianZERO (normal eyes, full trait compatibility). Both are awesome, 
+            but one costs nothing and the other... well, it's worth it! 🚀
         </p>
-        
-
     </section>
 
     <!-- Network Warning -->
@@ -815,134 +906,179 @@
         <button onclick="switchToBase()">Switch Network</button>
     </div>
 
-
-
-    <!-- Kit Sale Section -->
-    <section class="kit-section">
-        <div class="kit-container">
-            <!-- Kit Contents -->
-            <div class="kit-contents">
-                <div class="kit-item fade-in">
-                    <div class="kit-item-image">
-                        <img src="https://adrianlab.vercel.app/api/render/1" alt="AdrianZERO NFT">
+    <!-- Comparison Section -->
+    <section class="comparison-section">
+        <!-- Mobile Switch -->
+        <div class="kit-switch">
+            <div class="switch-container">
+                <button class="switch-btn active" onclick="switchKit('free')">FREE Kit</button>
+                <button class="switch-btn" onclick="switchKit('paid')">Premium Kit</button>
             </div>
-                    <h3 class="kit-item-title">AdrianZERO NFT</h3>
-                    <p class="kit-item-desc">Base character NFT</p>
-                    <p class="kit-item-amount">1 NFT</p>
         </div>
         
-                <div class="kit-item fade-in">
-                    <div class="kit-item-image">
-                        <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif" alt="STARTER Floppy Disc">
-                    </div>
-                    <h3 class="kit-item-title">STARTER Floppy Disc</h3>
-                    <p class="kit-item-desc">Contains rare traits to customize</p>
-                    <p class="kit-item-amount">1 Disc</p>
-                </div>
+        <!-- Comparison Grid -->
+        <div class="comparison-grid">
+            <!-- FREE Kit Card -->
+            <div class="kit-card free-kit fade-in" id="freeKitCard">
+                <div class="kit-badge free">100% FREE</div>
+                <h2 class="kit-title">SubZERO</h2>
+                <p class="kit-subtitle">The Budget-Friendly Quirky One</p>
                 
-                <div class="kit-item fade-in">
-                    <div class="kit-item-image">
-                        <img src="components/images/ADRIAN_Coin_Back.gif" alt="$ADRIAN Tokens">
+                <div class="kit-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">👁️</span>
+                        <span>Eyes closer together (it's a feature, not a bug!)</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🚫</span>
+                        <span>No EYE traits (glasses won't fit, sorry!)</span>
                 </div>
-                    <h3 class="kit-item-title">$ADRIAN Tokens</h3>
-                    <p class="kit-item-desc">Ecosystem currency</p>
-                    <p class="kit-item-amount" id="adrianTokenAmount">Loading...</p>
+                    <div class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span>Perfect for trying TraitLAB</span>
+                </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">💰</span>
+                        <span>100 $ADRIAN tokens included</span>
             </div>
                 </div>
                 
-            <!-- Purchase Interface -->
-            <div class="purchase-interface fade-in">
-                <h3 class="purchase-title">Buy Kit</h3>
-                
-                    <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="changeQuantity(-1)" id="decreaseBtn">-</button>
-                    <div class="quantity-display" id="quantity">1</div>
-                    <button class="quantity-btn" onclick="changeQuantity(1)" id="increaseBtn">+</button>
+                <div class="kit-contents-grid">
+                    <div class="content-item">
+                        <img src="subzero/images/subzero.png" alt="SubZERO NFT">
+                        <div class="content-label">1 SubZERO NFT</div>
                     </div>
-
-                <div class="cost-breakdown">
-                    <div class="cost-row">
-                        <span class="cost-label">Price per kit:</span>
-                        <span class="cost-value" id="pricePerKit">Loading...</span>
-                        <span class="usd-price" id="usdPrice">(Loading USD)</span>
+                    <div class="content-item">
+                        <img src="subzero/images/bluecheck.png" alt="Blue-Check">
+                        <div class="content-label">1 Blue-Check Trait</div>
                     </div>
-                    <div class="cost-row">
-                        <span class="cost-label">Quantity:</span>
-                        <span class="cost-value" id="quantityDisplay">1</span>
+                    <div class="content-item">
+                        <img src="subzero/images/adriancoin.gif" alt="$ADRIAN">
+                        <div class="content-label">100 $ADRIAN</div>
                     </div>
-                    <div class="cost-row">
-                        <span class="cost-label">Total Cost:</span>
-                        <span class="cost-value total-cost" id="totalCost">Loading...</span>
-                        <span class="usd-price" id="totalUsdPrice">(Loading USD)</span>
                 </div>
-            </div>
 
-                <!-- Wallet Connection -->
-                <div class="wallet-section">
-                    <button id="connectBtn" class="connect-btn">Connect Wallet</button>
-                    <div id="walletInfo" class="wallet-info">
-                        <div class="wallet-address" id="walletAddress"></div>
+                <div class="kit-price">
+                    <div class="price-amount" id="freePrice">FREE</div>
+                    <div class="kit-limit">Limit: 1 per wallet</div>
+                </div>
+
+                <div class="wallet-section" id="freeWalletSection">
+                    <button id="connectBtnFree" class="connect-btn">Connect Wallet</button>
+                    <div id="walletInfoFree" class="wallet-info">
+                        <div class="wallet-address" id="walletAddressFree"></div>
                     </div>
                 </div>
                 
-                <button class="purchase-btn" id="purchaseBtn" onclick="buyKit()" disabled>
-                    Buy Starter Kit
+                <button class="mint-btn free" id="mintBtnFree" onclick="buyFreeKit()" disabled>
+                    Mint FREE Kit
                 </button>
                 
+                <div class="status-message" id="statusMessageFree"></div>
 
-
-                <div class="status-message" id="statusMessage"></div>
-
-                <!-- Contract Info -->
-                <div class="contract-info" style="display: none;" id="contractInfo">
-                    <h4>Contract Information</h4>
-                    <div class="contract-detail">
-                        <strong>Kit Price:</strong> <span id="kitPriceInfo">Loading...</span>
-                    </div>
-                    <div class="contract-detail">
-                        <strong>Status:</strong> <span id="kitStatusInfo">Loading...</span>
+                <div class="cross-sell free" id="freeCrossSell" style="display: none;">
+                    <div class="cross-sell-title">Want Normal Eyes?</div>
+                    <div class="cross-sell-text">Get the full AdrianZERO experience with proper eye spacing and full trait compatibility!</div>
+                    <button class="cross-sell-btn" onclick="scrollToPaid()">Check Premium Kit</button>
                 </div>
-                    <div class="contract-detail">
-                        <strong>Contract:</strong> <span id="contractAddress" class="contract-address">0x20700BE61f2b94E08B16ebD82eE0BA46189B7305</span>
+            </div>
+
+            <!-- PAID Kit Card -->
+            <div class="kit-card paid-kit fade-in" id="paidKitCard">
+                <div class="kit-badge premium">PREMIUM</div>
+                <h2 class="kit-title">AdrianZERO</h2>
+                <p class="kit-subtitle">The Complete Experience</p>
+                
+                <div class="kit-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">👀</span>
+                        <span>Normal eyes (glasses will fit perfectly!)</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✨</span>
+                        <span>Full trait compatibility (all EYE traits work!)</span>
+                </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">💎</span>
+                        <span>STARTER Floppy Disc included</span>
+            </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🪙</span>
+                        <span>More $ADRIAN tokens</span>
             </div>
         </div>
-            </div>
-        </div>
 
-        <!-- Kit Preview -->
-        <div class="kit-preview fade-in">
-            <h3 class="preview-title">What you'll receive:</h3>
-            <div class="preview-grid">
-                <div class="preview-item">
-                    <div class="preview-image">
-                        <img src="https://adrianlab.vercel.app/api/render/1" alt="NFT">
+                <div class="kit-contents-grid">
+                    <div class="content-item">
+                        <img src="https://adrianlab.vercel.app/api/render/1" alt="AdrianZERO NFT">
+                        <div class="content-label">1 AdrianZERO NFT</div>
             </div>
-                    <div class="preview-label">1 AdrianZERO</div>
+                    <div class="content-item">
+                        <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif" alt="Floppy Disc">
+                        <div class="content-label">1 STARTER Floppy</div>
             </div>
-                <div class="preview-item">
-                    <div class="preview-image">
-                        <img src="https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif" alt="Disc">
+                    <div class="content-item">
+                        <img src="components/images/ADRIAN_Coin_Back.gif" alt="$ADRIAN">
+                        <div class="content-label" id="paidTokenAmount">Loading...</div>
                     </div>
-                    <div class="preview-label">1 STARTER Floppy</div>
                 </div>
-                <div class="preview-item">
-                    <div class="preview-image">
-                        <img src="https://adrianlab.vercel.app/api/render/148" alt="Tokens">
+
+                <div class="quantity-controls" id="paidQuantityControls">
+                    <button class="quantity-btn" onclick="changePaidQuantity(-1)" id="decreasePaidBtn">-</button>
+                    <div class="quantity-display" id="paidQuantity">1</div>
+                    <button class="quantity-btn" onclick="changePaidQuantity(1)" id="increasePaidBtn">+</button>
                     </div>
-                    <div class="preview-label" id="tokenPreviewLabel">Loading...</div>
+
+                <div class="kit-price">
+                    <div class="price-amount" id="paidPrice">Loading...</div>
+                    <div class="price-usd" id="paidPriceUSD"></div>
+                </div>
+
+                <div class="wallet-section" id="paidWalletSection">
+                    <button id="connectBtnPaid" class="connect-btn">Connect Wallet</button>
+                    <div id="walletInfoPaid" class="wallet-info">
+                        <div class="wallet-address" id="walletAddressPaid"></div>
+                    </div>
+                </div>
+
+                <button class="mint-btn premium" id="mintBtnPaid" onclick="buyPaidKit()" disabled>
+                    Buy Premium Kit
+                </button>
+
+                <div class="status-message" id="statusMessagePaid"></div>
+
+                <div class="cross-sell" id="paidCrossSell" style="display: none;">
+                    <div class="cross-sell-title">Want a FREE One Too?</div>
+                    <div class="cross-sell-text">Complete your collection with the quirky SubZERO! It's FREE and has eyes that are... unique!</div>
+                    <button class="cross-sell-btn free" onclick="scrollToFree()">Get FREE Kit</button>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Success Popup -->
+    <div class="popup-overlay" id="successPopup">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closePopup()">&times;</button>
+            <h2 class="popup-title" id="popupTitle">🎉 Mint Successful!</h2>
+            <p class="popup-message" id="popupMessage">
+                Awesome! Your ZERO is ready. Now let's make it even cooler!
+            </p>
+            <div class="popup-buttons">
+                <a href="traitlab" class="popup-btn primary">Customize in TraitLAB</a>
+                <a href="shop" class="popup-btn secondary">Shop for More Traits</a>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Contract configuration
         const KIT_SALE_CONTRACT = "0x20700BE61f2b94E08B16ebD82eE0BA46189B7305";
-        const KIT_ID = 2; // Paid kit with ETH
+        const FREE_KIT_ID = 3;
+        const PAID_KIT_ID = 2;
         const BASE_CHAIN_ID = 8453;
         const BASE_CHAIN_ID_HEX = "0x2105";
 
-        // Contract ABI - New contract with kitId parameter
         const KIT_SALE_ABI = [
             "function buyKit(uint256 kitId) payable",
             "function buyMultipleKits(uint256 kitId, uint256 quantity) payable",
@@ -950,8 +1086,7 @@
             "function userCanBuyKit(address user, uint256 kitId, uint256 quantity) view returns (bool, string)",
             "function kitSalePaused() view returns (bool)",
             "function maxKitsPerTransaction() view returns (uint256)",
-            "function getAdrianTokenBalance() view returns (uint256)",
-            "function getSystemStats() view returns (tuple(uint256 totalBatchMinted, uint256 totalKitsSold, uint256 totalETHReceived, uint256 adrianTokenBalance, bool batchPaused, bool kitPaused, address treasuryWallet, uint256 totalMintedTokens))"
+            "function getAdrianTokenBalance() view returns (uint256)"
         ];
 
         // Global state
@@ -959,21 +1094,64 @@
         let signer;
         let userAddress;
         let kitSaleContract;
-        let currentQuantity = 1;
-        let kitPrice = ethers.utils.parseEther("0");
-        let adrianTokenAmount = ethers.utils.parseEther("0");
+        
+        // FREE kit state
+        let freeKitPrice = ethers.utils.parseEther("0");
+        let freeKitAdrianAmount = ethers.utils.parseEther("0");
+        
+        // PAID kit state
+        let paidKitPrice = ethers.utils.parseEther("0");
+        let paidKitAdrianAmount = ethers.utils.parseEther("0");
+        let paidCurrentQuantity = 1;
         let maxKitsPerTransaction = 10;
         let ethPriceUSD = 0;
 
-
-        // Initialize on page load
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             checkConnection();
-            document.getElementById('connectBtn').addEventListener('click', connectWallet);
+            document.getElementById('connectBtnFree').addEventListener('click', connectWallet);
+            document.getElementById('connectBtnPaid').addEventListener('click', connectWallet);
             setupFadeInAnimations();
-            fetchETHPrice(); // Get ETH price on page load
-            
+            fetchETHPrice();
         });
+
+        // Mobile switch functionality
+        function switchKit(type) {
+            const buttons = document.querySelectorAll('.switch-btn');
+            const freeCard = document.getElementById('freeKitCard');
+            const paidCard = document.getElementById('paidKitCard');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (type === 'free') {
+                buttons[0].classList.add('active');
+                freeCard.classList.add('active');
+                paidCard.classList.remove('active');
+            } else {
+                buttons[1].classList.add('active');
+                paidCard.classList.add('active');
+                freeCard.classList.remove('active');
+            }
+        }
+
+        // Initialize mobile view
+        if (window.innerWidth <= 991) {
+            switchKit('free');
+        }
+
+        function scrollToFree() {
+            if (window.innerWidth <= 991) {
+                switchKit('free');
+            }
+            document.getElementById('freeKitCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function scrollToPaid() {
+            if (window.innerWidth <= 991) {
+                switchKit('paid');
+            }
+            document.getElementById('paidKitCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
 
         async function checkConnection() {
             if (window.ethereum) {
@@ -988,68 +1166,44 @@
             }
         }
 
-
-        // Update wallet UI
-        function updateWalletUI() {
-            document.getElementById('connectBtn').style.display = 'none';
-            document.getElementById('walletInfo').style.display = 'block';
-            document.getElementById('walletAddress').textContent = 
-                `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-        }
-
-        // Reset wallet UI
-        function resetWalletUI() {
-            document.getElementById('connectBtn').style.display = 'inline-block';
-            document.getElementById('walletInfo').style.display = 'none';
-            userAddress = null;
-            provider = null;
-            signer = null;
-            kitSaleContract = null;
-        }
-
-        // ===== ORIGINAL WALLET FUNCTIONS =====
-
         async function connectWallet() {
             try {
-                console.log('🔗 Connecting wallet...');
-                console.log('📱 Device:', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
-                
                 if (!window.ethereum) {
-                    showStatus('Please install MetaMask!', 'error');
+                    showStatus('Please install MetaMask!', 'error', 'both');
                     return;
                 }
 
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 userAddress = accounts[0];
-                console.log('👤 User address:', userAddress);
                 
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
                 
-                console.log('🔗 Provider created');
-                console.log('✍️ Signer created');
-                
-                // Check network
                 await ensureCorrectNetwork();
                 
-                // Initialize contract
-                console.log('📄 Contract address:', KIT_SALE_CONTRACT);
-                console.log('📋 Contract ABI length:', KIT_SALE_ABI.length);
                 kitSaleContract = new ethers.Contract(KIT_SALE_CONTRACT, KIT_SALE_ABI, signer);
-                console.log('✅ Contract initialized');
                 
-                // Update UI
                 updateWalletUI();
+                await loadFreeKitData();
+                await loadPaidKitData();
                 
-                // Load contract data
-                await loadContractData();
-                
-                showStatus('Wallet connected successfully!', 'success');
+                showStatus('Wallet connected successfully!', 'success', 'both');
                 
             } catch (error) {
                 console.error('Connection error:', error);
-                showStatus('Failed to connect wallet', 'error');
+                showStatus('Failed to connect wallet', 'error', 'both');
             }
+        }
+
+        function updateWalletUI() {
+            document.getElementById('connectBtnFree').style.display = 'none';
+            document.getElementById('connectBtnPaid').style.display = 'none';
+            document.getElementById('walletInfoFree').style.display = 'block';
+            document.getElementById('walletInfoPaid').style.display = 'block';
+            document.getElementById('walletAddressFree').textContent = 
+                `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+            document.getElementById('walletAddressPaid').textContent = 
+                `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
         }
 
         async function ensureCorrectNetwork() {
@@ -1073,11 +1227,7 @@
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: BASE_CHAIN_ID_HEX }]
                 });
-                
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-                
+                setTimeout(() => window.location.reload(), 1000);
             } catch (switchError) {
                 if (switchError.code === 4902) {
                     try {
@@ -1091,11 +1241,7 @@
                                 blockExplorerUrls: ['https://basescan.org']
                             }]
                         });
-                        
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                        
+                        setTimeout(() => window.location.reload(), 1000);
                     } catch (addError) {
                         console.error('Add network error:', addError);
                     }
@@ -1103,208 +1249,217 @@
             }
         }
 
-        async function loadContractData() {
+        async function loadFreeKitData() {
             try {
-                console.log('🔄 Loading contract data...');
-                console.log('📱 Device:', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
-                console.log('🌐 Network:', navigator.connection ? navigator.connection.effectiveType : 'Unknown');
+                const kitConfig = await kitSaleContract.getKitInfo(FREE_KIT_ID);
+                freeKitPrice = kitConfig.priceInETH;
+                freeKitAdrianAmount = kitConfig.adrianTokenAmount;
                 
-                // Load kit configuration using getKitInfo with kitId
-                console.log('📋 Fetching kit config for kitId:', KIT_ID);
-                const kitConfig = await kitSaleContract.getKitInfo(KIT_ID);
-                console.log('📊 Kit config received:', kitConfig);
+                const isPaused = await kitSaleContract.kitSalePaused();
+                const purchaseBtn = document.getElementById('mintBtnFree');
                 
-                kitPrice = kitConfig.priceInETH;
-                adrianTokenAmount = kitConfig.adrianTokenAmount;
+                if (purchaseBtn) {
+                    if (!isPaused && kitConfig.active) {
+                        purchaseBtn.disabled = false;
+                    } else {
+                        purchaseBtn.disabled = true;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading FREE kit data:', error);
+            }
+        }
+
+        async function loadPaidKitData() {
+            try {
+                const kitConfig = await kitSaleContract.getKitInfo(PAID_KIT_ID);
+                paidKitPrice = kitConfig.priceInETH;
+                paidKitAdrianAmount = kitConfig.adrianTokenAmount;
                 maxKitsPerTransaction = await kitSaleContract.maxKitsPerTransaction();
                 
-                console.log('💰 Kit price (wei):', kitPrice.toString());
-                console.log('💰 Kit price (ETH):', ethers.utils.formatEther(kitPrice));
-                console.log('🪙 Adrian amount (wei):', adrianTokenAmount.toString());
-                console.log('🪙 Adrian amount (tokens):', ethers.utils.formatEther(adrianTokenAmount));
-                console.log('📦 Max kits per transaction:', maxKitsPerTransaction.toString());
+                const priceEth = ethers.utils.formatEther(paidKitPrice);
+                const adrianAmount = ethers.utils.formatEther(paidKitAdrianAmount);
                 
-                // Update UI with kit info
-                const priceEth = ethers.utils.formatEther(kitPrice);
-                const adrianAmount = ethers.utils.formatEther(adrianTokenAmount);
+                document.getElementById('paidPrice').textContent = `${parseFloat(priceEth).toFixed(4)} ETH`;
+                document.getElementById('paidTokenAmount').textContent = `${parseInt(adrianAmount).toLocaleString()} $ADRIAN`;
                 
-                document.getElementById('pricePerKit').textContent = `${parseFloat(priceEth).toFixed(4)} ETH`;
-                document.getElementById('adrianTokenAmount').textContent = `${parseInt(adrianAmount).toLocaleString()} $ADRIAN`;
-                document.getElementById('tokenPreviewLabel').textContent = `${parseInt(adrianAmount).toLocaleString()} $ADRIAN`;
+                updatePaidTotalCost();
                 
-                updateTotalCost();
-                
-                // Check if contract is paused and kit is active
                 const isPaused = await kitSaleContract.kitSalePaused();
+                const purchaseBtn = document.getElementById('mintBtnPaid');
                 
-                // Enable purchase button if contract is not paused and kit is active
-                if (!isPaused && kitConfig.active) {
-                    document.getElementById('purchaseBtn').disabled = false;
-                } else {
-                    document.getElementById('purchaseBtn').disabled = true;
-                    if (isPaused) {
-                        showStatus('Kit sales are currently paused', 'error');
-                    } else if (!kitConfig.active) {
-                        showStatus('Kit sales are not active', 'error');
-        }
-                }
-                
-                // Load additional info
-                await loadContractInfo();
-                
+                if (purchaseBtn) {
+                    if (!isPaused && kitConfig.active) {
+                        purchaseBtn.disabled = false;
+                    } else {
+                        purchaseBtn.disabled = true;
+                        }
+                    }
             } catch (error) {
-                console.error('Error loading contract data:', error);
-                showStatus('Error loading contract data: ' + error.message, 'error');
+                console.error('Error loading PAID kit data:', error);
             }
         }
 
-        async function loadContractInfo() {
-            try {
-                const isPaused = await kitSaleContract.kitSalePaused();
-                const kitConfig = await kitSaleContract.getKitInfo(KIT_ID);
-                
-                document.getElementById('kitPriceInfo').textContent = 
-                    `${parseFloat(ethers.utils.formatEther(kitPrice)).toFixed(4)} ETH`;
-                document.getElementById('kitStatusInfo').textContent = 
-                    (!isPaused && kitConfig.active) ? 'Active' : 'Inactive';
-                
-                document.getElementById('contractInfo').style.display = 'block';
-                
-            } catch (error) {
-                console.error('Error loading contract info:', error);
-            }
-        }
-
-        function changeQuantity(delta) {
-            const newQuantity = currentQuantity + delta;
+        function changePaidQuantity(delta) {
+            const newQuantity = paidCurrentQuantity + delta;
             if (newQuantity >= 1 && newQuantity <= maxKitsPerTransaction) {
-                currentQuantity = newQuantity;
-                document.getElementById('quantity').textContent = currentQuantity;
-                document.getElementById('quantityDisplay').textContent = currentQuantity;
-                updateTotalCost();
+                paidCurrentQuantity = newQuantity;
+                document.getElementById('paidQuantity').textContent = paidCurrentQuantity;
+                updatePaidTotalCost();
             }
         }
 
-        function updateTotalCost() {
-            if (!kitPrice) return;
+        function updatePaidTotalCost() {
+            if (!paidKitPrice) return;
             
-            const totalWei = kitPrice.mul(currentQuantity);
+            const totalWei = paidKitPrice.mul(paidCurrentQuantity);
             const totalEth = ethers.utils.formatEther(totalWei);
             
-            document.getElementById('totalCost').textContent = `${parseFloat(totalEth).toFixed(4)} ETH`;
+            document.getElementById('paidPrice').textContent = `${parseFloat(totalEth).toFixed(4)} ETH`;
             
-            // Update USD prices if available
-            updateUSDPrices();
-                }
-                
-        // Fetch ETH price from CoinGecko API
+            if (ethPriceUSD > 0) {
+                const totalUSD = parseFloat(totalEth) * ethPriceUSD;
+                document.getElementById('paidPriceUSD').textContent = `($${totalUSD.toFixed(2)} USD)`;
+            }
+        }
+
         async function fetchETHPrice() {
             try {
-                console.log('💱 Fetching ETH price from CoinGecko...');
-                console.log('📱 Device:', /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop');
-                
                 const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
                 const data = await response.json();
-                console.log('💱 CoinGecko response:', data);
-                
                 if (data.ethereum && data.ethereum.usd) {
                     ethPriceUSD = data.ethereum.usd;
-                    console.log('💱 ETH price set to:', ethPriceUSD);
-                    updateUSDPrices();
+                    updatePaidTotalCost();
                 }
             } catch (error) {
                 console.error('Error fetching ETH price:', error);
-                // Fallback to Binance API
-                try {
-                    const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
-                    const data = await response.json();
-                    
-                    if (data.price) {
-                        ethPriceUSD = parseFloat(data.price);
-                        updateUSDPrices();
-                    }
-                } catch (fallbackError) {
-                    console.error('Error fetching ETH price from fallback:', fallbackError);
-                }
-            }
-                }
-                
-        // Update USD prices display
-        function updateUSDPrices() {
-            if (ethPriceUSD > 0 && kitPrice) {
-                // Calculate kit price in USD
-                const kitPriceEth = parseFloat(ethers.utils.formatEther(kitPrice));
-                const kitPriceUSD = kitPriceEth * ethPriceUSD;
-                
-                // Calculate total price in USD
-                const totalPriceEth = parseFloat(ethers.utils.formatEther(kitPrice.mul(currentQuantity)));
-                const totalPriceUSD = totalPriceEth * ethPriceUSD;
-                
-                // Update displays
-                document.getElementById('usdPrice').textContent = `($${kitPriceUSD.toFixed(2)} USD)`;
-                document.getElementById('totalUsdPrice').textContent = `($${totalPriceUSD.toFixed(2)} USD)`;
             }
         }
 
-
-
-        async function buyKit() {
+        async function buyFreeKit() {
             if (!userAddress || !kitSaleContract) {
-                showStatus('Connect wallet first!', 'error');
+                showStatus('Connect wallet first!', 'error', 'free');
                 return;
             }
             
             try {
-                const button = document.getElementById('purchaseBtn');
+                const button = document.getElementById('mintBtnFree');
                 button.disabled = true;
                 button.classList.add('btn-loading');
                 
-                // Validate purchase
-                showStatus('Validating purchase...', 'loading');
-                const [canPurchase, errorMessage] = await kitSaleContract.userCanBuyKit(userAddress, KIT_ID, currentQuantity);
+                showStatus('Validating purchase...', 'loading', 'free');
+                const [canPurchase, errorMessage] = await kitSaleContract.userCanBuyKit(userAddress, FREE_KIT_ID, 1);
                 
                 if (!canPurchase) {
-                    showStatus(`Cannot purchase: ${errorMessage}`, 'error');
+                    showStatus(`Cannot purchase: ${errorMessage}`, 'error', 'free');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
                     return;
                 }
                 
-                // Calculate total cost (kitPrice * quantity)
-                const totalCost = kitPrice.mul(currentQuantity);
+                showStatus('Purchasing kit...', 'loading', 'free');
+                const tx = await kitSaleContract.buyKit(FREE_KIT_ID, { value: freeKitPrice });
                 
-                // Check user balance
-                const balance = await provider.getBalance(userAddress);
-                if (balance.lt(totalCost)) {
-                    showStatus('Insufficient ETH balance', 'error');
-                    return;
-                }
-                
-                // Execute purchase
-                showStatus(`Purchasing ${currentQuantity} kit(s)...`, 'loading');
-                
-                let tx;
-                if (currentQuantity === 1) {
-                    tx = await kitSaleContract.buyKit(KIT_ID, { value: totalCost });
-                } else {
-                    tx = await kitSaleContract.buyMultipleKits(KIT_ID, currentQuantity, { value: totalCost });
-                }
-                
-                showStatus('Transaction submitted. Waiting for confirmation...', 'loading');
+                showStatus('Transaction submitted. Waiting for confirmation...', 'loading', 'free');
                 await tx.wait();
                 
-                showStatus(`🎉 Successfully purchased ${currentQuantity} kit(s)! Check your wallet for your new assets.`, 'success');
+                showStatus('🎉 Successfully minted!', 'success', 'free');
+                showSuccessPopup('free');
+                document.getElementById('freeCrossSell').style.display = 'block';
                 
             } catch (error) {
                 console.error('Purchase error:', error);
-                showStatus('Purchase failed: ' + parseError(error), 'error');
+                showStatus('Purchase failed: ' + parseError(error), 'error', 'free');
             } finally {
-                const button = document.getElementById('purchaseBtn');
-                button.disabled = false;
-                button.classList.remove('btn-loading');
+                const button = document.getElementById('mintBtnFree');
+                if (button) {
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                }
             }
         }
 
-        function showStatus(message, statusType) {
-            const statusEl = document.getElementById('statusMessage');
+        async function buyPaidKit() {
+            if (!userAddress || !kitSaleContract) {
+                showStatus('Connect wallet first!', 'error', 'paid');
+                return;
+            }
+            
+            try {
+                const button = document.getElementById('mintBtnPaid');
+                button.disabled = true;
+                button.classList.add('btn-loading');
+                
+                showStatus('Validating purchase...', 'loading', 'paid');
+                const [canPurchase, errorMessage] = await kitSaleContract.userCanBuyKit(userAddress, PAID_KIT_ID, paidCurrentQuantity);
+                
+                if (!canPurchase) {
+                    showStatus(`Cannot purchase: ${errorMessage}`, 'error', 'paid');
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                    return;
+                }
+                
+                const totalCost = paidKitPrice.mul(paidCurrentQuantity);
+                    const balance = await provider.getBalance(userAddress);
+                    if (balance.lt(totalCost)) {
+                    showStatus('Insufficient ETH balance', 'error', 'paid');
+                        button.disabled = false;
+                        button.classList.remove('btn-loading');
+                        return;
+                }
+                
+                showStatus(`Purchasing ${paidCurrentQuantity} kit(s)...`, 'loading', 'paid');
+                
+                let tx;
+                if (paidCurrentQuantity === 1) {
+                    tx = await kitSaleContract.buyKit(PAID_KIT_ID, { value: totalCost });
+                } else {
+                    tx = await kitSaleContract.buyMultipleKits(PAID_KIT_ID, paidCurrentQuantity, { value: totalCost });
+                }
+                
+                showStatus('Transaction submitted. Waiting for confirmation...', 'loading', 'paid');
+                await tx.wait();
+                
+                showStatus(`🎉 Successfully purchased ${paidCurrentQuantity} kit(s)!`, 'success', 'paid');
+                showSuccessPopup('paid');
+                document.getElementById('paidCrossSell').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Purchase error:', error);
+                showStatus('Purchase failed: ' + parseError(error), 'error', 'paid');
+            } finally {
+                const button = document.getElementById('mintBtnPaid');
+                if (button) {
+                    button.disabled = false;
+                    button.classList.remove('btn-loading');
+                }
+            }
+        }
+
+        function showSuccessPopup(kitType) {
+            const popup = document.getElementById('successPopup');
+            const title = document.getElementById('popupTitle');
+            const message = document.getElementById('popupMessage');
+            
+            if (kitType === 'free') {
+                title.textContent = '🎉 SubZERO Minted!';
+                message.textContent = 'Awesome! Your quirky SubZERO is ready. Now let\'s make it even cooler with some traits! Remember, no EYE traits though - those eyes are too close together for glasses! 😄';
+            } else {
+                title.textContent = '🎉 AdrianZERO Purchased!';
+                message.textContent = 'Excellent choice! Your premium AdrianZERO is ready. Now let\'s customize it with all the traits you want - including those fancy glasses!';
+            }
+            
+            popup.style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('successPopup').style.display = 'none';
+        }
+
+        function showStatus(message, statusType, kit) {
+            const statusEl = document.getElementById(`statusMessage${kit === 'free' ? 'Free' : 'Paid'}`);
+            if (statusEl) {
                         statusEl.className = `status-message ${statusType}`;
                         statusEl.textContent = message;
                         statusEl.style.display = 'block';
@@ -1313,6 +1468,7 @@
                             setTimeout(() => {
                                 statusEl.style.display = 'none';
                 }, 10000);
+                }
             }
         }
 
@@ -1348,6 +1504,14 @@
             });
         }
 
+        // Close popup when clicking outside
+        window.onclick = function(event) {
+            const popup = document.getElementById('successPopup');
+            if (event.target === popup) {
+                closePopup();
+            }
+        }
+
         // Listen for account changes
         if (window.ethereum) {
             window.ethereum.on('accountsChanged', function (accounts) {
@@ -1362,27 +1526,18 @@
                 window.location.reload();
             });
         }
-    </script>
 
-    <!-- Mint with ADRIAN Button -->
-    <div style="text-align: center; padding: 40px 20px; background: rgba(0, 255, 0, 0.1); margin-top: 40px;">
-        <h2 style="color: #00ff00; margin-bottom: 20px; font-size: 2.5rem;">Ready to Mint with $ADRIAN?</h2>
-        <p style="color: #cccccc; margin-bottom: 30px; font-size: 1.2rem;">Use your $ADRIAN tokens to mint exclusive NFTs</p>
-        <a href="mintwithadrian" style="
-            display: inline-block;
-            background: linear-gradient(45deg, #00ff00, #00cc00);
-            color: #000;
-            padding: 15px 30px;
-            text-decoration: none;
-            border-radius: 25px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
-        " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(0, 255, 0, 0.4)'" 
-           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(0, 255, 0, 0.3)'">
-            🪙 Mint with $ADRIAN
-        </a>
-    </div>
+        // Handle window resize for mobile switch
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 991) {
+                const freeCard = document.getElementById('freeKitCard');
+                const paidCard = document.getElementById('paidKitCard');
+                if (!freeCard.classList.contains('active') && !paidCard.classList.contains('active')) {
+                    switchKit('free');
+                }
+            }
+        });
+    </script>
 </body>
 </html>
+
