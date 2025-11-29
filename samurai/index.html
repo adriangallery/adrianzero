@@ -942,7 +942,6 @@
         const BATCH_ABI = [
             "function mint(uint256 batchId, uint256 quantity) external",
             "function getBatchInfo(uint256 batchId) external view returns (tuple(uint256 id, uint256 price, uint256 maxSupply, uint256 minted, bool active, string name, string tag, uint256 startTime, uint256 endTime, uint256 maxPerWallet))",
-            "function batchMintPaused() external view returns (bool)",
             "function mintedPerWalletPerBatch(uint256 batchId, address user) external view returns (uint256)"
         ];
 
@@ -1337,15 +1336,6 @@
                 
                 // Refresh batch info to get latest state
                 await loadBatchInfo();
-                
-                // Check if batch is paused
-                const isPaused = await batchContract.batchMintPaused();
-                if (isPaused) {
-                    showStatus('adrianZero', 'Batch minting is currently paused', 'error');
-                    button.disabled = false;
-                    button.classList.remove('btn-loading');
-                    return;
-                }
                 
                 // Check if batch is active
                 if (!batchInfo || !batchInfo.active) {
