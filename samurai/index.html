@@ -940,8 +940,7 @@
         }
 
         const BATCH_ABI = [
-            "function mint() external",
-            "function mintMultiple(uint256 quantity) external",
+            "function mint(uint256 batchId, uint256 quantity) external",
             "function getBatchInfo(uint256 batchId) external view returns (tuple(uint256 id, uint256 price, uint256 maxSupply, uint256 minted, bool active, string name, string tag, uint256 startTime, uint256 endTime, uint256 maxPerWallet))",
             "function batchMintPaused() external view returns (bool)",
             "function mintedPerWalletPerBatch(uint256 batchId, address user) external view returns (uint256)"
@@ -1390,12 +1389,8 @@
                 // Small delay before mint transaction
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
-                let tx;
-                if (currentQuantity === 1) {
-                    tx = await batchContract.mint();
-                } else {
-                    tx = await batchContract.mintMultiple(currentQuantity);
-                }
+                // Call mint with batchId and quantity
+                const tx = await batchContract.mint(BATCH_ID, currentQuantity);
                 
                 showStatus('adrianZero', 'Waiting for mint confirmation...', 'loading');
                 await tx.wait();
