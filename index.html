@@ -52,6 +52,19 @@
             object-fit: cover;
         }
 
+        /* Mobile banner overlay to prevent menu overlap */
+        .banner-mobile-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: transparent;
+            z-index: 2;
+            pointer-events: none;
+        }
+
         /* Hero Section */
         .hero {
             min-height: auto;
@@ -806,8 +819,8 @@
                 padding: 1rem;
             }
 
-            .banner-section {
-                padding-top: 80px;
+            .banner-mobile-overlay {
+                display: block;
             }
 
             .comparison-grid {
@@ -890,6 +903,7 @@
 
     <!-- Banner Section -->
     <div class="banner-section">
+        <div class="banner-mobile-overlay"></div>
         <img src="components/images/ADRIAN_ZERO_Banner.gif" alt="ADRIAN ZERO Banner" class="banner-image">
     </div>
 
