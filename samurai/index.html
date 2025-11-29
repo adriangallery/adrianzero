@@ -942,10 +942,9 @@
         const BATCH_ABI = [
             "function mint() external",
             "function mintMultiple(uint256 quantity) external",
-            "function getCurrentBatchInfo() external view returns (uint256 batchId, string name, string tag, uint256 price, uint256 minted, uint256 maxSupply, bool active, uint256 startTime, uint256 endTime)",
             "function getBatchInfo(uint256 batchId) external view returns (tuple(uint256 id, uint256 price, uint256 maxSupply, uint256 minted, bool active, string name, string tag, uint256 startTime, uint256 endTime, uint256 maxPerWallet))",
-            "function paymentToken() external view returns (address)",
-            "function batchMintPaused() external view returns (bool)"
+            "function batchMintPaused() external view returns (bool)",
+            "function mintedPerWalletPerBatch(uint256 batchId, address user) external view returns (uint256)"
         ];
 
 
@@ -1151,25 +1150,12 @@
                 // Delay before attempting batch info call
                 await new Promise(resolve => setTimeout(resolve, 800));
                 
-                // Use getCurrentBatchInfo() which returns the active batch
-                const batchInfo = await batchContract.getCurrentBatchInfo();
-                // getCurrentBatchInfo returns: (batchId, name, tag, price, minted, maxSupply, active, startTime, endTime)
-                batchPrice = batchInfo.price || batchInfo[3];
-                batchMaxSupply = (batchInfo.maxSupply || batchInfo[5]).toNumber();
-                batchMinted = (batchInfo.minted || batchInfo[4]).toNumber();
-                // maxPerWallet not in getCurrentBatchInfo, using default or getBatchInfo if needed
-                if (batchInfo.maxPerWallet) {
-                    batchMaxPerWallet = batchInfo.maxPerWallet.toNumber();
-                } else {
-                    // Try to get maxPerWallet from getBatchInfo if available
-                    try {
-                        const batchId = batchInfo.batchId || batchInfo[0];
-                        const fullBatchInfo = await batchContract.getBatchInfo(batchId);
-                        batchMaxPerWallet = fullBatchInfo.maxPerWallet.toNumber();
-                    } catch (e) {
-                        batchMaxPerWallet = 50; // Default
-                    }
-                }
+                // Use getBatchInfo(BATCH_ID) directly since getCurrentBatchInfo may not exist
+                const batchInfo = await batchContract.getBatchInfo(BATCH_ID);
+                batchPrice = batchInfo.price;
+                batchMaxSupply = batchInfo.maxSupply.toNumber();
+                batchMinted = batchInfo.minted.toNumber();
+                batchMaxPerWallet = batchInfo.maxPerWallet.toNumber();
                 
                 const priceFormatted = ethers.utils.formatEther(batchPrice);
                 const priceTag = document.querySelector('.price-tag');
