@@ -22,10 +22,37 @@
             overflow-x: hidden;
         }
 
+        /* Banner Section */
+        .banner-section {
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .banner-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        /* Mobile banner overlay to prevent menu overlap */
+        .banner-mobile-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: transparent;
+            z-index: 2;
+            pointer-events: none;
+        }
+
 
         @font-face {
             font-family: 'ADRIAN_ZERO';
-            src: url('components/fonts/ADRIAN_ZERO.otf') format('opentype');
+            src: url('../components/fonts/ADRIAN_ZERO.otf') format('opentype');
             font-weight: normal;
             font-style: normal;
             font-display: swap;
@@ -629,6 +656,12 @@
             background: rgba(255, 136, 0, 0.3);
         }
 
+        @media (max-width: 991.98px) {
+            .banner-mobile-overlay {
+                display: block;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .hero h1 {
@@ -797,16 +830,22 @@
     <div id="menu-container"></div>
     <script>
       // Load the menu
-      fetch('components/menu.html')
+      fetch('../components/menu.html')
         .then(response => response.text())
         .then(html => {
           document.getElementById('menu-container').innerHTML = html;
           const script = document.createElement('script');
-          script.src = 'components/menu.js';
+          script.src = '../components/menu.js';
           document.head.appendChild(script);
         })
         .catch(error => console.error('Error loading menu:', error));
     </script>
+
+    <!-- Banner Section -->
+    <div class="banner-section">
+        <div class="banner-mobile-overlay"></div>
+        <img src="Zero_Samurai.gif" alt="SamuraiZERO Banner" class="banner-image">
+    </div>
 
     <!-- Network Warning -->
     <div id="networkWarning" class="network-warning">
@@ -822,7 +861,7 @@
             <div class="step-card fade-in">
                 
                 <div class="nft-preview">
-                    <img src="components/images/595.png" alt="SamuraiZERO Preview">
+                    <img src="../components/images/595.png" alt="SamuraiZERO Preview">
                 </div>
                 
                 <p class="step-description">
