@@ -430,9 +430,21 @@
   <div id="menu-container"></div>
   <script>
     fetch('../components/menu.html')
-      .then(r => r.text())
-      .then(html => { document.getElementById('menu-container').innerHTML = html; const s = document.createElement('script'); s.src = '../components/menu.js'; document.head.appendChild(s); })
-      .catch(err => console.error('Error loading menu:', err));
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to load menu');
+        return r.text();
+      })
+      .then(html => { 
+        document.getElementById('menu-container').innerHTML = html; 
+        const s = document.createElement('script'); 
+        s.src = '../components/menu.js'; 
+        s.onerror = () => console.warn('Menu script not found, continuing without it');
+        document.head.appendChild(s); 
+      })
+      .catch(err => {
+        console.warn('Error loading menu:', err);
+        // Continue without menu if it fails
+      });
   </script>
 
   <div class="container hero">

@@ -7,8 +7,25 @@ let selectedWeeks = 4;
 // Load JSON data
 async function loadData() {
     try {
-        const response = await fetch('lost-data.json');
+        // Try to load from current directory first, then try relative path
+        let response;
+        try {
+            response = await fetch('./lost-data.json');
+            if (!response.ok) throw new Error('Failed to fetch');
+        } catch (e) {
+            // Fallback: try without leading dot
+            response = await fetch('lost-data.json');
+        }
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         lostData = await response.json();
+        
+        if (!lostData || !lostData.weeks) {
+            throw new Error('Invalid data format');
+        }
         
         // Calculate current week based on start date
         calculateCurrentWeek();
@@ -26,7 +43,22 @@ async function loadData() {
         updateDisplay();
     } catch (error) {
         console.error('Error loading data:', error);
-        document.getElementById('eventsGrid').innerHTML = '<div class="no-events">Error loading events data. Please refresh the page.</div>';
+        const grid = document.getElementById('eventsGrid');
+        const counter = document.getElementById('eventsCounter');
+        
+        if (grid) {
+            grid.innerHTML = `
+                <div class="no-events">
+                    <p>⚠️ Error loading events data.</p>
+                    <p style="font-size: 16px; margin-top: 12px;">${error.message || 'Network error or file not found'}</p>
+                    <p style="font-size: 14px; margin-top: 8px;">Please check your connection and refresh the page.</p>
+                </div>
+            `;
+        }
+        
+        if (counter) {
+            counter.textContent = 'Error loading data';
+        }
     }
 }
 
