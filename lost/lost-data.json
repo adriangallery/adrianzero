@@ -1,0 +1,1906 @@
+{
+  "startDate": "2024-01-01",
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "date": "2024-01-07",
+      "title": "Sunday Recap – The $ADRIAN Ecosystem Keeps Growing! 🚀",
+      "events": [
+        {
+          "emoji": "✅",
+          "title": "Auction Site",
+          "description": "Now shows the actual NFTs you're bidding on.",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "✅",
+          "title": "Burn Stats Dapp",
+          "description": "See a graph + data on how many $ADRIAN tokens have been burnt.",
+          "status": "completed",
+          "category": "stats"
+        },
+        {
+          "emoji": "✅",
+          "title": "Holdings Dapp",
+          "description": "View all your $ADRIAN assets (tokens + NFTs). Click an NFT to see metadata.",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "✅",
+          "title": "Filthy Rich Dapp",
+          "description": "Mint #0005 THE BURNED FORTUNE for 100K $ADRIAN (burnt forever). No real utility, just a flex & a special Filthy Rich Discord role.",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "price": "100K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "✅",
+          "title": "Forked OpenSea Collection",
+          "description": "Updated GENESIS art & sent it to holders. Forking the collection gives me more control for future upgrades like minting with $ADRIAN tokens.",
+          "status": "completed",
+          "category": "collection"
+        }
+      ]
+    },
+    {
+      "weekNumber": 2,
+      "date": "2024-01-14",
+      "title": "Sunday Recap!! 🚀",
+      "events": [
+        {
+          "emoji": "🎨",
+          "title": "AKASHI30 Auction LIVE",
+          "description": "Auction is LIVE! Ends next week—highest bid so far: 255K $ADRIAN!",
+          "status": "in-progress",
+          "category": "auction",
+          "stats": {
+            "highestBid": "255K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🛒",
+          "title": "Marketplace Ready",
+          "description": "Spent the weekend working on a complementary contract for offers, now you can make & accept offers using $ADRIAN! Check it out & let me know if you find any bugs (I spent way too many hours on this LOL).",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "📊",
+          "title": "Updated Token Details",
+          "description": "Updated token details in Geckoterminal.",
+          "status": "completed",
+          "category": "token"
+        },
+        {
+          "emoji": "💰",
+          "title": "LP Migration",
+          "description": "Moved LP to the new ADRIAN & switched from USD to ETH. This means more volatility in the graph since we're now tied to ETH price movements—so if you see red candles, blame ETH 😂.",
+          "status": "completed",
+          "category": "lp"
+        }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "date": "2024-01-21",
+      "title": "Sunday Recap – $ADRIAN Keeps Building! 🚀",
+      "events": [
+        {
+          "emoji": "✅",
+          "title": "New Perk Added",
+          "description": "GENESIS + ASCENSION holders now receive a tax refund on buy transactions!",
+          "status": "completed",
+          "category": "utility"
+        },
+        {
+          "emoji": "🎨",
+          "title": "#0011 THE OFFERING – A Tribute from GENESIS",
+          "description": "Mint started, ends this week ⏳ Already 25 minted!",
+          "status": "in-progress",
+          "category": "mint",
+          "stats": {
+            "minted": 25
+          }
+        },
+        {
+          "emoji": "💎",
+          "title": "Mint a PIMP with $ADRIAN",
+          "description": "Just because we can… LOL 🤣 3 or 4 minted already, and looks dope on OpenSea!",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "minted": 4
+          }
+        },
+        {
+          "emoji": "🎉",
+          "title": "AKASHI30 Auction = SUCCESS!",
+          "description": "13M+ collected! 💰 Half sent to ASCENSION dApp & already claimed by holders ✅ Both prizes & rewards looking GOOD in your wallets!",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "collected": "13M+ $ADRIAN"
+          }
+        },
+        {
+          "emoji": "⚡",
+          "title": "Lottery dApp",
+          "description": "Early version live, try it now! 🎰",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "⚡",
+          "title": "ADRIANswap",
+          "description": "Trying to compete with Uniswap (still lots to do LOL) 🔄",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "⚡",
+          "title": "PIMPSfeatADRIAN DAO",
+          "description": "Built to manage funds & cool stuff 🏛️",
+          "status": "completed",
+          "category": "dao"
+        },
+        {
+          "emoji": "⚡",
+          "title": "Staking dApp",
+          "description": "In progress – Plus a secret project… more details soon 👀",
+          "status": "in-progress",
+          "category": "staking"
+        }
+      ]
+    },
+    {
+      "weekNumber": 4,
+      "date": "2024-03-30",
+      "title": "Sunday Recap – 30.23 🟦 🟥",
+      "events": [
+        {
+          "emoji": "🎉",
+          "title": "Lottery Round 1 finished",
+          "description": "300K $ADRIAN + NFTs sent",
+          "status": "completed",
+          "category": "lottery",
+          "stats": {
+            "prize": "300K $ADRIAN + NFTs"
+          }
+        },
+        {
+          "emoji": "⚙️",
+          "title": "ADRIANauction V3",
+          "description": "With time-gated Boosters completed – Ready for TOMO's drop",
+          "status": "completed",
+          "category": "auction"
+        },
+        {
+          "emoji": "🎨",
+          "title": "Successfully deceived an artist",
+          "description": "Successfully deceived an artist into creating a stunning pixel PFP collection 😅",
+          "status": "completed",
+          "category": "art"
+        },
+        {
+          "emoji": "🧠",
+          "title": "Building AdrianPunks",
+          "description": "A 1K PFP masterpiece with 10 unique 1/1s (from monday to saturday LOL)",
+          "status": "in-progress",
+          "category": "collection",
+          "stats": {
+            "totalSupply": 1000,
+            "unique1of1": 10
+          }
+        },
+        {
+          "emoji": "💎",
+          "title": "HalfxTiger delivered",
+          "description": "Huge shoutout to the legend @HalfxTiger who finished art + metadata in just 3 days",
+          "status": "completed",
+          "category": "art"
+        },
+        {
+          "emoji": "📜",
+          "title": "AdrianPunks V2 contract built",
+          "description": "Includes tiered allowlists",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "🌐",
+          "title": "Domains secured",
+          "description": "AdrianPunks.com",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🖼️",
+          "title": "Facing challenges",
+          "description": "Facing some challenges managing images + metadata for the 1K collection – But we're close! Images now rendering properly. Working on bulk handling of JSON metadata",
+          "status": "in-progress",
+          "category": "development"
+        },
+        {
+          "emoji": "🏪",
+          "title": "AdrianMarket upgrade in progress",
+          "description": "ERC721 support (we had ERC1155 only before). Floor pricing + individual + floor-wide offers. Fast, smooth UX: combining offchain/onchain hybrid structure. Goal: have it ready before AdrianPunks drops, so y'all prefer it over OpenSea 😎",
+          "status": "in-progress",
+          "category": "marketplace"
+        }
+      ]
+    },
+    {
+      "weekNumber": 5,
+      "date": "2024-04-06",
+      "title": "Sunday Recap – April 6",
+      "events": [
+        {
+          "emoji": "💻",
+          "title": "Built a marketplace",
+          "description": "My First Times This Week: Built a marketplace",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "📦",
+          "title": "Compiled a modular contract",
+          "description": "My First Times This Week: Compiled a modular contract",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "🧠",
+          "title": "Fought with SQL databases",
+          "description": "My First Times This Week: Fought with SQL databases",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "🔧",
+          "title": "Interacted with GitHub from terminal",
+          "description": "My First Times This Week: Interacted with GitHub from the terminal",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "🚀",
+          "title": "Deployed on Vercel",
+          "description": "My First Times This Week: Deployed on Vercel like a real dev (kinda)",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "✅",
+          "title": "AdrianPunks Final touches done",
+          "description": "Final touches done (contract + frontend)",
+          "status": "completed",
+          "category": "collection"
+        },
+        {
+          "emoji": "🤝",
+          "title": "Allowlist collabs confirmed",
+          "description": "Allowlist collabs confirmed with: FFS, PunkSecrets, DZNTS, Naked Army, CryptoPimps, CoopTroop, The Appreciators, Ugly Labs",
+          "status": "completed",
+          "category": "collab"
+        },
+        {
+          "emoji": "🕊️",
+          "title": "Mint Date: Easter Sunday, April 20th",
+          "description": "Tiger made the call, be ready 👀",
+          "status": "announced",
+          "category": "mint"
+        },
+        {
+          "emoji": "🛒",
+          "title": "AdrianMarket Progress",
+          "description": "Make + cancel listings. Offers (floor, by trait or token ID). Filter by trait. Rarity filter",
+          "status": "in-progress",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "🎟️",
+          "title": "Lottery Recap",
+          "description": "Over 1K tickets sold. 3 winners. Allowlist prizes already delivered",
+          "status": "completed",
+          "category": "lottery",
+          "stats": {
+            "ticketsSold": 1000,
+            "winners": 3
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 6,
+      "date": "2024-04-13",
+      "title": "Sunday Recap – April 13",
+      "events": [
+        {
+          "emoji": "🧢",
+          "title": "AdrianPunks Mint THIS WEEK!",
+          "description": "Easter Sunday – 4/20 is THE DAY. If we mint out: 100M $ADRIAN in income. 50M goes to Tiger 🐯. 50M goes to THE OFFERING seat holders 💸",
+          "status": "announced",
+          "category": "mint",
+          "stats": {
+            "potentialIncome": "100M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🛒",
+          "title": "AdrianMarket is LIVE",
+          "description": "Buy, sell, and flex your punks with $ADRIAN",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "💀",
+          "title": "THE TAX REAPER SOLD",
+          "description": "Sold in Dutch Auction for 9.7M $ADRIAN. Proceeds going straight to PunkQuest reward pool. Already sent to the winner.",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "sold": "9.7M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🧙",
+          "title": "TOMO's 1/1 is almost done",
+          "description": "It's coming and it's gonna be 🔥",
+          "status": "in-progress",
+          "category": "art"
+        },
+        {
+          "emoji": "📈",
+          "title": "$ADRIAN Hit Several ATHs This Week",
+          "description": "Massive buys, strong momentum. OGs winning.",
+          "status": "completed",
+          "category": "token"
+        },
+        {
+          "emoji": "⚔️",
+          "title": "PunkQuest in Development",
+          "description": "Soft-staking system incoming – Casual mode for chill holders. Gamified mode for the real degens. Armor, weapons, quests, events… and more being cooked. Tiger dropped insane weapon assets for alpha testing.",
+          "status": "in-progress",
+          "category": "staking"
+        },
+        {
+          "emoji": "✅",
+          "title": "All Collab Allowlists Added",
+          "description": "All Collab Allowlists Added to Mint Contract",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🔮",
+          "title": "ORACLE Mint Wrapped",
+          "description": "13 minters… something happened? you tell me 👀. 50% of proceeds (440K $ADRIAN) already in THE OFFERING dApp ready to claim",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "minters": 13,
+            "proceeds": "440K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🧩",
+          "title": "AdrianGallery UI Updates",
+          "description": "Refining the AdrianGallery look & feel to separate it visually from AdrianPunks. It's a work in progress – known bugs, but updates incoming this week.",
+          "status": "in-progress",
+          "category": "ui"
+        }
+      ]
+    },
+    {
+      "weekNumber": 7,
+      "date": "2024-04-20",
+      "title": "Sunday Recap 4/20",
+      "events": [
+        {
+          "emoji": "🛡️",
+          "title": "PunkQuest Season One",
+          "description": "You can stake, unstake, and claim rewards starting now.",
+          "status": "completed",
+          "category": "staking",
+          "links": [
+            {
+              "text": "Mint here",
+              "url": "https://adrianpunks.com/mint"
+            },
+            {
+              "text": "Dump them",
+              "url": "https://adrianpunks.com/market"
+            },
+            {
+              "text": "Stake them",
+              "url": "https://adrianpunks.com/punkquest"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekNumber": 8,
+      "date": "2024-04-27",
+      "title": "Sunday Recap – 4/27",
+      "events": [
+        {
+          "emoji": "🔥",
+          "title": "TOMORROWMAN 1/1 Auction LIVE",
+          "description": "5 days left — Current highest bid: 16M $ADRIAN!! 🔥 This auction includes new features like Timed Boosters!",
+          "status": "in-progress",
+          "category": "auction",
+          "stats": {
+            "highestBid": "16M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🎨",
+          "title": "PFP Raffle on X",
+          "description": "I launched it but didn't have time to finish it properly (working on it, promise!).",
+          "status": "in-progress",
+          "category": "giveaway"
+        },
+        {
+          "emoji": "⚔️",
+          "title": "PunkQuest Armory Section",
+          "description": "Been fighting with a nasty bug all week. Still not solved… but we're close.",
+          "status": "in-progress",
+          "category": "staking"
+        },
+        {
+          "emoji": "🔄",
+          "title": "AdrianPunks Exchange!",
+          "description": "New dApp in Progress! Built a new contract and started frontend work. A platform where you can safely swap AdrianPunks with other users for a small $ADRIAN fee and don't get scammed by those mfers in general-chat chat LOL",
+          "status": "in-progress",
+          "category": "dapp"
+        }
+      ]
+    },
+    {
+      "weekNumber": 9,
+      "date": "2024-05-04",
+      "title": "Sunday Recap – 05/04 🟦 🟥",
+      "events": [
+        {
+          "emoji": "💾",
+          "title": "HalfxAdrians are LIVE!",
+          "description": "Soulbound minis tied to your AdrianPunks – wherever your Punk goes, it follows. They'll metamorph into different versions soon (contract already prepped).",
+          "status": "completed",
+          "category": "collection"
+        },
+        {
+          "emoji": "🎨",
+          "title": "New Feature: PocketAdrian",
+          "description": "Future side-collections will be attached to your PocketAdrian, so your wallet doesn't explode with junk. One Punk = One PocketAdrian, with toggleable versions and updateable metadata. Smart, huh?",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🛒",
+          "title": "Marketplace Upgrade",
+          "description": "Toggle between both collections at: https://adrianpunks.com/market",
+          "status": "completed",
+          "category": "marketplace",
+          "links": [
+            {
+              "text": "Marketplace",
+              "url": "https://adrianpunks.com/market"
+            }
+          ]
+        },
+        {
+          "emoji": "🏆",
+          "title": "Featured Auctions Page",
+          "description": "All the past madness in one place: https://adriangallery.com/auctionstats",
+          "status": "completed",
+          "category": "auction",
+          "links": [
+            {
+              "text": "Auction Stats",
+              "url": "https://adriangallery.com/auctionstats"
+            }
+          ]
+        },
+        {
+          "emoji": "🔄",
+          "title": "Punk Exchange is LIVE",
+          "description": "Yes, a whole f*cking dapp where you can swap Punks peer-to-peer, and no one used it yet 💀 (I wrote this yesterday haha, @Drew Peacock used it)",
+          "status": "completed",
+          "category": "dapp",
+          "links": [
+            {
+              "text": "Exchange",
+              "url": "https://adrianpunks.com/exchange"
+            }
+          ]
+        },
+        {
+          "emoji": "🎉",
+          "title": "TOMO Auction Recap",
+          "description": "16 MILLION $ADRIAN bid by GOOST 💪. 8 MILLION distributed to ASCENSION holders.",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "highestBid": "16M $ADRIAN",
+            "distributed": "8M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🎁",
+          "title": "X Raffle",
+          "description": "Wrapped up. Winner scored 2 amazing Punks.",
+          "status": "completed",
+          "category": "giveaway"
+        },
+        {
+          "emoji": "📊",
+          "title": "Mint Stats",
+          "description": "AdrianPunks mint has already farmed 50 MILLION $ADRIAN (≈$2.5K). That will be redistributed to holders & artists when we mint out 🔥",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "farmed": "50M $ADRIAN"
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 10,
+      "date": "2024-05-11",
+      "title": "Sunday Recap – 05/11 🟦 🟥",
+      "events": [
+        {
+          "emoji": "✅",
+          "title": "AdrianToggler live",
+          "description": "Now you can toggle your PocketAdrian between versions (HalfxAdrians so far)",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "👀",
+          "title": "Sneak peek of future toggled ADRIANS",
+          "description": "Sneak peek of future toggled ADRIANS by @HalfxTiger — they're 🔥",
+          "status": "announced",
+          "category": "art"
+        },
+        {
+          "emoji": "🌲",
+          "title": "BARKS by COR727 x ARBO",
+          "description": "Sold for 2.4M $ADRIAN. Split between artists & ASCENSION holders — ecosystem in motion",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "sold": "2.4M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "📈",
+          "title": "New ATHs & price at 0.00074",
+          "description": "Fourth zero might vanish soon 👀",
+          "status": "completed",
+          "category": "token",
+          "stats": {
+            "price": "0.00074"
+          }
+        },
+        {
+          "emoji": "💧",
+          "title": "Liquidity added to the LP",
+          "description": "Bigger LP = less slippage + more attention. Reminder: you can remove your liquidity anytime and keep the rewards",
+          "status": "completed",
+          "category": "lp"
+        },
+        {
+          "emoji": "⚔️",
+          "title": "PunkQuest update",
+          "description": "One of the most complex dApps so far. Making steady progress. Still a lot to do. Stay tuned",
+          "status": "in-progress",
+          "category": "staking"
+        },
+        {
+          "emoji": "🏎️",
+          "title": "LAMBObuilder is live",
+          "description": "Desktop only for now. Choose your Punk + Lambo color → Download your new Twitter banner. If mobile bugs you, tag me with the Punk ID and color — I'll do it for you 😎",
+          "status": "completed",
+          "category": "dapp"
+        }
+      ]
+    },
+    {
+      "weekNumber": 11,
+      "date": "2024-05-17",
+      "title": "SUNDAY RECAP – 05/17",
+      "events": [
+        {
+          "emoji": "🛠️",
+          "title": "AdrianAuctions is LIVE!",
+          "description": "From idea to reality—fast, buggy, but very real. Now you can auction your NFTs on Base and receive $ADRIAN. Check the announcement post for full details. Free to use. Yes, seriously.",
+          "status": "completed",
+          "category": "auction",
+          "links": [
+            {
+              "text": "AdrianAuctions",
+              "url": "https://auctions.adriangallery.com/"
+            }
+          ]
+        },
+        {
+          "emoji": "🎨",
+          "title": "New PocketAdrians Incoming!",
+          "description": "@10xTiger delivered most of the next toggled collection—and they're VECTORED AF. Clean enough to slap on your car, building, or forehead. 👀",
+          "status": "in-progress",
+          "category": "art"
+        },
+        {
+          "emoji": "🎮",
+          "title": "PunkQuest SeasonOne Funded!",
+          "description": "10 MILLION $ADRIAN added to the contract. No more fake rewards—only real bags now. Stake your punks or stay poor.",
+          "status": "completed",
+          "category": "staking",
+          "stats": {
+            "funded": "10M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "💸",
+          "title": "$ADRIAN Tax Update",
+          "description": "Down from 1.5% to 1.0%. Lowered DEV and BURN share. THE TAX REAPER still gets his tasty cut. GENESIS holders stay tax-exempt 😏",
+          "status": "completed",
+          "category": "token"
+        },
+        {
+          "emoji": "🧪",
+          "title": "Artist Chaos Unlocked",
+          "description": "Been harassed (lovingly) by @10xTiger with wild ideas. Apparently, I'm a \"real dev\" now. Some of this will land in AdrianLab. I'll leak things soon 👀",
+          "status": "in-progress",
+          "category": "development"
+        },
+        {
+          "emoji": "💧",
+          "title": "LP Contributions",
+          "description": "We have 5 liquidity providers already—thank you legends. Want to join in? There's a DIY tutorial pinned in Announcements.",
+          "status": "completed",
+          "category": "lp",
+          "stats": {
+            "providers": 5
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 12,
+      "date": "2024-05-25",
+      "title": "SUNDAY RECAP – 05/25",
+      "events": [
+        {
+          "emoji": "🤖",
+          "title": "Wassa bot shipped",
+          "description": "Young dev wassa just shipped an awesome bot that tracks AdrianPunks mints and $ADRIAN buys. From \"what if\" to it's fucking live.",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🧠",
+          "title": "AdrianLAB is no longer just a cursed idea",
+          "description": "It's a modular, smart, dangerous machine: Fully customizable collection incoming. Trait builder, gamification, chaos. Built a VERCEL dapp server that generates real-time metadata & images based on blockchain input. You can literally build your own punk",
+          "status": "in-progress",
+          "category": "lab"
+        },
+        {
+          "emoji": "📜",
+          "title": "4 contracts deployed",
+          "description": "4 contracts deployed that work together. Took time to whitepaper it. Modular logic, future-proof. No more rushed chaos—this time it's calculated chaos. AdrianLAB is meant to evolve without breaking. That's the whole point.",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "🤝",
+          "title": "Opens door to collabs",
+          "description": "This opens the door to collabs, extensions, integrations… You wanna build in the LAB? Let's cook.",
+          "status": "announced",
+          "category": "collab"
+        },
+        {
+          "emoji": "💎",
+          "title": "#0015 – COLLECTA.UNITS announced",
+          "description": "A new way to earn small pieces of AdrianLAB activity. Think OFFERING meets ASCENSION, but twisted. You want a cut? Spend those $ADRIANS. (full mechanics dropping this week)",
+          "status": "announced",
+          "category": "utility"
+        }
+      ]
+    },
+    {
+      "weekNumber": 13,
+      "date": "2024-06-01",
+      "title": "Sunday Recap – 06/01",
+      "events": [
+        {
+          "emoji": "🧠",
+          "title": "VERCEL Renderer",
+          "description": "Moved from mockup data → real on-chain data. First tests successful: NFTs now reflect trait changes directly on OpenSea 😤. It works. It's real.",
+          "status": "completed",
+          "category": "render"
+        },
+        {
+          "emoji": "⚙️",
+          "title": "Smart Contracts",
+          "description": "Started the week needing 4 contracts for AdrianLAB. Ended up with 8 ... Tried switching everything to a PROXY architecture (failed miserably LMAO). Might retry... or might just keep it simple for now.",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "🎨",
+          "title": "Art Leaks from @HalfxTiger",
+          "description": "AdrianZero – the 0-trait mf you'll mint first. Floppy Discs – trait packs (ERC1155s with random traits inside). Gen0 + Gen2 – mutation madness (you already know: deformities expected LOL). Point-and-click scenes: AI-powered backgrounds for future gamified UI",
+          "status": "announced",
+          "category": "art"
+        }
+      ]
+    },
+    {
+      "weekNumber": 14,
+      "date": "2024-06-08",
+      "title": "Sunday recap 06/08 🧪",
+      "events": [
+        {
+          "emoji": "👨‍💻",
+          "title": "Just coding LOL",
+          "description": "Spent the whole week building, deploying, and configuring 14 AdrianLAB contracts.",
+          "status": "completed",
+          "category": "contract",
+          "stats": {
+            "contracts": 14
+          }
+        },
+        {
+          "emoji": "✅",
+          "title": "Minted first 3 AdrianZERO",
+          "description": "Minted first 3 AdrianZERO for final render tests ✅",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🐛",
+          "title": "Tried minting Floppys + traits",
+          "description": "Tried minting some Floppys + traits, something broke 😭 — fixed it in theory, redeployed, but haven't checked again. Next week…",
+          "status": "in-progress",
+          "category": "mint"
+        }
+      ]
+    },
+    {
+      "weekNumber": 15,
+      "date": "2024-06-15",
+      "title": "Sunday Recap – 06/15",
+      "events": [
+        {
+          "emoji": "✅",
+          "title": "Minted first Floppy (ERC1155)",
+          "description": "Minted first Floppy (ERC1155)",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🔥",
+          "title": "Burned first Floppy → Got traits",
+          "description": "Burned first Floppy → Got traits",
+          "status": "completed",
+          "category": "trait"
+        },
+        {
+          "emoji": "🔥",
+          "title": "Burned first trait → Applied to AdrianZERO",
+          "description": "Burned first trait (background) → Applied it to an AdrianZERO",
+          "status": "completed",
+          "category": "trait"
+        },
+        {
+          "emoji": "🐛",
+          "title": "Major bugs found on VERCEL renderer",
+          "description": "Major bugs found on VERCEL renderer — solvable but needs time",
+          "status": "in-progress",
+          "category": "render"
+        },
+        {
+          "emoji": "🕹️",
+          "title": "80s Point & Click adventure idea locked",
+          "description": "Finally locked the idea: 80s Point & Click adventure to interact with AdrianLAB (trait builder, serums, mutations, floppy, etc) — starts small, grows wild",
+          "status": "announced",
+          "category": "game"
+        },
+        {
+          "emoji": "👀",
+          "title": "Leaked OG Floppy",
+          "description": "Leaked OG Floppy – free mint for AdrianPunks holders, has OG traits 🟩",
+          "status": "announced",
+          "category": "mint"
+        },
+        {
+          "emoji": "💡",
+          "title": "MostWanted is coming",
+          "description": "Trait builder + leaderboard. First to replicate a target AdrianZERO gets $ADRIAN reward. (not built yet… but easy af)",
+          "status": "announced",
+          "category": "game"
+        }
+      ]
+    },
+    {
+      "weekNumber": 16,
+      "date": "2024-06-22",
+      "title": "Sunday Recap – 06/22",
+      "events": [
+        {
+          "emoji": "🧪",
+          "title": "Let's launch the OG Floppy!",
+          "description": "At the beginning of the week we decided: Let's launch the OG Floppy! Everything looked ready… but then? Metadata wasn't showing. FML. Major bug. Not solvable with current deployed contracts 😤",
+          "status": "in-progress",
+          "category": "mint"
+        },
+        {
+          "emoji": "🔧",
+          "title": "Spent around 20 hours debugging",
+          "description": "Spent around 20 hours debugging across: AdrianTraitsCore, AdrianTraitsExtensions, AdrianPackTokenMinter, AdrianSerumModule",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "💡",
+          "title": "Added cool new features",
+          "description": "Since I was redeploying anyway… added: Cool new features 👀. Admin tools (so I don't lose my mind again)",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "✅",
+          "title": "Now everything compiles",
+          "description": "Now everything compiles. Just needs some final testing. If all works smoothly, OG Floppy drops THIS WEEK.",
+          "status": "completed",
+          "category": "mint"
+        }
+      ]
+    },
+    {
+      "weekNumber": 17,
+      "date": "2024-06-29",
+      "title": "Sunday Recap 06/29",
+      "events": [
+        {
+          "emoji": "🧠",
+          "title": "Spent the whole week stuck on a single bug",
+          "description": "ERC1155 metadata… a different beast than ERC721. 20+ hours sunk. Gave up. Accepted defeat. Then… boom 💥 a miracle (or maybe drugs LOL) — VERCEL metadata for OPENSEA now works.",
+          "status": "completed",
+          "category": "render"
+        },
+        {
+          "emoji": "🎨",
+          "title": "Now designing Trait Cards",
+          "description": "These will display info + colors based on metadata directly in the image. Not required for OG Floppy launch — just doing something visual after all the backend brain torture 😵‍💫",
+          "status": "in-progress",
+          "category": "ui"
+        },
+        {
+          "emoji": "🎲",
+          "title": "One last bug left: RANDOMNESS in OpenPack",
+          "description": "Should be solvable — not as cursed as metadata was. Let's cross fingers 🤞",
+          "status": "in-progress",
+          "category": "development"
+        }
+      ]
+    },
+    {
+      "weekNumber": 18,
+      "date": "2024-07-06",
+      "title": "Sunday Recap – 07/06 🔥",
+      "events": [
+        {
+          "emoji": "✅",
+          "title": "Fixed the 2 BIG bugs",
+          "description": "Fixed the 2 BIG bugs that held us back — Metadata (ERC1155/721 hell). Randomness for trait packs",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "🌐",
+          "title": "Launched AdrianLAB website",
+          "description": "Launched AdrianLAB website — A gamified teaser of what's coming 👀",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "💾",
+          "title": "OG Floppy minted (SOLD OUT in 6 min)",
+          "description": "OG Floppy minted (SOLD OUT in 6 min)",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🥷",
+          "title": "Stealth dropped STARTER Floppy",
+          "description": "Stealth dropped STARTER Floppy (free mint!)",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🧪",
+          "title": "TraitLAB went live",
+          "description": "TraitLAB went live — Select your AdrianZERO. Apply traits (and yes, they burn)",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "💥",
+          "title": "Open Floppy feature added",
+          "description": "Open Floppy feature added — Unpack your traits from Floppys",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🔧",
+          "title": "Hundreds of bugs squashed",
+          "description": "Hundreds of bugs squashed — Vercel server, metadata, OpenSea display, TraitLAB UI, minting… Literally HUNDREDS of hours 🧵",
+          "status": "completed",
+          "category": "development"
+        }
+      ]
+    },
+    {
+      "weekNumber": 19,
+      "date": "2024-07-13",
+      "title": "07/13 – SUNDAY RECAP 🧠",
+      "events": [
+        {
+          "emoji": "💾",
+          "title": "Green Floppy mint — success!",
+          "description": "Green Floppy mint — success! Minted & burnt like mfers",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🔥",
+          "title": "1300+ items created in AdrianLAB",
+          "description": "1300+ items created in AdrianLAB in under a week",
+          "status": "completed",
+          "category": "lab",
+          "stats": {
+            "itemsCreated": 1300
+          }
+        },
+        {
+          "emoji": "👾",
+          "title": "120 AdrianZERO minted in just 6 minutes",
+          "description": "120 AdrianZERO minted in just 6 minutes",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "minted": 120,
+            "time": "6 minutes"
+          }
+        },
+        {
+          "emoji": "🎨",
+          "title": "270+ wild trait artworks",
+          "description": "270+ wild trait artworks by @HalfxTiger",
+          "status": "completed",
+          "category": "art",
+          "stats": {
+            "traits": 270
+          }
+        },
+        {
+          "emoji": "🛠️",
+          "title": "Hundreds of bugs squashed",
+          "description": "Hundreds (yes, literally) of bugs squashed",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "🎲",
+          "title": "Improved Floppy randomness + metadata stability",
+          "description": "Improved Floppy randomness + metadata stability",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "⚡",
+          "title": "Switched VERCEL from ethers to infura",
+          "description": "Switched VERCEL from ethers to infura = way faster now",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "💣",
+          "title": "Launched our first ActionPACK: TOXIC",
+          "description": "A build-it-yourself 1/1 AdrianZERO",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "💸",
+          "title": "Dutch auction sold for 275K $ADRIAN",
+          "description": "Dutch auction sold for 275K $ADRIAN",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "sold": "275K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🧠",
+          "title": "Launched PatientZERO",
+          "description": "Bounty hunt for trait builds, first up: STRAPDADDY (50K reward!)",
+          "status": "completed",
+          "category": "game",
+          "stats": {
+            "reward": "50K $ADRIAN"
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 20,
+      "date": "2024-07-20",
+      "title": "Sunday Recap 07/20",
+      "events": [
+        {
+          "emoji": "💉",
+          "title": "262144 SERUM dropped",
+          "description": "Time to transform AdrianZERO into AdrianGF 👩‍🎤",
+          "status": "completed",
+          "category": "serum"
+        },
+        {
+          "emoji": "😵‍💫",
+          "title": "Serum fails officially announced",
+          "description": "Yeah, shit happens if you drink the wrong juice",
+          "status": "completed",
+          "category": "serum"
+        },
+        {
+          "emoji": "🏷️",
+          "title": "AdrianNameRegistry launched",
+          "description": "Write your AdrianZERO name onchain using $ADRIAN. Contract + render = dynamic metadata on Opensea 🔥",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🐦",
+          "title": "New official X account!",
+          "description": "We moved from @AdrianCerda (personal) to @AdrianZeroPunks — go follow + interact, we're giving away Tex.Ranger #202 🎁",
+          "status": "completed",
+          "category": "social"
+        },
+        {
+          "emoji": "💚",
+          "title": "AdrianGF Floppy ready!",
+          "description": "+150 traits dropped, all live in the contract. We launch soon!",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "traits": 150
+          }
+        },
+        {
+          "emoji": "🧬",
+          "title": "GLITCH floppy got launched",
+          "description": "GLITCH floppy got launched too, broken as hell inside 😂",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🃏",
+          "title": "TraitCards updated",
+          "description": "TraitCards updated to show Total Minted instead of max supply (makes more sense, right?)",
+          "status": "completed",
+          "category": "ui"
+        }
+      ]
+    },
+    {
+      "weekNumber": 21,
+      "date": "2024-07-27",
+      "title": "Sunday Recap – 07/27 🧼",
+      "events": [
+        {
+          "emoji": "🟡",
+          "title": "OG Distribution Completed",
+          "description": "26M $ADRIAN (+1300 USD) distributed to THE OFFERING holders via the dApp. THE OFFERING is part of our OG utility/art NFT collection: AdrianGallery",
+          "status": "completed",
+          "category": "distribution",
+          "stats": {
+            "distributed": "26M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🌐",
+          "title": "New Website Launched",
+          "description": "https://adrianzero.com/ is now live. Everything AdrianLAB related will live here: TraitLAB, PatientZERO, Index, and more coming soon. Includes the long-awaited MENU, finally 😅",
+          "status": "completed",
+          "category": "website",
+          "links": [
+            {
+              "text": "AdrianZERO.com",
+              "url": "https://adrianzero.com/"
+            }
+          ]
+        },
+        {
+          "emoji": "💧",
+          "title": "Tax Update",
+          "description": "The 0.8% DEV tax now goes directly to LP 💧. I'll be swapping small amounts of $ADRIAN for ETH and adding both to Uniswap LP. Stronger liquidity = healthier token",
+          "status": "completed",
+          "category": "token"
+        },
+        {
+          "emoji": "⚙️",
+          "title": "Render Optimization",
+          "description": "We've hit Vercel free plan limits. Added cache to rendering to improve speed + avoid downtime",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🛍️",
+          "title": "AdrianSHOP in Progress",
+          "description": "Buy traits directly with $ADRIAN (no floppy luck needed). Planning a CLAIMING feature for special holders — TBD but will be cool",
+          "status": "in-progress",
+          "category": "shop"
+        },
+        {
+          "emoji": "🕹️",
+          "title": "AdrianADVENTURE Beta",
+          "description": "Point-and-click game (80s inspired with Web3 twist). Some scenes already live. You can open Floppys in a computer… in an attic 😂. Blockchain-compatible mechanics in the works",
+          "status": "in-progress",
+          "category": "game"
+        },
+        {
+          "emoji": "🎨",
+          "title": "Tiger's Auctions",
+          "description": "Two epic commemoratives dropped: OZZY – sold for 250K $ADRIAN. HULK – sold for 100K $ADRIAN. Both via AdrianAuction v6",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "ozzy": "250K $ADRIAN",
+            "hulk": "100K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🛠️",
+          "title": "TraitLAB Fixes",
+          "description": "Visual and UX improvements — it's lookin' clean now 😎",
+          "status": "completed",
+          "category": "ui"
+        },
+        {
+          "emoji": "🚗",
+          "title": "AdrianLAMBOS v2",
+          "description": "Early rendering progress — contract still in the oven",
+          "status": "in-progress",
+          "category": "art"
+        }
+      ]
+    },
+    {
+      "weekNumber": 22,
+      "date": "2024-08-03",
+      "title": "SUNDAY RECAP – 08/03",
+      "events": [
+        {
+          "emoji": "🎥",
+          "title": "FIRST STREAM EVER",
+          "description": "Happened Thursday – shoutout to Filthy for organizing and to everyone who joined. We demo'd TraitLAB, gave away T-SHIRTS 👕 (Monkey Island vibes, my childhood fav 🎮 – thx Tiger). My English ain't perfect but we made it happen and it was fun!",
+          "status": "completed",
+          "category": "social"
+        },
+        {
+          "emoji": "🧠",
+          "title": "PatientZERO Upgrades",
+          "description": "Now when you customize a matching AdrianZERO with a rehab character… It auto-renames in OpenSea to reflect the identity. No more guessing who that glitched mf is.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🔧",
+          "title": "New onboarding module is LIVE",
+          "description": "Buy with ETH (~$5 on Base). Get: 1 AdrianZERO + 1 Starter Floppy + $ADRIAN tokens",
+          "status": "completed",
+          "category": "mint",
+          "links": [
+            {
+              "text": "AdrianZERO.com",
+              "url": "https://adrianzero.com/"
+            }
+          ]
+        },
+        {
+          "emoji": "🛍️",
+          "title": "TraitSHOP Launch",
+          "description": "No more luck needed—get special items directly. Now available: AdrianGF Serums",
+          "status": "completed",
+          "category": "shop",
+          "links": [
+            {
+              "text": "TraitSHOP",
+              "url": "https://adrianzero.com/shop/"
+            }
+          ]
+        },
+        {
+          "emoji": "🎨",
+          "title": "TraitSTUDIO Drop",
+          "description": "Spent days building this wild tool. You can now design & mint T-Shirts using $ADRIAN. Fully usable with your AdrianZERO 🔥. Custom render logic + smart contract—crazy stuff, thanks Tiger for being weird 💀",
+          "status": "completed",
+          "category": "dapp"
+        }
+      ]
+    },
+    {
+      "weekNumber": 23,
+      "date": "2024-08-10",
+      "title": "Sunday Recap – 08/10 🔴 🔵",
+      "events": [
+        {
+          "emoji": "⚡",
+          "title": "VERCEL Endpoints FULL Optimisation",
+          "description": "~25 hours spent caching SVGs, creating multiple types per endpoint, cutting contract calls, JSONs, and trait renders. Goal: stay on FREE tier. Still needs tweaks, but much faster now.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "💉",
+          "title": "Gold Serums – SOLD OUT",
+          "description": "SOLD OUT in under an hour! All 3 variants gone. Artist nailed the \"manager\" role during mint while dev was IRL.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🥳",
+          "title": "#300 AdrianZERO Minted",
+          "description": "Milestone! We're celebrating with a BuilderBATTLE – check the rules and build your ZERO for awesome prizes.",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "minted": 300
+          }
+        },
+        {
+          "emoji": "💾",
+          "title": "Golden Floppy",
+          "description": "Almost ready to drop. Keep your eyes open.",
+          "status": "in-progress",
+          "category": "mint"
+        }
+      ]
+    },
+    {
+      "weekNumber": 24,
+      "date": "2024-08-17",
+      "title": "Sunday Recap 08/17",
+      "events": [
+        {
+          "emoji": "👽",
+          "title": "Trait Delivery",
+          "description": "Delivered pending Alien + Action Pack traits. Auction winners got OZZY + HULK. First AlienGF → Cear got a full Alien Kit.",
+          "status": "completed",
+          "category": "trait"
+        },
+        {
+          "emoji": "🎭",
+          "title": "TraitLAB Updates",
+          "description": "Added Action Pack opening feature. Small fixes at /mintwithadrian, smoother UX",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🃏",
+          "title": "OG TraitCARDs",
+          "description": "Design, contract module + frontend ready. Batch claim live → already 200+ claimed",
+          "status": "completed",
+          "category": "feature",
+          "stats": {
+            "claimed": 200
+          }
+        },
+        {
+          "emoji": "⚔️",
+          "title": "BuilderBATTLE Season 1",
+          "description": "Huge success for the first run. Thanks to all participants 🙌. Check the animated 1st prize ZERO — it's 🔥",
+          "status": "completed",
+          "category": "game"
+        }
+      ]
+    },
+    {
+      "weekNumber": 25,
+      "date": "2024-08-24",
+      "title": "Sunday Recap 08/24",
+      "events": [
+        {
+          "emoji": "🛠️",
+          "title": "New Contract Module",
+          "description": "Built a fresh ERC1155 minter that accepts both $ADRIAN + ETH — perfect to onboard new lazy blood into the ecosystem.",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "📅",
+          "title": "Weekly Recap Page",
+          "description": "Now live 👉 https://adrianzero.com/roadmaps (Roadmap draft is in progress, not finished yet.)",
+          "status": "completed",
+          "category": "website",
+          "links": [
+            {
+              "text": "Roadmaps",
+              "url": "https://adrianzero.com/roadmaps"
+            }
+          ]
+        },
+        {
+          "emoji": "💾",
+          "title": "Golden Floppy",
+          "description": "Launch was smooth — still some left to mint 👀. Metadata already fixed on OpenSea.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🌌",
+          "title": "Neon Packs",
+          "description": "Backgrounds ready — squashing last smol bugs, launch incoming today.",
+          "status": "completed",
+          "category": "mint"
+        }
+      ]
+    },
+    {
+      "weekNumber": 26,
+      "date": "2024-08-31",
+      "title": "Sunday Recap – 08/31",
+      "events": [
+        {
+          "emoji": "🔹",
+          "title": "TraitLAB Refactor",
+          "description": "Full rework for smoother updates + easier maintenance. Whales got some QoL improvements 🐋, navigation between traits now way more comfy.",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🔹",
+          "title": "AdrianCrafting (Draft)",
+          "description": "New contract module idea: burn traits → get new/cool ones. Will be implemented inside TraitLAB. Makes perfect sense.",
+          "status": "announced",
+          "category": "feature"
+        },
+        {
+          "emoji": "🔹",
+          "title": "NEON Pack Launch",
+          "description": "New backgrounds available in the TraitSHOP ⚡ Go grab your NEON vibes.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🔹",
+          "title": "First Collab Secured",
+          "description": "USB incoming 💾 (first one is always the hardest… that's what she said).",
+          "status": "announced",
+          "category": "collab"
+        }
+      ]
+    },
+    {
+      "weekNumber": 27,
+      "date": "2024-09-07",
+      "title": "Sunday Recap 08/07 🟦 🟥",
+      "events": [
+        {
+          "emoji": "🔧",
+          "title": "TraitLAB v2",
+          "description": "Tons of effort here. Most used tool in the $A ecosystem, now rebuilt as a modular dApp so we can expand it in the future. (Still working on it)",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "⚡",
+          "title": "BOOSTED Auction",
+          "description": "OG vibes, two masterpieces from Masters of the Adrians up for grabs. Go pour those $ADRIAN moneys.",
+          "status": "completed",
+          "category": "auction"
+        },
+        {
+          "emoji": "👁️",
+          "title": "OPTICAL Backgrounds",
+          "description": "6 trippy new bgs to melt your eyes. Supply/price details soon.",
+          "status": "announced",
+          "category": "mint"
+        },
+        {
+          "emoji": "💡",
+          "title": "NEON Pack – Sale closed",
+          "description": "26 packs sold.",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "sold": 26
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 28,
+      "date": "2024-09-14",
+      "title": "Sunday Recap 09/14 @GANG",
+      "events": [
+        {
+          "emoji": "💾",
+          "title": "USB Comrades",
+          "description": "Launched with new contract module using Merkle proof. 800 wallets allowlisted. Traits inside = dope AF, USB ready to open",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "allowlisted": 800
+          }
+        },
+        {
+          "emoji": "🧪",
+          "title": "TraitLAB v2 (Beta)",
+          "description": "Almost 2 weeks coding → now split into 10 modular files. Easier updates + future expansions. Live for testing + bug hunting",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "👀",
+          "title": "X-Ray Trait",
+          "description": "Was about to announce… but someone sniped it from the shop for 1M $ADRIAN",
+          "status": "completed",
+          "category": "trait",
+          "stats": {
+            "price": "1M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "👽",
+          "title": "Engagement Thursday (E.T.)",
+          "description": "Tiger's idea to push engagement weekly. Rewards & surprises for X/Discord activity. 1st winner: Tipunch, snagged the 1/1 Ashley 👏",
+          "status": "completed",
+          "category": "social"
+        }
+      ]
+    },
+    {
+      "weekNumber": 29,
+      "date": "2024-09-21",
+      "title": "Sunday Recap 21/09",
+      "events": [
+        {
+          "emoji": "🚐",
+          "title": "Vacation Mode",
+          "description": "Dev drove to Portugal and back, ate, drank, saw things. IRL pause ✅",
+          "status": "completed",
+          "category": "personal"
+        },
+        {
+          "emoji": "🏛️",
+          "title": "Masters of the Adrians",
+          "description": "A slow-burn auction (artist insisted lol)… but ended as a success: 1.4M $ADRIAN highest bid. Two winners, two fresh 1/1 pieces",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "highestBid": "1.4M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "👁️",
+          "title": "OPTICAL Pack",
+          "description": "Sold out in minutes. Already seeing people opening them 👀",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🎁",
+          "title": "AdrianOGrewards",
+          "description": "Built contract + frontend: OG Punk holders get periodic free rewards from AdrianLAB just for holding. Might launch today if time allows — really love this idea, expect more like it.",
+          "status": "completed",
+          "category": "rewards"
+        }
+      ]
+    },
+    {
+      "weekNumber": 30,
+      "date": "2024-09-28",
+      "title": "Sunday Recap – 09/28",
+      "events": [
+        {
+          "emoji": "⚙️",
+          "title": "OpenPack v4",
+          "description": "Rewrote & deployed the new pack contract. Smoother, faster, less MetaMask fails. CHEAPER to open packs now in TraitLAB 💸",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "🎁",
+          "title": "OG Rewards",
+          "description": "New contract + dapp for AdrianPunks holders. 1 Punk = 1 free exclusive item. These traits/items won't be available anywhere else — only via OG claims 🔑",
+          "status": "completed",
+          "category": "rewards"
+        },
+        {
+          "emoji": "🗄️",
+          "title": "Supabase Integration",
+          "description": "Built my first database with Supabase (used for BuilderBattle). Opens the door to apply this logic across other parts of $ADRIAN 🚀",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "💾",
+          "title": "Punks Floppy",
+          "description": "Ready, already in the shop. Launching next week 👀",
+          "status": "completed",
+          "category": "mint"
+        }
+      ]
+    },
+    {
+      "weekNumber": 31,
+      "date": "2024-10-05",
+      "title": "Sunday Recap – 10/05",
+      "events": [
+        {
+          "emoji": "🎨",
+          "title": "BoredAdrian + MutantAdrian Background Packs",
+          "description": "Dropped and looking awesome — you know the inspiration, but we ain't saying it here 👀. Still some left at the shop (I think). Go grab 'em.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🛰️",
+          "title": "E.T. Space on X",
+          "description": "Filthy interviewed Tiger, dev got rugged and muted (LOL), classic $ADRIAN vibes. 10–15 listeners, pure alpha.",
+          "status": "completed",
+          "category": "social"
+        },
+        {
+          "emoji": "💾",
+          "title": "Stealth Launch – PunksFloppy",
+          "description": "Dropped during the space — real punks traits inside. Already seeing some dope builds with them 🔥",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "⚔️",
+          "title": "BuilderBATTLE Season 2",
+          "description": "Still open — dev winning (obviously 😎). Filthy is holding it down, waiting for your builds.",
+          "status": "in-progress",
+          "category": "game"
+        }
+      ]
+    },
+    {
+      "weekNumber": 32,
+      "date": "2024-10-12",
+      "title": "Sunday Recap — 10/12",
+      "events": [
+        {
+          "emoji": "🌒",
+          "title": "The Sun Went Down…",
+          "description": "Something weird happened this week in the AdrianLAB — for one strange day, odds to mint an AlbinoZERO were boosted to 70%. Some lucky mfers minted them, and I even made one a GF myself 😅",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "boostedOdds": "70%"
+          }
+        },
+        {
+          "emoji": "⚔️",
+          "title": "SamuraiZERO",
+          "description": "Artist delivered 600 prebuilt ZEROS + 100 new traits for upcoming Floppy drops. Dev updated render logic to handle collections inside collections (yep, each with unique metadata and art). Search for this: Senryoku (戦力) — every Samurai hides this power stat 👁️‍🗡️",
+          "status": "completed",
+          "category": "collection",
+          "stats": {
+            "prebuiltZeros": 600,
+            "newTraits": 100
+          }
+        },
+        {
+          "emoji": "🎨",
+          "title": "AdrianPlayground Live",
+          "description": "No wallet, no assets, just pure fun. Build a demo AdrianZERO, mix traits, and preview everything before buying. Direct OpenSea links for each trait — and yes, mobile friendly.",
+          "status": "completed",
+          "category": "dapp",
+          "links": [
+            {
+              "text": "Playground",
+              "url": "https://adrianzero.com/traitlab/play"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekNumber": 33,
+      "date": "2024-10-19",
+      "title": "Sunday Recap — 10/19",
+      "events": [
+        {
+          "emoji": "🌒",
+          "title": "Zoom-in-ZEROS",
+          "description": "Render CA calls + contract ready. Future toggler system built-in — can switch ANYTHING on-chain (paid or free with $ADRIAN). Already live at TraitLAB. 👀",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎃",
+          "title": "Hallo-WEN Incoming",
+          "description": "That red candle trait? I love it too LOL. It's going to the OG CLAIM. Halloween vibes loading... 🕯️ 🩸",
+          "status": "announced",
+          "category": "mint"
+        },
+        {
+          "emoji": "🏎️",
+          "title": "AdrianLAMBO",
+          "description": "Added to TraitLAB too! No txn needed yet — just for fun banners. If you like it, I'll drop a module and mintable version inside AdrianLAB. 🚀",
+          "status": "completed",
+          "category": "feature"
+        }
+      ]
+    },
+    {
+      "weekNumber": 34,
+      "date": "2024-10-26",
+      "title": "Sunday Recap — 10/26",
+      "events": [
+        {
+          "emoji": "🧠",
+          "title": "AdrianDELEGATOR",
+          "description": "New module that lets me interact with the AdrianZERO core from different extensions. Not gonna get too technical, but trust me — this thing's a feat LOL.",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "🎃",
+          "title": "Hello-WEN Drop",
+          "description": "Free mint module worked perfectly — wallet limit included. 50 new creepy-but-lovely traits by Tiger. These free drops are great for the long-term vibes of the project, so let's keep pushing them on X — any help means a lot 🕯️ 💀",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "traits": 50
+          }
+        },
+        {
+          "emoji": "💩",
+          "title": "ShitDROP (coming soon)",
+          "description": "Building on the Hello-WEN idea: Free public drops, 24 hours only ⏰. Based on trending topics, Web3 chaos, or random world events. Goal? Hit one viral pump and become accidentally famous and rich. LOL",
+          "status": "announced",
+          "category": "mint"
+        },
+        {
+          "emoji": "🧛‍♂️",
+          "title": "1/1 Dracula reward",
+          "description": "Top minter/buyer from Hello-WEN pumpkins & traits gets a 1/1 Dracula. Because every Halloween needs a bloodsucker. 🩸",
+          "status": "completed",
+          "category": "giveaway"
+        }
+      ]
+    },
+    {
+      "weekNumber": 35,
+      "date": "2024-11-02",
+      "title": "Sunday Recap — 11/02",
+      "events": [
+        {
+          "emoji": "🧩",
+          "title": "TraitLAB UI Improvements",
+          "description": "Rendered cleaner trait cards for faster loading — they look smoother and load quicker since they share the same path. Not implemented yet, but almost there. ⚙️",
+          "status": "in-progress",
+          "category": "ui"
+        },
+        {
+          "emoji": "🤖",
+          "title": "ShitDROP #1 — NEO",
+          "description": "Launched as a proof of concept with a 1/1 NEO-ZERO prize for one lucky minter 💩. It worked beautifully — pure, chaotic success.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "💉",
+          "title": "New Holders!",
+          "description": "Around 50 new holders joined through Hello-WEN + ShitDROP! Proof we can still onboard fresh blood into the $ADRIAN ecosystem — and that's awesome 💙 ❤️",
+          "status": "completed",
+          "category": "community",
+          "stats": {
+            "newHolders": 50
+          }
+        },
+        {
+          "emoji": "🕶️",
+          "title": "Adrian Shadow (UTILITY mfers!!)",
+          "description": "You can now add a shadow to your ZERO directly in TraitLAB — it's live under the \"Customise\" tab. Because sometimes utility is just… darker 😎",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "📦",
+          "title": "OpenPack Multiple",
+          "description": "You can now open up to 4 packs in one transaction at TraitLAB. Bundle it, save time (and hopefully gas 😂).",
+          "status": "completed",
+          "category": "feature"
+        }
+      ]
+    },
+    {
+      "weekNumber": 36,
+      "date": "2024-11-09",
+      "title": "Sunday Recap — 11/09",
+      "events": [
+        {
+          "emoji": "💩",
+          "title": "MC Packs — ShitDROP #2",
+          "description": "Second drop delivered! This time we went full fast-food mode 🍔. A proper pack with 10 different traits inside — uniforms, sodas, and drive-thru chaos.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🧢",
+          "title": "THE MANAGER (1/1)",
+          "description": "This awesome animated piece by @HalfxTiger went to the highest secondary buyer during the mint. He's overworked, overweight, and running the McMeta. 😂",
+          "status": "completed",
+          "category": "giveaway"
+        },
+        {
+          "emoji": "🎮",
+          "title": "Adrian McOrder Dash Game",
+          "description": "Our first mini-game by Tiger — and it was a hit! Players jumped in, grabbed free fries 🍟 for participating, and fought for the top leaderboard spot. The 1/1 reward went to the top scorer - Adrian McOrder Dash #454 🔥",
+          "status": "completed",
+          "category": "game"
+        }
+      ]
+    },
+    {
+      "weekNumber": 37,
+      "date": "2024-11-16",
+      "title": "Sunday Recap — 16/11",
+      "events": [
+        {
+          "emoji": "🥤",
+          "title": "Shakes in the Shop",
+          "description": "We only had shakes with fries, which felt illegal… so I asked Tiger for solo shakes. He delivered — man's a good dude sometimes 😂",
+          "status": "completed",
+          "category": "shop"
+        },
+        {
+          "emoji": "👾",
+          "title": "OG Treasury Punks",
+          "description": "Announcement → idea → dev → contract → dapp → launch… All at $ADRIAN speed ⚡. PunkSwap is live — go burn some GENESIS tokens, mfers!",
+          "status": "completed",
+          "category": "dapp",
+          "links": [
+            {
+              "text": "PunkSwap",
+              "url": "https://adrianzero.com/punkswap/"
+            }
+          ]
+        },
+        {
+          "emoji": "🖤",
+          "title": "BlackLIGHT Leaks",
+          "description": "Tiger cooked 69 new traits for the next big drop: BlackLIGHT Floppy. Not NEON — BlackLIGHT, and it looks insane 👀 🔥",
+          "status": "announced",
+          "category": "mint",
+          "stats": {
+            "traits": 69
+          }
+        },
+        {
+          "emoji": "🌐",
+          "title": "\"What Is This Shit?\" Landing Page",
+          "description": "Made a simple, digestible guide for newcomers trying to understand what the hell $ADRIAN is.",
+          "status": "completed",
+          "category": "website",
+          "links": [
+            {
+              "text": "What Is This Shit",
+              "url": "https://adrianzero.com/whatisit"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekNumber": 38,
+      "date": "2024-11-23",
+      "title": "Sunday Recap — 23/11",
+      "events": [
+        {
+          "emoji": "⚙️",
+          "title": "TraitLAB Optimisation (then disaster)",
+          "description": "Started the week strong — TraitLAB loading faster, smoother, cleaner… …aaaand right now it's fucking dead 🫣. No idea why. I'll try to fix it before I lose my mind LOL.",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🧹",
+          "title": "FloorENGINE (idea → contract → marketplace → live)",
+          "description": "Not a fork, not a copy, not a clone. Just a fully reimagined version for the $ADRIAN world: $ADRIAN marketplace. onchain sweep tools. Punks bought automatically. and ALL $ADRIAN tax now feeds the Engine (10% temp)",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "📡",
+          "title": "New Database + Scraper Bot",
+          "description": "Built an automated system that tracks a massive amount of ecosystem data: TraitLAB, $ADRIAN token, AdrianZERO, AdrianPunks, PunkQuest, FloorENGINE, AdrianShop, NameRegistry, SerumModule, and more…",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "💩",
+          "title": "ShitDROP #3 — Red Day Edition",
+          "description": "BTC bleeding? Perfect. 24h free drop. 40 mints + 15 new wallets joining $ADRIAN in a boring-ass bear market. Honestly? Pretty damn cool.",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "mints": 40,
+            "newWallets": 15
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 39,
+      "date": "2024-11-30",
+      "title": "Sunday Recap — 30/11",
+      "events": [
+        {
+          "emoji": "🛠️",
+          "title": "TraitLAB fixed + 4-day bug battle",
+          "description": "Half the dapps were broken because of ONE oversized image crashing everything 😂. Bug dead. Stability back.",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "🧹",
+          "title": "FloorENGINE UI glow-up",
+          "description": "Progress bar, cheapest Punk, engine balance, buys/sells, clean stats. Engine active all week — try it, it's actually fire.",
+          "status": "completed",
+          "category": "marketplace",
+          "links": [
+            {
+              "text": "Marketplace",
+              "url": "adrianpunks.com/market"
+            }
+          ]
+        },
+        {
+          "emoji": "🕶️",
+          "title": "BlackoutADRIANS ready",
+          "description": "Anonymous on-chain messages. Enough said.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🧊",
+          "title": "SubZERO launch + BlueTick",
+          "description": "Black Friday drop: 1 SubZERO + 1 trait + 100 $ADRIAN FREE. Added to homepage for onboarding. Router contract built → multiple mints in one txn.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "⚔️",
+          "title": "SamuraiZERO ready",
+          "description": "Crazy metadata logic: mint origin, tagging, naming, dynamic behavior. Multiple types mintable simultaneously in one collection.",
+          "status": "completed",
+          "category": "collection"
+        },
+        {
+          "emoji": "👥",
+          "title": "200 AdrianLAB holders",
+          "description": "Let's keep growing.",
+          "status": "completed",
+          "category": "community",
+          "stats": {
+            "holders": 200
+          }
+        }
+      ]
+    }
+  ]
+}

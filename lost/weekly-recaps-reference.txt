@@ -1,0 +1,1464 @@
+Sunday Recap – The $ADRIAN Ecosystem Keeps Growing! 🚀
+
+This week, I've been grinding on AdrianGallery.com, adding new dapps & improving what we already had. Here's what's new:
+
+✅ Auction Site – Now shows the actual NFTs you're bidding on.
+✅ Burn Stats Dapp – See a graph + data on how many $ADRIAN tokens have been burnt.
+✅ Holdings Dapp – View all your $ADRIAN assets (tokens + NFTs). Click an NFT to see metadata.
+✅ Filthy Rich Dapp – Mint #0005 THE BURNED FORTUNE for 100K $ADRIAN (burnt forever). No real utility, just a flex & a special Filthy Rich Discord role.
+✅ Forked OpenSea Collection – Updated GENESIS art & sent it to holders. Forking the collection gives me more control for future upgrades like minting with $ADRIAN tokens.
+✅ Tons of small improvements.
+
+All this while juggling IRL work too LOL. 😅
+
+I hope you guys enjoy the ecosystem I'm building!
+
+💙 Thanks for being here—BE REAL | BE ADRIAN! 🔥
+
+🚀 Sunday Recap!! 🚀
+
+🔥 What's new this week? 🔥
+
+• 🎨 @AKASHI30 auction is LIVE! Ends next week—highest bid so far: 255K $ADRIAN!
+• 🛒 Marketplace ready! Spent the weekend working on a complementary contract for offers, now you can make & accept offers using $ADRIAN! Check it out & let me know if you find any bugs (I spent way too many hours on this LOL).
+• 📊 Updated token details in Geckoterminal.
+• 💰 Moved LP to the new ADRIAN & switched from USD to ETH. This means more volatility in the graph since we're now tied to ETH price movements—so if you see red candles, blame ETH 😂.
+
+LFG! BE REAL | BE ADRIAN. 💙
+
+🚀 Sunday Recap – $ADRIAN Keeps Building! 🚀
+
+🔥 New Perk Added! 
+
+✅ GENESIS + ASCENSION holders now receive a tax refund on buy transactions!
+
+🎨 #0011 THE OFFERING – A Tribute from GENESIS
+• Mint started, ends this week ⏳
+• Already 25 minted!
+
+💎 Want to Mint a PIMP with $ADRIAN?
+• Just because we can… LOL 🤣
+• 3 or 4 minted already, and looks dope on OpenSea!
+
+🎉 AKASHI30 Auction = SUCCESS!
+• 13M+ collected! 💰
+• Half sent to ASCENSION dApp & already claimed by holders ✅
+• Both prizes & rewards looking GOOD in your wallets!
+
+🔮 What's Cooking?
+
+⚡ Lottery dApp – Early version live, try it now! 🎰
+⚡ ADRIANswap – Trying to compete with Uniswap (still lots to do LOL) 🔄
+⚡ PIMPSfeatADRIAN DAO – Built to manage funds & cool stuff 🏛️
+⚡ Staking dApp in progress – Plus a secret project… more details soon 👀
+
+We keep building every day—LFG!
+
+BE REAL | BE $ADRIAN. 🟦 🟥
+
+🚨 Sunday Recap – 30.23 @everyone 🟦 🟥
+
+Another insane week building—here's what went down in the $ADRIAN universe:
+
+⸻ ✅ What's Done:
+
+🎉 Lottery Round 1 finished – 300K $ADRIAN + NFTs sent
+⚙️ ADRIANauction V3 with time-gated Boosters completed – Ready for TOMO's drop
+🎨 Successfully deceived an artist into creating a stunning pixel PFP collection 😅
+🧠 Building AdrianPunks – A 1K PFP masterpiece with 10 unique 1/1s (from monday to saturday LOL)
+💎 Huge shoutout to the legend @HalfxTiger who finished art + metadata in just 3 days
+🐯 HalfTiger delivered the full set for AdrianPunks
+📜 AdrianPunks V2 contract built – includes tiered allowlists
+🌐 Domains secured: AdrianPunks.com
+
+⸻ 🔧 What's in the Making:
+
+🖼️ Facing some challenges managing images + metadata for the 1K collection
+– But we're close! Images now rendering properly
+– Working on bulk handling of JSON metadata
+🏪 AdrianMarket upgrade in progress
+– ERC721 support (we had ERC1155 only before)
+– Floor pricing + individual + floor-wide offers
+– Fast, smooth UX: combining offchain/onchain hybrid structure
+– Goal: have it ready before AdrianPunks drops, so y'all prefer it over OpenSea 😎
+
+⸻ ⏸️ What's on Hold (for now):
+
+🌀 Staking dApp
+🔄 ADRIANswap (still a bit above my dev paygrade atm LOL)
+🎮 ADRIANloyalty system
+– Part 1: contract to claim points from $ADRIAN token events
+– Part 2: gamified logic layer on top
+🗃️ Offchain record database for unified dApp integration
+
+🧠 Sunday Recap – April 6
+
+OMG what a week… I knew this would be hard but not this hard 😵‍💫
+(Been quiet, but my neighbors probably heard me screaming at my terminal 🤣)
+
+⸻ My First Times This Week:
+
+💻 Built a marketplace
+📦 Compiled a modular contract
+🧠 Fought with SQL databases
+🔧 Interacted with GitHub from the terminal
+🚀 Deployed on Vercel like a real dev (kinda)
+
+⸻ AdrianPunks Updates
+
+✅ Final touches done (contract + frontend)
+🤝 Alowlist collabs confirmed with:
+FFS, PunkSecrets, DZNTS, Naked Army, CryptoPimps, CoopTroop, The Appreciators, Ugly Labs
+🕊️ Mint Date: Easter Sunday, April 20th — Tiger made the call, be ready 👀
+
+⸻ AdrianMarket Progress
+
+I want to launch this before mint day, and it's looking great:
+
+🛒 Make + cancel listings
+🎯 Offers (floor, by trait or token ID)
+🔍 Filter by trait
+📊 Rarity filter
+
+I had a ton of issues dealing with databases, contract calls, frontend stuff, etc…
+(Reminder: I wasn't a dev before $ADRIAN LOL)
+
+But we're almost there—should be good to go for mint day 🟦 🟥
+
+⸻ Lottery Recap
+
+🎟️ Over 1K tickets sold
+🎉 3 winners
+✅ Allowlist prizes already delivered
+
+⸻ More stuff on the to-do and "waiting-for-AdrianMarket-to-finish" list. But we move.
+
+BE REAL | BE ADRIAN | BE A PUNK @everyone
+
+🧠 Sunday Recap – April 13
+
+READ DEGENS! pretty please:
+
+⸻ 🧢 AdrianPunks Mint THIS WEEK!
+
+Easter Sunday – 4/20 is THE DAY
+
+You can find the full mint schedule in ⁠adrian-punks-og
+
+👉 If we mint out: 100M $ADRIAN in income
+• 50M goes to Tiger 🐯
+• 50M goes to THE OFFERING seat holders 💸
+
+⏰ Schedule:
+
+20 April 2023 at 23:00 GENESIS (25 wallets, max 375 punks – so chill here)
+21 April 2023 at 00:00 COLLABS + LOTTERY + ARTISTS
+21 April 2023 at 00:30 PUBLIC
+
+⸻ 🛒 AdrianMarket is LIVE
+
+Buy, sell, and flex your punks with $ADRIAN
+
+⸻ 💀 THE TAX REAPER SOLD
+
+Sold in Dutch Auction for 9.7M $ADRIAN
+💰 Proceeds going straight to PunkQuest reward pool
+Already sent to the winner.
+
+⸻ 🧙 TOMO's 1/1 is almost done
+
+It's coming and it's gonna be 🔥
+
+⸻ 📈 $ADRIAN Hit Several ATHs This Week
+
+Massive buys, strong momentum. OGs winning.
+
+⸻ ⚔️ PunkQuest in Development
+
+Soft-staking system incoming
+– Casual mode for chill holders
+– Gamified mode for the real degens
+– Armor, weapons, quests, events… and more being cooked
+🖌️ Tiger dropped insane weapon assets for alpha testing.
+(If you didn't see them… go look. They're BEAUTIFUL.)
+
+⸻ ✅ All Collab Allowlists Added to Mint Contract
+
+If you know someone that could be interested, they're welcome, just let me know
+
+We mint 4/20 – BE READY
+
+⸻ 🔮 ORACLE Mint Wrapped
+
+13 minters… something happened? you tell me 👀
+💰 50% of proceeds (440K $ADRIAN) already in THE OFFERING dApp ready to claim (remember that only one claimer is needed)
+
+⸻ 🧩 AdrianGallery UI Updates
+
+Refining the AdrianGallery look & feel to separate it visually from AdrianPunks
+It's a work in progress – known bugs, but updates incoming this week.
+
+⸻ BE REAL | BE A PUNK | BE ADRIAN 🟦 🟥 Let's make history this 4/20.
+
+@everyone
+
+Sunday Recap 4/20 (this one's easy to read LOL)
+
+7 months ago till mint ⏳
+
+Been grinding all week building PunkQuest — batch functions, staking, rewards, items, weapons, armor, events… so much math it hurts 😵‍💫
+
+Most difficult contract I've built so far.
+
+Today I'm releasing a small slice of it:
+
+🛡️ PunkQuest Season One
+
+→ You can stake, unstake, and claim rewards starting now.
+
+🧠 Mint here: https://adrianpunks.com/mint
+💸 Dump them: https://adrianpunks.com/market
+🔥 Stake them: https://adrianpunks.com/punkquest
+
+BE REAL | BE AN ADRIAN PUNK @everyone 🟦 🟥
+
+Sunday Recap – 4/27
+
+• TOMORROWMAN 1/1 Auction LIVE (5 days left) — Current highest bid: 16M $ADRIAN!! 🔥
+
+This auction includes new features like Timed Boosters!
+
+• PFP Raffle on X — I launched it but didn't have time to finish it properly (working on it, promise!).
+• PunkQuest Armory Section —
+
+Been fighting with a nasty bug all week. Still not solved… but we're close.
+
+• New dApp in Progress: AdrianPunks Exchange!
+
+Built a new contract and started frontend work.
+
+A platform where you can safely swap AdrianPunks with other users for a small $ADRIAN fee and don't get scammed by those mfers in ⁠general-chat chat LOL
+
+Check sneek peaks 👀
+
+⸻ BE REAL | BE ADRIAN 🟦 🟥 @everyone
+
+Sunday Recap – 05/04 🟦 🟥
+
+– HalfxAdrians are LIVE!
+
+Soulbound minis tied to your AdrianPunks – wherever your Punk goes, it follows.
+
+They'll metamorph into different versions soon (contract already prepped).
+
+Massive shoutout to @HalfxTiger for the speedy, dope art!
+
+– New Feature:
+
+Future side-collections will be attached to your PocketAdrian, so your wallet doesn't explode with junk. One Punk = One PocketAdrian, with toggleable versions and updateable metadata. Smart, huh?
+
+– Marketplace Upgrade:
+
+Toggle between both collections at:
+
+👉 https://adrianpunks.com/market
+
+– Featured Auctions Page:
+
+All the past madness in one place:
+
+👉 https://adriangallery.com/auctionstats
+
+– Punk Exchange is LIVE
+
+Yes, a whole f*cking dapp where you can swap Punks peer-to-peer, and no one used it yet 💀 (I wrote this yesterday haha, @Drew Peacock used it)
+
+👉 https://adrianpunks.com/exchange
+
+– TOMO Auction Recap:
+
+16 MILLION $ADRIAN bid by GOOST 💪
+8 MILLION distributed to ASCENSION holders.
+
+@elemin waited for rewards (and gas sponsor 😅), @c727 still crying.
+
+– X Raffle:
+
+Wrapped up. Winner scored 2 amazing Punks.
+
+– No Progress in Armory:
+
+Too busy. But don't worry—your Punks still farming fake ADRIAN 😆
+
+– ATHs this week:
+
+$ADRIAN flying. Thanks to all of you degens 💙 ❤️
+
+– IRL Prints:
+
+Still pushing the artist to drop signed AdrianPunks prints… Stay tuned.
+
+– Mint Stats:
+
+AdrianPunks mint has already farmed 50 MILLION $ADRIAN (≈$2.5K)
+
+That will be redistributed to holders & artists when we mint out 🔥
+
+– Fun Fact:
+
+That airdrop months ago? Now worth $15 🤯
+
+BE REAL | BE ADRIAN | BE A FKN PUNK 🟦 🟥 @everyone
+
+🟦 🟥 Sunday Recap – 05/11 🟦 🟥
+
+– ✅ AdrianToggler live
+
+Now you can toggle your PocketAdrian between versions (HalfxAdrians so far)
+
+– 👀 Sneak peek of future toggled ADRIANS by @HalfxTiger — they're 🔥
+
+– 🌲 "BARKS" by COR727 x ARBO
+
+Sold for 2.4M $ADRIAN
+
+Split between artists & ASCENSION holders — ecosystem in motion
+
+– 📈 New ATHs & price at 0.00074 — fourth zero might vanish soon 👀
+
+– 💧 Liquidity added to the LP
+
+Bigger LP = less slippage + more attention
+
+Reminder: you can remove your liquidity anytime and keep the rewards
+
+– ⚔️ PunkQuest update
+
+One of the most complex dApps so far. Making steady progress. Still a lot to do. Stay tuned
+
+– 🏎️ LAMBObuilder is live (desktop only for now)
+
+Choose your Punk + Lambo color → Download your new Twitter banner
+
+If mobile bugs you, tag me with the Punk ID and color — I'll do it for you 😎
+
+– 🤔 Ideas for more visibility
+
+Maybe time to onboard an influencer or launch a mini airdrop to a wild degen community (+100 active users)
+
+⸻ BE REAL | BE BUILDING | BE $ADRIAN 🟦 🟥 @everyone
+
+🗓️ SUNDAY RECAP – 05/17
+
+Another week, another pile of madness. Let's go:
+
+🛠️ AdrianAuctions is LIVE!
+
+From idea to reality—fast, buggy, but very real. Now you can auction your NFTs on Base and receive $ADRIAN. Check the announcement post for full details. Free to use. Yes, seriously.
+
+🔗 https://auctions.adriangallery.com/
+
+🎨 New PocketAdrians Incoming!
+
+@10xTiger delivered most of the next toggled collection—and they're VECTORED AF. Clean enough to slap on your car, building, or forehead. 👀
+
+🎮 PunkQuest SeasonOne Funded!
+
+10 MILLION $ADRIAN added to the contract.
+
+No more fake rewards—only real bags now. Stake your punks or stay poor.
+
+💸 $ADRIAN Tax Update
+
+Down from 1.5% to 1.0%
+• Lowered DEV and BURN share
+• THE TAX REAPER still gets his tasty cut
+• GENESIS holders stay tax-exempt 😏
+
+🧪 Artist Chaos Unlocked
+
+Been harassed (lovingly) by @10xTiger with wild ideas. Apparently, I'm a "real dev" now. Some of this will land in AdrianLab. I'll leak things soon 👀
+
+💧 LP Contributions
+
+We have 5 liquidity providers already—thank you legends. Want to join in? There's a DIY tutorial pinned in Announcements.
+
+⸻ 🧠 Still cooking (halfway chaos list):
+
+• PunkQuest S2: Gamified boosts, armor, events
+• Auction upgrade pass (based on feedback/usage)
+• Next PocketAdrians toggled version – pending full vector delivery + metadata/IPFS work
+• Finalizing a CGPT 3D art piece for next mint
+• Building a new contract for the next crazy artist request™
+
+⸻ BE REAL | BUILD FAST | BE $ADRIAN 🟦 🟥 @everyone
+
+SUNDAY RECAP – 05/25
+
+what a week inside the AdrianVerse…
+
+• Young dev wassa just shipped an awesome bot that tracks AdrianPunks mints and $ADRIAN buys. From "what if" to it's fucking live.
+
+• AdrianLAB is no longer just a cursed idea—it's a modular, smart, dangerous machine:
+
+• Fully customizable collection incoming
+• Trait builder, gamification, chaos
+• Built a VERCEL dapp server that generates real-time metadata & images based on blockchain input
+• You can literally build your own punk
+
+(yes I have leaks… no I won't drop them… maybe)
+
+• While writing this, thought: "wait… we could use this for AdrianLAMBOS too." Add that to the To-Do list I never check.
+
+• 4 contracts deployed that work together.
+• Took time to whitepaper it
+• Modular logic, future-proof
+• No more rushed chaos—this time it's calculated chaos
+• AdrianLAB is meant to evolve without breaking. That's the whole point.
+
+• This opens the door to collabs, extensions, integrations…
+• You wanna build in the LAB? Let's cook.
+
+• #0015 – COLLECTA.UNITS was just announced:
+• A new way to earn small pieces of AdrianLAB activity
+• Think OFFERING meets ASCENSION, but twisted
+• You want a cut? Spend those $ADRIANS.
+
+(full mechanics dropping this week)
+
+⸻ Be real. Be synthetic. Be part of the AdrianLAB.
+
+See you in the chain. @everyone 🧬 🔴 🔵 ☣️
+
+Sunday Recap – 06/01
+
+TL;DR: Clean. Fcking. Code. LOL
+
+🧠 VERCEL Renderer
+
+• Moved from mockup data → real on-chain data
+• First tests successful: NFTs now reflect trait changes directly on OpenSea 😤
+• It works. It's real.
+
+⚙️ Smart Contracts
+
+• Started the week needing 4 contracts for AdrianLAB
+• Ended up with 8 ...
+• Tried switching everything to a PROXY architecture (failed miserably LMAO)
+• Might retry... or might just keep it simple for now.
+
+🎨 Art Leaks from @HalfxTiger
+
+• AdrianZero – the 0-trait mf you'll mint first
+• Floppy Discs – trait packs (ERC1155s with random traits inside)
+• Gen0 + Gen2 – mutation madness (you already know: deformities expected LOL)
+• Point-and-click scenes: AI-powered backgrounds for future gamified UI (we still have to figure it out completely how to do that shit.... just an idea now)
+
+🧪 AdrianLAB is cooking. You ain't ready. @everyone
+
+Sunday recap 06/08 🧪
+
+👨‍💻 Just coding LOL — spent the whole week building, deploying, and configuring 14 AdrianLAB contracts.
+
+Minted first 3 AdrianZERO for final render tests ✅
+
+Tried minting some Floppys + traits, something broke 😭 — fixed it in theory, redeployed, but haven't checked again. Next week…
+
+Artist keeps sending me wild stuff — gotta restrain myself from leaking it LOL.
+
+You'll be able to build some INSANE PFPs with AdrianLAB. 🔥
+
+🟦 🟥 @everyone
+
+Sunday Recap – 06/15
+
+• Forgot my laptop = 0 productivity 💀 dev weekend ruined
+• ✅ Minted first Floppy (ERC1155)
+• 🔥 Burned first Floppy → Got traits
+• 🔥 Burned first trait (background) → Applied it to an AdrianZERO
+• 🐛 Major bugs found on VERCEL renderer — solvable but needs time
+• 🎉 Dev's 40th birthday on Friday the 13th — thanks for the love and the BD Floppy, that was sick LOL
+• 🕹️ Finally locked the idea: 80s Point & Click adventure to interact with AdrianLAB (trait builder, serums, mutations, floppy, etc) — starts small, grows wild
+• 👀 Leaked OG Floppy – free mint for AdrianPunks holders, has OG traits 🟩
+• 💡 MostWanted is coming: trait builder + leaderboard. First to replicate a target AdrianZERO gets $ADRIAN reward. (not built yet… but easy af)
+• 😮‍💨 Still failing at bringing attention/FOMO… maybe next Sunday?
+• 🎨 Artist dropping fire AdrianZERO with new traits — if I were a collector, I'd hoard them. HUGE thanks to @HalfxTiger 🫡
+
+🟦 🟥 • AdrianGF revealed, you'll need a serum for that
+• 🤐 Got some spicy secrets they don't want me to leak… 🥲
+
+@everyone
+
+Sunday Recap – 06/22
+
+Brace yourself, it was a week of bugs, code, and breakthroughs 👇
+
+🧪 At the beginning of the week we decided: Let's launch the OG Floppy!
+
+Everything looked ready… but then?
+
+Metadata wasn't showing.
+
+FML. Major bug. Not solvable with current deployed contracts 😤
+
+So yeah, had to redeploy.
+
+🔧 Spent around 20 hours debugging across:
+
+AdrianTraitsCore
+AdrianTraitsExtensions
+AdrianPackTokenMinter
+AdrianSerumModule
+
+💡 Since I was redeploying anyway… added:
+
+Cool new features 👀
+Admin tools (so I don't lose my mind again)
+
+✅ Now everything compiles. Just needs some final testing.
+
+If all works smoothly, OG Floppy drops THIS WEEK.
+
+Get ready for more updates, and have your $ADRIAN wallets hot 🔥
+
+Love y'all, mfers 🟦 🟥 @everyone
+
+Here's your Sunday Recap 06/29 — now with fewer bugs and more ✨ hope:
+
+⸻ 🧠 Spent the whole week stuck on a single bug
+
+ERC1155 metadata… a different beast than ERC721.
+
+20+ hours sunk. Gave up. Accepted defeat.
+
+Then… boom 💥 a miracle (or maybe drugs LOL) —
+
+VERCEL metadata for OPENSEA now works.
+
+👉 This means: Fully dynamic ERC1155 metadata, rendered on the fly, showing properly on OpenSea — a game-changer for Floppys and traits.
+
+⸻ 🎨 Now designing Trait Cards
+
+These will display info + colors based on metadata directly in the image.
+
+Not required for OG Floppy launch — just doing something visual after all the backend brain torture 😵‍💫
+
+⸻ 🎲 One last bug left: RANDOMNESS in OpenPack
+
+Should be solvable — not as cursed as metadata was.
+
+Let's cross fingers 🤞
+
+⸻ 💬 Final thoughts:
+
+Thanks to all of you who stick around even when the dev logs sound like "debugging logs" LOL
+
+Next week gonna be fun — OG Floppy coming, maybe more surprises 👀
+
+⸻ BE REAL | BE ADRIAN
+
+🔥 Almost there, mfers. The Lab is waking up. @everyone
+
+🔥 Sunday Recap – 07/06 🔥
+
+After 6 weeks of grinding code, THIS was the week we went live…
+
+⸻ 🧠 Big Wins This Week
+
+• ✅ Fixed the 2 BIG bugs that held us back
+  — Metadata (ERC1155/721 hell)
+  — Randomness for trait packs
+• 🌐 Launched AdrianLAB website
+  — A gamified teaser of what's coming 👀
+• 💾 OG Floppy minted (SOLD OUT in 6 min)
+• 🥷 Stealth dropped STARTER Floppy (free mint!)
+• 🧪 TraitLAB went live
+  — Select your AdrianZERO
+  — Apply traits (and yes, they burn)
+• 💥 Open Floppy feature added
+  — Unpack your traits from Floppys
+• 🔧 Hundreds of bugs squashed
+  — Vercel server, metadata, OpenSea display, TraitLAB UI, minting…
+  — Literally HUNDREDS of hours 🧵
+💻 — All this while juggling IRL business & angry GF 😂 ❤️
+
+⸻ 💬 A Personal Note
+
+Some people might not like how I do things… and that's fine.
+
+This is a free space. You don't vibe? You don't stay.
+
+But know this:
+
+ZERO FOMO, ZERO VC MONEY, ZERO SHILLING.
+
+Just build. From meme ➝ to reality.
+
+AdrianLAB alone has thousands of lines of code, countless hours.
+
+No empty promises, no hype-based rug. Just… delivery.
+
+⸻ 🎨 A THANK YOU to @HalfxTiger
+
+The art is a core reason I keep pushing.
+
+Your creativity fuels this madness. We're just getting started.
+
+⸻ 🧪 What's Coming Next…
+
+• 🎮 Gamified experience (Point & Click vibes incoming)
+• 👾 PatientZERO module (first draft nearly done)
+• 🧬 More trait packs, mutations, duplicates, serums
+• 🧠 More chaos. More fun. More $ADRIAN.
+
+⸻ BE REAL | BE ADRIAN
+
+🟦 🟥 Let's keep building what others only dream of. VENI VIDI VICI @everyone
+
+🧠 07/13 – SUNDAY RECAP 🧠
+
+It's been 5 months since I launched $ADRIAN from my sofa with an online tool. Never did this before. No roadmap. No VC. Just chaos, fun, and code.
+
+Now look where we are… 😤
+
+This week was INSANE:
+
+💾 Green Floppy mint — success! Minted & burnt like mfers
+🔥 1300+ items created in AdrianLAB in under a week
+👾 120 AdrianZERO minted in just 6 minutes
+🎨 270+ wild trait artworks by @HalfxTiger
+📟 OG pagers dropped to special members
+🛠️ Hundreds (yes, literally) of bugs squashed
+🎲 Improved Floppy randomness + metadata stability
+⚡ Switched VERCEL from ethers to infura = way faster now
+💣 Launched our first ActionPACK: TOXIC — a build-it-yourself 1/1 AdrianZERO
+💸 Dutch auction sold for 275K $ADRIAN
+👀 Massive leaks (ofc, I can't help it)
+🎮 First Discord game, surprise-style by Tiger — gooost won BIG LEBOWSKI edition
+🧠 Launched PatientZERO — bounty hunt for trait builds, first up: STRAPDADDY (50K reward!)
+
+...and probably more I forgot because I haven't slept in days 🤣
+
+WE DID ALL THIS IN A SINGLE WEEK.
+
+Let that sink in.
+
+This is what happens when a mfer refuses to stop.
+
+BE REAL | BE ADRIAN 💙 ❤️ @everyone
+
+🧠 Sunday Recap 07/20 – Another Wild Week in $ADRIAN Land
+
+Let's see what the hell we did this time 👇
+
+💉 262144 SERUM dropped – time to transform AdrianZERO into AdrianGF 👩‍🎤
+😵‍💫 Serum fails officially announced – yeah, shit happens if you drink the wrong juice
+🏷️ AdrianNameRegistry launched – write your AdrianZERO name onchain using $ADRIAN. Contract + render = dynamic metadata on Opensea 🔥
+🐦 New official X account! We moved from @AdrianCerda (personal) to @AdrianZeroPunks — go follow + interact, we're giving away Tex.Ranger #202 🎁
+🎉 Gooost giveaway madness – one of his best AdZs gifted. Jess won that clean mf 💎
+🧟‍♂️ New bounty at the RehabCenter: SilentButDeadly still on the loose. Who's catching that mf?
+🆓 Wassa bailed out 2 Rehab patients – free souls back in the game
+🐛 Bug fixes all over the place (you know how we do)
+👀 Visual cue added to detect AdrianZERO without skin (maybe the damn alien is one of them…)
+🖼️ New Discord PFP + name – glow-up achieved
+🎨 New Artist Studio channel – go bother the artist with weird ideas and chaos
+📘 "Guide for Dummies" released – how to survive AdrianLAB 101
+💚 AdrianGF Floppy ready! +150 traits dropped, all live in the contract. We launch soon!
+🧬 Oh and yeah... GLITCH floppy got launched too, broken as hell inside 😂
+🃏 TraitCards updated to show Total Minted instead of max supply (makes more sense, right?)
+⚙️ This thing keeps growing... and glitching... and burning stuff.
+
+BE REAL | BE ADRIAN 🔴 🔵 @everyone
+
+🧼 Sunday Recap – 07/27 🧼
+
+Another wild week in the $ADRIAN ecosystem. Here's what went down:
+
+🟡 OG Distribution Completed
+
+• 26M $ADRIAN (+1300 USD) distributed to THE OFFERING holders via the dApp
+• THE OFFERING is part of our OG utility/art NFT collection: AdrianGallery
+
+🌐 New Website Launched
+
+• 📍 https://adrianzero.com/ is now live
+• Everything AdrianLAB related will live here: TraitLAB, PatientZERO, Index, and more coming soon
+• Includes the long-awaited MENU, finally 😅
+
+💧 Tax Update
+
+• The 0.8% DEV tax now goes directly to LP 💧
+• I'll be swapping small amounts of $ADRIAN for ETH and adding both to Uniswap LP
+• Stronger liquidity = healthier token
+
+⚙️ Render Optimization
+
+• We've hit Vercel free plan limits
+• Added cache to rendering to improve speed + avoid downtime
+
+🎥 Streaming Soon
+
+• Preparing a Twitter Space/Stream with Filthy and Tiger
+• More news this week — gonna be fun 🔥
+
+🛍️ AdrianSHOP in Progress
+
+• Buy traits directly with $ADRIAN (no floppy luck needed)
+• Planning a CLAIMING feature for special holders — TBD but will be cool
+
+🕹️ AdrianADVENTURE Beta
+
+• Point-and-click game (80s inspired with Web3 twist)
+• Some scenes already live
+• You can open Floppys in a computer… in an attic 😂
+• Blockchain-compatible mechanics in the works
+
+👥 New Faces
+
+• Welcome to the new frens who joined this week!
+• If you can, help push on X and Discord — every little bit helps this grow 💪
+
+🎨 Tiger's Auctions
+
+• Two epic commemoratives dropped:
+• OZZY – sold for 250K $ADRIAN
+• HULK – sold for 100K $ADRIAN
+• Both via AdrianAuction v6
+• Tiger delivered both TraitPacks — dev working on a special contract (simplified Floppy style)
+
+🛠️ TraitLAB Fixes
+
+• Visual and UX improvements — it's lookin' clean now 😎
+
+🚗 AdrianLAMBOS v2
+
+• Early rendering progress — contract still in the oven
+
+Let's keep pushing forward. One trait at a time.
+
+BE REAL | BE ADRIAN @everyone
+
+🌀 SUNDAY RECAP – 08/03
+
+What a week, fam! Let's run through it:
+
+🎥 FIRST STREAM EVER
+
+• Happened Thursday – shoutout to Filthy for organizing and to everyone who joined
+• We demo'd TraitLAB, gave away T-SHIRTS 👕 (Monkey Island vibes, my childhood fav 🎮 – thx Tiger)
+• My English ain't perfect but we made it happen and it was fun!
+
+🧠 PatientZERO Upgrades
+
+• Now when you customize a matching AdrianZERO with a rehab character…
+⚡ It auto-renames in OpenSea to reflect the identity.
+
+No more guessing who that glitched mf is.
+
+🌐 AdrianZERO.com: New Tools + Fixes
+
+🔧 New onboarding module is LIVE:
+
+• Buy with ETH (~$5 on Base)
+• Get: 1 AdrianZERO + 1 Starter Floppy + $ADRIAN tokens
+
+📎 https://adrianzero.com/
+
+🛍️ TraitSHOP Launch
+
+• No more luck needed—get special items directly
+• Now available: AdrianGF Serums
+
+🛒 https://adrianzero.com/shop/
+
+🎨 TraitSTUDIO Drop
+
+• Spent days building this wild tool
+• You can now design & mint T-Shirts using $ADRIAN
+• Fully usable with your AdrianZERO 🔥
+• Custom render logic + smart contract—crazy stuff, thanks Tiger for being weird 💀
+
+📺 Streaming Platform (WIP)
+
+• Our homie Professor built us a streaming site.
+• Still needs testing but… Why the hell not?
+• THANK YOU dude, you're nuts and we love it 💚
+
+🔁 That's it for now.
+
+Let's keep building cool shit.
+
+BE STRANGE | BE $ADRIAN 🧪 @everyone
+
+📢 Sunday Recap – 08/10 🔴 🔵
+
+⚡ VERCEL Endpoints FULL Optimisation – ~25 hours spent caching SVGs, creating multiple types per endpoint, cutting contract calls, JSONs, and trait renders. Goal: stay on FREE tier. Still needs tweaks, but much faster now.
+
+💉 Gold Serums – SOLD OUT in under an hour! All 3 variants gone. Artist nailed the "manager" role during mint while dev was IRL. Was the chaos part of the plan? 😏
+
+🎨 Render Logic Updates – Endpoints now handle GoldenSerum skins correctly.
+
+🥳 #300 AdrianZERO Minted – Milestone! We're celebrating with a BuilderBATTLE – check the rules and build your ZERO for awesome prizes.
+
+💾 Golden Floppy – Almost ready to drop. Keep your eyes open.
+
+🌐 AdrianZERO.com Updates – ETH onboarding live on the landing page. /mintwithadrian now lists ALL ongoing mints in one place.
+
+BE REAL | BE ADRIAN 🚀 @everyone
+
+📜 Sunday Recap 08/17 @everyone
+
+👽 Trait Delivery
+
+• Delivered pending Alien + Action Pack traits
+• Auction winners got OZZY + HULK
+• First AlienGF → Cear got a full Alien Kit
+• Finished contract for ActionPacks → easier dev flow → expect more soon
+
+🎭 TraitLAB Updates
+
+• Added Action Pack opening feature
+• Small fixes at /mintwithadrian, smoother UX
+
+🃏 OG TraitCARDs
+
+• Design, contract module + frontend ready
+• Batch claim live → already 200+ claimed
+
+🎨 Special NFTs
+
+• DFZ Honorary NFT → proof of concept + killer art
+• ILYA NFT → turned into an original piece, looks super cute
+
+💾 GLITCH Floppy
+
+• Open them and see what chaos you get
+
+⚔️ BuilderBATTLE Season 1
+
+• Huge success for the first run
+• Thanks to all participants 🙌
+• Check the animated 1st prize ZERO — it's 🔥
+
+🗞️ Sunday Recap 08/24
+
+🛠️ New Contract Module
+
+Built a fresh ERC1155 minter that accepts both $ADRIAN + ETH — perfect to onboard new lazy blood into the ecosystem.
+
+📅 Weekly Recap Page
+
+Now live 👉 https://adrianzero.com/roadmaps
+
+(Roadmap draft is in progress, not finished yet.)
+
+🤝 Comrades TraitCards
+
+Tried to push a collab (still tricky for me 😅), but art came out dope AF.
+
+🌀 Gumball Machine Drafts
+
+Experimenting with prefab ZEROS you'll be able to "grab" like toys.
+
+💾 Golden Floppy
+
+Launch was smooth — still some left to mint 👀
+Metadata already fixed on OpenSea.
+
+🔤 Tiger's New Typeface
+
+We got our own AdrianZERO font. No one asked for it, but it's 🔥
+
+🌌 Neon Packs
+
+Backgrounds ready — squashing last smol bugs, launch incoming today.
+
+BE REAL | BE ADRIAN 🟦 🟥 @everyone
+
+📅 Sunday Recap – 08/31
+
+IRL week was busy AF, but we still shipped. This one's been all about TraitLAB — since that's where you mfers are spending the most time lately 👀
+
+🔹 TraitLAB Refactor
+
+Full rework for smoother updates + easier maintenance. Whales got some QoL improvements 🐋, navigation between traits now way more comfy. (Still on the works, maybe next week launch)
+
+🔹 AdrianCrafting (Draft)
+
+New contract module idea: burn traits → get new/cool ones. Will be implemented inside TraitLAB. Makes perfect sense.
+
+🔹 NEON Pack Launch
+
+New backgrounds available in the TraitSHOP ⚡ Go grab your NEON vibes.
+
+🔹 Collection Grid Render
+
+Endpoint live: generates a full grid of the entire collection — made to flex & share 😏.
+
+🔹 First Collab Secured
+
+USB incoming 💾 (first one is always the hardest… that's what she said).
+
+🔹 $ADRIAN Staking Idea
+
+Points system draft coded. Stake $ADRIAN → earn points → redeem in shop. More updates in the coming weeks.
+
+⸻ BE REAL | BE ADRIAN 🟦 🟥 @everyone
+
+📢 Sunday Recap 08/07 🟦 🟥
+
+🔧 TraitLAB v2 – Tons of effort here. Most used tool in the $A ecosystem, now rebuilt as a modular dApp so we can expand it in the future. (Still working on it)
+
+🧪 Wizz-Potion – Delivered to Gooost.
+
+⚡ BOOSTED Auction – OG vibes, two masterpieces from Masters of the Adrians up for grabs. Go pour those $ADRIAN moneys.
+
+☠️ TAX Reaper Claim – Almost ready.
+
+👁️ OPTICAL Backgrounds – 6 trippy new bgs to melt your eyes. Supply/price details soon.
+
+💡 NEON Pack – Sale closed, 26 packs sold.
+
+💾 AdrianPUNKS Floppy – Almost ready.
+
+🤝 Comrades Collab – Progress! Stuck on an allowlisting bug, but maybe next week.
+
+💭 Ideas explored this week: Rewards for ZERO holders + $ADRIAN stakers, and a new PetFOOD concept with Tiger. Early days, but cooking something fun.
+
+📌 Heads-up: Dev goes on holiday 🏖️ road trip to Portugal Sept 12–19. No laptop, just phone. Maybe 1–2 stealth launches while away…
+
+BE REAL | BE ADRIAN @everyone
+
+📅 Sunday Recap 09/14 @GANG
+
+💾 USB Comrades
+
+• Launched with new contract module using Merkle proof
+• 800 wallets allowlisted
+• Traits inside = dope AF, USB ready to open
+
+🧪 TraitLAB v2 (Beta)
+
+• Almost 2 weeks coding → now split into 10 modular files
+• Easier updates + future expansions
+• Live for testing + bug hunting
+
+💿 New Drops Incoming
+
+• PUNKS Floppy: ready, launch TBA (price + availability soon)
+• OPTICAL Background Pack: small limited run, cheap, expect a quick sellout
+
+⚙️ Contract Improvements
+
+• Working on Floppy contract optimizations → cheaper, faster, bulk-friendly for whales
+• Not finished yet, still in progress
+
+👀 X-Ray Trait
+
+• Was about to announce… but someone sniped it from the shop for 1M $ADRIAN
+
+🤖 Welcome Bot
+
+• Built by Wassa, looks like it's working — let's test it further
+
+👽 Engagement Thursday (E.T.)
+
+• Tiger's idea to push engagement weekly
+• Rewards & surprises for X/Discord activity
+• 1st winner: Tipunch, snagged the 1/1 Ashley 👏
+• Delivery this Friday
+
+🌴 Dev on Roadtrip
+
+• Portugal till Friday 🚐
+• Chill week, less dev work
+
+BE REAL | BE ADRIAN 🟦 🟥
+
+📒 Sunday Recap 21/09
+
+What a week — let's run through it 👇
+
+⸻ 🚐 Vacation Mode
+
+Dev drove to Portugal and back, ate, drank, saw things. IRL pause ✅
+
+🎨 Artist Drop
+
+Tiger drew Elliot as the 1/1 prize for our first Engagement Thursday (E.T.) — delivered to the winner. Love it.
+
+🎃 Halloween?
+
+Thinking of a special Halloween drop/claim next month… stay tuned.
+
+👥 Discord Roles
+
+Created @GANG role so "everyone" is now kept for big announcements only.
+
+🏛️ Masters of the Adrians
+
+A slow-burn auction (artist insisted lol)… but ended as a success:
+
+• 1.4M $ADRIAN highest bid
+• Two winners, two fresh 1/1 pieces
+
+👁️ OPTICAL Pack
+
+Sold out in minutes. Already seeing people opening them 👀
+
+🎁 AdrianOGrewards
+
+Built contract + frontend: OG Punk holders get periodic free rewards from AdrianLAB just for holding. Might launch today if time allows — really love this idea, expect more like it.
+
+⸻ ⚡ Random Dev Experiments (WIP & stuck)
+
+• ShooterGame (artist-built, testing onchain mechanics)
+• AdrianStrategy (auto buy/sell punks — maybe too complex but fun idea)
+• OpenSea API experiments (found a dev API, still stuck on some parts)
+• Merch with $ADRIAN (classic onchain/offchain integration headaches)
+
+⸻ That's the wrap.
+
+BE REAL | BE ADRIAN 🟦 🟥
+
+📅 Sunday Recap – 09/28
+
+@everyone
+
+⚙️ OpenPack v4
+
+• Rewrote & deployed the new pack contract
+• Smoother, faster, less MetaMask fails
+• CHEAPER to open packs now in TraitLAB 💸
+
+🎁 OG Rewards
+
+• New contract + dapp for AdrianPunks holders
+• 1 Punk = 1 free exclusive item
+• These traits/items won't be available anywhere else — only via OG claims 🔑
+
+🗄️ Supabase Integration
+
+• Built my first database with Supabase (used for BuilderBattle)
+• Opens the door to apply this logic across other parts of $ADRIAN 🚀
+
+💾 Punks Floppy
+
+• Ready, already in the shop
+• Launching next week 👀
+
+🔮 Next Week Incoming
+
+• Space with Tiger (let's tag him so he doesn't "forget" 🐅)
+• Punks Floppy official launch
+• BuilderBattle Season 2 (submissions open on Discord)
+• Engagement Thursday
+
+BE REAL | BE ADRIAN 🔴 🔵 @GANG
+
+🧠 Sunday Recap – 10/05
+
+@GANG
+
+Short story short? IRL life hits hard sometimes 💀 — 12h/day working, chaos everywhere — but we still shipped some cool stuff (mostly thanks to Tiger, the real MVP this week 🐅).
+
+⸻ 🎨 BoredAdrian + MutantAdrian Background Packs
+
+Dropped and looking awesome — you know the inspiration, but we ain't saying it here 👀
+Still some left at the shop (I think). Go grab 'em.
+
+🛰️ E.T. Space on X
+
+Filthy interviewed Tiger, dev got rugged and muted (LOL), classic $ADRIAN vibes.
+10–15 listeners, pure alpha. Thank you all mfers who joined!
+
+💾 Stealth Launch – PunksFloppy
+
+Dropped during the space — real punks traits inside.
+Already seeing some dope builds with them 🔥
+Still available at the shop for those who missed it.
+
+⚔️ BuilderBATTLE Season 2
+
+Still open — dev winning (obviously 😎).
+Filthy is holding it down, waiting for your builds.
+
+📺 Rumble setup + Wassa doing his thing
+
+Some Floppys delivered through the chaos.
+
+🧬 New ZEROS minted
+
+Dropped ~20 at the floor just in case a whale decides to shop 🐋
+
+🧪 TOP SECRET projects
+
+Two new experiments in the lab. Can't say much yet… but leaks soon™.
+Artist's been cooking.
+
+⸻ BE REAL | BE ADRIAN 🟦 🟥
+
+📅 Sunday Recap — 10/12
+
+🌒 The Sun Went Down…
+
+Something weird happened this week in the AdrianLAB — for one strange day, odds to mint an AlbinoZERO were boosted to 70%. Some lucky mfers minted them, and I even made one a GF myself 😅
+
+⚔️ SamuraiZERO
+
+Artist delivered 600 prebuilt ZEROS + 100 new traits for upcoming Floppy drops.
+Dev updated render logic to handle collections inside collections (yep, each with unique metadata and art).
+Search for this: Senryoku (戦力) — every Samurai hides this power stat 👁️‍🗡️
+
+🧩 Vector x Pixel Fusion
+
+Tiger experimented mixing vector and pixel layers — results? Weirdly awesome.
+Render fully supports it now, so maybe… VECTORadrians make a comeback soon 👀
+
+🎨 AdrianPlayground Live
+
+No wallet, no assets, just pure fun.
+Build a demo AdrianZERO, mix traits, and preview everything before buying.
+Direct OpenSea links for each trait — and yes, mobile friendly.
+
+👉 https://adrianzero.com/traitlab/play
+
+BE REAL | BE ADRIAN 🟦 🟥 @GANG
+
+📅 Sunday Recap — 10/19
+
+🌒 Zoom-in-ZEROS
+
+Render CA calls + contract ready. Future toggler system built-in — can switch ANYTHING on-chain (paid or free with $ADRIAN). Already live at TraitLAB. 👀
+
+🎃 Hallo-WEN Incoming
+
+That red candle trait? I love it too LOL. It's going to the OG CLAIM. Halloween vibes loading... 🕯️ 🩸
+
+🎮 AdrianPLAY updates
+
+Blocked traits with max supply ≤ 5 so mfers can't flex their ultra-rares in public demos. 😎
+
+⚙️ OG Rewards fixes
+
+Now smoother, faster, awaiting Hallo-WEN edition rollout.
+
+🧩 Trait Render tweaks
+
+Minor stuff — cleaner visuals, lighter site load. Can display image-only traits without full data cards now.
+
+🏎️ AdrianLAMBO
+
+Added to TraitLAB too! No txn needed yet — just for fun banners.
+If you like it, I'll drop a module and mintable version inside AdrianLAB. 🚀
+
+💀 Engagement check
+
+0 engagement lately, not gonna lie, it's tough to build in silence.
+
+But we're still here — 8 months since inception, mfers!
+
+No dev background, no team, just chaos and persistence.
+
+And Tiger? Not just a pixel artist — a real artist.
+
+We're lucky to have him in this wild ride. ❤️
+
+🙏 Thanks to everyone still checking in and keeping the fire alive.
+
+Means more than you think.
+
+🧠 Ideas cooking:
+
+Remember GEN ZEROS? yeah, probably not LOL — we built the core for ZERO replication.
+Now brainstorming ways to bring it back — maybe a DNA Replicator claim system?
+
+Let's see where it goes. 🔬
+
+BE REAL | BE ADRIAN 🟦 🟥 @GANG
+
+📅 Sunday Recap — 10/26
+
+🧠 AdrianDELEGATOR
+
+New module that lets me interact with the AdrianZERO core from different extensions.
+Not gonna get too technical, but trust me — this thing's a feat LOL.
+Updated Serum, Minter, and other modules to work through the new delegator funnel. Still fine-tuning. 🧩
+
+🎃 Hello-WEN Drop
+
+Free mint module worked perfectly — wallet limit included.
+50 new creepy-but-lovely traits by Tiger.
+These free drops are great for the long-term vibes of the project, so let's keep pushing them on X — any help means a lot 🕯️ 💀
+
+💩 ShitDROP (coming soon)
+
+Building on the Hello-WEN idea:
+
+Free public drops, 24 hours only ⏰
+Based on trending topics, Web3 chaos, or random world events.
+Goal? Hit one viral pump and become accidentally famous and rich. LOL
+
+More details after the Hello-WEN drop closes on the 31st.
+
+🐳 TraitLAB tweaks
+
+Fixed some edge cases for ultra whales (like me 😂). Still improving the experience.
+
+🧛‍♂️ 1/1 Dracula reward
+
+Top minter/buyer from Hello-WEN pumpkins & traits gets a 1/1 Dracula.
+Because every Halloween needs a bloodsucker. 🩸
+
+9 months deep. Still shipping. Still chaotic.
+
+BE REAL | BE ADRIAN 🟦 🟥 @GANG
+
+📅 Sunday Recap — 11/02
+
+🧩 TraitLAB UI Improvements
+
+Rendered cleaner trait cards for faster loading — they look smoother and load quicker since they share the same path. Not implemented yet, but almost there. ⚙️
+
+💬 Telegram Stickers
+
+Been playing with Telegram sticker packs — will cook more next week. Expect chaos and memes. 😂
+
+🎃 Halloween Wrap-Up
+
+Dracula 1/1 (animated), pumpkins, and yes — I pulled FredZERO from one of them myself LOL 🧛‍♂️ 🕯️
+
+🤖 ShitDROP #1 — NEO
+
+Launched as a proof of concept with a 1/1 NEO-ZERO prize for one lucky minter 💩
+It worked beautifully — pure, chaotic success.
+
+💉 New Holders!
+
+Around 50 new holders joined through Hello-WEN + ShitDROP!
+Proof we can still onboard fresh blood into the $ADRIAN ecosystem — and that's awesome 💙 ❤️
+
+We'll keep doing ShitDROPS weekly or biweekly.
+
+🕶️ Adrian Shadow (UTILITY mfers!!)
+
+You can now add a shadow to your ZERO directly in TraitLAB — it's live under the "Customise" tab. Because sometimes utility is just… darker 😎
+
+🎁 New OG Reward
+
+Incoming next week, almost ready! 1 per OG Punk — stack your claims while you wait.
+
+📦 OpenPack Multiple
+
+You can now open up to 4 packs in one transaction at TraitLAB.
+Bundle it, save time (and hopefully gas 😂).
+
+⸻ Still shipping, still chaotic, still Adrian.
+
+be constant. be adrian. 🟦 🟥 @GANG
+
+📅 Sunday Recap — 11/09
+
+💩 MC Packs — ShitDROP #2
+
+Second drop delivered! This time we went full fast-food mode 🍔
+A proper pack with 10 different traits inside — uniforms, sodas, and drive-thru chaos.
+
+🧢 THE MANAGER (1/1)
+
+This awesome animated piece by @HalfxTiger went to the highest secondary buyer during the mint.
+He's overworked, overweight, and running the McMeta. 😂
+
+🎮 Adrian McOrder Dash Game
+
+Our first mini-game by Tiger — and it was a hit!
+Players jumped in, grabbed free fries 🍟 for participating, and fought for the top leaderboard spot.
+The 1/1 reward went to the top scorer - Adrian McOrder Dash #454 🔥
+
+⸻ Fast food. Fast drops. Faster chaos.
+
+be constant. be adrian. 🟦 🟥 @GANG
+
+📅 Sunday Recap — 16/11
+
+🥤 Shakes in the Shop
+
+We only had shakes with fries, which felt illegal… so I asked Tiger for solo shakes.
+He delivered — man's a good dude sometimes 😂
+Still some left if you wanna taste pure $ADRIAN sugar.
+
+👾 OG Treasury Punks
+
+Announcement → idea → dev → contract → dapp → launch…
+All at $ADRIAN speed ⚡
+PunkSwap is live — go burn some GENESIS tokens, mfers!
+
+👉 https://adrianzero.com/punkswap/
+
+🧩 Smol Fixes
+
+TraitLAB UI tiny improvements, small polish bits here and there — slow cleaning before big drops.
+
+🖤 🔦 BlackLIGHT Leaks
+
+Tiger cooked 69 new traits for the next big drop: BlackLIGHT Floppy.
+Not NEON — BlackLIGHT, and it looks insane 👀 🔥
+
+🎄 ChristmasPack
+
+December is near… Tiger already sketching madness.
+ChristmasPack confirmed for next month 🎁
+
+🌐 "What Is This Shit?" Landing Page
+
+Made a simple, digestible guide for newcomers trying to understand what the hell $ADRIAN is.
+
+👉 https://adrianzero.com/whatisit
+
+Not easy to explain chaos, but we tried LOL
+
+🎮 HYTOPIA Testing
+
+Playing with builder-style games and checking how we could integrate HYTOPIA into $ADRIAN.
+Let's see what next week brings 👀
+
+Another week of shipping, chaos and random brilliance.
+
+BE REAL | BE $ADRIAN @GANG
+
+📅 Sunday Recap — 23/11
+
+⚙️ TraitLAB Optimisation (then disaster)
+
+Started the week strong — TraitLAB loading faster, smoother, cleaner…
+…aaaand right now it's fucking dead 🫣
+No idea why. I'll try to fix it before I lose my mind LOL.
+
+🧠 DumbZEROS
+
+The DumbZEROS idea is almost ready.
+Yup. Another feature nobody asked for.
+And yup, we're shipping it anyway.
+
+🧹 FloorENGINE (idea → contract → marketplace → live)
+
+Not a fork, not a copy, not a clone.
+Just a fully reimagined version for the $ADRIAN world:
+
+• $ADRIAN marketplace
+• onchain sweep tools
+• Punks bought automatically
+• and ALL $ADRIAN tax now feeds the Engine (10% temp)
+
+Now we just need volume and a bull 🐂 so the machine goes brrrrr.
+
+🎁 Giveaway: 1 OG AdrianPUNK
+
+To enter:
+
+List ANY AdrianPunk in the new marketplace (any $ADRIAN price).
+One lucky dumper gets the OG Punk.
+Smooth, easy, degen.
+
+📡 New Database + Scraper Bot
+
+Built an automated system that tracks a massive amount of ecosystem data:
+
+• TraitLAB
+• $ADRIAN token
+• AdrianZERO
+• AdrianPunks
+• PunkQuest
+• FloorENGINE
+• AdrianShop
+• NameRegistry
+• SerumModule
+• and more…
+
+Live v1 already shows tons of fresh activity — auto-generated images included.
+Bot is now busy filling historic data. Super interesting to watch.
+
+🕶️ BlackoutADRIANS Toggle
+
+Send anonymous messages like a true shadow mfer.
+It's finished…
+…but since TraitLAB is broken, you can't use it yet 😭
+Soon™.
+
+💩 ShitDROP #3 — Red Day Edition
+
+BTC bleeding? Perfect.
+24h free drop.
+40 mints + 15 new wallets joining $ADRIAN in a boring-ass bear market.
+Honestly? Pretty damn cool.
+
+Another week of chaos, tools, bugs, sweeps and degen art.
+
+We keep building because we can.
+
+BE REAL | BE $ADRIAN @everyone
+
+🤯 If someone leaves for a month… HOW do they catch up?!
+
+We ship too much. Here's THIS week alone:
+
+⸻ 📅 Sunday Recap — 30/11
+
+🛠️ TraitLAB fixed + 4-day bug battle
+
+Half the dapps were broken because of ONE oversized image crashing everything 😂
+Bug dead. Stability back.
+
+🧹 FloorENGINE UI glow-up
+
+Progress bar, cheapest Punk, engine balance, buys/sells, clean stats.
+Engine active all week — try it, it's actually fire.
+
+👉 adrianpunks.com/market
+
+🧩 Free-tier survival mode
+
+Alchemy, Railway, Vercel… all crying.
+We stitch multiple free tiers together because we indie af.
+
+🕶️ BlackoutADRIANS ready
+
+Anonymous on-chain messages. Enough said.
+
+💩 CENSORpack — ShitDROP #4
+
+24h free mint, 4 traits. Easy. Gone.
+
+📊 Stats dApp upgraded
+
+AdrianPunks added. Events, sweeps, movements, TraitLAB, Shop, SerumModule — all tracked with auto images.
+
+🧊 SubZERO launch + BlueTick
+
+Black Friday drop: 1 SubZERO + 1 trait + 100 $ADRIAN FREE.
+Added to homepage for onboarding.
+Router contract built → multiple mints in one txn.
+
+⚔️ SamuraiZERO ready
+
+Crazy metadata logic: mint origin, tagging, naming, dynamic behavior.
+Multiple types mintable simultaneously in one collection.
+
+👥 200 AdrianLAB holders
+
+Let's keep growing.
+
+🎄 Xmas leaks started
+
+Tiger cooking.
+
+⸻ 🚀 Launched:
+
+SubZERO • BlueTick • CENSORpack
+
+🧬 Next:
+
+SamuraiZERO • BlackLight Floppy
+
+⸻ BE REAL | BE $ADRIAN @everyone
+

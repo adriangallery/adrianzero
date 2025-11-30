@@ -1,0 +1,465 @@
+{
+  "startDate": "2024-01-01",
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "date": "2024-01-07",
+      "title": "Sunday Recap – The $ADRIAN Ecosystem Keeps Growing! 🚀",
+      "events": [
+        {
+          "emoji": "✅",
+          "title": "Auction Site",
+          "description": "Now shows the actual NFTs you're bidding on.",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "✅",
+          "title": "Burn Stats Dapp",
+          "description": "See a graph + data on how many $ADRIAN tokens have been burnt.",
+          "status": "completed",
+          "category": "stats"
+        },
+        {
+          "emoji": "✅",
+          "title": "Holdings Dapp",
+          "description": "View all your $ADRIAN assets (tokens + NFTs). Click an NFT to see metadata.",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "✅",
+          "title": "Filthy Rich Dapp",
+          "description": "Mint #0005 THE BURNED FORTUNE for 100K $ADRIAN (burnt forever). No real utility, just a flex & a special Filthy Rich Discord role.",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "price": "100K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "✅",
+          "title": "Forked OpenSea Collection",
+          "description": "Updated GENESIS art & sent it to holders. Forking the collection gives me more control for future upgrades like minting with $ADRIAN tokens.",
+          "status": "completed",
+          "category": "collection"
+        }
+      ]
+    },
+    {
+      "weekNumber": 2,
+      "date": "2024-01-14",
+      "title": "Sunday Recap!! 🚀",
+      "events": [
+        {
+          "emoji": "🎨",
+          "title": "AKASHI30 Auction LIVE",
+          "description": "Auction is LIVE! Ends next week—highest bid so far: 255K $ADRIAN!",
+          "status": "in-progress",
+          "category": "auction",
+          "stats": {
+            "highestBid": "255K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🛒",
+          "title": "Marketplace Ready",
+          "description": "Spent the weekend working on a complementary contract for offers, now you can make & accept offers using $ADRIAN! Check it out & let me know if you find any bugs (I spent way too many hours on this LOL).",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "📊",
+          "title": "Updated Token Details",
+          "description": "Updated token details in Geckoterminal.",
+          "status": "completed",
+          "category": "token"
+        },
+        {
+          "emoji": "💰",
+          "title": "LP Migration",
+          "description": "Moved LP to the new ADRIAN & switched from USD to ETH. This means more volatility in the graph since we're now tied to ETH price movements—so if you see red candles, blame ETH 😂.",
+          "status": "completed",
+          "category": "lp"
+        }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "date": "2024-01-21",
+      "title": "Sunday Recap – $ADRIAN Keeps Building! 🚀",
+      "events": [
+        {
+          "emoji": "✅",
+          "title": "New Perk Added",
+          "description": "GENESIS + ASCENSION holders now receive a tax refund on buy transactions!",
+          "status": "completed",
+          "category": "utility"
+        },
+        {
+          "emoji": "🎨",
+          "title": "#0011 THE OFFERING – A Tribute from GENESIS",
+          "description": "Mint started, ends this week ⏳ Already 25 minted!",
+          "status": "in-progress",
+          "category": "mint",
+          "stats": {
+            "minted": 25
+          }
+        },
+        {
+          "emoji": "💎",
+          "title": "Mint a PIMP with $ADRIAN",
+          "description": "Just because we can… LOL 🤣 3 or 4 minted already, and looks dope on OpenSea!",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "minted": 4
+          }
+        },
+        {
+          "emoji": "🎉",
+          "title": "AKASHI30 Auction = SUCCESS!",
+          "description": "13M+ collected! 💰 Half sent to ASCENSION dApp & already claimed by holders ✅ Both prizes & rewards looking GOOD in your wallets!",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "collected": "13M+ $ADRIAN"
+          }
+        },
+        {
+          "emoji": "⚡",
+          "title": "Lottery dApp",
+          "description": "Early version live, try it now! 🎰",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "⚡",
+          "title": "ADRIANswap",
+          "description": "Trying to compete with Uniswap (still lots to do LOL) 🔄",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "⚡",
+          "title": "PIMPSfeatADRIAN DAO",
+          "description": "Built to manage funds & cool stuff 🏛️",
+          "status": "completed",
+          "category": "dao"
+        },
+        {
+          "emoji": "⚡",
+          "title": "Staking dApp",
+          "description": "In progress – Plus a secret project… more details soon 👀",
+          "status": "in-progress",
+          "category": "staking"
+        }
+      ]
+    },
+    {
+      "weekNumber": 4,
+      "date": "2024-03-30",
+      "title": "Sunday Recap – 30.23 🟦 🟥",
+      "events": [
+        {
+          "emoji": "🎉",
+          "title": "Lottery Round 1 finished",
+          "description": "300K $ADRIAN + NFTs sent",
+          "status": "completed",
+          "category": "lottery",
+          "stats": {
+            "prize": "300K $ADRIAN + NFTs"
+          }
+        },
+        {
+          "emoji": "⚙️",
+          "title": "ADRIANauction V3",
+          "description": "With time-gated Boosters completed – Ready for TOMO's drop",
+          "status": "completed",
+          "category": "auction"
+        },
+        {
+          "emoji": "🎨",
+          "title": "Successfully deceived an artist",
+          "description": "Successfully deceived an artist into creating a stunning pixel PFP collection 😅",
+          "status": "completed",
+          "category": "art"
+        },
+        {
+          "emoji": "🧠",
+          "title": "Building AdrianPunks",
+          "description": "A 1K PFP masterpiece with 10 unique 1/1s (from monday to saturday LOL)",
+          "status": "in-progress",
+          "category": "collection",
+          "stats": {
+            "totalSupply": 1000,
+            "unique1of1": 10
+          }
+        },
+        {
+          "emoji": "💎",
+          "title": "HalfxTiger delivered",
+          "description": "Huge shoutout to the legend @HalfxTiger who finished art + metadata in just 3 days",
+          "status": "completed",
+          "category": "art"
+        },
+        {
+          "emoji": "📜",
+          "title": "AdrianPunks V2 contract built",
+          "description": "Includes tiered allowlists",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "🌐",
+          "title": "Domains secured",
+          "description": "AdrianPunks.com",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🖼️",
+          "title": "Facing challenges",
+          "description": "Facing some challenges managing images + metadata for the 1K collection – But we're close! Images now rendering properly. Working on bulk handling of JSON metadata",
+          "status": "in-progress",
+          "category": "development"
+        },
+        {
+          "emoji": "🏪",
+          "title": "AdrianMarket upgrade in progress",
+          "description": "ERC721 support (we had ERC1155 only before). Floor pricing + individual + floor-wide offers. Fast, smooth UX: combining offchain/onchain hybrid structure. Goal: have it ready before AdrianPunks drops, so y'all prefer it over OpenSea 😎",
+          "status": "in-progress",
+          "category": "marketplace"
+        }
+      ]
+    },
+    {
+      "weekNumber": 5,
+      "date": "2024-04-06",
+      "title": "Sunday Recap – April 6",
+      "events": [
+        {
+          "emoji": "💻",
+          "title": "Built a marketplace",
+          "description": "My First Times This Week: Built a marketplace",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "📦",
+          "title": "Compiled a modular contract",
+          "description": "My First Times This Week: Compiled a modular contract",
+          "status": "completed",
+          "category": "contract"
+        },
+        {
+          "emoji": "🧠",
+          "title": "Fought with SQL databases",
+          "description": "My First Times This Week: Fought with SQL databases",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "🔧",
+          "title": "Interacted with GitHub from terminal",
+          "description": "My First Times This Week: Interacted with GitHub from the terminal",
+          "status": "completed",
+          "category": "development"
+        },
+        {
+          "emoji": "🚀",
+          "title": "Deployed on Vercel",
+          "description": "My First Times This Week: Deployed on Vercel like a real dev (kinda)",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "✅",
+          "title": "AdrianPunks Final touches done",
+          "description": "Final touches done (contract + frontend)",
+          "status": "completed",
+          "category": "collection"
+        },
+        {
+          "emoji": "🤝",
+          "title": "Allowlist collabs confirmed",
+          "description": "Allowlist collabs confirmed with: FFS, PunkSecrets, DZNTS, Naked Army, CryptoPimps, CoopTroop, The Appreciators, Ugly Labs",
+          "status": "completed",
+          "category": "collab"
+        },
+        {
+          "emoji": "🕊️",
+          "title": "Mint Date: Easter Sunday, April 20th",
+          "description": "Tiger made the call, be ready 👀",
+          "status": "announced",
+          "category": "mint"
+        },
+        {
+          "emoji": "🛒",
+          "title": "AdrianMarket Progress",
+          "description": "Make + cancel listings. Offers (floor, by trait or token ID). Filter by trait. Rarity filter",
+          "status": "in-progress",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "🎟️",
+          "title": "Lottery Recap",
+          "description": "Over 1K tickets sold. 3 winners. Allowlist prizes already delivered",
+          "status": "completed",
+          "category": "lottery",
+          "stats": {
+            "ticketsSold": 1000,
+            "winners": 3
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 6,
+      "date": "2024-04-13",
+      "title": "Sunday Recap – April 13",
+      "events": [
+        {
+          "emoji": "🧢",
+          "title": "AdrianPunks Mint THIS WEEK!",
+          "description": "Easter Sunday – 4/20 is THE DAY. If we mint out: 100M $ADRIAN in income. 50M goes to Tiger 🐯. 50M goes to THE OFFERING seat holders 💸",
+          "status": "announced",
+          "category": "mint",
+          "stats": {
+            "potentialIncome": "100M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🛒",
+          "title": "AdrianMarket is LIVE",
+          "description": "Buy, sell, and flex your punks with $ADRIAN",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "💀",
+          "title": "THE TAX REAPER SOLD",
+          "description": "Sold in Dutch Auction for 9.7M $ADRIAN. Proceeds going straight to PunkQuest reward pool. Already sent to the winner.",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "sold": "9.7M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🧙",
+          "title": "TOMO's 1/1 is almost done",
+          "description": "It's coming and it's gonna be 🔥",
+          "status": "in-progress",
+          "category": "art"
+        },
+        {
+          "emoji": "📈",
+          "title": "$ADRIAN Hit Several ATHs This Week",
+          "description": "Massive buys, strong momentum. OGs winning.",
+          "status": "completed",
+          "category": "token"
+        },
+        {
+          "emoji": "⚔️",
+          "title": "PunkQuest in Development",
+          "description": "Soft-staking system incoming – Casual mode for chill holders. Gamified mode for the real degens. Armor, weapons, quests, events… and more being cooked. Tiger dropped insane weapon assets for alpha testing.",
+          "status": "in-progress",
+          "category": "staking"
+        },
+        {
+          "emoji": "✅",
+          "title": "All Collab Allowlists Added",
+          "description": "All Collab Allowlists Added to Mint Contract",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🔮",
+          "title": "ORACLE Mint Wrapped",
+          "description": "13 minters… something happened? you tell me 👀. 50% of proceeds (440K $ADRIAN) already in THE OFFERING dApp ready to claim",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "minters": 13,
+            "proceeds": "440K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🧩",
+          "title": "AdrianGallery UI Updates",
+          "description": "Refining the AdrianGallery look & feel to separate it visually from AdrianPunks. It's a work in progress – known bugs, but updates incoming this week.",
+          "status": "in-progress",
+          "category": "ui"
+        }
+      ]
+    },
+    {
+      "weekNumber": 7,
+      "date": "2024-04-20",
+      "title": "Sunday Recap 4/20",
+      "events": [
+        {
+          "emoji": "🛡️",
+          "title": "PunkQuest Season One",
+          "description": "You can stake, unstake, and claim rewards starting now.",
+          "status": "completed",
+          "category": "staking",
+          "links": [
+            {
+              "text": "Mint here",
+              "url": "https://adrianpunks.com/mint"
+            },
+            {
+              "text": "Dump them",
+              "url": "https://adrianpunks.com/market"
+            },
+            {
+              "text": "Stake them",
+              "url": "https://adrianpunks.com/punkquest"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekNumber": 8,
+      "date": "2024-04-27",
+      "title": "Sunday Recap – 4/27",
+      "events": [
+        {
+          "emoji": "🔥",
+          "title": "TOMORROWMAN 1/1 Auction LIVE",
+          "description": "5 days left — Current highest bid: 16M $ADRIAN!! 🔥 This auction includes new features like Timed Boosters!",
+          "status": "in-progress",
+          "category": "auction",
+          "stats": {
+            "highestBid": "16M $ADRIAN"
+          }
+        },
+        {
+          "emoji": "🎨",
+          "title": "PFP Raffle on X",
+          "description": "I launched it but didn't have time to finish it properly (working on it, promise!).",
+          "status": "in-progress",
+          "category": "giveaway"
+        },
+        {
+          "emoji": "⚔️",
+          "title": "PunkQuest Armory Section",
+          "description": "Been fighting with a nasty bug all week. Still not solved… but we're close.",
+          "status": "in-progress",
+          "category": "staking"
+        },
+        {
+          "emoji": "🔄",
+          "title": "AdrianPunks Exchange!",
+          "description": "New dApp in Progress! Built a new contract and started frontend work. A platform where you can safely swap AdrianPunks with other users for a small $ADRIAN fee and don't get scammed by those mfers in general-chat chat LOL",
+          "status": "in-progress",
+          "category": "dapp"
+        }
+      ]
+    }
+  ]
+}
+
