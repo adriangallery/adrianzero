@@ -62,36 +62,38 @@ async function loadData() {
     }
 }
 
-// Calculate current week based on start date
+// Calculate current week based on data
 function calculateCurrentWeek() {
-    if (!lostData || !lostData.startDate) {
-        // Fallback: use the highest week number in data
-        currentWeek = Math.max(...lostData.weeks.map(w => w.weekNumber));
+    if (!lostData || !lostData.weeks || lostData.weeks.length === 0) {
+        currentWeek = 0;
         return;
     }
     
-    const startDate = new Date(lostData.startDate);
-    const today = new Date();
-    const diffTime = Math.abs(today - startDate);
-    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    // Use the highest week number in the data as current week
+    // This ensures we only show weeks that actually have data
+    currentWeek = Math.max(...lostData.weeks.map(w => w.weekNumber));
     
-    // Use the maximum between calculated and data weeks
-    const maxDataWeek = Math.max(...lostData.weeks.map(w => w.weekNumber));
-    currentWeek = Math.max(diffWeeks, maxDataWeek);
+    console.log(`Current week calculated: ${currentWeek} (based on data)`);
 }
 
 // Filter events from the last X weeks
 function getFilteredEvents() {
-    if (!lostData || !lostData.weeks) {
+    if (!lostData || !lostData.weeks || currentWeek === 0) {
         return [];
     }
     
+    // Calculate the range: from (currentWeek - selectedWeeks + 1) to currentWeek
     const startWeek = Math.max(1, currentWeek - selectedWeeks + 1);
     const endWeek = currentWeek;
     
+    console.log(`Filtering weeks ${startWeek} to ${endWeek} (showing last ${selectedWeeks} weeks)`);
+    
     const filteredWeeks = lostData.weeks.filter(week => {
-        return week.weekNumber >= startWeek && week.weekNumber <= endWeek;
+        const weekNum = week.weekNumber;
+        return weekNum >= startWeek && weekNum <= endWeek;
     });
+    
+    console.log(`Found ${filteredWeeks.length} weeks in range`);
     
     // Flatten events from all filtered weeks
     const events = [];
@@ -107,6 +109,8 @@ function getFilteredEvents() {
             });
         }
     });
+    
+    console.log(`Total events found: ${events.length}`);
     
     return events;
 }
