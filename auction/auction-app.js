@@ -192,9 +192,9 @@ function startCountdown() {
     const countdownEl = document.getElementById('countdown');
     if (!countdownEl) return;
     
-    countdownInterval = setInterval(() => {
+    const updateCountdown = () => {
         const now = Math.floor(Date.now() / 1000);
-        const remaining = auctionStats.endTime - now;
+        let remaining = auctionStats.endTime - now;
         
         if (remaining <= 0) {
             clearInterval(countdownInterval);
@@ -204,8 +204,10 @@ function startCountdown() {
         }
         
         const days = Math.floor(remaining / 86400);
-        const hours = Math.floor((remaining % 86400) / 3600);
-        const minutes = Math.floor((remaining % 3600) / 60);
+        remaining = remaining % 86400;
+        const hours = Math.floor(remaining / 3600);
+        remaining = remaining % 3600;
+        const minutes = Math.floor(remaining / 60);
         const seconds = remaining % 60;
         
         if (days > 0) {
@@ -217,25 +219,13 @@ function startCountdown() {
         }
         
         updateAuctionStatus();
-    }, 1000);
+    };
     
     // Initial update
-    const now = Math.floor(Date.now() / 1000);
-    const remaining = auctionStats.endTime - now;
-    if (remaining > 0) {
-        const days = Math.floor(remaining / 86400);
-        const hours = Math.floor((remaining % 86400) / 3600);
-        const minutes = Math.floor((remaining % 3600) / 60);
-        const seconds = remaining % 60;
-        
-        if (days > 0) {
-            countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-        } else if (hours > 0) {
-            countdownEl.textContent = `${hours}h ${minutes}m ${seconds}s`;
-        } else {
-            countdownEl.textContent = `${minutes}m ${seconds}s`;
-        }
-    }
+    updateCountdown();
+    
+    // Update every second
+    countdownInterval = setInterval(updateCountdown, 1000);
 }
 
 // Load and display top 10 bidders
@@ -305,8 +295,8 @@ function renderBidders(bidders) {
     }).join('');
 }
 
-// Connect wallet
-async function connectWallet() {
+// Connect wallet (renamed to avoid conflict with menu.js)
+async function connectAuctionWallet() {
     try {
         if (!window.ethereum) {
             showStatus('Please install MetaMask!', 'error');
@@ -423,12 +413,12 @@ function updateWalletUI() {
 }
 
 // Check if already connected
-async function checkConnection() {
+async function checkAuctionConnection() {
     if (window.ethereum) {
         try {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts.length > 0) {
-                await connectWallet();
+                await connectAuctionWallet();
             }
         } catch (error) {
             console.error("Connection check failed:", error);
@@ -599,14 +589,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadAuctionData();
         
         // Check if wallet already connected
-        await checkConnection();
+        await checkAuctionConnection();
         
         // Setup event listeners
         const connectBtn = document.getElementById('connectBtn');
         const bidBtn = document.getElementById('bidBtn');
         
         if (connectBtn) {
-            connectBtn.addEventListener('click', connectWallet);
+            connectBtn.addEventListener('click', connectAuctionWallet);
         }
         
         if (bidBtn) {
@@ -627,7 +617,7 @@ if (window.ethereum) {
             writeProvider = null;
             updateWalletUI();
         } else {
-            connectWallet();
+            connectAuctionWallet();
         }
     });
     
