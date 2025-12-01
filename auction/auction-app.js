@@ -111,6 +111,14 @@ async function loadAuctionData() {
             endTime: stats._auctionEndTime.toNumber()
         };
         
+        // Debug: Log times to verify
+        console.log('Auction times:', {
+            startTime: auctionStats.startTime,
+            endTime: auctionStats.endTime,
+            now: Math.floor(Date.now() / 1000),
+            remaining: auctionStats.endTime - Math.floor(Date.now() / 1000)
+        });
+        
         // Update UI
         updateAuctionInfo();
         
@@ -196,10 +204,24 @@ function startCountdown() {
         const now = Math.floor(Date.now() / 1000);
         let remaining = auctionStats.endTime - now;
         
+        // Debug log
+        console.log('Countdown calculation:', {
+            endTime: auctionStats.endTime,
+            now: now,
+            remaining: remaining,
+            remainingInDays: remaining / 86400
+        });
+        
         if (remaining <= 0) {
             clearInterval(countdownInterval);
             countdownEl.textContent = '00:00:00';
             updateAuctionStatus();
+            return;
+        }
+        
+        // Ensure remaining is a valid number
+        if (isNaN(remaining) || remaining < 0) {
+            countdownEl.textContent = '--:--:--';
             return;
         }
         
