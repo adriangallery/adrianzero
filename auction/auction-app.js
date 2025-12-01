@@ -102,21 +102,47 @@ async function loadAuctionData() {
         
         // Get auction stats
         const stats = await auctionContract.getAuctionStats();
+        
+        // Convert BigNumber to number safely
+        // For large numbers, use toString() and then parseInt
+        const startTimeBN = stats._auctionStartTime;
+        const endTimeBN = stats._auctionEndTime;
+        
+        // Check if values are reasonable (not in milliseconds)
+        const startTimeStr = startTimeBN.toString();
+        const endTimeStr = endTimeBN.toString();
+        
+        // If the number is too large (likely in milliseconds), divide by 1000
+        let startTime = parseInt(startTimeStr);
+        let endTime = parseInt(endTimeStr);
+        
+        // Check if values are in milliseconds (if > year 2100 in seconds, likely milliseconds)
+        const year2100InSeconds = 4102444800;
+        if (startTime > year2100InSeconds) {
+            startTime = Math.floor(startTime / 1000);
+        }
+        if (endTime > year2100InSeconds) {
+            endTime = Math.floor(endTime / 1000);
+        }
+        
         auctionStats = {
             highestBid: stats._highestBid,
             highestBidder: stats._highestBidder,
             totalTokens: stats._totalTokens,
             bidderCount: stats._bidderCount.toNumber(),
-            startTime: stats._auctionStartTime.toNumber(),
-            endTime: stats._auctionEndTime.toNumber()
+            startTime: startTime,
+            endTime: endTime
         };
         
         // Debug: Log times to verify
-        console.log('Auction times:', {
+        console.log('Auction times (raw):', {
+            startTimeRaw: startTimeStr,
+            endTimeRaw: endTimeStr,
             startTime: auctionStats.startTime,
             endTime: auctionStats.endTime,
             now: Math.floor(Date.now() / 1000),
-            remaining: auctionStats.endTime - Math.floor(Date.now() / 1000)
+            remaining: auctionStats.endTime - Math.floor(Date.now() / 1000),
+            remainingInDays: (auctionStats.endTime - Math.floor(Date.now() / 1000)) / 86400
         });
         
         // Update UI
