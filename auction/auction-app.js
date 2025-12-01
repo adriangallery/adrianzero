@@ -474,7 +474,7 @@ async function checkAuctionConnection() {
     }
 }
 
-// Place bid (with approve if needed)
+// Place bid (with automatic approve if needed - cascaded in MetaMask)
 async function placeBid() {
     if (!userAddress) {
         showStatus('Please connect wallet first!', 'error');
@@ -490,6 +490,12 @@ async function placeBid() {
         return;
     }
     
+    const bidBtn = document.getElementById('bidBtn');
+    const approveBtn = document.getElementById('approveBtn');
+    
+    // Hide approve button (we'll do it automatically)
+    if (approveBtn) approveBtn.style.display = 'none';
+    
     try {
         // Check if auction is active
         const now = Math.floor(Date.now() / 1000);
@@ -502,12 +508,8 @@ async function placeBid() {
             return;
         }
         
-        const bidBtn = document.getElementById('bidBtn');
-        const approveBtn = document.getElementById('approveBtn');
-        
-        // Disable buttons
+        // Disable button
         if (bidBtn) bidBtn.disabled = true;
-        if (approveBtn) approveBtn.disabled = true;
         
         const amountWei = ethers.utils.parseEther(amount.toString());
         
@@ -519,46 +521,44 @@ async function placeBid() {
             return;
         }
         
-        // Check allowance
+        // Check allowance and approve if needed (automatic cascade)
         const allowance = await adrianTokenContract.allowance(userAddress, AUCTION_CONTRACT);
         
         if (allowance.lt(amountWei)) {
-            // Need to approve first
-            showStatus('Approval needed. Please approve in MetaMask...', 'loading');
+            // Step 1: Automatic approval
+            showStatus('Step 1/2: Approving $ADRIAN tokens... Please confirm in MetaMask.', 'loading');
             
-            if (approveBtn) {
-                approveBtn.style.display = 'block';
-                approveBtn.disabled = false;
-                approveBtn.onclick = async () => {
-                    try {
-                        approveBtn.disabled = true;
-                        showStatus('Approving $ADRIAN tokens...', 'loading');
-                        
-                        const approveTx = await adrianTokenContract.approve(AUCTION_CONTRACT, amountWei);
-                        showStatus('Waiting for approval confirmation...', 'loading');
-                        
-                        await approveTx.wait();
-                        
-                        showStatus('Approval confirmed! You can now place your bid.', 'success');
-                        approveBtn.style.display = 'none';
-                        if (bidBtn) bidBtn.disabled = false;
-                        
-                        await loadBalance();
-                    } catch (error) {
-                        console.error('Approve error:', error);
-                        showStatus('Approval failed: ' + parseError(error), 'error');
-                        approveBtn.disabled = false;
-                    }
-                };
+            try {
+                const approveTx = await adrianTokenContract.approve(AUCTION_CONTRACT, amountWei);
+                showStatus('Step 1/2: Waiting for approval confirmation...', 'loading');
+                
+                await approveTx.wait();
+                
+                showStatus('Step 1/2: Approval confirmed! Proceeding to bid...', 'loading');
+                
+                // Small delay to ensure approval is processed
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Verify allowance again
+                const newAllowance = await adrianTokenContract.allowance(userAddress, AUCTION_CONTRACT);
+                if (newAllowance.lt(amountWei)) {
+                    showStatus('Approval verification failed. Please try again.', 'error');
+                    if (bidBtn) bidBtn.disabled = false;
+                    return;
+                }
+            } catch (error) {
+                console.error('Approve error:', error);
+                showStatus('Approval failed: ' + parseError(error), 'error');
+                if (bidBtn) bidBtn.disabled = false;
+                return;
             }
-            return;
         }
         
-        // Place bid
-        showStatus('Placing bid... Please confirm in MetaMask.', 'loading');
+        // Step 2: Place bid (automatic after approval)
+        showStatus('Step 2/2: Placing bid... Please confirm in MetaMask.', 'loading');
         
         const bidTx = await auctionContract.bid(amountWei);
-        showStatus('Waiting for bid confirmation...', 'loading');
+        showStatus('Step 2/2: Waiting for bid confirmation...', 'loading');
         
         await bidTx.wait();
         
@@ -577,10 +577,7 @@ async function placeBid() {
         console.error('Bid error:', error);
         showStatus('Bid failed: ' + parseError(error), 'error');
         
-        const bidBtn = document.getElementById('bidBtn');
-        const approveBtn = document.getElementById('approveBtn');
         if (bidBtn) bidBtn.disabled = false;
-        if (approveBtn) approveBtn.disabled = false;
     }
 }
 
