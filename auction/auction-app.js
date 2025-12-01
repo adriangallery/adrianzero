@@ -582,10 +582,8 @@ function showStatus(message, type) {
 // Auto-refresh auction data every 30 seconds
 function startAutoRefresh() {
     setInterval(async () => {
-        if (!userAddress) {
-            // Only refresh if no wallet connected (to avoid unnecessary calls)
-            await loadAuctionData();
-        }
+        // Always refresh auction data to keep it up to date
+        await loadAuctionData();
     }, 30000);
 }
 
