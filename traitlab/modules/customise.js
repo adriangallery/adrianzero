@@ -369,7 +369,7 @@ class CustomiseManager {
 
             // Obtener precio del toggle 13
             const togglePrice = await toggleContract.getTogglePrice(13);
-            console.log('💰 Precio del toggle BANANA:', ethers.utils.formatEther(togglePrice));
+            console.log('💰 BANANA toggle price:', ethers.utils.formatEther(togglePrice));
 
             if (togglePrice.eq(0)) {
                 // Si el precio es 0, activar directamente sin pago
@@ -393,7 +393,7 @@ class CustomiseManager {
             await this.approveAndPayBanana(ethers, togglePrice);
             
         } catch (error) {
-            console.error('Error en initiateBananaPayment:', error);
+            console.error('Error in initiateBananaPayment:', error);
             alert(`Error: ${error.message}`);
         }
     }
@@ -454,7 +454,7 @@ class CustomiseManager {
             await this.executeBananaToggle(ethers);
             
         } catch (error) {
-            console.error('Error en approveAndPayBanana:', error);
+            console.error('Error in approveAndPayBanana:', error);
             throw error;
         }
     }
@@ -515,7 +515,7 @@ class CustomiseManager {
             
             return receipt;
         } catch (error) {
-            console.error('Error en executeBananaToggle:', error);
+            console.error('Error in executeBananaToggle:', error);
             throw error;
         }
     }

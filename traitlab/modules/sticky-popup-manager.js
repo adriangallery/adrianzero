@@ -1823,7 +1823,7 @@ class StickyPopupManager {
             // Actualizar imagen con la real después del pago
             this.updateCustomiseImage();
         } catch (error) {
-            console.error('Error en toggleCustomiseBanana:', error);
+            console.error('Error in toggleCustomiseBanana:', error);
             // Si hay error, restaurar imagen normal
             this.updateCustomiseImage();
         }
@@ -1861,7 +1861,7 @@ class StickyPopupManager {
             if (this.elements.customiseLoading) {
                 this.elements.customiseLoading.style.display = 'none';
             }
-            console.warn('⚠️ No se pudo cargar imagen de preview para BANANA');
+            console.warn('⚠️ Could not load preview image for BANANA');
         };
     }
 
