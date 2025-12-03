@@ -297,7 +297,7 @@ class CustomiseManager {
      */
     toggleBanana() {
         if (!this.selectedERC721) {
-            console.warn('⚠️ CustomiseManager: No hay AdrianZERO seleccionado para BANANA');
+            console.warn('⚠️ CustomiseManager: No AdrianZERO selected for BANANA');
             return;
         }
 
@@ -324,7 +324,7 @@ class CustomiseManager {
      */
     async initiateBananaPayment() {
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
-            alert('Por favor, conecta tu wallet primero.');
+            alert('Please connect your wallet first.');
             return;
         }
 
@@ -351,13 +351,13 @@ class CustomiseManager {
             // Verificar red
             const network = await provider.getNetwork();
             if (network.chainId !== 8453) {
-                throw new Error('Por favor, cambia a la red Base para usar esta función.');
+                throw new Error('Please switch to Base network to use this feature.');
             }
 
             // Cargar ABI del contrato de toggles
             const response = await fetch('./zoom-toggle-abi.json');
             if (!response.ok) {
-                throw new Error('Error al cargar el ABI del contrato');
+                throw new Error('Failed to load contract ABI');
             }
             const contractABI = await response.json();
 
@@ -383,7 +383,7 @@ class CustomiseManager {
 
             // Mostrar confirmación con precio
             const priceFormatted = ethers.utils.formatEther(togglePrice);
-            const confirmed = confirm(`¿Activar BANANA toggle?\n\nPrecio: ${priceFormatted} ADRIAN\n\nEsto requerirá:\n1. Aprobar tokens ADRIAN\n2. Ejecutar transacción de pago`);
+            const confirmed = confirm(`Activate BANANA toggle?\n\nPrice: ${priceFormatted} ADRIAN\n\nThis will require:\n1. Approve ADRIAN tokens\n2. Execute payment transaction`);
             
             if (!confirmed) {
                 return;
@@ -427,7 +427,7 @@ class CustomiseManager {
                     window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT
                 );
             } catch (error) {
-                console.warn('⚠️ No se pudo verificar allowance, procediendo con aprobación:', error.message);
+                console.warn('⚠️ Could not verify allowance, proceeding with approval:', error.message);
                 currentAllowance = ethers.BigNumber.from(0);
             }
 
@@ -436,18 +436,18 @@ class CustomiseManager {
 
             // Si no hay suficiente allowance, aprobar
             if (currentAllowance.lt(togglePrice)) {
-                console.log('💳 Aprobando tokens ADRIAN para toggle contract...');
+                console.log('💳 Approving ADRIAN tokens for toggle contract...');
                 // Aprobar un monto mayor para evitar múltiples aprobaciones
                 const approveAmount = ethers.utils.parseEther('10000'); // 10k ADRIAN
                 const approveTx = await adrianTokenContract.approve(
                     window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
                     approveAmount
                 );
-                console.log('⏳ Esperando transacción de aprobación...');
+                console.log('⏳ Waiting for approval transaction...');
                 await approveTx.wait();
-                console.log('✅ Tokens ADRIAN aprobados para toggle contract');
+                console.log('✅ ADRIAN tokens approved for toggle contract');
             } else {
-                console.log('✅ Ya existe suficiente allowance');
+                console.log('✅ Sufficient allowance already exists');
             }
 
             // Ejecutar transacción de pago y activación
@@ -470,13 +470,13 @@ class CustomiseManager {
             // Verificar red
             const network = await provider.getNetwork();
             if (network.chainId !== 8453) {
-                throw new Error('Por favor, cambia a la red Base para usar esta función.');
+                throw new Error('Please switch to Base network to use this feature.');
             }
 
             // Cargar ABI del contrato de toggles
             const response = await fetch('./zoom-toggle-abi.json');
             if (!response.ok) {
-                throw new Error('Error al cargar el ABI del contrato');
+                throw new Error('Failed to load contract ABI');
             }
             const contractABI = await response.json();
 
@@ -488,13 +488,13 @@ class CustomiseManager {
 
             const tokenId = this.selectedERC721.tokenId;
             
-            console.log('💾 CustomiseManager: Activando toggle BANANA (ID=13) para token', tokenId);
+            console.log('💾 CustomiseManager: Activating BANANA toggle (ID=13) for token', tokenId);
             
             // Ejecutar setToggle con toggleId 13
             const tx = await contract.setToggle(tokenId, 13);
-            console.log('⏳ Esperando confirmación de transacción...');
+            console.log('⏳ Waiting for transaction confirmation...');
             const receipt = await tx.wait();
-            console.log('✅ Toggle BANANA activado exitosamente');
+            console.log('✅ BANANA toggle activated successfully');
 
             // Activar modo BANANA localmente
             this.isBananaMode = true;
@@ -507,6 +507,9 @@ class CustomiseManager {
 
             // Solicitar renderizado de la imagen con NanoBanana
             await this.requestBananaRender(tokenId);
+
+            // Mostrar mensaje de éxito
+            this.showBananaSuccessMessage(tokenId, receipt);
 
             this.emit('bananaToggled', { isBanana: this.isBananaMode });
             
@@ -522,7 +525,7 @@ class CustomiseManager {
      */
     async requestBananaRender(tokenId) {
         try {
-            console.log('🖼️ Solicitando renderizado con NanoBanana para token', tokenId);
+            console.log('🖼️ Requesting render with NanoBanana for token', tokenId);
             
             // La imagen se generará en la misma ruta que los ZERO
             // No necesitamos añadir toggle a la URL según las instrucciones
@@ -532,14 +535,39 @@ class CustomiseManager {
             // Esto es opcional, dependiendo de cómo funcione el backend
             try {
                 await fetch(renderUrl, { method: 'HEAD' });
-                console.log('✅ Renderizado solicitado');
+                console.log('✅ Render requested');
             } catch (error) {
-                console.warn('⚠️ No se pudo solicitar renderizado automático:', error);
+                console.warn('⚠️ Could not request automatic render:', error);
                 // No es crítico, la imagen se generará cuando se acceda
             }
         } catch (error) {
-            console.error('Error en requestBananaRender:', error);
+            console.error('Error in requestBananaRender:', error);
             // No lanzar error, es opcional
+        }
+    }
+
+    /**
+     * Mostrar mensaje de éxito cuando la transacción BANANA se complete
+     */
+    showBananaSuccessMessage(tokenId, receipt) {
+        try {
+            // Mostrar mensaje en el status del modal de customise
+            if (window.app?.stickyPopupManager?.elements?.customiseCommitStatus) {
+                const statusElement = window.app.stickyPopupManager.elements.customiseCommitStatus;
+                statusElement.textContent = `✅ BANANA toggle activated successfully! Transaction: ${receipt.transactionHash.substring(0, 10)}...`;
+                statusElement.className = 'apply-status success';
+                statusElement.style.display = 'block';
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 10000);
+            }
+            
+            // También mostrar alert de éxito
+            alert(`✅ BANANA toggle activated successfully!\n\nToken ID: ${tokenId}\nTransaction: ${receipt.transactionHash}\n\nThe image will be rendered with NanoBanana shortly.`);
+        } catch (error) {
+            console.error('Error showing success message:', error);
         }
     }
 
