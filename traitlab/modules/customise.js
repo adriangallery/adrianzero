@@ -11,6 +11,7 @@ class CustomiseManager {
         this.isGlowMode = false;
         this.isBnMode = false;
         this.isBlackoutMode = false;
+        this.isBananaMode = false;
         this.eventListeners = new Map();
         
         // Bind methods
@@ -19,6 +20,7 @@ class CustomiseManager {
         this.toggleGlow = this.toggleGlow.bind(this);
         this.toggleBn = this.toggleBn.bind(this);
         this.toggleBlackout = this.toggleBlackout.bind(this);
+        this.toggleBanana = this.toggleBanana.bind(this);
         this.commit = this.commit.bind(this);
         this.approveRename = this.approveRename.bind(this);
         this.renameToken = this.renameToken.bind(this);
@@ -57,6 +59,7 @@ class CustomiseManager {
             this.isGlowMode = false;
             this.isBnMode = false;
             this.isBlackoutMode = false;
+            this.isBananaMode = false;
 
             // Cargar ethers si no está disponible
             let ethers = window.ethers;
@@ -132,6 +135,9 @@ class CustomiseManager {
             } else if (toggleIdInt === 12) {
                 // Blackout
                 this.isBlackoutMode = true;
+            } else if (toggleIdInt === 13) {
+                // BANANA
+                this.isBananaMode = true;
             } else {
                 // IDs individuales (1-4)
                 if (toggleIdInt === 1) {
@@ -150,7 +156,8 @@ class CustomiseManager {
                 isShadowMode: this.isShadowMode,
                 isGlowMode: this.isGlowMode,
                 isBnMode: this.isBnMode,
-                isBlackoutMode: this.isBlackoutMode
+                isBlackoutMode: this.isBlackoutMode,
+                isBananaMode: this.isBananaMode
             });
 
             // Emitir evento para actualizar UI
@@ -182,6 +189,7 @@ class CustomiseManager {
         this.isGlowMode = false;
         this.isBnMode = false;
         this.isBlackoutMode = false;
+        this.isBananaMode = false;
     }
 
     /**
@@ -285,10 +293,264 @@ class CustomiseManager {
     }
 
     /**
+     * Toggle BANANA mode (requiere pago)
+     */
+    toggleBanana() {
+        if (!this.selectedERC721) {
+            console.warn('⚠️ CustomiseManager: No hay AdrianZERO seleccionado para BANANA');
+            return;
+        }
+
+        // Si ya está activo, desactivarlo
+        if (this.isBananaMode) {
+            this.isBananaMode = false;
+            console.log('🍌 CustomiseManager: BANANA mode: OFF');
+            
+            // Actualizar imagen si hay sticky popup manager
+            if (window.app?.stickyPopupManager) {
+                window.app.stickyPopupManager.updateCustomiseImage();
+            }
+            
+            this.emit('bananaToggled', { isBanana: this.isBananaMode });
+            return;
+        }
+
+        // Si no está activo, iniciar proceso de pago
+        this.initiateBananaPayment();
+    }
+
+    /**
+     * Iniciar proceso de pago para BANANA toggle
+     */
+    async initiateBananaPayment() {
+        if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+            alert('Por favor, conecta tu wallet primero.');
+            return;
+        }
+
+        try {
+            // Cargar ethers si no está disponible
+            let ethers = window.ethers;
+            if (typeof ethers === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                await new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        ethers = window.ethers;
+                        resolve();
+                    };
+                    script.onerror = () => reject(new Error('Failed to load ethers'));
+                    document.head.appendChild(script);
+                });
+            }
+
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const userAddress = await signer.getAddress();
+
+            // Verificar red
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                throw new Error('Por favor, cambia a la red Base para usar esta función.');
+            }
+
+            // Cargar ABI del contrato de toggles
+            const response = await fetch('./zoom-toggle-abi.json');
+            if (!response.ok) {
+                throw new Error('Error al cargar el ABI del contrato');
+            }
+            const contractABI = await response.json();
+
+            const toggleContract = new ethers.Contract(
+                window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                contractABI,
+                provider
+            );
+
+            // Obtener precio del toggle 13
+            const togglePrice = await toggleContract.getTogglePrice(13);
+            console.log('💰 Precio del toggle BANANA:', ethers.utils.formatEther(togglePrice));
+
+            if (togglePrice.eq(0)) {
+                // Si el precio es 0, activar directamente sin pago
+                this.isBananaMode = true;
+                if (window.app?.stickyPopupManager) {
+                    window.app.stickyPopupManager.updateCustomiseImage();
+                }
+                this.emit('bananaToggled', { isBanana: this.isBananaMode });
+                return;
+            }
+
+            // Mostrar confirmación con precio
+            const priceFormatted = ethers.utils.formatEther(togglePrice);
+            const confirmed = confirm(`¿Activar BANANA toggle?\n\nPrecio: ${priceFormatted} ADRIAN\n\nEsto requerirá:\n1. Aprobar tokens ADRIAN\n2. Ejecutar transacción de pago`);
+            
+            if (!confirmed) {
+                return;
+            }
+
+            // Aprobar y ejecutar pago
+            await this.approveAndPayBanana(ethers, togglePrice);
+            
+        } catch (error) {
+            console.error('Error en initiateBananaPayment:', error);
+            alert(`Error: ${error.message}`);
+        }
+    }
+
+    /**
+     * Aprobar tokens y ejecutar pago para BANANA
+     */
+    async approveAndPayBanana(ethers, togglePrice) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const userAddress = await signer.getAddress();
+
+            // ERC20 ABI mínimo para approve y allowance
+            const erc20ABI = [
+                "function approve(address spender, uint256 amount) external returns (bool)",
+                "function allowance(address owner, address spender) external view returns (uint256)"
+            ];
+
+            const adrianTokenContract = new ethers.Contract(
+                window.TraitLABConfig.ADRIAN_TOKEN,
+                erc20ABI,
+                signer
+            );
+
+            // Verificar allowance actual
+            let currentAllowance;
+            try {
+                currentAllowance = await adrianTokenContract.allowance(
+                    userAddress,
+                    window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT
+                );
+            } catch (error) {
+                console.warn('⚠️ No se pudo verificar allowance, procediendo con aprobación:', error.message);
+                currentAllowance = ethers.BigNumber.from(0);
+            }
+
+            console.log('Current allowance:', ethers.utils.formatEther(currentAllowance));
+            console.log('Required amount:', ethers.utils.formatEther(togglePrice));
+
+            // Si no hay suficiente allowance, aprobar
+            if (currentAllowance.lt(togglePrice)) {
+                console.log('💳 Aprobando tokens ADRIAN para toggle contract...');
+                // Aprobar un monto mayor para evitar múltiples aprobaciones
+                const approveAmount = ethers.utils.parseEther('10000'); // 10k ADRIAN
+                const approveTx = await adrianTokenContract.approve(
+                    window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                    approveAmount
+                );
+                console.log('⏳ Esperando transacción de aprobación...');
+                await approveTx.wait();
+                console.log('✅ Tokens ADRIAN aprobados para toggle contract');
+            } else {
+                console.log('✅ Ya existe suficiente allowance');
+            }
+
+            // Ejecutar transacción de pago y activación
+            await this.executeBananaToggle(ethers);
+            
+        } catch (error) {
+            console.error('Error en approveAndPayBanana:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Ejecutar toggle BANANA después del pago
+     */
+    async executeBananaToggle(ethers) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            // Verificar red
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                throw new Error('Por favor, cambia a la red Base para usar esta función.');
+            }
+
+            // Cargar ABI del contrato de toggles
+            const response = await fetch('./zoom-toggle-abi.json');
+            if (!response.ok) {
+                throw new Error('Error al cargar el ABI del contrato');
+            }
+            const contractABI = await response.json();
+
+            const contract = new ethers.Contract(
+                window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                contractABI,
+                signer
+            );
+
+            const tokenId = this.selectedERC721.tokenId;
+            
+            console.log('💾 CustomiseManager: Activando toggle BANANA (ID=13) para token', tokenId);
+            
+            // Ejecutar setToggle con toggleId 13
+            const tx = await contract.setToggle(tokenId, 13);
+            console.log('⏳ Esperando confirmación de transacción...');
+            const receipt = await tx.wait();
+            console.log('✅ Toggle BANANA activado exitosamente');
+
+            // Activar modo BANANA localmente
+            this.isBananaMode = true;
+            
+            // Actualizar imagen
+            if (window.app?.stickyPopupManager) {
+                window.app.stickyPopupManager.updateCustomiseImage();
+                window.app.stickyPopupManager.updateCustomiseButtonsState();
+            }
+
+            // Solicitar renderizado de la imagen con NanoBanana
+            await this.requestBananaRender(tokenId);
+
+            this.emit('bananaToggled', { isBanana: this.isBananaMode });
+            
+            return receipt;
+        } catch (error) {
+            console.error('Error en executeBananaToggle:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Solicitar renderizado de imagen con NanoBanana después del pago
+     */
+    async requestBananaRender(tokenId) {
+        try {
+            console.log('🖼️ Solicitando renderizado con NanoBanana para token', tokenId);
+            
+            // La imagen se generará en la misma ruta que los ZERO
+            // No necesitamos añadir toggle a la URL según las instrucciones
+            const renderUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+            
+            // Hacer una petición para forzar el renderizado (si el backend lo soporta)
+            // Esto es opcional, dependiendo de cómo funcione el backend
+            try {
+                await fetch(renderUrl, { method: 'HEAD' });
+                console.log('✅ Renderizado solicitado');
+            } catch (error) {
+                console.warn('⚠️ No se pudo solicitar renderizado automático:', error);
+                // No es crítico, la imagen se generará cuando se acceda
+            }
+        } catch (error) {
+            console.error('Error en requestBananaRender:', error);
+            // No lanzar error, es opcional
+        }
+    }
+
+    /**
      * Get image URL with toggles applied
      * Usa URLs combinadas según los IDs de toggle combinados
+     * BANANA (toggle 13) usa NanoBanana y la imagen está en la misma ruta sin parámetros
      */
     getImageUrl(tokenId) {
+        // Si BANANA está activo, la imagen ya está renderizada en la ruta estándar
+        // No añadimos parámetros según las instrucciones
         let baseUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
         const params = [];
         
@@ -342,6 +604,10 @@ class CustomiseManager {
         if (this.isBlackoutMode) {
             params.push('blackout=true');
         }
+        
+        // BANANA (toggle 13) usa NanoBanana - la imagen está en la misma ruta sin parámetros adicionales
+        // No añadimos parámetros a la URL según las instrucciones
+        // La imagen se renderiza automáticamente cuando el toggle está activo
         
         if (params.length > 0) {
             baseUrl += '?' + params.join('&');
@@ -454,7 +720,7 @@ class CustomiseManager {
             // Obtener precio del toggle
             // Primero verificar si hay un toggle combinado, si no usar el precio máximo de los individuales
             let togglePrice = ethers.BigNumber.from(0);
-            if (this.isCloseupMode || this.isShadowMode || this.isGlowMode || this.isBnMode || this.isBlackoutMode) {
+            if (this.isCloseupMode || this.isShadowMode || this.isGlowMode || this.isBnMode || this.isBlackoutMode || this.isBananaMode) {
                 try {
                     // Verificar si hay combinación y obtener su precio
                     const combinedToggleId = this.getCombinedToggleId();
@@ -469,10 +735,12 @@ class CustomiseManager {
                         const priceGlow = this.isGlowMode ? await toggleContract.getTogglePrice(3) : ethers.BigNumber.from(0);
                         const priceBn = this.isBnMode ? await toggleContract.getTogglePrice(4) : ethers.BigNumber.from(0);
                         const priceBlackout = this.isBlackoutMode ? await toggleContract.getTogglePrice(12) : ethers.BigNumber.from(0);
+                        const priceBanana = this.isBananaMode ? await toggleContract.getTogglePrice(13) : ethers.BigNumber.from(0);
                         togglePrice = priceCloseup.gt(priceShadow) ? priceCloseup : priceShadow;
                         togglePrice = togglePrice.gt(priceGlow) ? togglePrice : priceGlow;
                         togglePrice = togglePrice.gt(priceBn) ? togglePrice : priceBn;
                         togglePrice = togglePrice.gt(priceBlackout) ? togglePrice : priceBlackout;
+                        togglePrice = togglePrice.gt(priceBanana) ? togglePrice : priceBanana;
                         console.log('💰 Toggle price (individual):', ethers.utils.formatEther(togglePrice));
                     }
                 } catch (error) {
@@ -571,7 +839,7 @@ class CustomiseManager {
             const combinedToggleId = this.getCombinedToggleId();
             
             if (this.isCloseupMode === false && this.isShadowMode === false && 
-                this.isGlowMode === false && this.isBnMode === false && this.isBlackoutMode === false) {
+                this.isGlowMode === false && this.isBnMode === false && this.isBlackoutMode === false && this.isBananaMode === false) {
                 // Todos desactivados: enviar toggleId 0 para desactivar todo
                 console.log('💾 CustomiseManager: Todos los toggles desactivados, enviando toggleId 0');
                 const tx = await contract.setToggle(tokenId, 0);
@@ -595,8 +863,9 @@ class CustomiseManager {
                 receipts.push({ toggleId: combinedToggleId, receipt });
                 console.log(`✅ CustomiseManager: ${toggleName} toggle commiteado`);
             } else {
-                // Usar IDs individuales en orden descendente (12, 4, 3, 2, 1)
+                // Usar IDs individuales en orden descendente (13, 12, 4, 3, 2, 1)
                 const activeToggles = [];
+                if (this.isBananaMode) activeToggles.push(13);
                 if (this.isBlackoutMode) activeToggles.push(12);
                 if (this.isBnMode) activeToggles.push(4);
                 if (this.isGlowMode) activeToggles.push(3);
@@ -604,7 +873,7 @@ class CustomiseManager {
                 if (this.isCloseupMode) activeToggles.push(1);
                 
                 for (const toggleId of activeToggles) {
-                    const toggleName = toggleId === 12 ? 'Blackout' : toggleId === 4 ? 'BN' : toggleId === 3 ? 'Glow' : toggleId === 2 ? 'Shadow' : 'Closeup';
+                    const toggleName = toggleId === 13 ? 'BANANA' : toggleId === 12 ? 'Blackout' : toggleId === 4 ? 'BN' : toggleId === 3 ? 'Glow' : toggleId === 2 ? 'Shadow' : 'Closeup';
                     console.log(`💾 CustomiseManager: Commiteando ${toggleName} toggle (ID=${toggleId})`);
                     const tx = await contract.setToggle(tokenId, toggleId);
                     const receipt = await tx.wait();
@@ -621,6 +890,7 @@ class CustomiseManager {
                 isGlowMode: this.isGlowMode,
                 isBnMode: this.isBnMode,
                 isBlackoutMode: this.isBlackoutMode,
+                isBananaMode: this.isBananaMode,
                 combinedToggleId: combinedToggleId,
                 toggleIdsSent: toggleIdsSent
             });

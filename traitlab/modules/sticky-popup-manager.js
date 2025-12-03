@@ -105,6 +105,7 @@ class StickyPopupManager {
             customiseGlowBtn: document.getElementById('customise-glowBtn'),
             customiseBnBtn: document.getElementById('customise-bnBtn'),
             customiseBlackoutBtn: document.getElementById('customise-blackoutBtn'),
+            customiseBananaBtn: document.getElementById('customise-bananaBtn'),
             customiseCommitBtn: document.getElementById('customise-commitBtn'),
             customiseRenameTokenBtn: document.getElementById('customise-renameTokenBtn'),
             
@@ -1555,6 +1556,12 @@ class StickyPopupManager {
             // Blackout ON cuando está desactivado (para activarlo), Blackout OFF cuando está activado (para desactivarlo)
             this.elements.customiseBlackoutBtn.textContent = customiseModule.isBlackoutMode ? '🌑 Blackout OFF' : '🌑 Blackout ON';
         }
+        
+        // Actualizar botón BANANA
+        if (this.elements.customiseBananaBtn) {
+            // BANANA muestra estado actual (ON cuando está activo, OFF cuando está desactivado)
+            this.elements.customiseBananaBtn.textContent = customiseModule.isBananaMode ? '🍌 BANANA ON' : '🍌 BANANA';
+        }
     }
 
     /**
@@ -1579,6 +1586,7 @@ class StickyPopupManager {
         this.elements.customiseGlowBtn = document.getElementById('customise-glowBtn');
         this.elements.customiseBnBtn = document.getElementById('customise-bnBtn');
         this.elements.customiseBlackoutBtn = document.getElementById('customise-blackoutBtn');
+        this.elements.customiseBananaBtn = document.getElementById('customise-bananaBtn');
         this.elements.customiseCommitBtn = document.getElementById('customise-commitBtn');
         this.elements.customiseRenameTokenBtn = document.getElementById('customise-renameTokenBtn');
         this.elements.customiseCommitStatus = document.getElementById('customise-commit-status');
@@ -1616,6 +1624,10 @@ class StickyPopupManager {
 
         if (this.elements.customiseBlackoutBtn) {
             this.elements.customiseBlackoutBtn.onclick = () => this.toggleCustomiseBlackout();
+        }
+
+        if (this.elements.customiseBananaBtn) {
+            this.elements.customiseBananaBtn.onclick = () => this.toggleCustomiseBanana();
         }
 
         if (this.elements.customiseCommitBtn) {
@@ -1774,6 +1786,83 @@ class StickyPopupManager {
         
         // Actualizar imagen
         this.updateCustomiseImage();
+    }
+
+    /**
+     * 🎨 Customise: Toggle BANANA (requiere pago)
+     */
+    async toggleCustomiseBanana() {
+        if (!window.app?.modules?.customise) return;
+        
+        // Si ya está activo, desactivarlo directamente
+        if (window.app.modules.customise.isBananaMode) {
+            window.app.modules.customise.toggleBanana();
+            
+            // Actualizar texto del botón
+            if (this.elements.customiseBananaBtn) {
+                this.elements.customiseBananaBtn.textContent = '🍌 BANANA';
+            }
+            
+            // Actualizar imagen
+            this.updateCustomiseImage();
+            return;
+        }
+        
+        // Si no está activo, mostrar imagen de muestra antes de iniciar pago
+        this.showBananaPreview();
+        
+        // Iniciar proceso de pago (esto mostrará confirmación y procesará pago)
+        try {
+            await window.app.modules.customise.toggleBanana();
+            
+            // Actualizar texto del botón después del pago exitoso
+            if (this.elements.customiseBananaBtn) {
+                this.elements.customiseBananaBtn.textContent = '🍌 BANANA ON';
+            }
+            
+            // Actualizar imagen con la real después del pago
+            this.updateCustomiseImage();
+        } catch (error) {
+            console.error('Error en toggleCustomiseBanana:', error);
+            // Si hay error, restaurar imagen normal
+            this.updateCustomiseImage();
+        }
+    }
+
+    /**
+     * 🎨 Customise: Mostrar preview de BANANA (imagen de muestra)
+     * Muestra la imagen actual del token como preview antes del pago
+     */
+    showBananaPreview() {
+        if (!this.selectedERC721 || !this.elements.customisePreviewImage) return;
+        
+        // Mostrar imagen de muestra (imagen actual del token sin BANANA)
+        // Esta es la imagen que se mostrará antes de que el usuario pague
+        const previewUrl = window.app?.modules?.customise?.getImageUrl(this.selectedERC721.tokenId) || 
+                          `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
+        
+        // Mostrar loading
+        if (this.elements.customiseLoading) {
+            this.elements.customiseLoading.style.display = 'flex';
+        }
+        
+        // Cargar imagen de muestra
+        this.elements.customisePreviewImage.src = previewUrl;
+        this.elements.customisePreviewImage.onload = () => {
+            if (this.elements.customiseLoading) {
+                this.elements.customiseLoading.style.display = 'none';
+            }
+            if (this.elements.customisePreviewImage) {
+                this.elements.customisePreviewImage.style.display = 'block';
+            }
+        };
+        
+        this.elements.customisePreviewImage.onerror = () => {
+            if (this.elements.customiseLoading) {
+                this.elements.customiseLoading.style.display = 'none';
+            }
+            console.warn('⚠️ No se pudo cargar imagen de preview para BANANA');
+        };
     }
 
     /**
