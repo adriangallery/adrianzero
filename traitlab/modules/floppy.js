@@ -113,6 +113,8 @@ class FloppyManager {
             return this.getImagePath(10012, '.gif');
         } else if (tokenId === 10013) {
             return this.getImagePath(10013, '.gif');
+        } else if (tokenId === 10015) {
+            return this.getImagePath(10015, '.gif');
         } else if (tokenId === 1123) {
             // CensorPACK: intentar .gif primero, luego .png como fallback
             const gifPath = this.getImagePath(1123, '.gif');
@@ -266,6 +268,13 @@ class FloppyManager {
                 address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
                 type: 'floppy',
                 name: 'Floppy'
+            };
+        } else if (tokenId === 10015) {
+            // XMAS '25 Floppy - ADRIAN_FLOPPY_DISCS_CONTRACT
+            return {
+                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
+                type: 'floppy',
+                name: 'XMAS \'25 Floppy'
             };
         } else {
             // Default fallback
