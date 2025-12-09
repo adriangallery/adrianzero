@@ -1,0 +1,3100 @@
+{
+  "traits": [
+    {
+      "tokenId": 1,
+      "name": "HODL Mode",
+      "category": "BACKGROUND",
+      "fileName": "HODL-Mode",
+      "maxSupply": 37,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 2,
+      "name": "Moon Background",
+      "category": "BACKGROUND",
+      "fileName": "Moon-Background",
+      "maxSupply": 21,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 3,
+      "name": "Diamond Pattern",
+      "category": "BACKGROUND",
+      "fileName": "Diamond-Pattern",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 4,
+      "name": "Crypto Grid",
+      "category": "BACKGROUND",
+      "fileName": "Crypto-Grid",
+      "maxSupply": 33,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 5,
+      "name": "Blockchain Waves",
+      "category": "BACKGROUND",
+      "fileName": "Blockchain-Waves",
+      "maxSupply": 46,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 6,
+      "name": "NFT Galaxy",
+      "category": "BACKGROUND",
+      "fileName": "NFT-Galaxy",
+      "maxSupply": 7,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 7,
+      "name": "DeFi Sky",
+      "category": "BACKGROUND",
+      "fileName": "DeFi-Sky",
+      "maxSupply": 39,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 8,
+      "name": "Web3 Sunset",
+      "category": "BACKGROUND",
+      "fileName": "Web3-Sunset",
+      "maxSupply": 44,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 9,
+      "name": "Token Storm",
+      "category": "BACKGROUND",
+      "fileName": "Token-Storm",
+      "maxSupply": 24,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 10,
+      "name": "Chain Link BG",
+      "category": "BACKGROUND",
+      "fileName": "Chain-Link-BG",
+      "maxSupply": 41,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 11,
+      "name": "Laser Eyes Crypto",
+      "category": "EYES",
+      "fileName": "Laser-Eyes-Crypto",
+      "maxSupply": 42,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 12,
+      "name": "Diamond Eyes",
+      "category": "EYES",
+      "fileName": "Diamond-Eyes",
+      "maxSupply": 49,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 13,
+      "name": "Moon Eyes",
+      "category": "EYES",
+      "fileName": "Moon-Eyes",
+      "maxSupply": 11,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 14,
+      "name": "HODL Gaze",
+      "category": "EYES",
+      "fileName": "HODL-Gaze",
+      "maxSupply": 37,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 15,
+      "name": "Crypto Vision",
+      "category": "EYES",
+      "fileName": "Crypto-Vision",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 16,
+      "name": "NFT Glow",
+      "category": "EYES",
+      "fileName": "NFT-Glow",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 17,
+      "name": "Blockchain Stare",
+      "category": "EYES",
+      "fileName": "Blockchain-Stare",
+      "maxSupply": 12,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 18,
+      "name": "Web3 Shades",
+      "category": "EYES",
+      "fileName": "Web3-Shades",
+      "maxSupply": 19,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 19,
+      "name": "Token Eyes",
+      "category": "EYES",
+      "fileName": "Token-Eyes",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 20,
+      "name": "Chain Eyes",
+      "category": "EYES",
+      "fileName": "Chain-Eyes",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 21,
+      "name": "Moon Cap",
+      "category": "HEAD",
+      "fileName": "Moon-Cap",
+      "maxSupply": 49,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 22,
+      "name": "Diamond Crown",
+      "category": "HEAD",
+      "fileName": "Diamond-Crown",
+      "maxSupply": 12,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 23,
+      "name": "NFT Hat",
+      "category": "HEAD",
+      "fileName": "NFT-Hat",
+      "maxSupply": 8,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 24,
+      "name": "Crypto Helmet",
+      "category": "HEAD",
+      "fileName": "Crypto-Helmet",
+      "maxSupply": 12,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 25,
+      "name": "HODL Beanie",
+      "category": "HEAD",
+      "fileName": "HODL-Beanie",
+      "maxSupply": 50,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 26,
+      "name": "Blockchain Cap",
+      "category": "HEAD",
+      "fileName": "Blockchain-Cap",
+      "maxSupply": 48,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 27,
+      "name": "Web3 Headband",
+      "category": "HEAD",
+      "fileName": "Web3-Headband",
+      "maxSupply": 42,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 28,
+      "name": "Token Crown",
+      "category": "HEAD",
+      "fileName": "Token-Crown",
+      "maxSupply": 7,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 29,
+      "name": "DeFi Cap",
+      "category": "HEAD",
+      "fileName": "DeFi-Cap",
+      "maxSupply": 43,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 30,
+      "name": "Chain Headgear",
+      "category": "HEAD",
+      "fileName": "Chain-Headgear",
+      "maxSupply": 11,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 31,
+      "name": "Diamond Smile",
+      "category": "MOUTH",
+      "fileName": "Diamond-Smile",
+      "maxSupply": 48,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 32,
+      "name": "Moon Grin",
+      "category": "MOUTH",
+      "fileName": "Moon-Grin",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 33,
+      "name": "Crypto Vape",
+      "category": "MOUTH",
+      "fileName": "Crypto-Vape",
+      "maxSupply": 21,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 34,
+      "name": "NFT Pipe",
+      "category": "MOUTH",
+      "fileName": "NFT-Pipe",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 35,
+      "name": "HODL Smirk",
+      "category": "MOUTH",
+      "fileName": "HODL-Smirk",
+      "maxSupply": 36,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 36,
+      "name": "Blockchain Laugh",
+      "category": "MOUTH",
+      "fileName": "Blockchain-Laugh",
+      "maxSupply": 6,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 37,
+      "name": "Web3 Smile",
+      "category": "MOUTH",
+      "fileName": "Web3-Smile",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 38,
+      "name": "Token Grin",
+      "category": "MOUTH",
+      "fileName": "Token-Grin",
+      "maxSupply": 24,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 39,
+      "name": "DeFi Smirk",
+      "category": "MOUTH",
+      "fileName": "DeFi-Smirk",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 40,
+      "name": "Chain Smile",
+      "category": "MOUTH",
+      "fileName": "Chain-Smile",
+      "maxSupply": 9,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 41,
+      "name": "OG Crypto Skin",
+      "category": "SKIN",
+      "fileName": "OG-Crypto-Skin",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 42,
+      "name": "Diamond Skin",
+      "category": "SKIN",
+      "fileName": "Diamond-Skin",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 43,
+      "name": "Moon Glow",
+      "category": "SKIN",
+      "fileName": "Moon-Glow",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 44,
+      "name": "NFT Texture",
+      "category": "SKIN",
+      "fileName": "NFT-Texture",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 45,
+      "name": "Blockchain Pattern",
+      "category": "SKIN",
+      "fileName": "Blockchain-Pattern",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 46,
+      "name": "Web3 Base",
+      "category": "SKIN",
+      "fileName": "Web3-Base",
+      "maxSupply": 49,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 47,
+      "name": "Token Skin",
+      "category": "SKIN",
+      "fileName": "Token-Skin",
+      "maxSupply": 34,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 48,
+      "name": "DeFi Texture",
+      "category": "SKIN",
+      "fileName": "DeFi-Texture",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 49,
+      "name": "Chain Pattern",
+      "category": "SKIN",
+      "fileName": "Chain-Pattern",
+      "maxSupply": 26,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 50,
+      "name": "Crypto Base",
+      "category": "SKIN",
+      "fileName": "Crypto-Base",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 51,
+      "name": "Diamond Hands",
+      "category": "SWAG",
+      "fileName": "Diamond-Hands",
+      "maxSupply": 44,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 52,
+      "name": "Moon Necklace",
+      "category": "SWAG",
+      "fileName": "Moon-Necklace",
+      "maxSupply": 23,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 53,
+      "name": "Crypto Chain",
+      "category": "SWAG",
+      "fileName": "Crypto-Chain",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 54,
+      "name": "NFT Badge",
+      "category": "SWAG",
+      "fileName": "NFT-Badge",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 55,
+      "name": "HODL Bracelet",
+      "category": "SWAG",
+      "fileName": "HODL-Bracelet",
+      "maxSupply": 24,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 56,
+      "name": "Blockchain Ring",
+      "category": "SWAG",
+      "fileName": "Blockchain-Ring",
+      "maxSupply": 41,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 57,
+      "name": "Web3 Pendant",
+      "category": "SWAG",
+      "fileName": "Web3-Pendant",
+      "maxSupply": 11,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 58,
+      "name": "Token Chain",
+      "category": "SWAG",
+      "fileName": "Token-Chain",
+      "maxSupply": 16,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 59,
+      "name": "DeFi Watch",
+      "category": "SWAG",
+      "fileName": "DeFi-Watch",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 60,
+      "name": "Chain Accessory",
+      "category": "SWAG",
+      "fileName": "Chain-Accessory",
+      "maxSupply": 31,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 61,
+      "name": "NFT Badge",
+      "category": "GEAR",
+      "fileName": "NFT-Badge",
+      "maxSupply": 17,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 62,
+      "name": "Crypto Wallet",
+      "category": "GEAR",
+      "fileName": "Crypto-Wallet",
+      "maxSupply": 37,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 63,
+      "name": "Blockchain Device",
+      "category": "GEAR",
+      "fileName": "Blockchain-Device",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 64,
+      "name": "Web3 Tool",
+      "category": "GEAR",
+      "fileName": "Web3-Tool",
+      "maxSupply": 47,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 65,
+      "name": "Token Gear",
+      "category": "GEAR",
+      "fileName": "Token-Gear",
+      "maxSupply": 11,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 66,
+      "name": "DeFi Equipment",
+      "category": "GEAR",
+      "fileName": "DeFi-Equipment",
+      "maxSupply": 7,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 67,
+      "name": "Chain Tech",
+      "category": "GEAR",
+      "fileName": "Chain-Tech",
+      "maxSupply": 18,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 68,
+      "name": "Crypto Gadget",
+      "category": "GEAR",
+      "fileName": "Crypto-Gadget",
+      "maxSupply": 48,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 69,
+      "name": "NFT Device",
+      "category": "GEAR",
+      "fileName": "NFT-Device",
+      "maxSupply": 32,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 70,
+      "name": "HODL Gear",
+      "category": "GEAR",
+      "fileName": "HODL-Gear",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 71,
+      "name": "Bitcoin Symbol",
+      "category": "CRYPTO",
+      "fileName": "Bitcoin-Symbol",
+      "maxSupply": 19,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 72,
+      "name": "Ethereum Logo",
+      "category": "CRYPTO",
+      "fileName": "Ethereum-Logo",
+      "maxSupply": 14,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 73,
+      "name": "Solana Sign",
+      "category": "CRYPTO",
+      "fileName": "Solana-Sign",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 74,
+      "name": "Polygon Badge",
+      "category": "CRYPTO",
+      "fileName": "Polygon-Badge",
+      "maxSupply": 24,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 75,
+      "name": "Avalanche Mark",
+      "category": "CRYPTO",
+      "fileName": "Avalanche-Mark",
+      "maxSupply": 19,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 76,
+      "name": "BNB Chain",
+      "category": "CRYPTO",
+      "fileName": "BNB-Chain",
+      "maxSupply": 49,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 77,
+      "name": "Cardano Symbol",
+      "category": "CRYPTO",
+      "fileName": "Cardano-Symbol",
+      "maxSupply": 31,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 78,
+      "name": "Dogecoin Icon",
+      "category": "CRYPTO",
+      "fileName": "Dogecoin-Icon",
+      "maxSupply": 39,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 79,
+      "name": "Shiba Token",
+      "category": "CRYPTO",
+      "fileName": "Shiba-Token",
+      "maxSupply": 47,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 80,
+      "name": "Pepe Coin",
+      "category": "CRYPTO",
+      "fileName": "Pepe-Coin",
+      "maxSupply": 19,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 81,
+      "name": "VR Headset",
+      "category": "TECH",
+      "fileName": "VR-Headset",
+      "maxSupply": 44,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 82,
+      "name": "AR Glasses",
+      "category": "TECH",
+      "fileName": "AR-Glasses",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 83,
+      "name": "AI Chip",
+      "category": "TECH",
+      "fileName": "AI-Chip",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 84,
+      "name": "Quantum Processor",
+      "category": "TECH",
+      "fileName": "Quantum-Processor",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 85,
+      "name": "Neural Link",
+      "category": "TECH",
+      "fileName": "Neural-Link",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 86,
+      "name": "Cyber Implant",
+      "category": "TECH",
+      "fileName": "Cyber-Implant",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 87,
+      "name": "Tech Visor",
+      "category": "TECH",
+      "fileName": "Tech-Visor",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 88,
+      "name": "Digital Interface",
+      "category": "TECH",
+      "fileName": "Digital-Interface",
+      "maxSupply": 31,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 89,
+      "name": "Smart Device",
+      "category": "TECH",
+      "fileName": "Smart-Device",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 90,
+      "name": "Future Tech",
+      "category": "TECH",
+      "fileName": "Future-Tech",
+      "maxSupply": 48,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 91,
+      "name": "Chill Mode",
+      "category": "VIBE",
+      "fileName": "Chill-Mode",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 92,
+      "name": "Hype Energy",
+      "category": "VIBE",
+      "fileName": "Hype-Energy",
+      "maxSupply": 46,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 93,
+      "name": "Vibe Check",
+      "category": "VIBE",
+      "fileName": "Vibe-Check",
+      "maxSupply": 41,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 94,
+      "name": "Good Vibes",
+      "category": "VIBE",
+      "fileName": "Good-Vibes",
+      "maxSupply": 47,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 95,
+      "name": "Positive Aura",
+      "category": "VIBE",
+      "fileName": "Positive-Aura",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 96,
+      "name": "Cool Energy",
+      "category": "VIBE",
+      "fileName": "Cool-Energy",
+      "maxSupply": 47,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 97,
+      "name": "Fresh Vibe",
+      "category": "VIBE",
+      "fileName": "Fresh-Vibe",
+      "maxSupply": 11,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 98,
+      "name": "Smooth Energy",
+      "category": "VIBE",
+      "fileName": "Smooth-Energy",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 99,
+      "name": "Vibe Wave",
+      "category": "VIBE",
+      "fileName": "Vibe-Wave",
+      "maxSupply": 19,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 100,
+      "name": "Energy Flow",
+      "category": "VIBE",
+      "fileName": "Energy-Flow",
+      "maxSupply": 43,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 101,
+      "name": "Crypto Watch",
+      "category": "ACCESSORY",
+      "fileName": "Crypto-Watch",
+      "maxSupply": 31,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 102,
+      "name": "NFT Glasses",
+      "category": "ACCESSORY",
+      "fileName": "NFT-Glasses",
+      "maxSupply": 9,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 103,
+      "name": "Blockchain Bracelet",
+      "category": "ACCESSORY",
+      "fileName": "Blockchain-Bracelet",
+      "maxSupply": 31,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 104,
+      "name": "Web3 Ring",
+      "category": "ACCESSORY",
+      "fileName": "Web3-Ring",
+      "maxSupply": 38,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 105,
+      "name": "Token Pendant",
+      "category": "ACCESSORY",
+      "fileName": "Token-Pendant",
+      "maxSupply": 39,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 106,
+      "name": "DeFi Necklace",
+      "category": "ACCESSORY",
+      "fileName": "DeFi-Necklace",
+      "maxSupply": 39,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 107,
+      "name": "Chain Earring",
+      "category": "ACCESSORY",
+      "fileName": "Chain-Earring",
+      "maxSupply": 50,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 108,
+      "name": "Crypto Band",
+      "category": "ACCESSORY",
+      "fileName": "Crypto-Band",
+      "maxSupply": 12,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 109,
+      "name": "NFT Clip",
+      "category": "ACCESSORY",
+      "fileName": "NFT-Clip",
+      "maxSupply": 24,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 110,
+      "name": "HODL Pin",
+      "category": "ACCESSORY",
+      "fileName": "HODL-Pin",
+      "maxSupply": 33,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 111,
+      "name": "Crypto Sunset",
+      "category": "BACKGROUND",
+      "fileName": "Crypto-Sunset",
+      "maxSupply": 27,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 112,
+      "name": "Token Rain",
+      "category": "BACKGROUND",
+      "fileName": "Token-Rain",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 113,
+      "name": "Blockchain Matrix",
+      "category": "BACKGROUND",
+      "fileName": "Blockchain-Matrix",
+      "maxSupply": 48,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 114,
+      "name": "NFT Nebula",
+      "category": "BACKGROUND",
+      "fileName": "NFT-Nebula",
+      "maxSupply": 34,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 115,
+      "name": "DeFi Clouds",
+      "category": "BACKGROUND",
+      "fileName": "DeFi-Clouds",
+      "maxSupply": 9,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 116,
+      "name": "Bitcoin Eyes",
+      "category": "EYES",
+      "fileName": "Bitcoin-Eyes",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 117,
+      "name": "Ethereum Glow",
+      "category": "EYES",
+      "fileName": "Ethereum-Glow",
+      "maxSupply": 32,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 118,
+      "name": "Solana Spark",
+      "category": "EYES",
+      "fileName": "Solana-Spark",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 119,
+      "name": "Polygon Vision",
+      "category": "EYES",
+      "fileName": "Polygon-Vision",
+      "maxSupply": 14,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 120,
+      "name": "Avalanche Gaze",
+      "category": "EYES",
+      "fileName": "Avalanche-Gaze",
+      "maxSupply": 47,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 121,
+      "name": "Bitcoin Cap",
+      "category": "HEAD",
+      "fileName": "Bitcoin-Cap",
+      "maxSupply": 13,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 122,
+      "name": "Ethereum Beanie",
+      "category": "HEAD",
+      "fileName": "Ethereum-Beanie",
+      "maxSupply": 49,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 123,
+      "name": "Solana Helmet",
+      "category": "HEAD",
+      "fileName": "Solana-Helmet",
+      "maxSupply": 6,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 124,
+      "name": "Polygon Crown",
+      "category": "HEAD",
+      "fileName": "Polygon-Crown",
+      "maxSupply": 49,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 125,
+      "name": "Avalanche Hat",
+      "category": "HEAD",
+      "fileName": "Avalanche-Hat",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 126,
+      "name": "Bitcoin Grin",
+      "category": "MOUTH",
+      "fileName": "Bitcoin-Grin",
+      "maxSupply": 27,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 127,
+      "name": "Ethereum Smile",
+      "category": "MOUTH",
+      "fileName": "Ethereum-Smile",
+      "maxSupply": 34,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 128,
+      "name": "Solana Laugh",
+      "category": "MOUTH",
+      "fileName": "Solana-Laugh",
+      "maxSupply": 36,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 129,
+      "name": "Polygon Smirk",
+      "category": "MOUTH",
+      "fileName": "Polygon-Smirk",
+      "maxSupply": 8,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 130,
+      "name": "Avalanche Grin",
+      "category": "MOUTH",
+      "fileName": "Avalanche-Grin",
+      "maxSupply": 26,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 131,
+      "name": "Bitcoin Chain",
+      "category": "SWAG",
+      "fileName": "Bitcoin-Chain",
+      "maxSupply": 48,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 132,
+      "name": "Ethereum Necklace",
+      "category": "SWAG",
+      "fileName": "Ethereum-Necklace",
+      "maxSupply": 33,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 133,
+      "name": "Solana Bracelet",
+      "category": "SWAG",
+      "fileName": "Solana-Bracelet",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 134,
+      "name": "Polygon Ring",
+      "category": "SWAG",
+      "fileName": "Polygon-Ring",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 135,
+      "name": "Avalanche Watch",
+      "category": "SWAG",
+      "fileName": "Avalanche-Watch",
+      "maxSupply": 13,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 136,
+      "name": "Bitcoin Wallet",
+      "category": "GEAR",
+      "fileName": "Bitcoin-Wallet",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 137,
+      "name": "Ethereum Device",
+      "category": "GEAR",
+      "fileName": "Ethereum-Device",
+      "maxSupply": 47,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 138,
+      "name": "Solana Tool",
+      "category": "GEAR",
+      "fileName": "Solana-Tool",
+      "maxSupply": 29,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 139,
+      "name": "Polygon Equipment",
+      "category": "GEAR",
+      "fileName": "Polygon-Equipment",
+      "maxSupply": 12,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 140,
+      "name": "Avalanche Gadget",
+      "category": "GEAR",
+      "fileName": "Avalanche-Gadget",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 141,
+      "name": "Chainlink Symbol",
+      "category": "CRYPTO",
+      "fileName": "Chainlink-Symbol",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 142,
+      "name": "Uniswap Logo",
+      "category": "CRYPTO",
+      "fileName": "Uniswap-Logo",
+      "maxSupply": 46,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 143,
+      "name": "Aave Sign",
+      "category": "CRYPTO",
+      "fileName": "Aave-Sign",
+      "maxSupply": 43,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 144,
+      "name": "Compound Badge",
+      "category": "CRYPTO",
+      "fileName": "Compound-Badge",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 145,
+      "name": "Maker Mark",
+      "category": "CRYPTO",
+      "fileName": "Maker-Mark",
+      "maxSupply": 8,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 146,
+      "name": "Neural Interface",
+      "category": "TECH",
+      "fileName": "Neural-Interface",
+      "maxSupply": 44,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 147,
+      "name": "Quantum Chip",
+      "category": "TECH",
+      "fileName": "Quantum-Chip",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 148,
+      "name": "Cyber Implant",
+      "category": "TECH",
+      "fileName": "Cyber-Implant",
+      "maxSupply": 48,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 149,
+      "name": "Digital Visor",
+      "category": "TECH",
+      "fileName": "Digital-Visor",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 150,
+      "name": "Smart Link",
+      "category": "TECH",
+      "fileName": "Smart-Link",
+      "maxSupply": 17,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 151,
+      "name": "Alpha Energy",
+      "category": "VIBE",
+      "fileName": "Alpha-Energy",
+      "maxSupply": 32,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 152,
+      "name": "Based Vibe",
+      "category": "VIBE",
+      "fileName": "Based-Vibe",
+      "maxSupply": 34,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 153,
+      "name": "WAGMI Aura",
+      "category": "VIBE",
+      "fileName": "WAGMI-Aura",
+      "maxSupply": 19,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 154,
+      "name": "GM Energy",
+      "category": "VIBE",
+      "fileName": "GM-Energy",
+      "maxSupply": 31,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 155,
+      "name": "NGMI Warning",
+      "category": "VIBE",
+      "fileName": "NGMI-Warning",
+      "maxSupply": 36,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 156,
+      "name": "Crypto Earbuds",
+      "category": "ACCESSORY",
+      "fileName": "Crypto-Earbuds",
+      "maxSupply": 16,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 157,
+      "name": "NFT Pin",
+      "category": "ACCESSORY",
+      "fileName": "NFT-Pin",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 158,
+      "name": "Blockchain Clip",
+      "category": "ACCESSORY",
+      "fileName": "Blockchain-Clip",
+      "maxSupply": 34,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 159,
+      "name": "Web3 Band",
+      "category": "ACCESSORY",
+      "fileName": "Web3-Band",
+      "maxSupply": 34,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 160,
+      "name": "Token Tag",
+      "category": "ACCESSORY",
+      "fileName": "Token-Tag",
+      "maxSupply": 34,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 161,
+      "name": "OG Crypto",
+      "category": "SKIN",
+      "fileName": "OG-Crypto",
+      "maxSupply": 12,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 162,
+      "name": "Diamond Texture",
+      "category": "SKIN",
+      "fileName": "Diamond-Texture",
+      "maxSupply": 47,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 163,
+      "name": "Moon Pattern",
+      "category": "SKIN",
+      "fileName": "Moon-Pattern",
+      "maxSupply": 16,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 164,
+      "name": "NFT Base",
+      "category": "SKIN",
+      "fileName": "NFT-Base",
+      "maxSupply": 19,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 165,
+      "name": "Blockchain Skin",
+      "category": "SKIN",
+      "fileName": "Blockchain-Skin",
+      "maxSupply": 29,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 166,
+      "name": "Web3 Aurora",
+      "category": "BACKGROUND",
+      "fileName": "Web3-Aurora",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 167,
+      "name": "Crypto Storm",
+      "category": "BACKGROUND",
+      "fileName": "Crypto-Storm",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 168,
+      "name": "Token Universe",
+      "category": "BACKGROUND",
+      "fileName": "Token-Universe",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 169,
+      "name": "Blockchain Void",
+      "category": "BACKGROUND",
+      "fileName": "Blockchain-Void",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 170,
+      "name": "NFT Cosmos",
+      "category": "BACKGROUND",
+      "fileName": "NFT-Cosmos",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 171,
+      "name": "DeFi Horizon",
+      "category": "BACKGROUND",
+      "fileName": "DeFi-Horizon",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 172,
+      "name": "Chain Lightning",
+      "category": "BACKGROUND",
+      "fileName": "Chain-Lightning",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 173,
+      "name": "Crypto Gradient",
+      "category": "BACKGROUND",
+      "fileName": "Crypto-Gradient",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 174,
+      "name": "OG Laser",
+      "category": "EYES",
+      "fileName": "OG-Laser",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 175,
+      "name": "Diamond Beam",
+      "category": "EYES",
+      "fileName": "Diamond-Beam",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 176,
+      "name": "Moon Glow Eyes",
+      "category": "EYES",
+      "fileName": "Moon-Glow-Eyes",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 177,
+      "name": "Crypto Scanner",
+      "category": "EYES",
+      "fileName": "Crypto-Scanner",
+      "maxSupply": 18,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 178,
+      "name": "NFT Vision",
+      "category": "EYES",
+      "fileName": "NFT-Vision",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 179,
+      "name": "Blockchain Sight",
+      "category": "EYES",
+      "fileName": "Blockchain-Sight",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 180,
+      "name": "Web3 Goggles",
+      "category": "EYES",
+      "fileName": "Web3-Goggles",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 181,
+      "name": "Token Eyes Glow",
+      "category": "EYES",
+      "fileName": "Token-Eyes-Glow",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 182,
+      "name": "OG Crypto Cap",
+      "category": "HEAD",
+      "fileName": "OG-Crypto-Cap",
+      "maxSupply": 12,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 183,
+      "name": "Diamond Helmet",
+      "category": "HEAD",
+      "fileName": "Diamond-Helmet",
+      "maxSupply": 8,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 184,
+      "name": "Moon Crown",
+      "category": "HEAD",
+      "fileName": "Moon-Crown",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 185,
+      "name": "NFT Headset",
+      "category": "HEAD",
+      "fileName": "NFT-Headset",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 186,
+      "name": "Blockchain Beanie",
+      "category": "HEAD",
+      "fileName": "Blockchain-Beanie",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 187,
+      "name": "Web3 Cap",
+      "category": "HEAD",
+      "fileName": "Web3-Cap",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 188,
+      "name": "Token Helmet",
+      "category": "HEAD",
+      "fileName": "Token-Helmet",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 189,
+      "name": "DeFi Hat",
+      "category": "HEAD",
+      "fileName": "DeFi-Hat",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 190,
+      "name": "Chain Cap",
+      "category": "HEAD",
+      "fileName": "Chain-Cap",
+      "maxSupply": 32,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 191,
+      "name": "Crypto Crown",
+      "category": "HEAD",
+      "fileName": "Crypto-Crown",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 192,
+      "name": "OG Diamond Smile",
+      "category": "MOUTH",
+      "fileName": "OG-Diamond-Smile",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 193,
+      "name": "Moon Grin",
+      "category": "MOUTH",
+      "fileName": "Moon-Grin",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 194,
+      "name": "Crypto Vape Cloud",
+      "category": "MOUTH",
+      "fileName": "Crypto-Vape-Cloud",
+      "maxSupply": 18,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 195,
+      "name": "NFT Pipe Smoke",
+      "category": "MOUTH",
+      "fileName": "NFT-Pipe-Smoke",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 196,
+      "name": "Blockchain Laugh",
+      "category": "MOUTH",
+      "fileName": "Blockchain-Laugh",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 197,
+      "name": "Web3 Smirk",
+      "category": "MOUTH",
+      "fileName": "Web3-Smirk",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 198,
+      "name": "Token Grin",
+      "category": "MOUTH",
+      "fileName": "Token-Grin",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 199,
+      "name": "DeFi Smile",
+      "category": "MOUTH",
+      "fileName": "DeFi-Smile",
+      "maxSupply": 32,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 200,
+      "name": "OG Diamond",
+      "category": "SKIN",
+      "fileName": "OG-Diamond",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 201,
+      "name": "Moon Glow Skin",
+      "category": "SKIN",
+      "fileName": "Moon-Glow-Skin",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 202,
+      "name": "Crypto Texture",
+      "category": "SKIN",
+      "fileName": "Crypto-Texture",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 203,
+      "name": "NFT Pattern",
+      "category": "SKIN",
+      "fileName": "NFT-Pattern",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 204,
+      "name": "Blockchain Base",
+      "category": "SKIN",
+      "fileName": "Blockchain-Base",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 205,
+      "name": "Web3 Skin",
+      "category": "SKIN",
+      "fileName": "Web3-Skin",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 206,
+      "name": "Token Texture",
+      "category": "SKIN",
+      "fileName": "Token-Texture",
+      "maxSupply": 38,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 207,
+      "name": "DeFi Pattern",
+      "category": "SKIN",
+      "fileName": "DeFi-Pattern",
+      "maxSupply": 32,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 208,
+      "name": "OG Diamond Hands",
+      "category": "SWAG",
+      "fileName": "OG-Diamond-Hands",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 209,
+      "name": "Moon Necklace",
+      "category": "SWAG",
+      "fileName": "Moon-Necklace",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 210,
+      "name": "Crypto Chain Gold",
+      "category": "SWAG",
+      "fileName": "Crypto-Chain-Gold",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 211,
+      "name": "NFT Badge Premium",
+      "category": "SWAG",
+      "fileName": "NFT-Badge-Premium",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 212,
+      "name": "Blockchain Ring",
+      "category": "SWAG",
+      "fileName": "Blockchain-Ring",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 213,
+      "name": "Web3 Pendant",
+      "category": "SWAG",
+      "fileName": "Web3-Pendant",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 214,
+      "name": "Token Bracelet",
+      "category": "SWAG",
+      "fileName": "Token-Bracelet",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 215,
+      "name": "DeFi Watch",
+      "category": "SWAG",
+      "fileName": "DeFi-Watch",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 216,
+      "name": "Chain Accessory",
+      "category": "SWAG",
+      "fileName": "Chain-Accessory",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 217,
+      "name": "OG Crypto Wallet",
+      "category": "GEAR",
+      "fileName": "OG-Crypto-Wallet",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 218,
+      "name": "Diamond Device",
+      "category": "GEAR",
+      "fileName": "Diamond-Device",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 219,
+      "name": "Moon Tool",
+      "category": "GEAR",
+      "fileName": "Moon-Tool",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 220,
+      "name": "NFT Badge System",
+      "category": "GEAR",
+      "fileName": "NFT-Badge-System",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 221,
+      "name": "Blockchain Device Pro",
+      "category": "GEAR",
+      "fileName": "Blockchain-Device-Pro",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 222,
+      "name": "Web3 Tool Kit",
+      "category": "GEAR",
+      "fileName": "Web3-Tool-Kit",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 223,
+      "name": "Token Gear Set",
+      "category": "GEAR",
+      "fileName": "Token-Gear-Set",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 224,
+      "name": "DeFi Equipment",
+      "category": "GEAR",
+      "fileName": "DeFi-Equipment",
+      "maxSupply": 32,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 225,
+      "name": "Chain Tech",
+      "category": "GEAR",
+      "fileName": "Chain-Tech",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 226,
+      "name": "OG Bitcoin",
+      "category": "CRYPTO",
+      "fileName": "OG-Bitcoin",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 227,
+      "name": "Ethereum Classic",
+      "category": "CRYPTO",
+      "fileName": "Ethereum-Classic",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 228,
+      "name": "Solana Beach",
+      "category": "CRYPTO",
+      "fileName": "Solana-Beach",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 229,
+      "name": "Polygon Network",
+      "category": "CRYPTO",
+      "fileName": "Polygon-Network",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 230,
+      "name": "Avalanche Peak",
+      "category": "CRYPTO",
+      "fileName": "Avalanche-Peak",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 231,
+      "name": "Chainlink Oracle",
+      "category": "CRYPTO",
+      "fileName": "Chainlink-Oracle",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 232,
+      "name": "Uniswap Pool",
+      "category": "CRYPTO",
+      "fileName": "Uniswap-Pool",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 233,
+      "name": "Aave Protocol",
+      "category": "CRYPTO",
+      "fileName": "Aave-Protocol",
+      "maxSupply": 18,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 234,
+      "name": "OG VR",
+      "category": "TECH",
+      "fileName": "OG-VR",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 235,
+      "name": "Diamond AR",
+      "category": "TECH",
+      "fileName": "Diamond-AR",
+      "maxSupply": 10,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 236,
+      "name": "Moon AI",
+      "category": "TECH",
+      "fileName": "Moon-AI",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 237,
+      "name": "Crypto Quantum",
+      "category": "TECH",
+      "fileName": "Crypto-Quantum",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 238,
+      "name": "NFT Neural",
+      "category": "TECH",
+      "fileName": "NFT-Neural",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 239,
+      "name": "Blockchain Cyber",
+      "category": "TECH",
+      "fileName": "Blockchain-Cyber",
+      "maxSupply": 20,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 240,
+      "name": "Web3 Digital",
+      "category": "TECH",
+      "fileName": "Web3-Digital",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 241,
+      "name": "Token Smart",
+      "category": "TECH",
+      "fileName": "Token-Smart",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 242,
+      "name": "OG Chill",
+      "category": "VIBE",
+      "fileName": "OG-Chill",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 243,
+      "name": "Diamond Hype",
+      "category": "VIBE",
+      "fileName": "Diamond-Hype",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 244,
+      "name": "Moon Vibes",
+      "category": "VIBE",
+      "fileName": "Moon-Vibes",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 245,
+      "name": "Crypto Energy",
+      "category": "VIBE",
+      "fileName": "Crypto-Energy",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 246,
+      "name": "NFT Aura",
+      "category": "VIBE",
+      "fileName": "NFT-Aura",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 247,
+      "name": "Blockchain Flow",
+      "category": "VIBE",
+      "fileName": "Blockchain-Flow",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 248,
+      "name": "Web3 Wave",
+      "category": "VIBE",
+      "fileName": "Web3-Wave",
+      "maxSupply": 45,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 249,
+      "name": "Token Energy",
+      "category": "VIBE",
+      "fileName": "Token-Energy",
+      "maxSupply": 38,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 250,
+      "name": "OG Crypto Watch",
+      "category": "ACCESSORY",
+      "fileName": "OG-Crypto-Watch",
+      "maxSupply": 5,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 251,
+      "name": "Diamond Glasses",
+      "category": "ACCESSORY",
+      "fileName": "Diamond-Glasses",
+      "maxSupply": 15,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 252,
+      "name": "Moon Bracelet",
+      "category": "ACCESSORY",
+      "fileName": "Moon-Bracelet",
+      "maxSupply": 30,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 253,
+      "name": "Crypto Ring",
+      "category": "ACCESSORY",
+      "fileName": "Crypto-Ring",
+      "maxSupply": 25,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 254,
+      "name": "NFT Pendant",
+      "category": "ACCESSORY",
+      "fileName": "NFT-Pendant",
+      "maxSupply": 35,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 255,
+      "name": "Blockchain Necklace",
+      "category": "ACCESSORY",
+      "fileName": "Blockchain-Necklace",
+      "maxSupply": 28,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 256,
+      "name": "Web3 Earring",
+      "category": "ACCESSORY",
+      "fileName": "Web3-Earring",
+      "maxSupply": 32,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 257,
+      "name": "Token Pin",
+      "category": "ACCESSORY",
+      "fileName": "Token-Pin",
+      "maxSupply": 40,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    },
+    {
+      "tokenId": 258,
+      "name": "DeFi Clip",
+      "category": "ACCESSORY",
+      "fileName": "DeFi-Clip",
+      "maxSupply": 22,
+      "description": "AIDRIANS by HalfxTiger",
+      "masterminds": [
+        "Adrian | HalfxTiger"
+      ],
+      "external_url": "https://adrianzero.com/"
+    }
+  ]
+}

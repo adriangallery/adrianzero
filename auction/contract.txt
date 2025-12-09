@@ -1,0 +1,179 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface IERC20 {
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+}
+
+contract AdrianAuction {
+    IERC20 public token;
+    address public owner;
+    address public engineWallet;
+
+    // Auction timing
+    uint256 public auctionStartTime;
+    uint256 public auctionEndTime;
+
+    // Auction state
+    mapping(address => uint256) public bids;
+    address[] public bidders;
+    mapping(address => bool) public hasBid;
+
+    uint256 public highestBid;
+    address public highestBidder;
+    uint256 public totalDeposited;
+
+    // Events
+    event TokensDeposited(address indexed bidder, uint256 amount, uint256 totalBid);
+    event NewHighestBid(address indexed bidder, uint256 amount);
+    event AuctionExtended(uint256 newAuctionEndTime);
+    event AuctionConfigured(uint256 startTime, uint256 endTime);
+    event EngineWalletUpdated(address indexed newEngine);
+    event TokenAddressUpdated(address indexed newToken);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can execute this function");
+        _;
+    }
+
+    constructor(address _token, address _engineWallet) {
+        require(_token != address(0), "Invalid token address");
+        require(_engineWallet != address(0), "Invalid engine wallet address");
+        
+        owner = msg.sender;
+        token = IERC20(_token);
+        engineWallet = _engineWallet;
+        
+        // Default auction: starts now, ends in 1 day
+        auctionStartTime = block.timestamp;
+        auctionEndTime = block.timestamp + 1 days;
+    }
+
+    // Internal function to process a bid
+    function _processBid(uint256 amount) internal {
+        require(block.timestamp >= auctionStartTime, "Auction not started");
+        require(block.timestamp < auctionEndTime, "Auction ended");
+        
+        emit TokensDeposited(msg.sender, amount, bids[msg.sender] + amount);
+
+        // Add bidder to list if first time bidding
+        if (!hasBid[msg.sender]) {
+            bidders.push(msg.sender);
+            hasBid[msg.sender] = true;
+        }
+        
+        // Update bid amount
+        uint256 newBid = bids[msg.sender] + amount;
+        bids[msg.sender] = newBid;
+        
+        // Track total deposited
+        totalDeposited += amount;
+
+        // Update highest bid if necessary (no 10% restriction)
+        if (newBid > highestBid) {
+            highestBid = newBid;
+            highestBidder = msg.sender;
+            emit NewHighestBid(msg.sender, newBid);
+            
+            // Anti-sniper: extend auction by 10 minutes if less than 10 minutes remain
+            if (auctionEndTime - block.timestamp < 10 minutes) {
+                auctionEndTime += 10 minutes;
+                emit AuctionExtended(auctionEndTime);
+            }
+        }
+    }
+
+    // Standard bidding function - tokens go directly to engineWallet
+    function bid(uint256 amount) external {
+        require(amount > 0, "Bid amount must be greater than 0");
+        require(token.transferFrom(msg.sender, engineWallet, amount), "Token transfer failed");
+        _processBid(amount);
+    }
+
+    // Returns all bids for frontend processing
+    function getAllBids() external view returns (address[] memory, uint256[] memory) {
+        uint256 length = bidders.length;
+        address[] memory addresses = new address[](length);
+        uint256[] memory amounts = new uint256[](length);
+        
+        for (uint256 i = 0; i < length; i++) {
+            addresses[i] = bidders[i];
+            amounts[i] = bids[bidders[i]];
+        }
+        
+        return (addresses, amounts);
+    }
+
+    // Returns the remaining time of the auction in seconds
+    function getTimeRemaining() external view returns (uint256) {
+        if (block.timestamp >= auctionEndTime) {
+            return 0;
+        }
+        if (block.timestamp < auctionStartTime) {
+            return auctionEndTime - auctionStartTime; // Total duration if not started
+        }
+        return auctionEndTime - block.timestamp;
+    }
+
+    // Returns general auction statistics
+    function getAuctionStats() external view returns (
+        uint256 _highestBid,
+        address _highestBidder,
+        uint256 _totalTokens,
+        uint256 _bidderCount,
+        uint256 _auctionStartTime,
+        uint256 _auctionEndTime
+    ) {
+        _highestBid = highestBid;
+        _highestBidder = highestBidder;
+        _totalTokens = totalDeposited;
+        _bidderCount = bidders.length;
+        _auctionStartTime = auctionStartTime;
+        _auctionEndTime = auctionEndTime;
+    }
+
+    // ============================================================
+    // Owner functions:
+    // ============================================================
+
+    // Configure/reset auction with specific start and end timestamps
+    function setAuction(uint256 startTime, uint256 endTime) external onlyOwner {
+        require(startTime < endTime, "Start must be before end");
+        require(endTime > block.timestamp, "End must be in future");
+        
+        auctionStartTime = startTime;
+        auctionEndTime = endTime;
+        
+        // Reset auction state
+        highestBid = 0;
+        highestBidder = address(0);
+        totalDeposited = 0;
+        
+        // Reset all bids
+        uint256 length = bidders.length;
+        for (uint256 i = 0; i < length; i++) {
+            address bidder = bidders[i];
+            delete bids[bidder];
+            delete hasBid[bidder];
+        }
+        delete bidders;
+        
+        emit AuctionConfigured(startTime, endTime);
+    }
+
+    // Update the engine wallet address
+    function setEngineWallet(address _engine) external onlyOwner {
+        require(_engine != address(0), "Invalid engine address");
+        engineWallet = _engine;
+        emit EngineWalletUpdated(_engine);
+    }
+
+    // Update token address
+    function updateTokenAddress(address _token) external onlyOwner {
+        require(_token != address(0), "Invalid token address");
+        token = IERC20(_token);
+        emit TokenAddressUpdated(_token);
+    }
+}

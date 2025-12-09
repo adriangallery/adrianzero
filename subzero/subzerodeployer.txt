@@ -1,0 +1,929 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+interface IAdrianLabDelegator {
+    function mint(address to) external returns (uint256);
+}
+
+interface IAdrianLabCore {
+    function owner() external view returns (address);
+    function treasuryWallet() external view returns (address);
+}
+
+interface IAdrianTraitsCore {
+    function mintFromExtension(address to, uint256 id, uint256 amount) external;
+}
+
+interface IAdrianHistory {
+    function recordEvent(
+        uint256 tokenId,
+        bytes32 eventType,
+        address actor,
+        bytes calldata eventData,
+        uint256 blockNumber
+    ) external;
+}
+
+struct BatchConfig {
+    uint256 id;
+    uint256 price;
+    uint256 maxSupply;
+    uint256 minted;
+    bool active;
+    string name;
+    string tag;
+    uint256 startTime;
+    uint256 endTime;
+    uint256 maxPerWallet;
+}
+
+struct KitConfig {
+    uint256 id;
+    string name;
+    uint256 priceInETH;
+    uint256 adrianTokenAmount;
+    uint256 floppyTokenId;
+    uint256 erc721Amount;
+    uint256 maxPerWallet;
+    uint256 maxSupply;
+    uint256 sold;
+    bool active;
+    string tag;
+}
+
+struct PurchaseValidation {
+    bool canPurchase;
+    string error;
+    uint256 totalCost;
+    uint256 contractAdrianBalance;
+    uint256 remainingSupply;
+    uint256 userRemaining;
+}
+
+struct SystemStats {
+    uint256 totalBatchMinted;
+    uint256 totalKitsSold;
+    uint256 totalETHReceived;
+    uint256 adrianTokenBalance;
+    bool batchPaused;
+    bool kitPaused;
+    address treasuryWallet;
+    uint256 totalMintedTokens;
+}
+
+struct UserStats {
+    uint256 totalBatchMinted;
+    uint256 totalKitsPurchased;
+    uint256 totalETHSpent;
+    uint256 adrianTokensReceived;
+}
+
+struct TagStats {
+    string tag;
+    uint256 totalMinted;
+    uint256[] tokenIds;
+    bool exists;
+}
+
+contract SubZEROdeployerV3 is Ownable, ReentrancyGuard {
+
+    address public delegator;
+    address public coreContract;
+    address public traitsCore;
+    address public historyContract;
+    IERC20 public paymentToken;
+    IERC20 public adrianToken;
+    address public treasuryWallet;
+    
+    mapping(uint256 => BatchConfig) public batches;
+    uint256 public activeBatch;
+    uint256 public nextBatchId;
+    bool public batchMintPaused;
+    
+    mapping(uint256 => mapping(address => bool)) public isWhitelistedForBatch;
+    mapping(uint256 => mapping(address => uint256)) public mintedPerWalletPerBatch;
+    
+    uint256 public totalBatchMinted;
+    uint256 public totalBatchesCreated;
+    mapping(address => uint256) public totalBatchMintedByUser;
+    
+    mapping(uint256 => KitConfig) public kits;
+    uint256 public nextKitId;
+    bool public kitSalePaused;
+    uint256 public totalKitsSold;
+    uint256 public totalETHReceived;
+    uint256 public maxKitsPerTransaction = 10;
+    
+    mapping(address => mapping(uint256 => uint256)) public userKitPurchases;
+    mapping(address => uint256) public totalKitsPurchasedByUser;
+    mapping(address => uint256) public ethSpentByUser;
+    mapping(address => uint256) public adrianTokensReceivedByUser;
+    
+    mapping(uint256 => string) public tokenTag;
+    mapping(string => uint256[]) public tokensWithTag;
+    mapping(string => uint256) public totalMintedByTag;
+    mapping(address => mapping(string => uint256)) public userMintsByTag;
+    mapping(string => bool) public tagExists;
+    
+    string[] public allTags;
+    mapping(string => uint256) private tagIndex;
+    
+    uint256[] public allMintedTokens;
+    mapping(uint256 => bool) public wasMintedHere;
+    mapping(uint256 => uint256) private tokenIndexInArray;
+    
+    event BatchCreated(uint256 indexed batchId, string name, string tag, uint256 price, uint256 maxSupply);
+    event BatchActivated(uint256 indexed batchId);
+    event BatchDeactivated(uint256 indexed batchId);
+    event BatchCompleted(uint256 indexed batchId, uint256 totalMinted);
+    event BatchMint(address indexed to, uint256 indexed tokenId, uint256 indexed batchId, string tag);
+    
+    event KitCreated(uint256 indexed kitId, string name, string tag, uint256 priceInETH, uint256 maxSupply);
+    event KitActivated(uint256 indexed kitId);
+    event KitDeactivated(uint256 indexed kitId);
+    event KitUpdated(uint256 indexed kitId);
+    event KitPurchased(address indexed buyer, uint256 indexed kitId, uint256 quantity, uint256 totalCost, uint256 timestamp, uint256[] erc721TokenIds);
+    
+    event TokenTagged(uint256 indexed tokenId, string indexed tag, address indexed minter);
+    event TagCreated(string indexed tag);
+    
+    event SystemPaused(string system, bool paused);
+    event ContractUpdated(string contractType, address indexed newAddress);
+    event TreasuryWalletUpdated(address newWallet);
+    event AdrianTokensDeposited(uint256 amount, address indexed depositor);
+    event AdrianTokensWithdrawn(uint256 amount, address indexed recipient);
+    event ETHWithdrawn(uint256 amount, address indexed recipient);
+
+    error NotCoreOwner();
+    error BatchMintingPaused();
+    error KitSalesPaused();
+    error InvalidBatch();
+    error InvalidKit();
+    error DelegatorNotSet();
+    error CoreNotSet();
+    error TraitsNotSet();
+    error InvalidDelegator();
+    error InvalidCore();
+    error InvalidTraits();
+    error InvalidTreasury();
+    error InvalidSupply();
+    error InvalidMaxPerWallet();
+    error EmptyName();
+    error EmptyTag();
+    error BatchAlreadyCompleted();
+    error NoActiveBatch();
+    error InvalidQuantity();
+    error InvalidRecipient();
+    error BatchNotAvailable();
+    error NotStarted();
+    error Ended();
+    error PaymentTokenNotSet();
+    error PaymentFailed();
+    error InvalidToken();
+    error AmountMustBePositive();
+    error AdrianTokenNotSet();
+    error TransferFailed();
+    error InsufficientBalance();
+    error NoETHToWithdraw();
+    error TagDoesNotExist();
+    error InvalidMax();
+    error InvalidPrice();
+    error InvalidAdrianAmount();
+    error ERC721AmountMustBePositive();
+    error InsufficientAdrianTokens();
+    error InsufficientETH();
+    error KitNotActive();
+    error KitNotAvailable();
+    error ExceedsKitWalletLimit();
+    error ExceedsMintLimit();
+    error ExceedsMaxSupply();
+    error TreasuryNotSet();
+    error StartIndexOutOfBounds();
+
+    modifier onlyCoreOwner() {
+        if (msg.sender != IAdrianLabCore(coreContract).owner()) revert NotCoreOwner();
+        _;
+    }
+
+    modifier batchNotPaused() {
+        if (batchMintPaused) revert BatchMintingPaused();
+        _;
+    }
+
+    modifier kitNotPaused() {
+        if (kitSalePaused) revert KitSalesPaused();
+        _;
+    }
+
+    modifier validBatch(uint256 batchId) {
+        if (batchId >= nextBatchId) revert InvalidBatch();
+        _;
+    }
+
+    modifier validKit(uint256 kitId) {
+        if (kitId >= nextKitId) revert InvalidKit();
+        _;
+    }
+
+    modifier contractsConfigured() {
+        if (delegator == address(0)) revert DelegatorNotSet();
+        if (coreContract == address(0)) revert CoreNotSet();
+        if (traitsCore == address(0)) revert TraitsNotSet();
+        _;
+    }
+
+    constructor(
+        address _delegator,
+        address _coreContract,
+        address _traitsCore,
+        address _treasuryWallet
+    ) Ownable(msg.sender) {
+        if (_delegator == address(0)) revert InvalidDelegator();
+        if (_coreContract == address(0)) revert InvalidCore();
+        if (_traitsCore == address(0)) revert InvalidTraits();
+        if (_treasuryWallet == address(0)) revert InvalidTreasury();
+        
+        delegator = _delegator;
+        coreContract = _coreContract;
+        traitsCore = _traitsCore;
+        treasuryWallet = _treasuryWallet;
+        nextBatchId = 1;
+        nextKitId = 1;
+    }
+
+    receive() external payable {}
+
+    function createBatch(
+        string memory name,
+        string memory tag,
+        uint256 price,
+        uint256 maxSupply,
+        uint256 startTime,
+        uint256 endTime,
+        bool makeActive,
+        uint256 maxPerWallet
+    ) external onlyOwner returns (uint256) {
+        if (maxSupply == 0) revert InvalidSupply();
+        if (maxPerWallet == 0) revert InvalidMaxPerWallet();
+        if (bytes(name).length == 0) revert EmptyName();
+        if (bytes(tag).length == 0) revert EmptyTag();
+        
+        if (!tagExists[tag]) {
+            _createTag(tag);
+        }
+        
+        uint256 batchId = nextBatchId++;
+        totalBatchesCreated++;
+        
+        batches[batchId] = BatchConfig({
+            id: batchId,
+            price: price,
+            maxSupply: maxSupply,
+            minted: 0,
+            active: false,
+            name: name,
+            tag: tag,
+            startTime: startTime,
+            endTime: endTime,
+            maxPerWallet: maxPerWallet
+        });
+        
+        if (makeActive) {
+            _activateBatch(batchId);
+        }
+        
+        emit BatchCreated(batchId, name, tag, price, maxSupply);
+        return batchId;
+    }
+
+    function createPublicBatch(
+        string memory name,
+        string memory tag,
+        uint256 price,
+        uint256 maxSupply,
+        uint256 startTime,
+        uint256 endTime,
+        uint256 maxPerWallet,
+        bool makeActive
+    ) external onlyOwner returns (uint256) {
+        return this.createBatch(name, tag, price, maxSupply, startTime, endTime, makeActive, maxPerWallet);
+    }
+
+    function activateBatch(uint256 batchId) external onlyOwner validBatch(batchId) {
+        if (batches[batchId].minted >= batches[batchId].maxSupply) revert BatchAlreadyCompleted();
+        _activateBatch(batchId);
+    }
+
+    function _activateBatch(uint256 batchId) internal {
+        if (activeBatch != 0 && batches[activeBatch].active) {
+            batches[activeBatch].active = false;
+            emit BatchDeactivated(activeBatch);
+        }
+        activeBatch = batchId;
+        batches[batchId].active = true;
+        emit BatchActivated(batchId);
+    }
+
+    function deactivateCurrentBatch() external onlyOwner {
+        if (activeBatch != 0 && batches[activeBatch].active) {
+            batches[activeBatch].active = false;
+            emit BatchDeactivated(activeBatch);
+            activeBatch = 0;
+        }
+    }
+
+    function mint() external nonReentrant batchNotPaused contractsConfigured {
+        if (activeBatch == 0) revert NoActiveBatch();
+        _executePublicBatchMint(msg.sender, 1);
+    }
+
+    function mintMultiple(uint256 quantity) external nonReentrant batchNotPaused contractsConfigured {
+        if (quantity == 0 || quantity > 10) revert InvalidQuantity();
+        if (activeBatch == 0) revert NoActiveBatch();
+        _executePublicBatchMint(msg.sender, quantity);
+    }
+
+    function mintPublic() external nonReentrant batchNotPaused contractsConfigured {
+        if (activeBatch == 0) revert NoActiveBatch();
+        _executePublicBatchMint(msg.sender, 1);
+    }
+
+    function mintMultiplePublic(uint256 quantity) external nonReentrant batchNotPaused contractsConfigured {
+        if (quantity == 0 || quantity > 10) revert InvalidQuantity();
+        if (activeBatch == 0) revert NoActiveBatch();
+        _executePublicBatchMint(msg.sender, quantity);
+    }
+
+    function mintTo(address recipient, uint256 quantity) external onlyCoreOwner nonReentrant contractsConfigured {
+        if (recipient == address(0)) revert InvalidRecipient();
+        if (quantity == 0 || quantity > 100) revert InvalidQuantity();
+        if (activeBatch == 0) revert NoActiveBatch();
+        
+        BatchConfig storage batch = batches[activeBatch];
+        if (!batch.active || batch.minted + quantity > batch.maxSupply) revert BatchNotAvailable();
+        
+        _processBatchMint(recipient, quantity);
+    }
+
+    function _executePublicBatchMint(address user, uint256 quantity) internal {
+        BatchConfig storage batch = batches[activeBatch];
+        if (!batch.active || batch.minted + quantity > batch.maxSupply) revert BatchNotAvailable();
+        
+        if (batch.startTime > 0 && block.timestamp < batch.startTime) revert NotStarted();
+        if (batch.endTime > 0 && block.timestamp > batch.endTime) revert Ended();
+        
+        uint256 userMints = mintedPerWalletPerBatch[activeBatch][user];
+        if (userMints + quantity > batch.maxPerWallet) revert ExceedsMintLimit();
+        
+        if (batch.price > 0) {
+            if (address(paymentToken) == address(0)) revert PaymentTokenNotSet();
+            uint256 totalCost = batch.price * quantity;
+            if (!paymentToken.transferFrom(user, treasuryWallet, totalCost)) revert PaymentFailed();
+        }
+        
+        _processBatchMint(user, quantity);
+    }
+
+    function _processBatchMint(address user, uint256 quantity) internal {
+        BatchConfig storage batch = batches[activeBatch];
+        string memory tag = batch.tag;
+        
+        for (uint256 i = 0; i < quantity; i++) {
+            uint256 tokenId = IAdrianLabDelegator(delegator).mint(user);
+            
+            _applyTag(tokenId, tag, user);
+            
+            if (historyContract != address(0)) {
+                try IAdrianHistory(historyContract).recordEvent(
+                    tokenId,
+                    keccak256("BATCH_MINTED"),
+                    msg.sender,
+                    abi.encode(activeBatch, batch.price, block.timestamp, tag),
+                    block.number
+                ) {} catch {}
+            }
+            
+            emit BatchMint(user, tokenId, activeBatch, tag);
+        }
+        
+        mintedPerWalletPerBatch[activeBatch][user] += quantity;
+        batch.minted += quantity;
+        totalBatchMinted += quantity;
+        totalBatchMintedByUser[user] += quantity;
+        
+        if (batch.minted >= batch.maxSupply) {
+            batch.active = false;
+            activeBatch = 0;
+            emit BatchCompleted(batch.id, batch.minted);
+        }
+    }
+
+    function updateWhitelistForBatch(
+        uint256 batchId,
+        address[] calldata addresses,
+        bool whitelisted
+    ) external onlyOwner validBatch(batchId) {
+        for (uint256 i = 0; i < addresses.length; i++) {
+            isWhitelistedForBatch[batchId][addresses[i]] = whitelisted;
+        }
+    }
+
+    function getCurrentBatchInfo() external view returns (
+        uint256 batchId,
+        string memory name,
+        string memory tag,
+        uint256 price,
+        uint256 minted,
+        uint256 maxSupply,
+        bool active,
+        uint256 startTime,
+        uint256 endTime
+    ) {
+        if (activeBatch == 0) {
+            return (0, "", "", 0, 0, 0, false, 0, 0);
+        }
+        
+        BatchConfig storage batch = batches[activeBatch];
+        return (
+            batch.id,
+            batch.name,
+            batch.tag,
+            batch.price,
+            batch.minted,
+            batch.maxSupply,
+            batch.active,
+            batch.startTime,
+            batch.endTime
+        );
+    }
+
+    function getBatchInfo(uint256 batchId) external view validBatch(batchId) returns (BatchConfig memory) {
+        return batches[batchId];
+    }
+
+    function getMintStatus(uint256) external view returns (bool) {
+        return !batchMintPaused && activeBatch != 0 && batches[activeBatch].active;
+    }
+
+    function createKit(
+        string memory name,
+        string memory tag,
+        uint256 priceInETH,
+        uint256 adrianTokenAmount,
+        uint256 floppyTokenId,
+        uint256 erc721Amount,
+        uint256 maxPerWallet,
+        uint256 maxSupply,
+        bool makeActive
+    ) external onlyOwner returns (uint256) {
+        if (bytes(name).length == 0) revert EmptyName();
+        if (bytes(tag).length == 0) revert EmptyTag();
+        if (erc721Amount == 0) revert ERC721AmountMustBePositive();
+        
+        if (!tagExists[tag]) {
+            _createTag(tag);
+        }
+        
+        uint256 kitId = nextKitId++;
+        
+        kits[kitId] = KitConfig({
+            id: kitId,
+            name: name,
+            priceInETH: priceInETH,
+            adrianTokenAmount: adrianTokenAmount,
+            floppyTokenId: floppyTokenId,
+            erc721Amount: erc721Amount,
+            maxPerWallet: maxPerWallet,
+            maxSupply: maxSupply,
+            sold: 0,
+            active: makeActive,
+            tag: tag
+        });
+        
+        emit KitCreated(kitId, name, tag, priceInETH, maxSupply);
+        
+        if (makeActive) {
+            emit KitActivated(kitId);
+        }
+        
+        return kitId;
+    }
+    function updateKit(
+        uint256 kitId,
+        string memory name,
+        uint256 priceInETH,
+        uint256 adrianTokenAmount,
+        uint256 floppyTokenId,
+        uint256 erc721Amount,
+        uint256 maxPerWallet,
+        uint256 maxSupply
+    ) external onlyOwner validKit(kitId) {
+        KitConfig storage kit = kits[kitId];
+        kit.name = name;
+        kit.priceInETH = priceInETH;
+        kit.adrianTokenAmount = adrianTokenAmount;
+        kit.floppyTokenId = floppyTokenId;
+        kit.erc721Amount = erc721Amount;
+        kit.maxPerWallet = maxPerWallet;
+        kit.maxSupply = maxSupply;
+        emit KitUpdated(kitId);
+    }
+
+    function activateKit(uint256 kitId) external onlyOwner validKit(kitId) {
+        kits[kitId].active = true;
+        emit KitActivated(kitId);
+    }
+
+    function deactivateKit(uint256 kitId) external onlyOwner validKit(kitId) {
+        kits[kitId].active = false;
+        emit KitDeactivated(kitId);
+    }
+
+    function buyKit(uint256 kitId) external payable nonReentrant kitNotPaused contractsConfigured validKit(kitId) {
+        _processKitPurchase(msg.sender, kitId, 1);
+    }
+
+    function buyMultipleKits(uint256 kitId, uint256 quantity) external payable nonReentrant kitNotPaused contractsConfigured validKit(kitId) {
+        if (quantity == 0 || quantity > maxKitsPerTransaction) revert InvalidQuantity();
+        _processKitPurchase(msg.sender, kitId, quantity);
+    }
+
+    function _processKitPurchase(address buyer, uint256 kitId, uint256 quantity) internal {
+        KitConfig storage kit = kits[kitId];
+        if (!kit.active) revert KitNotActive();
+        
+        if (kit.maxSupply > 0) {
+            if (kit.sold + quantity > kit.maxSupply) revert ExceedsMaxSupply();
+        }
+        
+        if (kit.maxPerWallet > 0) {
+            uint256 userPurchased = userKitPurchases[buyer][kitId];
+            if (userPurchased + quantity > kit.maxPerWallet) revert ExceedsKitWalletLimit();
+        }
+        
+        uint256 totalCost = kit.priceInETH * quantity;
+        
+        if (kit.priceInETH > 0) {
+            if (msg.value < totalCost) revert InsufficientETH();
+            _transferETHToTreasury(totalCost);
+            
+            if (msg.value > totalCost) {
+                payable(buyer).transfer(msg.value - totalCost);
+            }
+        }
+        
+        uint256[] memory tokenIds = _mintKitAssets(buyer, kitId, quantity);
+        
+        if (kit.adrianTokenAmount > 0) {
+            if (!_hasSufficientAdrianTokens(kit.adrianTokenAmount * quantity)) revert InsufficientAdrianTokens();
+            _transferKitAdrianTokens(buyer, kit.adrianTokenAmount * quantity);
+        }
+        
+        userKitPurchases[buyer][kitId] += quantity;
+        kit.sold += quantity;
+        totalKitsSold += quantity;
+        totalKitsPurchasedByUser[buyer] += quantity;
+        ethSpentByUser[buyer] += totalCost;
+        totalETHReceived += totalCost;
+        adrianTokensReceivedByUser[buyer] += kit.adrianTokenAmount * quantity;
+        
+        emit KitPurchased(buyer, kitId, quantity, totalCost, block.timestamp, tokenIds);
+    }
+
+    function _mintKitAssets(address to, uint256 kitId, uint256 quantity) internal returns (uint256[] memory tokenIds) {
+        KitConfig storage kit = kits[kitId];
+        uint256 totalERC721s = quantity * kit.erc721Amount;
+        tokenIds = new uint256[](totalERC721s);
+        uint256 tokenIndex = 0;
+        string memory tag = kit.tag;
+        
+        for (uint256 i = 0; i < quantity; i++) {
+            for (uint256 j = 0; j < kit.erc721Amount; j++) {
+                uint256 tokenId = IAdrianLabDelegator(delegator).mint(to);
+                tokenIds[tokenIndex] = tokenId;
+                tokenIndex++;
+                
+                _applyTag(tokenId, tag, to);
+                
+                if (historyContract != address(0)) {
+                    try IAdrianHistory(historyContract).recordEvent(
+                        tokenId,
+                        keccak256("KIT_MINTED"),
+                        msg.sender,
+                        abi.encode(kitId, quantity, kit.priceInETH, block.timestamp, tag),
+                        block.number
+                    ) {} catch {}
+                }
+            }
+            
+            IAdrianTraitsCore(traitsCore).mintFromExtension(to, kit.floppyTokenId, 1);
+        }
+        
+        return tokenIds;
+    }
+
+    function _transferKitAdrianTokens(address to, uint256 amount) internal {
+        if (!adrianToken.transfer(to, amount)) revert TransferFailed();
+    }
+
+    function _transferETHToTreasury(uint256 amount) internal {
+        address treasury = getEffectiveTreasuryWallet();
+        if (treasury == address(0)) revert TreasuryNotSet();
+        (bool success, ) = treasury.call{value: amount}("");
+        if (!success) revert PaymentFailed();
+    }
+
+    function getKitInfo(uint256 kitId) external view validKit(kitId) returns (KitConfig memory) {
+        return kits[kitId];
+    }
+
+    function getAllActiveKits() external view returns (uint256[] memory) {
+        uint256 activeCount = 0;
+        for (uint256 i = 1; i < nextKitId; i++) {
+            if (kits[i].active) activeCount++;
+        }
+        
+        uint256[] memory activeKitIds = new uint256[](activeCount);
+        uint256 index = 0;
+        for (uint256 i = 1; i < nextKitId; i++) {
+            if (kits[i].active) {
+                activeKitIds[index] = i;
+                index++;
+            }
+        }
+        
+        return activeKitIds;
+    }
+
+    function userCanBuyKit(address user, uint256 kitId, uint256 quantity) external view validKit(kitId) returns (bool, string memory) {
+        KitConfig storage kit = kits[kitId];
+        
+        if (kitSalePaused) return (false, "Kit sales paused");
+        if (!kit.active) return (false, "Kit not active");
+        if (quantity == 0 || quantity > maxKitsPerTransaction) return (false, "Invalid quantity");
+        
+        if (kit.maxSupply > 0 && kit.sold + quantity > kit.maxSupply) {
+            return (false, "Exceeds max supply");
+        }
+        
+        if (kit.maxPerWallet > 0) {
+            uint256 userPurchased = userKitPurchases[user][kitId];
+            if (userPurchased + quantity > kit.maxPerWallet) {
+                return (false, "Exceeds wallet limit");
+            }
+        }
+        
+        if (kit.adrianTokenAmount > 0 && !_hasSufficientAdrianTokens(kit.adrianTokenAmount * quantity)) {
+            return (false, "Insufficient Adrian tokens");
+        }
+        
+        return (true, "");
+    }
+
+    function getUserKitPurchases(address user, uint256 kitId) external view validKit(kitId) returns (uint256) {
+        return userKitPurchases[user][kitId];
+    }
+
+    function _createTag(string memory tag) internal {
+        if (!tagExists[tag]) {
+            tagExists[tag] = true;
+            tagIndex[tag] = allTags.length;
+            allTags.push(tag);
+            emit TagCreated(tag);
+        }
+    }
+
+    function _applyTag(uint256 tokenId, string memory tag, address minter) internal {
+        tokenTag[tokenId] = tag;
+        tokensWithTag[tag].push(tokenId);
+        totalMintedByTag[tag]++;
+        userMintsByTag[minter][tag]++;
+        
+        if (!wasMintedHere[tokenId]) {
+            wasMintedHere[tokenId] = true;
+            tokenIndexInArray[tokenId] = allMintedTokens.length;
+            allMintedTokens.push(tokenId);
+        }
+        
+        emit TokenTagged(tokenId, tag, minter);
+    }
+
+    function getTokenTag(uint256 tokenId) external view returns (string memory) {
+        return tokenTag[tokenId];
+    }
+
+    function getTokensByTag(string calldata tag) external view returns (uint256[] memory) {
+        return tokensWithTag[tag];
+    }
+
+    function getTokenTags(uint256[] calldata tokenIds) external view returns (string[] memory tags) {
+        tags = new string[](tokenIds.length);
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            tags[i] = tokenTag[tokenIds[i]];
+        }
+    }
+
+    function tokenHasTag(uint256 tokenId, string calldata tag) external view returns (bool) {
+        return keccak256(bytes(tokenTag[tokenId])) == keccak256(bytes(tag));
+    }
+
+    function getTagStats(string calldata tag) external view returns (TagStats memory) {
+        return TagStats({
+            tag: tag,
+            totalMinted: totalMintedByTag[tag],
+            tokenIds: tokensWithTag[tag],
+            exists: tagExists[tag]
+        });
+    }
+
+    function getAllTags() external view returns (string[] memory) {
+        return allTags;
+    }
+
+
+    function getAllMintedTokens() external view returns (uint256[] memory) {
+        return allMintedTokens;
+    }
+
+
+    function getMintedTokensRange(uint256 startIndex, uint256 count) external view returns (uint256[] memory tokens) {
+        if (startIndex >= allMintedTokens.length) revert StartIndexOutOfBounds();
+        
+        uint256 endIndex = startIndex + count;
+        if (endIndex > allMintedTokens.length) {
+            endIndex = allMintedTokens.length;
+        }
+        
+        uint256 resultCount = endIndex - startIndex;
+        tokens = new uint256[](resultCount);
+        
+        for (uint256 i = 0; i < resultCount; i++) {
+            tokens[i] = allMintedTokens[startIndex + i];
+        }
+    }
+
+    function setDelegator(address _delegator) external onlyOwner {
+        if (_delegator == address(0)) revert InvalidDelegator();
+        delegator = _delegator;
+        emit ContractUpdated("delegator", _delegator);
+    }
+
+    function setTraitsCore(address _traits) external onlyOwner {
+        if (_traits == address(0)) revert InvalidTraits();
+        traitsCore = _traits;
+        emit ContractUpdated("traits", _traits);
+    }
+
+    function setPaymentToken(address _token) external onlyOwner {
+        paymentToken = IERC20(_token);
+        emit ContractUpdated("paymentToken", _token);
+    }
+
+    function setAdrianToken(address _token) external onlyOwner {
+        if (_token == address(0)) revert InvalidToken();
+        adrianToken = IERC20(_token);
+        emit ContractUpdated("adrianToken", _token);
+    }
+
+    function setTreasuryWallet(address _treasury) external onlyOwner {
+        if (_treasury == address(0)) revert InvalidTreasury();
+        treasuryWallet = _treasury;
+        emit TreasuryWalletUpdated(_treasury);
+    }
+
+    function setHistoryContract(address _history) external onlyOwner {
+        historyContract = _history;
+        emit ContractUpdated("history", _history);
+    }
+
+    function setBatchMintPaused(bool paused) external onlyOwner {
+        batchMintPaused = paused;
+        emit SystemPaused("batchMint", paused);
+    }
+
+    function setKitSalePaused(bool paused) external onlyOwner {
+        kitSalePaused = paused;
+        emit SystemPaused("kitSale", paused);
+    }
+
+    function setMaxKitsPerTransaction(uint256 max) external onlyOwner {
+        if (max == 0 || max > 100) revert InvalidMax();
+        maxKitsPerTransaction = max;
+    }
+
+    function depositAdrianTokens(uint256 amount) external onlyOwner {
+        if (amount == 0) revert AmountMustBePositive();
+        if (address(adrianToken) == address(0)) revert AdrianTokenNotSet();
+        if (!adrianToken.transferFrom(msg.sender, address(this), amount)) revert TransferFailed();
+        emit AdrianTokensDeposited(amount, msg.sender);
+    }
+
+    function withdrawAdrianTokens(uint256 amount) external onlyOwner {
+        if (amount == 0) revert AmountMustBePositive();
+        if (address(adrianToken) == address(0)) revert AdrianTokenNotSet();
+        if (!adrianToken.transfer(msg.sender, amount)) revert TransferFailed();
+        emit AdrianTokensWithdrawn(amount, msg.sender);
+    }
+
+    function withdrawETH(uint256 amount) external onlyOwner {
+        if (amount == 0) revert AmountMustBePositive();
+        if (address(this).balance < amount) revert InsufficientBalance();
+        payable(msg.sender).transfer(amount);
+        emit ETHWithdrawn(amount, msg.sender);
+    }
+
+    function emergencyWithdrawETH() external onlyOwner {
+        uint256 balance = address(this).balance;
+        if (balance == 0) revert NoETHToWithdraw();
+        payable(msg.sender).transfer(balance);
+        emit ETHWithdrawn(balance, msg.sender);
+    }
+
+    function emergencyWithdrawTokens(address token, uint256 amount) external onlyOwner {
+        if (token == address(0)) revert InvalidToken();
+        if (amount == 0) revert AmountMustBePositive();
+        if (!IERC20(token).transfer(msg.sender, amount)) revert TransferFailed();
+    }
+
+    function emergencySetTag(uint256 tokenId, string calldata tag) external onlyOwner {
+        if (!tagExists[tag]) revert TagDoesNotExist();
+        
+        string memory oldTag = tokenTag[tokenId];
+        tokenTag[tokenId] = tag;
+        tokensWithTag[tag].push(tokenId);
+        totalMintedByTag[tag]++;
+        
+        if (bytes(oldTag).length > 0 && totalMintedByTag[oldTag] > 0) {
+            totalMintedByTag[oldTag]--;
+        }
+        
+        if (!wasMintedHere[tokenId]) {
+            wasMintedHere[tokenId] = true;
+            tokenIndexInArray[tokenId] = allMintedTokens.length;
+            allMintedTokens.push(tokenId);
+        }
+        
+        emit TokenTagged(tokenId, tag, msg.sender);
+    }
+
+    function getSystemStats() external view returns (SystemStats memory stats) {
+        stats.totalBatchMinted = totalBatchMinted;
+        stats.totalKitsSold = totalKitsSold;
+        stats.totalETHReceived = totalETHReceived;
+        stats.adrianTokenBalance = address(adrianToken) != address(0) ? adrianToken.balanceOf(address(this)) : 0;
+        stats.batchPaused = batchMintPaused;
+        stats.kitPaused = kitSalePaused;
+        stats.treasuryWallet = getEffectiveTreasuryWallet();
+        stats.totalMintedTokens = allMintedTokens.length;
+    }
+
+    function getUserStats(address user) external view returns (UserStats memory stats) {
+        stats.totalBatchMinted = totalBatchMintedByUser[user];
+        stats.totalKitsPurchased = totalKitsPurchasedByUser[user];
+        stats.totalETHSpent = ethSpentByUser[user];
+        stats.adrianTokensReceived = adrianTokensReceivedByUser[user];
+    }
+
+    function getContractAddresses() external view returns (
+        address _delegator,
+        address _core,
+        address _traits,
+        address _paymentToken,
+        address _adrianToken,
+        address _treasury
+    ) {
+        return (
+            delegator,
+            coreContract,
+            traitsCore,
+            address(paymentToken),
+            address(adrianToken),
+            getEffectiveTreasuryWallet()
+        );
+    }
+
+    function getEffectiveTreasuryWallet() public view returns (address) {
+        if (treasuryWallet != address(0)) {
+            return treasuryWallet;
+        }
+        try IAdrianLabCore(coreContract).treasuryWallet() returns (address treasury) {
+            return treasury;
+        } catch {
+            return address(0);
+        }
+    }
+
+    function getAdrianTokenBalance() public view returns (uint256) {
+        if (address(adrianToken) == address(0)) return 0;
+        return adrianToken.balanceOf(address(this));
+    }
+
+    function _hasSufficientAdrianTokens(uint256 amount) internal view returns (bool) {
+        if (address(adrianToken) == address(0)) return false;
+        return adrianToken.balanceOf(address(this)) >= amount;
+    }
+}

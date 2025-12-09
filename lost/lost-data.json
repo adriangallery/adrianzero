@@ -1901,6 +1901,77 @@
           }
         }
       ]
+    },
+    {
+      "weekNumber": 40,
+      "date": "2024-12-07",
+      "title": "Sunday Recap — 12/07",
+      "events": [
+        {
+          "emoji": "🧠",
+          "title": "AdrianAuction V2 + Sensai 1/1",
+          "description": "New optimised AdrianAuction contract + frontend + DB live. First run with AdrianSensai 1/1 sent 860,000 $ADRIAN straight into FloorENGINE. Engine so far: 14 Punks sold, 14 in the vault, all listed again on the market.",
+          "status": "completed",
+          "category": "auction",
+          "stats": {
+            "sentToEngine": "860K $ADRIAN",
+            "punksSold": 14,
+            "punksInVault": 14
+          }
+        },
+        {
+          "emoji": "🍌",
+          "title": "NanoBanana Week",
+          "description": "Deep dive with NanoBanana 2.5 wired into our render stack — prompts, logic, outputs, full lab grind.",
+          "status": "in-progress",
+          "category": "ai"
+        },
+        {
+          "emoji": "⏱️",
+          "title": "“What Did I Miss?” dAPP",
+          "description": "Pick how many weeks you were out, get an instant recap of all the chaos.",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🤖",
+          "title": "Adrian BANANA TOGGLE",
+          "description": "AI toggle for your ZEROS → same traits, new NanoBanana art tailored by Tiger. Cost: 10K $ADRIAN per toggle, updates on OpenSea & friends.",
+          "status": "completed",
+          "category": "feature",
+          "stats": {
+            "cost": "10K $ADRIAN"
+          }
+        },
+        {
+          "emoji": "⚙️",
+          "title": "Render Optimisation — History Hash",
+          "description": "Every ZERO config now has a unique history hash. If the hash exists, renderer doesn’t rebuild the image — just serves the one stored on GitHub. Less waste, faster renders.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🧬",
+          "title": "AIDRIANS (Sneak Peek)",
+          "description": "New AI collection experiment with NanoBanana in progress. Name locked: AIDRIANS. More details next week.",
+          "status": "announced",
+          "category": "collection"
+        },
+        {
+          "emoji": "📊",
+          "title": "$ADRIAN World Stats",
+          "description": "Stats dAPP keeps filling up with data from the whole ecosystem. Soon you’ll be able to peek every contract + module from a single dashboard.",
+          "status": "in-progress",
+          "category": "stats"
+        },
+        {
+          "emoji": "🧪",
+          "title": "Uniswap V4 Tests",
+          "description": "Back at testing Uni V4 hooks. 11 months ago: impossible. Now: still hard as fuck, but looks actually doable.",
+          "status": "in-progress",
+          "category": "defi"
+        }
+      ]
     }
   ]
 }
