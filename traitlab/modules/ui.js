@@ -16,6 +16,16 @@ class UIManager {
         this.selectedPacks = []; // Array para selección múltiple de packs (hasta 4)
         this.selectedSerum = null;
         
+        // Lazy loading state for mobile traits
+        this.lazyLoadingState = {
+            enabled: false,
+            allTokens: [],
+            currentIndex: 0,
+            batchSize: 25, // Cargar 25 traits por batch
+            observer: null,
+            sentinel: null
+        };
+        
         // Bind methods
         this.displayTokens = this.displayTokens.bind(this);
         this.displayPlaceholders = this.displayPlaceholders.bind(this);
@@ -110,6 +120,12 @@ class UIManager {
      */
     setCurrentFilter(filter) {
         console.log('🔧 setCurrentFilter called with:', filter);
+        
+        // Clean up lazy loading if changing away from traits
+        if (this.currentFilter === 'traits' && filter !== 'traits') {
+            this.cleanupLazyLoading();
+        }
+        
         this.currentFilter = filter;
         console.log('✅ currentFilter set to:', this.currentFilter);
         
@@ -132,6 +148,287 @@ class UIManager {
     }
 
     /**
+     * Check if device is mobile
+     */
+    isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    /**
+     * Clean up lazy loading observer
+     */
+    cleanupLazyLoading() {
+        if (this.lazyLoadingState.observer) {
+            this.lazyLoadingState.observer.disconnect();
+            this.lazyLoadingState.observer = null;
+        }
+        if (this.lazyLoadingState.sentinel) {
+            this.lazyLoadingState.sentinel.remove();
+            this.lazyLoadingState.sentinel = null;
+        }
+        this.lazyLoadingState.enabled = false;
+        this.lazyLoadingState.allTokens = [];
+        this.lazyLoadingState.currentIndex = 0;
+    }
+
+    /**
+     * Render a batch of tokens
+     */
+    renderTokenBatch(tokens, startIndex, endIndex, tokensGrid) {
+        const batch = tokens.slice(startIndex, endIndex);
+        
+        batch.forEach(token => {
+            const tokenCard = this.createTokenCard(token);
+            tokensGrid.appendChild(tokenCard);
+        });
+        
+        return batch.length;
+    }
+
+    /**
+     * Create a single token card element
+     */
+    createTokenCard(token) {
+        const tokenCard = document.createElement('div');
+        tokenCard.className = 'token-card';
+        tokenCard.setAttribute('data-token-id', token.tokenId);
+        tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
+        
+        // Use specific image URLs for different token types
+        let imageUrl = token.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
+        
+        // Hardcode names for specific floppy discs
+        let displayTitle = token.title;
+        if (this.currentFilter === 'floppy') {
+            if (token.tokenId === 10003) {
+                displayTitle = 'GLITCH Floppy';
+            } else if (token.tokenId === 10004) {
+                displayTitle = 'GF Floppy';
+            } else if (token.tokenId === 10005) {
+                displayTitle = 'Golden Floppy';
+            } else if (token.tokenId === 10007) {
+                displayTitle = 'NEONpack';
+            } else if (token.tokenId === 10008) {
+                displayTitle = 'OPTICALpack';
+            } else if (token.tokenId === 10009) {
+                displayTitle = 'PUNKSfloppy';
+            } else if (token.tokenId === 10010) {
+                displayTitle = 'ComradesUSB';
+            } else if (token.tokenId === 1123) {
+                displayTitle = 'CensorPACK';
+            } else if (token.tokenId === 15010) {
+                displayTitle = 'Back to Work';
+            } else {
+                displayTitle = token.title.replace(/^\d+\s*/, '');
+            }
+        }
+        
+        // Override image URL for specific token types
+        if (this.currentFilter === 'serum' && token.tokenId >= 262144 && token.tokenId <= 262147) {
+            imageUrl = this.getImagePath(token.tokenId, '.gif');
+        } else if (this.currentFilter === 'floppy') {
+            // Use local images for floppy discs
+            if (token.tokenId === 10000) {
+                imageUrl = this.getImagePath(10000, '.gif');
+            } else if (token.tokenId === 10001) {
+                imageUrl = this.getImagePath(10001, '.gif');
+            } else if (token.tokenId === 10002) {
+                imageUrl = this.getImagePath(10002, '.gif');
+            } else if (token.tokenId === 10003) {
+                imageUrl = this.getImagePath(10003, '.gif');
+            } else if (token.tokenId === 10004) {
+                imageUrl = this.getImagePath(10004, '.gif');
+            } else if (token.tokenId === 10005) {
+                imageUrl = this.getImagePath(10005, '.gif');
+            } else if (token.tokenId === 10007) {
+                imageUrl = this.getImagePath(10007, '.gif');
+            } else if (token.tokenId === 15000) {
+                imageUrl = this.getImagePath(15000, '.gif');
+            } else if (token.tokenId === 15001) {
+                imageUrl = this.getImagePath(15001, '.gif');
+            } else if (token.tokenId === 15002) {
+                imageUrl = this.getImagePath(15002, '.gif');
+            } else if (token.tokenId === 15003) {
+                imageUrl = this.getImagePath(15003, '.gif');
+            } else if (token.tokenId === 15004) {
+                imageUrl = this.getImagePath(15004, '.gif');
+            } else if (token.tokenId === 15005) {
+                imageUrl = this.getImagePath(15005, '.gif');
+            } else if (token.tokenId === 15006) {
+                imageUrl = this.getImagePath(15006, '.gif');
+            } else if (token.tokenId === 15007) {
+                imageUrl = this.getImagePath(15007, '.gif');
+            } else if (token.tokenId === 15008) {
+                imageUrl = this.getImagePath(15008, '.png');
+            } else if (token.tokenId === 15009) {
+                imageUrl = this.getImagePath(15009, '.png');
+            } else if (token.tokenId === 15010) {
+                imageUrl = this.getImagePath(15010, '.png');
+            } else if (token.tokenId === 15011) {
+                imageUrl = this.getImagePath(15011, '.png');
+            } else if (token.tokenId === 15012) {
+                imageUrl = this.getImagePath(15012, '.png');
+            } else if (token.tokenId === 15013) {
+                imageUrl = this.getImagePath(15013, '.png');
+            } else if (token.tokenId === 15014) {
+                imageUrl = this.getImagePath(15014, '.png');
+            } else if (token.tokenId === 15015) {
+                imageUrl = this.getImagePath(15015, '.png');
+            } else if (token.tokenId === 10008) {
+                imageUrl = this.getImagePath(10008, '.gif');
+            } else if (token.tokenId === 10009) {
+                imageUrl = this.getImagePath(10009, '.gif');
+            } else if (token.tokenId === 10010) {
+                imageUrl = this.getImagePath(10010, '.gif');
+            } else if (token.tokenId === 10011) {
+                imageUrl = this.getImagePath(10011, '.gif');
+            } else if (token.tokenId === 10012) {
+                imageUrl = this.getImagePath(10012, '.gif');
+            } else if (token.tokenId === 10013) {
+                imageUrl = this.getImagePath(10013, '.gif');
+            } else if (token.tokenId === 10015) {
+                imageUrl = this.getImagePath(10015, '.gif');
+            }
+        }
+        
+        // Create quantity tag for ERC1155 tokens with balance > 1
+        const quantityTag = token.tokenType === 'ERC1155' && token.balance > 1 ? 
+            `<div class="token-quantity-tag">x${token.balance}</div>` : '';
+        
+        // Create category display for ERC1155 tokens
+        const categoryDisplay = token.tokenType === 'ERC1155' && token.category ? 
+            `<div class="token-category">${token.category}</div>` : '';
+        
+        // Handle image loading with fallback for traits
+        let imgTag;
+        if (token.fallbackImageUrl && imageUrl !== token.fallbackImageUrl) {
+            // Trait with local asset - use fallback if local fails
+            const fallbackUrl = token.fallbackImageUrl.replace(/'/g, "\\'");
+            imgTag = `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" loading="lazy" onerror="if('${fallbackUrl}') { this.src='${fallbackUrl}'; this.onerror=function(){ this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'; }; }">`;
+        } else {
+            // Standard image tag for other tokens
+            imgTag = `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'>">`;
+        }
+        
+        tokenCard.innerHTML = `
+            <div style="position: relative;">
+                ${imgTag}
+                ${quantityTag}
+            </div>
+            <div class="token-info">
+                <div class="token-title">${displayTitle}</div>
+                <div class="token-id">ID: ${token.tokenId}</div>
+                ${categoryDisplay}
+            </div>
+        `;
+        
+        // Add click event for token selection
+        const clickHandler = () => {
+            this.handleTokenSelection(tokenCard, token);
+        };
+        
+        // Store the handler reference for potential removal
+        tokenCard._clickHandler = clickHandler;
+        tokenCard.addEventListener('click', clickHandler);
+        
+        return tokenCard;
+    }
+
+    /**
+     * Load next batch of traits using lazy loading
+     */
+    loadNextBatch() {
+        const state = this.lazyLoadingState;
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid || !state.enabled) return;
+        
+        const endIndex = Math.min(state.currentIndex + state.batchSize, state.allTokens.length);
+        
+        if (state.currentIndex >= state.allTokens.length) {
+            // All tokens loaded, remove sentinel
+            if (state.sentinel) {
+                state.sentinel.remove();
+                state.sentinel = null;
+            }
+            if (state.observer) {
+                state.observer.disconnect();
+                state.observer = null;
+            }
+            return;
+        }
+        
+        console.log(`📦 Lazy loading batch: ${state.currentIndex} to ${endIndex} (${endIndex - state.currentIndex} traits)`);
+        
+        // Remove old sentinel if exists
+        if (state.sentinel) {
+            state.sentinel.remove();
+        }
+        
+        // Render batch
+        this.renderTokenBatch(state.allTokens, state.currentIndex, endIndex, tokensGrid);
+        state.currentIndex = endIndex;
+        
+        // Update selection info after rendering
+        this.updateSelectionInfo();
+        
+        // Add new sentinel for next batch if there are more tokens
+        if (state.currentIndex < state.allTokens.length) {
+            state.sentinel = document.createElement('div');
+            state.sentinel.className = 'lazy-loading-sentinel';
+            state.sentinel.style.height = '20px';
+            state.sentinel.style.width = '100%';
+            tokensGrid.appendChild(state.sentinel);
+            
+            // Observe the sentinel
+            if (state.observer) {
+                state.observer.observe(state.sentinel);
+            }
+        } else {
+            // All loaded, cleanup
+            if (state.observer) {
+                state.observer.disconnect();
+                state.observer = null;
+            }
+            console.log('✅ All traits loaded via lazy loading');
+        }
+    }
+
+    /**
+     * Setup lazy loading for traits on mobile
+     */
+    setupLazyLoading(tokens) {
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid) return;
+        
+        // Clean up any existing lazy loading
+        this.cleanupLazyLoading();
+        
+        // Initialize state
+        this.lazyLoadingState.allTokens = tokens;
+        this.lazyLoadingState.currentIndex = 0;
+        this.lazyLoadingState.enabled = true;
+        
+        // Load first batch immediately
+        this.loadNextBatch();
+        
+        // Setup IntersectionObserver for subsequent batches
+        this.lazyLoadingState.observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && this.lazyLoadingState.enabled) {
+                    this.loadNextBatch();
+                }
+            });
+        }, {
+            rootMargin: '200px' // Start loading 200px before sentinel is visible
+        });
+        
+        // Observe sentinel if it exists
+        if (this.lazyLoadingState.sentinel) {
+            this.lazyLoadingState.observer.observe(this.lazyLoadingState.sentinel);
+        }
+    }
+
+    /**
      * Display tokens in grid
      */
     displayTokens(tokens, skipSelectionUpdate = false, hasLoadingWheels = false) {
@@ -147,166 +444,33 @@ class UIManager {
             }
         });
 
+        // Clean up any existing lazy loading
+        this.cleanupLazyLoading();
+
         tokensGrid.innerHTML = "";
+        
+        // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens)
+        const shouldUseLazyLoading = this.isMobile() && 
+                                     this.currentFilter === 'traits' && 
+                                     tokens.length > 50; // Only use lazy loading if more than 50 traits
+        
+        if (shouldUseLazyLoading) {
+            console.log(`📱 Lazy loading enabled for ${tokens.length} traits on mobile`);
+            this.setupLazyLoading(tokens);
+            if (!skipSelectionUpdate) {
+                this.updateSelectionInfo();
+            }
+            return;
+        }
         
         // 🚨 NUEVO: Mostrar loading wheel si se especifica
         if (hasLoadingWheels) {
             console.log('🔄 Mostrando tokens con loading wheels...');
         }
         
+        // Standard rendering for desktop or non-traits tabs
         tokens.forEach(token => {
-            const tokenCard = document.createElement('div');
-            tokenCard.className = 'token-card';
-            tokenCard.setAttribute('data-token-id', token.tokenId);
-            tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
-            
-            // Use specific image URLs for different token types
-            let imageUrl = token.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
-            
-            // Hardcode names for specific floppy discs
-            let displayTitle = token.title;
-            if (this.currentFilter === 'floppy') {
-                if (token.tokenId === 10003) {
-                    displayTitle = 'GLITCH Floppy';
-                } else if (token.tokenId === 10004) {
-                    displayTitle = 'GF Floppy';
-                } else if (token.tokenId === 10005) {
-                    displayTitle = 'Golden Floppy';
-                } else if (token.tokenId === 10007) {
-                    displayTitle = 'NEONpack';
-                } else if (token.tokenId === 10008) {
-                    displayTitle = 'OPTICALpack';
-                } else if (token.tokenId === 10009) {
-                    displayTitle = 'PUNKSfloppy';
-                } else if (token.tokenId === 10010) {
-                    displayTitle = 'ComradesUSB';
-                } else if (token.tokenId === 1123) {
-                    displayTitle = 'CensorPACK';
-                } else if (token.tokenId === 15010) {
-                    displayTitle = 'Back to Work';
-                } else {
-                    // 🚨 NUEVO: Limpiar el título quitando números al inicio
-                    displayTitle = token.title.replace(/^\d+\s*/, '');
-                }
-            }
-            
-            // Override image URL for specific token types
-            if (this.currentFilter === 'serum' && token.tokenId >= 262144 && token.tokenId <= 262147) {
-                imageUrl = this.getImagePath(token.tokenId, '.gif');
-            } else if (this.currentFilter === 'floppy') {
-                // Use local images for floppy discs
-                if (token.tokenId === 10000) {
-                    imageUrl = this.getImagePath(10000, '.gif');
-                } else if (token.tokenId === 10001) {
-                    imageUrl = this.getImagePath(10001, '.gif');
-                } else if (token.tokenId === 10002) {
-                    imageUrl = this.getImagePath(10002, '.gif');
-                } else if (token.tokenId === 10003) {
-                    imageUrl = this.getImagePath(10003, '.gif');
-                } else if (token.tokenId === 10004) {
-                    imageUrl = this.getImagePath(10004, '.gif');
-                } else if (token.tokenId === 10005) {
-                    imageUrl = this.getImagePath(10005, '.gif');
-                } else if (token.tokenId === 10007) {
-                    imageUrl = this.getImagePath(10007, '.gif');
-                } else if (token.tokenId === 15000) {
-                    imageUrl = this.getImagePath(15000, '.gif');
-                } else if (token.tokenId === 15001) {
-                    imageUrl = this.getImagePath(15001, '.gif');
-                } else if (token.tokenId === 15002) {
-                    imageUrl = this.getImagePath(15002, '.gif');
-                } else if (token.tokenId === 15003) {
-                    imageUrl = this.getImagePath(15003, '.gif');
-                } else if (token.tokenId === 15004) {
-                    imageUrl = this.getImagePath(15004, '.gif');
-                } else if (token.tokenId === 15005) {
-                    imageUrl = this.getImagePath(15005, '.gif');
-                } else if (token.tokenId === 15006) {
-                    imageUrl = this.getImagePath(15006, '.gif');
-                } else if (token.tokenId === 15007) {
-                    imageUrl = this.getImagePath(15007, '.gif');
-                } else if (token.tokenId === 15008) {
-                    imageUrl = this.getImagePath(15008, '.png');
-                } else if (token.tokenId === 15009) {
-                    imageUrl = this.getImagePath(15009, '.png');
-                } else if (token.tokenId === 15010) {
-                    imageUrl = this.getImagePath(15010, '.png');
-                } else if (token.tokenId === 15011) {
-                    imageUrl = this.getImagePath(15011, '.png');
-                } else if (token.tokenId === 15012) {
-                    imageUrl = this.getImagePath(15012, '.png');
-                } else if (token.tokenId === 15013) {
-                    imageUrl = this.getImagePath(15013, '.png');
-                } else if (token.tokenId === 15014) {
-                    imageUrl = this.getImagePath(15014, '.png');
-                } else if (token.tokenId === 15015) {
-                    imageUrl = this.getImagePath(15015, '.png');
-                } else if (token.tokenId === 10008) {
-                    imageUrl = this.getImagePath(10008, '.gif');
-                } else if (token.tokenId === 10009) {
-                    imageUrl = this.getImagePath(10009, '.gif');
-                } else if (token.tokenId === 10010) {
-                    imageUrl = this.getImagePath(10010, '.gif');
-                } else if (token.tokenId === 10011) {
-                    imageUrl = this.getImagePath(10011, '.gif');
-                } else if (token.tokenId === 10012) {
-                    imageUrl = this.getImagePath(10012, '.gif');
-                } else if (token.tokenId === 10013) {
-                    imageUrl = this.getImagePath(10013, '.gif');
-                } else if (token.tokenId === 10015) {
-                    imageUrl = this.getImagePath(10015, '.gif');
-                }
-            }
-            
-            // Create quantity tag for ERC1155 tokens with balance > 1
-            const quantityTag = token.tokenType === 'ERC1155' && token.balance > 1 ? 
-                `<div class="token-quantity-tag">x${token.balance}</div>` : '';
-            
-            // Create category display for ERC1155 tokens
-            const categoryDisplay = token.tokenType === 'ERC1155' && token.category ? 
-                `<div class="token-category">${token.category}</div>` : '';
-            
-            // 🚨 NUEVO: Agregar loading wheel si se especifica
-            const loadingWheel = hasLoadingWheels ? 
-                `<div class="token-loading-overlay">
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">Cargando...</div>
-                </div>` : '';
-            
-            // Handle image loading with fallback for traits
-            let imgTag;
-            if (token.fallbackImageUrl && imageUrl !== token.fallbackImageUrl) {
-                // Trait with local asset - use fallback if local fails
-                const fallbackUrl = token.fallbackImageUrl.replace(/'/g, "\\'");
-                imgTag = `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" onerror="if('${fallbackUrl}') { this.src='${fallbackUrl}'; this.onerror=function(){ this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'; }; }">`;
-            } else {
-                // Standard image tag for other tokens
-                imgTag = `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'>">`;
-            }
-            
-            tokenCard.innerHTML = `
-                <div style="position: relative;">
-                    ${imgTag}
-                    ${quantityTag}
-                    ${loadingWheel}
-                </div>
-                <div class="token-info">
-                    <div class="token-title">${displayTitle}</div>
-                    <div class="token-id">ID: ${token.tokenId}</div>
-                    ${categoryDisplay}
-                </div>
-            `;
-            
-                    // Add click event for token selection
-        const clickHandler = () => {
-            // Handle visual selection state and emit event
-            this.handleTokenSelection(tokenCard, token);
-        };
-        
-        // Store the handler reference for potential removal
-        tokenCard._clickHandler = clickHandler;
-        tokenCard.addEventListener('click', clickHandler);
-            
+            const tokenCard = this.createTokenCard(token);
             tokensGrid.appendChild(tokenCard);
         });
         
