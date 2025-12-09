@@ -812,7 +812,7 @@ class StickyPopupManager {
         
         this.elements.combinedImage.onerror = () => {
             if (isPack && window.app && window.app.modules.floppy && !fallbackAttempted) {
-                // Intentar PNG como fallback
+                // Intentar PNG como fallback (solo para packs que no tienen GIF)
                 const pngUrl = window.app.modules.floppy.getImagePath(tokenId, '.png');
                 if (!this.elements.combinedImage.src.includes('.png') || this.elements.combinedImage.src.includes('.gif')) {
                     fallbackAttempted = true;
@@ -822,16 +822,25 @@ class StickyPopupManager {
                 }
             }
             
-            // Si ya intentamos PNG o no es pack, usar render API como último fallback
-            if (!this.elements.combinedImage.src.includes('adrianlab.vercel.app')) {
-                this.elements.combinedImage.src = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
-                console.log('⚠️ Intentando con render API como último fallback');
-            } else {
+            // Para packs, NO usar render API - solo usar imágenes locales
+            if (isPack) {
                 // Ya intentamos todo, ocultar loading
                 if (this.elements.imageLoadingOverlay) {
                     this.elements.imageLoadingOverlay.style.display = 'none';
                 }
-                console.error('❌ Error cargando imagen - todos los fallbacks fallaron');
+                console.error('❌ Error cargando imagen local del pack - verificar que existe:', tokenId);
+            } else {
+                // Solo para no-packs, usar render API como último fallback
+                if (!this.elements.combinedImage.src.includes('adrianlab.vercel.app')) {
+                    this.elements.combinedImage.src = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+                    console.log('⚠️ Intentando con render API como último fallback');
+                } else {
+                    // Ya intentamos todo, ocultar loading
+                    if (this.elements.imageLoadingOverlay) {
+                        this.elements.imageLoadingOverlay.style.display = 'none';
+                    }
+                    console.error('❌ Error cargando imagen - todos los fallbacks fallaron');
+                }
             }
         };
         
