@@ -40,6 +40,16 @@ class FloppyManager {
         // Check if we're running locally (localhost) or online
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         
+        // For floppy discs (10000-20000 range), use traitlab/assets/ path
+        if (assetId >= 10000 && assetId <= 20000) {
+            if (isLocal) {
+                return `./assets/${assetId}${extension}`;
+            } else {
+                return `https://adrianzero.com/traitlab/assets/${assetId}${extension}`;
+            }
+        }
+        
+        // For other items, use components/images/ path
         if (isLocal) {
             // Local development - use relative path from current directory
             return `../components/images/${assetId}${extension}`;
