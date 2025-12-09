@@ -18,6 +18,16 @@ class TraitLABDataManager {
             }
         };
         
+        // Estado de paginación para carga por batches
+        this.paginationState = {
+            traits: {
+                pageKey: null,
+                hasMore: false,
+                batchSize: 150,
+                isBatchMode: false
+            }
+        };
+        
         this.eventListeners = new Map();
         this.isInitialized = false;
         
@@ -140,7 +150,30 @@ class TraitLABDataManager {
     }
 
     /**
-     * Cargar tokens AdrianLAB (ERC1155) - TODOS LOS TOKENS SIN FILTRAR
+     * Verificar si debemos usar modo batch (móvil + tab traits)
+     */
+    shouldUseBatchMode() {
+        const isMobile = window.innerWidth <= 768;
+        const currentFilter = window.app?.modules?.ui?.getCurrentFilter?.() || window.app?.currentFilter;
+        const isTraitsTab = currentFilter === 'traits';
+        return isMobile && isTraitsTab;
+    }
+
+    /**
+     * Resetear estado de paginación de traits
+     */
+    resetTraitsPagination() {
+        this.paginationState.traits = {
+            pageKey: null,
+            hasMore: false,
+            batchSize: 150,
+            isBatchMode: false
+        };
+        console.log('🔄 Estado de paginación de traits reseteado');
+    }
+
+    /**
+     * Cargar tokens AdrianLAB (ERC1155) - TODOS LOS TOKENS SIN FILTRAR o por batches
      */
     async loadAdrianLabTokens() {
         if (this.cache.loading.adrianLab || this.cache.ready.adrianLab) return;
@@ -155,9 +188,17 @@ class TraitLABDataManager {
                 if (userAddress) {
                     const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
                     
-                    // 🚀 CARGAR TOKENS PROGRESIVAMENTE
-                    console.log('📊 Cargando tokens ERC1155 progresivamente...');
-                    await this.loadTokensProgressive(userAddress, contractAddress);
+                    // 🚀 VERIFICAR SI USAR MODO BATCH
+                    const useBatchMode = this.shouldUseBatchMode();
+                    this.paginationState.traits.isBatchMode = useBatchMode;
+                    
+                    if (useBatchMode) {
+                        console.log('📱 Modo BATCH activado - cargando solo primer batch de 150 traits');
+                        await this.loadTokensProgressive(userAddress, contractAddress, true); // true = batch mode
+                    } else {
+                        console.log('📊 Cargando tokens ERC1155 progresivamente (modo completo)...');
+                        await this.loadTokensProgressive(userAddress, contractAddress, false);
+                    }
                 } else {
                     console.warn('📊 No hay wallet conectada, no se pueden cargar tokens AdrianLAB');
                 }
@@ -651,6 +692,16 @@ class TraitLABDataManager {
         this.eventListeners.get(event).push(callback);
     }
 
+    off(event, callback) {
+        if (this.eventListeners.has(event)) {
+            const listeners = this.eventListeners.get(event);
+            const index = listeners.indexOf(callback);
+            if (index > -1) {
+                listeners.splice(index, 1);
+            }
+        }
+    }
+
     emit(event, data) {
         if (this.eventListeners.has(event)) {
             this.eventListeners.get(event).forEach(callback => callback(data));
@@ -672,15 +723,38 @@ class TraitLABDataManager {
 
     /**
      * Cargar tokens ERC1155 progresivamente
+     * @param {string} userAddress - User wallet address
+     * @param {string} contractAddress - Contract address
+     * @param {boolean} batchMode - Si true, cargar solo un batch de 150 tokens
      */
-    async loadTokensProgressive(userAddress, contractAddress) {
+    async loadTokensProgressive(userAddress, contractAddress, batchMode = false) {
         try {
             // Cargar tokens básicos primero (sin metadata individual)
-            console.log('📊 Cargando tokens básicos ERC1155...');
+            console.log(`📊 Cargando tokens básicos ERC1155${batchMode ? ' (BATCH MODE - 150 tokens)' : ' (modo completo)'}...`);
             
             let basicTokens = [];
+            let loadResult = null;
             try {
-                basicTokens = await this.loadBasicTokens(userAddress, contractAddress);
+                if (batchMode) {
+                    // Modo batch: cargar solo 150 tokens
+                    const batchSize = this.paginationState.traits.batchSize;
+                    loadResult = await this.loadBasicTokens(userAddress, contractAddress, batchSize, null);
+                    
+                    // loadResult es un objeto {tokens, hasMore, nextPageKey} en modo batch
+                    if (loadResult && typeof loadResult === 'object' && loadResult.tokens) {
+                        basicTokens = loadResult.tokens;
+                        this.paginationState.traits.pageKey = loadResult.nextPageKey;
+                        this.paginationState.traits.hasMore = loadResult.hasMore;
+                        console.log(`📦 Batch cargado: ${basicTokens.length} tokens, hasMore: ${loadResult.hasMore}`);
+                    } else {
+                        // Fallback si no retorna formato batch
+                        basicTokens = Array.isArray(loadResult) ? loadResult : [];
+                    }
+                } else {
+                    // Modo completo: cargar todos los tokens
+                    loadResult = await this.loadBasicTokens(userAddress, contractAddress);
+                    basicTokens = Array.isArray(loadResult) ? loadResult : (loadResult?.tokens || []);
+                }
             } catch (error) {
                 console.error('📊 Error cargando tokens básicos ERC1155:', error);
                 // Emitir evento de error
@@ -764,16 +838,123 @@ class TraitLABDataManager {
     }
 
     /**
-     * Cargar tokens básicos sin metadata individual
+     * Cargar más traits (siguiente batch) desde Alchemy
+     * @returns {Promise<Array>} Array de nuevos traits cargados
      */
-    async loadBasicTokens(userAddress, contractAddress) {
+    async loadMoreTraits() {
+        if (!this.paginationState.traits.isBatchMode) {
+            console.warn('📊 loadMoreTraits llamado pero no estamos en modo batch');
+            return [];
+        }
+        
+        if (!this.paginationState.traits.hasMore) {
+            console.log('📊 No hay más traits para cargar');
+            return [];
+        }
+        
+        if (!window.app || !window.app.modules.zero || !window.app.modules.wallet) {
+            console.warn('📊 Módulos necesarios no disponibles');
+            return [];
+        }
+        
+        const userAddress = window.app.modules.wallet.getCurrentAccount();
+        if (!userAddress) {
+            console.warn('📊 No hay wallet conectada');
+            return [];
+        }
+        
+        const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+        const batchSize = this.paginationState.traits.batchSize;
+        const pageKey = this.paginationState.traits.pageKey;
+        
+        console.log(`📦 Cargando siguiente batch de ${batchSize} traits desde Alchemy...`);
+        
         try {
-            // Usar el método loadTokens del zero.js pero con un flag para saltar metadata individual
-            const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress, null, true); // true = skip individual metadata
-            return tokens || [];
+            // Cargar siguiente batch
+            const loadResult = await this.loadBasicTokens(userAddress, contractAddress, batchSize, pageKey);
+            
+            if (!loadResult || typeof loadResult !== 'object' || !loadResult.tokens) {
+                console.warn('📊 Resultado inválido de loadBasicTokens');
+                return [];
+            }
+            
+            const newTokens = loadResult.tokens;
+            
+            // Actualizar estado de paginación
+            this.paginationState.traits.pageKey = loadResult.nextPageKey;
+            this.paginationState.traits.hasMore = loadResult.hasMore;
+            
+            console.log(`✅ Batch cargado: ${newTokens.length} nuevos traits, hasMore: ${loadResult.hasMore}`);
+            
+            // Separar por tipo usando filters.js
+            if (window.app && window.app.modules.filters) {
+                const newTraits = window.app.modules.filters.filterTraitTokens(newTokens);
+                
+                // Agregar nuevos traits al cache existente
+                if (this.cache.adrianLab && this.cache.adrianLab.traits) {
+                    this.cache.adrianLab.traits = [...this.cache.adrianLab.traits, ...newTraits];
+                    this.cache.adrianLab.all = [...(this.cache.adrianLab.all || []), ...newTokens];
+                } else {
+                    // Si no hay cache, inicializarlo
+                    const floppys = window.app.modules.filters.filterFloppyTokens(newTokens);
+                    const serums = window.app.modules.filters.filterSerumTokens(newTokens);
+                    this.cache.adrianLab = {
+                        all: newTokens,
+                        traits: newTraits,
+                        floppys: floppys,
+                        packs: [],
+                        serums: serums
+                    };
+                }
+                
+                // Emitir evento con nuevos traits
+                this.emit('adrianLabMoreTraitsLoaded', {
+                    newTraits: newTraits,
+                    hasMore: loadResult.hasMore,
+                    totalTraits: this.cache.adrianLab.traits.length
+                });
+                
+                return newTraits;
+            } else {
+                console.warn('📊 Módulo filters no disponible');
+                return [];
+            }
+        } catch (error) {
+            console.error('📊 Error cargando más traits:', error);
+            this.emit('adrianLabError', { 
+                error: error.message || 'Error cargando más traits',
+                step: 'loadMoreTraits'
+            });
+            return [];
+        }
+    }
+
+    /**
+     * Cargar tokens básicos sin metadata individual
+     * @param {string} userAddress - User wallet address
+     * @param {string} contractAddress - Contract address
+     * @param {number|null} limit - Maximum number of tokens to load (null = all)
+     * @param {string|null} pageKey - Page key to start from (null = start from beginning)
+     * @returns {Promise<Array|Object>} Array of tokens or {tokens, hasMore, nextPageKey} if limit is provided
+     */
+    async loadBasicTokens(userAddress, contractAddress, limit = null, pageKey = null) {
+        try {
+            // Usar el método loadTokens del zero.js con parámetros de paginación
+            const result = await window.app.modules.zero.loadTokens(
+                userAddress, 
+                contractAddress, 
+                null, // filter
+                true, // skip individual metadata
+                limit, // limit (para batch mode)
+                pageKey // startPageKey (para continuar desde donde quedó)
+            );
+            
+            // Si limit fue proporcionado, result es un objeto {tokens, hasMore, nextPageKey}
+            // Si no, result es un array
+            return result || (limit ? { tokens: [], hasMore: false, nextPageKey: null } : []);
         } catch (error) {
             console.warn('📊 Error cargando tokens básicos:', error);
-            return [];
+            return limit ? { tokens: [], hasMore: false, nextPageKey: null } : [];
         }
     }
 

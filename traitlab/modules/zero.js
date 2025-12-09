@@ -269,9 +269,16 @@ class ZeroManager {
 
     /**
      * Load tokens for specific contract using direct API calls with pagination
+     * @param {string} userAddress - User wallet address
+     * @param {string} contractAddress - Contract address
+     * @param {string|null} filter - Filter type (optional)
+     * @param {boolean} skipIndividualMetadata - Skip individual metadata (optional)
+     * @param {number|null} limit - Maximum number of tokens to load (optional, for batch loading)
+     * @param {string|null} startPageKey - Page key to start from (optional, for batch loading)
+     * @returns {Promise<{tokens: Array, hasMore: boolean, nextPageKey: string|null}>}
      */
-    async loadTokens(userAddress, contractAddress, filter = null, skipIndividualMetadata = false) {
-        console.log('loadTokens called with:', { userAddress, contractAddress, filter, skipIndividualMetadata });
+    async loadTokens(userAddress, contractAddress, filter = null, skipIndividualMetadata = false, limit = null, startPageKey = null) {
+        console.log('loadTokens called with:', { userAddress, contractAddress, filter, skipIndividualMetadata, limit, startPageKey });
         
         if (!userAddress) {
             throw new Error('User address is required');
@@ -291,16 +298,17 @@ class ZeroManager {
                 this.activeTogglesLoaded = true;
             }
             
-            // Load all tokens with pagination
+            // Load tokens with pagination
             let allNfts = [];
-            let pageKey = null;
+            let pageKey = startPageKey || null;
             let previousPageKey = null;
             let hasMore = true;
             let pageCount = 0;
             const MAX_PAGES = 1000; // Límite de seguridad para páginas
-            const MAX_TOKENS = 10000; // Límite de tokens (10k)
+            const MAX_TOKENS = limit || 10000; // Usar limit si se proporciona, sino 10k
+            const isBatchMode = limit !== null; // Modo batch si se proporciona limit
             
-            console.log(`🚀 Iniciando carga de tokens ${tokenType} con límites: max ${MAX_PAGES} páginas, max ${MAX_TOKENS} tokens`);
+            console.log(`🚀 Iniciando carga de tokens ${tokenType} con límites: max ${MAX_PAGES} páginas, max ${MAX_TOKENS} tokens${isBatchMode ? ' (BATCH MODE)' : ''}`);
             
             while (hasMore && pageCount < MAX_PAGES && allNfts.length < MAX_TOKENS) {
                 pageCount++;
@@ -372,9 +380,16 @@ class ZeroManager {
             
             console.log(`Total tokens loaded: ${allNfts.length} from ${pageCount} pages`);
             
+            // Capturar nextPageKey antes de procesar (para modo batch)
+            const nextPageKey = pageKey;
+            const hasMoreTokens = hasMore && allNfts.length >= MAX_TOKENS;
+            
             if (allNfts.length === 0) {
                 console.log('No NFTs found for this user');
                 this.emit('noTokensFound', { userAddress, contractAddress });
+                if (isBatchMode) {
+                    return { tokens: [], hasMore: false, nextPageKey: null };
+                }
                 return [];
             }
             
@@ -598,6 +613,15 @@ class ZeroManager {
                     
                     console.log(`Tokens with metadata:`, tokensWithMetadata);
                     this.emit('tokensLoaded', { tokens: tokensWithMetadata, contractAddress, tokenType });
+                    
+                    // Retornar con información de paginación si está en modo batch
+                    if (isBatchMode) {
+                        return { 
+                            tokens: tokensWithMetadata, 
+                            hasMore: hasMoreTokens, 
+                            nextPageKey: nextPageKey 
+                        };
+                    }
                     return tokensWithMetadata;
                 }
             } else {
@@ -614,12 +638,26 @@ class ZeroManager {
                     tokens = customNamesResult;
                 }
                 this.emit('tokensLoaded', { tokens, contractAddress, tokenType });
+                
+                // Retornar con información de paginación si está en modo batch
+                if (isBatchMode) {
+                    return { 
+                        tokens: tokens, 
+                        hasMore: hasMoreTokens, 
+                        nextPageKey: nextPageKey 
+                    };
+                }
                 return tokens;
             }
 
         } catch (error) {
             console.error("Error loading tokens:", error);
             this.emit('tokensLoadError', { error: error.message, contractAddress });
+            
+            // Retornar formato batch si está en modo batch
+            if (limit !== null) {
+                return { tokens: [], hasMore: false, nextPageKey: null };
+            }
             throw error;
         }
     }

@@ -166,6 +166,14 @@ class UIManager {
             this.lazyLoadingState.sentinel.remove();
             this.lazyLoadingState.sentinel = null;
         }
+        
+        // Remover listener del data-manager si existe
+        const dataManager = window.app?.modules?.dataManager;
+        if (dataManager && this._moreTraitsLoadedHandler) {
+            dataManager.off('adrianLabMoreTraitsLoaded', this._moreTraitsLoadedHandler);
+            this._moreTraitsLoadedHandler = null;
+        }
+        
         this.lazyLoadingState.enabled = false;
         this.lazyLoadingState.allTokens = [];
         this.lazyLoadingState.currentIndex = 0;
@@ -336,11 +344,50 @@ class UIManager {
 
     /**
      * Load next batch of traits using lazy loading
+     * Ahora carga desde Alchemy cuando se necesitan más traits
      */
-    loadNextBatch() {
+    async loadNextBatch() {
         const state = this.lazyLoadingState;
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid || !state.enabled) return;
+        
+        // Verificar si necesitamos cargar más desde Alchemy
+        const needsMoreFromAlchemy = state.currentIndex >= state.allTokens.length;
+        
+        if (needsMoreFromAlchemy) {
+            // Cargar más traits desde Alchemy
+            console.log('📡 No hay más traits locales, cargando desde Alchemy...');
+            
+            const dataManager = window.app?.modules?.dataManager;
+            if (!dataManager) {
+                console.warn('📊 DataManager no disponible');
+                this.cleanupLazyLoading();
+                return;
+            }
+            
+            try {
+                // Cargar siguiente batch desde Alchemy
+                const newTraits = await dataManager.loadMoreTraits();
+                
+                if (newTraits && newTraits.length > 0) {
+                    // Agregar nuevos traits al array local
+                    state.allTokens = [...state.allTokens, ...newTraits];
+                    console.log(`✅ ${newTraits.length} nuevos traits cargados desde Alchemy (total: ${state.allTokens.length})`);
+                    
+                    // Continuar con el renderizado del batch
+                    // (el código continuará después de este if)
+                } else {
+                    // No hay más traits disponibles
+                    console.log('✅ No hay más traits disponibles');
+                    this.cleanupLazyLoading();
+                    return;
+                }
+            } catch (error) {
+                console.error('❌ Error cargando más traits desde Alchemy:', error);
+                this.cleanupLazyLoading();
+                return;
+            }
+        }
         
         const endIndex = Math.min(state.currentIndex + state.batchSize, state.allTokens.length);
         
@@ -371,8 +418,14 @@ class UIManager {
         // Update selection info after rendering
         this.updateSelectionInfo();
         
+        // Verificar si hay más traits disponibles (localmente o desde Alchemy)
+        const dataManager = window.app?.modules?.dataManager;
+        const hasMoreFromAlchemy = dataManager?.paginationState?.traits?.hasMore || false;
+        const hasMoreLocally = state.currentIndex < state.allTokens.length;
+        const hasMore = hasMoreLocally || hasMoreFromAlchemy;
+        
         // Add new sentinel for next batch if there are more tokens
-        if (state.currentIndex < state.allTokens.length) {
+        if (hasMore) {
             state.sentinel = document.createElement('div');
             state.sentinel.className = 'lazy-loading-sentinel';
             state.sentinel.style.height = '20px';
@@ -395,6 +448,7 @@ class UIManager {
 
     /**
      * Setup lazy loading for traits on mobile
+     * Ahora integrado con carga desde Alchemy
      */
     setupLazyLoading(tokens) {
         const tokensGrid = this.domElements.get('tokens-grid');
@@ -425,6 +479,32 @@ class UIManager {
         // Observe sentinel if it exists
         if (this.lazyLoadingState.sentinel) {
             this.lazyLoadingState.observer.observe(this.lazyLoadingState.sentinel);
+        }
+        
+        // Escuchar eventos del data-manager para cuando se carguen más traits desde Alchemy
+        const dataManager = window.app?.modules?.dataManager;
+        if (dataManager) {
+            // Remover listener anterior si existe
+            if (this._moreTraitsLoadedHandler) {
+                dataManager.off('adrianLabMoreTraitsLoaded', this._moreTraitsLoadedHandler);
+            }
+            
+            // Crear nuevo handler
+            this._moreTraitsLoadedHandler = (data) => {
+                if (this.lazyLoadingState.enabled && data.newTraits) {
+                    console.log(`📡 Nuevos traits cargados desde Alchemy: ${data.newTraits.length}`);
+                    // Los nuevos traits ya fueron agregados a allTokens en loadNextBatch
+                    // Solo necesitamos verificar si debemos continuar cargando
+                    if (data.hasMore && this.lazyLoadingState.sentinel) {
+                        // Asegurar que el sentinel esté siendo observado
+                        if (this.lazyLoadingState.observer) {
+                            this.lazyLoadingState.observer.observe(this.lazyLoadingState.sentinel);
+                        }
+                    }
+                }
+            };
+            
+            dataManager.on('adrianLabMoreTraitsLoaded', this._moreTraitsLoadedHandler);
         }
     }
 
