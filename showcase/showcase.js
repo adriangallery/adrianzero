@@ -535,6 +535,7 @@ class Showcase {
         }
         this.state.autoScrollX = 0;
         this.state.autoScrollY = 0;
+        this.state.autoScrollStartTime = null;
     }
 
     /**
