@@ -362,8 +362,13 @@ class Showcase {
         this.state.autoScrollY = scrollY;
         
         // Start auto-scroll if not already running
-        if (!this.state.autoScrollInterval && typeof this.startAutoScroll === 'function') {
-            this.startAutoScroll();
+        if (!this.state.autoScrollInterval) {
+            // Ensure method exists before calling
+            if (this.startAutoScroll) {
+                this.startAutoScroll();
+            } else {
+                console.warn('startAutoScroll method not available');
+            }
         }
 
         // Apply 3D effect to visible items (only those in viewport)
