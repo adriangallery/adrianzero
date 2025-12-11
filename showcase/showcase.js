@@ -387,13 +387,21 @@ class Showcase {
             const combinedRotateY = rotateY + (swingY * (1 - intensity * 0.5));
             const combinedTranslateZ = translateZ + swingZ;
             
-            if (isHovered) {
-                // When hovered, CSS handles the transform, just pause animation
-                item.style.animationPlayState = 'paused';
+            // Only apply JS transforms if mouse is actually moving over items
+            // Otherwise let CSS animation handle the swing
+            if (intensity > 0.1) {
+                // Mouse is active, apply 3D transforms
+                if (isHovered) {
+                    // When hovered, CSS handles the transform, just pause animation
+                    item.style.animationPlayState = 'paused';
+                } else {
+                    // Normal 3D movement - combine with CSS swing animation
+                    item.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, ${parallaxZ}px) perspective(1000px) rotateX(${combinedRotateX}deg) rotateY(${combinedRotateY}deg) scale(${scale}) translateZ(${combinedTranslateZ}px)`;
+                    item.style.animationPlayState = 'running';
+                }
             } else {
-                // Normal 3D movement - combine with CSS swing animation
-                // Apply additional transforms on top of CSS animation
-                item.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, ${parallaxZ}px) perspective(1000px) rotateX(${combinedRotateX}deg) rotateY(${combinedRotateY}deg) scale(${scale}) translateZ(${combinedTranslateZ}px)`;
+                // Mouse not active, let CSS animation run freely
+                item.style.transform = '';
                 item.style.animationPlayState = 'running';
             }
         });
@@ -406,6 +414,7 @@ class Showcase {
         const items = this.gridWrapper.querySelectorAll('.grid-item');
         items.forEach(item => {
             item.style.transform = '';
+            item.style.animationPlayState = 'running'; // Resume CSS animation
         });
     }
 
