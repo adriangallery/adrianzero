@@ -284,7 +284,8 @@ class Showcase {
                 // Only apply parallax, let CSS handle the flip
                 const parallaxX = parseFloat(item.dataset.parallaxX) || 0;
                 const parallaxY = parseFloat(item.dataset.parallaxY) || 0;
-                item.style.transform = `translate(${parallaxX}px, ${parallaxY}px) translateY(-5px) scale(1.03)`;
+                // Don't override CSS hover transform, just apply parallax base
+                item.style.transform = `translate(${parallaxX}px, ${parallaxY}px)`;
                 return;
             }
             
