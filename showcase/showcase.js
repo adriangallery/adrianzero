@@ -858,49 +858,24 @@ class Showcase {
      * Render metadata details
      */
     renderMetadataDetails(metadata) {
-        let html = '<div class="modal-metadata">';
-        
-        // Render attributes/properties (traits)
-        if (metadata.attributes || metadata.properties) {
-            const attributes = metadata.attributes || metadata.properties || [];
-            if (attributes.length > 0) {
-                attributes.forEach(attr => {
-                    const traitType = attr.trait_type || attr.name || 'Unknown';
-                    const value = attr.value || '';
-                    html += `
-                        <div class="modal-metadata-item">
-                            <span class="modal-metadata-label">${traitType}:</span>
-                            <span class="modal-metadata-value">${value}</span>
-                        </div>
-                    `;
-                });
-            }
+        if (!metadata.attributes && !metadata.properties) {
+            return '';
         }
-        
-        // Render other metadata fields (UsedSerum, Generation, Skin, etc.)
-        const metadataFields = [
-            'usedSerum', 'UsedSerum',
-            'generation', 'Generation',
-            'skin', 'Skin',
-            'mutationLevel', 'Mutation Level',
-            'mutationType', 'Mutation Type',
-            'mutationStage', 'Mutation Stage'
-        ];
-        
-        metadataFields.forEach(field => {
-            const value = metadata[field];
-            if (value !== undefined && value !== null && value !== '') {
-                const label = field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1').trim();
-                html += `
-                    <div class="modal-metadata-item">
-                        <span class="modal-metadata-label">${label}:</span>
-                        <span class="modal-metadata-value">${value}</span>
-                    </div>
-                `;
-            }
+
+        const attributes = metadata.attributes || metadata.properties || [];
+        if (attributes.length === 0) return '';
+
+        let html = '<div class="modal-metadata">';
+        attributes.forEach(attr => {
+            html += `
+                <div class="modal-metadata-item">
+                    <span class="modal-metadata-label">${attr.trait_type || attr.name}:</span>
+                    <span class="modal-metadata-value">${attr.value}</span>
+                </div>
+            `;
         });
-        
         html += '</div>';
+
         return html;
     }
 
