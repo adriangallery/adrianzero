@@ -375,8 +375,9 @@ class Showcase {
             
             // Combine swing animation with mouse movement
             // Get swing offset based on time and item index for variation
+            const itemIndex = parseInt(item.dataset.index) || 0;
             const swingTime = Date.now() / 2000; // Slow swing
-            const swingOffset = (index % 8) * 0.5; // Vary per item
+            const swingOffset = (itemIndex % 8) * 0.5; // Vary per item
             const swingX = Math.sin(swingTime + swingOffset) * 2; // Max 2 degrees
             const swingY = Math.cos(swingTime + swingOffset) * 2; // Max 2 degrees
             const swingZ = Math.sin(swingTime * 0.7 + swingOffset) * 3; // Max 3px depth
