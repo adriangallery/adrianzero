@@ -27,7 +27,9 @@ class Showcase {
             itemsPerPage: 50,
             loadThreshold: 0.8, // Load more when 80% scrolled
             imageCache: new Map(),
-            metadataCache: new Map()
+            metadataCache: new Map(),
+            gifPath: 'ADRIAN_GF_Floppy_Disk.gif',
+            gifFrequency: 20 // Show GIF every 20 items
         };
 
         // State
@@ -330,15 +332,16 @@ class Showcase {
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             const intensity = Math.min(distance * 1.5, 1);
             
-            const rotateX = deltaY * 5 * intensity; // Max 5 degrees
-            const rotateY = deltaX * -5 * intensity; // Max -5 degrees
-            const scale = 1 + (intensity * 0.02); // Subtle scale
+            const rotateX = deltaY * 8 * intensity; // Max 8 degrees (increased from 5)
+            const rotateY = deltaX * -8 * intensity; // Max -8 degrees (increased from 5)
+            const scale = 1 + (intensity * 0.03); // Slightly more scale
+            const translateZ = intensity * 15; // Add Z translation for depth
             
             // Combine with parallax if exists
             const parallaxX = parseFloat(item.dataset.parallaxX) || 0;
             const parallaxY = parseFloat(item.dataset.parallaxY) || 0;
             
-            item.style.transform = `translate(${parallaxX}px, ${parallaxY}px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+            item.style.transform = `translate(${parallaxX}px, ${parallaxY}px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale}) translateZ(${translateZ}px)`;
         });
     }
 
@@ -560,8 +563,17 @@ class Showcase {
         const item = document.createElement('div');
         item.className = 'grid-item';
         item.dataset.index = index;
-        item.dataset.tokenId = image.tokenId;
-        item.dataset.hash = image.hash;
+        
+        // Check if this should be a GIF (1 in every gifFrequency)
+        const isGif = (index % this.config.gifFrequency === 0);
+        
+        if (isGif) {
+            item.classList.add('grid-item-gif');
+            item.dataset.isGif = 'true';
+        } else {
+            item.dataset.tokenId = image.tokenId;
+            item.dataset.hash = image.hash;
+        }
         
         // Stagger animation delay based on index
         const delay = (index % 20) * 0.03;
@@ -573,18 +585,31 @@ class Showcase {
         const placeholder = document.createElement('div');
         placeholder.className = 'image-placeholder';
 
-        const img = document.createElement('img');
-        img.dataset.src = image.url;
-        img.dataset.index = index;
-        img.alt = `AdrianZERO #${image.tokenId}`;
+        if (isGif) {
+            // Create GIF element
+            const gif = document.createElement('img');
+            gif.src = this.config.gifPath;
+            gif.alt = 'AdrianZERO Floppy Disk';
+            gif.className = 'gif-image';
+            gif.dataset.loaded = 'true';
+            imageContainer.appendChild(gif);
+        } else {
+            // Regular image
+            const img = document.createElement('img');
+            img.dataset.src = image.url;
+            img.dataset.index = index;
+            img.alt = `AdrianZERO #${image.tokenId}`;
+            imageContainer.appendChild(placeholder);
+            imageContainer.appendChild(img);
+        }
 
-        imageContainer.appendChild(placeholder);
-        imageContainer.appendChild(img);
         item.appendChild(imageContainer);
 
         // Click handler
         item.addEventListener('click', () => {
-            this.openModal(index);
+            if (!isGif) {
+                this.openModal(index);
+            }
         });
 
         return item;
