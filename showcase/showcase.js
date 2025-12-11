@@ -331,13 +331,26 @@ class Showcase {
             const parallaxY = parseFloat(item.dataset.parallaxY) || 0;
             const parallaxZ = parseFloat(item.dataset.parallaxZ) || 0;
             
+            // Combine swing animation with mouse movement
+            // Get swing offset based on time and item index for variation
+            const swingTime = Date.now() / 2000; // Slow swing
+            const swingOffset = (index % 8) * 0.5; // Vary per item
+            const swingX = Math.sin(swingTime + swingOffset) * 2; // Max 2 degrees
+            const swingY = Math.cos(swingTime + swingOffset) * 2; // Max 2 degrees
+            const swingZ = Math.sin(swingTime * 0.7 + swingOffset) * 3; // Max 3px depth
+            
+            // Combine mouse movement with swing (swing is subtle when mouse is active)
+            const combinedRotateX = rotateX + (swingX * (1 - intensity * 0.5));
+            const combinedRotateY = rotateY + (swingY * (1 - intensity * 0.5));
+            const combinedTranslateZ = translateZ + swingZ;
+            
             if (isHovered) {
-                // When hovered, combine CSS hover with subtle 3D
+                // When hovered, combine CSS hover with subtle 3D and swing
                 const baseTransform = `translate(${parallaxX}px, ${parallaxY}px)`;
-                item.style.transform = `${baseTransform} perspective(1000px) rotateX(${rotateX * 0.3}deg) rotateY(${rotateY * 0.3}deg) translateZ(${translateZ * 0.5}px)`;
+                item.style.transform = `${baseTransform} perspective(1000px) rotateX(${combinedRotateX * 0.3}deg) rotateY(${combinedRotateY * 0.3}deg) translateZ(${combinedTranslateZ * 0.5}px)`;
             } else {
-                // Normal 3D movement
-                item.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, ${parallaxZ}px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale}) translateZ(${translateZ}px)`;
+                // Normal 3D movement with swing
+                item.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, ${parallaxZ}px) perspective(1000px) rotateX(${combinedRotateX}deg) rotateY(${combinedRotateY}deg) scale(${scale}) translateZ(${combinedTranslateZ}px)`;
             }
         });
     }
