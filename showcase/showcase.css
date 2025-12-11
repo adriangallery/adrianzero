@@ -195,6 +195,7 @@ body {
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
     transform: translateY(-15px) rotateY(8deg) rotateX(-3deg) scale(1.25) translateZ(40px) !important;
     filter: brightness(1.1) blur(0.3px);
+    border-radius: 8px; /* Maintain rounded corners on hover */
 }
 
 /* Compensate container rotation and scale to keep image flat and normal size */
