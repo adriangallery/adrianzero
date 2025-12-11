@@ -177,12 +177,14 @@ class Showcase {
             }
         );
 
-        // Observer for scroll-based loading (vertical)
+        // Observer for scroll-based loading (all directions)
         this.scrollObserver = new IntersectionObserver(
             (entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && this.state.hasMore) {
-                        this.loadMoreItems();
+                        const sentinel = entry.target;
+                        const direction = sentinel.dataset.direction || 'vertical';
+                        this.loadMoreItems(direction);
                     }
                 });
             },
@@ -191,17 +193,6 @@ class Showcase {
                 threshold: 0.1
             }
         );
-
-        // Horizontal scroll detection with throttling
-        let horizontalScrollTimeout = null;
-        this.gridWrapper.addEventListener('scroll', () => {
-            if (horizontalScrollTimeout) return;
-            
-            horizontalScrollTimeout = setTimeout(() => {
-                this.checkHorizontalScroll();
-                horizontalScrollTimeout = null;
-            }, 100); // Throttle to 100ms
-        }, { passive: true });
     }
 
     /**
@@ -392,7 +383,7 @@ class Showcase {
         });
 
         // Create sentinel for infinite scroll
-        this.createScrollSentinel();
+        this.createScrollSentinels();
     }
 
     /**
@@ -475,34 +466,32 @@ class Showcase {
     }
 
     /**
-     * Create scroll sentinel for infinite loading
+     * Create scroll sentinels for infinite loading in all directions
      */
-    createScrollSentinel() {
-        const sentinel = document.createElement('div');
-        sentinel.className = 'scroll-sentinel';
-        sentinel.style.height = '1px';
-        sentinel.style.gridColumn = '1 / -1';
-        this.gridElement.appendChild(sentinel);
-        this.scrollObserver.observe(sentinel);
-    }
+    createScrollSentinels() {
+        // Remove existing sentinels
+        const existingSentinels = this.gridElement.querySelectorAll('.scroll-sentinel');
+        existingSentinels.forEach(s => s.remove());
 
-    /**
-     * Check horizontal scroll and load items if needed
-     */
-    checkHorizontalScroll() {
-        const scrollLeft = this.gridWrapper.scrollLeft;
-        const scrollWidth = this.gridWrapper.scrollWidth;
-        const clientWidth = this.gridWrapper.clientWidth;
-        
-        // Check if near right edge (within 300px)
-        if (scrollLeft + clientWidth >= scrollWidth - 300) {
-            this.loadMoreItems('horizontal');
-        }
-        // Check if near left edge (within 300px) and we've scrolled
-        else if (scrollLeft <= 300 && this.state.totalItemsRendered > this.config.itemsPerPage) {
-            // For left edge, we could prepend items, but for simplicity we'll just ensure we have enough
-            // This prevents issues with grid layout
-        }
+        // Bottom sentinel (vertical down)
+        const bottomSentinel = document.createElement('div');
+        bottomSentinel.className = 'scroll-sentinel scroll-sentinel-bottom';
+        bottomSentinel.dataset.direction = 'vertical';
+        bottomSentinel.style.height = '1px';
+        bottomSentinel.style.gridColumn = '1 / -1';
+        this.gridElement.appendChild(bottomSentinel);
+        this.scrollObserver.observe(bottomSentinel);
+
+        // Right sentinel (horizontal right)
+        const rightSentinel = document.createElement('div');
+        rightSentinel.className = 'scroll-sentinel scroll-sentinel-right';
+        rightSentinel.dataset.direction = 'horizontal';
+        rightSentinel.style.width = '1px';
+        rightSentinel.style.height = '100%';
+        rightSentinel.style.gridColumn = '-1';
+        rightSentinel.style.gridRow = '1 / -1';
+        this.gridElement.appendChild(rightSentinel);
+        this.scrollObserver.observe(rightSentinel);
     }
 
     /**
@@ -515,11 +504,9 @@ class Showcase {
 
         // Use requestAnimationFrame to batch DOM operations
         requestAnimationFrame(() => {
-            // Remove sentinel temporarily (only for vertical)
-            if (direction === 'vertical') {
-                const sentinel = this.gridElement.querySelector('.scroll-sentinel');
-                if (sentinel) sentinel.remove();
-            }
+            // Remove sentinels temporarily
+            const sentinels = this.gridElement.querySelectorAll('.scroll-sentinel');
+            sentinels.forEach(s => s.remove());
 
             // Load next batch
             const batchSize = this.config.itemsPerPage;
@@ -559,10 +546,8 @@ class Showcase {
                 if (item) this.imageObserver.observe(item);
             });
 
-            // Re-add sentinel for next batch (only for vertical)
-            if (direction === 'vertical') {
-                this.createScrollSentinel();
-            }
+            // Re-add sentinels for next batch
+            this.createScrollSentinels();
 
             this.state.isLoading = false;
         });
