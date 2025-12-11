@@ -111,6 +111,8 @@ body {
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     cursor: grab;
+    transition: transform 0.1s ease-out;
+    will-change: transform;
 }
 
 .grid-wrapper:active {
