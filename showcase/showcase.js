@@ -362,7 +362,7 @@ class Showcase {
         this.state.autoScrollY = scrollY;
         
         // Start auto-scroll if not already running
-        if (!this.state.autoScrollInterval) {
+        if (!this.state.autoScrollInterval && typeof this.startAutoScroll === 'function') {
             this.startAutoScroll();
         }
 
