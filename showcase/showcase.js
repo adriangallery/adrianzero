@@ -345,6 +345,23 @@ class Showcase {
         
         // Apply parallax to grid wrapper
         this.gridWrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        
+        // Auto-scroll based on mouse position
+        // Calculate scroll velocity based on distance from center
+        const scrollIntensity = 0.3; // How fast to scroll (lower = slower)
+        const maxScrollSpeed = 5; // Maximum pixels per frame
+        
+        const scrollX = ((mouseX - centerX) / centerX) * maxScrollSpeed * scrollIntensity;
+        const scrollY = ((mouseY - centerY) / centerY) * maxScrollSpeed * scrollIntensity;
+        
+        // Store scroll velocities
+        this.state.autoScrollX = scrollX;
+        this.state.autoScrollY = scrollY;
+        
+        // Start auto-scroll if not already running
+        if (!this.state.autoScrollInterval) {
+            this.startAutoScroll();
+        }
 
         // Apply 3D effect to visible items (only those in viewport)
         const items = Array.from(this.gridWrapper.querySelectorAll('.grid-item'));

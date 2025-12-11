@@ -233,14 +233,14 @@ body {
 .grid-item:hover {
     z-index: 10;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-    transform: translateY(-15px) rotateY(8deg) rotateX(-3deg) scale(1.25) translateZ(40px) !important;
-    filter: brightness(1.1) blur(0.3px);
+    transform: translateY(-10px) rotateY(8deg) rotateX(-3deg) scale(1.12) translateZ(30px) !important;
+    filter: brightness(1.08) blur(0.2px);
     border-radius: 8px; /* Maintain rounded corners on hover */
 }
 
 /* Compensate container rotation and scale to keep image flat and normal size */
 .grid-item:hover .image-container {
-    transform: rotateY(-8deg) rotateX(3deg) scale(calc(1 / 1.25));
+    transform: rotateY(-8deg) rotateX(3deg) scale(calc(1 / 1.12));
     transform-style: preserve-3d;
     border-radius: 8px; /* Maintain rounded corners */
     overflow: hidden; /* Ensure image respects border radius */
