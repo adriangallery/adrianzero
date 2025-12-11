@@ -670,8 +670,10 @@ class Showcase {
 
         // Click handler
         item.addEventListener('click', () => {
-            if (!isGif) {
-                this.openModal(index);
+            if (isFloppyGif && floppyGif) {
+                this.openModal(index, 'floppy');
+            } else {
+                this.openModal(index, 'adrianzero');
             }
         });
 
