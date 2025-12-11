@@ -9,7 +9,7 @@ export function Header() {
 
   const externalLinks = [
     { name: 'Home', url: 'https://adrianzero.com' },
-    { name: 'Buy $ADRIAN', url: 'https://app.uniswap.org/swap?chain=base&inputCurrency=ETH&outputCurrency=0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea' },
+    { name: 'Buy $ADRIAN', url: 'https://adrianpunks.com/swap' },
     { name: 'Mint with $ADRIAN', url: 'https://adrianzero.com/mintwithadrian.html' },
     { name: 'TraitLAB', url: 'https://adrianzero.com/traitlab' },
     { name: 'Adventure', url: 'https://adrianzero.com/' },
