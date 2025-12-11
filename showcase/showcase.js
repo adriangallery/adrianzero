@@ -45,6 +45,8 @@ class Showcase {
             autoScrollX: 0,
             autoScrollY: 0,
             autoScrollInterval: null,
+            autoScrollStartTime: null,
+            autoScrollDuration: 5000, // 5 seconds in milliseconds
             totalItemsRendered: 0 // Track total items rendered for infinite loop
         };
 
@@ -360,6 +362,7 @@ class Showcase {
         // Store scroll velocities (update continuously while mouse moves)
         this.state.autoScrollX = scrollX;
         this.state.autoScrollY = scrollY;
+        this.state.autoScrollStartTime = Date.now(); // Reset timer when mouse moves
         
         // Start auto-scroll if not already running
         if (!this.state.autoScrollInterval) {
@@ -454,6 +457,15 @@ class Showcase {
         if (this.state.autoScrollInterval) return;
         
         const scroll = () => {
+            // Calculate time elapsed since scroll started
+            const elapsed = Date.now() - (this.state.autoScrollStartTime || Date.now());
+            const progress = Math.min(elapsed / this.state.autoScrollDuration, 1); // 0 to 1 over 5 seconds
+            
+            // Calculate decay factor using ease-out curve (starts fast, ends slow)
+            // Using easeOutCubic: 1 - (1 - t)^3
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+            const decayFactor = 1 - easeOutCubic; // Goes from 1 to 0 over 5 seconds
+            
             // Apply scroll with momentum
             const currentScrollLeft = this.gridWrapper.scrollLeft;
             const currentScrollTop = this.gridWrapper.scrollTop;
@@ -461,44 +473,43 @@ class Showcase {
             const maxScrollLeft = this.gridWrapper.scrollWidth - this.gridWrapper.clientWidth;
             const maxScrollTop = this.gridWrapper.scrollHeight - this.gridWrapper.clientHeight;
             
+            // Get initial velocities (stored when mouse was moving)
+            const initialScrollX = this.state.autoScrollX;
+            const initialScrollY = this.state.autoScrollY;
+            
+            // Apply decay to velocities
+            const currentScrollX = initialScrollX * decayFactor;
+            const currentScrollY = initialScrollY * decayFactor;
+            
             // Calculate new scroll position
-            let newScrollLeft = currentScrollLeft + this.state.autoScrollX;
-            let newScrollTop = currentScrollTop + this.state.autoScrollY;
+            let newScrollLeft = currentScrollLeft + currentScrollX;
+            let newScrollTop = currentScrollTop + currentScrollY;
             
             // Clamp to boundaries
             newScrollLeft = Math.max(0, Math.min(maxScrollLeft, newScrollLeft));
             newScrollTop = Math.max(0, Math.min(maxScrollTop, newScrollTop));
             
             // Check if we've hit a boundary
-            const hitBoundaryX = (newScrollLeft === 0 && this.state.autoScrollX < 0) || 
-                                 (newScrollLeft >= maxScrollLeft && this.state.autoScrollX > 0);
-            const hitBoundaryY = (newScrollTop === 0 && this.state.autoScrollY < 0) || 
-                                 (newScrollTop >= maxScrollTop && this.state.autoScrollY > 0);
+            const hitBoundaryX = (newScrollLeft === 0 && currentScrollX < 0) || 
+                                 (newScrollLeft >= maxScrollLeft && currentScrollX > 0);
+            const hitBoundaryY = (newScrollTop === 0 && currentScrollY < 0) || 
+                                 (newScrollTop >= maxScrollTop && currentScrollY > 0);
             
             // Apply scroll
             this.gridWrapper.scrollLeft = newScrollLeft;
             this.gridWrapper.scrollTop = newScrollTop;
             
-            // Decay scroll velocity (momentum effect) - slower decay for smoother continuation
-            if (!hitBoundaryX) {
-                this.state.autoScrollX *= 0.98; // Slower decay (was 0.95)
-            } else {
-                this.state.autoScrollX = 0; // Stop at boundary
-            }
-            
-            if (!hitBoundaryY) {
-                this.state.autoScrollY *= 0.98; // Slower decay (was 0.95)
-            } else {
-                this.state.autoScrollY = 0; // Stop at boundary
-            }
-            
-            // Stop if velocity is too small
-            if (Math.abs(this.state.autoScrollX) < 0.05 && Math.abs(this.state.autoScrollY) < 0.05) {
+            // Stop if time elapsed or hit boundary
+            if (progress >= 1 || (hitBoundaryX && hitBoundaryY)) {
                 this.state.autoScrollX = 0;
                 this.state.autoScrollY = 0;
                 this.stopAutoScroll();
                 return;
             }
+            
+            // Update velocities for next frame (will be recalculated based on time)
+            this.state.autoScrollX = currentScrollX;
+            this.state.autoScrollY = currentScrollY;
         };
         
         // Use requestAnimationFrame for smooth scrolling
