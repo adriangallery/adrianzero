@@ -388,12 +388,13 @@ class Showcase {
             const combinedTranslateZ = translateZ + swingZ;
             
             if (isHovered) {
-                // When hovered, combine CSS hover with subtle 3D and swing
-                const baseTransform = `translate(${parallaxX}px, ${parallaxY}px)`;
-                item.style.transform = `${baseTransform} perspective(1000px) rotateX(${combinedRotateX * 0.3}deg) rotateY(${combinedRotateY * 0.3}deg) translateZ(${combinedTranslateZ * 0.5}px)`;
+                // When hovered, CSS handles the transform, just pause animation
+                item.style.animationPlayState = 'paused';
             } else {
-                // Normal 3D movement with swing
+                // Normal 3D movement - combine with CSS swing animation
+                // Apply additional transforms on top of CSS animation
                 item.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, ${parallaxZ}px) perspective(1000px) rotateX(${combinedRotateX}deg) rotateY(${combinedRotateY}deg) scale(${scale}) translateZ(${combinedTranslateZ}px)`;
+                item.style.animationPlayState = 'running';
             }
         });
     }

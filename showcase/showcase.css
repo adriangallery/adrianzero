@@ -106,11 +106,13 @@ body {
     transform-style: preserve-3d;
     will-change: transform, opacity, filter;
     opacity: 0;
-    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+               swingLateral 6s ease-in-out infinite;
+    animation-delay: 0s, calc(var(--item-index, 0) * 0.2s);
     perspective: 1000px;
     backface-visibility: hidden;
-    /* Remove transition from transform to allow JS to control it smoothly */
-    /* Swing animation is handled by JS for better control */
+    transform-origin: center center;
+    /* Swing animation runs continuously, JS can override on hover/mouse move */
 }
 
 @keyframes fadeIn {
@@ -125,6 +127,21 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes swingLateral {
+    0%, 100% {
+        transform: translateX(0) rotateY(0deg);
+    }
+    25% {
+        transform: translateX(-8px) rotateY(-3deg);
+    }
+    50% {
+        transform: translateX(0) rotateY(0deg);
+    }
+    75% {
+        transform: translateX(8px) rotateY(3deg);
     }
 }
 
@@ -146,8 +163,9 @@ body {
 .grid-item:hover {
     z-index: 10;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-    transform: translateY(-12px) rotateY(20deg) rotateX(-8deg) scale(1.15) translateZ(30px);
+    transform: translateY(-12px) rotateY(20deg) rotateX(-8deg) scale(1.15) translateZ(30px) !important;
     filter: brightness(1.15) blur(0.5px);
+    animation-play-state: paused; /* Pause swing on hover */
 }
 
 /* Image Container */
