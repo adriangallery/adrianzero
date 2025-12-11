@@ -28,7 +28,7 @@ class Showcase {
             loadThreshold: 0.8, // Load more when 80% scrolled
             imageCache: new Map(),
             metadataCache: new Map(),
-            gifPath: 'ADRIAN_GF_Floppy_Disk.gif',
+            gifPath: 'https://adrianzero.com/showcase/ADRIAN_GF_Floppy_Disk.gif',
             gifFrequency: 20 // Show GIF every 20 items
         };
 
@@ -312,14 +312,8 @@ class Showcase {
             }
             
             // Skip items that are being hovered (let CSS handle the flip effect)
-            if (item.matches(':hover')) {
-                // Only apply parallax, let CSS handle the flip
-                const parallaxX = parseFloat(item.dataset.parallaxX) || 0;
-                const parallaxY = parseFloat(item.dataset.parallaxY) || 0;
-                // Don't override CSS hover transform, just apply parallax base
-                item.style.transform = `translate(${parallaxX}px, ${parallaxY}px)`;
-                return;
-            }
+            // But still apply subtle 3D movement
+            const isHovered = item.matches(':hover');
             
             const itemRect = item.getBoundingClientRect();
             const itemCenterX = itemRect.left + itemRect.width / 2;
@@ -332,16 +326,25 @@ class Showcase {
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             const intensity = Math.min(distance * 1.5, 1);
             
-            const rotateX = deltaY * 8 * intensity; // Max 8 degrees (increased from 5)
-            const rotateY = deltaX * -8 * intensity; // Max -8 degrees (increased from 5)
-            const scale = 1 + (intensity * 0.03); // Slightly more scale
-            const translateZ = intensity * 15; // Add Z translation for depth
+            // More pronounced 3D movement
+            const rotateX = deltaY * 12 * intensity; // Max 12 degrees (more visible)
+            const rotateY = deltaX * -12 * intensity; // Max -12 degrees
+            const scale = isHovered ? 1.15 : (1 + (intensity * 0.05)); // More scale
+            const translateZ = intensity * 25; // More Z translation for depth
             
             // Combine with parallax if exists
             const parallaxX = parseFloat(item.dataset.parallaxX) || 0;
             const parallaxY = parseFloat(item.dataset.parallaxY) || 0;
+            const parallaxZ = parseFloat(item.dataset.parallaxZ) || 0;
             
-            item.style.transform = `translate(${parallaxX}px, ${parallaxY}px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale}) translateZ(${translateZ}px)`;
+            if (isHovered) {
+                // When hovered, combine CSS hover with subtle 3D
+                const baseTransform = `translate(${parallaxX}px, ${parallaxY}px)`;
+                item.style.transform = `${baseTransform} perspective(1000px) rotateX(${rotateX * 0.3}deg) rotateY(${rotateY * 0.3}deg) translateZ(${translateZ * 0.5}px)`;
+            } else {
+                // Normal 3D movement
+                item.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, ${parallaxZ}px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale}) translateZ(${translateZ}px)`;
+            }
         });
     }
 
