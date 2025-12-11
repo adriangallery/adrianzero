@@ -106,12 +106,11 @@ body {
     transform-style: preserve-3d;
     will-change: transform, opacity, filter;
     opacity: 0;
-    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards,
-               swing3D 8s ease-in-out infinite;
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     perspective: 1000px;
     backface-visibility: hidden;
     /* Remove transition from transform to allow JS to control it smoothly */
-    animation-delay: calc(var(--item-index, 0) * 0.1s);
+    /* Swing animation is handled by JS for better control */
 }
 
 @keyframes fadeIn {
