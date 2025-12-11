@@ -75,27 +75,40 @@ class Showcase {
             const files = await response.json();
             
             // Filter PNG files and parse metadata
-            this.images = files
-                .filter(file => file.name.endsWith('.png'))
-                .map(file => {
-                    const parsed = this.parseFileName(file.name);
-                    return {
-                        name: file.name,
-                        url: `${this.config.baseImageUrl}/${file.name}`,
-                        tokenId: parsed.tokenId,
-                        hash: parsed.hash,
-                        ...parsed
-                    };
-                })
+            const allPngFiles = files.filter(file => file.name.endsWith('.png'));
+            const parsedImages = allPngFiles.map(file => {
+                const parsed = this.parseFileName(file.name);
+                return {
+                    name: file.name,
+                    url: `${this.config.baseImageUrl}/${file.name}`,
+                    tokenId: parsed.tokenId,
+                    hash: parsed.hash,
+                    ...parsed
+                };
+            });
+
+            // Filter out invalid images and log them
+            const invalidImages = parsedImages.filter(img => img.tokenId === null || img.hash === null);
+            if (invalidImages.length > 0) {
+                console.warn(`Skipping ${invalidImages.length} images with invalid format:`, 
+                    invalidImages.map(img => img.name));
+            }
+
+            this.images = parsedImages
+                .filter(image => image.tokenId !== null && image.hash !== null) // Only include valid parsed images
                 .sort((a, b) => {
                     // Sort by tokenId, then by hash
                     if (a.tokenId !== b.tokenId) {
                         return a.tokenId - b.tokenId;
                     }
+                    // Handle null hashes (shouldn't happen after filter, but safe check)
+                    if (!a.hash || !b.hash) {
+                        return (a.hash || '').localeCompare(b.hash || '');
+                    }
                     return a.hash.localeCompare(b.hash);
                 });
 
-            console.log(`Loaded ${this.images.length} images from collection`);
+            console.log(`Loaded ${this.images.length} valid images from ${allPngFiles.length} PNG files`);
         } catch (error) {
             console.error('Error loading image list:', error);
             throw error;
