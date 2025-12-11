@@ -363,11 +363,12 @@ class Showcase {
         
         // Start auto-scroll if not already running
         if (!this.state.autoScrollInterval) {
-            // Ensure method exists before calling
-            if (this.startAutoScroll) {
-                this.startAutoScroll();
-            } else {
-                console.warn('startAutoScroll method not available');
+            try {
+                if (typeof this.startAutoScroll === 'function') {
+                    this.startAutoScroll();
+                }
+            } catch (error) {
+                console.warn('Auto-scroll not available:', error);
             }
         }
 
