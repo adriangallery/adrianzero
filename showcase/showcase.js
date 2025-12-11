@@ -279,6 +279,15 @@ class Showcase {
                 return;
             }
             
+            // Skip items that are being hovered (let CSS handle the flip effect)
+            if (item.matches(':hover')) {
+                // Only apply parallax, let CSS handle the flip
+                const parallaxX = parseFloat(item.dataset.parallaxX) || 0;
+                const parallaxY = parseFloat(item.dataset.parallaxY) || 0;
+                item.style.transform = `translate(${parallaxX}px, ${parallaxY}px) translateY(-5px) scale(1.03)`;
+                return;
+            }
+            
             const itemRect = item.getBoundingClientRect();
             const itemCenterX = itemRect.left + itemRect.width / 2;
             const itemCenterY = itemRect.top + itemRect.height / 2;
