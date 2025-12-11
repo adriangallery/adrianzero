@@ -669,12 +669,14 @@ class Showcase {
 
         item.appendChild(imageContainer);
 
-        // Click handler
+        // Click handler - capture variables in closure
+        const itemIndex = index;
+        const isFloppy = isFloppyGif && floppyGif;
         item.addEventListener('click', () => {
-            if (isFloppyGif && floppyGif) {
-                this.openModal(index, 'floppy');
+            if (isFloppy) {
+                this.openModal(itemIndex, 'floppy');
             } else {
-                this.openModal(index, 'adrianzero');
+                this.openModal(itemIndex, 'adrianzero');
             }
         });
 
