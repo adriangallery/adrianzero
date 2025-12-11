@@ -333,6 +333,19 @@ class Showcase {
         this.state.mouseX = x;
         this.state.mouseY = y;
 
+        // Viewport parallax effect
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const maxOffset = 15; // Maximum parallax offset in pixels
+        const offsetX = ((mouseX - centerX) / centerX) * maxOffset;
+        const offsetY = ((mouseY - centerY) / centerY) * maxOffset;
+        
+        // Apply parallax to grid wrapper
+        this.gridWrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+
         // Apply 3D effect to visible items (only those in viewport)
         const items = Array.from(this.gridWrapper.querySelectorAll('.grid-item'));
         const viewportTop = this.gridWrapper.scrollTop;
@@ -395,6 +408,9 @@ class Showcase {
      * Reset 3D effects when mouse leaves
      */
     handleMouseLeave() {
+        // Reset parallax
+        this.gridWrapper.style.transform = '';
+        
         const items = this.gridWrapper.querySelectorAll('.grid-item');
         items.forEach(item => {
             item.style.transform = '';
@@ -720,6 +736,9 @@ class Showcase {
             metadata = await this.loadMetadata(image);
         }
         
+        // Create zoom animation before showing modal
+        await this.createZoomAnimation(item, image);
+        
         this.modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
 
@@ -732,6 +751,76 @@ class Showcase {
 
         // Update navigation buttons
         this.updateModalNavigation();
+    }
+
+    /**
+     * Create professional zoom animation from item to modal
+     */
+    async createZoomAnimation(item, image) {
+        // Get item position and size
+        const itemRect = item.getBoundingClientRect();
+        const itemImg = item.querySelector('img');
+        if (!itemImg) return;
+        
+        // Get viewport center
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        
+        // Calculate transforms needed
+        const startX = itemRect.left + itemRect.width / 2;
+        const startY = itemRect.top + itemRect.height / 2;
+        const translateX = centerX - startX;
+        const translateY = centerY - startY;
+        
+        // Calculate scale (from item size to modal size)
+        const modalWidth = Math.min(600, window.innerWidth * 0.9);
+        const modalHeight = Math.min(window.innerHeight * 0.9, 800);
+        const scaleX = modalWidth / itemRect.width;
+        const scaleY = modalHeight / itemRect.height;
+        const scale = Math.min(scaleX, scaleY) * 0.8; // Slightly smaller for better effect
+        
+        // Create temporary zoom element
+        const zoomElement = document.createElement('div');
+        zoomElement.className = 'zoom-animation-element';
+        zoomElement.style.cssText = `
+            position: fixed;
+            left: ${itemRect.left}px;
+            top: ${itemRect.top}px;
+            width: ${itemRect.width}px;
+            height: ${itemRect.height}px;
+            z-index: 3000;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: 8px;
+        `;
+        
+        // Clone the image
+        const imgClone = itemImg.cloneNode(true);
+        imgClone.style.cssText = `
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        `;
+        zoomElement.appendChild(imgClone);
+        document.body.appendChild(zoomElement);
+        
+        // Hide original item temporarily
+        item.style.opacity = '0';
+        
+        // Animate
+        requestAnimationFrame(() => {
+            zoomElement.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease-out';
+            zoomElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            zoomElement.style.opacity = '0';
+        });
+        
+        // Wait for animation to complete
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        // Cleanup
+        zoomElement.remove();
+        item.style.opacity = '';
     }
 
     /**

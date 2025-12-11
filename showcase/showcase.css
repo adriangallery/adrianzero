@@ -121,8 +121,8 @@ body {
 .showcase-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 30px;
-    padding: 50px;
+    gap: 50px;
+    padding: 80px;
     width: max-content;
     min-width: 100%;
 }
@@ -130,8 +130,8 @@ body {
 @media (max-width: 768px) {
     .showcase-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 20px;
-        padding: 30px;
+        gap: 30px;
+        padding: 50px;
     }
 }
 
@@ -191,13 +191,13 @@ body {
 .grid-item:hover {
     z-index: 10;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-    transform: translateY(-8px) rotateY(8deg) rotateX(-3deg) scale(1.08) translateZ(20px) !important;
+    transform: translateY(-15px) rotateY(8deg) rotateX(-3deg) scale(1.25) translateZ(40px) !important;
     filter: brightness(1.1) blur(0.3px);
 }
 
 /* Compensate container rotation and scale to keep image flat and normal size */
 .grid-item:hover .image-container {
-    transform: rotateY(-8deg) rotateX(3deg) scale(calc(1 / 1.08));
+    transform: rotateY(-8deg) rotateX(3deg) scale(calc(1 / 1.25));
     transform-style: preserve-3d;
 }
 
