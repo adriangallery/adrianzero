@@ -177,21 +177,12 @@ class Showcase {
             }
         );
 
-        // Observer for scroll-based loading in all directions
+        // Observer for scroll-based loading
         this.scrollObserver = new IntersectionObserver(
             (entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && this.state.hasMore) {
-                        const sentinel = entry.target;
-                        if (sentinel.classList.contains('scroll-sentinel-bottom')) {
-                            this.loadMoreItems('bottom');
-                        } else if (sentinel.classList.contains('scroll-sentinel-top')) {
-                            this.loadMoreItems('top');
-                        } else if (sentinel.classList.contains('scroll-sentinel-right')) {
-                            this.loadMoreItems('right');
-                        } else if (sentinel.classList.contains('scroll-sentinel-left')) {
-                            this.loadMoreItems('left');
-                        }
+                        this.loadMoreItems();
                     }
                 });
             },
@@ -375,15 +366,44 @@ class Showcase {
             this.state.totalItemsRendered++;
         });
 
-        // Create sentinels for infinite scroll in all directions
-        this.createScrollSentinels();
+        // Create sentinel for infinite scroll
+        this.createScrollSentinel();
     }
 
     /**
      * Create a grid item element with staggered animation
      */
     createGridItem(image, index) {
-        const item = this.createGridItemElement(image, index);
+        const item = document.createElement('div');
+        item.className = 'grid-item';
+        item.dataset.index = index;
+        item.dataset.tokenId = image.tokenId;
+        item.dataset.hash = image.hash;
+        
+        // Stagger animation delay based on index
+        const delay = (index % 20) * 0.03; // Max 0.6s delay
+        item.style.animationDelay = `${delay}s`;
+
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
+
+        const placeholder = document.createElement('div');
+        placeholder.className = 'image-placeholder';
+
+        const img = document.createElement('img');
+        img.dataset.src = image.url;
+        img.dataset.index = index;
+        img.alt = `AdrianZERO #${image.tokenId}`;
+
+        imageContainer.appendChild(placeholder);
+        imageContainer.appendChild(img);
+        item.appendChild(imageContainer);
+
+        // Click handler
+        item.addEventListener('click', () => {
+            this.openModal(index);
+        });
+
         this.gridElement.appendChild(item);
         this.imageObserver.observe(item);
     }
@@ -459,60 +479,28 @@ class Showcase {
     }
 
     /**
-     * Create scroll sentinels for infinite loading in all directions
+     * Create scroll sentinel for infinite loading
      */
-    createScrollSentinels() {
-        // Remove existing sentinels
-        const existingSentinels = this.gridElement.querySelectorAll('.scroll-sentinel');
-        existingSentinels.forEach(s => s.remove());
-
-        // Bottom sentinel (existing behavior)
-        const bottomSentinel = document.createElement('div');
-        bottomSentinel.className = 'scroll-sentinel scroll-sentinel-bottom';
-        bottomSentinel.style.height = '1px';
-        bottomSentinel.style.gridColumn = '1 / -1';
-        this.gridElement.appendChild(bottomSentinel);
-        this.scrollObserver.observe(bottomSentinel);
-
-        // Top sentinel
-        const topSentinel = document.createElement('div');
-        topSentinel.className = 'scroll-sentinel scroll-sentinel-top';
-        topSentinel.style.height = '1px';
-        topSentinel.style.gridColumn = '1 / -1';
-        topSentinel.style.gridRow = '1';
-        this.gridElement.insertBefore(topSentinel, this.gridElement.firstChild);
-        this.scrollObserver.observe(topSentinel);
-
-        // Right sentinel (for horizontal scroll)
-        const rightSentinel = document.createElement('div');
-        rightSentinel.className = 'scroll-sentinel scroll-sentinel-right';
-        rightSentinel.style.width = '1px';
-        rightSentinel.style.gridColumn = '-1';
-        rightSentinel.style.gridRow = '1 / -1';
-        this.gridElement.appendChild(rightSentinel);
-        this.scrollObserver.observe(rightSentinel);
-
-        // Left sentinel (for horizontal scroll)
-        const leftSentinel = document.createElement('div');
-        leftSentinel.className = 'scroll-sentinel scroll-sentinel-left';
-        leftSentinel.style.width = '1px';
-        leftSentinel.style.gridColumn = '1';
-        leftSentinel.style.gridRow = '1 / -1';
-        this.gridElement.insertBefore(leftSentinel, this.gridElement.firstChild);
-        this.scrollObserver.observe(leftSentinel);
+    createScrollSentinel() {
+        const sentinel = document.createElement('div');
+        sentinel.className = 'scroll-sentinel';
+        sentinel.style.height = '1px';
+        sentinel.style.gridColumn = '1 / -1';
+        this.gridElement.appendChild(sentinel);
+        this.scrollObserver.observe(sentinel);
     }
 
     /**
-     * Load more items when scrolling (infinite scroll in all directions)
+     * Load more items when scrolling (infinite scroll)
      */
-    loadMoreItems(direction = 'bottom') {
+    loadMoreItems() {
         if (this.state.isLoading) return;
 
         this.state.isLoading = true;
 
-        // Remove sentinels temporarily
-        const sentinels = this.gridElement.querySelectorAll('.scroll-sentinel');
-        sentinels.forEach(s => s.remove());
+        // Remove sentinel temporarily
+        const sentinel = this.gridElement.querySelector('.scroll-sentinel');
+        if (sentinel) sentinel.remove();
 
         // Load next batch
         const batchSize = this.config.itemsPerPage;
@@ -536,70 +524,15 @@ class Showcase {
             this.state.totalItemsRendered++;
         }
 
-        // Add new items based on direction
-        if (direction === 'top') {
-            // Insert at the beginning
-            imagesToAdd.reverse().forEach(({ image, index }) => {
-                const item = this.createGridItemElement(image, index);
-                this.gridElement.insertBefore(item, this.gridElement.firstChild);
-                this.imageObserver.observe(item);
-            });
-        } else if (direction === 'left') {
-            // For left, we'll add items at the start of each row
-            // This is more complex with CSS Grid, so we'll just append for now
-            imagesToAdd.forEach(({ image, index }) => {
-                const item = this.createGridItemElement(image, index);
-                this.gridElement.insertBefore(item, this.gridElement.firstChild);
-                this.imageObserver.observe(item);
-            });
-        } else {
-            // Default: append (bottom/right)
-            imagesToAdd.forEach(({ image, index }) => {
-                this.createGridItem(image, index);
-            });
-        }
-
-        // Re-add sentinels for next batch
-        this.createScrollSentinels();
-
-        this.state.isLoading = false;
-    }
-
-    /**
-     * Create grid item element (without appending)
-     */
-    createGridItemElement(image, index) {
-        const item = document.createElement('div');
-        item.className = 'grid-item';
-        item.dataset.index = index;
-        item.dataset.tokenId = image.tokenId;
-        item.dataset.hash = image.hash;
-        
-        // Stagger animation delay based on index
-        const delay = (index % 20) * 0.03;
-        item.style.animationDelay = `${delay}s`;
-
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'image-container';
-
-        const placeholder = document.createElement('div');
-        placeholder.className = 'image-placeholder';
-
-        const img = document.createElement('img');
-        img.dataset.src = image.url;
-        img.dataset.index = index;
-        img.alt = `AdrianZERO #${image.tokenId}`;
-
-        imageContainer.appendChild(placeholder);
-        imageContainer.appendChild(img);
-        item.appendChild(imageContainer);
-
-        // Click handler
-        item.addEventListener('click', () => {
-            this.openModal(index);
+        // Add new items
+        imagesToAdd.forEach(({ image, index }) => {
+            this.createGridItem(image, index);
         });
 
-        return item;
+        // Re-add sentinel for next batch
+        this.createScrollSentinel();
+
+        this.state.isLoading = false;
     }
 
     /**
