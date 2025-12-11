@@ -202,6 +202,8 @@ body {
 .grid-item:hover .image-container {
     transform: rotateY(-8deg) rotateX(3deg) scale(calc(1 / 1.25));
     transform-style: preserve-3d;
+    border-radius: 8px; /* Maintain rounded corners */
+    overflow: hidden; /* Ensure image respects border radius */
 }
 
 /* Image Container */
@@ -210,6 +212,7 @@ body {
     height: 100%;
     position: relative;
     overflow: hidden;
+    border-radius: 8px; /* Match parent border radius */
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     transform-style: preserve-3d;
 }
