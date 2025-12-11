@@ -6,6 +6,7 @@
 class Showcase {
     constructor() {
         this.images = [];
+        this.floppyGifs = [];
         this.loadedImages = new Set();
         this.currentIndex = 0;
         this.gridElement = document.getElementById('showcaseGrid');
@@ -28,8 +29,9 @@ class Showcase {
             loadThreshold: 0.8, // Load more when 80% scrolled
             imageCache: new Map(),
             metadataCache: new Map(),
-            gifPath: 'https://adrianzero.com/showcase/ADRIAN_GF_Floppy_Disk.gif',
-            gifFrequency: 20 // Show GIF every 20 items
+            floppyGifPath: 'floppy/',
+            gifFrequency: 30, // Show GIF every 30 items
+            adrianLabMetadataUrl: 'https://adrianlab.vercel.app/api/metadata/floppy'
         };
 
         // State
@@ -52,7 +54,10 @@ class Showcase {
 
     async init() {
         try {
-            await this.loadImageList();
+            await Promise.all([
+                this.loadImageList(),
+                this.loadFloppyGifs()
+            ]);
             this.setupObservers();
             this.setupEventListeners();
             this.hideLoading();
@@ -61,6 +66,43 @@ class Showcase {
             console.error('Error initializing showcase:', error);
             this.showError('Failed to load collection. Please refresh the page.');
         }
+    }
+
+    /**
+     * Load list of floppy GIFs
+     */
+    async loadFloppyGifs() {
+        // List of floppy GIFs (can be loaded from server or hardcoded for now)
+        const floppyFiles = [
+            '10000.gif', '10001.gif', '10002.gif', '10003.gif', '10004.gif',
+            '10005.gif', '10009.gif', '10010.gif', '10013.gif', '10014.gif',
+            '10015.gif', '262144.gif', '262145.gif', '262146.gif', '262147.gif'
+        ];
+
+        this.floppyGifs = floppyFiles.map(filename => {
+            const match = filename.match(/^(\d+)\.gif$/);
+            const tokenId = match ? parseInt(match[1], 10) : null;
+            return {
+                filename,
+                tokenId,
+                url: `${this.config.floppyGifPath}${filename}`,
+                type: 'floppy'
+            };
+        }).filter(gif => gif.tokenId !== null);
+
+        // Shuffle for variety
+        this.shuffleArray(this.floppyGifs);
+        
+        console.log(`Loaded ${this.floppyGifs.length} floppy GIFs`);
+    }
+
+    /**
+     * Get random floppy GIF
+     */
+    getRandomFloppyGif() {
+        if (this.floppyGifs.length === 0) return null;
+        const randomIndex = Math.floor(Math.random() * this.floppyGifs.length);
+        return this.floppyGifs[randomIndex];
     }
 
     /**
@@ -574,15 +616,24 @@ class Showcase {
         item.className = 'grid-item';
         item.dataset.index = index;
         
-        // Check if this should be a GIF (1 in every gifFrequency)
-        const isGif = (index % this.config.gifFrequency === 0);
+        // Check if this should be a floppy GIF (1 in every gifFrequency)
+        const isFloppyGif = (index % this.config.gifFrequency === 0);
+        let floppyGif = null;
         
-        if (isGif) {
-            item.classList.add('grid-item-gif');
-            item.dataset.isGif = 'true';
-        } else {
+        if (isFloppyGif) {
+            floppyGif = this.getRandomFloppyGif();
+            if (floppyGif) {
+                item.classList.add('grid-item-gif');
+                item.dataset.isGif = 'true';
+                item.dataset.floppyTokenId = floppyGif.tokenId;
+                item.dataset.type = 'floppy';
+            }
+        }
+        
+        if (!isFloppyGif || !floppyGif) {
             item.dataset.tokenId = image.tokenId;
             item.dataset.hash = image.hash;
+            item.dataset.type = 'adrianzero';
         }
         
         // Stagger animation delay based on index
@@ -596,13 +647,14 @@ class Showcase {
         const placeholder = document.createElement('div');
         placeholder.className = 'image-placeholder';
 
-        if (isGif) {
-            // Create GIF element
+        if (isFloppyGif && floppyGif) {
+            // Create floppy GIF element
             const gif = document.createElement('img');
-            gif.src = this.config.gifPath;
-            gif.alt = 'AdrianZERO Floppy Disk';
+            gif.src = floppyGif.url;
+            gif.alt = `AdrianLAB Floppy #${floppyGif.tokenId}`;
             gif.className = 'gif-image';
             gif.dataset.loaded = 'true';
+            gif.dataset.tokenId = floppyGif.tokenId;
             imageContainer.appendChild(gif);
         } else {
             // Regular image
@@ -629,22 +681,45 @@ class Showcase {
     /**
      * Open modal with metadata
      */
-    async openModal(index) {
+    async openModal(index, type = 'adrianzero') {
         // Get the actual image from the item's data attributes
         const item = this.gridElement.querySelector(`[data-index="${index}"]`);
         if (!item) return;
 
-        const tokenId = item.dataset.tokenId;
-        const hash = item.dataset.hash;
-        
-        // Find the image in our array
-        const image = this.images.find(img => 
-            img.tokenId === parseInt(tokenId) && img.hash === hash
-        );
-        
-        if (!image) return;
-
         this.state.activeModalIndex = index;
+        
+        let image = null;
+        let metadata = null;
+
+        if (type === 'floppy') {
+            const floppyTokenId = item.dataset.floppyTokenId;
+            if (!floppyTokenId) return;
+            
+            // Find the floppy GIF
+            const floppyGif = this.floppyGifs.find(g => g.tokenId === parseInt(floppyTokenId));
+            if (!floppyGif) return;
+            
+            image = {
+                url: floppyGif.url,
+                tokenId: floppyGif.tokenId,
+                type: 'floppy'
+            };
+            
+            // Load metadata from AdrianLAB
+            metadata = await this.loadFloppyMetadata(floppyGif.tokenId);
+        } else {
+            const tokenId = item.dataset.tokenId;
+            const hash = item.dataset.hash;
+            
+            // Find the image in our array
+            image = this.images.find(img => 
+                img.tokenId === parseInt(tokenId) && img.hash === hash
+            );
+            
+            if (!image) return;
+            
+            metadata = await this.loadMetadata(image);
+        }
         
         this.modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -653,12 +728,43 @@ class Showcase {
         this.modalContent.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p class="loading-text">Loading metadata...</p></div>';
         this.modalContent.classList.add('loading');
 
-        // Load metadata
-        const metadata = await this.loadMetadata(image);
+        // Render modal content
         this.renderModalContent(image, metadata);
 
         // Update navigation buttons
         this.updateModalNavigation();
+    }
+
+    /**
+     * Load metadata for a floppy (AdrianLAB)
+     */
+    async loadFloppyMetadata(tokenId) {
+        // Check cache
+        const cacheKey = `floppy_${tokenId}`;
+        if (this.config.metadataCache.has(cacheKey)) {
+            return this.config.metadataCache.get(cacheKey);
+        }
+
+        try {
+            // Try to load from AdrianLAB API
+            const apiUrl = `${this.config.adrianLabMetadataUrl}/${tokenId}`;
+            const response = await fetch(apiUrl);
+            
+            if (response.ok) {
+                const metadata = await response.json();
+                this.config.metadataCache.set(cacheKey, metadata);
+                return metadata;
+            }
+        } catch (error) {
+            console.warn(`Failed to load floppy metadata for token ${tokenId}:`, error);
+        }
+
+        // Return basic metadata
+        return {
+            tokenId: tokenId,
+            name: `AdrianLAB Floppy #${tokenId}`,
+            description: `Floppy disc from AdrianLAB collection`
+        };
     }
 
     /**
@@ -709,12 +815,17 @@ class Showcase {
         imageContainer.className = 'modal-image-container';
         imageContainer.appendChild(placeholder);
         
+        const isFloppy = image.type === 'floppy';
+        const displayName = metadata.name || (isFloppy ? `AdrianLAB Floppy #${image.tokenId}` : `AdrianZERO #${image.tokenId}`);
+        const tokenIdText = isFloppy ? `AdrianLAB Token ID: #${image.tokenId}` : `Token ID: #${image.tokenId}`;
+        const hashText = image.hash ? `<div class="trait-hash">Trait Hash: ${image.hash}</div>` : '';
+        
         const html = `
             ${imageContainer.outerHTML}
             <div class="modal-info">
-                <h2>${metadata.name || `AdrianZERO #${image.tokenId}`}</h2>
-                <div class="token-id">Token ID: #${image.tokenId}</div>
-                <div class="trait-hash">Trait Hash: ${image.hash}</div>
+                <h2>${displayName}</h2>
+                <div class="token-id">${tokenIdText}</div>
+                ${hashText}
                 ${metadata.description ? `<p class="modal-description">${metadata.description}</p>` : ''}
                 ${this.renderMetadataDetails(metadata)}
             </div>
@@ -725,7 +836,7 @@ class Showcase {
         // Preload modal image with smooth loading
         const modalImgContainer = this.modalContent.querySelector('.modal-image-container');
         const img = document.createElement('img');
-        img.alt = metadata.name || `AdrianZERO #${image.tokenId}`;
+        img.alt = displayName;
         
         const imgLoader = new Image();
         imgLoader.onload = () => {
