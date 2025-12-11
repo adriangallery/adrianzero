@@ -373,36 +373,20 @@ class Showcase {
             const parallaxY = parseFloat(item.dataset.parallaxY) || 0;
             const parallaxZ = parseFloat(item.dataset.parallaxZ) || 0;
             
-            // Combine swing animation with mouse movement
-            // Get swing offset based on time and item index for variation
-            const itemIndex = parseInt(item.dataset.index) || 0;
-            const swingTime = Date.now() / 2000; // Slow swing
-            const swingOffset = (itemIndex % 8) * 0.5; // Vary per item
-            const swingX = Math.sin(swingTime + swingOffset) * 2; // Max 2 degrees
-            const swingY = Math.cos(swingTime + swingOffset) * 2; // Max 2 degrees
-            const swingZ = Math.sin(swingTime * 0.7 + swingOffset) * 3; // Max 3px depth
-            
-            // Combine mouse movement with swing (swing is subtle when mouse is active)
-            const combinedRotateX = rotateX + (swingX * (1 - intensity * 0.5));
-            const combinedRotateY = rotateY + (swingY * (1 - intensity * 0.5));
-            const combinedTranslateZ = translateZ + swingZ;
-            
-            // Only apply JS transforms if mouse is actually moving over items
-            // Otherwise let CSS animation handle the swing
+            // Only apply transforms when mouse is active (intensity > 0.1)
+            // No movement when mouse is not over items
             if (intensity > 0.1) {
                 // Mouse is active, apply 3D transforms
                 if (isHovered) {
-                    // When hovered, CSS handles the transform, just pause animation
-                    item.style.animationPlayState = 'paused';
+                    // When hovered, CSS handles the transform via :hover
+                    item.style.transform = '';
                 } else {
-                    // Normal 3D movement - combine with CSS swing animation
-                    item.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, ${parallaxZ}px) perspective(1000px) rotateX(${combinedRotateX}deg) rotateY(${combinedRotateY}deg) scale(${scale}) translateZ(${combinedTranslateZ}px)`;
-                    item.style.animationPlayState = 'running';
+                    // Normal 3D movement with mouse
+                    item.style.transform = `translate3d(${parallaxX}px, ${parallaxY}px, ${parallaxZ}px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale}) translateZ(${translateZ}px)`;
                 }
             } else {
-                // Mouse not active, let CSS animation run freely
+                // Mouse not active, no transforms
                 item.style.transform = '';
-                item.style.animationPlayState = 'running';
             }
         });
     }
