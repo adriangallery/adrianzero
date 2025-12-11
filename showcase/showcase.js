@@ -177,7 +177,7 @@ class Showcase {
             }
         );
 
-        // Observer for scroll-based loading
+        // Observer for scroll-based loading (vertical)
         this.scrollObserver = new IntersectionObserver(
             (entries) => {
                 entries.forEach(entry => {
@@ -191,6 +191,17 @@ class Showcase {
                 threshold: 0.1
             }
         );
+
+        // Horizontal scroll detection with throttling
+        let horizontalScrollTimeout = null;
+        this.gridWrapper.addEventListener('scroll', () => {
+            if (horizontalScrollTimeout) return;
+            
+            horizontalScrollTimeout = setTimeout(() => {
+                this.checkHorizontalScroll();
+                horizontalScrollTimeout = null;
+            }, 100); // Throttle to 100ms
+        }, { passive: true });
     }
 
     /**
@@ -199,13 +210,19 @@ class Showcase {
     setupEventListeners() {
         // 3D effect on mouse move (throttled with requestAnimationFrame)
         let rafId = null;
+        let mouseMoveTimeout = null;
         this.gridWrapper.addEventListener('mousemove', (e) => {
-            if (rafId === null) {
-                rafId = requestAnimationFrame(() => {
-                    this.handleMouseMove(e);
-                    rafId = null;
-                });
-            }
+            // Throttle to avoid saturation
+            if (mouseMoveTimeout) return;
+            mouseMoveTimeout = setTimeout(() => {
+                if (rafId === null) {
+                    rafId = requestAnimationFrame(() => {
+                        this.handleMouseMove(e);
+                        rafId = null;
+                    });
+                }
+                mouseMoveTimeout = null;
+            }, 16); // ~60fps
         }, { passive: true });
 
         // Reset 3D effects when mouse leaves
@@ -252,19 +269,27 @@ class Showcase {
             }
         });
 
-        // Scroll indicator and scroll animations
+        // Scroll indicator and scroll animations (throttled)
         let scrollRafId = null;
         let lastScrollTop = 0;
+        let scrollTimeout = null;
         this.gridWrapper.addEventListener('scroll', () => {
-            if (scrollRafId === null) {
-                scrollRafId = requestAnimationFrame(() => {
-                    this.handleScroll();
-                    const currentScrollTop = this.gridWrapper.scrollTop;
-                    lastScrollTop = currentScrollTop;
-                    scrollRafId = null;
-                });
-            }
+            // Hide scroll indicator immediately
             this.hideScrollIndicator();
+            
+            // Throttle heavy operations
+            if (scrollTimeout) return;
+            scrollTimeout = setTimeout(() => {
+                if (scrollRafId === null) {
+                    scrollRafId = requestAnimationFrame(() => {
+                        this.handleScroll();
+                        const currentScrollTop = this.gridWrapper.scrollTop;
+                        lastScrollTop = currentScrollTop;
+                        scrollRafId = null;
+                    });
+                }
+                scrollTimeout = null;
+            }, 150); // Throttle to 150ms
         }, { passive: true });
     }
 
@@ -374,36 +399,7 @@ class Showcase {
      * Create a grid item element with staggered animation
      */
     createGridItem(image, index) {
-        const item = document.createElement('div');
-        item.className = 'grid-item';
-        item.dataset.index = index;
-        item.dataset.tokenId = image.tokenId;
-        item.dataset.hash = image.hash;
-        
-        // Stagger animation delay based on index
-        const delay = (index % 20) * 0.03; // Max 0.6s delay
-        item.style.animationDelay = `${delay}s`;
-
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'image-container';
-
-        const placeholder = document.createElement('div');
-        placeholder.className = 'image-placeholder';
-
-        const img = document.createElement('img');
-        img.dataset.src = image.url;
-        img.dataset.index = index;
-        img.alt = `AdrianZERO #${image.tokenId}`;
-
-        imageContainer.appendChild(placeholder);
-        imageContainer.appendChild(img);
-        item.appendChild(imageContainer);
-
-        // Click handler
-        item.addEventListener('click', () => {
-            this.openModal(index);
-        });
-
+        const item = this.createGridItemElement(image, index);
         this.gridElement.appendChild(item);
         this.imageObserver.observe(item);
     }
@@ -491,48 +487,122 @@ class Showcase {
     }
 
     /**
+     * Check horizontal scroll and load items if needed
+     */
+    checkHorizontalScroll() {
+        const scrollLeft = this.gridWrapper.scrollLeft;
+        const scrollWidth = this.gridWrapper.scrollWidth;
+        const clientWidth = this.gridWrapper.clientWidth;
+        
+        // Check if near right edge (within 300px)
+        if (scrollLeft + clientWidth >= scrollWidth - 300) {
+            this.loadMoreItems('horizontal');
+        }
+        // Check if near left edge (within 300px) and we've scrolled
+        else if (scrollLeft <= 300 && this.state.totalItemsRendered > this.config.itemsPerPage) {
+            // For left edge, we could prepend items, but for simplicity we'll just ensure we have enough
+            // This prevents issues with grid layout
+        }
+    }
+
+    /**
      * Load more items when scrolling (infinite scroll)
      */
-    loadMoreItems() {
+    loadMoreItems(direction = 'vertical') {
         if (this.state.isLoading) return;
 
         this.state.isLoading = true;
 
-        // Remove sentinel temporarily
-        const sentinel = this.gridElement.querySelector('.scroll-sentinel');
-        if (sentinel) sentinel.remove();
-
-        // Load next batch
-        const batchSize = this.config.itemsPerPage;
-        const imagesToAdd = [];
-
-        for (let i = 0; i < batchSize; i++) {
-            // Use modulo to loop through images infinitely
-            const imageIndex = this.state.totalItemsRendered % this.images.length;
-            const image = this.images[imageIndex];
-            
-            // If we've looped back to the start, reshuffle for variety
-            if (imageIndex === 0 && this.state.totalItemsRendered > 0) {
-                this.shuffleArray(this.images);
+        // Use requestAnimationFrame to batch DOM operations
+        requestAnimationFrame(() => {
+            // Remove sentinel temporarily (only for vertical)
+            if (direction === 'vertical') {
+                const sentinel = this.gridElement.querySelector('.scroll-sentinel');
+                if (sentinel) sentinel.remove();
             }
-            
-            imagesToAdd.push({
-                image: image,
-                index: this.state.totalItemsRendered
-            });
-            
-            this.state.totalItemsRendered++;
-        }
 
-        // Add new items
-        imagesToAdd.forEach(({ image, index }) => {
-            this.createGridItem(image, index);
+            // Load next batch
+            const batchSize = this.config.itemsPerPage;
+            const imagesToAdd = [];
+
+            for (let i = 0; i < batchSize; i++) {
+                // Use modulo to loop through images infinitely
+                const imageIndex = this.state.totalItemsRendered % this.images.length;
+                const image = this.images[imageIndex];
+                
+                // If we've looped back to the start, reshuffle for variety
+                if (imageIndex === 0 && this.state.totalItemsRendered > 0) {
+                    this.shuffleArray(this.images);
+                }
+                
+                imagesToAdd.push({
+                    image: image,
+                    index: this.state.totalItemsRendered
+                });
+                
+                this.state.totalItemsRendered++;
+            }
+
+            // Batch DOM updates
+            const fragment = document.createDocumentFragment();
+            imagesToAdd.forEach(({ image, index }) => {
+                const item = this.createGridItemElement(image, index);
+                fragment.appendChild(item);
+            });
+
+            // Single DOM operation
+            this.gridElement.appendChild(fragment);
+
+            // Observe new items
+            imagesToAdd.forEach(({ image, index }) => {
+                const item = this.gridElement.querySelector(`[data-index="${index}"]`);
+                if (item) this.imageObserver.observe(item);
+            });
+
+            // Re-add sentinel for next batch (only for vertical)
+            if (direction === 'vertical') {
+                this.createScrollSentinel();
+            }
+
+            this.state.isLoading = false;
+        });
+    }
+
+    /**
+     * Create grid item element (without appending, for batching)
+     */
+    createGridItemElement(image, index) {
+        const item = document.createElement('div');
+        item.className = 'grid-item';
+        item.dataset.index = index;
+        item.dataset.tokenId = image.tokenId;
+        item.dataset.hash = image.hash;
+        
+        // Stagger animation delay based on index
+        const delay = (index % 20) * 0.03;
+        item.style.animationDelay = `${delay}s`;
+
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
+
+        const placeholder = document.createElement('div');
+        placeholder.className = 'image-placeholder';
+
+        const img = document.createElement('img');
+        img.dataset.src = image.url;
+        img.dataset.index = index;
+        img.alt = `AdrianZERO #${image.tokenId}`;
+
+        imageContainer.appendChild(placeholder);
+        imageContainer.appendChild(img);
+        item.appendChild(imageContainer);
+
+        // Click handler
+        item.addEventListener('click', () => {
+            this.openModal(index);
         });
 
-        // Re-add sentinel for next batch
-        this.createScrollSentinel();
-
-        this.state.isLoading = false;
+        return item;
     }
 
     /**
