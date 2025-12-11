@@ -575,6 +575,7 @@ class Showcase {
         // Stagger animation delay based on index
         const delay = (index % 20) * 0.03;
         item.style.animationDelay = `${delay}s`;
+        item.style.setProperty('--item-index', index % 8); // Vary swing timing
 
         const imageContainer = document.createElement('div');
         imageContainer.className = 'image-container';
