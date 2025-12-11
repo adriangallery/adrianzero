@@ -55,15 +55,55 @@ body {
     height: 100vh;
 }
 
-/* Navigation Menu */
+/* Navigation Menu - Showcase specific styles */
 #menu-container {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(11, 15, 20, 0.95) !important; /* Use showcase bg color with high opacity */
     backdrop-filter: blur(10px);
+}
+
+/* Ensure navbar is visible */
+#menu-container .navbar {
+    background: rgba(11, 15, 20, 0.95) !important;
+}
+
+/* Make text visible */
+#menu-container .navbar-text,
+#menu-container .nav-link {
+    color: #e6f1ff !important; /* Use showcase fg color */
+    opacity: 1 !important;
+}
+
+#menu-container .nav-link:hover {
+    color: #00e5ff !important; /* Use showcase cyan color on hover */
+}
+
+/* Navbar toggler icon */
+#menu-container .navbar-toggler {
+    border-color: #e6f1ff !important;
+}
+
+#menu-container .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(230, 241, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Dropdown menu */
+#menu-container .dropdown-menu {
+    background: rgba(15, 22, 32, 0.98) !important; /* Use showcase card color */
+    border: 1px solid rgba(230, 241, 255, 0.2) !important;
+}
+
+#menu-container .dropdown-item {
+    color: #e6f1ff !important;
+}
+
+#menu-container .dropdown-item:hover {
+    background: rgba(0, 229, 255, 0.2) !important;
+    color: #00e5ff !important;
 }
 
 /* Showcase Container */
