@@ -33,11 +33,12 @@ class Showcase {
         // State
         this.state = {
             isLoading: false,
-            hasMore: true,
+            hasMore: true, // Always true for infinite scroll
             currentPage: 1,
             activeModalIndex: -1,
             mouseX: 0,
-            mouseY: 0
+            mouseY: 0,
+            totalItemsRendered: 0 // Track total items rendered for infinite loop
         };
 
         // Intersection Observer for lazy loading
@@ -359,8 +360,10 @@ class Showcase {
      */
     renderInitialGrid() {
         const initialItems = this.images.slice(0, this.config.itemsPerPage);
-        initialItems.forEach((image, index) => {
+        initialItems.forEach((image, i) => {
+            const index = this.state.totalItemsRendered;
             this.createGridItem(image, index);
+            this.state.totalItemsRendered++;
         });
 
         // Create sentinel for infinite scroll
@@ -488,18 +491,10 @@ class Showcase {
     }
 
     /**
-     * Load more items when scrolling
+     * Load more items when scrolling (infinite scroll)
      */
     loadMoreItems() {
-        if (this.state.isLoading || !this.state.hasMore) return;
-
-        const currentCount = this.gridElement.children.length - 1; // -1 for sentinel
-        const nextBatch = this.images.slice(currentCount, currentCount + this.config.itemsPerPage);
-
-        if (nextBatch.length === 0) {
-            this.state.hasMore = false;
-            return;
-        }
+        if (this.state.isLoading) return;
 
         this.state.isLoading = true;
 
@@ -507,13 +502,34 @@ class Showcase {
         const sentinel = this.gridElement.querySelector('.scroll-sentinel');
         if (sentinel) sentinel.remove();
 
+        // Load next batch
+        const batchSize = this.config.itemsPerPage;
+        const imagesToAdd = [];
+
+        for (let i = 0; i < batchSize; i++) {
+            // Use modulo to loop through images infinitely
+            const imageIndex = this.state.totalItemsRendered % this.images.length;
+            const image = this.images[imageIndex];
+            
+            // If we've looped back to the start, reshuffle for variety
+            if (imageIndex === 0 && this.state.totalItemsRendered > 0) {
+                this.shuffleArray(this.images);
+            }
+            
+            imagesToAdd.push({
+                image: image,
+                index: this.state.totalItemsRendered
+            });
+            
+            this.state.totalItemsRendered++;
+        }
+
         // Add new items
-        nextBatch.forEach((image, i) => {
-            const index = currentCount + i;
+        imagesToAdd.forEach(({ image, index }) => {
             this.createGridItem(image, index);
         });
 
-        // Re-add sentinel
+        // Re-add sentinel for next batch
         this.createScrollSentinel();
 
         this.state.isLoading = false;
@@ -523,10 +539,21 @@ class Showcase {
      * Open modal with metadata
      */
     async openModal(index) {
-        if (index < 0 || index >= this.images.length) return;
+        // Get the actual image from the item's data attributes
+        const item = this.gridElement.querySelector(`[data-index="${index}"]`);
+        if (!item) return;
+
+        const tokenId = item.dataset.tokenId;
+        const hash = item.dataset.hash;
+        
+        // Find the image in our array
+        const image = this.images.find(img => 
+            img.tokenId === parseInt(tokenId) && img.hash === hash
+        );
+        
+        if (!image) return;
 
         this.state.activeModalIndex = index;
-        const image = this.images[index];
         
         this.modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -652,11 +679,20 @@ class Showcase {
     }
 
     /**
-     * Navigate modal (previous/next)
+     * Navigate modal (previous/next) - works with infinite scroll
      */
     navigateModal(direction) {
-        const newIndex = this.state.activeModalIndex + direction;
-        if (newIndex >= 0 && newIndex < this.images.length) {
+        const currentItem = this.gridElement.querySelector(`[data-index="${this.state.activeModalIndex}"]`);
+        if (!currentItem) return;
+
+        // Find all items in order
+        const allItems = Array.from(this.gridElement.querySelectorAll('.grid-item'));
+        const currentItemIndex = allItems.indexOf(currentItem);
+        const newItemIndex = currentItemIndex + direction;
+
+        if (newItemIndex >= 0 && newItemIndex < allItems.length) {
+            const newItem = allItems[newItemIndex];
+            const newIndex = parseInt(newItem.dataset.index);
             this.openModal(newIndex);
         }
     }
@@ -665,8 +701,18 @@ class Showcase {
      * Update modal navigation buttons
      */
     updateModalNavigation() {
-        this.modalPrev.disabled = this.state.activeModalIndex <= 0;
-        this.modalNext.disabled = this.state.activeModalIndex >= this.images.length - 1;
+        const allItems = Array.from(this.gridElement.querySelectorAll('.grid-item'));
+        const currentItem = this.gridElement.querySelector(`[data-index="${this.state.activeModalIndex}"]`);
+        
+        if (!currentItem) {
+            this.modalPrev.disabled = true;
+            this.modalNext.disabled = true;
+            return;
+        }
+
+        const currentItemIndex = allItems.indexOf(currentItem);
+        this.modalPrev.disabled = currentItemIndex <= 0;
+        this.modalNext.disabled = currentItemIndex >= allItems.length - 1;
     }
 
     /**
