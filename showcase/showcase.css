@@ -100,20 +100,34 @@ body {
     border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease-out;
     transform-style: preserve-3d;
-    will-change: transform;
+    will-change: transform, opacity;
     opacity: 0;
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes fadeIn {
     to { opacity: 1; }
 }
 
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .grid-item:hover {
     z-index: 10;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    transform: translateY(-5px) scale(1.03);
 }
 
 /* Image Container */
@@ -402,6 +416,9 @@ body {
 /* Smooth scrolling */
 .grid-wrapper {
     scroll-behavior: smooth;
+    /* Enable hardware acceleration */
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Hide scrollbar but keep functionality */

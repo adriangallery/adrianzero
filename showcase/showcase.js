@@ -117,14 +117,23 @@ class Showcase {
 
     /**
      * Parse filename to extract tokenId and hash
-     * Format: {tokenId}_{hash}.png
+     * Formats: {tokenId}_{hash}.png or {tokenId}_banana.png
      */
     parseFileName(filename) {
-        const match = filename.match(/^(\d+)_([a-f0-9]+)\.png$/i);
+        // Try standard format: {tokenId}_{hash}.png
+        let match = filename.match(/^(\d+)_([a-f0-9]+)\.png$/i);
         if (match) {
             return {
                 tokenId: parseInt(match[1], 10),
                 hash: match[2]
+            };
+        }
+        // Try banana format: {tokenId}_banana.png
+        match = filename.match(/^(\d+)_banana\.png$/i);
+        if (match) {
+            return {
+                tokenId: parseInt(match[1], 10),
+                hash: 'banana'
             };
         }
         return { tokenId: null, hash: null };
@@ -174,30 +183,37 @@ class Showcase {
      * Setup event listeners
      */
     setupEventListeners() {
-        // 3D effect on mouse move
+        // 3D effect on mouse move (throttled with requestAnimationFrame)
+        let rafId = null;
         this.gridWrapper.addEventListener('mousemove', (e) => {
-            this.handleMouseMove(e);
-        });
+            if (rafId === null) {
+                rafId = requestAnimationFrame(() => {
+                    this.handleMouseMove(e);
+                    rafId = null;
+                });
+            }
+        }, { passive: true });
 
         // Reset 3D effects when mouse leaves
         this.gridWrapper.addEventListener('mouseleave', () => {
+            if (rafId) cancelAnimationFrame(rafId);
             this.handleMouseLeave();
         });
 
-        // Touch events for mobile
+        // Touch events for mobile (passive for better performance)
         let touchStartX = 0;
         let touchStartY = 0;
         
         this.gridWrapper.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
-        });
+        }, { passive: true });
 
         this.gridWrapper.addEventListener('touchmove', (e) => {
             if (e.touches.length === 1) {
                 this.handleTouchMove(e, touchStartX, touchStartY);
             }
-        });
+        }, { passive: true });
 
         // Modal controls
         this.modalClose.addEventListener('click', () => this.closeModal());
@@ -222,14 +238,24 @@ class Showcase {
             }
         });
 
-        // Scroll indicator
+        // Scroll indicator and scroll animations
+        let scrollRafId = null;
+        let lastScrollTop = 0;
         this.gridWrapper.addEventListener('scroll', () => {
+            if (scrollRafId === null) {
+                scrollRafId = requestAnimationFrame(() => {
+                    this.handleScroll();
+                    const currentScrollTop = this.gridWrapper.scrollTop;
+                    lastScrollTop = currentScrollTop;
+                    scrollRafId = null;
+                });
+            }
             this.hideScrollIndicator();
-        });
+        }, { passive: true });
     }
 
     /**
-     * Handle mouse move for 3D effects
+     * Handle mouse move for 3D effects (optimized)
      */
     handleMouseMove(e) {
         const rect = this.gridWrapper.getBoundingClientRect();
@@ -239,9 +265,20 @@ class Showcase {
         this.state.mouseX = x;
         this.state.mouseY = y;
 
-        // Apply 3D effect to visible items
-        const items = this.gridWrapper.querySelectorAll('.grid-item');
+        // Apply 3D effect to visible items (only those in viewport)
+        const items = Array.from(this.gridWrapper.querySelectorAll('.grid-item'));
+        const viewportTop = this.gridWrapper.scrollTop;
+        const viewportBottom = viewportTop + this.gridWrapper.clientHeight;
+        
         items.forEach(item => {
+            const itemTop = item.offsetTop;
+            const itemBottom = itemTop + item.offsetHeight;
+            
+            // Only process items in or near viewport
+            if (itemBottom < viewportTop - 200 || itemTop > viewportBottom + 200) {
+                return;
+            }
+            
             const itemRect = item.getBoundingClientRect();
             const itemCenterX = itemRect.left + itemRect.width / 2;
             const itemCenterY = itemRect.top + itemRect.height / 2;
@@ -249,10 +286,19 @@ class Showcase {
             const deltaX = (e.clientX - itemCenterX) / itemRect.width;
             const deltaY = (e.clientY - itemCenterY) / itemRect.height;
             
-            const rotateX = deltaY * 5; // Max 5 degrees
-            const rotateY = deltaX * -5; // Max -5 degrees
+            // Calculate distance from center for intensity
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const intensity = Math.min(distance * 1.5, 1);
             
-            item.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+            const rotateX = deltaY * 5 * intensity; // Max 5 degrees
+            const rotateY = deltaX * -5 * intensity; // Max -5 degrees
+            const scale = 1 + (intensity * 0.02); // Subtle scale
+            
+            // Combine with parallax if exists
+            const parallaxX = parseFloat(item.dataset.parallaxX) || 0;
+            const parallaxY = parseFloat(item.dataset.parallaxY) || 0;
+            
+            item.style.transform = `translate(${parallaxX}px, ${parallaxY}px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
         });
     }
 
@@ -299,7 +345,7 @@ class Showcase {
     }
 
     /**
-     * Create a grid item element
+     * Create a grid item element with staggered animation
      */
     createGridItem(image, index) {
         const item = document.createElement('div');
@@ -307,6 +353,10 @@ class Showcase {
         item.dataset.index = index;
         item.dataset.tokenId = image.tokenId;
         item.dataset.hash = image.hash;
+        
+        // Stagger animation delay based on index
+        const delay = (index % 20) * 0.03; // Max 0.6s delay
+        item.style.animationDelay = `${delay}s`;
 
         const imageContainer = document.createElement('div');
         imageContainer.className = 'image-container';
@@ -612,6 +662,55 @@ class Showcase {
         if (this.loadingState) {
             this.loadingState.style.display = 'none';
         }
+    }
+
+    /**
+     * Handle scroll with parallax effects (optimized, only for items near viewport)
+     */
+    handleScroll() {
+        const scrollTop = this.gridWrapper.scrollTop;
+        const scrollLeft = this.gridWrapper.scrollLeft;
+        const viewportHeight = this.gridWrapper.clientHeight;
+        const viewportWidth = this.gridWrapper.clientWidth;
+        
+        // Only process items near viewport for performance
+        const items = Array.from(this.gridWrapper.querySelectorAll('.grid-item'));
+        const viewportTop = scrollTop - 500; // Process items 500px before viewport
+        const viewportBottom = scrollTop + viewportHeight + 500; // And 500px after
+        
+        items.forEach((item) => {
+            const itemTop = item.offsetTop;
+            const itemBottom = itemTop + item.offsetHeight;
+            
+            // Skip items far from viewport
+            if (itemBottom < viewportTop || itemTop > viewportBottom) {
+                return;
+            }
+            
+            const itemLeft = item.offsetLeft;
+            const itemCenterY = itemTop + item.offsetHeight / 2;
+            const itemCenterX = itemLeft + item.offsetWidth / 2;
+            
+            // Calculate position relative to viewport center
+            const relativeY = (itemCenterY - scrollTop - viewportHeight / 2) / viewportHeight;
+            const relativeX = (itemCenterX - scrollLeft - viewportWidth / 2) / viewportWidth;
+            
+            // Subtle parallax movement
+            const translateY = relativeY * 15; // Max 15px movement
+            const translateX = relativeX * 15;
+            
+            // Store parallax values in data attributes (don't override 3D transforms)
+            item.dataset.parallaxX = translateX;
+            item.dataset.parallaxY = translateY;
+            
+            // Only apply if not hovering (3D effect takes priority)
+            if (!item.matches(':hover')) {
+                const currentTransform = item.style.transform;
+                if (!currentTransform || !currentTransform.includes('perspective')) {
+                    item.style.transform = `translate(${translateX}px, ${translateY}px)`;
+                }
+            }
+        });
     }
 
     /**
