@@ -108,10 +108,23 @@ class Showcase {
                     return a.hash.localeCompare(b.hash);
                 });
 
-            console.log(`Loaded ${this.images.length} valid images from ${allPngFiles.length} PNG files`);
+            // Shuffle array randomly using Fisher-Yates algorithm
+            this.shuffleArray(this.images);
+
+            console.log(`Loaded ${this.images.length} valid images from ${allPngFiles.length} PNG files (randomized)`);
         } catch (error) {
             console.error('Error loading image list:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Shuffle array randomly using Fisher-Yates algorithm
+     */
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
         }
     }
 
