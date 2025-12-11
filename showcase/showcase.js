@@ -42,6 +42,9 @@ class Showcase {
             activeModalIndex: -1,
             mouseX: 0,
             mouseY: 0,
+            autoScrollX: 0,
+            autoScrollY: 0,
+            autoScrollInterval: null,
             totalItemsRendered: 0 // Track total items rendered for infinite loop
         };
 
@@ -428,11 +431,81 @@ class Showcase {
         // Reset parallax
         this.gridWrapper.style.transform = '';
         
+        // Stop auto-scroll
+        this.stopAutoScroll();
+        
         const items = this.gridWrapper.querySelectorAll('.grid-item');
         items.forEach(item => {
             item.style.transform = '';
             item.style.animationPlayState = 'running'; // Resume CSS animation
         });
+    }
+
+    /**
+     * Start auto-scroll animation
+     */
+    startAutoScroll() {
+        if (this.state.autoScrollInterval) return;
+        
+        const scroll = () => {
+            if (this.state.autoScrollX === 0 && this.state.autoScrollY === 0) {
+                this.stopAutoScroll();
+                return;
+            }
+            
+            // Apply scroll with momentum
+            const currentScrollLeft = this.gridWrapper.scrollLeft;
+            const currentScrollTop = this.gridWrapper.scrollTop;
+            
+            const maxScrollLeft = this.gridWrapper.scrollWidth - this.gridWrapper.clientWidth;
+            const maxScrollTop = this.gridWrapper.scrollHeight - this.gridWrapper.clientHeight;
+            
+            // Calculate new scroll position
+            let newScrollLeft = currentScrollLeft + this.state.autoScrollX;
+            let newScrollTop = currentScrollTop + this.state.autoScrollY;
+            
+            // Clamp to boundaries
+            newScrollLeft = Math.max(0, Math.min(maxScrollLeft, newScrollLeft));
+            newScrollTop = Math.max(0, Math.min(maxScrollTop, newScrollTop));
+            
+            // Apply scroll
+            this.gridWrapper.scrollLeft = newScrollLeft;
+            this.gridWrapper.scrollTop = newScrollTop;
+            
+            // Decay scroll velocity (momentum effect)
+            this.state.autoScrollX *= 0.95;
+            this.state.autoScrollY *= 0.95;
+            
+            // Stop if velocity is too small
+            if (Math.abs(this.state.autoScrollX) < 0.1 && Math.abs(this.state.autoScrollY) < 0.1) {
+                this.state.autoScrollX = 0;
+                this.state.autoScrollY = 0;
+            }
+        };
+        
+        // Use requestAnimationFrame for smooth scrolling
+        const animate = () => {
+            scroll();
+            if (this.state.autoScrollX !== 0 || this.state.autoScrollY !== 0) {
+                this.state.autoScrollInterval = requestAnimationFrame(animate);
+            } else {
+                this.state.autoScrollInterval = null;
+            }
+        };
+        
+        this.state.autoScrollInterval = requestAnimationFrame(animate);
+    }
+
+    /**
+     * Stop auto-scroll animation
+     */
+    stopAutoScroll() {
+        if (this.state.autoScrollInterval) {
+            cancelAnimationFrame(this.state.autoScrollInterval);
+            this.state.autoScrollInterval = null;
+        }
+        this.state.autoScrollX = 0;
+        this.state.autoScrollY = 0;
     }
 
     /**
