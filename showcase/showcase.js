@@ -357,7 +357,7 @@ class Showcase {
         const scrollX = ((mouseX - centerX) / centerX) * maxScrollSpeed * scrollIntensity;
         const scrollY = ((mouseY - centerY) / centerY) * maxScrollSpeed * scrollIntensity;
         
-        // Store scroll velocities
+        // Store scroll velocities (update continuously while mouse moves)
         this.state.autoScrollX = scrollX;
         this.state.autoScrollY = scrollY;
         
@@ -437,8 +437,8 @@ class Showcase {
         // Reset parallax
         this.gridWrapper.style.transform = '';
         
-        // Stop auto-scroll
-        this.stopAutoScroll();
+        // Don't stop auto-scroll immediately - let momentum continue
+        // The scroll will naturally decay and stop on its own
         
         const items = this.gridWrapper.querySelectorAll('.grid-item');
         items.forEach(item => {
@@ -454,11 +454,6 @@ class Showcase {
         if (this.state.autoScrollInterval) return;
         
         const scroll = () => {
-            if (this.state.autoScrollX === 0 && this.state.autoScrollY === 0) {
-                this.stopAutoScroll();
-                return;
-            }
-            
             // Apply scroll with momentum
             const currentScrollLeft = this.gridWrapper.scrollLeft;
             const currentScrollTop = this.gridWrapper.scrollTop;
@@ -474,18 +469,35 @@ class Showcase {
             newScrollLeft = Math.max(0, Math.min(maxScrollLeft, newScrollLeft));
             newScrollTop = Math.max(0, Math.min(maxScrollTop, newScrollTop));
             
+            // Check if we've hit a boundary
+            const hitBoundaryX = (newScrollLeft === 0 && this.state.autoScrollX < 0) || 
+                                 (newScrollLeft >= maxScrollLeft && this.state.autoScrollX > 0);
+            const hitBoundaryY = (newScrollTop === 0 && this.state.autoScrollY < 0) || 
+                                 (newScrollTop >= maxScrollTop && this.state.autoScrollY > 0);
+            
             // Apply scroll
             this.gridWrapper.scrollLeft = newScrollLeft;
             this.gridWrapper.scrollTop = newScrollTop;
             
-            // Decay scroll velocity (momentum effect)
-            this.state.autoScrollX *= 0.95;
-            this.state.autoScrollY *= 0.95;
+            // Decay scroll velocity (momentum effect) - slower decay for smoother continuation
+            if (!hitBoundaryX) {
+                this.state.autoScrollX *= 0.98; // Slower decay (was 0.95)
+            } else {
+                this.state.autoScrollX = 0; // Stop at boundary
+            }
+            
+            if (!hitBoundaryY) {
+                this.state.autoScrollY *= 0.98; // Slower decay (was 0.95)
+            } else {
+                this.state.autoScrollY = 0; // Stop at boundary
+            }
             
             // Stop if velocity is too small
-            if (Math.abs(this.state.autoScrollX) < 0.1 && Math.abs(this.state.autoScrollY) < 0.1) {
+            if (Math.abs(this.state.autoScrollX) < 0.05 && Math.abs(this.state.autoScrollY) < 0.05) {
                 this.state.autoScrollX = 0;
                 this.state.autoScrollY = 0;
+                this.stopAutoScroll();
+                return;
             }
         };
         
