@@ -195,9 +195,9 @@ body {
     filter: brightness(1.15) blur(0.5px);
 }
 
-/* Compensate container rotation to keep image flat */
+/* Compensate container rotation and scale to keep image flat and normal size */
 .grid-item:hover .image-container {
-    transform: rotateY(-15deg) rotateX(5deg);
+    transform: rotateY(-15deg) rotateX(5deg) scale(calc(1 / 1.15));
     transform-style: preserve-3d;
 }
 
