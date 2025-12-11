@@ -759,7 +759,7 @@ class Showcase {
     async createZoomAnimation(item, image) {
         // Get item position and size
         const itemRect = item.getBoundingClientRect();
-        const itemImg = item.querySelector('img');
+        const itemImg = item.querySelector('img') || item.querySelector('.gif-image');
         if (!itemImg) return;
         
         // Get viewport center
