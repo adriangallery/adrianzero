@@ -191,8 +191,9 @@ body {
 .grid-item:hover {
     z-index: 10;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-    transform: translateY(-12px) rotateY(20deg) rotateX(-8deg) scale(1.15) translateZ(30px) !important;
+    transform: translateY(-12px) rotateY(15deg) rotateX(-5deg) scale(1.15) translateZ(30px) !important;
     filter: brightness(1.15) blur(0.5px);
+    /* Transform applied to container only, image inside stays normal */
 }
 
 /* Image Container */
