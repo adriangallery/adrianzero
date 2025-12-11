@@ -203,19 +203,13 @@ class Showcase {
     setupEventListeners() {
         // 3D effect on mouse move (throttled with requestAnimationFrame)
         let rafId = null;
-        let mouseMoveTimeout = null;
         this.gridWrapper.addEventListener('mousemove', (e) => {
-            // Throttle to avoid saturation
-            if (mouseMoveTimeout) return;
-            mouseMoveTimeout = setTimeout(() => {
-                if (rafId === null) {
-                    rafId = requestAnimationFrame(() => {
-                        this.handleMouseMove(e);
-                        rafId = null;
-                    });
-                }
-                mouseMoveTimeout = null;
-            }, 16); // ~60fps
+            if (rafId === null) {
+                rafId = requestAnimationFrame(() => {
+                    this.handleMouseMove(e);
+                    rafId = null;
+                });
+            }
         }, { passive: true });
 
         // Reset 3D effects when mouse leaves
