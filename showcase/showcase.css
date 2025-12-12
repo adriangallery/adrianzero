@@ -331,6 +331,15 @@ body {
     opacity: 1;
 }
 
+/* Transparent background for floppy GIFs */
+.grid-item-gif .image-container {
+    background: transparent;
+}
+
+.grid-item-gif {
+    background: transparent;
+}
+
 /* 3D Model Viewer Styles */
 .grid-item-3d .model-3d-wrapper {
     position: relative;

@@ -804,13 +804,15 @@ class Showcase {
             // Create 3D model viewer element
             this.create3dModelViewer(imageContainer, index);
         } else if (isFloppyGif && floppyGif) {
-            // Create floppy GIF element
+            // Create floppy GIF element with transparent background
             const gif = document.createElement('img');
             gif.src = floppyGif.url;
             gif.alt = `AdrianLAB Floppy #${floppyGif.tokenId}`;
             gif.className = 'gif-image';
             gif.dataset.loaded = 'true';
             gif.dataset.tokenId = floppyGif.tokenId;
+            // Set transparent background for floppy GIFs
+            imageContainer.style.background = 'transparent';
             imageContainer.appendChild(gif);
         } else {
             // Regular image
