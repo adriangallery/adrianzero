@@ -150,13 +150,13 @@ class TraitLABDataManager {
     }
 
     /**
-     * Verificar si debemos usar modo batch (siempre para traits)
+     * Verificar si debemos usar modo batch (móvil + tab traits)
      */
     shouldUseBatchMode() {
+        const isMobile = window.innerWidth <= 768;
         const currentFilter = window.app?.modules?.ui?.getCurrentFilter?.() || window.app?.currentFilter;
         const isTraitsTab = currentFilter === 'traits';
-        // Siempre usar modo batch para traits (carga paginada con botón)
-        return isTraitsTab;
+        return isMobile && isTraitsTab;
     }
 
     /**
@@ -192,13 +192,9 @@ class TraitLABDataManager {
                     const useBatchMode = this.shouldUseBatchMode();
                     this.paginationState.traits.isBatchMode = useBatchMode;
                     
-                    if (useBatchMode) {
-                        console.log('📱 Modo BATCH activado - cargando solo primer batch de 50 traits');
-                        await this.loadTokensProgressive(userAddress, contractAddress, true); // true = batch mode
-                    } else {
-                        console.log('📊 Cargando tokens ERC1155 progresivamente (modo completo)...');
-                        await this.loadTokensProgressive(userAddress, contractAddress, false);
-                    }
+                    // 🚀 CARGAR TOKENS PROGRESIVAMENTE
+                    console.log('📊 Cargando tokens ERC1155 progresivamente...');
+                    await this.loadTokensProgressive(userAddress, contractAddress);
                 } else {
                     console.warn('📊 No hay wallet conectada, no se pueden cargar tokens AdrianLAB');
                 }

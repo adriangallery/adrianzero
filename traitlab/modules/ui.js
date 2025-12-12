@@ -51,7 +51,6 @@ class UIManager {
         
         // Selection methods
         this.getSelectionState = this.getSelectionState.bind(this);
-        this.handleLoadMoreTraits = this.handleLoadMoreTraits.bind(this);
     }
 
     /**
@@ -79,8 +78,7 @@ class UIManager {
             'open-pack-section', 'open-pack-status',
             'use-serum-section', 'useSerumBtn', 'use-serum-status',
             'activate-token-section', 'activateTokenBtn', 'activate-token-status',
-            'rename-section', 'newTokenName', 'approveRenameBtn', 'renameTokenBtn', 'rename-status',
-            'load-more-traits-btn'
+            'rename-section', 'newTokenName', 'approveRenameBtn', 'renameTokenBtn', 'rename-status'
         ];
 
         elements.forEach(id => {
@@ -126,8 +124,6 @@ class UIManager {
         // Clean up lazy loading if changing away from traits
         if (this.currentFilter === 'traits' && filter !== 'traits') {
             this.cleanupLazyLoading();
-            // Ocultar botón Load More cuando se cambia de tab
-            this.updateLoadMoreButton(false);
         }
         
         this.currentFilter = filter;
@@ -176,7 +172,7 @@ class UIManager {
         if (dataManager && this._moreTraitsLoadedHandler) {
             dataManager.off('adrianLabMoreTraitsLoaded', this._moreTraitsLoadedHandler);
             this._moreTraitsLoadedHandler = null;
-        }
+            }
         
         this.lazyLoadingState.enabled = false;
         this.lazyLoadingState.allTokens = [];
@@ -201,140 +197,140 @@ class UIManager {
      * Create a single token card element
      */
     createTokenCard(token) {
-        const tokenCard = document.createElement('div');
-        tokenCard.className = 'token-card';
-        tokenCard.setAttribute('data-token-id', token.tokenId);
-        tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
-        
-        // Use specific image URLs for different token types
-        let imageUrl = token.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
-        
-        // Hardcode names for specific floppy discs
-        let displayTitle = token.title;
-        if (this.currentFilter === 'floppy') {
-            if (token.tokenId === 10003) {
-                displayTitle = 'GLITCH Floppy';
-            } else if (token.tokenId === 10004) {
-                displayTitle = 'GF Floppy';
-            } else if (token.tokenId === 10005) {
-                displayTitle = 'Golden Floppy';
-            } else if (token.tokenId === 10007) {
-                displayTitle = 'NEONpack';
-            } else if (token.tokenId === 10008) {
-                displayTitle = 'OPTICALpack';
-            } else if (token.tokenId === 10009) {
-                displayTitle = 'PUNKSfloppy';
-            } else if (token.tokenId === 10010) {
-                displayTitle = 'ComradesUSB';
-            } else if (token.tokenId === 1123) {
-                displayTitle = 'CensorPACK';
-            } else if (token.tokenId === 15010) {
-                displayTitle = 'Back to Work';
-            } else {
-                displayTitle = token.title.replace(/^\d+\s*/, '');
+            const tokenCard = document.createElement('div');
+            tokenCard.className = 'token-card';
+            tokenCard.setAttribute('data-token-id', token.tokenId);
+            tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
+            
+            // Use specific image URLs for different token types
+            let imageUrl = token.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
+            
+            // Hardcode names for specific floppy discs
+            let displayTitle = token.title;
+            if (this.currentFilter === 'floppy') {
+                if (token.tokenId === 10003) {
+                    displayTitle = 'GLITCH Floppy';
+                } else if (token.tokenId === 10004) {
+                    displayTitle = 'GF Floppy';
+                } else if (token.tokenId === 10005) {
+                    displayTitle = 'Golden Floppy';
+                } else if (token.tokenId === 10007) {
+                    displayTitle = 'NEONpack';
+                } else if (token.tokenId === 10008) {
+                    displayTitle = 'OPTICALpack';
+                } else if (token.tokenId === 10009) {
+                    displayTitle = 'PUNKSfloppy';
+                } else if (token.tokenId === 10010) {
+                    displayTitle = 'ComradesUSB';
+                } else if (token.tokenId === 1123) {
+                    displayTitle = 'CensorPACK';
+                } else if (token.tokenId === 15010) {
+                    displayTitle = 'Back to Work';
+                } else {
+                    displayTitle = token.title.replace(/^\d+\s*/, '');
+                }
             }
-        }
-        
-        // Override image URL for specific token types
-        if (this.currentFilter === 'serum' && token.tokenId >= 262144 && token.tokenId <= 262147) {
-            imageUrl = this.getImagePath(token.tokenId, '.gif');
-        } else if (this.currentFilter === 'floppy') {
-            // Use local images for floppy discs
-            if (token.tokenId === 10000) {
-                imageUrl = this.getImagePath(10000, '.gif');
-            } else if (token.tokenId === 10001) {
-                imageUrl = this.getImagePath(10001, '.gif');
-            } else if (token.tokenId === 10002) {
-                imageUrl = this.getImagePath(10002, '.gif');
-            } else if (token.tokenId === 10003) {
-                imageUrl = this.getImagePath(10003, '.gif');
-            } else if (token.tokenId === 10004) {
-                imageUrl = this.getImagePath(10004, '.gif');
-            } else if (token.tokenId === 10005) {
-                imageUrl = this.getImagePath(10005, '.gif');
-            } else if (token.tokenId === 10007) {
-                imageUrl = this.getImagePath(10007, '.gif');
-            } else if (token.tokenId === 15000) {
-                imageUrl = this.getImagePath(15000, '.gif');
-            } else if (token.tokenId === 15001) {
-                imageUrl = this.getImagePath(15001, '.gif');
-            } else if (token.tokenId === 15002) {
-                imageUrl = this.getImagePath(15002, '.gif');
-            } else if (token.tokenId === 15003) {
-                imageUrl = this.getImagePath(15003, '.gif');
-            } else if (token.tokenId === 15004) {
-                imageUrl = this.getImagePath(15004, '.gif');
-            } else if (token.tokenId === 15005) {
-                imageUrl = this.getImagePath(15005, '.gif');
-            } else if (token.tokenId === 15006) {
-                imageUrl = this.getImagePath(15006, '.gif');
-            } else if (token.tokenId === 15007) {
-                imageUrl = this.getImagePath(15007, '.gif');
-            } else if (token.tokenId === 15008) {
-                imageUrl = this.getImagePath(15008, '.png');
-            } else if (token.tokenId === 15009) {
-                imageUrl = this.getImagePath(15009, '.png');
-            } else if (token.tokenId === 15010) {
-                imageUrl = this.getImagePath(15010, '.png');
-            } else if (token.tokenId === 15011) {
-                imageUrl = this.getImagePath(15011, '.png');
-            } else if (token.tokenId === 15012) {
-                imageUrl = this.getImagePath(15012, '.png');
-            } else if (token.tokenId === 15013) {
-                imageUrl = this.getImagePath(15013, '.png');
-            } else if (token.tokenId === 15014) {
-                imageUrl = this.getImagePath(15014, '.png');
-            } else if (token.tokenId === 15015) {
-                imageUrl = this.getImagePath(15015, '.png');
-            } else if (token.tokenId === 10008) {
-                imageUrl = this.getImagePath(10008, '.gif');
-            } else if (token.tokenId === 10009) {
-                imageUrl = this.getImagePath(10009, '.gif');
-            } else if (token.tokenId === 10010) {
-                imageUrl = this.getImagePath(10010, '.gif');
-            } else if (token.tokenId === 10011) {
-                imageUrl = this.getImagePath(10011, '.gif');
-            } else if (token.tokenId === 10012) {
-                imageUrl = this.getImagePath(10012, '.gif');
-            } else if (token.tokenId === 10013) {
-                imageUrl = this.getImagePath(10013, '.gif');
-            } else if (token.tokenId === 10015) {
-                imageUrl = this.getImagePath(10015, '.gif');
+            
+            // Override image URL for specific token types
+            if (this.currentFilter === 'serum' && token.tokenId >= 262144 && token.tokenId <= 262147) {
+                imageUrl = this.getImagePath(token.tokenId, '.gif');
+            } else if (this.currentFilter === 'floppy') {
+                // Use local images for floppy discs
+                if (token.tokenId === 10000) {
+                    imageUrl = this.getImagePath(10000, '.gif');
+                } else if (token.tokenId === 10001) {
+                    imageUrl = this.getImagePath(10001, '.gif');
+                } else if (token.tokenId === 10002) {
+                    imageUrl = this.getImagePath(10002, '.gif');
+                } else if (token.tokenId === 10003) {
+                    imageUrl = this.getImagePath(10003, '.gif');
+                } else if (token.tokenId === 10004) {
+                    imageUrl = this.getImagePath(10004, '.gif');
+                } else if (token.tokenId === 10005) {
+                    imageUrl = this.getImagePath(10005, '.gif');
+                } else if (token.tokenId === 10007) {
+                    imageUrl = this.getImagePath(10007, '.gif');
+                } else if (token.tokenId === 15000) {
+                    imageUrl = this.getImagePath(15000, '.gif');
+                } else if (token.tokenId === 15001) {
+                    imageUrl = this.getImagePath(15001, '.gif');
+                } else if (token.tokenId === 15002) {
+                    imageUrl = this.getImagePath(15002, '.gif');
+                } else if (token.tokenId === 15003) {
+                    imageUrl = this.getImagePath(15003, '.gif');
+                } else if (token.tokenId === 15004) {
+                    imageUrl = this.getImagePath(15004, '.gif');
+                } else if (token.tokenId === 15005) {
+                    imageUrl = this.getImagePath(15005, '.gif');
+                } else if (token.tokenId === 15006) {
+                    imageUrl = this.getImagePath(15006, '.gif');
+                } else if (token.tokenId === 15007) {
+                    imageUrl = this.getImagePath(15007, '.gif');
+                } else if (token.tokenId === 15008) {
+                    imageUrl = this.getImagePath(15008, '.png');
+                } else if (token.tokenId === 15009) {
+                    imageUrl = this.getImagePath(15009, '.png');
+                } else if (token.tokenId === 15010) {
+                    imageUrl = this.getImagePath(15010, '.png');
+                } else if (token.tokenId === 15011) {
+                    imageUrl = this.getImagePath(15011, '.png');
+                } else if (token.tokenId === 15012) {
+                    imageUrl = this.getImagePath(15012, '.png');
+                } else if (token.tokenId === 15013) {
+                    imageUrl = this.getImagePath(15013, '.png');
+                } else if (token.tokenId === 15014) {
+                    imageUrl = this.getImagePath(15014, '.png');
+                } else if (token.tokenId === 15015) {
+                    imageUrl = this.getImagePath(15015, '.png');
+                } else if (token.tokenId === 10008) {
+                    imageUrl = this.getImagePath(10008, '.gif');
+                } else if (token.tokenId === 10009) {
+                    imageUrl = this.getImagePath(10009, '.gif');
+                } else if (token.tokenId === 10010) {
+                    imageUrl = this.getImagePath(10010, '.gif');
+                } else if (token.tokenId === 10011) {
+                    imageUrl = this.getImagePath(10011, '.gif');
+                } else if (token.tokenId === 10012) {
+                    imageUrl = this.getImagePath(10012, '.gif');
+                } else if (token.tokenId === 10013) {
+                    imageUrl = this.getImagePath(10013, '.gif');
+                } else if (token.tokenId === 10015) {
+                    imageUrl = this.getImagePath(10015, '.gif');
+                }
             }
-        }
-        
-        // Create quantity tag for ERC1155 tokens with balance > 1
-        const quantityTag = token.tokenType === 'ERC1155' && token.balance > 1 ? 
-            `<div class="token-quantity-tag">x${token.balance}</div>` : '';
-        
-        // Create category display for ERC1155 tokens
-        const categoryDisplay = token.tokenType === 'ERC1155' && token.category ? 
-            `<div class="token-category">${token.category}</div>` : '';
-        
-        // Handle image loading with fallback for traits
-        let imgTag;
-        if (token.fallbackImageUrl && imageUrl !== token.fallbackImageUrl) {
-            // Trait with local asset - use fallback if local fails
-            const fallbackUrl = token.fallbackImageUrl.replace(/'/g, "\\'");
+            
+            // Create quantity tag for ERC1155 tokens with balance > 1
+            const quantityTag = token.tokenType === 'ERC1155' && token.balance > 1 ? 
+                `<div class="token-quantity-tag">x${token.balance}</div>` : '';
+            
+            // Create category display for ERC1155 tokens
+            const categoryDisplay = token.tokenType === 'ERC1155' && token.category ? 
+                `<div class="token-category">${token.category}</div>` : '';
+            
+            // Handle image loading with fallback for traits
+            let imgTag;
+            if (token.fallbackImageUrl && imageUrl !== token.fallbackImageUrl) {
+                // Trait with local asset - use fallback if local fails
+                const fallbackUrl = token.fallbackImageUrl.replace(/'/g, "\\'");
             imgTag = `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" loading="lazy" onerror="if('${fallbackUrl}') { this.src='${fallbackUrl}'; this.onerror=function(){ this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'; }; }">`;
-        } else {
-            // Standard image tag for other tokens
+            } else {
+                // Standard image tag for other tokens
             imgTag = `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'>">`;
-        }
-        
-        tokenCard.innerHTML = `
-            <div style="position: relative;">
-                ${imgTag}
-                ${quantityTag}
-            </div>
-            <div class="token-info">
-                <div class="token-title">${displayTitle}</div>
-                <div class="token-id">ID: ${token.tokenId}</div>
-                ${categoryDisplay}
-            </div>
-        `;
-        
-        // Add click event for token selection
+            }
+            
+            tokenCard.innerHTML = `
+                <div style="position: relative;">
+                    ${imgTag}
+                    ${quantityTag}
+                </div>
+                <div class="token-info">
+                    <div class="token-title">${displayTitle}</div>
+                    <div class="token-id">ID: ${token.tokenId}</div>
+                    ${categoryDisplay}
+                </div>
+            `;
+            
+                    // Add click event for token selection
         const clickHandler = () => {
             this.handleTokenSelection(tokenCard, token);
         };
@@ -342,7 +338,7 @@ class UIManager {
         // Store the handler reference for potential removal
         tokenCard._clickHandler = clickHandler;
         tokenCard.addEventListener('click', clickHandler);
-        
+            
         return tokenCard;
     }
 
@@ -533,23 +529,14 @@ class UIManager {
 
         tokensGrid.innerHTML = "";
         
-        // 🚨 PAGINACIÓN CON BOTÓN: Para traits, mostrar solo primeros 50 y botón "Load More"
-        if (this.currentFilter === 'traits') {
-            const dataManager = window.app?.modules?.dataManager;
-            const hasMore = dataManager?.paginationState?.traits?.hasMore || false;
-            const maxInitialDisplay = 50;
-            
-            // Mostrar solo los primeros 50 traits
-            const traitsToDisplay = tokens.slice(0, maxInitialDisplay);
-            
-            traitsToDisplay.forEach(token => {
-                const tokenCard = this.createTokenCard(token);
-                tokensGrid.appendChild(tokenCard);
-            });
-            
-            // Mostrar botón "Load More" si hay más traits disponibles
-            this.updateLoadMoreButton(hasMore);
-            
+        // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens)
+        const shouldUseLazyLoading = this.isMobile() && 
+                                     this.currentFilter === 'traits' && 
+                                     tokens.length > 50; // Only use lazy loading if more than 50 traits
+        
+        if (shouldUseLazyLoading) {
+            console.log(`📱 Lazy loading enabled for ${tokens.length} traits on mobile`);
+            this.setupLazyLoading(tokens);
             if (!skipSelectionUpdate) {
                 this.updateSelectionInfo();
             }
@@ -1032,98 +1019,6 @@ class UIManager {
                     openPackStatus.style.display = 'none';
                 }, 5000);
             }
-        }
-    }
-
-    /**
-     * Actualizar botón "Load More" según disponibilidad de más traits
-     */
-    updateLoadMoreButton(hasMore) {
-        const tokensSection = this.domElements.get('tokens-section');
-        
-        if (!tokensSection) return;
-        
-        // Buscar o crear el botón
-        let loadMoreBtn = this.domElements.get('load-more-traits-btn');
-        
-        if (!loadMoreBtn) {
-            loadMoreBtn = document.createElement('button');
-            loadMoreBtn.id = 'load-more-traits-btn';
-            loadMoreBtn.className = 'load-more-traits-btn';
-            loadMoreBtn.textContent = 'Load More Traits';
-            loadMoreBtn.style.cssText = `
-                display: block;
-                margin: 20px auto;
-                padding: 12px 24px;
-                background: var(--accent, #00D632);
-                color: #000;
-                border: none;
-                border-radius: 999px;
-                font-size: 0.95rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.18s ease-out;
-            `;
-            loadMoreBtn.addEventListener('click', this.handleLoadMoreTraits);
-            tokensSection.appendChild(loadMoreBtn);
-            this.domElements.set('load-more-traits-btn', loadMoreBtn);
-        }
-        
-        if (hasMore) {
-            loadMoreBtn.style.display = 'block';
-            loadMoreBtn.disabled = false;
-            loadMoreBtn.textContent = 'Load More Traits';
-        } else {
-            loadMoreBtn.style.display = 'none';
-        }
-    }
-
-    /**
-     * Manejar click en botón "Load More"
-     */
-    async handleLoadMoreTraits() {
-        const loadMoreBtn = this.domElements.get('load-more-traits-btn');
-        const tokensGrid = this.domElements.get('tokens-grid');
-        
-        if (!loadMoreBtn || !tokensGrid) return;
-        
-        // Deshabilitar botón mientras carga
-        loadMoreBtn.disabled = true;
-        loadMoreBtn.textContent = 'Loading...';
-        
-        try {
-            const dataManager = window.app?.modules?.dataManager;
-            if (!dataManager) {
-                console.error('❌ DataManager no disponible');
-                return;
-            }
-            
-            // Cargar más traits
-            const newTraits = await dataManager.loadMoreTraits();
-            
-            if (newTraits && newTraits.length > 0) {
-                // Agregar nuevos traits al grid
-                newTraits.forEach(token => {
-                    const tokenCard = this.createTokenCard(token);
-                    tokensGrid.appendChild(tokenCard);
-                });
-                
-                // Actualizar botón según si hay más
-                const hasMore = dataManager.paginationState?.traits?.hasMore || false;
-                this.updateLoadMoreButton(hasMore);
-                
-                // Actualizar selección
-                this.updateSelectionInfo();
-                
-                console.log(`✅ ${newTraits.length} nuevos traits cargados`);
-            } else {
-                // No hay más traits
-                this.updateLoadMoreButton(false);
-            }
-        } catch (error) {
-            console.error('❌ Error cargando más traits:', error);
-            loadMoreBtn.disabled = false;
-            loadMoreBtn.textContent = 'Load More Traits';
         }
     }
 
