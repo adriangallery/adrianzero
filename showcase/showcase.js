@@ -938,10 +938,13 @@ class Showcase {
         modelViewer.setAttribute('field-of-view', '30deg'); // Smaller FOV = smaller model
         modelViewer.setAttribute('auto-rotate', '');
         modelViewer.setAttribute('auto-rotate-delay', '0');
+        modelViewer.setAttribute('auto-rotate-speed', '0.5'); // Slower rotation for smoother animation
         modelViewer.setAttribute('interaction-policy', 'allow-when-focused');
         modelViewer.setAttribute('render-scale', '2'); // Higher resolution for better quality
         modelViewer.setAttribute('exposure', '1.2'); // Slightly brighter
         modelViewer.setAttribute('shadow-intensity', '0.5');
+        modelViewer.setAttribute('disable-zoom', ''); // Disable zoom to prevent jumps
+        modelViewer.setAttribute('camera-controls', ''); // Enable smooth camera controls
         modelViewer.style.cssText = `
             position: relative;
             width: 80%;
@@ -1218,10 +1221,14 @@ class Showcase {
             modelViewer.setAttribute('camera-target', '0m 0m 0m');
             modelViewer.setAttribute('field-of-view', '30deg'); // Smaller FOV = smaller model
             modelViewer.setAttribute('auto-rotate', '');
+            modelViewer.setAttribute('auto-rotate-delay', '0');
+            modelViewer.setAttribute('auto-rotate-speed', '0.5'); // Slower rotation for smoother animation
             modelViewer.setAttribute('interaction-policy', 'allow-when-focused');
             modelViewer.setAttribute('render-scale', '2'); // Higher resolution
             modelViewer.setAttribute('exposure', '1.2');
             modelViewer.setAttribute('shadow-intensity', '0.5');
+            modelViewer.setAttribute('disable-zoom', ''); // Disable zoom to prevent jumps
+            modelViewer.setAttribute('camera-controls', ''); // Enable smooth camera controls
             modelViewer.style.cssText = `
                 position: relative;
                 width: 80%;
