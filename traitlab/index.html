@@ -372,6 +372,9 @@
                         } else if (this.currentFilter === 'traits' && traits.length > 0) {
                             console.log('✅ Mostrando trait tokens inmediatamente');
                             this.modules.ui.displayTokens(traits, 'traits');
+                            // Actualizar botón Load More según si hay más traits
+                            const hasMore = this.modules.dataManager.paginationState?.traits?.hasMore || false;
+                            this.modules.ui.updateLoadMoreButton(hasMore);
                             this.hideLoading();
                         }
                     });

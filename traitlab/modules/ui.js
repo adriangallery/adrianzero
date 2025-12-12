@@ -78,7 +78,8 @@ class UIManager {
             'open-pack-section', 'open-pack-status',
             'use-serum-section', 'useSerumBtn', 'use-serum-status',
             'activate-token-section', 'activateTokenBtn', 'activate-token-status',
-            'rename-section', 'newTokenName', 'approveRenameBtn', 'renameTokenBtn', 'rename-status'
+            'rename-section', 'newTokenName', 'approveRenameBtn', 'renameTokenBtn', 'rename-status',
+            'load-more-traits-btn'
         ];
 
         elements.forEach(id => {
@@ -124,6 +125,8 @@ class UIManager {
         // Clean up lazy loading if changing away from traits
         if (this.currentFilter === 'traits' && filter !== 'traits') {
             this.cleanupLazyLoading();
+            // Ocultar botón Load More cuando se cambia de tab
+            this.updateLoadMoreButton(false);
         }
         
         this.currentFilter = filter;
@@ -529,14 +532,23 @@ class UIManager {
 
         tokensGrid.innerHTML = "";
         
-        // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens)
-        const shouldUseLazyLoading = this.isMobile() && 
-                                     this.currentFilter === 'traits' && 
-                                     tokens.length > 50; // Only use lazy loading if more than 50 traits
-        
-        if (shouldUseLazyLoading) {
-            console.log(`📱 Lazy loading enabled for ${tokens.length} traits on mobile`);
-            this.setupLazyLoading(tokens);
+        // 🚨 PAGINACIÓN CON BOTÓN: Para traits, mostrar solo primeros 50 y botón "Load More"
+        if (this.currentFilter === 'traits') {
+            const dataManager = window.app?.modules?.dataManager;
+            const hasMore = dataManager?.paginationState?.traits?.hasMore || false;
+            const maxInitialDisplay = 50;
+            
+            // Mostrar solo los primeros 50 traits
+            const traitsToDisplay = tokens.slice(0, maxInitialDisplay);
+            
+            traitsToDisplay.forEach(token => {
+                const tokenCard = this.createTokenCard(token);
+                tokensGrid.appendChild(tokenCard);
+            });
+            
+            // Mostrar botón "Load More" si hay más traits disponibles
+            this.updateLoadMoreButton(hasMore);
+            
             if (!skipSelectionUpdate) {
                 this.updateSelectionInfo();
             }

@@ -23,7 +23,7 @@ class TraitLABDataManager {
             traits: {
                 pageKey: null,
                 hasMore: false,
-                batchSize: 150,
+                batchSize: 50, // Cargar 50 traits por vez
                 isBatchMode: false
             }
         };
@@ -150,13 +150,13 @@ class TraitLABDataManager {
     }
 
     /**
-     * Verificar si debemos usar modo batch (móvil + tab traits)
+     * Verificar si debemos usar modo batch (siempre para traits)
      */
     shouldUseBatchMode() {
-        const isMobile = window.innerWidth <= 768;
         const currentFilter = window.app?.modules?.ui?.getCurrentFilter?.() || window.app?.currentFilter;
         const isTraitsTab = currentFilter === 'traits';
-        return isMobile && isTraitsTab;
+        // Siempre usar modo batch para traits (carga paginada con botón)
+        return isTraitsTab;
     }
 
     /**
@@ -166,7 +166,7 @@ class TraitLABDataManager {
         this.paginationState.traits = {
             pageKey: null,
             hasMore: false,
-            batchSize: 150,
+            batchSize: 50, // Cargar 50 traits por vez
             isBatchMode: false
         };
         console.log('🔄 Estado de paginación de traits reseteado');
@@ -193,7 +193,7 @@ class TraitLABDataManager {
                     this.paginationState.traits.isBatchMode = useBatchMode;
                     
                     if (useBatchMode) {
-                        console.log('📱 Modo BATCH activado - cargando solo primer batch de 150 traits');
+                        console.log('📱 Modo BATCH activado - cargando solo primer batch de 50 traits');
                         await this.loadTokensProgressive(userAddress, contractAddress, true); // true = batch mode
                     } else {
                         console.log('📊 Cargando tokens ERC1155 progresivamente (modo completo)...');
@@ -730,7 +730,7 @@ class TraitLABDataManager {
     async loadTokensProgressive(userAddress, contractAddress, batchMode = false) {
         try {
             // Cargar tokens básicos primero (sin metadata individual)
-            console.log(`📊 Cargando tokens básicos ERC1155${batchMode ? ' (BATCH MODE - 150 tokens)' : ' (modo completo)'}...`);
+            console.log(`📊 Cargando tokens básicos ERC1155${batchMode ? ' (BATCH MODE - 50 traits)' : ' (modo completo)'}...`);
             
             let basicTokens = [];
             let loadResult = null;
