@@ -895,19 +895,20 @@ class Showcase {
 
         item.appendChild(imageContainer);
 
-        // Click handler - capture variables in closure
+        // Click handler - only for regular AdrianZERO items (not floppys or 3D models)
         const itemIndex = index;
         const isFloppy = isFloppyGif && floppyGif;
         const is3d = is3dModel;
-        item.addEventListener('click', () => {
-            if (is3d) {
-                this.openModal(itemIndex, '3d-model');
-            } else if (isFloppy) {
-                this.openModal(itemIndex, 'floppy');
-            } else {
+        
+        // Only add click handler for regular items (not floppys or 3D models)
+        if (!is3d && !isFloppy) {
+            item.addEventListener('click', () => {
                 this.openModal(itemIndex, 'adrianzero');
-            }
-        });
+            });
+        } else {
+            // Floppys and 3D models are not clickable - change cursor to default
+            item.style.cursor = 'default';
+        }
 
         return item;
     }
