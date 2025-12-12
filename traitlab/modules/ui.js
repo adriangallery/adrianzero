@@ -529,14 +529,23 @@ class UIManager {
 
         tokensGrid.innerHTML = "";
         
+        // 🚨 TEST N1: Limitar a máximo 150 traits
+        const maxTraits = 150;
+        let traitsToDisplay = tokens;
+        
+        if (this.currentFilter === 'traits' && tokens.length > maxTraits) {
+            console.log(`📊 Limitando display a ${maxTraits} traits de ${tokens.length} totales`);
+            traitsToDisplay = tokens.slice(0, maxTraits);
+        }
+        
         // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens)
         const shouldUseLazyLoading = this.isMobile() && 
                                      this.currentFilter === 'traits' && 
-                                     tokens.length > 50; // Only use lazy loading if more than 50 traits
+                                     traitsToDisplay.length > 50; // Only use lazy loading if more than 50 traits
         
         if (shouldUseLazyLoading) {
-            console.log(`📱 Lazy loading enabled for ${tokens.length} traits on mobile`);
-            this.setupLazyLoading(tokens);
+            console.log(`📱 Lazy loading enabled for ${traitsToDisplay.length} traits on mobile`);
+            this.setupLazyLoading(traitsToDisplay);
             if (!skipSelectionUpdate) {
                 this.updateSelectionInfo();
             }
@@ -549,7 +558,7 @@ class UIManager {
         }
         
         // Standard rendering for desktop or non-traits tabs
-        tokens.forEach(token => {
+        traitsToDisplay.forEach(token => {
             const tokenCard = this.createTokenCard(token);
             tokensGrid.appendChild(tokenCard);
         });
