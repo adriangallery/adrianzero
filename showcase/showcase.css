@@ -391,6 +391,19 @@ body {
     }
 }
 
+/* Smooth swing animation for 3D models - only horizontal movement, no rotation */
+@keyframes swing-3d-smooth {
+    0% {
+        transform: translateX(2px);
+    }
+    50% {
+        transform: translateX(-2px);
+    }
+    100% {
+        transform: translateX(2px);
+    }
+}
+
 .grid-item img.error {
     opacity: 0;
 }

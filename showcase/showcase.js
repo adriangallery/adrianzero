@@ -933,12 +933,15 @@ class Showcase {
         modelViewer.src = modelPath || this.config.model3dPath;
         modelViewer.alt = '3D Model';
         modelViewer.className = 'model-3d';
-        modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.5m'); // Further away to prevent clipping
+        
+        // Set initial camera position with slight offset for swing effect
+        const swingOffset = (index % 8) * 0.5; // Small offset based on index
+        modelViewer.setAttribute('camera-orbit', `${swingOffset}deg 75deg 2.5m`); // Slight horizontal offset
         modelViewer.setAttribute('camera-target', '0m 0m 0m');
         modelViewer.setAttribute('field-of-view', '30deg'); // Smaller FOV = smaller model
         modelViewer.setAttribute('auto-rotate', '');
         modelViewer.setAttribute('auto-rotate-delay', '0');
-        modelViewer.setAttribute('auto-rotate-speed', '0.5'); // Slower rotation for smoother animation
+        modelViewer.setAttribute('auto-rotate-speed', '0.3'); // Even slower for smoother rotation
         modelViewer.setAttribute('interaction-policy', 'allow-when-focused');
         modelViewer.setAttribute('render-scale', '2'); // Higher resolution for better quality
         modelViewer.setAttribute('exposure', '1.2'); // Slightly brighter
@@ -956,11 +959,13 @@ class Showcase {
             image-rendering: crisp-edges;
         `;
 
-        // Add swing animation based on index
+        // Use CSS animation on the model-viewer itself for smooth continuous swing
+        // This avoids conflicts with auto-rotate
         const swingDelay = (index % 8) * 0.1;
-        const swingDuration = 3 + (index % 3) * 0.5; // Vary duration between 3-4.5s
-        modelWrapper.style.animation = `swing-3d ${swingDuration}s ease-in-out infinite`;
-        modelWrapper.style.animationDelay = `${swingDelay}s`;
+        const swingDuration = 4; // Fixed duration for consistency
+        modelViewer.style.animation = `swing-3d-smooth ${swingDuration}s ease-in-out infinite`;
+        modelViewer.style.animationDelay = `${swingDelay}s`;
+        modelViewer.style.transformOrigin = 'center center';
 
         modelWrapper.appendChild(modelViewer);
         container.appendChild(modelWrapper);
@@ -1222,7 +1227,7 @@ class Showcase {
             modelViewer.setAttribute('field-of-view', '30deg'); // Smaller FOV = smaller model
             modelViewer.setAttribute('auto-rotate', '');
             modelViewer.setAttribute('auto-rotate-delay', '0');
-            modelViewer.setAttribute('auto-rotate-speed', '0.5'); // Slower rotation for smoother animation
+            modelViewer.setAttribute('auto-rotate-speed', '0.3'); // Even slower for smoother rotation
             modelViewer.setAttribute('interaction-policy', 'allow-when-focused');
             modelViewer.setAttribute('render-scale', '2'); // Higher resolution
             modelViewer.setAttribute('exposure', '1.2');
@@ -1238,6 +1243,8 @@ class Showcase {
                 background: transparent;
                 image-rendering: -webkit-optimize-contrast;
                 image-rendering: crisp-edges;
+                animation: swing-3d-smooth 4s ease-in-out infinite;
+                transform-origin: center center;
             `;
 
             modelWrapper.appendChild(modelViewer);
