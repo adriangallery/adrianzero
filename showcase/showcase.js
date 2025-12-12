@@ -76,31 +76,83 @@ class Showcase {
     }
 
     /**
-     * Load list of floppy GIFs
+     * Load list of floppy GIFs and 3D models
      */
     async loadFloppyGifs() {
-        // List of floppy GIFs (can be loaded from server or hardcoded for now)
+        // List of all floppy files (GIFs and 3D models)
         const floppyFiles = [
+            // Original numbered GIFs
             '10000.gif', '10001.gif', '10002.gif', '10003.gif', '10004.gif',
             '10005.gif', '10009.gif', '10010.gif', '10013.gif', '10014.gif',
-            '10015.gif', '262144.gif', '262145.gif', '262146.gif', '262147.gif'
+            '10015.gif', '262144.gif', '262145.gif', '262146.gif', '262147.gif',
+            // New GIFs
+            'ADRIAN__GoldenFloppy_Disk.gif',
+            'ADRIAN_Floppy_Disk.gif',
+            'ADRIAN_OG-Floppy_Disk.gif',
+            'ADRIAN_Punks.gif',
+            'ADRIAN_Starter-Floppy_Disk.gif',
+            'ADRIAN_X-Mas-Floppy.gif',
+            'ADRIAN-Bootleg_Floppy_Disk.gif',
+            'ADRIAN-GF-Serum.gif',
+            'Black-Light.gif',
+            'Commrades.gif',
+            'Serum_Creature.gif',
+            'Serum_DNA.gif',
+            'Serum_Venum.gif',
+            'Serum-Gold_1-1.gif',
+            'Serum-Gold_1.gif',
+            'Serum-Gold_2.gif',
+            // 3D Models (GLTF)
+            '$A-Snot.gltf',
+            '$A.gltf',
+            'DISCORD-Snot.gltf',
+            'Discord.gltf',
+            'FAQ-OFF-Snot.gltf',
+            'FAQ-OFF.gltf',
+            'GM-Snot.gltf',
+            'GM.gltf',
+            'GN-Snot.gltf',
+            'GN.gltf',
+            'LAB-Snot.gltf',
+            'LFG-Snot.gltf',
+            'LFG.gltf',
+            'V-Snot.gltf',
+            'WEN_LAMBO.gltf',
+            'WEN-LAMBO-Snot.gltf',
+            'WEN-LAMBO.gltf',
+            'WTF-Snot.gltf',
+            'WTF.gltf',
+            'X.gltf'
         ];
 
         this.floppyGifs = floppyFiles.map(filename => {
-            const match = filename.match(/^(\d+)\.gif$/);
-            const tokenId = match ? parseInt(match[1], 10) : null;
+            // Check if it's a numbered GIF (old format)
+            let match = filename.match(/^(\d+)\.gif$/);
+            let tokenId = match ? parseInt(match[1], 10) : null;
+            
+            // Determine type
+            const is3D = filename.endsWith('.gltf');
+            const type = is3D ? '3d-model' : 'floppy';
+            
+            // For non-numbered files, use filename as identifier
+            if (!tokenId) {
+                tokenId = filename.replace(/\.(gif|gltf)$/, '');
+            }
+            
             return {
                 filename,
-                tokenId,
+                tokenId: tokenId || filename,
                 url: `${this.config.floppyGifPath}${filename}`,
-                type: 'floppy'
+                type: type
             };
-        }).filter(gif => gif.tokenId !== null);
+        });
 
         // Shuffle for variety
         this.shuffleArray(this.floppyGifs);
         
-        console.log(`Loaded ${this.floppyGifs.length} floppy GIFs`);
+        const gifCount = this.floppyGifs.filter(f => f.type === 'floppy').length;
+        const modelCount = this.floppyGifs.filter(f => f.type === '3d-model').length;
+        console.log(`Loaded ${this.floppyGifs.length} floppy items: ${gifCount} GIFs, ${modelCount} 3D models`);
     }
 
     /**
@@ -756,30 +808,27 @@ class Showcase {
         let isFloppyGif = false;
         
         if (isSpecialItem) {
-            // Randomly choose between floppy or 3D model (50/50 chance)
-            const randomChoice = Math.random();
-            if (randomChoice < 0.5 && this.floppyGifs.length > 0) {
-                // Show floppy GIF
-                isFloppyGif = true;
-                floppyGif = this.getRandomFloppyGif();
-                if (floppyGif) {
-                    item.classList.add('grid-item-gif');
-                    item.dataset.isGif = 'true';
-                    item.dataset.floppyTokenId = floppyGif.tokenId;
-                    item.dataset.type = 'floppy';
-                } else {
-                    // Fallback to 3D model if no floppy available
-                    is3dModel = true;
-                    item.classList.add('grid-item-3d');
-                    item.dataset.type = '3d-model';
-                    item.dataset.model3d = 'true';
+            // Randomly choose from all floppy items (GIFs and 3D models)
+            if (this.floppyGifs.length > 0) {
+                const randomItem = this.getRandomFloppyGif();
+                if (randomItem) {
+                    if (randomItem.type === '3d-model') {
+                        // Show 3D model
+                        is3dModel = true;
+                        item.classList.add('grid-item-3d');
+                        item.dataset.type = '3d-model';
+                        item.dataset.model3d = 'true';
+                        item.dataset.modelPath = randomItem.url;
+                    } else {
+                        // Show floppy GIF
+                        isFloppyGif = true;
+                        floppyGif = randomItem;
+                        item.classList.add('grid-item-gif');
+                        item.dataset.isGif = 'true';
+                        item.dataset.floppyTokenId = floppyGif.tokenId;
+                        item.dataset.type = 'floppy';
+                    }
                 }
-            } else {
-                // Show 3D model
-                is3dModel = true;
-                item.classList.add('grid-item-3d');
-                item.dataset.type = '3d-model';
-                item.dataset.model3d = 'true';
             }
         }
         
@@ -801,8 +850,9 @@ class Showcase {
         placeholder.className = 'image-placeholder';
 
         if (is3dModel) {
-            // Create 3D model viewer element
-            this.create3dModelViewer(imageContainer, index);
+            // Create 3D model viewer element (single model, no tint)
+            const modelPath = item.dataset.modelPath || this.config.model3dPath;
+            this.create3dModelViewer(imageContainer, index, modelPath);
         } else if (isFloppyGif && floppyGif) {
             // Create floppy GIF element with transparent background
             const gif = document.createElement('img');
@@ -844,9 +894,9 @@ class Showcase {
     }
 
     /**
-     * Create 3D model viewer with red/cyan anaglyph effect and swing animation
+     * Create 3D model viewer with swing animation (single model, no tint)
      */
-    create3dModelViewer(container, index) {
+    create3dModelViewer(container, index, modelPath = null) {
         const modelWrapper = document.createElement('div');
         modelWrapper.className = 'model-3d-wrapper';
         modelWrapper.style.cssText = `
@@ -859,54 +909,25 @@ class Showcase {
             background: transparent;
         `;
 
-        // Red version (left) - slightly offset camera orbit to the left
-        // Increased distance (2.2m) and reduced FOV (35deg) to make model smaller and prevent clipping
-        const modelRed = document.createElement('model-viewer');
-        modelRed.src = this.config.model3dPath;
-        modelRed.alt = 'WEN LAMBO 3D Model';
-        modelRed.className = 'model-3d model-3d-red';
-        modelRed.setAttribute('camera-orbit', '-5deg 75deg 2.2m'); // Offset left, further away
-        modelRed.setAttribute('camera-target', '0m 0m 0m');
-        modelRed.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
-        modelRed.setAttribute('auto-rotate', '');
-        modelRed.setAttribute('auto-rotate-delay', '0');
-        modelRed.setAttribute('interaction-policy', 'allow-when-focused');
-        modelRed.setAttribute('render-scale', '2'); // Higher resolution for better quality
-        modelRed.setAttribute('exposure', '1.2'); // Slightly brighter
-        modelRed.setAttribute('shadow-intensity', '0.5');
-        modelRed.style.cssText = `
+        // Single model viewer (no tint, no overlay)
+        const modelViewer = document.createElement('model-viewer');
+        modelViewer.src = modelPath || this.config.model3dPath;
+        modelViewer.alt = '3D Model';
+        modelViewer.className = 'model-3d';
+        modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.2m'); // Centered, further away
+        modelViewer.setAttribute('camera-target', '0m 0m 0m');
+        modelViewer.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
+        modelViewer.setAttribute('auto-rotate', '');
+        modelViewer.setAttribute('auto-rotate-delay', '0');
+        modelViewer.setAttribute('interaction-policy', 'allow-when-focused');
+        modelViewer.setAttribute('render-scale', '2'); // Higher resolution for better quality
+        modelViewer.setAttribute('exposure', '1.2'); // Slightly brighter
+        modelViewer.setAttribute('shadow-intensity', '0.5');
+        modelViewer.style.cssText = `
             position: absolute;
             width: 100%;
             height: 100%;
             background: transparent;
-            filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(0deg) contrast(1.1);
-            mix-blend-mode: screen;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-        `;
-
-        // Cyan version (right) - slightly offset camera orbit to the right
-        // Increased distance (2.2m) and reduced FOV (35deg) to make model smaller and prevent clipping
-        const modelCyan = document.createElement('model-viewer');
-        modelCyan.src = this.config.model3dPath;
-        modelCyan.alt = 'WEN LAMBO 3D Model';
-        modelCyan.className = 'model-3d model-3d-cyan';
-        modelCyan.setAttribute('camera-orbit', '5deg 75deg 2.2m'); // Offset right, further away
-        modelCyan.setAttribute('camera-target', '0m 0m 0m');
-        modelCyan.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
-        modelCyan.setAttribute('auto-rotate', '');
-        modelCyan.setAttribute('auto-rotate-delay', '0');
-        modelCyan.setAttribute('interaction-policy', 'allow-when-focused');
-        modelCyan.setAttribute('render-scale', '2'); // Higher resolution for better quality
-        modelCyan.setAttribute('exposure', '1.2'); // Slightly brighter
-        modelCyan.setAttribute('shadow-intensity', '0.5');
-        modelCyan.style.cssText = `
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(180deg) contrast(1.1);
-            mix-blend-mode: screen;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
         `;
@@ -917,8 +938,7 @@ class Showcase {
         modelWrapper.style.animation = `swing-3d ${swingDuration}s ease-in-out infinite`;
         modelWrapper.style.animationDelay = `${swingDelay}s`;
 
-        modelWrapper.appendChild(modelRed);
-        modelWrapper.appendChild(modelCyan);
+        modelWrapper.appendChild(modelViewer);
         container.appendChild(modelWrapper);
     }
 
@@ -936,16 +956,18 @@ class Showcase {
         let metadata = null;
 
         if (type === '3d-model') {
+            const modelPath = item.dataset.modelPath || this.config.model3dPath;
+            const modelName = modelPath.split('/').pop().replace('.gltf', '').replace(/-/g, ' ');
             image = {
-                url: this.config.model3dPath,
+                url: modelPath,
                 type: '3d-model',
-                tokenId: 'WEN-LAMBO'
+                tokenId: modelName
             };
             
             metadata = {
-                tokenId: 'WEN-LAMBO',
-                name: 'WEN LAMBO 3D Model',
-                description: 'Anaglyph 3D model with red/cyan effect and swing animation'
+                tokenId: modelName,
+                name: `${modelName} 3D Model`,
+                description: '3D model with swing animation'
             };
         } else if (type === 'floppy') {
             const floppyTokenId = item.dataset.floppyTokenId;
@@ -1152,7 +1174,7 @@ class Showcase {
         imageContainer.className = 'modal-image-container';
         
         if (is3dModel) {
-            // Create 3D model viewer for modal
+            // Create 3D model viewer for modal (single model, no tint)
             const modelWrapper = document.createElement('div');
             modelWrapper.className = 'modal-model-3d-wrapper';
             modelWrapper.style.cssText = `
@@ -1166,54 +1188,28 @@ class Showcase {
                 background: transparent;
             `;
 
-            // Red version - slightly offset camera orbit to the left
-            // Increased distance and reduced FOV to prevent clipping
-            const modelRed = document.createElement('model-viewer');
-            modelRed.src = image.url;
-            modelRed.alt = 'WEN LAMBO 3D Model';
-            modelRed.setAttribute('camera-orbit', '-5deg 75deg 2.2m'); // Offset left, further away
-            modelRed.setAttribute('camera-target', '0m 0m 0m');
-            modelRed.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
-            modelRed.setAttribute('auto-rotate', '');
-            modelRed.setAttribute('interaction-policy', 'allow-when-focused');
-            modelRed.setAttribute('render-scale', '2'); // Higher resolution
-            modelRed.setAttribute('exposure', '1.2');
-            modelRed.style.cssText = `
+            // Single model viewer (no tint, no overlay)
+            const modelViewer = document.createElement('model-viewer');
+            modelViewer.src = image.url;
+            modelViewer.alt = '3D Model';
+            modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.2m'); // Centered, further away
+            modelViewer.setAttribute('camera-target', '0m 0m 0m');
+            modelViewer.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
+            modelViewer.setAttribute('auto-rotate', '');
+            modelViewer.setAttribute('interaction-policy', 'allow-when-focused');
+            modelViewer.setAttribute('render-scale', '2'); // Higher resolution
+            modelViewer.setAttribute('exposure', '1.2');
+            modelViewer.setAttribute('shadow-intensity', '0.5');
+            modelViewer.style.cssText = `
                 position: absolute;
                 width: 100%;
                 height: 100%;
                 background: transparent;
-                filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(0deg) contrast(1.1);
-                mix-blend-mode: screen;
                 image-rendering: -webkit-optimize-contrast;
                 image-rendering: crisp-edges;
             `;
 
-            // Cyan version - slightly offset camera orbit to the right
-            // Increased distance and reduced FOV to prevent clipping
-            const modelCyan = document.createElement('model-viewer');
-            modelCyan.src = image.url;
-            modelCyan.alt = 'WEN LAMBO 3D Model';
-            modelCyan.setAttribute('camera-orbit', '5deg 75deg 2.2m'); // Offset right, further away
-            modelCyan.setAttribute('camera-target', '0m 0m 0m');
-            modelCyan.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
-            modelCyan.setAttribute('auto-rotate', '');
-            modelCyan.setAttribute('interaction-policy', 'allow-when-focused');
-            modelCyan.setAttribute('render-scale', '2'); // Higher resolution
-            modelCyan.setAttribute('exposure', '1.2');
-            modelCyan.style.cssText = `
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                background: transparent;
-                filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(180deg) contrast(1.1);
-                mix-blend-mode: screen;
-                image-rendering: -webkit-optimize-contrast;
-                image-rendering: crisp-edges;
-            `;
-
-            modelWrapper.appendChild(modelRed);
-            modelWrapper.appendChild(modelCyan);
+            modelWrapper.appendChild(modelViewer);
             imageContainer.appendChild(modelWrapper);
         } else {
             // Regular image placeholder
