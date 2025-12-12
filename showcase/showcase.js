@@ -749,28 +749,41 @@ class Showcase {
         item.className = 'grid-item';
         item.dataset.index = index;
         
-        // Check if this should be a 3D model (1 in every model3dFrequency)
-        const is3dModel = (index % this.config.model3dFrequency === 0);
-        
-        // Check if this should be a floppy GIF (1 in every gifFrequency, but not if it's a 3D model)
-        const isFloppyGif = !is3dModel && (index % this.config.gifFrequency === 0);
+        // Check if this should be a special item (floppy or 3D model) - 1 in every gifFrequency
+        const isSpecialItem = (index % this.config.gifFrequency === 0);
         let floppyGif = null;
+        let is3dModel = false;
+        let isFloppyGif = false;
         
-        if (is3dModel) {
-            item.classList.add('grid-item-3d');
-            item.dataset.type = '3d-model';
-            item.dataset.model3d = 'true';
-        } else if (isFloppyGif) {
-            floppyGif = this.getRandomFloppyGif();
-            if (floppyGif) {
-                item.classList.add('grid-item-gif');
-                item.dataset.isGif = 'true';
-                item.dataset.floppyTokenId = floppyGif.tokenId;
-                item.dataset.type = 'floppy';
+        if (isSpecialItem) {
+            // Randomly choose between floppy or 3D model (50/50 chance)
+            const randomChoice = Math.random();
+            if (randomChoice < 0.5 && this.floppyGifs.length > 0) {
+                // Show floppy GIF
+                isFloppyGif = true;
+                floppyGif = this.getRandomFloppyGif();
+                if (floppyGif) {
+                    item.classList.add('grid-item-gif');
+                    item.dataset.isGif = 'true';
+                    item.dataset.floppyTokenId = floppyGif.tokenId;
+                    item.dataset.type = 'floppy';
+                } else {
+                    // Fallback to 3D model if no floppy available
+                    is3dModel = true;
+                    item.classList.add('grid-item-3d');
+                    item.dataset.type = '3d-model';
+                    item.dataset.model3d = 'true';
+                }
+            } else {
+                // Show 3D model
+                is3dModel = true;
+                item.classList.add('grid-item-3d');
+                item.dataset.type = '3d-model';
+                item.dataset.model3d = 'true';
             }
         }
         
-        if (!is3dModel && (!isFloppyGif || !floppyGif)) {
+        if (!isSpecialItem || (!is3dModel && !isFloppyGif)) {
             item.dataset.tokenId = image.tokenId;
             item.dataset.hash = image.hash;
             item.dataset.type = 'adrianzero';
@@ -852,12 +865,17 @@ class Showcase {
         modelRed.setAttribute('auto-rotate', '');
         modelRed.setAttribute('auto-rotate-delay', '0');
         modelRed.setAttribute('interaction-policy', 'allow-when-focused');
+        modelRed.setAttribute('render-scale', '2'); // Higher resolution for better quality
+        modelRed.setAttribute('exposure', '1.2'); // Slightly brighter
+        modelRed.setAttribute('shadow-intensity', '0.5');
         modelRed.style.cssText = `
             position: absolute;
             width: 100%;
             height: 100%;
-            filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(0deg);
+            filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(0deg) contrast(1.1);
             mix-blend-mode: screen;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         `;
 
         // Cyan version (right) - slightly offset camera orbit to the right
@@ -871,12 +889,17 @@ class Showcase {
         modelCyan.setAttribute('auto-rotate', '');
         modelCyan.setAttribute('auto-rotate-delay', '0');
         modelCyan.setAttribute('interaction-policy', 'allow-when-focused');
+        modelCyan.setAttribute('render-scale', '2'); // Higher resolution for better quality
+        modelCyan.setAttribute('exposure', '1.2'); // Slightly brighter
+        modelCyan.setAttribute('shadow-intensity', '0.5');
         modelCyan.style.cssText = `
             position: absolute;
             width: 100%;
             height: 100%;
-            filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(180deg);
+            filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(180deg) contrast(1.1);
             mix-blend-mode: screen;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         `;
 
         // Add swing animation based on index
@@ -1140,12 +1163,16 @@ class Showcase {
             modelRed.setAttribute('field-of-view', '45deg');
             modelRed.setAttribute('auto-rotate', '');
             modelRed.setAttribute('interaction-policy', 'allow-when-focused');
+            modelRed.setAttribute('render-scale', '2'); // Higher resolution
+            modelRed.setAttribute('exposure', '1.2');
             modelRed.style.cssText = `
                 position: absolute;
                 width: 100%;
                 height: 100%;
-                filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(0deg);
+                filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(0deg) contrast(1.1);
                 mix-blend-mode: screen;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
             `;
 
             // Cyan version - slightly offset camera orbit to the right
@@ -1157,12 +1184,16 @@ class Showcase {
             modelCyan.setAttribute('field-of-view', '45deg');
             modelCyan.setAttribute('auto-rotate', '');
             modelCyan.setAttribute('interaction-policy', 'allow-when-focused');
+            modelCyan.setAttribute('render-scale', '2'); // Higher resolution
+            modelCyan.setAttribute('exposure', '1.2');
             modelCyan.style.cssText = `
                 position: absolute;
                 width: 100%;
                 height: 100%;
-                filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(180deg);
+                filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(180deg) contrast(1.1);
                 mix-blend-mode: screen;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
             `;
 
             modelWrapper.appendChild(modelRed);

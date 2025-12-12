@@ -338,21 +338,27 @@ body {
     height: 100%;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.3);
+    will-change: transform;
 }
 
 .grid-item-3d model-viewer {
     width: 100%;
     height: 100%;
     background: transparent;
+    /* Improve rendering quality */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .grid-item-3d .model-3d-red {
-    filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(0deg);
+    filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(0deg) contrast(1.1);
     mix-blend-mode: screen;
 }
 
 .grid-item-3d .model-3d-cyan {
-    filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(180deg);
+    filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(180deg) contrast(1.1);
     mix-blend-mode: screen;
 }
 
