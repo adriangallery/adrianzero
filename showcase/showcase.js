@@ -851,17 +851,20 @@ class Showcase {
             position: relative;
             width: 100%;
             height: 100%;
-            overflow: hidden;
+            overflow: visible;
+            padding: 10%;
+            box-sizing: border-box;
         `;
 
         // Red version (left) - slightly offset camera orbit to the left
+        // Increased distance (2.2m) and reduced FOV (35deg) to make model smaller and prevent clipping
         const modelRed = document.createElement('model-viewer');
         modelRed.src = this.config.model3dPath;
         modelRed.alt = 'WEN LAMBO 3D Model';
         modelRed.className = 'model-3d model-3d-red';
-        modelRed.setAttribute('camera-orbit', '-5deg 75deg 1.5m'); // Offset left
+        modelRed.setAttribute('camera-orbit', '-5deg 75deg 2.2m'); // Offset left, further away
         modelRed.setAttribute('camera-target', '0m 0m 0m');
-        modelRed.setAttribute('field-of-view', '45deg');
+        modelRed.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
         modelRed.setAttribute('auto-rotate', '');
         modelRed.setAttribute('auto-rotate-delay', '0');
         modelRed.setAttribute('interaction-policy', 'allow-when-focused');
@@ -879,13 +882,14 @@ class Showcase {
         `;
 
         // Cyan version (right) - slightly offset camera orbit to the right
+        // Increased distance (2.2m) and reduced FOV (35deg) to make model smaller and prevent clipping
         const modelCyan = document.createElement('model-viewer');
         modelCyan.src = this.config.model3dPath;
         modelCyan.alt = 'WEN LAMBO 3D Model';
         modelCyan.className = 'model-3d model-3d-cyan';
-        modelCyan.setAttribute('camera-orbit', '5deg 75deg 1.5m'); // Offset right
+        modelCyan.setAttribute('camera-orbit', '5deg 75deg 2.2m'); // Offset right, further away
         modelCyan.setAttribute('camera-target', '0m 0m 0m');
-        modelCyan.setAttribute('field-of-view', '45deg');
+        modelCyan.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
         modelCyan.setAttribute('auto-rotate', '');
         modelCyan.setAttribute('auto-rotate-delay', '0');
         modelCyan.setAttribute('interaction-policy', 'allow-when-focused');
@@ -1155,12 +1159,13 @@ class Showcase {
             `;
 
             // Red version - slightly offset camera orbit to the left
+            // Increased distance and reduced FOV to prevent clipping
             const modelRed = document.createElement('model-viewer');
             modelRed.src = image.url;
             modelRed.alt = 'WEN LAMBO 3D Model';
-            modelRed.setAttribute('camera-orbit', '-5deg 75deg 1.5m'); // Offset left
+            modelRed.setAttribute('camera-orbit', '-5deg 75deg 2.2m'); // Offset left, further away
             modelRed.setAttribute('camera-target', '0m 0m 0m');
-            modelRed.setAttribute('field-of-view', '45deg');
+            modelRed.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
             modelRed.setAttribute('auto-rotate', '');
             modelRed.setAttribute('interaction-policy', 'allow-when-focused');
             modelRed.setAttribute('render-scale', '2'); // Higher resolution
@@ -1176,12 +1181,13 @@ class Showcase {
             `;
 
             // Cyan version - slightly offset camera orbit to the right
+            // Increased distance and reduced FOV to prevent clipping
             const modelCyan = document.createElement('model-viewer');
             modelCyan.src = image.url;
             modelCyan.alt = 'WEN LAMBO 3D Model';
-            modelCyan.setAttribute('camera-orbit', '5deg 75deg 1.5m'); // Offset right
+            modelCyan.setAttribute('camera-orbit', '5deg 75deg 2.2m'); // Offset right, further away
             modelCyan.setAttribute('camera-target', '0m 0m 0m');
-            modelCyan.setAttribute('field-of-view', '45deg');
+            modelCyan.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
             modelCyan.setAttribute('auto-rotate', '');
             modelCyan.setAttribute('interaction-policy', 'allow-when-focused');
             modelCyan.setAttribute('render-scale', '2'); // Higher resolution
