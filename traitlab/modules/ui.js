@@ -51,6 +51,7 @@ class UIManager {
         
         // Selection methods
         this.getSelectionState = this.getSelectionState.bind(this);
+        this.handleLoadMoreTraits = this.handleLoadMoreTraits.bind(this);
     }
 
     /**
@@ -1031,6 +1032,98 @@ class UIManager {
                     openPackStatus.style.display = 'none';
                 }, 5000);
             }
+        }
+    }
+
+    /**
+     * Actualizar botón "Load More" según disponibilidad de más traits
+     */
+    updateLoadMoreButton(hasMore) {
+        const tokensSection = this.domElements.get('tokens-section');
+        
+        if (!tokensSection) return;
+        
+        // Buscar o crear el botón
+        let loadMoreBtn = this.domElements.get('load-more-traits-btn');
+        
+        if (!loadMoreBtn) {
+            loadMoreBtn = document.createElement('button');
+            loadMoreBtn.id = 'load-more-traits-btn';
+            loadMoreBtn.className = 'load-more-traits-btn';
+            loadMoreBtn.textContent = 'Load More Traits';
+            loadMoreBtn.style.cssText = `
+                display: block;
+                margin: 20px auto;
+                padding: 12px 24px;
+                background: var(--accent, #00D632);
+                color: #000;
+                border: none;
+                border-radius: 999px;
+                font-size: 0.95rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.18s ease-out;
+            `;
+            loadMoreBtn.addEventListener('click', this.handleLoadMoreTraits);
+            tokensSection.appendChild(loadMoreBtn);
+            this.domElements.set('load-more-traits-btn', loadMoreBtn);
+        }
+        
+        if (hasMore) {
+            loadMoreBtn.style.display = 'block';
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.textContent = 'Load More Traits';
+        } else {
+            loadMoreBtn.style.display = 'none';
+        }
+    }
+
+    /**
+     * Manejar click en botón "Load More"
+     */
+    async handleLoadMoreTraits() {
+        const loadMoreBtn = this.domElements.get('load-more-traits-btn');
+        const tokensGrid = this.domElements.get('tokens-grid');
+        
+        if (!loadMoreBtn || !tokensGrid) return;
+        
+        // Deshabilitar botón mientras carga
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.textContent = 'Loading...';
+        
+        try {
+            const dataManager = window.app?.modules?.dataManager;
+            if (!dataManager) {
+                console.error('❌ DataManager no disponible');
+                return;
+            }
+            
+            // Cargar más traits
+            const newTraits = await dataManager.loadMoreTraits();
+            
+            if (newTraits && newTraits.length > 0) {
+                // Agregar nuevos traits al grid
+                newTraits.forEach(token => {
+                    const tokenCard = this.createTokenCard(token);
+                    tokensGrid.appendChild(tokenCard);
+                });
+                
+                // Actualizar botón según si hay más
+                const hasMore = dataManager.paginationState?.traits?.hasMore || false;
+                this.updateLoadMoreButton(hasMore);
+                
+                // Actualizar selección
+                this.updateSelectionInfo();
+                
+                console.log(`✅ ${newTraits.length} nuevos traits cargados`);
+            } else {
+                // No hay más traits
+                this.updateLoadMoreButton(false);
+            }
+        } catch (error) {
+            console.error('❌ Error cargando más traits:', error);
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.textContent = 'Load More Traits';
         }
     }
 
