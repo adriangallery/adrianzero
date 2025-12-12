@@ -81,18 +81,39 @@ class Showcase {
     async loadFloppyGifs() {
         try {
             // Load files dynamically from GitHub API
-            const apiUrl = `https://api.github.com/repos/${this.config.githubRepo}/contents/showcase/floppy?ref=${this.config.githubBranch}`;
+            // Try different possible paths
+            const possiblePaths = [
+                `showcase/floppy`,
+                `floppy`,
+                `public/floppy`
+            ];
             
-            const response = await fetch(apiUrl);
-            if (!response.ok) {
-                throw new Error(`GitHub API error: ${response.status}`);
+            let files = [];
+            let lastError = null;
+            
+            for (const path of possiblePaths) {
+                try {
+                    const apiUrl = `https://api.github.com/repos/${this.config.githubRepo}/contents/${path}?ref=${this.config.githubBranch}`;
+                    const response = await fetch(apiUrl);
+                    
+                    if (response.ok) {
+                        files = await response.json();
+                        console.log(`✅ Found floppy files at path: ${path}`);
+                        break;
+                    }
+                } catch (error) {
+                    lastError = error;
+                    continue;
+                }
             }
             
-            const files = await response.json();
+            if (files.length === 0) {
+                throw new Error(`Could not find floppy folder in any of the tried paths: ${possiblePaths.join(', ')}`);
+            }
             
             // Filter only GIF and GLTF files
             const floppyFiles = files
-                .filter(file => file.name.endsWith('.gif') || file.name.endsWith('.gltf'))
+                .filter(file => (file.name.endsWith('.gif') || file.name.endsWith('.gltf')) && file.type === 'file')
                 .map(file => file.name);
             
             this.floppyGifs = floppyFiles.map(filename => {
