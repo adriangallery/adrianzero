@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEN LAMBO Survivor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: auto;
+        }
+
+        #hud h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #00D632;
+        }
+
+        #hud .stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        #hud .stat-label {
+            color: #B3B3B3;
+        }
+
+        #hud .stat-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        #level-up {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid #00D632;
+            display: none;
+            pointer-events: auto;
+            min-width: 300px;
+        }
+
+        #level-up.active {
+            display: block;
+        }
+
+        #level-up h3 {
+            color: #00D632;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        #level-up .upgrade {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        #level-up .upgrade:hover {
+            background: rgba(0, 214, 50, 0.1);
+            border-color: #00D632;
+        }
+
+        #level-up .upgrade-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        #level-up .upgrade-desc {
+            font-size: 12px;
+            color: #B3B3B3;
+        }
+
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 16px;
+            border: 2px solid #ff0000;
+            display: none;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        #game-over.active {
+            display: block;
+        }
+
+        #game-over h2 {
+            color: #ff0000;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        #game-over button {
+            background: #00D632;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            margin-top: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        #game-over button:hover {
+            background: #0AFF5A;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 16px;
+            border: 2px solid #00D632;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        #start-screen h1 {
+            color: #00D632;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        #start-screen p {
+            color: #B3B3B3;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        #start-screen button {
+            background: #00D632;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        #start-screen button:hover {
+            background: #0AFF5A;
+        }
+
+        .health-bar {
+            width: 200px;
+            height: 20px;
+            background: rgba(255, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .health-bar-fill {
+            height: 100%;
+            background: #00D632;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    
+    <div id="ui">
+        <div id="start-screen">
+            <h1>WEN LAMBO SURVIVOR</h1>
+            <p>Survive as long as you can!<br>Enemies will spawn and attack you.<br>Kill them to gain XP and level up.</p>
+            <button id="start-btn">START GAME</button>
+        </div>
+
+        <div id="hud" style="display: none;">
+            <h2>STATS</h2>
+            <div class="stat">
+                <span class="stat-label">Level:</span>
+                <span class="stat-value" id="level">1</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">XP:</span>
+                <span class="stat-value" id="xp">0 / 100</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Kills:</span>
+                <span class="stat-value" id="kills">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Time:</span>
+                <span class="stat-value" id="time">0:00</span>
+            </div>
+            <div class="health-bar">
+                <div class="health-bar-fill" id="health-fill" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div id="level-up">
+            <h3>LEVEL UP!</h3>
+            <div id="upgrades-list"></div>
+        </div>
+
+        <div id="game-over">
+            <h2>GAME OVER</h2>
+            <p>You survived for <span id="final-time">0:00</span></p>
+            <p>Kills: <span id="final-kills">0</span></p>
+            <p>Level: <span id="final-level">1</span></p>
+            <button id="restart-btn">RESTART</button>
+        </div>
+    </div>
+
+    <!-- Three.js r182 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.182.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // Game state
+        const gameState = {
+            started: false,
+            paused: false,
+            gameOver: false,
+            level: 1,
+            xp: 0,
+            xpToNext: 100,
+            kills: 0,
+            health: 100,
+            maxHealth: 100,
+            time: 0,
+            player: null,
+            enemies: [],
+            bullets: [],
+            upgrades: {
+                damage: 1,
+                fireRate: 1,
+                speed: 1,
+                health: 1,
+                bulletSpeed: 1,
+                bulletSize: 1
+            }
+        };
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0a);
+        scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(0, 5, 10);
+        camera.lookAt(0, 0, 0);
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 10, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.camera.left = -20;
+        directionalLight.shadow.camera.right = 20;
+        directionalLight.shadow.camera.top = 20;
+        directionalLight.shadow.camera.bottom = -20;
+        scene.add(directionalLight);
+
+        const pointLight = new THREE.PointLight(0x00D632, 0.5, 30);
+        pointLight.position.set(0, 5, 0);
+        scene.add(pointLight);
+
+        // Ground
+        const groundGeometry = new THREE.PlaneGeometry(100, 100);
+        const groundMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x1a1a1a,
+            roughness: 0.8,
+            metalness: 0.2
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Load player model
+        const loader = new GLTFLoader();
+        let playerModel = null;
+
+        function createPlayer() {
+            if (!playerModel) return;
+
+            const player = playerModel.clone();
+            
+            // Scale and position
+            const box = new THREE.Box3().setFromObject(player);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 0.5 / maxDim;
+            player.scale.multiplyScalar(scale);
+            
+            player.position.set(0, 0, 0);
+            player.rotation.y = Math.PI;
+
+            // Enable shadows
+            player.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+
+            scene.add(player);
+            return player;
+        }
+
+        // Create enemy
+        function createEnemy() {
+            const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.3
+            });
+            const enemy = new THREE.Mesh(geometry, material);
+            enemy.castShadow = true;
+            enemy.receiveShadow = true;
+
+            // Random position around player
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 15 + Math.random() * 10;
+            enemy.position.set(
+                Math.cos(angle) * distance,
+                0.25,
+                Math.sin(angle) * distance
+            );
+
+            enemy.userData = {
+                health: 1,
+                speed: 0.02 * gameState.level,
+                damage: 1
+            };
+
+            scene.add(enemy);
+            gameState.enemies.push(enemy);
+        }
+
+        // Create bullet
+        function createBullet(startPos, targetPos) {
+            const geometry = new THREE.SphereGeometry(0.1 * gameState.upgrades.bulletSize, 8, 8);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x00D632,
+                emissive: 0x00D632,
+                emissiveIntensity: 0.5
+            });
+            const bullet = new THREE.Mesh(geometry, material);
+            bullet.position.copy(startPos);
+            bullet.castShadow = true;
+
+            const direction = new THREE.Vector3()
+                .subVectors(targetPos, startPos)
+                .normalize();
+
+            bullet.userData = {
+                velocity: direction.multiplyScalar(0.3 * gameState.upgrades.bulletSpeed),
+                damage: gameState.upgrades.damage,
+                lifetime: 3
+            };
+
+            scene.add(bullet);
+            gameState.bullets.push(bullet);
+        }
+
+        // Shoot at nearest enemy
+        let lastShotTime = 0;
+        function shoot() {
+            if (gameState.enemies.length === 0) return;
+            if (Date.now() - lastShotTime < 500 / gameState.upgrades.fireRate) return;
+
+            // Find nearest enemy
+            let nearestEnemy = null;
+            let nearestDistance = Infinity;
+            gameState.enemies.forEach(enemy => {
+                const distance = enemy.position.distanceTo(gameState.player.position);
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestEnemy = enemy;
+                }
+            });
+
+            if (nearestEnemy) {
+                const startPos = gameState.player.position.clone();
+                startPos.y += 0.5;
+                createBullet(startPos, nearestEnemy.position);
+                lastShotTime = Date.now();
+            }
+        }
+
+        // Update bullets
+        function updateBullets(deltaTime) {
+            for (let i = gameState.bullets.length - 1; i >= 0; i--) {
+                const bullet = gameState.bullets[i];
+                bullet.position.add(bullet.userData.velocity.clone().multiplyScalar(deltaTime * 60));
+                bullet.userData.lifetime -= deltaTime;
+
+                // Check collision with enemies
+                for (let j = gameState.enemies.length - 1; j >= 0; j--) {
+                    const enemy = gameState.enemies[j];
+                    if (bullet.position.distanceTo(enemy.position) < 0.5) {
+                        // Hit enemy
+                        enemy.userData.health -= bullet.userData.damage;
+                        if (enemy.userData.health <= 0) {
+                            // Enemy killed
+                            scene.remove(enemy);
+                            gameState.enemies.splice(j, 1);
+                            gameState.kills++;
+                            gameState.xp += 10;
+                            updateXP();
+                        }
+                        scene.remove(bullet);
+                        gameState.bullets.splice(i, 1);
+                        break;
+                    }
+                }
+
+                // Remove bullet if lifetime expired or out of bounds
+                if (bullet.userData.lifetime <= 0 || 
+                    bullet.position.distanceTo(gameState.player.position) > 50) {
+                    scene.remove(bullet);
+                    gameState.bullets.splice(i, 1);
+                }
+            }
+        }
+
+        // Update enemies
+        function updateEnemies(deltaTime) {
+            gameState.enemies.forEach(enemy => {
+                // Move towards player
+                const direction = new THREE.Vector3()
+                    .subVectors(gameState.player.position, enemy.position)
+                    .normalize();
+                
+                enemy.position.add(direction.multiplyScalar(enemy.userData.speed * deltaTime * 60));
+                enemy.rotation.y += deltaTime * 5;
+
+                // Check collision with player
+                if (enemy.position.distanceTo(gameState.player.position) < 0.8) {
+                    gameState.health -= enemy.userData.damage * deltaTime * 2;
+                    updateHealth();
+                    
+                    if (gameState.health <= 0) {
+                        endGame();
+                    }
+                }
+            });
+        }
+
+        // Spawn enemies
+        let lastSpawnTime = 0;
+        function spawnEnemies() {
+            const spawnRate = Math.max(1000, 3000 - gameState.level * 100);
+            if (Date.now() - lastSpawnTime > spawnRate) {
+                createEnemy();
+                lastSpawnTime = Date.now();
+            }
+        }
+
+        // XP and leveling
+        function updateXP() {
+            document.getElementById('xp').textContent = `${gameState.xp} / ${gameState.xpToNext}`;
+            
+            if (gameState.xp >= gameState.xpToNext) {
+                levelUp();
+            }
+        }
+
+        function levelUp() {
+            gameState.level++;
+            gameState.xp = 0;
+            gameState.xpToNext = Math.floor(100 * Math.pow(1.2, gameState.level - 1));
+            gameState.health = Math.min(gameState.maxHealth, gameState.health + 20);
+            updateHealth();
+            
+            showLevelUpMenu();
+        }
+
+        // Level up menu
+        const upgrades = [
+            { id: 'damage', title: 'Increase Damage', desc: '+20% damage' },
+            { id: 'fireRate', title: 'Increase Fire Rate', desc: '+15% fire rate' },
+            { id: 'speed', title: 'Increase Speed', desc: '+10% movement speed' },
+            { id: 'health', title: 'Increase Health', desc: '+20 max health' },
+            { id: 'bulletSpeed', title: 'Faster Bullets', desc: '+25% bullet speed' },
+            { id: 'bulletSize', title: 'Bigger Bullets', desc: '+20% bullet size' }
+        ];
+
+        function showLevelUpMenu() {
+            gameState.paused = true;
+            const menu = document.getElementById('level-up');
+            const list = document.getElementById('upgrades-list');
+            list.innerHTML = '';
+
+            // Show 3 random upgrades
+            const shuffled = [...upgrades].sort(() => Math.random() - 0.5);
+            shuffled.slice(0, 3).forEach(upgrade => {
+                const div = document.createElement('div');
+                div.className = 'upgrade';
+                div.innerHTML = `
+                    <div class="upgrade-title">${upgrade.title}</div>
+                    <div class="upgrade-desc">${upgrade.desc}</div>
+                `;
+                div.addEventListener('click', () => {
+                    applyUpgrade(upgrade.id);
+                    menu.classList.remove('active');
+                    gameState.paused = false;
+                });
+                list.appendChild(div);
+            });
+
+            menu.classList.add('active');
+        }
+
+        function applyUpgrade(id) {
+            switch(id) {
+                case 'damage':
+                    gameState.upgrades.damage *= 1.2;
+                    break;
+                case 'fireRate':
+                    gameState.upgrades.fireRate *= 1.15;
+                    break;
+                case 'speed':
+                    gameState.upgrades.speed *= 1.1;
+                    break;
+                case 'health':
+                    gameState.maxHealth += 20;
+                    gameState.health += 20;
+                    updateHealth();
+                    break;
+                case 'bulletSpeed':
+                    gameState.upgrades.bulletSpeed *= 1.25;
+                    break;
+                case 'bulletSize':
+                    gameState.upgrades.bulletSize *= 1.2;
+                    break;
+            }
+        }
+
+        // UI updates
+        function updateHealth() {
+            const percent = (gameState.health / gameState.maxHealth) * 100;
+            document.getElementById('health-fill').style.width = percent + '%';
+        }
+
+        function updateHUD() {
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('kills').textContent = gameState.kills;
+            
+            const minutes = Math.floor(gameState.time / 60);
+            const seconds = Math.floor(gameState.time % 60);
+            document.getElementById('time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function endGame() {
+            gameState.gameOver = true;
+            gameState.paused = true;
+            
+            const minutes = Math.floor(gameState.time / 60);
+            const seconds = Math.floor(gameState.time % 60);
+            document.getElementById('final-time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('final-kills').textContent = gameState.kills;
+            document.getElementById('final-level').textContent = gameState.level;
+            
+            document.getElementById('game-over').classList.add('active');
+        }
+
+        function restartGame() {
+            // Reset state
+            gameState.started = false;
+            gameState.paused = false;
+            gameState.gameOver = false;
+            gameState.level = 1;
+            gameState.xp = 0;
+            gameState.xpToNext = 100;
+            gameState.kills = 0;
+            gameState.health = 100;
+            gameState.maxHealth = 100;
+            gameState.time = 0;
+            gameState.upgrades = {
+                damage: 1,
+                fireRate: 1,
+                speed: 1,
+                health: 1,
+                bulletSpeed: 1,
+                bulletSize: 1
+            };
+
+            // Remove all enemies and bullets
+            gameState.enemies.forEach(enemy => scene.remove(enemy));
+            gameState.bullets.forEach(bullet => scene.remove(bullet));
+            gameState.enemies = [];
+            gameState.bullets = [];
+
+            // Hide UI
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('game-over').classList.remove('active');
+            document.getElementById('start-screen').style.display = 'block';
+        }
+
+        // Start game
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            gameState.started = true;
+            gameState.paused = false;
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            restartGame();
+        });
+
+        // Load player model
+        loader.load(
+            'https://raw.githubusercontent.com/adriangallery/AdrianLAB/d05193bc1dbc1c577c051656111a3c07281ba019/showcase/floppy/WEN-LAMBO.gltf',
+            (gltf) => {
+                playerModel = gltf.scene;
+                gameState.player = createPlayer();
+            },
+            undefined,
+            (error) => {
+                console.error('Error loading model:', error);
+                // Create fallback player
+                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const material = new THREE.MeshStandardMaterial({ color: 0x00D632 });
+                gameState.player = new THREE.Mesh(geometry, material);
+                gameState.player.position.set(0, 0.25, 0);
+                scene.add(gameState.player);
+            }
+        );
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(currentTime) {
+            requestAnimationFrame(animate);
+            
+            if (!gameState.started || gameState.paused || gameState.gameOver) {
+                renderer.render(scene, camera);
+                return;
+            }
+
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
+            // Update game
+            gameState.time += deltaTime;
+            updateHUD();
+
+            // Rotate player
+            if (gameState.player) {
+                gameState.player.rotation.y += deltaTime * 2;
+            }
+
+            // Spawn enemies
+            spawnEnemies();
+
+            // Shoot
+            shoot();
+
+            // Update entities
+            updateBullets(deltaTime);
+            updateEnemies(deltaTime);
+
+            // Update camera to follow player
+            if (gameState.player) {
+                camera.position.x = gameState.player.position.x;
+                camera.position.z = gameState.player.position.z + 10;
+                camera.lookAt(gameState.player.position);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate(0);
+    </script>
+</body>
+</html>
+
