@@ -819,8 +819,9 @@ class Showcase {
         item.className = 'grid-item';
         item.dataset.index = index;
         
-        // Check if this should be a special item (floppy or 3D model) - 1 in every gifFrequency
-        const isSpecialItem = (index % this.config.gifFrequency === 0);
+        // Check if this should be a special item (floppy or 3D model) - truly random 1 in every gifFrequency
+        // Use probability instead of modulo to avoid clustering in rows/columns
+        const isSpecialItem = (Math.random() < (1 / this.config.gifFrequency));
         let floppyGif = null;
         let is3dModel = false;
         let isFloppyGif = false;
