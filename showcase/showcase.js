@@ -76,80 +76,101 @@ class Showcase {
     }
 
     /**
-     * Load list of floppy GIFs and 3D models dynamically from floppy/ folder
+     * Load list of floppy GIFs and 3D models - verify files exist before adding
      */
     async loadFloppyGifs() {
-        try {
-            // Load files dynamically from GitHub API
-            // Try different possible paths
-            const possiblePaths = [
-                `showcase/floppy`,
-                `floppy`,
-                `public/floppy`
-            ];
-            
-            let files = [];
-            let lastError = null;
-            
-            for (const path of possiblePaths) {
-                try {
-                    const apiUrl = `https://api.github.com/repos/${this.config.githubRepo}/contents/${path}?ref=${this.config.githubBranch}`;
-                    const response = await fetch(apiUrl);
-                    
-                    if (response.ok) {
-                        files = await response.json();
-                        console.log(`✅ Found floppy files at path: ${path}`);
-                        break;
-                    }
-                } catch (error) {
-                    lastError = error;
-                    continue;
-                }
-            }
-            
-            if (files.length === 0) {
-                throw new Error(`Could not find floppy folder in any of the tried paths: ${possiblePaths.join(', ')}`);
-            }
-            
-            // Filter only GIF and GLTF files
-            const floppyFiles = files
-                .filter(file => (file.name.endsWith('.gif') || file.name.endsWith('.gltf')) && file.type === 'file')
-                .map(file => file.name);
-            
-            this.floppyGifs = floppyFiles.map(filename => {
-                // Check if it's a numbered GIF (old format)
-                let match = filename.match(/^(\d+)\.gif$/);
-                let tokenId = match ? parseInt(match[1], 10) : null;
-                
-                // Determine type
-                const is3D = filename.endsWith('.gltf');
-                const type = is3D ? '3d-model' : 'floppy';
-                
-                // For non-numbered files, use filename as identifier
-                if (!tokenId) {
-                    tokenId = filename.replace(/\.(gif|gltf)$/, '');
-                }
-                
-                return {
-                    filename,
-                    tokenId: tokenId || filename,
-                    url: `${this.config.floppyGifPath}${filename}`,
-                    type: type
-                };
-            });
+        // List of all possible floppy files (from local folder)
+        const allPossibleFiles = [
+            // Original numbered GIFs (may not exist)
+            '10000.gif', '10001.gif', '10002.gif', '10003.gif', '10004.gif',
+            '10005.gif', '10009.gif', '10010.gif', '10013.gif', '10014.gif',
+            '10015.gif', '262144.gif', '262145.gif', '262146.gif', '262147.gif',
+            // New GIFs
+            'ADRIAN__GoldenFloppy_Disk.gif',
+            'ADRIAN_Floppy_Disk.gif',
+            'ADRIAN_OG-Floppy_Disk.gif',
+            'ADRIAN_Punks.gif',
+            'ADRIAN_Starter-Floppy_Disk.gif',
+            'ADRIAN_X-Mas-Floppy.gif',
+            'ADRIAN-Bootleg_Floppy_Disk.gif',
+            'ADRIAN-GF-Serum.gif',
+            'Black-Light.gif',
+            'Commrades.gif',
+            'Serum_Creature.gif',
+            'Serum_DNA.gif',
+            'Serum_Venum.gif',
+            'Serum-Gold_1-1.gif',
+            'Serum-Gold_1.gif',
+            'Serum-Gold_2.gif',
+            // 3D Models (GLTF)
+            '$A-Snot.gltf',
+            '$A.gltf',
+            'DISCORD-Snot.gltf',
+            'Discord.gltf',
+            'FAQ-OFF-Snot.gltf',
+            'FAQ-OFF.gltf',
+            'GM-Snot.gltf',
+            'GM.gltf',
+            'GN-Snot.gltf',
+            'GN.gltf',
+            'LAB-Snot.gltf',
+            'LFG-Snot.gltf',
+            'LFG.gltf',
+            'V-Snot.gltf',
+            'WEN_LAMBO.gltf',
+            'WEN-LAMBO-Snot.gltf',
+            'WEN-LAMBO.gltf',
+            'WTF-Snot.gltf',
+            'WTF.gltf',
+            'X.gltf'
+        ];
 
-            // Shuffle for variety
-            this.shuffleArray(this.floppyGifs);
+        // Verify which files actually exist by trying to load them
+        const fileChecks = await Promise.allSettled(
+            allPossibleFiles.map(async (filename) => {
+                const url = `${this.config.floppyGifPath}${filename}`;
+                try {
+                    const response = await fetch(url, { method: 'HEAD' });
+                    return response.ok ? filename : null;
+                } catch {
+                    return null;
+                }
+            })
+        );
+
+        // Get list of files that exist
+        const existingFiles = fileChecks
+            .map((result, index) => result.status === 'fulfilled' && result.value ? allPossibleFiles[index] : null)
+            .filter(file => file !== null);
+
+        this.floppyGifs = existingFiles.map(filename => {
+            // Check if it's a numbered GIF (old format)
+            let match = filename.match(/^(\d+)\.gif$/);
+            let tokenId = match ? parseInt(match[1], 10) : null;
             
-            const gifCount = this.floppyGifs.filter(f => f.type === 'floppy').length;
-            const modelCount = this.floppyGifs.filter(f => f.type === '3d-model').length;
-            console.log(`Loaded ${this.floppyGifs.length} floppy items dynamically: ${gifCount} GIFs, ${modelCount} 3D models`);
-        } catch (error) {
-            console.error('Error loading floppy files dynamically:', error);
-            // Fallback to empty array if API fails
-            this.floppyGifs = [];
-            console.log('Floppy files loading failed, using empty array');
-        }
+            // Determine type
+            const is3D = filename.endsWith('.gltf');
+            const type = is3D ? '3d-model' : 'floppy';
+            
+            // For non-numbered files, use filename as identifier
+            if (!tokenId) {
+                tokenId = filename.replace(/\.(gif|gltf)$/, '');
+            }
+            
+            return {
+                filename,
+                tokenId: tokenId || filename,
+                url: `${this.config.floppyGifPath}${filename}`,
+                type: type
+            };
+        });
+
+        // Shuffle for variety
+        this.shuffleArray(this.floppyGifs);
+        
+        const gifCount = this.floppyGifs.filter(f => f.type === 'floppy').length;
+        const modelCount = this.floppyGifs.filter(f => f.type === '3d-model').length;
+        console.log(`Loaded ${this.floppyGifs.length} floppy items (verified): ${gifCount} GIFs, ${modelCount} 3D models`);
     }
 
     /**
