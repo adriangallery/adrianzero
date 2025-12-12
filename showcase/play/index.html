@@ -183,6 +183,29 @@
             line-height: 1.6;
         }
 
+        #controls-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+            color: #B3B3B3;
+            pointer-events: none;
+        }
+
+        #controls-info .control {
+            margin: 5px 0;
+        }
+
+        #controls-info .key {
+            color: #00D632;
+            font-weight: 600;
+        }
+
         #start-screen button {
             background: #00D632;
             color: #000;
@@ -247,6 +270,11 @@
             </div>
         </div>
 
+        <div id="controls-info" style="display: none;">
+            <div class="control"><span class="key">WASD</span> / <span class="key">Arrow Keys</span> - Move</div>
+            <div class="control"><span class="key">Mouse Click</span> / <span class="key">Space</span> - Shoot</div>
+        </div>
+
         <div id="level-up">
             <h3>LEVEL UP!</h3>
             <div id="upgrades-list"></div>
@@ -298,7 +326,21 @@
                 health: 1,
                 bulletSpeed: 1,
                 bulletSize: 1
-            }
+            },
+            // Input state
+            keys: {
+                w: false,
+                a: false,
+                s: false,
+                d: false,
+                arrowUp: false,
+                arrowDown: false,
+                arrowLeft: false,
+                arrowRight: false,
+                space: false
+            },
+            mousePosition: new THREE.Vector2(),
+            mouseWorldPosition: new THREE.Vector3()
         };
 
         // Scene setup
@@ -441,29 +483,46 @@
             gameState.bullets.push(bullet);
         }
 
-        // Shoot at nearest enemy
+        // Shoot towards mouse position or forward direction
         let lastShotTime = 0;
-        function shoot() {
-            if (gameState.enemies.length === 0) return;
+        function shoot(targetPos = null) {
             if (Date.now() - lastShotTime < 500 / gameState.upgrades.fireRate) return;
 
-            // Find nearest enemy
-            let nearestEnemy = null;
-            let nearestDistance = Infinity;
-            gameState.enemies.forEach(enemy => {
-                const distance = enemy.position.distanceTo(gameState.player.position);
-                if (distance < nearestDistance) {
-                    nearestDistance = distance;
-                    nearestEnemy = enemy;
-                }
-            });
+            const startPos = gameState.player.position.clone();
+            startPos.y += 0.5;
 
-            if (nearestEnemy) {
-                const startPos = gameState.player.position.clone();
-                startPos.y += 0.5;
-                createBullet(startPos, nearestEnemy.position);
-                lastShotTime = Date.now();
+            let shootTarget;
+            if (targetPos) {
+                // Shoot towards mouse position
+                shootTarget = targetPos;
+            } else {
+                // Shoot forward in movement direction or default forward
+                const forward = new THREE.Vector3(0, 0, -1);
+                forward.applyQuaternion(gameState.player.quaternion);
+                shootTarget = startPos.clone().add(forward.multiplyScalar(10));
             }
+
+            createBullet(startPos, shootTarget);
+            lastShotTime = Date.now();
+        }
+
+        // Raycaster for mouse position
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Get mouse world position
+        function getMouseWorldPosition(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Intersect with ground plane
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const intersectPoint = new THREE.Vector3();
+            raycaster.ray.intersectPlane(plane, intersectPoint);
+            
+            return intersectPoint;
         }
 
         // Update bullets
@@ -500,6 +559,46 @@
                     gameState.bullets.splice(i, 1);
                 }
             }
+        }
+
+        // Update player movement
+        function updatePlayerMovement(deltaTime) {
+            if (!gameState.player) return;
+
+            const moveSpeed = 0.1 * gameState.upgrades.speed;
+            const velocity = new THREE.Vector3();
+
+            // WASD or Arrow keys
+            if (gameState.keys.w || gameState.keys.arrowUp) {
+                velocity.z -= moveSpeed;
+            }
+            if (gameState.keys.s || gameState.keys.arrowDown) {
+                velocity.z += moveSpeed;
+            }
+            if (gameState.keys.a || gameState.keys.arrowLeft) {
+                velocity.x -= moveSpeed;
+            }
+            if (gameState.keys.d || gameState.keys.arrowRight) {
+                velocity.x += moveSpeed;
+            }
+
+            // Normalize diagonal movement
+            if (velocity.length() > 0) {
+                velocity.normalize();
+                velocity.multiplyScalar(moveSpeed * deltaTime * 60);
+                gameState.player.position.add(velocity);
+
+                // Rotate player towards movement direction
+                if (velocity.length() > 0.01) {
+                    const angle = Math.atan2(velocity.x, velocity.z);
+                    gameState.player.rotation.y = angle;
+                }
+            }
+
+            // Keep player within bounds
+            const bounds = 20;
+            gameState.player.position.x = Math.max(-bounds, Math.min(bounds, gameState.player.position.x));
+            gameState.player.position.z = Math.max(-bounds, Math.min(bounds, gameState.player.position.z));
         }
 
         // Update enemies
@@ -672,14 +771,63 @@
 
             // Hide UI
             document.getElementById('hud').style.display = 'none';
+            document.getElementById('controls-info').style.display = 'none';
             document.getElementById('game-over').classList.remove('active');
             document.getElementById('start-screen').style.display = 'block';
         }
+
+        // Input handlers
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            if (key === 'w') gameState.keys.w = true;
+            if (key === 'a') gameState.keys.a = true;
+            if (key === 's') gameState.keys.s = true;
+            if (key === 'd') gameState.keys.d = true;
+            if (key === ' ') {
+                event.preventDefault();
+                gameState.keys.space = true;
+                if (gameState.started && !gameState.paused && !gameState.gameOver) {
+                    shoot(gameState.mouseWorldPosition);
+                }
+            }
+            if (event.key === 'ArrowUp') gameState.keys.arrowUp = true;
+            if (event.key === 'ArrowDown') gameState.keys.arrowDown = true;
+            if (event.key === 'ArrowLeft') gameState.keys.arrowLeft = true;
+            if (event.key === 'ArrowRight') gameState.keys.arrowRight = true;
+        });
+
+        document.addEventListener('keyup', (event) => {
+            const key = event.key.toLowerCase();
+            if (key === 'w') gameState.keys.w = false;
+            if (key === 'a') gameState.keys.a = false;
+            if (key === 's') gameState.keys.s = false;
+            if (key === 'd') gameState.keys.d = false;
+            if (key === ' ') gameState.keys.space = false;
+            if (event.key === 'ArrowUp') gameState.keys.arrowUp = false;
+            if (event.key === 'ArrowDown') gameState.keys.arrowDown = false;
+            if (event.key === 'ArrowLeft') gameState.keys.arrowLeft = false;
+            if (event.key === 'ArrowRight') gameState.keys.arrowRight = false;
+        });
+
+        // Mouse movement and click
+        document.addEventListener('mousemove', (event) => {
+            if (gameState.started && !gameState.paused && !gameState.gameOver) {
+                gameState.mouseWorldPosition = getMouseWorldPosition(event);
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (gameState.started && !gameState.paused && !gameState.gameOver) {
+                const targetPos = getMouseWorldPosition(event);
+                shoot(targetPos);
+            }
+        });
 
         // Start game
         document.getElementById('start-btn').addEventListener('click', () => {
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('hud').style.display = 'block';
+            document.getElementById('controls-info').style.display = 'block';
             gameState.started = true;
             gameState.paused = false;
         });
@@ -731,16 +879,11 @@
             gameState.time += deltaTime;
             updateHUD();
 
-            // Rotate player
-            if (gameState.player) {
-                gameState.player.rotation.y += deltaTime * 2;
-            }
+            // Update player movement
+            updatePlayerMovement(deltaTime);
 
             // Spawn enemies
             spawnEnemies();
-
-            // Shoot
-            shoot();
 
             // Update entities
             updateBullets(deltaTime);
