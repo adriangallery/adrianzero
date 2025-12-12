@@ -355,6 +355,15 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Ensure transparent background for 3D model wrapper */
+.grid-item-3d .model-3d-wrapper {
+    background: transparent !important;
+}
+
+.grid-item-3d .image-container {
+    background: transparent;
+}
+
 .grid-item-3d .model-3d-red {
     filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(0deg) contrast(1.1);
     mix-blend-mode: screen;
@@ -366,17 +375,11 @@ body {
 }
 
 @keyframes swing-3d {
-    0%, 100% {
-        transform: translateX(0) rotateY(0deg);
+    0% {
+        transform: translateX(3px) rotateY(2deg); /* Start from right */
     }
-    25% {
-        transform: translateX(-3px) rotateY(-2deg);
-    }
-    50% {
-        transform: translateX(0) rotateY(0deg);
-    }
-    75% {
-        transform: translateX(3px) rotateY(2deg);
+    100% {
+        transform: translateX(-3px) rotateY(-2deg); /* End at left */
     }
 }
 

@@ -854,6 +854,7 @@ class Showcase {
             overflow: visible;
             padding: 10%;
             box-sizing: border-box;
+            background: transparent;
         `;
 
         // Red version (left) - slightly offset camera orbit to the left
@@ -875,6 +876,7 @@ class Showcase {
             position: absolute;
             width: 100%;
             height: 100%;
+            background: transparent;
             filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(0deg) contrast(1.1);
             mix-blend-mode: screen;
             image-rendering: -webkit-optimize-contrast;
@@ -900,6 +902,7 @@ class Showcase {
             position: absolute;
             width: 100%;
             height: 100%;
+            background: transparent;
             filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(180deg) contrast(1.1);
             mix-blend-mode: screen;
             image-rendering: -webkit-optimize-contrast;
@@ -1155,7 +1158,10 @@ class Showcase {
                 width: 100%;
                 height: 100%;
                 min-height: 400px;
-                overflow: hidden;
+                overflow: visible;
+                padding: 10%;
+                box-sizing: border-box;
+                background: transparent;
             `;
 
             // Red version - slightly offset camera orbit to the left
@@ -1174,6 +1180,7 @@ class Showcase {
                 position: absolute;
                 width: 100%;
                 height: 100%;
+                background: transparent;
                 filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(0deg) contrast(1.1);
                 mix-blend-mode: screen;
                 image-rendering: -webkit-optimize-contrast;
@@ -1196,6 +1203,7 @@ class Showcase {
                 position: absolute;
                 width: 100%;
                 height: 100%;
+                background: transparent;
                 filter: brightness(0.7) sepia(1) saturate(3) hue-rotate(180deg) contrast(1.1);
                 mix-blend-mode: screen;
                 image-rendering: -webkit-optimize-contrast;
