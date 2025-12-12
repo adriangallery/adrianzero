@@ -76,83 +76,59 @@ class Showcase {
     }
 
     /**
-     * Load list of floppy GIFs and 3D models
+     * Load list of floppy GIFs and 3D models dynamically from floppy/ folder
      */
     async loadFloppyGifs() {
-        // List of all floppy files (GIFs and 3D models)
-        const floppyFiles = [
-            // Original numbered GIFs
-            '10000.gif', '10001.gif', '10002.gif', '10003.gif', '10004.gif',
-            '10005.gif', '10009.gif', '10010.gif', '10013.gif', '10014.gif',
-            '10015.gif', '262144.gif', '262145.gif', '262146.gif', '262147.gif',
-            // New GIFs
-            'ADRIAN__GoldenFloppy_Disk.gif',
-            'ADRIAN_Floppy_Disk.gif',
-            'ADRIAN_OG-Floppy_Disk.gif',
-            'ADRIAN_Punks.gif',
-            'ADRIAN_Starter-Floppy_Disk.gif',
-            'ADRIAN_X-Mas-Floppy.gif',
-            'ADRIAN-Bootleg_Floppy_Disk.gif',
-            'ADRIAN-GF-Serum.gif',
-            'Black-Light.gif',
-            'Commrades.gif',
-            'Serum_Creature.gif',
-            'Serum_DNA.gif',
-            'Serum_Venum.gif',
-            'Serum-Gold_1-1.gif',
-            'Serum-Gold_1.gif',
-            'Serum-Gold_2.gif',
-            // 3D Models (GLTF)
-            '$A-Snot.gltf',
-            '$A.gltf',
-            'DISCORD-Snot.gltf',
-            'Discord.gltf',
-            'FAQ-OFF-Snot.gltf',
-            'FAQ-OFF.gltf',
-            'GM-Snot.gltf',
-            'GM.gltf',
-            'GN-Snot.gltf',
-            'GN.gltf',
-            'LAB-Snot.gltf',
-            'LFG-Snot.gltf',
-            'LFG.gltf',
-            'V-Snot.gltf',
-            'WEN_LAMBO.gltf',
-            'WEN-LAMBO-Snot.gltf',
-            'WEN-LAMBO.gltf',
-            'WTF-Snot.gltf',
-            'WTF.gltf',
-            'X.gltf'
-        ];
-
-        this.floppyGifs = floppyFiles.map(filename => {
-            // Check if it's a numbered GIF (old format)
-            let match = filename.match(/^(\d+)\.gif$/);
-            let tokenId = match ? parseInt(match[1], 10) : null;
+        try {
+            // Load files dynamically from GitHub API
+            const apiUrl = `https://api.github.com/repos/${this.config.githubRepo}/contents/showcase/floppy?ref=${this.config.githubBranch}`;
             
-            // Determine type
-            const is3D = filename.endsWith('.gltf');
-            const type = is3D ? '3d-model' : 'floppy';
-            
-            // For non-numbered files, use filename as identifier
-            if (!tokenId) {
-                tokenId = filename.replace(/\.(gif|gltf)$/, '');
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`GitHub API error: ${response.status}`);
             }
             
-            return {
-                filename,
-                tokenId: tokenId || filename,
-                url: `${this.config.floppyGifPath}${filename}`,
-                type: type
-            };
-        });
+            const files = await response.json();
+            
+            // Filter only GIF and GLTF files
+            const floppyFiles = files
+                .filter(file => file.name.endsWith('.gif') || file.name.endsWith('.gltf'))
+                .map(file => file.name);
+            
+            this.floppyGifs = floppyFiles.map(filename => {
+                // Check if it's a numbered GIF (old format)
+                let match = filename.match(/^(\d+)\.gif$/);
+                let tokenId = match ? parseInt(match[1], 10) : null;
+                
+                // Determine type
+                const is3D = filename.endsWith('.gltf');
+                const type = is3D ? '3d-model' : 'floppy';
+                
+                // For non-numbered files, use filename as identifier
+                if (!tokenId) {
+                    tokenId = filename.replace(/\.(gif|gltf)$/, '');
+                }
+                
+                return {
+                    filename,
+                    tokenId: tokenId || filename,
+                    url: `${this.config.floppyGifPath}${filename}`,
+                    type: type
+                };
+            });
 
-        // Shuffle for variety
-        this.shuffleArray(this.floppyGifs);
-        
-        const gifCount = this.floppyGifs.filter(f => f.type === 'floppy').length;
-        const modelCount = this.floppyGifs.filter(f => f.type === '3d-model').length;
-        console.log(`Loaded ${this.floppyGifs.length} floppy items: ${gifCount} GIFs, ${modelCount} 3D models`);
+            // Shuffle for variety
+            this.shuffleArray(this.floppyGifs);
+            
+            const gifCount = this.floppyGifs.filter(f => f.type === 'floppy').length;
+            const modelCount = this.floppyGifs.filter(f => f.type === '3d-model').length;
+            console.log(`Loaded ${this.floppyGifs.length} floppy items dynamically: ${gifCount} GIFs, ${modelCount} 3D models`);
+        } catch (error) {
+            console.error('Error loading floppy files dynamically:', error);
+            // Fallback to empty array if API fails
+            this.floppyGifs = [];
+            console.log('Floppy files loading failed, using empty array');
+        }
     }
 
     /**
@@ -903,9 +879,10 @@ class Showcase {
             position: relative;
             width: 100%;
             height: 100%;
-            overflow: visible;
-            padding: 10%;
-            box-sizing: border-box;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: transparent;
         `;
 
@@ -914,9 +891,9 @@ class Showcase {
         modelViewer.src = modelPath || this.config.model3dPath;
         modelViewer.alt = '3D Model';
         modelViewer.className = 'model-3d';
-        modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.2m'); // Centered, further away
+        modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.5m'); // Further away to prevent clipping
         modelViewer.setAttribute('camera-target', '0m 0m 0m');
-        modelViewer.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
+        modelViewer.setAttribute('field-of-view', '30deg'); // Smaller FOV = smaller model
         modelViewer.setAttribute('auto-rotate', '');
         modelViewer.setAttribute('auto-rotate-delay', '0');
         modelViewer.setAttribute('interaction-policy', 'allow-when-focused');
@@ -924,9 +901,11 @@ class Showcase {
         modelViewer.setAttribute('exposure', '1.2'); // Slightly brighter
         modelViewer.setAttribute('shadow-intensity', '0.5');
         modelViewer.style.cssText = `
-            position: absolute;
-            width: 100%;
-            height: 100%;
+            position: relative;
+            width: 80%;
+            height: 80%;
+            max-width: 100%;
+            max-height: 100%;
             background: transparent;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
@@ -1182,9 +1161,10 @@ class Showcase {
                 width: 100%;
                 height: 100%;
                 min-height: 400px;
-                overflow: visible;
-                padding: 10%;
-                box-sizing: border-box;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 background: transparent;
             `;
 
@@ -1192,18 +1172,20 @@ class Showcase {
             const modelViewer = document.createElement('model-viewer');
             modelViewer.src = image.url;
             modelViewer.alt = '3D Model';
-            modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.2m'); // Centered, further away
+            modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.5m'); // Further away to prevent clipping
             modelViewer.setAttribute('camera-target', '0m 0m 0m');
-            modelViewer.setAttribute('field-of-view', '35deg'); // Reduced FOV = smaller model
+            modelViewer.setAttribute('field-of-view', '30deg'); // Smaller FOV = smaller model
             modelViewer.setAttribute('auto-rotate', '');
             modelViewer.setAttribute('interaction-policy', 'allow-when-focused');
             modelViewer.setAttribute('render-scale', '2'); // Higher resolution
             modelViewer.setAttribute('exposure', '1.2');
             modelViewer.setAttribute('shadow-intensity', '0.5');
             modelViewer.style.cssText = `
-                position: absolute;
-                width: 100%;
-                height: 100%;
+                position: relative;
+                width: 80%;
+                height: 80%;
+                max-width: 100%;
+                max-height: 100%;
                 background: transparent;
                 image-rendering: -webkit-optimize-contrast;
                 image-rendering: crisp-edges;

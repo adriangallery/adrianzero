@@ -200,12 +200,11 @@ body {
 .grid-item {
     position: relative;
     aspect-ratio: 1;
-    background: var(--surface-card);
+    background: transparent;
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     overflow: hidden;
     cursor: pointer;
-    backdrop-filter: blur(12px);
     transition: box-shadow 0.18s ease-out,
                 transform 0.18s ease-out,
                 border-color 0.18s ease-out,
@@ -421,7 +420,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     z-index: 2000;
     display: none;
@@ -441,7 +440,7 @@ body {
     max-width: 90vw;
     max-height: 90vh;
     width: 600px;
-    background: var(--bg-elevated);
+    background: transparent;
     border-radius: var(--radius-xl);
     border: 1px solid var(--border-subtle);
     overflow: hidden;
@@ -509,7 +508,7 @@ body {
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 24px;
-    background: rgba(255, 255, 255, 0.05);
+    background: transparent;
     position: relative;
 }
 
