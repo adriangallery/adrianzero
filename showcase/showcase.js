@@ -31,6 +31,8 @@ class Showcase {
             metadataCache: new Map(),
             floppyGifPath: 'floppy/',
             gifFrequency: 30, // Show GIF every 30 items
+            model3dPath: 'WEN-LAMBO.gltf',
+            model3dFrequency: 30, // Show 3D model every 30 items
             adrianLabMetadataUrl: 'https://adrianlab.vercel.app/api/metadata/floppy'
         };
 
@@ -747,11 +749,18 @@ class Showcase {
         item.className = 'grid-item';
         item.dataset.index = index;
         
-        // Check if this should be a floppy GIF (1 in every gifFrequency)
-        const isFloppyGif = (index % this.config.gifFrequency === 0);
+        // Check if this should be a 3D model (1 in every model3dFrequency)
+        const is3dModel = (index % this.config.model3dFrequency === 0);
+        
+        // Check if this should be a floppy GIF (1 in every gifFrequency, but not if it's a 3D model)
+        const isFloppyGif = !is3dModel && (index % this.config.gifFrequency === 0);
         let floppyGif = null;
         
-        if (isFloppyGif) {
+        if (is3dModel) {
+            item.classList.add('grid-item-3d');
+            item.dataset.type = '3d-model';
+            item.dataset.model3d = 'true';
+        } else if (isFloppyGif) {
             floppyGif = this.getRandomFloppyGif();
             if (floppyGif) {
                 item.classList.add('grid-item-gif');
@@ -761,7 +770,7 @@ class Showcase {
             }
         }
         
-        if (!isFloppyGif || !floppyGif) {
+        if (!is3dModel && (!isFloppyGif || !floppyGif)) {
             item.dataset.tokenId = image.tokenId;
             item.dataset.hash = image.hash;
             item.dataset.type = 'adrianzero';
@@ -778,7 +787,10 @@ class Showcase {
         const placeholder = document.createElement('div');
         placeholder.className = 'image-placeholder';
 
-        if (isFloppyGif && floppyGif) {
+        if (is3dModel) {
+            // Create 3D model viewer element
+            this.create3dModelViewer(imageContainer, index);
+        } else if (isFloppyGif && floppyGif) {
             // Create floppy GIF element
             const gif = document.createElement('img');
             gif.src = floppyGif.url;
@@ -802,8 +814,11 @@ class Showcase {
         // Click handler - capture variables in closure
         const itemIndex = index;
         const isFloppy = isFloppyGif && floppyGif;
+        const is3d = is3dModel;
         item.addEventListener('click', () => {
-            if (isFloppy) {
+            if (is3d) {
+                this.openModal(itemIndex, '3d-model');
+            } else if (isFloppy) {
                 this.openModal(itemIndex, 'floppy');
             } else {
                 this.openModal(itemIndex, 'adrianzero');
@@ -811,6 +826,68 @@ class Showcase {
         });
 
         return item;
+    }
+
+    /**
+     * Create 3D model viewer with red/cyan anaglyph effect and swing animation
+     */
+    create3dModelViewer(container, index) {
+        const modelWrapper = document.createElement('div');
+        modelWrapper.className = 'model-3d-wrapper';
+        modelWrapper.style.cssText = `
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        `;
+
+        // Red version (left) - slightly offset camera orbit to the left
+        const modelRed = document.createElement('model-viewer');
+        modelRed.src = this.config.model3dPath;
+        modelRed.alt = 'WEN LAMBO 3D Model';
+        modelRed.className = 'model-3d model-3d-red';
+        modelRed.setAttribute('camera-orbit', '-5deg 75deg 1.5m'); // Offset left
+        modelRed.setAttribute('camera-target', '0m 0m 0m');
+        modelRed.setAttribute('field-of-view', '45deg');
+        modelRed.setAttribute('auto-rotate', '');
+        modelRed.setAttribute('auto-rotate-delay', '0');
+        modelRed.setAttribute('interaction-policy', 'allow-when-focused');
+        modelRed.style.cssText = `
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(0deg);
+            mix-blend-mode: screen;
+        `;
+
+        // Cyan version (right) - slightly offset camera orbit to the right
+        const modelCyan = document.createElement('model-viewer');
+        modelCyan.src = this.config.model3dPath;
+        modelCyan.alt = 'WEN LAMBO 3D Model';
+        modelCyan.className = 'model-3d model-3d-cyan';
+        modelCyan.setAttribute('camera-orbit', '5deg 75deg 1.5m'); // Offset right
+        modelCyan.setAttribute('camera-target', '0m 0m 0m');
+        modelCyan.setAttribute('field-of-view', '45deg');
+        modelCyan.setAttribute('auto-rotate', '');
+        modelCyan.setAttribute('auto-rotate-delay', '0');
+        modelCyan.setAttribute('interaction-policy', 'allow-when-focused');
+        modelCyan.style.cssText = `
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(180deg);
+            mix-blend-mode: screen;
+        `;
+
+        // Add swing animation based on index
+        const swingDelay = (index % 8) * 0.1;
+        const swingDuration = 3 + (index % 3) * 0.5; // Vary duration between 3-4.5s
+        modelWrapper.style.animation = `swing-3d ${swingDuration}s ease-in-out infinite`;
+        modelWrapper.style.animationDelay = `${swingDelay}s`;
+
+        modelWrapper.appendChild(modelRed);
+        modelWrapper.appendChild(modelCyan);
+        container.appendChild(modelWrapper);
     }
 
     /**
@@ -826,7 +903,19 @@ class Showcase {
         let image = null;
         let metadata = null;
 
-        if (type === 'floppy') {
+        if (type === '3d-model') {
+            image = {
+                url: this.config.model3dPath,
+                type: '3d-model',
+                tokenId: 'WEN-LAMBO'
+            };
+            
+            metadata = {
+                tokenId: 'WEN-LAMBO',
+                name: 'WEN LAMBO 3D Model',
+                description: 'Anaglyph 3D model with red/cyan effect and swing animation'
+            };
+        } else if (type === 'floppy') {
             const floppyTokenId = item.dataset.floppyTokenId;
             if (!floppyTokenId) return;
             
@@ -879,7 +968,7 @@ class Showcase {
     async createZoomAnimation(item, image) {
         // Get item position and size
         const itemRect = item.getBoundingClientRect();
-        const itemImg = item.querySelector('img') || item.querySelector('.gif-image');
+        const itemImg = item.querySelector('img') || item.querySelector('.gif-image') || item.querySelector('.model-3d-wrapper');
         if (!itemImg) return;
         
         // Get viewport center
@@ -914,14 +1003,21 @@ class Showcase {
             border-radius: 8px;
         `;
         
-        // Clone the image
+        // Clone the image or 3D model
         const imgClone = itemImg.cloneNode(true);
-        imgClone.style.cssText = `
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        `;
+        if (itemImg.tagName === 'IMG' || itemImg.classList.contains('gif-image')) {
+            imgClone.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            `;
+        } else if (itemImg.classList.contains('model-3d-wrapper')) {
+            imgClone.style.cssText = `
+                width: 100%;
+                height: 100%;
+            `;
+        }
         zoomElement.appendChild(imgClone);
         document.body.appendChild(zoomElement);
         
@@ -1014,19 +1110,71 @@ class Showcase {
     renderModalContent(image, metadata) {
         this.modalContent.classList.remove('loading');
         
-        // Create placeholder first
-        const placeholder = document.createElement('div');
-        placeholder.className = 'modal-image-placeholder';
-        placeholder.innerHTML = '<div class="loading-spinner"></div>';
+        const is3dModel = image.type === '3d-model';
+        const isFloppy = image.type === 'floppy';
+        const displayName = metadata.name || (is3dModel ? 'WEN LAMBO 3D Model' : (isFloppy ? `AdrianLAB Floppy #${image.tokenId}` : `AdrianZERO #${image.tokenId}`));
+        const tokenIdText = is3dModel ? '3D Model: WEN LAMBO' : (isFloppy ? `AdrianLAB Token ID: #${image.tokenId}` : `Token ID: #${image.tokenId}`);
+        const hashText = image.hash ? `<div class="trait-hash">Trait Hash: ${image.hash}</div>` : '';
         
         const imageContainer = document.createElement('div');
         imageContainer.className = 'modal-image-container';
-        imageContainer.appendChild(placeholder);
         
-        const isFloppy = image.type === 'floppy';
-        const displayName = metadata.name || (isFloppy ? `AdrianLAB Floppy #${image.tokenId}` : `AdrianZERO #${image.tokenId}`);
-        const tokenIdText = isFloppy ? `AdrianLAB Token ID: #${image.tokenId}` : `Token ID: #${image.tokenId}`;
-        const hashText = image.hash ? `<div class="trait-hash">Trait Hash: ${image.hash}</div>` : '';
+        if (is3dModel) {
+            // Create 3D model viewer for modal
+            const modelWrapper = document.createElement('div');
+            modelWrapper.className = 'modal-model-3d-wrapper';
+            modelWrapper.style.cssText = `
+                position: relative;
+                width: 100%;
+                height: 100%;
+                min-height: 400px;
+                overflow: hidden;
+            `;
+
+            // Red version - slightly offset camera orbit to the left
+            const modelRed = document.createElement('model-viewer');
+            modelRed.src = image.url;
+            modelRed.alt = 'WEN LAMBO 3D Model';
+            modelRed.setAttribute('camera-orbit', '-5deg 75deg 1.5m'); // Offset left
+            modelRed.setAttribute('camera-target', '0m 0m 0m');
+            modelRed.setAttribute('field-of-view', '45deg');
+            modelRed.setAttribute('auto-rotate', '');
+            modelRed.setAttribute('interaction-policy', 'allow-when-focused');
+            modelRed.style.cssText = `
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(0deg);
+                mix-blend-mode: screen;
+            `;
+
+            // Cyan version - slightly offset camera orbit to the right
+            const modelCyan = document.createElement('model-viewer');
+            modelCyan.src = image.url;
+            modelCyan.alt = 'WEN LAMBO 3D Model';
+            modelCyan.setAttribute('camera-orbit', '5deg 75deg 1.5m'); // Offset right
+            modelCyan.setAttribute('camera-target', '0m 0m 0m');
+            modelCyan.setAttribute('field-of-view', '45deg');
+            modelCyan.setAttribute('auto-rotate', '');
+            modelCyan.setAttribute('interaction-policy', 'allow-when-focused');
+            modelCyan.style.cssText = `
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                filter: brightness(0.6) sepia(1) saturate(2.5) hue-rotate(180deg);
+                mix-blend-mode: screen;
+            `;
+
+            modelWrapper.appendChild(modelRed);
+            modelWrapper.appendChild(modelCyan);
+            imageContainer.appendChild(modelWrapper);
+        } else {
+            // Regular image placeholder
+            const placeholder = document.createElement('div');
+            placeholder.className = 'modal-image-placeholder';
+            placeholder.innerHTML = '<div class="loading-spinner"></div>';
+            imageContainer.appendChild(placeholder);
+        }
         
         const html = `
             ${imageContainer.outerHTML}
@@ -1041,26 +1189,28 @@ class Showcase {
 
         this.modalContent.innerHTML = html;
 
-        // Preload modal image with smooth loading
-        const modalImgContainer = this.modalContent.querySelector('.modal-image-container');
-        const img = document.createElement('img');
-        img.alt = displayName;
-        
-        const imgLoader = new Image();
-        imgLoader.onload = () => {
-            img.src = image.url;
-            img.style.opacity = '0';
-            img.style.transition = 'opacity 0.3s ease-out';
-            modalImgContainer.innerHTML = '';
-            modalImgContainer.appendChild(img);
-            requestAnimationFrame(() => {
-                img.style.opacity = '1';
-            });
-        };
-        imgLoader.onerror = () => {
-            modalImgContainer.innerHTML = '<div class="modal-image-placeholder">Failed to load image</div>';
-        };
-        imgLoader.src = image.url;
+        // Load image or 3D model
+        if (!is3dModel) {
+            const modalImgContainer = this.modalContent.querySelector('.modal-image-container');
+            const img = document.createElement('img');
+            img.alt = displayName;
+            
+            const imgLoader = new Image();
+            imgLoader.onload = () => {
+                img.src = image.url;
+                img.style.opacity = '0';
+                img.style.transition = 'opacity 0.3s ease-out';
+                modalImgContainer.innerHTML = '';
+                modalImgContainer.appendChild(img);
+                requestAnimationFrame(() => {
+                    img.style.opacity = '1';
+                });
+            };
+            imgLoader.onerror = () => {
+                modalImgContainer.innerHTML = '<div class="modal-image-placeholder">Failed to load image</div>';
+            };
+            imgLoader.src = image.url;
+        }
     }
 
     /**
