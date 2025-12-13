@@ -202,7 +202,17 @@ class AppInitializer {
             const connectBtn = document.getElementById('connectBtn');
             if (connectBtn) {
                 console.log('✅ AppInitializer: Botón connectBtn encontrado, configurando listener...');
-                connectBtn.addEventListener('click', () => {
+                console.log('🔍 AppInitializer: Estado del botón - display:', window.getComputedStyle(connectBtn).display);
+                console.log('🔍 AppInitializer: Estado del botón - visibility:', window.getComputedStyle(connectBtn).visibility);
+                console.log('🔍 AppInitializer: Estado del botón - pointer-events:', window.getComputedStyle(connectBtn).pointerEvents);
+                
+                // Remover listeners anteriores si existen (evitar duplicados)
+                const newConnectBtn = connectBtn.cloneNode(true);
+                connectBtn.parentNode.replaceChild(newConnectBtn, connectBtn);
+                
+                newConnectBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     console.log('🖱️ Click en botón Connect Wallet detectado');
                     if (this.app.modules.wallet) {
                         this.app.modules.wallet.connectWallet();
@@ -210,6 +220,11 @@ class AppInitializer {
                         console.error('❌ Wallet module no disponible');
                     }
                 });
+                
+                // También agregar listener con capture para debugging
+                newConnectBtn.addEventListener('click', (e) => {
+                    console.log('🔍 DEBUG: Click capturado en fase capture');
+                }, true);
             } else {
                 console.warn('⚠️ AppInitializer: Botón connectBtn NO encontrado en el DOM');
             }

@@ -30,7 +30,10 @@ class WalletManager {
      */
     init() {
         // Check if wallet is already connected
-        this.checkConnection();
+        // Usar setTimeout para asegurar que el DOM esté listo
+        setTimeout(() => {
+            this.checkConnection();
+        }, 100);
         
         // Listen for messages from parent window (AdrianLab)
         window.addEventListener('message', this.handleParentMessage);
@@ -279,11 +282,21 @@ class WalletManager {
         const accountSection = document.getElementById('account-section');
         const walletAddress = document.getElementById('walletAddress');
         const tokensSection = document.getElementById('tokens-section');
+        const connectBtn = document.getElementById('connectBtn');
+        
+        console.log('🔍 Wallet: updateUIForConnectedWallet - isConnected:', this.isConnected, 'account:', this.currentAccount);
+        console.log('🔍 Wallet: Elementos encontrados - connectSection:', !!connectSection, 'accountSection:', !!accountSection, 'connectBtn:', !!connectBtn);
         
         if (this.isConnected && this.currentAccount) {
             // Show account section, hide connect section
-            if (connectSection) connectSection.style.display = 'none';
-            if (accountSection) accountSection.style.display = 'block';
+            if (connectSection) {
+                console.log('🔍 Wallet: Ocultando connect-section');
+                connectSection.style.display = 'none';
+            }
+            if (accountSection) {
+                console.log('🔍 Wallet: Mostrando account-section');
+                accountSection.style.display = 'block';
+            }
             if (tokensSection) tokensSection.style.display = 'block';
             if (walletAddress) {
                 walletAddress.textContent = `${this.currentAccount.substring(0, 6)}...${this.currentAccount.substring(38)}`;
@@ -297,8 +310,14 @@ class WalletManager {
             });
         } else {
             // Show connect section, hide account section
-            if (connectSection) connectSection.style.display = 'block';
-            if (accountSection) accountSection.style.display = 'none';
+            if (connectSection) {
+                console.log('🔍 Wallet: Mostrando connect-section');
+                connectSection.style.display = 'block';
+            }
+            if (accountSection) {
+                console.log('🔍 Wallet: Ocultando account-section');
+                accountSection.style.display = 'none';
+            }
             if (tokensSection) tokensSection.style.display = 'none';
             if (walletAddress) walletAddress.textContent = '';
             
@@ -306,6 +325,12 @@ class WalletManager {
             this.emit('uiUpdate', { 
                 type: 'walletDisconnected' 
             });
+        }
+        
+        // Verificar estado final del botón
+        if (connectBtn) {
+            const computedStyle = window.getComputedStyle(connectBtn);
+            console.log('🔍 Wallet: Estado final del botón - display:', computedStyle.display, 'visibility:', computedStyle.visibility, 'pointer-events:', computedStyle.pointerEvents);
         }
     }
 
