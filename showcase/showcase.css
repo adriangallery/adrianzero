@@ -272,6 +272,12 @@ body {
     border-color: rgba(255, 255, 255, 0.18);
 }
 
+/* No border on hover for floppy and 3D items */
+.grid-item-gif:hover,
+.grid-item-3d:hover {
+    border: none !important;
+}
+
 /* Compensate container rotation and scale to keep image flat and normal size */
 .grid-item:hover .image-container {
     transform: rotateY(-8deg) rotateX(3deg) scale(calc(1 / 1.02));
