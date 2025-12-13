@@ -474,12 +474,19 @@ class Showcase {
         // Set text content
         if (this.idleStateText && this.idleStateConfig.text) {
             this.idleStateText.textContent = this.idleStateConfig.text.content;
-            this.idleStateText.style.fontSize = this.idleStateConfig.text.fontSize;
-            this.idleStateText.style.color = this.idleStateConfig.text.color;
-            this.idleStateText.style.opacity = this.idleStateConfig.text.opacity;
+            // Font size is now set via CSS (clamp), but we can override if needed
+            if (this.idleStateConfig.text.fontSize) {
+                this.idleStateText.style.fontSize = this.idleStateConfig.text.fontSize;
+            }
+            // Color is now set to Star Wars yellow in CSS, but we can override if needed
+            if (this.idleStateConfig.text.color) {
+                // Keep Star Wars yellow, but allow opacity override
+                this.idleStateText.style.opacity = this.idleStateConfig.text.opacity || 1;
+            }
             console.log('✅ Idle state text configured:', {
                 length: this.idleStateConfig.text.content.length,
-                fontSize: this.idleStateConfig.text.fontSize
+                fontSize: this.idleStateConfig.text.fontSize || 'CSS clamp',
+                fontFamily: 'AdrianZero'
             });
         } else {
             console.warn('⚠️ Idle state text element not found');

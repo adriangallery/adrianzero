@@ -4,6 +4,15 @@
     box-sizing: border-box;
 }
 
+/* AdrianZero Font */
+@font-face {
+    font-family: 'AdrianZero';
+    src: url('../components/fonts/ADRIAN_ZERO.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
     /* Design System Colors */
     --bg: #000000;
@@ -699,7 +708,7 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
-/* Idle State Overlay */
+/* Idle State Overlay - Star Wars Style */
 .idle-state-overlay {
     position: fixed;
     top: 0;
@@ -715,49 +724,60 @@ body {
     pointer-events: none;
     transition: opacity 2s ease-in-out, background-color 2s ease-in-out;
     overflow: hidden;
+    /* Star Wars perspective */
+    perspective: 1000px;
+    perspective-origin: center center;
 }
 
 .idle-state-overlay.active {
     opacity: 1;
     pointer-events: auto;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.95);
 }
 
 .idle-state-text {
     position: absolute;
-    bottom: -100px;
+    bottom: 0;
     left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    max-width: 800px;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: clamp(1rem, 2vw, 1.5rem);
-    line-height: 1.6;
-    text-align: center;
-    font-weight: 300;
-    letter-spacing: 0.5px;
+    transform: translateX(-50%) translateY(0) rotateX(25deg);
+    transform-origin: center bottom;
+    width: 90%;
+    max-width: 1000px;
+    color: #FFE81F; /* Star Wars yellow */
+    font-family: 'AdrianZero', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.8;
+    text-align: justify;
+    font-weight: normal;
+    letter-spacing: 2px;
     white-space: normal;
-    animation: scrollUp 30s linear infinite;
+    text-shadow: 
+        0 0 10px rgba(255, 232, 31, 0.5),
+        0 0 20px rgba(255, 232, 31, 0.3),
+        0 0 30px rgba(255, 232, 31, 0.2);
+    animation: starWarsScroll 40s linear infinite;
     will-change: transform;
+    /* Star Wars 3D effect */
+    transform-style: preserve-3d;
 }
 
 .idle-state-overlay.active .idle-state-text {
-    animation: scrollUp 30s linear infinite;
+    animation: starWarsScroll 40s linear infinite;
 }
 
-@keyframes scrollUp {
+@keyframes starWarsScroll {
     0% {
-        transform: translateX(-50%) translateY(100vh);
+        transform: translateX(-50%) translateY(100vh) rotateX(25deg) scale(0.5);
         opacity: 0;
     }
-    10% {
-        opacity: 0.9;
+    5% {
+        opacity: 1;
     }
-    90% {
-        opacity: 0.9;
+    95% {
+        opacity: 1;
     }
     100% {
-        transform: translateX(-50%) translateY(-100vh);
+        transform: translateX(-50%) translateY(-200vh) rotateX(25deg) scale(2);
         opacity: 0;
     }
 }
