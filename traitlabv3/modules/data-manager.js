@@ -38,12 +38,24 @@ class TraitLABDataManager {
      * Inicializar y comenzar carga en background
      */
     async init(force = false) {
+        // Si es force, resetear todo el estado primero
+        if (force) {
+            console.log('📊 DataManager: Reinicialización forzada, reseteando estado...');
+            this.isInitialized = false;
+            this.cache.loading.adrianZero = false;
+            this.cache.loading.adrianLab = false;
+            this.cache.ready.adrianZero = false;
+            this.cache.ready.adrianLab = false;
+            this.cache.adrianZero = [];
+            this.cache.adrianLab = null;
+        }
+        
         // Si ya está inicializado y no es un force, verificar si hay wallet
         if (this.isInitialized && !force) {
             // Verificar si hay wallet conectada y si no hay tokens cargados
             const hasWallet = window.app?.modules?.wallet?.getCurrentAccount();
             const hasTokens = (this.cache.adrianZero && this.cache.adrianZero.length > 0) || 
-                             (this.cache.adrianLab && this.cache.adrianLab.length > 0);
+                             (this.cache.adrianLab && Object.keys(this.cache.adrianLab || {}).length > 0);
             
             // Si hay wallet pero no hay tokens, reinicializar
             if (hasWallet && !hasTokens) {
@@ -59,12 +71,12 @@ class TraitLABDataManager {
                 return;
             } else {
                 // Ya está inicializado y tiene tokens, no hacer nada
+                console.log('📊 DataManager: Ya inicializado con tokens, saltando carga');
                 return;
             }
         }
         
         console.log('📊 TraitLABDataManager: Iniciando carga en paralelo...');
-        this.isInitialized = true;
         
         // Verificar que haya wallet antes de cargar
         const userAddress = window.app?.modules?.wallet?.getCurrentAccount();
@@ -73,6 +85,9 @@ class TraitLABDataManager {
             this.isInitialized = false; // Permitir reinicialización cuando se conecte la wallet
             return;
         }
+        
+        // Marcar como inicializado ANTES de cargar (para evitar múltiples llamadas)
+        this.isInitialized = true;
         
         // 1. Cargar AdrianZERO y AdrianLAB en paralelo
         await Promise.all([

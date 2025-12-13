@@ -593,9 +593,16 @@
                         console.log('📊 TraitLAB v2: DataManager cargado en background');
                         const status = this.modules.dataManager.getStatus();
                         console.log('📊 TraitLAB v2: Estado del cache:', status);
+                        
+                        // Esperar un momento para que los tokens se procesen
+                        // Los eventos adrianZeroReady y adrianLabReady se emitirán automáticamente
+                        // y los listeners mostrarán los tokens cuando estén listos
+                        await new Promise(resolve => setTimeout(resolve, 500));
                     }
                     
                     // 2. Cargar tokens del contrato actual en background (DESPUÉS de DataManager)
+                    // Nota: Los tokens pueden mostrarse automáticamente vía eventos,
+                    // pero también intentamos cargar el tab actual por si acaso
                     console.log('🚀 TraitLAB v2: Cargando tokens del contrato actual en background...');
                     await this.loadTokensForTab();
                     
