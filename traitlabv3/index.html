@@ -467,46 +467,46 @@
                     console.log('🚗 LAMBO: Showing AdrianZERO for Lambo selection:', erc721.length);
                     this.modules.ui.displayTokens(erc721, { filter: 'adrianzero' });
                     this.hideLoading();
-                    } else if (this.currentFilter === 'traits') {
-                        // 🎯 CASO ESPECIAL: Traits - Mostrar inmediatamente lo disponible, cargar en background
-                        console.log('🎨 TRAITS: Verificando estado de carga de traits...');
+                } else if (this.currentFilter === 'traits') {
+                    // 🎯 CASO ESPECIAL: Traits - Mostrar inmediatamente lo disponible, cargar en background
+                    console.log('🎨 TRAITS: Verificando estado de carga de traits...');
+                    
+                    // Verificar si los traits ya están cargados
+                    const filteredTokens = this.modules.dataManager.getFilteredTokens('traits');
+                    console.log(`📊 Traits disponibles actualmente: ${filteredTokens.length}`);
+                    
+                    if (filteredTokens.length > 0) {
+                        // Traits ya están cargados, mostrar inmediatamente
+                        console.log('✅ Mostrando traits disponibles inmediatamente');
+                        this.modules.ui.displayTokens(filteredTokens, { filter: 'traits' });
+                        this.hideLoading();
+                    } else {
+                        // Traits no están cargados, iniciar carga en background (NO BLOQUEANTE)
+                        console.log('⏳ Traits no están cargados, iniciando carga en background...');
                         
-                        // Verificar si los traits ya están cargados
-                        const filteredTokens = this.modules.dataManager.getFilteredTokens('traits');
-                        console.log(`📊 Traits disponibles actualmente: ${filteredTokens.length}`);
+                        // Mostrar loading pero permitir cambio de tab
+                        this.showLoading();
                         
-                        if (filteredTokens.length > 0) {
-                            // Traits ya están cargados, mostrar inmediatamente
-                            console.log('✅ Mostrando traits disponibles inmediatamente');
-                            this.modules.ui.displayTokens(filteredTokens, { filter: 'traits' });
-                            this.hideLoading();
-                        } else {
-                            // Traits no están cargados, iniciar carga en background (NO BLOQUEANTE)
-                            console.log('⏳ Traits no están cargados, iniciando carga en background...');
-                            
-                            // Mostrar loading pero permitir cambio de tab
-                            this.showLoading();
-                            
-                            // Iniciar carga en background sin await (no bloquea cambio de tab)
-                            this.modules.dataManager.loadAdrianLabTokensOnDemand().then(() => {
-                                // Solo actualizar si aún estamos en el tab de traits
-                                if (this.currentFilter === 'traits') {
-                                    const traitsAfterLoad = this.modules.dataManager.getFilteredTokens('traits');
-                                    if (traitsAfterLoad.length > 0) {
-                                        console.log('✅ Traits cargados, mostrando:', traitsAfterLoad.length);
-                                        this.modules.ui.displayTokens(traitsAfterLoad, { filter: 'traits' });
-                                        this.hideLoading();
-                                    }
-                                }
-                            }).catch(error => {
-                                console.error('❌ Error cargando traits en background:', error);
-                                // Solo mostrar error si aún estamos en el tab de traits
-                                if (this.currentFilter === 'traits') {
+                        // Iniciar carga en background sin await (no bloquea cambio de tab)
+                        this.modules.dataManager.loadAdrianLabTokensOnDemand().then(() => {
+                            // Solo actualizar si aún estamos en el tab de traits
+                            if (this.currentFilter === 'traits') {
+                                const traitsAfterLoad = this.modules.dataManager.getFilteredTokens('traits');
+                                if (traitsAfterLoad.length > 0) {
+                                    console.log('✅ Traits cargados, mostrando:', traitsAfterLoad.length);
+                                    this.modules.ui.displayTokens(traitsAfterLoad, { filter: 'traits' });
                                     this.hideLoading();
-                                    this.showError(`Error cargando traits: ${error.message}`);
                                 }
-                            });
-                        }
+                            }
+                        }).catch(error => {
+                            console.error('❌ Error cargando traits en background:', error);
+                            // Solo mostrar error si aún estamos en el tab de traits
+                            if (this.currentFilter === 'traits') {
+                                this.hideLoading();
+                                this.showError(`Error cargando traits: ${error.message}`);
+                            }
+                        });
+                    }
                 } else {
                     // 🚨 Verificar si el usuario cambió de tab durante la carga
                     if (this.currentFilter !== currentFilterSnapshot) {
