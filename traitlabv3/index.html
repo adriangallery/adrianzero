@@ -579,54 +579,74 @@
 
             /**
              * Cargar datos en background sin bloquear la UI
+             * IMPORTANTE: Esta función NO debe bloquear los clicks del botón Connect Wallet
              */
             async loadDataInBackground(userAddress) {
                 console.log('🚀 TraitLAB v2: Iniciando carga en background...');
+                
+                // 🚨 CRÍTICO: Asegurar que el botón sea clickeable durante todo el proceso
+                const connectBtn = document.getElementById('connectBtn');
+                if (connectBtn) {
+                    connectBtn.style.pointerEvents = 'auto';
+                    connectBtn.style.cursor = 'pointer';
+                    connectBtn.disabled = false;
+                    console.log('✅ Botón Connect Wallet habilitado para clicks durante carga');
+                }
                 
                 // NO mostrar mensaje de carga aquí - se maneja en loadTokensForTab
                 
                 try {
                     // 1. Iniciar DataManager en background (SECUENCIAL) - FORZAR reinicialización
+                    // Usar setTimeout para no bloquear el event loop
                     if (this.modules.dataManager) {
                         console.log('📊 TraitLAB v2: Iniciando DataManager en background...');
-                        await this.modules.dataManager.init(true); // Force = true para reinicializar
-                        console.log('📊 TraitLAB v2: DataManager cargado en background');
-                        const status = this.modules.dataManager.getStatus();
-                        console.log('📊 TraitLAB v2: Estado del cache:', status);
                         
-                        // Esperar a que los tokens se carguen (máximo 10 segundos)
-                        let attempts = 0;
-                        const maxAttempts = 20; // 20 intentos * 500ms = 10 segundos máximo
-                        while (attempts < maxAttempts) {
-                            const hasAdrianZero = this.modules.dataManager.getFilteredTokens('adrianzero').length > 0;
-                            const hasAdrianLab = this.modules.dataManager.getFilteredTokens('traits').length > 0 || 
-                                               this.modules.dataManager.getFilteredTokens('floppy').length > 0;
+                        // Iniciar carga de forma asíncrona (no bloqueante)
+                        this.modules.dataManager.init(true).then(() => {
+                            console.log('📊 TraitLAB v2: DataManager cargado en background');
+                            const status = this.modules.dataManager.getStatus();
+                            console.log('📊 TraitLAB v2: Estado del cache:', status);
                             
-                            if (hasAdrianZero || hasAdrianLab) {
-                                console.log('✅ TraitLAB v2: Tokens cargados, continuando...');
-                                break;
-                            }
+                            // Esperar a que los tokens se carguen (máximo 10 segundos)
+                            let attempts = 0;
+                            const maxAttempts = 20; // 20 intentos * 500ms = 10 segundos máximo
                             
-                            attempts++;
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                        }
-                        
-                        if (attempts >= maxAttempts) {
-                            console.warn('⚠️ TraitLAB v2: Timeout esperando tokens, continuando de todas formas...');
-                        }
+                            const checkTokens = async () => {
+                                while (attempts < maxAttempts) {
+                                    const hasAdrianZero = this.modules.dataManager.getFilteredTokens('adrianzero').length > 0;
+                                    const hasAdrianLab = this.modules.dataManager.getFilteredTokens('traits').length > 0 || 
+                                                       this.modules.dataManager.getFilteredTokens('floppy').length > 0;
+                                    
+                                    if (hasAdrianZero || hasAdrianLab) {
+                                        console.log('✅ TraitLAB v2: Tokens cargados, continuando...');
+                                        
+                                        // Cargar tokens del contrato actual en background (DESPUÉS de DataManager)
+                                        console.log('🚀 TraitLAB v2: Cargando tokens del contrato actual en background...');
+                                        this.loadTokensForTab().catch(err => {
+                                            console.error('❌ Error cargando tokens para tab:', err);
+                                        });
+                                        break;
+                                    }
+                                    
+                                    attempts++;
+                                    await new Promise(resolve => setTimeout(resolve, 500));
+                                }
+                                
+                                if (attempts >= maxAttempts) {
+                                    console.warn('⚠️ TraitLAB v2: Timeout esperando tokens, continuando de todas formas...');
+                                }
+                            };
+                            
+                            checkTokens();
+                        }).catch(error => {
+                            console.error('❌ TraitLAB v2: Error en DataManager:', error);
+                        });
                     }
-                    
-                    // 2. Cargar tokens del contrato actual en background (DESPUÉS de DataManager)
-                    // Los eventos adrianZeroReady y adrianLabReady también mostrarán tokens automáticamente
-                    console.log('🚀 TraitLAB v2: Cargando tokens del contrato actual en background...');
-                    await this.loadTokensForTab();
-                    
-                    // 3. NO limpiar el grid aquí - los tokens ya se mostraron
-                    // El grid se mantiene con el contenido mostrado por displayTokens
                     
                 } catch (error) {
                     console.error('❌ TraitLAB v2: Error en carga en background:', error);
                     // Mostrar error pero no bloquear la UI
+                    const tokensGrid = document.getElementById('tokens-grid');
                     if (tokensGrid) {
                         tokensGrid.innerHTML = `
                             <div class="error-message" style="text-align: center; padding: 20px; color: #e74c3c;">
@@ -645,8 +665,39 @@
             onWalletDisconnected() {
                 console.log('🔌 TraitLAB v2: Wallet desconectada');
                 
+                // 🚨 CRÍTICO: Reinicializar DataManager cuando se desconecta
+                if (this.modules.dataManager) {
+                    console.log('🔄 Reinicializando DataManager después de desconexión...');
+                    // Limpiar cache y estado
+                    this.modules.dataManager.cache.adrianZero = [];
+                    this.modules.dataManager.cache.adrianLab = null;
+                    this.modules.dataManager.isInitialized = false;
+                    this.modules.dataManager.cache.loading.adrianZero = false;
+                    this.modules.dataManager.cache.loading.adrianLab = false;
+                    this.modules.dataManager.cache.ready.adrianZero = false;
+                    this.modules.dataManager.cache.ready.adrianLab = false;
+                }
+                
+                // Limpiar grid
+                const tokensGrid = document.getElementById('tokens-grid');
+                if (tokensGrid) {
+                    tokensGrid.innerHTML = '';
+                }
+                
                 // Update UI
-                document.getElementById('connect-section').style.display = 'block';
+                const connectSection = document.getElementById('connect-section');
+                if (connectSection) {
+                    connectSection.style.display = 'block';
+                }
+                
+                // Asegurar que el botón sea clickeable
+                const connectBtn = document.getElementById('connectBtn');
+                if (connectBtn) {
+                    connectBtn.style.pointerEvents = 'auto';
+                    connectBtn.style.cursor = 'pointer';
+                    connectBtn.disabled = false;
+                    console.log('✅ Botón Connect Wallet habilitado después de desconexión');
+                }
                 document.getElementById('account-section').style.display = 'none';
                 document.getElementById('tokens-section').style.display = 'none';
                 

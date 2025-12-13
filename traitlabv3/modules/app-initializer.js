@@ -176,8 +176,24 @@ class AppInitializer {
         
         try {
             // Wallet events
-            this.app.modules.wallet.on('walletConnected', (data) => this.app.onWalletConnected(data));
-            this.app.modules.wallet.on('walletDisconnected', () => this.app.onWalletDisconnected());
+            this.app.modules.wallet.on('walletConnected', (data) => {
+                console.log('🔗 AppInitializer: Evento walletConnected recibido:', data);
+                this.app.onWalletConnected(data);
+            });
+            this.app.modules.wallet.on('walletDisconnected', () => {
+                console.log('🔗 AppInitializer: Evento walletDisconnected recibido');
+                this.app.onWalletDisconnected();
+            });
+            
+            // 🚨 CRÍTICO: Si la wallet ya está conectada al inicializar, cargar datos
+            // Esperar un poco para asegurar que los listeners estén configurados
+            setTimeout(() => {
+                const currentAccount = this.app.modules.wallet.getCurrentAccount();
+                if (currentAccount) {
+                    console.log('🔗 AppInitializer: Wallet ya conectada al inicializar, cargando datos...');
+                    this.app.loadDataInBackground(currentAccount);
+                }
+            }, 200);
             
             // UI events
             this.app.modules.ui.on('tokenSelected', (data) => {

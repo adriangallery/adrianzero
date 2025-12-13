@@ -264,7 +264,12 @@ class WalletManager {
                 this.isConnected = true;
                 
                 this.updateUIForConnectedWallet();
-                this.emit('walletConnected', { account, contract: this.currentContract });
+                
+                // 🚨 CRÍTICO: Emitir evento de forma asíncrona para no bloquear
+                // Usar setTimeout para asegurar que el listener esté configurado
+                setTimeout(() => {
+                    this.emit('walletConnected', { account, contract: this.currentContract });
+                }, 100);
             } else {
                 console.log('No existing wallet connection found');
             }
