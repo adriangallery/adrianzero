@@ -594,15 +594,30 @@
                         const status = this.modules.dataManager.getStatus();
                         console.log('📊 TraitLAB v2: Estado del cache:', status);
                         
-                        // Esperar un momento para que los tokens se procesen
-                        // Los eventos adrianZeroReady y adrianLabReady se emitirán automáticamente
-                        // y los listeners mostrarán los tokens cuando estén listos
-                        await new Promise(resolve => setTimeout(resolve, 500));
+                        // Esperar a que los tokens se carguen (máximo 10 segundos)
+                        let attempts = 0;
+                        const maxAttempts = 20; // 20 intentos * 500ms = 10 segundos máximo
+                        while (attempts < maxAttempts) {
+                            const hasAdrianZero = this.modules.dataManager.getFilteredTokens('adrianzero').length > 0;
+                            const hasAdrianLab = this.modules.dataManager.getFilteredTokens('traits').length > 0 || 
+                                               this.modules.dataManager.getFilteredTokens('floppy').length > 0;
+                            
+                            if (hasAdrianZero || hasAdrianLab) {
+                                console.log('✅ TraitLAB v2: Tokens cargados, continuando...');
+                                break;
+                            }
+                            
+                            attempts++;
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                        
+                        if (attempts >= maxAttempts) {
+                            console.warn('⚠️ TraitLAB v2: Timeout esperando tokens, continuando de todas formas...');
+                        }
                     }
                     
                     // 2. Cargar tokens del contrato actual en background (DESPUÉS de DataManager)
-                    // Nota: Los tokens pueden mostrarse automáticamente vía eventos,
-                    // pero también intentamos cargar el tab actual por si acaso
+                    // Los eventos adrianZeroReady y adrianLabReady también mostrarán tokens automáticamente
                     console.log('🚀 TraitLAB v2: Cargando tokens del contrato actual en background...');
                     await this.loadTokensForTab();
                     
