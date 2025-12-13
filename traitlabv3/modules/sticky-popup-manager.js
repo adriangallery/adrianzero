@@ -229,6 +229,13 @@ class StickyPopupManager {
                 } else if (window.app?.modules?.traits) {
                     this.selectedERC1155 = window.app.modules.traits.getSelectedTraits();
                 }
+                
+                // 🚨 CRÍTICO: Si hay un trait reemplazado, asegurar que se regenere la imagen
+                if (data.replacedTrait && data.newTrait) {
+                    console.log(`🔄 Trait ${data.replacedTrait} reemplazado por ${data.newTrait}, regenerando imagen`);
+                }
+                
+                // Actualizar UI (esto llamará a generateCombinedImage si hay traits seleccionados)
                 this.updateUI();
             });
             

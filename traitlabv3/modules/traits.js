@@ -131,10 +131,11 @@ class TraitsManager {
             }
             console.log(`Replaced trait ${existingTrait.tokenId} with ${token.tokenId} in category ${category}`);
             
-            // Emit event for visual selection update after replacement
-            this.emit('traitsSelectionUpdated', { 
-                selectedTraits: this.selectedERC1155,
-                selectedTraitsByCategory: Array.from(this.selectedTraitsByCategory.entries())
+            // 🚨 NUEVO: Emitir evento de deselección del trait anterior para actualizar UI visual
+            this.emit('traitDeselected', { 
+                token: existingTrait, 
+                category,
+                reason: 'replaced' // Indicar que fue reemplazado, no deseleccionado manualmente
             });
         }
         
@@ -145,10 +146,12 @@ class TraitsManager {
         
         this.emit('traitSelected', { token, category });
         
-        // Emit event for visual selection update
+        // 🚨 CRÍTICO: Emitir evento de actualización con información completa para regenerar imagen
         this.emit('traitsSelectionUpdated', { 
             selectedTraits: this.selectedERC1155,
-            selectedTraitsByCategory: Array.from(this.selectedTraitsByCategory.entries())
+            selectedTraitsByCategory: Array.from(this.selectedTraitsByCategory.entries()),
+            replacedTrait: existingTrait ? existingTrait.tokenId : null, // Informar qué trait fue reemplazado
+            newTrait: token.tokenId
         });
         
         return true;

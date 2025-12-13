@@ -181,7 +181,7 @@ class UIManager {
         if (dataManager && this._moreTraitsLoadedHandler) {
             dataManager.off('adrianLabMoreTraitsLoaded', this._moreTraitsLoadedHandler);
             this._moreTraitsLoadedHandler = null;
-        }
+            }
         
         this.lazyLoadingState.enabled = false;
         this.lazyLoadingState.allTokens = [];
@@ -294,11 +294,21 @@ class UIManager {
      * Create a single token card element
      */
     createTokenCard(token) {
-        const tokenCard = document.createElement('div');
-        tokenCard.className = 'token-card';
-        tokenCard.setAttribute('data-token-id', token.tokenId);
-        tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
-        
+            const tokenCard = document.createElement('div');
+            tokenCard.className = 'token-card';
+            tokenCard.setAttribute('data-token-id', token.tokenId);
+            tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
+            
+            // 🚨 NUEVO: Marcar como seleccionado si ya está en la lista de traits seleccionados
+            if (this.currentFilter === 'traits' && window.app?.modules?.traits) {
+                const selectedTraits = window.app.modules.traits.getSelectedTraits();
+                const isSelected = selectedTraits.some(t => t.tokenId === token.tokenId);
+                if (isSelected) {
+                    tokenCard.classList.add('selected');
+                    console.log(`✅ Token ${token.tokenId} ya está seleccionado, marcando como selected`);
+                }
+            }
+            
         // Obtener imagen y título
         const { imageUrl, displayTitle } = this.getTokenDisplayInfo(token);
         
@@ -338,16 +348,16 @@ class UIManager {
         const imgTag = this.buildImageTag(token, imageUrl, displayTitle);
         
         return `
-            <div style="position: relative;">
-                ${imgTag}
-                ${quantityTag}
-            </div>
-            <div class="token-info">
-                <div class="token-title">${displayTitle}</div>
-                <div class="token-id">ID: ${token.tokenId}</div>
-                ${categoryDisplay}
-            </div>
-        `;
+                <div style="position: relative;">
+                    ${imgTag}
+                    ${quantityTag}
+                </div>
+                <div class="token-info">
+                    <div class="token-title">${displayTitle}</div>
+                    <div class="token-id">ID: ${token.tokenId}</div>
+                    ${categoryDisplay}
+                </div>
+            `;
     }
 
     /**
@@ -701,7 +711,7 @@ class UIManager {
         const shouldUseLazyLoading = this.isMobile() && 
                                      filter === 'traits' && 
                                      tokens.length > 50; // Only use lazy loading if more than 50 traits
-
+        
         if (shouldUseLazyLoading) {
             console.log(`📱 Lazy loading enabled for ${tokens.length} traits on mobile`);
             this.setupLazyLoading(tokens);
@@ -801,25 +811,25 @@ class UIManager {
      * Manejar selección de tokens ERC721
      */
     handleERC721Selection(tokenCard, token, tokensGrid) {
-        // Single selection for ERC721
-        if (this.selectedERC721 && this.selectedERC721.tokenId === token.tokenId) {
-            this.selectedERC721 = null;
-            tokenCard.classList.remove('selected');
-        } else {
-            // Deselect previous ERC721
-            const prevSelected = tokensGrid.querySelector('.token-card.selected');
-            if (prevSelected) prevSelected.classList.remove('selected');
-            
-            this.selectedERC721 = token;
-            tokenCard.classList.add('selected');
-        }
+            // Single selection for ERC721
+            if (this.selectedERC721 && this.selectedERC721.tokenId === token.tokenId) {
+                this.selectedERC721 = null;
+                tokenCard.classList.remove('selected');
+            } else {
+                // Deselect previous ERC721
+                const prevSelected = tokensGrid.querySelector('.token-card.selected');
+                if (prevSelected) prevSelected.classList.remove('selected');
+                
+                this.selectedERC721 = token;
+                tokenCard.classList.add('selected');
+            }
     }
 
     /**
      * Manejar selección de tokens ERC1155
      */
     handleERC1155Selection(tokenCard, token, tokensGrid) {
-        if (this.currentFilter === 'floppy') {
+            if (this.currentFilter === 'floppy') {
             this.handleFloppySelection(tokenCard, token, tokensGrid);
         } else if (this.currentFilter === 'serum') {
             this.handleSerumSelection(tokenCard, token, tokensGrid);
@@ -832,45 +842,45 @@ class UIManager {
      * Manejar selección de floppy
      */
     handleFloppySelection(tokenCard, token, tokensGrid) {
-        const packIndex = this.selectedPacks.findIndex(p => p.tokenId === token.tokenId);
-        if (packIndex !== -1) {
-            this.selectedPacks.splice(packIndex, 1);
-            tokenCard.classList.remove('selected');
-            this.selectedFloppy = null;
-        } else {
-            if (this.selectedPacks.length > 0) {
-                const prevSelectedCard = tokensGrid.querySelector('.token-card.selected');
-                if (prevSelectedCard) {
-                    prevSelectedCard.classList.remove('selected');
+                const packIndex = this.selectedPacks.findIndex(p => p.tokenId === token.tokenId);
+                if (packIndex !== -1) {
+                    this.selectedPacks.splice(packIndex, 1);
+                    tokenCard.classList.remove('selected');
+                    this.selectedFloppy = null;
+                } else {
+                    if (this.selectedPacks.length > 0) {
+                        const prevSelectedCard = tokensGrid.querySelector('.token-card.selected');
+                        if (prevSelectedCard) {
+                            prevSelectedCard.classList.remove('selected');
+                        }
+                        this.selectedPacks = [];
+                    }
+                    
+                    this.selectedPacks = [token];
+                    tokenCard.classList.add('selected');
+                    this.selectedFloppy = token;
                 }
-                this.selectedPacks = [];
-            }
-            
-            this.selectedPacks = [token];
-            tokenCard.classList.add('selected');
-            this.selectedFloppy = token;
-        }
-        
-        this.emit('packsSelectionChanged', { 
-            selectedPacks: this.selectedPacks,
-            selectedFloppy: this.selectedFloppy 
-        });
+                
+                this.emit('packsSelectionChanged', { 
+                    selectedPacks: this.selectedPacks,
+                    selectedFloppy: this.selectedFloppy 
+                });
     }
 
     /**
      * Manejar selección de serum
      */
     handleSerumSelection(tokenCard, token, tokensGrid) {
-        if (this.selectedSerum && this.selectedSerum.tokenId === token.tokenId) {
-            this.selectedSerum = null;
-            tokenCard.classList.remove('selected');
-        } else {
-            const prevSelected = tokensGrid.querySelector('.token-card.selected');
-            if (prevSelected) prevSelected.classList.remove('selected');
-            
-            this.selectedSerum = token;
-            tokenCard.classList.add('selected');
-        }
+                if (this.selectedSerum && this.selectedSerum.tokenId === token.tokenId) {
+                    this.selectedSerum = null;
+                    tokenCard.classList.remove('selected');
+                } else {
+                    const prevSelected = tokensGrid.querySelector('.token-card.selected');
+                    if (prevSelected) prevSelected.classList.remove('selected');
+                    
+                    this.selectedSerum = token;
+                    tokenCard.classList.add('selected');
+                }
     }
 
     /**
@@ -879,6 +889,24 @@ class UIManager {
     handleTraitsSelection(tokenCard, token) {
         // Delegar al módulo de traits
         if (window.app?.modules?.traits) {
+            // 🚨 NUEVO: Obtener categoría antes de seleccionar para manejar exclusión mutua visual
+            const category = window.app.modules.traits.getTraitCategory(token.tokenId);
+            const selectedTraitsByCategory = window.app.modules.traits.getSelectedTraitsByCategory();
+            
+            // Si hay un trait de la misma categoría ya seleccionado, deseleccionarlo visualmente primero
+            if (category && selectedTraitsByCategory.has(category)) {
+                const existingTrait = selectedTraitsByCategory.get(category);
+                // Buscar el card del trait existente y deseleccionarlo visualmente
+                const tokensGrid = tokenCard.closest('#tokens-grid');
+                if (tokensGrid) {
+                    const existingCard = tokensGrid.querySelector(`[data-token-id="${existingTrait.tokenId}"]`);
+                    if (existingCard && existingCard !== tokenCard) {
+                        existingCard.classList.remove('selected');
+                        console.log(`🔄 Deseleccionando visualmente trait ${existingTrait.tokenId} de categoría ${category}`);
+                    }
+                }
+            }
+            
             const wasSelected = window.app.modules.traits.handleTraitSelection(token);
             if (wasSelected) {
                 tokenCard.classList.add('selected');
