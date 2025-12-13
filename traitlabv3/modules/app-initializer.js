@@ -365,6 +365,14 @@ class AppInitializer {
             
             contractBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    // 🚨 NUEVO: Cancelar procesos en background cuando cambia el tab
+                    this.app.loadingCancelled = true;
+                    
+                    // Resetear flag después de un breve delay
+                    setTimeout(() => {
+                        this.app.loadingCancelled = false;
+                    }, 100);
+                    
                     // Remove active class from all buttons
                     contractBtns.forEach(b => b.classList.remove('active'));
                     

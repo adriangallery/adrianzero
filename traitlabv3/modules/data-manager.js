@@ -41,6 +41,10 @@ class TraitLABDataManager {
         // Contador de errores consecutivos para rate limiting adaptativo
         this.consecutiveErrors = 0;
         
+        // 🚨 NUEVO: Flags para evitar procesos duplicados
+        this.isImprovingNames = false;
+        this.isLoadingAdrianLab = false;
+        
         console.log('📊 TraitLABDataManager: Inicializado');
     }
     
@@ -305,8 +309,16 @@ class TraitLABDataManager {
      * Cargar tokens AdrianLAB (ERC1155) - TODOS LOS TOKENS SIN FILTRAR o por batches
      */
     async loadAdrianLabTokens() {
+        // 🚨 NUEVO: Verificar flag para evitar procesos duplicados
+        if (this.isLoadingAdrianLab) {
+            console.log('⚠️ Carga de AdrianLAB ya en proceso, saltando...');
+            return;
+        }
+        
         if (this.cache.loading.adrianLab || this.cache.ready.adrianLab) return;
         
+        // 🚨 NUEVO: Marcar como en proceso
+        this.isLoadingAdrianLab = true;
         this.cache.loading.adrianLab = true;
         console.log('📊 Cargando tokens AdrianLAB (ERC1155)...');
         
@@ -336,6 +348,8 @@ class TraitLABDataManager {
             this.emit('adrianLabError', { error: error.message || 'Error desconocido cargando tokens' });
             // No lanzar el error para evitar crashes, solo loguearlo
         } finally {
+            // 🚨 NUEVO: Resetear flag al finalizar
+            this.isLoadingAdrianLab = false;
             this.cache.loading.adrianLab = false;
             this.cache.ready.adrianLab = true;
             this.emit('adrianLabReady', { tokens: this.cache.adrianLab });
@@ -495,6 +509,12 @@ class TraitLABDataManager {
      * 🔄 Mejorar nombres de tokens en background
      */
     async improveTokenNamesInBackground(tokens) {
+        // 🚨 NUEVO: Verificar si ya está en proceso para evitar duplicados
+        if (this.isImprovingNames) {
+            console.log('⚠️ Mejora de nombres ya en proceso, saltando...');
+            return;
+        }
+        
         console.log('🔄 Iniciando mejora de nombres en background...');
         
         // Solo procesar tokens AdrianZERO (ERC721)
@@ -507,6 +527,9 @@ class TraitLABDataManager {
             console.log('No hay tokens AdrianZERO para mejorar nombres');
             return;
         }
+        
+        // 🚨 NUEVO: Marcar como en proceso
+        this.isImprovingNames = true;
         
         try {
             // Cargar ethers si no está disponible
@@ -558,10 +581,10 @@ class TraitLABDataManager {
             );
             
             // Procesar tokens en lotes con delays para evitar rate limiting
-            // Rate limiting adaptativo: reducir batch size si hay muchos errores
-            let batchSize = this.consecutiveErrors > 3 ? 3 : 5;
-            let delayBetweenBatches = this.consecutiveErrors > 3 ? 3000 : 2000;
-            const delayBetweenRequests = 500; // Delay individual entre requests (como traitlab original)
+            // Rate limiting adaptativo mejorado: reducir batch size y aumentar delays si hay muchos errores
+            let batchSize = this.consecutiveErrors > 5 ? 2 : (this.consecutiveErrors > 3 ? 3 : 5);
+            let delayBetweenBatches = this.consecutiveErrors > 5 ? 5000 : (this.consecutiveErrors > 3 ? 3000 : 2000);
+            let delayBetweenRequests = this.consecutiveErrors > 5 ? 1000 : 500; // Delay individual entre requests
             const nameMap = new Map();
             let processedCount = 0;
             let batchErrors = 0;
@@ -569,15 +592,36 @@ class TraitLABDataManager {
             // Resetear contador de errores al inicio
             this.consecutiveErrors = 0;
             
+            // 🚨 NUEVO: Cancelar si hay demasiados errores consecutivos desde el inicio
+            if (this.consecutiveErrors > 10) {
+                console.warn('⚠️ Demasiados errores consecutivos previos, cancelando mejora de nombres');
+                this.isImprovingNames = false;
+                return;
+            }
+            
             for (let i = 0; i < adrianZeroTokens.length; i += batchSize) {
+                // 🚨 NUEVO: Cancelar si hay demasiados errores consecutivos durante el proceso
+                if (this.consecutiveErrors > 10) {
+                    console.warn('⚠️ Demasiados errores consecutivos durante el proceso, cancelando mejora de nombres');
+                    this.isImprovingNames = false;
+                    return;
+                }
+                
                 // Ajustar batch size y delay dinámicamente si hay muchos errores
-                if (this.consecutiveErrors > 3) {
+                if (this.consecutiveErrors > 5) {
+                    batchSize = 2;
+                    delayBetweenBatches = 5000;
+                    delayBetweenRequests = 1000;
+                    console.warn(`⚠️ Demasiados errores consecutivos (${this.consecutiveErrors}), reduciendo batchSize a ${batchSize} y aumentando delays`);
+                } else if (this.consecutiveErrors > 3) {
                     batchSize = 3;
                     delayBetweenBatches = 3000;
+                    delayBetweenRequests = 500;
                     console.warn(`⚠️ Demasiados errores consecutivos (${this.consecutiveErrors}), reduciendo batchSize a ${batchSize} y aumentando delay a ${delayBetweenBatches}ms`);
                 } else {
                     batchSize = 5;
                     delayBetweenBatches = 2000;
+                    delayBetweenRequests = 500;
                 }
                 
                 const batch = adrianZeroTokens.slice(i, i + batchSize);
@@ -670,6 +714,8 @@ class TraitLABDataManager {
         } catch (error) {
             console.warn('⚠️ Error en mejora de nombres:', error);
         } finally {
+            // 🚨 NUEVO: Resetear flag al finalizar (éxito o error)
+            this.isImprovingNames = false;
             // Marcar que la mejora de nombres está completa
             console.log('✅ Mejora de nombres AdrianZERO completada');
         }
