@@ -199,6 +199,12 @@ class StickyPopupManager {
      * Configurar listeners de eventos de traits
      */
     setupTraitsEventListeners() {
+        // Si ya están configurados, no hacer nada
+        if (this._traitsListenersConfigured) {
+            console.log('ℹ️ StickyPopupManager: Listeners de traits ya configurados');
+            return;
+        }
+        
         if (window.app?.modules?.traits) {
             // Listener para cuando se selecciona un trait
             window.app.modules.traits.on('traitSelected', (data) => {
@@ -239,9 +245,11 @@ class StickyPopupManager {
                 this.updateUI();
             });
             
+            this._traitsListenersConfigured = true;
             console.log('✅ StickyPopupManager: Listeners de traits configurados');
         } else {
             console.warn('⚠️ StickyPopupManager: Módulo traits no disponible para configurar listeners');
+            // Intentar configurar más tarde (será llamado desde app-initializer después de inicializar traits)
         }
     }
 

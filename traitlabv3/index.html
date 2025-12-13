@@ -624,6 +624,20 @@
             async loadDataInBackground(userAddress) {
                 console.log('🚀 TraitLAB v2: Iniciando carga en background...');
                 
+                // 🚨 CRÍTICO: Establecer tab por defecto si no está configurado
+                if (!this.currentFilter) {
+                    this.currentFilter = 'adrianzero';
+                    this.currentContract = window.TraitLABConfig.CONTRACTS.ERC721;
+                    console.log('🎯 Estableciendo tab por defecto en loadDataInBackground: adrianzero');
+                    
+                    // Activar visualmente el botón del tab "AdrianZERO"
+                    const adrianZeroBtn = document.querySelector('.contract-btn[data-filter="adrianzero"]');
+                    if (adrianZeroBtn) {
+                        document.querySelectorAll('.contract-btn').forEach(btn => btn.classList.remove('active'));
+                        adrianZeroBtn.classList.add('active');
+                    }
+                }
+                
                 // 🚨 CRÍTICO: Asegurar que el botón sea clickeable durante todo el proceso
                 const connectBtn = document.getElementById('connectBtn');
                 if (connectBtn) {

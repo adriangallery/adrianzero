@@ -112,6 +112,14 @@ class AppInitializer {
             }
         }
         
+        // 🚨 CRÍTICO: Configurar listeners de traits en sticky-popup-manager DESPUÉS de que traits se inicialice
+        if (this.app.modules.stickyPopupManager && this.app.modules.traits) {
+            console.log('🔧 Configurando listeners de traits en sticky-popup-manager...');
+            this.app.modules.stickyPopupManager.setupTraitsEventListeners();
+        } else {
+            console.warn('⚠️ No se pueden configurar listeners de traits: stickyPopupManager o traits no disponible');
+        }
+        
         // Inicializar DataManager después de que todos los módulos estén listos
         if (this.app.modules.dataManager) {
             try {

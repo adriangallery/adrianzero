@@ -1002,7 +1002,19 @@ class TraitLABDataManager {
                     });
                     
                     // 🚀 MOSTRAR TOKENS INMEDIATAMENTE si estamos en el tab correspondiente
-                    // Si no hay tab activo, no mostrar nada (se mostrarán cuando el usuario cambie de tab)
+                    // 🚨 NUEVO: Establecer tab por defecto si no hay uno activo
+                    if (!window.app.currentFilter) {
+                        window.app.currentFilter = 'adrianzero';
+                        console.log('🎯 Estableciendo tab por defecto: adrianzero (desde loadAdrianLabTokens)');
+                        
+                        // Activar visualmente el botón del tab "AdrianZERO"
+                        const adrianZeroBtn = document.querySelector('.contract-btn[data-filter="adrianzero"]');
+                        if (adrianZeroBtn) {
+                            document.querySelectorAll('.contract-btn').forEach(btn => btn.classList.remove('active'));
+                            adrianZeroBtn.classList.add('active');
+                        }
+                    }
+                    
                     if (window.app?.modules?.ui && window.app.currentFilter) {
                         const currentFilter = window.app.currentFilter;
                         
@@ -1029,6 +1041,17 @@ class TraitLABDataManager {
                                 filter: 'serum',
                                 hasLoadingWheels: true 
                             });
+                        }
+                        // 🚨 NUEVO: Si estamos en adrianzero (por defecto), mostrar AdrianZERO tokens
+                        else if (currentFilter === 'adrianzero') {
+                            const adrianZeroTokens = this.getFilteredTokens('adrianzero');
+                            if (adrianZeroTokens.length > 0) {
+                                console.log('🎨 Mostrando AdrianZERO tokens inmediatamente:', adrianZeroTokens.length);
+                                window.app.modules.ui.displayTokens(adrianZeroTokens, { 
+                                    filter: 'adrianzero',
+                                    hasLoadingWheels: true 
+                                });
+                            }
                         }
                     } else {
                         console.log('ℹ️ No hay tab activo o UI no disponible, tokens se mostrarán cuando el usuario cambie de tab');
