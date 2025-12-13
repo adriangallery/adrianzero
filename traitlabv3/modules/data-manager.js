@@ -4,6 +4,13 @@
  */
 
 class TraitLABDataManager {
+    // Cache estático para verificación de red (compartido entre instancias)
+    static networkCheckCache = {
+        chainId: null,
+        timestamp: null,
+        ttl: 60000 // 1 minuto
+    };
+    
     constructor() {
         this.cache = {
             adrianZero: null,      // ERC721 tokens
@@ -31,7 +38,42 @@ class TraitLABDataManager {
         this.eventListeners = new Map();
         this.isInitialized = false;
         
+        // Contador de errores consecutivos para rate limiting adaptativo
+        this.consecutiveErrors = 0;
+        
         console.log('📊 TraitLABDataManager: Inicializado');
+    }
+    
+    /**
+     * Obtener verificación de red con cache
+     * Evita múltiples llamadas a getNetwork() que causan errores
+     */
+    async getCachedNetwork(provider) {
+        const now = Date.now();
+        const cache = TraitLABDataManager.networkCheckCache;
+        
+        // Si hay cache válido, usarlo
+        if (cache.chainId && (now - cache.timestamp) < cache.ttl) {
+            console.log('✅ Usando cache de verificación de red:', cache.chainId);
+            return { chainId: cache.chainId };
+        }
+        
+        try {
+            const network = await provider.getNetwork();
+            cache.chainId = network.chainId;
+            cache.timestamp = now;
+            console.log('✅ Red verificada y cacheada:', network.chainId);
+            return network;
+        } catch (error) {
+            // Si falla pero hay cache, usar cache
+            if (cache.chainId) {
+                console.warn('⚠️ Error verificando red, usando cache:', error.message);
+                return { chainId: cache.chainId };
+            }
+            // Si no hay cache y falla, lanzar error
+            console.error('❌ Error verificando red y no hay cache disponible:', error);
+            throw error;
+        }
     }
 
     /**
