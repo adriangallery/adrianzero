@@ -742,10 +742,11 @@ body {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: 10vh;
+    padding-bottom: 0;
     transform-style: preserve-3d;
     /* Aplicar perspectiva directamente al wrapper */
     transform: perspective(1200px);
+    overflow: hidden;
 }
 
 .idle-state-text {
@@ -777,16 +778,16 @@ body {
 }
 
 .idle-state-overlay.active .idle-state-text {
-    animation: starWarsScroll 35s linear infinite;
+    animation: starWarsScroll 40s linear infinite;
 }
 
 @keyframes starWarsScroll {
     0% {
-        transform: translateY(10vh) rotateX(25deg) scale(1);
+        transform: translateY(100vh) rotateX(30deg) scale(2.5);
         opacity: 1;
     }
     100% {
-        transform: translateY(-100vh) rotateX(25deg) scale(2.5);
+        transform: translateY(-50vh) rotateX(30deg) scale(0.3);
         opacity: 0;
     }
 }
