@@ -1376,6 +1376,214 @@ class ZeroManager {
             });
         }
     }
+
+    /**
+     * Procesar un NFT individual
+     */
+    processNFT(nft, isERC721, contractAddress) {
+        try {
+            const tokenId = this.extractTokenId(nft);
+            if (!tokenId) return null;
+            
+            const tokenIdInt = this.parseTokenId(tokenId);
+            if (isNaN(tokenIdInt)) return null;
+            
+            const title = this.extractTitle(nft, tokenIdInt);
+            const { imageUrl, fallbackImageUrl } = this.extractImageUrl(nft, tokenIdInt, isERC721);
+            const balance = nft.balance || '1';
+            const category = this.extractCategory(nft);
+            
+            const tokenObj = {
+                tokenId: tokenIdInt,
+                title: title,
+                imageUrl: imageUrl,
+                contract: nft.contract.address,
+                contractName: nft.contract.name || 'Unknown Contract',
+                tokenType: isERC721 ? 'ERC721' : 'ERC1155',
+                category: category,
+                balance: balance,
+                metadata: nft.metadata || {}
+            };
+            
+            if (fallbackImageUrl && !isERC721) {
+                tokenObj.fallbackImageUrl = fallbackImageUrl;
+            }
+            
+            return tokenObj;
+        } catch (err) {
+            console.error("Error processing NFT:", err, nft);
+            return null;
+        }
+    }
+
+    /**
+     * Extraer tokenId del NFT
+     */
+    extractTokenId(nft) {
+        if (nft.tokenId) {
+            return nft.tokenId;
+        } else if (nft.id && nft.id.tokenId) {
+            return nft.id.tokenId;
+        }
+        console.error("No tokenId found in NFT:", nft);
+        return null;
+    }
+
+    /**
+     * Parsear tokenId a entero
+     */
+    parseTokenId(tokenId) {
+        if (typeof tokenId === 'number') {
+            return tokenId;
+        } else if (tokenId.startsWith('0x')) {
+            return parseInt(tokenId, 16);
+        } else {
+            return parseInt(tokenId, 10);
+        }
+    }
+
+    /**
+     * Extraer título del NFT
+     */
+    extractTitle(nft, tokenIdInt) {
+        if (nft.title) {
+            return nft.title;
+        } else if (nft.name) {
+            return nft.name;
+        } else if (nft.metadata && nft.metadata.name) {
+            return nft.metadata.name;
+        } else if (nft.contract && nft.contract.name) {
+            return `${nft.contract.name} #${tokenIdInt}`;
+        }
+        return `Token #${tokenIdInt}`;
+    }
+
+    /**
+     * Extraer URL de imagen del NFT
+     */
+    extractImageUrl(nft, tokenIdInt, isERC721) {
+        let mediaUrl = "";
+        let fallbackImageUrl = null;
+        
+        if (isERC721) {
+            mediaUrl = this.getERC721ImageUrl(tokenIdInt);
+        } else {
+            const result = this.getERC1155ImageUrl(nft, tokenIdInt);
+            mediaUrl = result.imageUrl;
+            fallbackImageUrl = result.fallbackUrl;
+        }
+        
+        return { imageUrl: mediaUrl, fallbackImageUrl };
+    }
+
+    /**
+     * Obtener URL de imagen para ERC721
+     */
+    getERC721ImageUrl(tokenIdInt) {
+        const hasZoomToggle = this.activeToggles.has(tokenIdInt) && 
+                             this.activeToggles.get(tokenIdInt) === 1;
+        
+        if (hasZoomToggle) {
+            console.log(`🔍 Token ${tokenIdInt} has zoom toggle - using closeup=true`);
+            return `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png?closeup=true`;
+        } else {
+            return `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`;
+        }
+    }
+
+    /**
+     * Obtener URL de imagen para ERC1155
+     */
+    getERC1155ImageUrl(nft, tokenIdInt) {
+        // Floppy
+        if (this.isFloppyToken(tokenIdInt)) {
+            if (window.app?.modules?.floppy) {
+                return {
+                    imageUrl: window.app.modules.floppy.getFloppyImageUrl(tokenIdInt),
+                    fallbackUrl: null
+                };
+            }
+            return {
+                imageUrl: `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`,
+                fallbackUrl: null
+            };
+        }
+        
+        // Serum
+        if (this.isSerumToken(tokenIdInt)) {
+            if (window.app?.modules?.serums) {
+                return {
+                    imageUrl: window.app.modules.serums.getSerumImageUrl(tokenIdInt),
+                    fallbackUrl: null
+                };
+            }
+            return {
+                imageUrl: `https://adrianlab.vercel.app/api/render/${tokenIdInt}.png`,
+                fallbackUrl: null
+            };
+        }
+        
+        // Traits - usar TraitImageLoader
+        const alchemyImageUrl = this.extractAlchemyImageUrl(nft);
+        
+        if (window.traitImageLoader && typeof window.traitImageLoader.getTraitImageUrl === 'function') {
+            try {
+                const imageUrls = window.traitImageLoader.getTraitImageUrl(
+                    tokenIdInt,
+                    alchemyImageUrl || `https://adrianlab.vercel.app/api/render/floppy/${tokenIdInt}.png`
+                );
+                return {
+                    imageUrl: imageUrls.localUrl,
+                    fallbackUrl: imageUrls.fallbackUrl
+                };
+            } catch (error) {
+                console.warn('⚠️ Error usando TraitImageLoader, usando fallback:', error);
+                return {
+                    imageUrl: alchemyImageUrl,
+                    fallbackUrl: null
+                };
+            }
+        }
+        
+        return {
+            imageUrl: alchemyImageUrl,
+            fallbackUrl: null
+        };
+    }
+
+    /**
+     * Extraer URL de imagen de Alchemy
+     */
+    extractAlchemyImageUrl(nft) {
+        if (nft.raw?.metadata?.image) {
+            return nft.raw.metadata.image;
+        } else if (nft.media && Array.isArray(nft.media) && nft.media.length > 0) {
+            return nft.media[0].gateway || nft.media[0].raw || '';
+        } else if (nft.metadata?.image) {
+            return nft.metadata.image;
+        }
+        return '';
+    }
+
+    /**
+     * Extraer categoría del NFT
+     */
+    extractCategory(nft) {
+        if (!nft.metadata) return '';
+        
+        let category = nft.metadata.category || nft.metadata.Category || '';
+        
+        if (!category && nft.metadata.attributes) {
+            const categoryAttr = nft.metadata.attributes.find(attr => 
+                attr.trait_type && attr.trait_type.toLowerCase() === 'category'
+            );
+            if (categoryAttr) {
+                category = categoryAttr.value.toLowerCase();
+            }
+        }
+        
+        return category;
+    }
 }
 
 // Export for browser environment
