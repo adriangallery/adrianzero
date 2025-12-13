@@ -337,9 +337,14 @@ body {
 
 .grid-item-gif {
     background: transparent;
+    border: none !important;
 }
 
 /* 3D Model Viewer Styles */
+.grid-item-3d {
+    border: none !important;
+}
+
 .grid-item-3d .model-3d-wrapper {
     position: relative;
     width: 100%;
