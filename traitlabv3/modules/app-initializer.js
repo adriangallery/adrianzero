@@ -371,7 +371,16 @@ class AppInitializer {
             
             // Auto-click first tab if wallet is connected
             if (contractBtns.length > 0 && this.app.modules.wallet.getCurrentAccount()) {
-                // En lugar de hacer click inmediato, cargar en background
+                // Establecer tab por defecto (adrianzero)
+                const firstBtn = contractBtns[0];
+                if (firstBtn) {
+                    this.app.currentContract = firstBtn.dataset.contract;
+                    this.app.currentFilter = firstBtn.dataset.filter || 'adrianzero';
+                    firstBtn.classList.add('active');
+                    console.log('🎯 Tab por defecto establecido:', this.app.currentFilter);
+                }
+                
+                // Cargar en background (mostrará tokens cuando estén listos)
                 this.app.loadDataInBackground(this.app.modules.wallet.getCurrentAccount());
             }
             

@@ -139,18 +139,29 @@ class TraitLABDataManager {
             this.cache.adrianZero = tokens;
             console.log('📊 AdrianZERO tokens básicos cargados:', tokens.length);
             
-            // Mostrar tokens inmediatamente usando UI manager
-            if (window.app?.modules?.ui) {
+            this.cache.loading.adrianZero = false;
+            this.cache.ready.adrianZero = true;
+            
+            // 🚨 CRÍTICO: Mostrar tokens inmediatamente usando UI manager
+            // Esto asegura que el usuario vea algo mientras se cargan más datos
+            if (window.app?.modules?.ui && tokens.length > 0) {
+                console.log('🎨 Mostrando tokens AdrianZERO inmediatamente:', tokens.length);
+                
+                // Establecer tab por defecto si no hay uno activo
+                if (!window.app.currentFilter) {
+                    window.app.currentFilter = 'adrianzero';
+                    console.log('🎯 Estableciendo tab por defecto: adrianzero');
+                }
+                
                 window.app.modules.ui.displayTokens(tokens, { 
                     filter: 'adrianzero',
                     hasLoadingWheels: true 
                 });
             } else {
-                console.warn('⚠️ UIManager no disponible para mostrar tokens');
+                console.warn('⚠️ UIManager no disponible o sin tokens para mostrar');
             }
             
-            this.cache.loading.adrianZero = false;
-            this.cache.ready.adrianZero = true;
+            // Emitir evento después de mostrar
             this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
         } catch (error) {
             console.warn('📊 Error cargando AdrianZERO tokens básicos:', error);
@@ -876,15 +887,45 @@ class TraitLABDataManager {
                         serums: serums.length
                     });
                     
-                    // 🚀 NO MOSTRAR TOKENS AQUÍ - se mostrarán cuando el usuario cambie de tab
-                    // Los tokens se mostrarán automáticamente via getFilteredTokens() cuando sea necesario
-                    
                     // 🚨 NUEVO: Emitir evento para notificar que los tokens están listos
                     this.emit('adrianLabTokensReady', {
                         floppys: floppys,
                         serums: serums,
                         traits: traits
                     });
+                    
+                    // 🚀 MOSTRAR TOKENS INMEDIATAMENTE si estamos en el tab correspondiente
+                    // Si no hay tab activo, no mostrar nada (se mostrarán cuando el usuario cambie de tab)
+                    if (window.app?.modules?.ui && window.app.currentFilter) {
+                        const currentFilter = window.app.currentFilter;
+                        
+                        // Si estamos en el tab de traits y hay traits, mostrarlos
+                        if (currentFilter === 'traits' && traits.length > 0) {
+                            console.log('🎨 Mostrando traits inmediatamente:', traits.length);
+                            window.app.modules.ui.displayTokens(traits, { 
+                                filter: 'traits',
+                                hasLoadingWheels: true 
+                            });
+                        }
+                        // Si estamos en el tab de floppy y hay floppys, mostrarlos
+                        else if (currentFilter === 'floppy' && floppys.length > 0) {
+                            console.log('🎨 Mostrando floppys inmediatamente:', floppys.length);
+                            window.app.modules.ui.displayTokens(floppys, { 
+                                filter: 'floppy',
+                                hasLoadingWheels: true 
+                            });
+                        }
+                        // Si estamos en el tab de serum y hay serums, mostrarlos
+                        else if (currentFilter === 'serum' && serums.length > 0) {
+                            console.log('🎨 Mostrando serums inmediatamente:', serums.length);
+                            window.app.modules.ui.displayTokens(serums, { 
+                                filter: 'serum',
+                                hasLoadingWheels: true 
+                            });
+                        }
+                    } else {
+                        console.log('ℹ️ No hay tab activo o UI no disponible, tokens se mostrarán cuando el usuario cambie de tab');
+                    }
                     
                     // 🔄 MEJORAR METADATA EN BACKGROUND (no bloquear si falla)
                     try {
