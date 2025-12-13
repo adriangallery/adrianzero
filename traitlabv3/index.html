@@ -451,22 +451,22 @@
                                 this.hideLoading();
                             }
                         });
-                    } else if (this.currentFilter === 'rename') {
-                            // Mostrar inmediatamente AdrianZERO (ERC721) y habilitar rename en popup
-                            const erc721 = this.modules.dataManager.getFilteredTokens('rename');
-                            console.log('✍️ RENAME: Mostrando AdrianZERO para renombrar:', erc721.length);
-                            this.modules.ui.displayTokens(erc721, { filter: 'adrianzero' });
-                            this.hideLoading();
-                        } else if (this.currentFilter === 'lambo') {
-                            // Show AdrianZERO tokens for Lambo selection
-                            const erc721 = this.modules.dataManager.getFilteredTokens('adrianzero');
-                            console.log('🚗 LAMBO: Showing AdrianZERO for Lambo selection:', erc721.length);
-                            this.modules.ui.displayTokens(erc721, { filter: 'adrianzero' });
-                            this.hideLoading();
-                        } else {
-                            console.error('🔨 CRAFTING: Módulo de crafting no disponible');
-                            throw new Error('Módulo de crafting no disponible');
-                        }
+                    } else {
+                        console.error('🔨 CRAFTING: Módulo de crafting no disponible');
+                        this.hideLoading();
+                    }
+                } else if (this.currentFilter === 'rename') {
+                    // Mostrar inmediatamente AdrianZERO (ERC721) y habilitar rename en popup
+                    const erc721 = this.modules.dataManager.getFilteredTokens('rename');
+                    console.log('✍️ RENAME: Mostrando AdrianZERO para renombrar:', erc721.length);
+                    this.modules.ui.displayTokens(erc721, { filter: 'adrianzero' });
+                    this.hideLoading();
+                } else if (this.currentFilter === 'lambo') {
+                    // Show AdrianZERO tokens for Lambo selection
+                    const erc721 = this.modules.dataManager.getFilteredTokens('adrianzero');
+                    console.log('🚗 LAMBO: Showing AdrianZERO for Lambo selection:', erc721.length);
+                    this.modules.ui.displayTokens(erc721, { filter: 'adrianzero' });
+                    this.hideLoading();
                     } else if (this.currentFilter === 'traits') {
                         // 🎯 CASO ESPECIAL: Traits - Mostrar inmediatamente lo disponible, cargar en background
                         console.log('🎨 TRAITS: Verificando estado de carga de traits...');
@@ -507,52 +507,46 @@
                                 }
                             });
                         }
-                    } else {
-                        // 🚨 Verificar si el usuario cambió de tab durante la carga
-                        if (this.currentFilter !== currentFilterSnapshot) {
-                            console.log('🔄 Tab cambió durante carga, cancelando operación');
-                            this.hideLoading();
-                            return;
-                        }
-                        
-                        // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE (para otros tabs)
-                        const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
-                        console.log(`📊 Tokens filtrados obtenidos: ${filteredTokens.length}`);
-                        console.log(`🔍 Estado cache - ready: ${this.modules.dataManager.cache.ready.adrianZero}, loading: ${this.modules.dataManager.cache.loading.adrianZero}`);
-                        
-                        if (filteredTokens.length > 0) {
-                            console.log('✅ Mostrando tokens disponibles inmediatamente');
-                            this.modules.ui.displayTokens(filteredTokens, { filter: this.currentFilter || 'adrianzero' });
-                            this.hideLoading();
-                        } else {
-                            // 🚨 Si estamos en adrianzero y no hay tokens, verificar si están cargando
-                            if (this.currentFilter === 'adrianzero' && this.modules.dataManager.cache.loading.adrianZero) {
-                                console.log('⏳ Tokens AdrianZERO aún cargando, esperando...');
-                                // Esperar un momento y reintentar
-                                setTimeout(() => {
-                                    if (this.currentFilter === 'adrianzero') {
-                                        const tokens = this.modules.dataManager.getFilteredTokens('adrianzero');
-                                        if (tokens.length > 0) {
-                                            console.log('✅ Tokens cargados después de esperar:', tokens.length);
-                                            this.modules.ui.displayTokens(tokens, { filter: 'adrianzero' });
-                                            this.hideLoading();
-                                        }
-                                    }
-                                }, 1000);
-                            } else {
-                                // Mostrar loading mientras se cargan los tokens
-                                console.log('⏳ Mostrando loading mientras se cargan tokens...');
-                                // El loading ya se mostró al inicio del método
-                                // Los tokens se mostrarán automáticamente cuando estén listos
-                                // a través del callback onTokensLoaded
-                            }
-                        }
+                } else {
+                    // 🚨 Verificar si el usuario cambió de tab durante la carga
+                    if (this.currentFilter !== currentFilterSnapshot) {
+                        console.log('🔄 Tab cambió durante carga, cancelando operación');
+                        this.hideLoading();
+                        return;
                     }
                     
-                } catch (error) {
-                    console.error('❌ Error cargando tokens:', error);
-                    this.hideLoading();
-                    this.showError(`Error cargando tokens: ${error.message}`);
+                    // 🚀 MOSTRAR TOKENS INMEDIATAMENTE (para otros tabs como adrianzero)
+                    const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
+                    console.log(`📊 Tokens filtrados obtenidos: ${filteredTokens.length}`);
+                    console.log(`🔍 Estado cache - ready: ${this.modules.dataManager.cache.ready.adrianZero}, loading: ${this.modules.dataManager.cache.loading.adrianZero}`);
+                    
+                    if (filteredTokens.length > 0) {
+                        console.log('✅ Mostrando tokens disponibles inmediatamente');
+                        this.modules.ui.displayTokens(filteredTokens, { filter: this.currentFilter || 'adrianzero' });
+                        this.hideLoading();
+                    } else {
+                        // 🚨 Si estamos en adrianzero y no hay tokens, verificar si están cargando
+                        if (this.currentFilter === 'adrianzero' && this.modules.dataManager.cache.loading.adrianZero) {
+                            console.log('⏳ Tokens AdrianZERO aún cargando, esperando...');
+                            // Esperar un momento y reintentar (NO BLOQUEANTE)
+                            setTimeout(() => {
+                                // Verificar si aún estamos en el tab correcto
+                                if (this.currentFilter === 'adrianzero' && this.currentFilter === currentFilterSnapshot) {
+                                    const tokens = this.modules.dataManager.getFilteredTokens('adrianzero');
+                                    if (tokens.length > 0) {
+                                        console.log('✅ Tokens cargados después de esperar:', tokens.length);
+                                        this.modules.ui.displayTokens(tokens, { filter: 'adrianzero' });
+                                        this.hideLoading();
+                                    }
+                                }
+                            }, 500);
+                        } else {
+                            // Mostrar loading mientras se cargan los tokens
+                            console.log('⏳ Mostrando loading mientras se cargan tokens...');
+                            // Los tokens se mostrarán automáticamente cuando estén listos
+                            // a través del callback onTokensLoaded
+                        }
+                    }
                 }
             }
 
