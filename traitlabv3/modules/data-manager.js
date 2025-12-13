@@ -566,7 +566,20 @@ class TraitLABDataManager {
             let processedCount = 0;
             let batchErrors = 0;
             
+            // Resetear contador de errores al inicio
+            this.consecutiveErrors = 0;
+            
             for (let i = 0; i < adrianZeroTokens.length; i += batchSize) {
+                // Ajustar batch size y delay dinámicamente si hay muchos errores
+                if (this.consecutiveErrors > 3) {
+                    batchSize = 3;
+                    delayBetweenBatches = 3000;
+                    console.warn(`⚠️ Demasiados errores consecutivos (${this.consecutiveErrors}), reduciendo batchSize a ${batchSize} y aumentando delay a ${delayBetweenBatches}ms`);
+                } else {
+                    batchSize = 5;
+                    delayBetweenBatches = 2000;
+                }
+                
                 const batch = adrianZeroTokens.slice(i, i + batchSize);
                 console.log(`📦 Procesando lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(adrianZeroTokens.length/batchSize)} (${batch.length} tokens)`);
                 
@@ -577,7 +590,8 @@ class TraitLABDataManager {
                 }
                 
                 const batchPromises = batch.map(async (token, index) => {
-                    // Delay individual entre requests (alineado con traitlab original)
+                    // Delay individual entre requests (como en traitlab original)
+                    // El plan especifica delay de 500ms entre cada request
                     if (index > 0) {
                         await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
                     }
@@ -592,33 +606,30 @@ class TraitLABDataManager {
                         if (this.consecutiveErrors > 0) {
                             this.consecutiveErrors = Math.max(0, this.consecutiveErrors - 1);
                         }
-                        } catch (error) {
-                            batchErrors++;
-                            
-                            // Detectar errores de red específicos y rate limiting
-                            const isNetworkError = error.message?.includes('could not detect network') ||
-                                                error.message?.includes('NETWORK_ERROR') ||
-                                                error.code === 'NETWORK_ERROR' ||
-                                                error.message?.includes('network');
-                            
-                            const isRateLimitError = error.message?.includes('429') ||
-                                                    error.message?.includes('Too Many Requests') ||
-                                                    error.code === 429 ||
-                                                    (error.response && error.response.status === 429);
-                            
-                            if (isRateLimitError) {
-                                console.warn(`⚠️ Rate limit (429) para token ${token.tokenId}, aumentando delay...`);
-                                // Aumentar delay para este batch
-                                // Esperar más tiempo antes de continuar
+                    } catch (error) {
+                        batchErrors++;
+                        
+                        // Detectar errores de red específicos y rate limiting
+                        const isNetworkError = error.message?.includes('could not detect network') ||
+                                            error.message?.includes('NETWORK_ERROR') ||
+                                            error.code === 'NETWORK_ERROR' ||
+                                            error.message?.includes('network') ||
+                                            error.status === 429; // Detectar 429 Too Many Requests
+                        
+                        if (isNetworkError) {
+                            console.warn(`⚠️ Error de red para token ${token.tokenId}, saltando...`);
+                            // Si es 429, esperar un poco más antes de continuar
+                            if (error.status === 429 || error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
+                                console.log('⏳ Demasiadas peticiones (429), esperando 5 segundos...');
                                 await new Promise(resolve => setTimeout(resolve, 5000));
-                            } else if (isNetworkError) {
-                                console.warn(`⚠️ Error de red para token ${token.tokenId}, saltando...`);
-                                // No propagar error, continuar con siguiente token
-                            } else {
-                                // Otros errores: log pero no propagar
-                                console.log(`⚠️ Error obteniendo nombre para token ${token.tokenId}:`, error.message);
                             }
+                            // No propagar error, continuar con siguiente token
+                            return;
                         }
+                        
+                        // Otros errores: log pero no propagar
+                        console.log(`⚠️ Error obteniendo nombre para token ${token.tokenId}:`, error.message);
+                    }
                     
                     processedCount++;
                     console.log(`📊 Progreso: ${processedCount}/${adrianZeroTokens.length} tokens procesados`);
@@ -629,7 +640,10 @@ class TraitLABDataManager {
                 // Actualizar contador de errores consecutivos
                 if (batchErrors > 0) {
                     this.consecutiveErrors += batchErrors;
-                    batchErrors = 0;
+                    batchErrors = 0; // Resetear para el siguiente batch
+                } else {
+                    // Si no hay errores en este batch, reducir contador gradualmente
+                    this.consecutiveErrors = Math.max(0, this.consecutiveErrors - 1);
                 }
                 
                 // 🚨 NUEVO: Verificar cancelación antes de actualizar

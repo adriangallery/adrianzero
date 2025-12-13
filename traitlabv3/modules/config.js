@@ -143,6 +143,7 @@ class TraitLABConfig {
     /**
      * Crear provider con fallbacks para Base
      * Usa múltiples RPC endpoints para mayor confiabilidad
+     * Mejorado: Manejo de errores cuando todos los providers fallan
      */
     getBaseProviderWithFallback() {
         if (typeof ethers === 'undefined') {
@@ -150,12 +151,39 @@ class TraitLABConfig {
             return null;
         }
         
-        const providers = this.BASE_RPC_URLS.map(url => 
-            new ethers.providers.JsonRpcProvider(url)
-        );
-        
-        // FallbackProvider intenta cada provider en orden hasta que uno funcione
-        return new ethers.providers.FallbackProvider(providers, 1);
+        try {
+            const providers = this.BASE_RPC_URLS.map(url => {
+                try {
+                    return new ethers.providers.JsonRpcProvider(url);
+                } catch (error) {
+                    console.warn(`⚠️ Error creando provider para ${url}:`, error.message);
+                    return null;
+                }
+            }).filter(p => p !== null); // Filtrar providers que fallaron al crear
+            
+            if (providers.length === 0) {
+                console.error('❌ No se pudo crear ningún provider con fallback');
+                return null;
+            }
+            
+            // FallbackProvider intenta cada provider en orden hasta que uno funcione
+            // El segundo parámetro (1) es el quorum - número de providers que deben responder
+            const fallbackProvider = new ethers.providers.FallbackProvider(providers, 1);
+            
+            // Agregar manejo de errores al provider
+            providers.forEach((provider, index) => {
+                provider.on('error', (error) => {
+                    console.warn(`⚠️ Provider ${index} (${this.BASE_RPC_URLS[index]}) falló:`, error.message);
+                    // El FallbackProvider automáticamente intentará el siguiente
+                });
+            });
+            
+            return fallbackProvider;
+        } catch (error) {
+            console.error('❌ Error creando FallbackProvider:', error);
+            // Si falla completamente, retornar null para usar fallback a MetaMask
+            return null;
+        }
     }
 }
 
