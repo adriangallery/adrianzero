@@ -275,8 +275,21 @@ class WalletManager {
      * Update UI for connected wallet
      */
     updateUIForConnectedWallet() {
+        const connectSection = document.getElementById('connect-section');
+        const accountSection = document.getElementById('account-section');
+        const walletAddress = document.getElementById('walletAddress');
+        const tokensSection = document.getElementById('tokens-section');
+        
         if (this.isConnected && this.currentAccount) {
             // Show account section, hide connect section
+            if (connectSection) connectSection.style.display = 'none';
+            if (accountSection) accountSection.style.display = 'block';
+            if (tokensSection) tokensSection.style.display = 'block';
+            if (walletAddress) {
+                walletAddress.textContent = `${this.currentAccount.substring(0, 6)}...${this.currentAccount.substring(38)}`;
+            }
+            
+            // Emit event for other modules
             this.emit('uiUpdate', { 
                 type: 'walletConnected', 
                 account: this.currentAccount,
@@ -284,6 +297,12 @@ class WalletManager {
             });
         } else {
             // Show connect section, hide account section
+            if (connectSection) connectSection.style.display = 'block';
+            if (accountSection) accountSection.style.display = 'none';
+            if (tokensSection) tokensSection.style.display = 'none';
+            if (walletAddress) walletAddress.textContent = '';
+            
+            // Emit event for other modules
             this.emit('uiUpdate', { 
                 type: 'walletDisconnected' 
             });
