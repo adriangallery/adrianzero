@@ -56,6 +56,14 @@ class Showcase {
         this.imageObserver = null;
         this.scrollObserver = null;
 
+        // Idle state
+        this.idleStateConfig = null;
+        this.idleStateOverlay = document.getElementById('idleStateOverlay');
+        this.idleStateText = document.getElementById('idleStateText');
+        this.idleTimer = null;
+        this.isIdle = false;
+        this.lastActivityTime = Date.now();
+
         this.init();
     }
 
@@ -63,10 +71,12 @@ class Showcase {
         try {
             await Promise.all([
                 this.loadImageList(),
-                this.loadFloppyGifs()
+                this.loadFloppyGifs(),
+                this.loadIdleStateConfig()
             ]);
             this.setupObservers();
             this.setupEventListeners();
+            this.setupIdleState();
             this.hideLoading();
             this.renderInitialGrid();
         } catch (error) {
@@ -323,6 +333,9 @@ class Showcase {
         // 3D effect on mouse move (throttled with requestAnimationFrame)
         let rafId = null;
         this.gridWrapper.addEventListener('mousemove', (e) => {
+            // Reset idle timer on mouse move
+            this.resetIdleTimer();
+            
             if (rafId === null) {
                 rafId = requestAnimationFrame(() => {
                     this.handleMouseMove(e);
@@ -347,6 +360,9 @@ class Showcase {
         }, { passive: true });
 
         this.gridWrapper.addEventListener('touchmove', (e) => {
+            // Reset idle timer on touch move
+            this.resetIdleTimer();
+            
             if (e.touches.length === 1) {
                 this.handleTouchMove(e, touchStartX, touchStartY);
             }
@@ -364,6 +380,9 @@ class Showcase {
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
+            // Reset idle timer on key press
+            this.resetIdleTimer();
+            
             if (this.state.activeModalIndex >= 0) {
                 if (e.key === 'Escape') {
                     this.closeModal();
@@ -383,6 +402,9 @@ class Showcase {
             // Hide scroll indicator immediately
             this.hideScrollIndicator();
             
+            // Reset idle timer on scroll
+            this.resetIdleTimer();
+            
             // Throttle heavy operations
             if (scrollTimeout) return;
             scrollTimeout = setTimeout(() => {
@@ -397,6 +419,125 @@ class Showcase {
                 scrollTimeout = null;
             }, 150); // Throttle to 150ms
         }, { passive: true });
+    }
+
+    /**
+     * Load idle state configuration from JSON
+     */
+    async loadIdleStateConfig() {
+        try {
+            const response = await fetch('idle-state.json');
+            if (!response.ok) {
+                throw new Error(`Failed to load idle state config: ${response.status}`);
+            }
+            const config = await response.json();
+            this.idleStateConfig = config.idleState;
+            console.log('✅ Idle state config loaded:', this.idleStateConfig);
+        } catch (error) {
+            console.warn('⚠️ Failed to load idle state config, using defaults:', error);
+            // Default config if JSON fails to load
+            this.idleStateConfig = {
+                enabled: true,
+                idleTimeout: 30000,
+                fadeInDuration: 2000,
+                fadeOutDuration: 1000,
+                text: {
+                    content: "So basically, we vibe-coded our own ecosystem — starting with $ADRIAN, a token powering auctions, staking, and all on-chain mints. Then we built AdrianZERO, a community-assembled NFT that evolves through Floppys, Packs, and Pagers, burning traits as it grows. Now we're layering AI on top to extend creativity even further — turning the whole thing into a controlled experiment in collaboration, ownership, and beautifully engineered chaos.",
+                    scrollSpeed: 50,
+                    fontSize: "clamp(1rem, 2vw, 1.5rem)",
+                    color: "#ffffff",
+                    opacity: 0.9
+                },
+                overlay: {
+                    backgroundColor: "rgba(0, 0, 0, 0.85)",
+                    transitionDuration: "2s"
+                }
+            };
+        }
+    }
+
+    /**
+     * Setup idle state detection and display
+     */
+    setupIdleState() {
+        if (!this.idleStateConfig || !this.idleStateConfig.enabled) {
+            return;
+        }
+
+        // Set text content
+        if (this.idleStateText && this.idleStateConfig.text) {
+            this.idleStateText.textContent = this.idleStateConfig.text.content;
+            this.idleStateText.style.fontSize = this.idleStateConfig.text.fontSize;
+            this.idleStateText.style.color = this.idleStateConfig.text.color;
+            this.idleStateText.style.opacity = this.idleStateConfig.text.opacity;
+        }
+
+        // Set overlay background
+        if (this.idleStateOverlay && this.idleStateConfig.overlay) {
+            this.idleStateOverlay.style.transition = `opacity ${this.idleStateConfig.fadeInDuration}ms ease-in-out, background-color ${this.idleStateConfig.fadeInDuration}ms ease-in-out`;
+        }
+
+        // Setup activity listeners
+        const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'touchmove', 'click'];
+        activityEvents.forEach(event => {
+            document.addEventListener(event, () => this.resetIdleTimer(), { passive: true });
+        });
+
+        // Start idle timer
+        this.resetIdleTimer();
+    }
+
+    /**
+     * Reset idle timer when user activity is detected
+     */
+    resetIdleTimer() {
+        if (!this.idleStateConfig || !this.idleStateConfig.enabled) {
+            return;
+        }
+
+        // Hide idle state if active
+        if (this.isIdle) {
+            this.hideIdleState();
+        }
+
+        // Clear existing timer
+        if (this.idleTimer) {
+            clearTimeout(this.idleTimer);
+        }
+
+        // Update last activity time
+        this.lastActivityTime = Date.now();
+
+        // Set new timer
+        this.idleTimer = setTimeout(() => {
+            this.showIdleState();
+        }, this.idleStateConfig.idleTimeout);
+    }
+
+    /**
+     * Show idle state overlay
+     */
+    showIdleState() {
+        if (!this.idleStateOverlay || this.isIdle) {
+            return;
+        }
+
+        this.isIdle = true;
+        this.idleStateOverlay.classList.add('active');
+        console.log('💤 Idle state activated');
+    }
+
+    /**
+     * Hide idle state overlay
+     */
+    hideIdleState() {
+        if (!this.idleStateOverlay || !this.isIdle) {
+            return;
+        }
+
+        this.isIdle = false;
+        this.idleStateOverlay.classList.remove('active');
+        console.log('✨ Idle state deactivated');
     }
 
     /**

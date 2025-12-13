@@ -699,3 +699,71 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
+/* Idle State Overlay */
+.idle-state-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 2s ease-in-out, background-color 2s ease-in-out;
+    overflow: hidden;
+}
+
+.idle-state-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.idle-state-text {
+    position: absolute;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 800px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    line-height: 1.6;
+    text-align: center;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    white-space: normal;
+    animation: scrollUp 30s linear infinite;
+    will-change: transform;
+}
+
+.idle-state-overlay.active .idle-state-text {
+    animation: scrollUp 30s linear infinite;
+}
+
+@keyframes scrollUp {
+    0% {
+        transform: translateX(-50%) translateY(100vh);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.9;
+    }
+    90% {
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateX(-50%) translateY(-100vh);
+        opacity: 0;
+    }
+}
+
+/* Pause animation on hover */
+.idle-state-overlay:hover .idle-state-text {
+    animation-play-state: paused;
+}
+

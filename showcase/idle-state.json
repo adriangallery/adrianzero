@@ -1,0 +1,20 @@
+{
+  "idleState": {
+    "enabled": true,
+    "idleTimeout": 30000,
+    "fadeInDuration": 2000,
+    "fadeOutDuration": 1000,
+    "text": {
+      "content": "So basically, we vibe-coded our own ecosystem — starting with $ADRIAN, a token powering auctions, staking, and all on-chain mints. Then we built AdrianZERO, a community-assembled NFT that evolves through Floppys, Packs, and Pagers, burning traits as it grows. Now we're layering AI on top to extend creativity even further — turning the whole thing into a controlled experiment in collaboration, ownership, and beautifully engineered chaos.",
+      "scrollSpeed": 50,
+      "fontSize": "clamp(1rem, 2vw, 1.5rem)",
+      "color": "#ffffff",
+      "opacity": 0.9
+    },
+    "overlay": {
+      "backgroundColor": "rgba(0, 0, 0, 0.85)",
+      "transitionDuration": "2s"
+    }
+  }
+}
+
