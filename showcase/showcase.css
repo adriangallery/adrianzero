@@ -742,20 +742,22 @@ body {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-bottom: 20vh;
+    padding-bottom: 10vh;
     transform-style: preserve-3d;
+    /* Aplicar perspectiva directamente al wrapper */
+    transform: perspective(1200px);
 }
 
 .idle-state-text {
     position: relative;
     width: 85%;
     max-width: 900px;
-    color: #FFE81F; /* Star Wars yellow */
-    font-family: 'AdrianZero', 'Arial', sans-serif;
-    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    color: #FFE81F !important; /* Star Wars yellow - force */
+    font-family: 'AdrianZero', 'Arial Black', 'Arial', sans-serif !important;
+    font-size: clamp(2.5rem, 5vw, 4.5rem) !important;
     line-height: 1.6;
     text-align: justify;
-    font-weight: normal;
+    font-weight: normal !important;
     letter-spacing: 3px;
     white-space: normal;
     text-shadow: 
@@ -767,7 +769,11 @@ body {
     will-change: transform;
     transform-style: preserve-3d;
     /* Asegurar que el texto sea visible desde el inicio */
-    opacity: 1;
+    opacity: 1 !important;
+    /* Forzar renderizado 3D */
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .idle-state-overlay.active .idle-state-text {
@@ -776,17 +782,11 @@ body {
 
 @keyframes starWarsScroll {
     0% {
-        transform: translateY(30vh) rotateX(20deg) scale(0.9);
-        opacity: 0;
-    }
-    1% {
-        opacity: 1;
-    }
-    99% {
+        transform: translateY(10vh) rotateX(25deg) scale(1);
         opacity: 1;
     }
     100% {
-        transform: translateY(-120vh) rotateX(20deg) scale(1.8);
+        transform: translateY(-100vh) rotateX(25deg) scale(2.5);
         opacity: 0;
     }
 }
