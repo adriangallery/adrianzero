@@ -197,149 +197,167 @@ class UIManager {
      * Create a single token card element
      */
     createTokenCard(token) {
-            const tokenCard = document.createElement('div');
-            tokenCard.className = 'token-card';
-            tokenCard.setAttribute('data-token-id', token.tokenId);
-            tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
-            
-            // Use specific image URLs for different token types
-            let imageUrl = token.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
-            
-            // Hardcode names for specific floppy discs
-            let displayTitle = token.title;
-            if (this.currentFilter === 'floppy') {
-                if (token.tokenId === 10003) {
-                    displayTitle = 'GLITCH Floppy';
-                } else if (token.tokenId === 10004) {
-                    displayTitle = 'GF Floppy';
-                } else if (token.tokenId === 10005) {
-                    displayTitle = 'Golden Floppy';
-                } else if (token.tokenId === 10007) {
-                    displayTitle = 'NEONpack';
-                } else if (token.tokenId === 10008) {
-                    displayTitle = 'OPTICALpack';
-                } else if (token.tokenId === 10009) {
-                    displayTitle = 'PUNKSfloppy';
-                } else if (token.tokenId === 10010) {
-                    displayTitle = 'ComradesUSB';
-                } else if (token.tokenId === 1123) {
-                    displayTitle = 'CensorPACK';
-                } else if (token.tokenId === 15010) {
-                    displayTitle = 'Back to Work';
-                } else {
-                    displayTitle = token.title.replace(/^\d+\s*/, '');
-                }
-            }
-            
-            // Override image URL for specific token types
-            if (this.currentFilter === 'serum' && token.tokenId >= 262144 && token.tokenId <= 262147) {
-                imageUrl = this.getImagePath(token.tokenId, '.gif');
-            } else if (this.currentFilter === 'floppy') {
-                // Use local images for floppy discs
-                if (token.tokenId === 10000) {
-                    imageUrl = this.getImagePath(10000, '.gif');
-                } else if (token.tokenId === 10001) {
-                    imageUrl = this.getImagePath(10001, '.gif');
-                } else if (token.tokenId === 10002) {
-                    imageUrl = this.getImagePath(10002, '.gif');
-                } else if (token.tokenId === 10003) {
-                    imageUrl = this.getImagePath(10003, '.gif');
-                } else if (token.tokenId === 10004) {
-                    imageUrl = this.getImagePath(10004, '.gif');
-                } else if (token.tokenId === 10005) {
-                    imageUrl = this.getImagePath(10005, '.gif');
-                } else if (token.tokenId === 10007) {
-                    imageUrl = this.getImagePath(10007, '.gif');
-                } else if (token.tokenId === 15000) {
-                    imageUrl = this.getImagePath(15000, '.gif');
-                } else if (token.tokenId === 15001) {
-                    imageUrl = this.getImagePath(15001, '.gif');
-                } else if (token.tokenId === 15002) {
-                    imageUrl = this.getImagePath(15002, '.gif');
-                } else if (token.tokenId === 15003) {
-                    imageUrl = this.getImagePath(15003, '.gif');
-                } else if (token.tokenId === 15004) {
-                    imageUrl = this.getImagePath(15004, '.gif');
-                } else if (token.tokenId === 15005) {
-                    imageUrl = this.getImagePath(15005, '.gif');
-                } else if (token.tokenId === 15006) {
-                    imageUrl = this.getImagePath(15006, '.gif');
-                } else if (token.tokenId === 15007) {
-                    imageUrl = this.getImagePath(15007, '.gif');
-                } else if (token.tokenId === 15008) {
-                    imageUrl = this.getImagePath(15008, '.png');
-                } else if (token.tokenId === 15009) {
-                    imageUrl = this.getImagePath(15009, '.png');
-                } else if (token.tokenId === 15010) {
-                    imageUrl = this.getImagePath(15010, '.png');
-                } else if (token.tokenId === 15011) {
-                    imageUrl = this.getImagePath(15011, '.png');
-                } else if (token.tokenId === 15012) {
-                    imageUrl = this.getImagePath(15012, '.png');
-                } else if (token.tokenId === 15013) {
-                    imageUrl = this.getImagePath(15013, '.png');
-                } else if (token.tokenId === 15014) {
-                    imageUrl = this.getImagePath(15014, '.png');
-                } else if (token.tokenId === 15015) {
-                    imageUrl = this.getImagePath(15015, '.png');
-                } else if (token.tokenId === 10008) {
-                    imageUrl = this.getImagePath(10008, '.gif');
-                } else if (token.tokenId === 10009) {
-                    imageUrl = this.getImagePath(10009, '.gif');
-                } else if (token.tokenId === 10010) {
-                    imageUrl = this.getImagePath(10010, '.gif');
-                } else if (token.tokenId === 10011) {
-                    imageUrl = this.getImagePath(10011, '.gif');
-                } else if (token.tokenId === 10012) {
-                    imageUrl = this.getImagePath(10012, '.gif');
-                } else if (token.tokenId === 10013) {
-                    imageUrl = this.getImagePath(10013, '.gif');
-                } else if (token.tokenId === 10015) {
-                    imageUrl = this.getImagePath(10015, '.gif');
-                }
-            }
-            
-            // Create quantity tag for ERC1155 tokens with balance > 1
-            const quantityTag = token.tokenType === 'ERC1155' && token.balance > 1 ? 
-                `<div class="token-quantity-tag">x${token.balance}</div>` : '';
-            
-            // Create category display for ERC1155 tokens
-            const categoryDisplay = token.tokenType === 'ERC1155' && token.category ? 
-                `<div class="token-category">${token.category}</div>` : '';
-            
-            // Handle image loading with fallback for traits
-            let imgTag;
-            if (token.fallbackImageUrl && imageUrl !== token.fallbackImageUrl) {
-                // Trait with local asset - use fallback if local fails
-                const fallbackUrl = token.fallbackImageUrl.replace(/'/g, "\\'");
-            imgTag = `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" loading="lazy" onerror="if('${fallbackUrl}') { this.src='${fallbackUrl}'; this.onerror=function(){ this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'; }; }">`;
-            } else {
-                // Standard image tag for other tokens
-            imgTag = `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+'>">`;
-            }
-            
-            tokenCard.innerHTML = `
-                <div style="position: relative;">
-                    ${imgTag}
-                    ${quantityTag}
-                </div>
-                <div class="token-info">
-                    <div class="token-title">${displayTitle}</div>
-                    <div class="token-id">ID: ${token.tokenId}</div>
-                    ${categoryDisplay}
-                </div>
-            `;
-            
-                    // Add click event for token selection
+        const tokenCard = document.createElement('div');
+        tokenCard.className = 'token-card';
+        tokenCard.setAttribute('data-token-id', token.tokenId);
+        tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
+        
+        // Obtener imagen y título
+        const { imageUrl, displayTitle } = this.getTokenDisplayInfo(token);
+        
+        // Crear contenido HTML
+        tokenCard.innerHTML = this.buildTokenCardHTML(token, imageUrl, displayTitle);
+        
+        // Agregar event listeners
+        this.attachTokenCardListeners(tokenCard, token);
+        
+        return tokenCard;
+    }
+
+    /**
+     * Obtener información de visualización del token
+     */
+    getTokenDisplayInfo(token) {
+        let imageUrl = token.imageUrl || this.getDefaultImageUrl();
+        let displayTitle = token.title;
+        
+        // Aplicar lógica específica por filtro
+        if (this.currentFilter === 'floppy') {
+            displayTitle = this.getFloppyDisplayName(token.tokenId);
+            imageUrl = this.getFloppyImageUrl(token);
+        } else if (this.currentFilter === 'serum') {
+            imageUrl = this.getSerumImageUrl(token);
+        }
+        
+        return { imageUrl, displayTitle };
+    }
+
+    /**
+     * Construir HTML del token card
+     */
+    buildTokenCardHTML(token, imageUrl, displayTitle) {
+        const quantityTag = this.getQuantityTag(token);
+        const categoryDisplay = this.getCategoryDisplay(token);
+        const imgTag = this.buildImageTag(token, imageUrl, displayTitle);
+        
+        return `
+            <div style="position: relative;">
+                ${imgTag}
+                ${quantityTag}
+            </div>
+            <div class="token-info">
+                <div class="token-title">${displayTitle}</div>
+                <div class="token-id">ID: ${token.tokenId}</div>
+                ${categoryDisplay}
+            </div>
+        `;
+    }
+
+    /**
+     * Construir tag de imagen con fallback
+     */
+    buildImageTag(token, imageUrl, displayTitle) {
+        const defaultImageUrl = this.getDefaultImageUrl();
+        
+        if (token.fallbackImageUrl && imageUrl !== token.fallbackImageUrl) {
+            const fallbackUrl = token.fallbackImageUrl.replace(/'/g, "\\'");
+            return `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" loading="lazy" onerror="if('${fallbackUrl}') { this.src='${fallbackUrl}'; this.onerror=function(){ this.src='${defaultImageUrl}'; }; }">`;
+        } else {
+            return `<img src="${imageUrl}" alt="${displayTitle}" class="token-image" loading="lazy" onerror="this.src='${defaultImageUrl}'">`;
+        }
+    }
+
+    /**
+     * Obtener URL de imagen por defecto
+     */
+    getDefaultImageUrl() {
+        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
+    }
+
+    /**
+     * Obtener tag de cantidad
+     */
+    getQuantityTag(token) {
+        return token.tokenType === 'ERC1155' && token.balance > 1 ? 
+            `<div class="token-quantity-tag">x${token.balance}</div>` : '';
+    }
+
+    /**
+     * Obtener display de categoría
+     */
+    getCategoryDisplay(token) {
+        return token.tokenType === 'ERC1155' && token.category ? 
+            `<div class="token-category">${token.category}</div>` : '';
+    }
+
+    /**
+     * Obtener nombre de display para floppy
+     */
+    getFloppyDisplayName(tokenId) {
+        const floppyNames = {
+            10003: 'GLITCH Floppy',
+            10004: 'GF Floppy',
+            10005: 'Golden Floppy',
+            10007: 'NEONpack',
+            10008: 'OPTICALpack',
+            10009: 'PUNKSfloppy',
+            10010: 'ComradesUSB',
+            1123: 'CensorPACK',
+            15010: 'Back to Work'
+        };
+        
+        return floppyNames[tokenId] || tokenId.toString().replace(/^\d+\s*/, '');
+    }
+
+    /**
+     * Obtener URL de imagen para floppy
+     */
+    getFloppyImageUrl(token) {
+        if (window.app?.modules?.floppy) {
+            return window.app.modules.floppy.getFloppyImageUrl(token.tokenId);
+        }
+        // Fallback: usar getImagePath para tokens específicos
+        const floppyImageMap = {
+            10000: '.gif', 10001: '.gif', 10002: '.gif', 10003: '.gif', 10004: '.gif',
+            10005: '.gif', 10007: '.gif', 10008: '.gif', 10009: '.gif', 10010: '.gif',
+            10011: '.gif', 10012: '.gif', 10013: '.gif', 10015: '.gif',
+            15000: '.gif', 15001: '.gif', 15002: '.gif', 15003: '.gif', 15004: '.gif',
+            15005: '.gif', 15006: '.gif', 15007: '.gif',
+            15008: '.png', 15009: '.png', 15010: '.png', 15011: '.png',
+            15012: '.png', 15013: '.png', 15014: '.png', 15015: '.png'
+        };
+        
+        if (floppyImageMap[token.tokenId]) {
+            return this.getImagePath(token.tokenId, floppyImageMap[token.tokenId]);
+        }
+        
+        return token.imageUrl || this.getDefaultImageUrl();
+    }
+
+    /**
+     * Obtener URL de imagen para serum
+     */
+    getSerumImageUrl(token) {
+        if (window.app?.modules?.serums) {
+            return window.app.modules.serums.getSerumImageUrl(token.tokenId);
+        }
+        // Fallback: usar getImagePath para serums específicos
+        if (token.tokenId >= 262144 && token.tokenId <= 262147) {
+            return this.getImagePath(token.tokenId, '.gif');
+        }
+        return token.imageUrl || this.getDefaultImageUrl();
+    }
+
+    /**
+     * Adjuntar event listeners al token card
+     */
+    attachTokenCardListeners(tokenCard, token) {
         const clickHandler = () => {
             this.handleTokenSelection(tokenCard, token);
         };
         
-        // Store the handler reference for potential removal
         tokenCard._clickHandler = clickHandler;
         tokenCard.addEventListener('click', clickHandler);
-            
-        return tokenCard;
     }
 
     /**
