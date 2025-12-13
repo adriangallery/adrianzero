@@ -37,11 +37,42 @@ class TraitLABDataManager {
     /**
      * Inicializar y comenzar carga en background
      */
-    async init() {
-        if (this.isInitialized) return;
+    async init(force = false) {
+        // Si ya está inicializado y no es un force, verificar si hay wallet
+        if (this.isInitialized && !force) {
+            // Verificar si hay wallet conectada y si no hay tokens cargados
+            const hasWallet = window.app?.modules?.wallet?.getCurrentAccount();
+            const hasTokens = (this.cache.adrianZero && this.cache.adrianZero.length > 0) || 
+                             (this.cache.adrianLab && this.cache.adrianLab.length > 0);
+            
+            // Si hay wallet pero no hay tokens, reinicializar
+            if (hasWallet && !hasTokens) {
+                console.log('📊 DataManager: Wallet conectada pero sin tokens, reinicializando...');
+                this.isInitialized = false;
+                this.cache.loading.adrianZero = false;
+                this.cache.loading.adrianLab = false;
+                this.cache.ready.adrianZero = false;
+                this.cache.ready.adrianLab = false;
+            } else if (!hasWallet) {
+                // Si no hay wallet, no hacer nada
+                console.log('📊 DataManager: No hay wallet conectada, esperando conexión...');
+                return;
+            } else {
+                // Ya está inicializado y tiene tokens, no hacer nada
+                return;
+            }
+        }
         
         console.log('📊 TraitLABDataManager: Iniciando carga en paralelo...');
         this.isInitialized = true;
+        
+        // Verificar que haya wallet antes de cargar
+        const userAddress = window.app?.modules?.wallet?.getCurrentAccount();
+        if (!userAddress) {
+            console.warn('📊 DataManager: No hay wallet conectada, no se pueden cargar tokens');
+            this.isInitialized = false; // Permitir reinicialización cuando se conecte la wallet
+            return;
+        }
         
         // 1. Cargar AdrianZERO y AdrianLAB en paralelo
         await Promise.all([
