@@ -642,7 +642,7 @@ class UIManager {
     }
 
     /**
-     * Handle token selection with visual feedback - using original logic
+     * Handle token selection with visual feedback
      */
     handleTokenSelection(tokenCard, token) {
         console.log('🔍 handleTokenSelection called with:', { token, currentFilter: this.currentFilter });
@@ -654,111 +654,134 @@ class UIManager {
         }
 
         if (token.tokenType === 'ERC721') {
-            // Single selection for ERC721
-            if (this.selectedERC721 && this.selectedERC721.tokenId === token.tokenId) {
-                this.selectedERC721 = null;
-                tokenCard.classList.remove('selected');
-            } else {
-                // Deselect previous ERC721
-                const prevSelected = tokensGrid.querySelector('.token-card.selected');
-                if (prevSelected) prevSelected.classList.remove('selected');
-                
-                this.selectedERC721 = token;
-                tokenCard.classList.add('selected');
-            }
+            this.handleERC721Selection(tokenCard, token, tokensGrid);
         } else {
-            // Handle ERC1155 selection based on current filter
-            if (this.currentFilter === 'floppy') {
-                // Single selection for Packs - deseleccionar automáticamente el anterior
-                const packIndex = this.selectedPacks.findIndex(p => p.tokenId === token.tokenId);
-                if (packIndex !== -1) {
-                    // Deselect pack si ya está seleccionado
-                    this.selectedPacks.splice(packIndex, 1);
-                    tokenCard.classList.remove('selected');
-                    this.selectedFloppy = null;
-                } else {
-                    // Deseleccionar pack anterior si existe
-                    if (this.selectedPacks.length > 0) {
-                        const prevSelectedCard = tokensGrid.querySelector('.token-card.selected');
-                        if (prevSelectedCard) {
-                            prevSelectedCard.classList.remove('selected');
-                        }
-                        this.selectedPacks = [];
-                    }
-                    
-                    // Seleccionar el nuevo pack
-                    this.selectedPacks = [token];
-                    tokenCard.classList.add('selected');
-                    this.selectedFloppy = token;
-                }
-                
-                // Notificar cambio de selección para actualizar UI
-                this.emit('packsSelectionChanged', { 
-                    selectedPacks: this.selectedPacks,
-                    selectedFloppy: this.selectedFloppy 
-                });
-            } else if (this.currentFilter === 'serum') {
-                // Single selection for Serums
-                if (this.selectedSerum && this.selectedSerum.tokenId === token.tokenId) {
-                    this.selectedSerum = null;
-                    tokenCard.classList.remove('selected');
-                } else {
-                    // Deselect previous serum
-                    const prevSelected = tokensGrid.querySelector('.token-card.selected');
-                    if (prevSelected) prevSelected.classList.remove('selected');
-                    
-                    this.selectedSerum = token;
-                    tokenCard.classList.add('selected');
-                }
-            } else {
-                // Handle selection for AdrianLAB (Traits tab) with category management
-                if (token.tokenType === 'ERC721') {
-                    // Single selection for ERC721 in AdrianLAB tab
-                    if (this.selectedERC721 && this.selectedERC721.tokenId === token.tokenId) {
-                        this.selectedERC721 = null;
-                        tokenCard.classList.remove('selected');
-                    } else {
-                        // Deselect previous ERC721
-                        const prevSelected = tokensGrid.querySelector('.token-card.selected');
-                        if (prevSelected) prevSelected.classList.remove('selected');
-                        
-                        this.selectedERC721 = token;
-                        tokenCard.classList.add('selected');
-                    }
-                    // Emit event for main app to react if needed
-                    this.emit('tokenSelected', { token, filter: this.currentFilter });
-                } else if (token.tokenType === 'ERC1155') {
-                    // Handle selection for AdrianLAB (Traits tab) with category management
-                    // This will be handled by the traits module
-                    // Just toggle the visual state for now
-                    tokenCard.classList.toggle('selected');
-                }
-            }
+            this.handleERC1155Selection(tokenCard, token, tokensGrid);
         }
         
-        console.log('📤 Emitting tokenSelected event with:', { token, filter: this.currentFilter });
-        // Emit tokenSelected event for main app to handle
+        // Emitir evento
         this.emit('tokenSelected', { token, filter: this.currentFilter });
         
-        // Si estamos en tab rename y se selecciona un ERC721, mostrar sección de rename
+        // Manejar acciones específicas por filtro
+        this.handleFilterSpecificActions(token);
+    }
+
+    /**
+     * Manejar selección de tokens ERC721
+     */
+    handleERC721Selection(tokenCard, token, tokensGrid) {
+        // Single selection for ERC721
+        if (this.selectedERC721 && this.selectedERC721.tokenId === token.tokenId) {
+            this.selectedERC721 = null;
+            tokenCard.classList.remove('selected');
+        } else {
+            // Deselect previous ERC721
+            const prevSelected = tokensGrid.querySelector('.token-card.selected');
+            if (prevSelected) prevSelected.classList.remove('selected');
+            
+            this.selectedERC721 = token;
+            tokenCard.classList.add('selected');
+        }
+    }
+
+    /**
+     * Manejar selección de tokens ERC1155
+     */
+    handleERC1155Selection(tokenCard, token, tokensGrid) {
+        if (this.currentFilter === 'floppy') {
+            this.handleFloppySelection(tokenCard, token, tokensGrid);
+        } else if (this.currentFilter === 'serum') {
+            this.handleSerumSelection(tokenCard, token, tokensGrid);
+        } else {
+            this.handleTraitsSelection(tokenCard, token);
+        }
+    }
+
+    /**
+     * Manejar selección de floppy
+     */
+    handleFloppySelection(tokenCard, token, tokensGrid) {
+        const packIndex = this.selectedPacks.findIndex(p => p.tokenId === token.tokenId);
+        if (packIndex !== -1) {
+            this.selectedPacks.splice(packIndex, 1);
+            tokenCard.classList.remove('selected');
+            this.selectedFloppy = null;
+        } else {
+            if (this.selectedPacks.length > 0) {
+                const prevSelectedCard = tokensGrid.querySelector('.token-card.selected');
+                if (prevSelectedCard) {
+                    prevSelectedCard.classList.remove('selected');
+                }
+                this.selectedPacks = [];
+            }
+            
+            this.selectedPacks = [token];
+            tokenCard.classList.add('selected');
+            this.selectedFloppy = token;
+        }
+        
+        this.emit('packsSelectionChanged', { 
+            selectedPacks: this.selectedPacks,
+            selectedFloppy: this.selectedFloppy 
+        });
+    }
+
+    /**
+     * Manejar selección de serum
+     */
+    handleSerumSelection(tokenCard, token, tokensGrid) {
+        if (this.selectedSerum && this.selectedSerum.tokenId === token.tokenId) {
+            this.selectedSerum = null;
+            tokenCard.classList.remove('selected');
+        } else {
+            const prevSelected = tokensGrid.querySelector('.token-card.selected');
+            if (prevSelected) prevSelected.classList.remove('selected');
+            
+            this.selectedSerum = token;
+            tokenCard.classList.add('selected');
+        }
+    }
+
+    /**
+     * Manejar selección de traits
+     */
+    handleTraitsSelection(tokenCard, token) {
+        // Delegar al módulo de traits
+        if (window.app?.modules?.traits) {
+            const wasSelected = window.app.modules.traits.handleTraitSelection(token);
+            if (wasSelected) {
+                tokenCard.classList.add('selected');
+            } else {
+                tokenCard.classList.remove('selected');
+            }
+        } else {
+            // Fallback: toggle simple
+            tokenCard.classList.toggle('selected');
+        }
+    }
+
+    /**
+     * Manejar acciones específicas por filtro
+     */
+    handleFilterSpecificActions(token) {
+        // Rename tab
         if (this.currentFilter === 'rename' && token.tokenType === 'ERC721') {
-            if (window.app && window.app.modules.stickyPopupManager && window.app.modules.stickyPopupManager.showRenameSection) {
+            if (window.app?.modules?.stickyPopupManager?.showRenameSection) {
                 window.app.modules.stickyPopupManager.showRenameSection();
             }
         }
         
-        // If we're in lambo tab and an ERC721 is selected, handle AdrianZERO selection
+        // Lambo tab
         if (this.currentFilter === 'lambo' && token.tokenType === 'ERC721') {
-            if (window.app && window.app.modules.lambo) {
+            if (window.app?.modules?.lambo) {
                 window.app.modules.lambo.selectAdrianZero(token);
                 this.showLamboModal(token);
             }
         }
         
-        // If we're in customise tab and an ERC721 is selected, open Customise modal
+        // Customise tab
         if (this.currentFilter === 'customise' && token.tokenType === 'ERC721') {
-            if (window.app && window.app.modules.stickyPopupManager) {
-                // Set the selected token first
+            if (window.app?.modules?.stickyPopupManager) {
                 window.app.modules.stickyPopupManager.selectedERC721 = token;
                 window.app.modules.stickyPopupManager.openCustomiseModal();
             }
