@@ -393,65 +393,65 @@
             /**
              * Cargar tokens para el tab actual
              */
-            async loadTokensForTab() {
-                // 🚨 CRÍTICO: Permitir cambio de tab incluso durante carga
-                // No bloquear la UI con await
+            loadTokensForTab() {
+                // 🚨 CRÍTICO: NO usar async/await - hacer completamente no bloqueante
                 const currentFilterSnapshot = this.currentFilter;
                 
-                try {
-                    console.log('🚀 TraitLAB v2: Cargando tokens para tab:', currentFilterSnapshot);
-                    console.log('🔍 Contrato actual:', this.currentContract);
+                console.log('🚀 TraitLAB v2: Cargando tokens para tab:', currentFilterSnapshot);
+                console.log('🔍 Contrato actual:', this.currentContract);
+                
+                // Verificar que tengamos los módulos necesarios
+                if (!this.modules.wallet || !this.modules.ui) {
+                    console.error('❌ Módulos wallet o UI no disponibles');
+                    return;
+                }
+                
+                const userAddress = this.modules.wallet.getCurrentAccount();
+                if (!userAddress) {
+                    console.error('❌ No hay wallet conectada');
+                    return;
+                }
+                
+                // Usar data-manager para obtener tokens ya filtrados
+                if (!this.modules.dataManager) {
+                    console.error('❌ Módulo data-manager no disponible');
+                    return;
+                }
+                
+                // 🚨 Verificar si el usuario cambió de tab ANTES de hacer cualquier cosa
+                if (this.currentFilter !== currentFilterSnapshot) {
+                    console.log('🔄 Tab cambió antes de iniciar carga, cancelando');
+                    return;
+                }
+                
+                this.showLoading();
+                
+                if (this.currentFilter === 'crafting') {
+                    console.log('🔨 CRAFTING: Iniciando carga de crafting...');
                     
-                    this.showLoading();
-                    
-                    // Verificar que tengamos los módulos necesarios
-                    if (!this.modules.wallet || !this.modules.ui) {
-                        throw new Error('Módulos wallet o UI no disponibles');
-                    }
-                    
-                    const userAddress = this.modules.wallet.getCurrentAccount();
-                    if (!userAddress) {
-                        throw new Error('No hay wallet conectada');
-                    }
-                    
-                    // Usar data-manager para obtener tokens ya filtrados
-                    if (!this.modules.dataManager) {
-                        throw new Error('Módulo data-manager no disponible');
-                    }
-                    
-                    // 🚨 Verificar si el usuario cambió de tab durante la carga
-                    if (this.currentFilter !== currentFilterSnapshot) {
-                        console.log('🔄 Tab cambió durante carga, cancelando operación');
-                        this.hideLoading();
-                        return;
-                    }
-                    
-                    if (this.currentFilter === 'crafting') {
-                        console.log('🔨 CRAFTING: Iniciando carga de crafting...');
-                        console.log('🔨 CRAFTING: this.modules.crafting disponible:', !!this.modules.crafting);
-                        console.log('🔨 CRAFTING: this.modules.displayManager disponible:', !!this.modules.displayManager);
-                        console.log('🔨 CRAFTING: tokens-grid disponible:', !!document.getElementById('tokens-grid'));
-                        
-                        // Mostrar contenido de crafting
-                        if (this.modules.crafting) {
-                            console.log('🔨 CRAFTING: Cargando recetas...');
-                            await this.modules.crafting.loadRecipes();
-                            
-                            // Verificar nuevamente si cambió de tab
+                    // Cargar crafting en background (NO BLOQUEANTE)
+                    if (this.modules.crafting) {
+                        this.modules.crafting.loadRecipes().then(() => {
+                            // Verificar si aún estamos en el tab correcto
                             if (this.currentFilter !== currentFilterSnapshot) {
                                 console.log('🔄 Tab cambió durante carga de crafting, cancelando');
-                                this.hideLoading();
                                 return;
                             }
                             
-                            console.log('🔨 CRAFTING: Recetas cargadas, llamando displayCraftingContent...');
+                            console.log('🔨 CRAFTING: Recetas cargadas, mostrando contenido...');
                             this.modules.displayManager.displayCraftingContent(
                                 document.getElementById('tokens-grid'),
                                 this.modules.crafting,
                                 this.modules.dataManager
                             );
-                            console.log('🔨 CRAFTING: displayCraftingContent llamado');
-                        } else if (this.currentFilter === 'rename') {
+                            this.hideLoading();
+                        }).catch(error => {
+                            console.error('❌ Error cargando crafting:', error);
+                            if (this.currentFilter === currentFilterSnapshot) {
+                                this.hideLoading();
+                            }
+                        });
+                    } else if (this.currentFilter === 'rename') {
                             // Mostrar inmediatamente AdrianZERO (ERC721) y habilitar rename en popup
                             const erc721 = this.modules.dataManager.getFilteredTokens('rename');
                             console.log('✍️ RENAME: Mostrando AdrianZERO para renombrar:', erc721.length);

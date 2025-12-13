@@ -1038,28 +1038,33 @@ class StickyPopupManager {
             });
         }
 
-        // Cargar imagen combinada con fallback (mantener loading overlay visible)
-        const img = new Image();
+        // 🚨 CRÍTICO: Cargar imagen combinada directamente (como en traitlab original)
+        // NO usar Image() para precargar - cargar directamente en el elemento
+        if (this.elements.imageLoadingOverlay) {
+            this.elements.imageLoadingOverlay.style.display = 'flex';
+        }
         
-        // Cargar imagen
-        img.onload = () => {
-            this.elements.combinedImage.src = primaryImageUrl;
+        // Cargar imagen directamente en el elemento
+        this.elements.combinedImage.src = primaryImageUrl;
+        
+        // Ocultar loading cuando la imagen esté lista
+        this.elements.combinedImage.onload = () => {
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
             }
-            console.log('✅ Imagen combinada generada y cargada correctamente');
+            console.log('✅ Imagen combinada generada y cargada correctamente:', primaryImageUrl);
         };
         
-        img.onerror = () => {
+        this.elements.combinedImage.onerror = () => {
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
             }
             console.error('❌ Error generando imagen combinada:', {
-                url: primaryImageUrl
+                url: primaryImageUrl,
+                baseTokenId: baseTokenId,
+                traits: this.selectedERC1155.map(t => t.tokenId)
             });
         };
-        
-        img.src = primaryImageUrl;
     }
 
     /**
