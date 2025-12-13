@@ -201,13 +201,33 @@ class AppInitializer {
             // Connect button
             const connectBtn = document.getElementById('connectBtn');
             if (connectBtn) {
-                connectBtn.addEventListener('click', () => this.app.modules.wallet.connectWallet());
+                console.log('✅ AppInitializer: Botón connectBtn encontrado, configurando listener...');
+                connectBtn.addEventListener('click', () => {
+                    console.log('🖱️ Click en botón Connect Wallet detectado');
+                    if (this.app.modules.wallet) {
+                        this.app.modules.wallet.connectWallet();
+                    } else {
+                        console.error('❌ Wallet module no disponible');
+                    }
+                });
+            } else {
+                console.warn('⚠️ AppInitializer: Botón connectBtn NO encontrado en el DOM');
             }
             
             // Disconnect button
             const disconnectBtn = document.getElementById('disconnectBtn');
             if (disconnectBtn) {
-                disconnectBtn.addEventListener('click', () => this.app.modules.wallet.disconnectWallet());
+                console.log('✅ AppInitializer: Botón disconnectBtn encontrado, configurando listener...');
+                disconnectBtn.addEventListener('click', () => {
+                    console.log('🖱️ Click en botón Disconnect detectado');
+                    if (this.app.modules.wallet) {
+                        this.app.modules.wallet.disconnectWallet();
+                    } else {
+                        console.error('❌ Wallet module no disponible');
+                    }
+                });
+            } else {
+                console.warn('⚠️ AppInitializer: Botón disconnectBtn NO encontrado en el DOM');
             }
             
             console.log('✅ AppInitializer: Event listeners configurados');
@@ -313,8 +333,18 @@ class AppInitializer {
             // Inicializar módulos
             await this.initializeModules();
             
-            // Configurar event listeners
+            // Configurar event listeners (con retry si los botones no están disponibles)
             this.setupEventListeners();
+            
+            // Retry para botones de wallet si no se encontraron inicialmente
+            setTimeout(() => {
+                const connectBtn = document.getElementById('connectBtn');
+                const disconnectBtn = document.getElementById('disconnectBtn');
+                if (!connectBtn || !disconnectBtn) {
+                    console.warn('⚠️ AppInitializer: Reintentando configurar botones de wallet...');
+                    this.setupWalletButtons();
+                }
+            }, 500);
             
             // 🚨 NUEVO: Configurar listeners opcionales
             this.setupOptionalEventListeners();
@@ -327,6 +357,51 @@ class AppInitializer {
         } catch (error) {
             console.error('❌ AppInitializer: Error en inicialización:', error);
             throw error;
+        }
+    }
+    
+    /**
+     * Configurar botones de wallet (método auxiliar para retry)
+     */
+    setupWalletButtons() {
+        // Connect button
+        const connectBtn = document.getElementById('connectBtn');
+        if (connectBtn) {
+            // Remover listeners anteriores si existen
+            const newConnectBtn = connectBtn.cloneNode(true);
+            connectBtn.parentNode.replaceChild(newConnectBtn, connectBtn);
+            
+            console.log('✅ AppInitializer: Botón connectBtn encontrado (retry), configurando listener...');
+            newConnectBtn.addEventListener('click', () => {
+                console.log('🖱️ Click en botón Connect Wallet detectado');
+                if (this.app.modules.wallet) {
+                    this.app.modules.wallet.connectWallet();
+                } else {
+                    console.error('❌ Wallet module no disponible');
+                }
+            });
+        } else {
+            console.warn('⚠️ AppInitializer: Botón connectBtn NO encontrado en el DOM (retry)');
+        }
+        
+        // Disconnect button
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        if (disconnectBtn) {
+            // Remover listeners anteriores si existen
+            const newDisconnectBtn = disconnectBtn.cloneNode(true);
+            disconnectBtn.parentNode.replaceChild(newDisconnectBtn, disconnectBtn);
+            
+            console.log('✅ AppInitializer: Botón disconnectBtn encontrado (retry), configurando listener...');
+            newDisconnectBtn.addEventListener('click', () => {
+                console.log('🖱️ Click en botón Disconnect detectado');
+                if (this.app.modules.wallet) {
+                    this.app.modules.wallet.disconnectWallet();
+                } else {
+                    console.error('❌ Wallet module no disponible');
+                }
+            });
+        } else {
+            console.warn('⚠️ AppInitializer: Botón disconnectBtn NO encontrado en el DOM (retry)');
         }
     }
 }
