@@ -285,15 +285,33 @@ class TokenSelectionManager {
         // Update sticky popup manager (usar fallback si no está configurado)
         const stickyPopupManager = this.stickyPopupManager || window.app?.modules?.stickyPopupManager;
         if (stickyPopupManager) {
+            // 🚨 CRÍTICO: Obtener siempre los traits seleccionados desde traits module
+            // para asegurar que tenemos el estado más actualizado
+            let selectedERC1155 = this.selectedERC1155;
+            if (window.app?.modules?.traits && window.app.modules.traits.getSelectedTraits) {
+                const traitsFromModule = window.app.modules.traits.getSelectedTraits();
+                if (traitsFromModule && traitsFromModule.length > 0) {
+                    selectedERC1155 = traitsFromModule;
+                    console.log('🔄 TokenSelectionManager: Actualizando selectedERC1155 desde traits module:', {
+                        count: selectedERC1155.length,
+                        ids: selectedERC1155.map(t => t.tokenId)
+                    });
+                }
+            }
+            
             const selectionData = {
                 selectedERC721: this.selectedERC721,
-                selectedERC1155: this.selectedERC1155,
+                selectedERC1155: selectedERC1155,
                 selectedFloppy: this.selectedFloppy,
                 selectedSerum: this.selectedSerum,
                 currentFilter: this.currentFilter,
                 currentTab: this.currentFilter
             };
-            console.log('🎯 TokenSelectionManager: Actualizando sticky popup manager con estado:', selectionData);
+            console.log('🎯 TokenSelectionManager: Actualizando sticky popup manager con estado:', {
+                ...selectionData,
+                erc1155Count: selectionData.selectedERC1155.length,
+                erc1155Ids: selectionData.selectedERC1155.map(t => t.tokenId)
+            });
             stickyPopupManager.updateSelectionState(selectionData);
         } else {
             console.warn('⚠️ TokenSelectionManager: stickyPopupManager no disponible');
