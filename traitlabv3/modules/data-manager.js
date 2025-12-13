@@ -592,23 +592,33 @@ class TraitLABDataManager {
                         if (this.consecutiveErrors > 0) {
                             this.consecutiveErrors = Math.max(0, this.consecutiveErrors - 1);
                         }
-                    } catch (error) {
-                        batchErrors++;
-                        
-                        // Detectar errores de red específicos
-                        const isNetworkError = error.message?.includes('could not detect network') ||
-                                            error.message?.includes('NETWORK_ERROR') ||
-                                            error.code === 'NETWORK_ERROR' ||
-                                            error.message?.includes('network');
-                        
-                        if (isNetworkError) {
-                            console.warn(`⚠️ Error de red para token ${token.tokenId}, saltando...`);
-                            // No propagar error, continuar con siguiente token
-                        } else {
-                            // Otros errores: log pero no propagar
-                            console.log(`⚠️ Error obteniendo nombre para token ${token.tokenId}:`, error.message);
+                        } catch (error) {
+                            batchErrors++;
+                            
+                            // Detectar errores de red específicos y rate limiting
+                            const isNetworkError = error.message?.includes('could not detect network') ||
+                                                error.message?.includes('NETWORK_ERROR') ||
+                                                error.code === 'NETWORK_ERROR' ||
+                                                error.message?.includes('network');
+                            
+                            const isRateLimitError = error.message?.includes('429') ||
+                                                    error.message?.includes('Too Many Requests') ||
+                                                    error.code === 429 ||
+                                                    (error.response && error.response.status === 429);
+                            
+                            if (isRateLimitError) {
+                                console.warn(`⚠️ Rate limit (429) para token ${token.tokenId}, aumentando delay...`);
+                                // Aumentar delay para este batch
+                                // Esperar más tiempo antes de continuar
+                                await new Promise(resolve => setTimeout(resolve, 5000));
+                            } else if (isNetworkError) {
+                                console.warn(`⚠️ Error de red para token ${token.tokenId}, saltando...`);
+                                // No propagar error, continuar con siguiente token
+                            } else {
+                                // Otros errores: log pero no propagar
+                                console.log(`⚠️ Error obteniendo nombre para token ${token.tokenId}:`, error.message);
+                            }
                         }
-                    }
                     
                     processedCount++;
                     console.log(`📊 Progreso: ${processedCount}/${adrianZeroTokens.length} tokens procesados`);
