@@ -209,12 +209,16 @@ class StickyPopupManager {
             // Listener para cuando se selecciona un trait
             window.app.modules.traits.on('traitSelected', (data) => {
                 console.log('🎯 StickyPopupManager: Trait seleccionado, actualizando UI', data);
-                // Actualizar selectedERC1155 desde traits module
-                if (window.app?.modules?.tokenSelection) {
-                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || 
-                                           window.app.modules.traits.getSelectedTraits();
-                } else if (window.app?.modules?.traits) {
-                    this.selectedERC1155 = window.app.modules.traits.getSelectedTraits();
+                // 🚨 CRÍTICO: Actualizar selectedERC1155 desde traits module ANTES de updateUI
+                if (window.app?.modules?.traits) {
+                    const selectedTraits = window.app.modules.traits.getSelectedTraits();
+                    this.selectedERC1155 = selectedTraits;
+                    console.log('🔄 selectedERC1155 actualizado desde traits module:', {
+                        count: this.selectedERC1155.length,
+                        ids: this.selectedERC1155.map(t => t.tokenId)
+                    });
+                } else if (window.app?.modules?.tokenSelection) {
+                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || [];
                 }
                 this.updateUI();
             });
@@ -222,12 +226,16 @@ class StickyPopupManager {
             // Listener para cuando se actualiza la selección de traits
             window.app.modules.traits.on('traitsSelectionUpdated', (data) => {
                 console.log('🎯 StickyPopupManager: Selección de traits actualizada', data);
-                // Actualizar selectedERC1155 desde traits module
-                if (window.app?.modules?.tokenSelection) {
-                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || 
-                                           window.app.modules.traits.getSelectedTraits();
-                } else if (window.app?.modules?.traits) {
-                    this.selectedERC1155 = window.app.modules.traits.getSelectedTraits();
+                // 🚨 CRÍTICO: Actualizar selectedERC1155 desde traits module ANTES de updateUI
+                if (window.app?.modules?.traits) {
+                    const selectedTraits = window.app.modules.traits.getSelectedTraits();
+                    this.selectedERC1155 = selectedTraits;
+                    console.log('🔄 selectedERC1155 actualizado desde traits module:', {
+                        count: this.selectedERC1155.length,
+                        ids: this.selectedERC1155.map(t => t.tokenId)
+                    });
+                } else if (window.app?.modules?.tokenSelection) {
+                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || [];
                 }
                 
                 // 🚨 CRÍTICO: Si hay un trait reemplazado, asegurar que se regenere la imagen
@@ -242,12 +250,16 @@ class StickyPopupManager {
             // Listener para cuando se deselecciona un trait
             window.app.modules.traits.on('traitDeselected', (data) => {
                 console.log('🎯 StickyPopupManager: Trait deseleccionado, actualizando UI', data);
-                // Actualizar selectedERC1155 desde traits module
-                if (window.app?.modules?.tokenSelection) {
-                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || 
-                                           window.app.modules.traits.getSelectedTraits();
-                } else if (window.app?.modules?.traits) {
-                    this.selectedERC1155 = window.app.modules.traits.getSelectedTraits();
+                // 🚨 CRÍTICO: Actualizar selectedERC1155 desde traits module ANTES de updateUI
+                if (window.app?.modules?.traits) {
+                    const selectedTraits = window.app.modules.traits.getSelectedTraits();
+                    this.selectedERC1155 = selectedTraits;
+                    console.log('🔄 selectedERC1155 actualizado desde traits module:', {
+                        count: this.selectedERC1155.length,
+                        ids: this.selectedERC1155.map(t => t.tokenId)
+                    });
+                } else if (window.app?.modules?.tokenSelection) {
+                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || [];
                 }
                 this.updateUI();
             });
@@ -559,12 +571,23 @@ class StickyPopupManager {
             // 🚨 NUEVO: Verificar si estamos en tab traits para mostrar botones correctos
             if (this.currentFilter === 'traits') {
                 // En tab traits, mostrar Apply Traits si hay AdrianZERO y traits seleccionados
+                console.log('🎯 StickyPopupManager: Tab traits - Verificando selección:', {
+                    hasERC721: !!this.selectedERC721,
+                    hasERC1155: this.selectedERC1155.length > 0,
+                    erc1155Count: this.selectedERC1155.length,
+                    erc1155Ids: this.selectedERC1155.map(t => t.tokenId)
+                });
+                
                 if (this.selectedERC721 && this.selectedERC1155.length > 0) {
+                    console.log('✅ Mostrando Apply Traits y generando imagen combinada');
                     this.showTraitsActionsOnly();
                     this.generateCombinedImage();
                 } else if (this.selectedERC721) {
                     // Solo AdrianZERO, mostrar imagen base
+                    console.log('ℹ️ Solo AdrianZERO seleccionado, mostrando imagen base');
                     this.showBaseAdrianZeroImage();
+                } else {
+                    console.log('⚠️ No hay AdrianZERO seleccionado en tab traits');
                 }
             } else {
                 // En otros tabs, mostrar botones normales de ERC721
@@ -673,14 +696,43 @@ class StickyPopupManager {
      * 🚨 NUEVO: Mostrar solo acciones de traits (sin Assign SKIN ni Rename)
      */
     showTraitsActionsOnly() {
+        console.log('🎯 showTraitsActionsOnly: Iniciando...', {
+            hasERC721: !!this.selectedERC721,
+            erc1155Count: this.selectedERC1155.length,
+            traitsActionsSection: !!this.elements.traitsActionsSection,
+            applyTraitsSection: !!this.elements.applyTraitsSection
+        });
+        
         // Ocultar botones de ERC721 (Assign SKIN y Rename)
         if (this.elements.erc721ActionsSection) {
             this.elements.erc721ActionsSection.style.display = 'none';
+            console.log('✅ Ocultada sección erc721ActionsSection');
+        } else {
+            console.warn('⚠️ erc721ActionsSection no encontrada');
         }
         
-        // Mostrar solo Apply Traits
+        // Mostrar solo Apply Traits - mostrar AMBAS secciones por si acaso
         if (this.elements.traitsActionsSection) {
             this.elements.traitsActionsSection.style.display = 'block';
+            console.log('✅ Mostrada sección traitsActionsSection');
+        } else {
+            console.warn('⚠️ traitsActionsSection no encontrada');
+        }
+        
+        // También mostrar applyTraitsSection si existe
+        if (this.elements.applyTraitsSection) {
+            this.elements.applyTraitsSection.style.display = 'block';
+            console.log('✅ Mostrada sección applyTraitsSection');
+        } else {
+            console.warn('⚠️ applyTraitsSection no encontrada');
+        }
+        
+        // Asegurar que el botón applyTraitsBtn esté visible
+        if (this.elements.applyTraitsBtn) {
+            this.elements.applyTraitsBtn.style.display = 'block';
+            console.log('✅ Botón applyTraitsBtn visible');
+        } else {
+            console.warn('⚠️ applyTraitsBtn no encontrado');
         }
         
         console.log('🎯 Mostrando solo Apply Traits (ocultando Assign SKIN y Rename)');
@@ -1062,7 +1114,24 @@ class StickyPopupManager {
      * Generar imagen combinada
      */
     generateCombinedImage() {
-        if (!this.selectedERC721 || this.selectedERC1155.length === 0) return;
+        console.log('🖼️ generateCombinedImage: Iniciando...', {
+            hasERC721: !!this.selectedERC721,
+            erc721Id: this.selectedERC721?.tokenId,
+            erc1155Count: this.selectedERC1155.length,
+            erc1155Ids: this.selectedERC1155.map(t => t.tokenId),
+            currentFilter: this.currentFilter,
+            currentTab: this.currentTab
+        });
+        
+        if (!this.selectedERC721) {
+            console.warn('⚠️ generateCombinedImage: No hay selectedERC721');
+            return;
+        }
+        
+        if (this.selectedERC1155.length === 0) {
+            console.warn('⚠️ generateCombinedImage: No hay traits seleccionados');
+            return;
+        }
 
         // Si estamos en tab Floppy, no generar imagen
         if (this.currentTab === 'floppy') {
@@ -1070,7 +1139,13 @@ class StickyPopupManager {
             return;
         }
 
-        if (!this.elements.generatedImage || !this.elements.combinedImage) return;
+        if (!this.elements.generatedImage || !this.elements.combinedImage) {
+            console.warn('⚠️ generateCombinedImage: Elementos de imagen no encontrados', {
+                hasGeneratedImage: !!this.elements.generatedImage,
+                hasCombinedImage: !!this.elements.combinedImage
+            });
+            return;
+        }
 
         // Asegurar que la imagen se muestra
         if (this.elements.generatedImage) {
