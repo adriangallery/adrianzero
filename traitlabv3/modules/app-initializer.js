@@ -380,15 +380,24 @@ class AppInitializer {
             // Configurar event listeners (con retry si los botones no están disponibles)
             this.setupEventListeners();
             
-            // Retry para botones de wallet si no se encontraron inicialmente
+            // Retry para botones de wallet - SIEMPRE intentar después de un delay
+            // porque la wallet puede detectarse automáticamente y ocultar el botón
+            setTimeout(() => {
+                console.log('🔄 AppInitializer: Reintentando configurar botones de wallet (retry 1)...');
+                this.setupWalletButtons();
+            }, 500);
+            
+            // Segundo retry después de más tiempo (por si el DOM aún no está listo)
             setTimeout(() => {
                 const connectBtn = document.getElementById('connectBtn');
-                const disconnectBtn = document.getElementById('disconnectBtn');
-                if (!connectBtn || !disconnectBtn) {
-                    console.warn('⚠️ AppInitializer: Reintentando configurar botones de wallet...');
-                    this.setupWalletButtons();
+                if (connectBtn) {
+                    const hasListener = connectBtn.getAttribute('data-listener-attached');
+                    if (!hasListener) {
+                        console.log('🔄 AppInitializer: Segundo retry para botones de wallet (retry 2)...');
+                        this.setupWalletButtons();
+                    }
                 }
-            }, 500);
+            }, 1500);
             
             // 🚨 NUEVO: Configurar listeners opcionales
             this.setupOptionalEventListeners();
