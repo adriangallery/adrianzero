@@ -474,19 +474,32 @@ class Showcase {
         // Set text content
         if (this.idleStateText && this.idleStateConfig.text) {
             this.idleStateText.textContent = this.idleStateConfig.text.content;
+            // Force font family to ensure it loads
+            this.idleStateText.style.fontFamily = "'AdrianZero', 'Arial', sans-serif";
             // Font size is now set via CSS (clamp), but we can override if needed
             if (this.idleStateConfig.text.fontSize) {
                 this.idleStateText.style.fontSize = this.idleStateConfig.text.fontSize;
             }
-            // Color is now set to Star Wars yellow in CSS, but we can override if needed
-            if (this.idleStateConfig.text.color) {
-                // Keep Star Wars yellow, but allow opacity override
-                this.idleStateText.style.opacity = this.idleStateConfig.text.opacity || 1;
+            // Color is now set to Star Wars yellow in CSS
+            this.idleStateText.style.color = '#FFE81F';
+            this.idleStateText.style.opacity = '1';
+            
+            // Verificar carga de fuente
+            if (document.fonts && document.fonts.check) {
+                document.fonts.ready.then(() => {
+                    const fontLoaded = document.fonts.check('1em AdrianZero');
+                    console.log('🔤 Font AdrianZero loaded:', fontLoaded);
+                    if (!fontLoaded) {
+                        console.warn('⚠️ Font AdrianZero may not be loaded, using fallback');
+                    }
+                });
             }
+            
             console.log('✅ Idle state text configured:', {
                 length: this.idleStateConfig.text.content.length,
                 fontSize: this.idleStateConfig.text.fontSize || 'CSS clamp',
-                fontFamily: 'AdrianZero'
+                fontFamily: 'AdrianZero',
+                color: '#FFE81F (Star Wars yellow)'
             });
         } else {
             console.warn('⚠️ Idle state text element not found');

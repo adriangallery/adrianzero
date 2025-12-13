@@ -13,6 +13,15 @@
     font-display: swap;
 }
 
+/* Fallback para verificar carga de fuente */
+@font-face {
+    font-family: 'AdrianZero';
+    src: url('components/fonts/ADRIAN_ZERO.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
     /* Design System Colors */
     --bg: #000000;
@@ -717,16 +726,13 @@ body {
     bottom: 0;
     background: rgba(0, 0, 0, 0);
     z-index: 3000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     opacity: 0;
     pointer-events: none;
     transition: opacity 2s ease-in-out, background-color 2s ease-in-out;
     overflow: hidden;
-    /* Star Wars perspective */
-    perspective: 1000px;
-    perspective-origin: center center;
+    /* Star Wars perspective container */
+    perspective: 1200px;
+    perspective-origin: 50% 50%;
 }
 
 .idle-state-overlay.active {
@@ -735,49 +741,61 @@ body {
     background: rgba(0, 0, 0, 0.95);
 }
 
-.idle-state-text {
+/* Wrapper para el efecto 3D */
+.idle-state-text-wrapper {
     position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) translateY(0) rotateX(25deg);
-    transform-origin: center bottom;
-    width: 90%;
-    max-width: 1000px;
-    color: #FFE81F; /* Star Wars yellow */
-    font-family: 'AdrianZero', sans-serif;
-    font-size: clamp(2rem, 4vw, 3.5rem);
-    line-height: 1.8;
-    text-align: justify;
-    font-weight: normal;
-    letter-spacing: 2px;
-    white-space: normal;
-    text-shadow: 
-        0 0 10px rgba(255, 232, 31, 0.5),
-        0 0 20px rgba(255, 232, 31, 0.3),
-        0 0 30px rgba(255, 232, 31, 0.2);
-    animation: starWarsScroll 40s linear infinite;
-    will-change: transform;
-    /* Star Wars 3D effect */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 20vh;
     transform-style: preserve-3d;
 }
 
+.idle-state-text {
+    position: relative;
+    width: 85%;
+    max-width: 900px;
+    color: #FFE81F; /* Star Wars yellow */
+    font-family: 'AdrianZero', 'Arial', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.6;
+    text-align: justify;
+    font-weight: normal;
+    letter-spacing: 3px;
+    white-space: normal;
+    text-shadow: 
+        0 0 15px rgba(255, 232, 31, 0.8),
+        0 0 30px rgba(255, 232, 31, 0.6),
+        0 0 45px rgba(255, 232, 31, 0.4),
+        0 0 60px rgba(255, 232, 31, 0.2);
+    animation: starWarsScroll 35s linear infinite;
+    will-change: transform;
+    transform-style: preserve-3d;
+    /* Asegurar que el texto sea visible desde el inicio */
+    opacity: 1;
+}
+
 .idle-state-overlay.active .idle-state-text {
-    animation: starWarsScroll 40s linear infinite;
+    animation: starWarsScroll 35s linear infinite;
 }
 
 @keyframes starWarsScroll {
     0% {
-        transform: translateX(-50%) translateY(100vh) rotateX(25deg) scale(0.5);
+        transform: translateY(50vh) rotateX(20deg) scale(0.8);
         opacity: 0;
     }
-    5% {
+    2% {
         opacity: 1;
     }
-    95% {
+    98% {
         opacity: 1;
     }
     100% {
-        transform: translateX(-50%) translateY(-200vh) rotateX(25deg) scale(2);
+        transform: translateY(-150vh) rotateX(20deg) scale(1.5);
         opacity: 0;
     }
 }
