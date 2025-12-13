@@ -201,16 +201,15 @@ class AppInitializer {
             // Connect button
             const connectBtn = document.getElementById('connectBtn');
             if (connectBtn) {
+                const computedStyle = window.getComputedStyle(connectBtn);
                 console.log('✅ AppInitializer: Botón connectBtn encontrado, configurando listener...');
-                console.log('🔍 AppInitializer: Estado del botón - display:', window.getComputedStyle(connectBtn).display);
-                console.log('🔍 AppInitializer: Estado del botón - visibility:', window.getComputedStyle(connectBtn).visibility);
-                console.log('🔍 AppInitializer: Estado del botón - pointer-events:', window.getComputedStyle(connectBtn).pointerEvents);
+                console.log('🔍 AppInitializer: Estado del botón - display:', computedStyle.display);
+                console.log('🔍 AppInitializer: Estado del botón - visibility:', computedStyle.visibility);
+                console.log('🔍 AppInitializer: Estado del botón - pointer-events:', computedStyle.pointerEvents);
+                console.log('🔍 AppInitializer: Estado del botón - opacity:', computedStyle.opacity);
                 
-                // Remover listeners anteriores si existen (evitar duplicados)
-                const newConnectBtn = connectBtn.cloneNode(true);
-                connectBtn.parentNode.replaceChild(newConnectBtn, connectBtn);
-                
-                newConnectBtn.addEventListener('click', (e) => {
+                // Agregar listener directamente
+                connectBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('🖱️ Click en botón Connect Wallet detectado');
@@ -219,12 +218,11 @@ class AppInitializer {
                     } else {
                         console.error('❌ Wallet module no disponible');
                     }
-                });
+                }, { once: false, capture: false });
                 
-                // También agregar listener con capture para debugging
-                newConnectBtn.addEventListener('click', (e) => {
-                    console.log('🔍 DEBUG: Click capturado en fase capture');
-                }, true);
+                // Marcar como configurado
+                connectBtn.setAttribute('data-listener-attached', 'true');
+                console.log('✅ AppInitializer: Listener configurado en botón connectBtn');
             } else {
                 console.warn('⚠️ AppInitializer: Botón connectBtn NO encontrado en el DOM');
             }
@@ -413,19 +411,39 @@ class AppInitializer {
         // Connect button
         const connectBtn = document.getElementById('connectBtn');
         if (connectBtn) {
-            // Remover listeners anteriores si existen
-            const newConnectBtn = connectBtn.cloneNode(true);
-            connectBtn.parentNode.replaceChild(newConnectBtn, connectBtn);
+            // Verificar si ya tiene listener
+            if (connectBtn.getAttribute('data-listener-attached') === 'true') {
+                console.log('ℹ️ AppInitializer: Botón connectBtn ya tiene listener, saltando...');
+                return;
+            }
             
-            console.log('✅ AppInitializer: Botón connectBtn encontrado (retry), configurando listener...');
-            newConnectBtn.addEventListener('click', () => {
-                console.log('🖱️ Click en botón Connect Wallet detectado');
+            const computedStyle = window.getComputedStyle(connectBtn);
+            console.log('✅ AppInitializer: Botón connectBtn encontrado (retry)');
+            console.log('🔍 AppInitializer: Estado del botón - display:', computedStyle.display);
+            console.log('🔍 AppInitializer: Estado del botón - visibility:', computedStyle.visibility);
+            console.log('🔍 AppInitializer: Estado del botón - pointer-events:', computedStyle.pointerEvents);
+            console.log('🔍 AppInitializer: Estado del botón - opacity:', computedStyle.opacity);
+            
+            // Si el botón está oculto, hacerlo visible temporalmente para poder hacer click
+            if (computedStyle.display === 'none') {
+                console.log('⚠️ AppInitializer: Botón está oculto (display: none), pero configurando listener de todas formas');
+            }
+            
+            // Agregar listener directamente (sin clonar, para no perder referencias)
+            connectBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ Click en botón Connect Wallet detectado (retry listener)');
                 if (this.app.modules.wallet) {
                     this.app.modules.wallet.connectWallet();
                 } else {
                     console.error('❌ Wallet module no disponible');
                 }
-            });
+            }, { once: false, capture: false });
+            
+            // Marcar como configurado
+            connectBtn.setAttribute('data-listener-attached', 'true');
+            console.log('✅ AppInitializer: Listener configurado en botón connectBtn (retry)');
         } else {
             console.warn('⚠️ AppInitializer: Botón connectBtn NO encontrado en el DOM (retry)');
         }
@@ -433,19 +451,24 @@ class AppInitializer {
         // Disconnect button
         const disconnectBtn = document.getElementById('disconnectBtn');
         if (disconnectBtn) {
-            // Remover listeners anteriores si existen
-            const newDisconnectBtn = disconnectBtn.cloneNode(true);
-            disconnectBtn.parentNode.replaceChild(newDisconnectBtn, disconnectBtn);
+            if (disconnectBtn.getAttribute('data-listener-attached') === 'true') {
+                console.log('ℹ️ AppInitializer: Botón disconnectBtn ya tiene listener, saltando...');
+                return;
+            }
             
             console.log('✅ AppInitializer: Botón disconnectBtn encontrado (retry), configurando listener...');
-            newDisconnectBtn.addEventListener('click', () => {
-                console.log('🖱️ Click en botón Disconnect detectado');
+            disconnectBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ Click en botón Disconnect detectado (retry listener)');
                 if (this.app.modules.wallet) {
                     this.app.modules.wallet.disconnectWallet();
                 } else {
                     console.error('❌ Wallet module no disponible');
                 }
-            });
+            }, { once: false, capture: false });
+            
+            disconnectBtn.setAttribute('data-listener-attached', 'true');
         } else {
             console.warn('⚠️ AppInitializer: Botón disconnectBtn NO encontrado en el DOM (retry)');
         }
