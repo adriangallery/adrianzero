@@ -13,15 +13,6 @@
     font-display: swap;
 }
 
-/* Fallback para verificar carga de fuente */
-@font-face {
-    font-family: 'AdrianZero';
-    src: url('components/fonts/ADRIAN_ZERO.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
 :root {
     /* Design System Colors */
     --bg: #000000;
@@ -785,17 +776,17 @@ body {
 
 @keyframes starWarsScroll {
     0% {
-        transform: translateY(50vh) rotateX(20deg) scale(0.8);
+        transform: translateY(30vh) rotateX(20deg) scale(0.9);
         opacity: 0;
     }
-    2% {
+    1% {
         opacity: 1;
     }
-    98% {
+    99% {
         opacity: 1;
     }
     100% {
-        transform: translateY(-150vh) rotateX(20deg) scale(1.5);
+        transform: translateY(-120vh) rotateX(20deg) scale(1.8);
         opacity: 0;
     }
 }
