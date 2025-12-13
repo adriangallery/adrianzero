@@ -256,6 +256,37 @@ class AppInitializer {
                 });
             }
             
+            // DataManager events - escuchar cuando tokens están listos
+            if (this.app.modules.dataManager) {
+                this.app.modules.dataManager.on('adrianLabTokensReady', ({ floppys, serums, traits }) => {
+                    console.log('✅ DataManager: Tokens AdrianLAB listos:', { 
+                        floppys: floppys.length, 
+                        serums: serums.length, 
+                        traits: traits.length 
+                    });
+                    
+                    // Si estamos en el tab de traits y no hay tokens mostrados, mostrar ahora
+                    if (this.app.currentFilter === 'traits' && traits.length > 0) {
+                        console.log('🎨 Mostrando traits automáticamente después de carga...');
+                        if (this.app.modules.ui) {
+                            this.app.modules.ui.displayTokens(traits, { filter: 'traits' });
+                        }
+                    }
+                });
+                
+                this.app.modules.dataManager.on('adrianZeroReady', ({ tokens }) => {
+                    console.log('✅ DataManager: Tokens AdrianZERO listos:', tokens.length);
+                    
+                    // Si estamos en el tab de adrianzero y no hay tokens mostrados, mostrar ahora
+                    if ((this.app.currentFilter === 'adrianzero' || !this.app.currentFilter) && tokens.length > 0) {
+                        console.log('🎨 Mostrando AdrianZERO automáticamente después de carga...');
+                        if (this.app.modules.ui) {
+                            this.app.modules.ui.displayTokens(tokens, { filter: 'adrianzero' });
+                        }
+                    }
+                });
+            }
+            
             // UI events
             if (this.app.modules.ui) {
                 this.app.modules.ui.on('selectionInfoUpdate', () => {
