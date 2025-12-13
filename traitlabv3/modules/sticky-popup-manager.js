@@ -519,11 +519,29 @@ class StickyPopupManager {
      */
     updateSelectionState(selectionData) {
         this.selectedERC721 = selectionData.selectedERC721 || null;
-        this.selectedERC1155 = selectionData.selectedERC1155 || [];
         this.selectedFloppy = selectionData.selectedFloppy || null;
         this.selectedSerum = selectionData.selectedSerum || null;
         this.currentFilter = selectionData.currentFilter || null;
         this.currentTab = selectionData.currentTab || null;
+        
+        // 🚨 CRÍTICO: Obtener siempre los traits seleccionados desde traits module
+        // para asegurar que tenemos el estado más actualizado
+        if (window.app?.modules?.traits && window.app.modules.traits.getSelectedTraits) {
+            const traitsFromModule = window.app.modules.traits.getSelectedTraits();
+            if (traitsFromModule && traitsFromModule.length > 0) {
+                this.selectedERC1155 = traitsFromModule;
+                console.log('🔄 StickyPopupManager: selectedERC1155 actualizado desde traits module en updateSelectionState:', {
+                    count: this.selectedERC1155.length,
+                    ids: this.selectedERC1155.map(t => t.tokenId)
+                });
+            } else {
+                // Si no hay traits en el módulo, usar los que vienen en selectionData
+                this.selectedERC1155 = selectionData.selectedERC1155 || [];
+            }
+        } else {
+            // Fallback: usar los que vienen en selectionData
+            this.selectedERC1155 = selectionData.selectedERC1155 || [];
+        }
 
         console.log('🔄 StickyPopupManager: Estado actualizado:', {
             selectedERC721: this.selectedERC721?.tokenId,
