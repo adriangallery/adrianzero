@@ -394,8 +394,12 @@
              * Cargar tokens para el tab actual
              */
             async loadTokensForTab() {
+                // 🚨 CRÍTICO: Permitir cambio de tab incluso durante carga
+                // No bloquear la UI con await
+                const currentFilterSnapshot = this.currentFilter;
+                
                 try {
-                    console.log('🚀 TraitLAB v2: Cargando tokens para tab:', this.currentFilter);
+                    console.log('🚀 TraitLAB v2: Cargando tokens para tab:', currentFilterSnapshot);
                     console.log('🔍 Contrato actual:', this.currentContract);
                     
                     this.showLoading();
@@ -415,6 +419,13 @@
                         throw new Error('Módulo data-manager no disponible');
                     }
                     
+                    // 🚨 Verificar si el usuario cambió de tab durante la carga
+                    if (this.currentFilter !== currentFilterSnapshot) {
+                        console.log('🔄 Tab cambió durante carga, cancelando operación');
+                        this.hideLoading();
+                        return;
+                    }
+                    
                     if (this.currentFilter === 'crafting') {
                         console.log('🔨 CRAFTING: Iniciando carga de crafting...');
                         console.log('🔨 CRAFTING: this.modules.crafting disponible:', !!this.modules.crafting);
@@ -425,6 +436,14 @@
                         if (this.modules.crafting) {
                             console.log('🔨 CRAFTING: Cargando recetas...');
                             await this.modules.crafting.loadRecipes();
+                            
+                            // Verificar nuevamente si cambió de tab
+                            if (this.currentFilter !== currentFilterSnapshot) {
+                                console.log('🔄 Tab cambió durante carga de crafting, cancelando');
+                                this.hideLoading();
+                                return;
+                            }
+                            
                             console.log('🔨 CRAFTING: Recetas cargadas, llamando displayCraftingContent...');
                             this.modules.displayManager.displayCraftingContent(
                                 document.getElementById('tokens-grid'),
@@ -449,7 +468,7 @@
                             throw new Error('Módulo de crafting no disponible');
                         }
                     } else if (this.currentFilter === 'traits') {
-                        // 🎯 CASO ESPECIAL: Traits - Iniciar carga bajo demanda si es necesario
+                        // 🎯 CASO ESPECIAL: Traits - Mostrar inmediatamente lo disponible, cargar en background
                         console.log('🎨 TRAITS: Verificando estado de carga de traits...');
                         
                         // Verificar si los traits ya están cargados
@@ -462,28 +481,31 @@
                             this.modules.ui.displayTokens(filteredTokens, { filter: 'traits' });
                             this.hideLoading();
                         } else {
-                            // Traits no están cargados, iniciar carga bajo demanda
-                            console.log('⏳ Traits no están cargados, iniciando carga bajo demanda...');
-                            try {
-                                // Iniciar carga de traits inmediatamente
-                                await this.modules.dataManager.loadAdrianLabTokensOnDemand();
-                                
-                                // Intentar obtener traits nuevamente después de iniciar la carga
-                                const traitsAfterLoad = this.modules.dataManager.getFilteredTokens('traits');
-                                if (traitsAfterLoad.length > 0) {
-                                    console.log('✅ Traits cargados, mostrando:', traitsAfterLoad.length);
-                                    this.modules.ui.displayTokens(traitsAfterLoad, 'traits');
-                                    this.hideLoading();
-                                } else {
-                                    // Los traits aún se están cargando, mostrar loading
-                                    // Se mostrarán automáticamente cuando estén listos vía onTokensLoaded
-                                    console.log('⏳ Traits en proceso de carga, mostrando loading...');
+                            // Traits no están cargados, iniciar carga en background (NO BLOQUEANTE)
+                            console.log('⏳ Traits no están cargados, iniciando carga en background...');
+                            
+                            // Mostrar loading pero permitir cambio de tab
+                            this.showLoading();
+                            
+                            // Iniciar carga en background sin await (no bloquea cambio de tab)
+                            this.modules.dataManager.loadAdrianLabTokensOnDemand().then(() => {
+                                // Solo actualizar si aún estamos en el tab de traits
+                                if (this.currentFilter === 'traits') {
+                                    const traitsAfterLoad = this.modules.dataManager.getFilteredTokens('traits');
+                                    if (traitsAfterLoad.length > 0) {
+                                        console.log('✅ Traits cargados, mostrando:', traitsAfterLoad.length);
+                                        this.modules.ui.displayTokens(traitsAfterLoad, { filter: 'traits' });
+                                        this.hideLoading();
+                                    }
                                 }
-                            } catch (error) {
-                                console.error('❌ Error iniciando carga de traits:', error);
-                                this.hideLoading();
-                                this.showError(`Error cargando traits: ${error.message}`);
-                            }
+                            }).catch(error => {
+                                console.error('❌ Error cargando traits en background:', error);
+                                // Solo mostrar error si aún estamos en el tab de traits
+                                if (this.currentFilter === 'traits') {
+                                    this.hideLoading();
+                                    this.showError(`Error cargando traits: ${error.message}`);
+                                }
+                            });
                         }
                     } else {
                         // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE (para otros tabs)

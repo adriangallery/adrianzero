@@ -489,24 +489,19 @@ class TraitLABDataManager {
                     console.log('MetaMask no disponible, saltando mejora de nombres');
                     return;
                 }
-                const fallbackProvider = new ethers.providers.Web3Provider(window.ethereum);
-                const network = await fallbackProvider.getNetwork();
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+            }
+            
+            // Verificar red usando cache (solo una vez)
+            try {
+                const network = await this.getCachedNetwork(provider);
                 if (network.chainId !== 8453) {
                     console.log('No estamos en Base network, saltando mejora de nombres');
                     return;
                 }
-                provider = fallbackProvider;
-            } else {
-                // Verificar que estamos en Base (usando el primer provider del fallback)
-                try {
-                    const network = await provider.getNetwork();
-                    if (network.chainId !== 8453) {
-                        console.log('No estamos en Base network, saltando mejora de nombres');
-                        return;
-                    }
-                } catch (error) {
-                    console.warn('Error verificando red, continuando de todas formas:', error.message);
-                }
+            } catch (error) {
+                console.warn('Error verificando red, continuando de todas formas:', error.message);
+                // Continuar aunque falle la verificación de red
             }
             
             // Cargar ABI del contrato de nombres
@@ -521,24 +516,56 @@ class TraitLABDataManager {
             );
             
             // Procesar tokens en lotes con delays para evitar rate limiting
-            const batchSize = 5; // Procesar 5 tokens a la vez
-            const delayBetweenBatches = 2000; // 2 segundos entre lotes
+            // Rate limiting adaptativo: reducir batch size si hay muchos errores
+            let batchSize = this.consecutiveErrors > 3 ? 3 : 5;
+            let delayBetweenBatches = this.consecutiveErrors > 3 ? 3000 : 2000;
+            const delayBetweenRequests = 500; // Delay individual entre requests (como traitlab original)
             const nameMap = new Map();
             let processedCount = 0;
+            let batchErrors = 0;
             
             for (let i = 0; i < adrianZeroTokens.length; i += batchSize) {
                 const batch = adrianZeroTokens.slice(i, i + batchSize);
                 console.log(`📦 Procesando lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(adrianZeroTokens.length/batchSize)} (${batch.length} tokens)`);
                 
-                const batchPromises = batch.map(async (token) => {
+                // 🚨 CRÍTICO: Verificar cancelación antes de procesar cada batch
+                if (window.app && window.app.loadingCancelled) {
+                    console.log('🛑 Mejora de nombres cancelada - no procesando más batches');
+                    return;
+                }
+                
+                const batchPromises = batch.map(async (token, index) => {
+                    // Delay individual entre requests (alineado con traitlab original)
+                    if (index > 0) {
+                        await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
+                    }
+                    
                     try {
                         const customName = await nameRegistryContract.getTokenName(token.tokenId);
                         if (customName && customName.trim()) {
                             nameMap.set(token.tokenId, customName.trim());
                             console.log(`✅ Nombre personalizado encontrado para token ${token.tokenId}: "${customName.trim()}"`);
                         }
+                        // Resetear contador de errores si hay éxito
+                        if (this.consecutiveErrors > 0) {
+                            this.consecutiveErrors = Math.max(0, this.consecutiveErrors - 1);
+                        }
                     } catch (error) {
-                        console.log(`⚠️ Error obteniendo nombre para token ${token.tokenId}:`, error.message);
+                        batchErrors++;
+                        
+                        // Detectar errores de red específicos
+                        const isNetworkError = error.message?.includes('could not detect network') ||
+                                            error.message?.includes('NETWORK_ERROR') ||
+                                            error.code === 'NETWORK_ERROR' ||
+                                            error.message?.includes('network');
+                        
+                        if (isNetworkError) {
+                            console.warn(`⚠️ Error de red para token ${token.tokenId}, saltando...`);
+                            // No propagar error, continuar con siguiente token
+                        } else {
+                            // Otros errores: log pero no propagar
+                            console.log(`⚠️ Error obteniendo nombre para token ${token.tokenId}:`, error.message);
+                        }
                     }
                     
                     processedCount++;
@@ -546,6 +573,12 @@ class TraitLABDataManager {
                 });
                 
                 await Promise.all(batchPromises);
+                
+                // Actualizar contador de errores consecutivos
+                if (batchErrors > 0) {
+                    this.consecutiveErrors += batchErrors;
+                    batchErrors = 0;
+                }
                 
                 // 🚨 NUEVO: Verificar cancelación antes de actualizar
                 if (window.app && window.app.loadingCancelled) {
