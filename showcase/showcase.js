@@ -484,11 +484,24 @@ class Showcase {
             this.idleStateText.style.color = '#FFE81F';
             this.idleStateText.style.opacity = '1';
             
-            // Verificar carga de fuente
-            if (document.fonts && document.fonts.check) {
+            // Verificar carga de fuente y forzar carga
+            if (document.fonts) {
+                // Intentar cargar la fuente explícitamente
+                const font = new FontFace('AdrianZero', 'url(../components/fonts/ADRIAN_ZERO.otf)');
+                font.load().then((loadedFont) => {
+                    document.fonts.add(loadedFont);
+                    console.log('✅ Font AdrianZero loaded successfully');
+                    // Aplicar fuente después de cargar
+                    this.idleStateText.style.fontFamily = "'AdrianZero', 'Arial Black', 'Arial', sans-serif";
+                }).catch((error) => {
+                    console.warn('⚠️ Error loading AdrianZero font:', error);
+                    console.warn('⚠️ Using fallback font');
+                });
+                
+                // Verificar carga después de un momento
                 document.fonts.ready.then(() => {
                     const fontLoaded = document.fonts.check('1em AdrianZero');
-                    console.log('🔤 Font AdrianZero loaded:', fontLoaded);
+                    console.log('🔤 Font AdrianZero check:', fontLoaded);
                     if (!fontLoaded) {
                         console.warn('⚠️ Font AdrianZero may not be loaded, using fallback');
                     }
