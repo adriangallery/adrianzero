@@ -933,6 +933,14 @@ class StickyPopupManager {
                           this.selectedERC721.imageUrl || 
                           `https://adrianlab.vercel.app/api/render/${this.selectedERC721.tokenId}.png`;
 
+        // 🚨 CRÍTICO: Si la URL es relativa (./assets/traits/...), usar fallback
+        if (baseImageUrl.startsWith('./') || baseImageUrl.startsWith('../')) {
+            // Es una URL local, usar fallback o render API
+            const tokenId = this.selectedERC721.tokenId;
+            baseImageUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+            console.log('🔄 URL local detectada, usando fallback:', baseImageUrl);
+        }
+
         // Añadir ?closeup=true si está en modo closeup
         if (this.isCloseupMode) {
             // Si la URL ya tiene parámetros, añadir con &
@@ -967,6 +975,13 @@ class StickyPopupManager {
         };
 
         this.elements.combinedImage.onerror = () => {
+            // Intentar con fallback si hay uno disponible
+            if (this.selectedERC721.fallbackImageUrl) {
+                console.log('🔄 Intentando con fallback URL:', this.selectedERC721.fallbackImageUrl);
+                this.elements.combinedImage.src = this.selectedERC721.fallbackImageUrl;
+                return;
+            }
+            
             if (this.elements.imageLoadingOverlay) {
                 this.elements.imageLoadingOverlay.style.display = 'none';
             }

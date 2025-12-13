@@ -508,20 +508,44 @@
                             });
                         }
                     } else {
+                        // 🚨 Verificar si el usuario cambió de tab durante la carga
+                        if (this.currentFilter !== currentFilterSnapshot) {
+                            console.log('🔄 Tab cambió durante carga, cancelando operación');
+                            this.hideLoading();
+                            return;
+                        }
+                        
                         // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE (para otros tabs)
                         const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
                         console.log(`📊 Tokens filtrados obtenidos: ${filteredTokens.length}`);
+                        console.log(`🔍 Estado cache - ready: ${this.modules.dataManager.cache.ready.adrianZero}, loading: ${this.modules.dataManager.cache.loading.adrianZero}`);
                         
                         if (filteredTokens.length > 0) {
                             console.log('✅ Mostrando tokens disponibles inmediatamente');
                             this.modules.ui.displayTokens(filteredTokens, { filter: this.currentFilter || 'adrianzero' });
                             this.hideLoading();
                         } else {
-                            // Mostrar loading mientras se cargan los tokens
-                            console.log('⏳ Mostrando loading mientras se cargan tokens...');
-                            // El loading ya se mostró al inicio del método
-                            // Los tokens se mostrarán automáticamente cuando estén listos
-                            // a través del callback onTokensLoaded
+                            // 🚨 Si estamos en adrianzero y no hay tokens, verificar si están cargando
+                            if (this.currentFilter === 'adrianzero' && this.modules.dataManager.cache.loading.adrianZero) {
+                                console.log('⏳ Tokens AdrianZERO aún cargando, esperando...');
+                                // Esperar un momento y reintentar
+                                setTimeout(() => {
+                                    if (this.currentFilter === 'adrianzero') {
+                                        const tokens = this.modules.dataManager.getFilteredTokens('adrianzero');
+                                        if (tokens.length > 0) {
+                                            console.log('✅ Tokens cargados después de esperar:', tokens.length);
+                                            this.modules.ui.displayTokens(tokens, { filter: 'adrianzero' });
+                                            this.hideLoading();
+                                        }
+                                    }
+                                }, 1000);
+                            } else {
+                                // Mostrar loading mientras se cargan los tokens
+                                console.log('⏳ Mostrando loading mientras se cargan tokens...');
+                                // El loading ya se mostró al inicio del método
+                                // Los tokens se mostrarán automáticamente cuando estén listos
+                                // a través del callback onTokensLoaded
+                            }
                         }
                     }
                     

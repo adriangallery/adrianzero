@@ -793,7 +793,15 @@ class TraitLABDataManager {
      */
     getFilteredTokens(filterType) {
         if (filterType === 'adrianzero' || filterType === 'rename' || filterType === 'customise') {
-            return this.getTokens('adrianZero');
+            const tokens = this.getTokens('adrianZero');
+            // 🚨 CRÍTICO: Si no hay tokens pero están cargando, esperar un momento
+            if (tokens.length === 0 && this.cache.loading.adrianZero) {
+                console.log('⏳ Tokens AdrianZERO aún cargando, esperando...');
+                // Retornar array vacío pero loguear para debugging
+            } else if (tokens.length === 0 && this.cache.ready.adrianZero) {
+                console.warn('⚠️ Tokens AdrianZERO marcados como listos pero array vacío');
+            }
+            return tokens;
         } else if (filterType === 'floppy') {
             return this.getTokens('adrianLab', 'floppys');
         } else if (filterType === 'serum') {
