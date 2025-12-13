@@ -438,7 +438,7 @@ class Showcase {
             // Default config if JSON fails to load
             this.idleStateConfig = {
                 enabled: true,
-                idleTimeout: 30000,
+                idleTimeout: 5000,
                 fadeInDuration: 2000,
                 fadeOutDuration: 1000,
                 text: {
@@ -461,8 +461,15 @@ class Showcase {
      */
     setupIdleState() {
         if (!this.idleStateConfig || !this.idleStateConfig.enabled) {
+            console.log('⏸️ Idle state disabled or config not available');
             return;
         }
+
+        console.log('🔧 Setting up idle state:', {
+            timeout: this.idleStateConfig.idleTimeout,
+            fadeIn: this.idleStateConfig.fadeInDuration,
+            fadeOut: this.idleStateConfig.fadeOutDuration
+        });
 
         // Set text content
         if (this.idleStateText && this.idleStateConfig.text) {
@@ -470,21 +477,36 @@ class Showcase {
             this.idleStateText.style.fontSize = this.idleStateConfig.text.fontSize;
             this.idleStateText.style.color = this.idleStateConfig.text.color;
             this.idleStateText.style.opacity = this.idleStateConfig.text.opacity;
+            console.log('✅ Idle state text configured:', {
+                length: this.idleStateConfig.text.content.length,
+                fontSize: this.idleStateConfig.text.fontSize
+            });
+        } else {
+            console.warn('⚠️ Idle state text element not found');
         }
 
         // Set overlay background
         if (this.idleStateOverlay && this.idleStateConfig.overlay) {
             this.idleStateOverlay.style.transition = `opacity ${this.idleStateConfig.fadeInDuration}ms ease-in-out, background-color ${this.idleStateConfig.fadeInDuration}ms ease-in-out`;
+            console.log('✅ Idle state overlay configured');
+        } else {
+            console.warn('⚠️ Idle state overlay element not found');
         }
 
         // Setup activity listeners
         const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'touchmove', 'click'];
         activityEvents.forEach(event => {
-            document.addEventListener(event, () => this.resetIdleTimer(), { passive: true });
+            document.addEventListener(event, () => {
+                console.log(`🔄 Activity detected: ${event} - resetting idle timer`);
+                this.resetIdleTimer();
+            }, { passive: true });
         });
+
+        console.log(`👂 Listening for activity events: ${activityEvents.join(', ')}`);
 
         // Start idle timer
         this.resetIdleTimer();
+        console.log(`⏱️ Idle timer started: ${this.idleStateConfig.idleTimeout}ms (${this.idleStateConfig.idleTimeout / 1000}s)`);
     }
 
     /**
@@ -497,12 +519,15 @@ class Showcase {
 
         // Hide idle state if active
         if (this.isIdle) {
+            console.log('👋 User activity detected while idle - hiding idle state');
             this.hideIdleState();
         }
 
         // Clear existing timer
         if (this.idleTimer) {
             clearTimeout(this.idleTimer);
+            const timeSinceLastActivity = Date.now() - this.lastActivityTime;
+            console.log(`⏱️ Timer reset - was ${timeSinceLastActivity}ms since last activity`);
         }
 
         // Update last activity time
@@ -510,34 +535,57 @@ class Showcase {
 
         // Set new timer
         this.idleTimer = setTimeout(() => {
+            console.log(`⏰ Idle timeout reached (${this.idleStateConfig.idleTimeout}ms) - showing idle state`);
             this.showIdleState();
         }, this.idleStateConfig.idleTimeout);
+        
+        console.log(`🔄 Idle timer reset - will trigger in ${this.idleStateConfig.idleTimeout}ms (${this.idleStateConfig.idleTimeout / 1000}s)`);
     }
 
     /**
      * Show idle state overlay
      */
     showIdleState() {
-        if (!this.idleStateOverlay || this.isIdle) {
+        if (!this.idleStateOverlay) {
+            console.error('❌ Cannot show idle state - overlay element not found');
+            return;
+        }
+        
+        if (this.isIdle) {
+            console.log('ℹ️ Idle state already active');
             return;
         }
 
         this.isIdle = true;
         this.idleStateOverlay.classList.add('active');
-        console.log('💤 Idle state activated');
+        console.log('💤 Idle state ACTIVATED', {
+            timestamp: new Date().toISOString(),
+            timeSinceLastActivity: Date.now() - this.lastActivityTime,
+            overlayElement: !!this.idleStateOverlay,
+            textElement: !!this.idleStateText
+        });
     }
 
     /**
      * Hide idle state overlay
      */
     hideIdleState() {
-        if (!this.idleStateOverlay || !this.isIdle) {
+        if (!this.idleStateOverlay) {
+            console.error('❌ Cannot hide idle state - overlay element not found');
+            return;
+        }
+        
+        if (!this.isIdle) {
+            console.log('ℹ️ Idle state already inactive');
             return;
         }
 
         this.isIdle = false;
         this.idleStateOverlay.classList.remove('active');
-        console.log('✨ Idle state deactivated');
+        console.log('✨ Idle state DEACTIVATED', {
+            timestamp: new Date().toISOString(),
+            timeSinceLastActivity: Date.now() - this.lastActivityTime
+        });
     }
 
     /**

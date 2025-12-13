@@ -1,7 +1,7 @@
 {
   "idleState": {
     "enabled": true,
-    "idleTimeout": 30000,
+    "idleTimeout": 5000,
     "fadeInDuration": 2000,
     "fadeOutDuration": 1000,
     "text": {
