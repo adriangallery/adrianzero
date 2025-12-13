@@ -65,6 +65,7 @@ class AppInitializer {
         // Inicializar módulos auxiliares (no críticos pero importantes)
         try {
             this.app.stickyPopupManager = new window.StickyPopupManager();
+            this.app.modules.stickyPopupManager = this.app.stickyPopupManager; // También en modules para consistencia
             this.app.stickyPopupManager.init();
             console.log('✅ StickyPopupManager inicializado');
         } catch (error) {
@@ -87,8 +88,14 @@ class AppInitializer {
         
         try {
             this.app.modules.tokenSelection = new window.TokenSelectionManager();
-            if (this.app.stickyPopupManager) {
-                this.app.modules.tokenSelection.setStickyPopupManager(this.app.stickyPopupManager);
+            // Configurar stickyPopupManager en tokenSelection si está disponible
+            // stickyPopupManager se inicializa antes, así que debería estar disponible
+            const stickyPopupManager = this.app.stickyPopupManager || this.app.modules?.stickyPopupManager;
+            if (stickyPopupManager) {
+                this.app.modules.tokenSelection.setStickyPopupManager(stickyPopupManager);
+                console.log('✅ TokenSelectionManager: stickyPopupManager configurado');
+            } else {
+                console.warn('⚠️ TokenSelectionManager: stickyPopupManager no disponible al inicializar');
             }
             console.log('✅ TokenSelectionManager inicializado');
         } catch (error) {

@@ -21,10 +21,13 @@ class UIManager {
             enabled: false,
             allTokens: [],
             currentIndex: 0,
-            batchSize: 25, // Cargar 25 traits por batch
+            batchSize: 25, // Cargar 25 traits por batch (se ajusta dinámicamente)
             observer: null,
             sentinel: null
         };
+        
+        // Image cleanup observer para liberar memoria en móvil
+        this.imageCleanupObserver = null;
         
         // Bind methods
         this.displayTokens = this.displayTokens.bind(this);
@@ -167,12 +170,18 @@ class UIManager {
             this.lazyLoadingState.sentinel = null;
         }
         
+        // Limpiar observer de imágenes
+        if (this.imageCleanupObserver) {
+            this.imageCleanupObserver.disconnect();
+            this.imageCleanupObserver = null;
+        }
+        
         // Remover listener del data-manager si existe
         const dataManager = window.app?.modules?.dataManager;
         if (dataManager && this._moreTraitsLoadedHandler) {
             dataManager.off('adrianLabMoreTraitsLoaded', this._moreTraitsLoadedHandler);
             this._moreTraitsLoadedHandler = null;
-            }
+        }
         
         this.lazyLoadingState.enabled = false;
         this.lazyLoadingState.allTokens = [];
@@ -185,12 +194,100 @@ class UIManager {
     renderTokenBatch(tokens, startIndex, endIndex, tokensGrid) {
         const batch = tokens.slice(startIndex, endIndex);
         
+        // Limpiar elementos fuera del viewport antes de agregar nuevos (solo en móvil)
+        if (this.isMobile()) {
+            this.cleanupOffscreenElements(tokensGrid, startIndex, endIndex);
+        }
+        
         batch.forEach(token => {
             const tokenCard = this.createTokenCard(token);
             tokensGrid.appendChild(tokenCard);
+            
+            // Observar imágenes para cleanup (solo en móvil)
+            if (this.isMobile()) {
+                const img = tokenCard.querySelector('img');
+                if (img) {
+                    this.observeImageForCleanup(img);
+                }
+            }
         });
         
         return batch.length;
+    }
+
+    /**
+     * Limpiar elementos fuera del viewport (virtualización para móvil)
+     */
+    cleanupOffscreenElements(tokensGrid, currentStart, currentEnd) {
+        const allCards = Array.from(tokensGrid.querySelectorAll('.token-card'));
+        const viewportHeight = window.innerHeight;
+        const bufferSize = 300; // Mantener 300px de buffer antes de limpiar
+        
+        allCards.forEach(card => {
+            const cardRect = card.getBoundingClientRect();
+            
+            // Si está más de bufferSize fuera del viewport, remover
+            if (cardRect.bottom < -bufferSize || cardRect.top > viewportHeight + bufferSize) {
+                // Limpiar imagen antes de remover
+                const img = card.querySelector('img');
+                if (img && this.imageCleanupObserver) {
+                    this.imageCleanupObserver.unobserve(img);
+                    // Limpiar src para liberar memoria
+                    if (img.dataset.originalSrc) {
+                        img.src = '';
+                    }
+                }
+                card.remove();
+            }
+        });
+    }
+
+    /**
+     * Configurar cleanup de imágenes fuera del viewport
+     */
+    setupImageCleanup() {
+        if (!this.imageCleanupObserver) {
+            this.imageCleanupObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const img = entry.target;
+                    if (!entry.isIntersecting) {
+                        // Imagen fuera del viewport: limpiar src para liberar memoria
+                        if (img.src && !img.dataset.originalSrc) {
+                            img.dataset.originalSrc = img.src;
+                        }
+                        if (img.dataset.originalSrc) {
+                            img.src = ''; // Liberar memoria
+                            img.dataset.isUnloaded = 'true';
+                        }
+                    } else {
+                        // Imagen visible: restaurar src si fue descargada
+                        if (img.dataset.isUnloaded === 'true' && img.dataset.originalSrc) {
+                            img.src = img.dataset.originalSrc;
+                            img.dataset.isUnloaded = 'false';
+                        }
+                    }
+                });
+            }, {
+                rootMargin: '200px' // Mantener 200px de margen
+            });
+        }
+    }
+
+    /**
+     * Observar imagen para cleanup automático
+     */
+    observeImageForCleanup(imgElement) {
+        if (!this.imageCleanupObserver) {
+            this.setupImageCleanup();
+        }
+        
+        // Guardar src original si no está guardado
+        if (imgElement.src && !imgElement.dataset.originalSrc) {
+            imgElement.dataset.originalSrc = imgElement.src;
+        }
+        
+        // Observar imagen
+        this.imageCleanupObserver.observe(imgElement);
     }
 
     /**
@@ -513,10 +610,26 @@ class UIManager {
         // Clean up any existing lazy loading
         this.cleanupLazyLoading();
         
+        // Ajustar batch size dinámicamente según cantidad total de traits
+        // Para wallets grandes (1000+), usar batch más pequeño para evitar memory issues
+        if (tokens.length > 500) {
+            this.lazyLoadingState.batchSize = 15; // Batch más pequeño para wallets grandes
+            console.log(`📱 Wallet grande detectada (${tokens.length} traits), usando batch size: ${this.lazyLoadingState.batchSize}`);
+        } else if (tokens.length > 200) {
+            this.lazyLoadingState.batchSize = 20; // Batch medio
+        } else {
+            this.lazyLoadingState.batchSize = 25; // Default para wallets pequeñas
+        }
+        
         // Initialize state
         this.lazyLoadingState.allTokens = tokens;
         this.lazyLoadingState.currentIndex = 0;
         this.lazyLoadingState.enabled = true;
+        
+        // Configurar cleanup de imágenes si es móvil
+        if (this.isMobile()) {
+            this.setupImageCleanup();
+        }
         
         // Load first batch immediately
         this.loadNextBatch();

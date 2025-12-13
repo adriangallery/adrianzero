@@ -189,7 +189,60 @@ class StickyPopupManager {
 
         // Customise modal event listeners will be set up when modal opens (see setupCustomiseModalEvents)
 
+        // Escuchar eventos de traits para actualizar UI reactivamente
+        this.setupTraitsEventListeners();
+
         console.log('✅ StickyPopupManager: Event listeners configured');
+    }
+
+    /**
+     * Configurar listeners de eventos de traits
+     */
+    setupTraitsEventListeners() {
+        if (window.app?.modules?.traits) {
+            // Listener para cuando se selecciona un trait
+            window.app.modules.traits.on('traitSelected', (data) => {
+                console.log('🎯 StickyPopupManager: Trait seleccionado, actualizando UI', data);
+                // Actualizar selectedERC1155 desde traits module
+                if (window.app?.modules?.tokenSelection) {
+                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || 
+                                           window.app.modules.traits.getSelectedTraits();
+                } else if (window.app?.modules?.traits) {
+                    this.selectedERC1155 = window.app.modules.traits.getSelectedTraits();
+                }
+                this.updateUI();
+            });
+            
+            // Listener para cuando se actualiza la selección de traits
+            window.app.modules.traits.on('traitsSelectionUpdated', (data) => {
+                console.log('🎯 StickyPopupManager: Selección de traits actualizada', data);
+                // Actualizar selectedERC1155 desde traits module
+                if (window.app?.modules?.tokenSelection) {
+                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || 
+                                           window.app.modules.traits.getSelectedTraits();
+                } else if (window.app?.modules?.traits) {
+                    this.selectedERC1155 = window.app.modules.traits.getSelectedTraits();
+                }
+                this.updateUI();
+            });
+            
+            // Listener para cuando se deselecciona un trait
+            window.app.modules.traits.on('traitDeselected', (data) => {
+                console.log('🎯 StickyPopupManager: Trait deseleccionado, actualizando UI', data);
+                // Actualizar selectedERC1155 desde traits module
+                if (window.app?.modules?.tokenSelection) {
+                    this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || 
+                                           window.app.modules.traits.getSelectedTraits();
+                } else if (window.app?.modules?.traits) {
+                    this.selectedERC1155 = window.app.modules.traits.getSelectedTraits();
+                }
+                this.updateUI();
+            });
+            
+            console.log('✅ StickyPopupManager: Listeners de traits configurados');
+        } else {
+            console.warn('⚠️ StickyPopupManager: Módulo traits no disponible para configurar listeners');
+        }
     }
 
     /**
@@ -490,11 +543,12 @@ class StickyPopupManager {
             } else
             // 🚨 NUEVO: Verificar si estamos en tab traits para mostrar botones correctos
             if (this.currentFilter === 'traits') {
-                // En tab traits, solo mostrar Apply Traits si hay traits seleccionados
-                if (this.selectedERC1155.length > 0) {
+                // En tab traits, mostrar Apply Traits si hay AdrianZERO y traits seleccionados
+                if (this.selectedERC721 && this.selectedERC1155.length > 0) {
                     this.showTraitsActionsOnly();
                     this.generateCombinedImage();
-                } else {
+                } else if (this.selectedERC721) {
+                    // Solo AdrianZERO, mostrar imagen base
                     this.showBaseAdrianZeroImage();
                 }
             } else {
@@ -1002,6 +1056,14 @@ class StickyPopupManager {
         }
 
         if (!this.elements.generatedImage || !this.elements.combinedImage) return;
+
+        // Asegurar que la imagen se muestra
+        if (this.elements.generatedImage) {
+            this.elements.generatedImage.style.display = 'block';
+        }
+        if (this.elements.combinedImage) {
+            this.elements.combinedImage.style.display = 'block';
+        }
 
         // MOSTRAR loading overlay SIN mover elementos
         if (this.elements.imageLoadingOverlay) {

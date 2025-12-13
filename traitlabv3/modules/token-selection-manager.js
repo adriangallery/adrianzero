@@ -241,13 +241,8 @@ class TokenSelectionManager {
             // No generar imagen aquí para evitar duplicación
         }
         
-        if (this.selectedERC1155.length > 0) {
-            // Show traits actions section
-            const traitsActionsSection = document.getElementById('traits-actions-section');
-            if (traitsActionsSection) {
-                traitsActionsSection.style.display = 'block';
-            }
-        }
+        // 🚨 REMOVIDO: No manipular traits-actions-section directamente
+        // Esto se maneja en sticky-popup-manager.js para evitar conflictos
         
         if (this.selectedFloppy) {
             // Use hardcoded names for specific floppy discs
@@ -287,8 +282,9 @@ class TokenSelectionManager {
             console.log('🎯 TokenSelectionManager: Texto de selección actualizado:', text);
         }
         
-        // Update sticky popup manager
-        if (this.stickyPopupManager) {
+        // Update sticky popup manager (usar fallback si no está configurado)
+        const stickyPopupManager = this.stickyPopupManager || window.app?.modules?.stickyPopupManager;
+        if (stickyPopupManager) {
             const selectionData = {
                 selectedERC721: this.selectedERC721,
                 selectedERC1155: this.selectedERC1155,
@@ -298,7 +294,7 @@ class TokenSelectionManager {
                 currentTab: this.currentFilter
             };
             console.log('🎯 TokenSelectionManager: Actualizando sticky popup manager con estado:', selectionData);
-            this.stickyPopupManager.updateSelectionState(selectionData);
+            stickyPopupManager.updateSelectionState(selectionData);
         } else {
             console.warn('⚠️ TokenSelectionManager: stickyPopupManager no disponible');
         }
