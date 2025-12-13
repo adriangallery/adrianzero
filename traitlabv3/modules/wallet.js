@@ -302,6 +302,13 @@ class WalletManager {
                 walletAddress.textContent = `${this.currentAccount.substring(0, 6)}...${this.currentAccount.substring(38)}`;
             }
             
+            // Asegurar que el botón tenga pointer-events incluso si está oculto
+            // (por si el usuario quiere desconectar y volver a conectar)
+            if (connectBtn) {
+                connectBtn.style.pointerEvents = 'auto';
+                connectBtn.style.cursor = 'pointer';
+            }
+            
             // Emit event for other modules
             this.emit('uiUpdate', { 
                 type: 'walletConnected', 
@@ -321,6 +328,13 @@ class WalletManager {
             if (tokensSection) tokensSection.style.display = 'none';
             if (walletAddress) walletAddress.textContent = '';
             
+            // Asegurar que el botón sea clickeable
+            if (connectBtn) {
+                connectBtn.style.pointerEvents = 'auto';
+                connectBtn.style.cursor = 'pointer';
+                connectBtn.style.display = 'inline-block';
+            }
+            
             // Emit event for other modules
             this.emit('uiUpdate', { 
                 type: 'walletDisconnected' 
@@ -331,6 +345,13 @@ class WalletManager {
         if (connectBtn) {
             const computedStyle = window.getComputedStyle(connectBtn);
             console.log('🔍 Wallet: Estado final del botón - display:', computedStyle.display, 'visibility:', computedStyle.visibility, 'pointer-events:', computedStyle.pointerEvents);
+            
+            // Si el botón está oculto pero debería ser clickeable, hacerlo visible temporalmente
+            // o asegurar que tenga pointer-events
+            if (computedStyle.display === 'none' && !this.isConnected) {
+                console.log('⚠️ Wallet: Botón está oculto pero wallet no está conectada, haciendo visible...');
+                connectSection.style.display = 'block';
+            }
         }
     }
 
