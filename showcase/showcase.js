@@ -288,7 +288,7 @@ class Showcase {
      * Setup Intersection Observers for lazy loading
      */
     setupObservers() {
-        // Observer for images
+        // Observer for images - precarga agresiva en todas las direcciones
         this.imageObserver = new IntersectionObserver(
             (entries) => {
                 entries.forEach(entry => {
@@ -297,13 +297,14 @@ class Showcase {
                         // Small delay to prevent loading all at once
                         setTimeout(() => {
                             this.loadImage(item);
-                        }, Math.random() * 100); // Random delay 0-100ms for smoother loading
+                        }, Math.random() * 50); // Random delay 0-50ms for faster loading
                         this.imageObserver.unobserve(item);
                     }
                 });
             },
             {
-                rootMargin: '500px', // Start loading 500px before visible for smoother experience
+                // Precarga en todas las direcciones: top right bottom left
+                rootMargin: '1000px 1000px 1000px 1000px', // 1000px en todas las direcciones
                 threshold: 0.01
             }
         );
@@ -320,7 +321,8 @@ class Showcase {
                 });
             },
             {
-                rootMargin: '800px',
+                // Precarga en todas las direcciones para scroll
+                rootMargin: '1500px 1500px 1500px 1500px', // 1500px en todas las direcciones
                 threshold: 0.1
             }
         );
@@ -398,12 +400,19 @@ class Showcase {
         let scrollRafId = null;
         let lastScrollTop = 0;
         let scrollTimeout = null;
+        let preloadTimeout = null;
         this.gridWrapper.addEventListener('scroll', () => {
             // Hide scroll indicator immediately
             this.hideScrollIndicator();
             
             // Reset idle timer on scroll
             this.resetIdleTimer();
+            
+            // Preload images on scroll (separate throttle for preloading)
+            if (preloadTimeout) clearTimeout(preloadTimeout);
+            preloadTimeout = setTimeout(() => {
+                this.preloadVisibleArea();
+            }, 100); // Preload 100ms después del scroll
             
             // Throttle heavy operations
             if (scrollTimeout) return;
@@ -862,10 +871,12 @@ class Showcase {
     }
 
     /**
-     * Render initial grid items
+     * Render initial grid items - render more items initially for better preloading
      */
     renderInitialGrid() {
-        const initialItems = this.images.slice(0, this.config.itemsPerPage);
+        // Render more items initially to preload images in all directions
+        const initialItemsCount = Math.min(this.config.itemsPerPage * 3, this.images.length); // 3x más items iniciales
+        const initialItems = this.images.slice(0, initialItemsCount);
         initialItems.forEach((image, i) => {
             const index = this.state.totalItemsRendered;
             this.createGridItem(image, index);
@@ -874,6 +885,52 @@ class Showcase {
 
         // Create sentinel for infinite scroll
         this.createScrollSentinels();
+        
+        // Preload images proactively after initial render
+        this.preloadVisibleArea();
+    }
+    
+    /**
+     * Preload images proactively around the visible viewport
+     */
+    preloadVisibleArea() {
+        // Get all grid items
+        const allItems = Array.from(this.gridElement.querySelectorAll('.grid-item'));
+        
+        // Get viewport dimensions including scroll position
+        const scrollTop = this.gridWrapper.scrollTop;
+        const scrollLeft = this.gridWrapper.scrollLeft;
+        const viewportWidth = this.gridWrapper.clientWidth;
+        const viewportHeight = this.gridWrapper.clientHeight;
+        
+        // Preload range: 2000px in all directions from viewport
+        const preloadRange = 2000;
+        const viewportTop = scrollTop - preloadRange;
+        const viewportBottom = scrollTop + viewportHeight + preloadRange;
+        const viewportLeft = scrollLeft - preloadRange;
+        const viewportRight = scrollLeft + viewportWidth + preloadRange;
+        
+        // Preload images that are near the viewport
+        allItems.forEach(item => {
+            const rect = item.getBoundingClientRect();
+            const itemTop = scrollTop + rect.top;
+            const itemBottom = scrollTop + rect.bottom;
+            const itemLeft = scrollLeft + rect.left;
+            const itemRight = scrollLeft + rect.right;
+            
+            // Check if item is within preload range in all directions
+            const isNearViewport = 
+                itemBottom >= viewportTop && itemTop <= viewportBottom &&
+                itemRight >= viewportLeft && itemLeft <= viewportRight;
+            
+            if (isNearViewport) {
+                // Load image immediately if near viewport and not already loaded
+                const img = item.querySelector('img');
+                if (img && !img.dataset.loaded && img.dataset.loaded !== 'loading') {
+                    this.loadImage(item);
+                }
+            }
+        });
     }
 
     /**
