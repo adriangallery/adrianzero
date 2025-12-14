@@ -294,17 +294,19 @@ class Showcase {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const item = entry.target;
-                        // Small delay to prevent loading all at once
-                        setTimeout(() => {
+                        // Load immediately - no delay
+                        const img = item.querySelector('img');
+                        if (img && !img.dataset.loaded && img.dataset.loaded !== 'loading') {
                             this.loadImage(item);
-                        }, Math.random() * 50); // Random delay 0-50ms for faster loading
+                        }
                         this.imageObserver.unobserve(item);
                     }
                 });
             },
             {
-                // Precarga en todas las direcciones: top right bottom left
-                rootMargin: '1000px 1000px 1000px 1000px', // 1000px en todas las direcciones
+                // Precarga asimétrica: más hacia abajo (pantallas panorámicas)
+                // Formato: top right bottom left
+                rootMargin: '1000px 1000px 2500px 1000px', // Más precarga hacia abajo
                 threshold: 0.01
             }
         );
@@ -321,8 +323,9 @@ class Showcase {
                 });
             },
             {
-                // Precarga en todas las direcciones para scroll
-                rootMargin: '1500px 1500px 1500px 1500px', // 1500px en todas las direcciones
+                // Precarga asimétrica para scroll: más hacia abajo
+                // Formato: top right bottom left
+                rootMargin: '1500px 1500px 3000px 1500px', // Más precarga hacia abajo
                 threshold: 0.1
             }
         );
@@ -412,7 +415,7 @@ class Showcase {
             if (preloadTimeout) clearTimeout(preloadTimeout);
             preloadTimeout = setTimeout(() => {
                 this.preloadVisibleArea();
-            }, 100); // Preload 100ms después del scroll
+            }, 50); // Preload 50ms después del scroll (más rápido)
             
             // Throttle heavy operations
             if (scrollTimeout) return;
@@ -892,44 +895,72 @@ class Showcase {
     
     /**
      * Preload images proactively around the visible viewport
+     * Prioritizes images by distance to viewport
      */
     preloadVisibleArea() {
         // Get all grid items
         const allItems = Array.from(this.gridElement.querySelectorAll('.grid-item'));
         
-        // Get viewport dimensions including scroll position
-        const scrollTop = this.gridWrapper.scrollTop;
-        const scrollLeft = this.gridWrapper.scrollLeft;
+        // Get viewport dimensions (getBoundingClientRect already accounts for scroll)
         const viewportWidth = this.gridWrapper.clientWidth;
         const viewportHeight = this.gridWrapper.clientHeight;
+        const viewportCenterX = viewportWidth / 2;
+        const viewportCenterY = viewportHeight / 2;
         
-        // Preload range: 2000px in all directions from viewport
-        const preloadRange = 2000;
-        const viewportTop = scrollTop - preloadRange;
-        const viewportBottom = scrollTop + viewportHeight + preloadRange;
-        const viewportLeft = scrollLeft - preloadRange;
-        const viewportRight = scrollLeft + viewportWidth + preloadRange;
+        // Preload ranges: close (0-500px), medium (500-1500px), far (1500-2000px)
+        // Rango vertical aumentado para pantallas panorámicas
+        const closeRange = 500;
+        const mediumRange = 1500;
+        const farRangeHorizontal = 2000; // Lados
+        const farRangeVertical = 3000; // Hacia abajo (más para pantallas panorámicas)
         
-        // Preload images that are near the viewport
+        // Categorize items by distance to viewport
+        const itemsToLoad = [];
+        
         allItems.forEach(item => {
-            const rect = item.getBoundingClientRect();
-            const itemTop = scrollTop + rect.top;
-            const itemBottom = scrollTop + rect.bottom;
-            const itemLeft = scrollLeft + rect.left;
-            const itemRight = scrollLeft + rect.right;
-            
-            // Check if item is within preload range in all directions
-            const isNearViewport = 
-                itemBottom >= viewportTop && itemTop <= viewportBottom &&
-                itemRight >= viewportLeft && itemLeft <= viewportRight;
-            
-            if (isNearViewport) {
-                // Load image immediately if near viewport and not already loaded
-                const img = item.querySelector('img');
-                if (img && !img.dataset.loaded && img.dataset.loaded !== 'loading') {
-                    this.loadImage(item);
-                }
+            const img = item.querySelector('img');
+            if (!img || img.dataset.loaded === 'true' || img.dataset.loaded === 'loading') {
+                return; // Skip already loaded or loading images
             }
+            
+            const rect = item.getBoundingClientRect();
+            
+            // Check if item is within preload range (más rango hacia abajo)
+            const isInRange = 
+                rect.bottom >= -farRangeVertical && rect.top <= viewportHeight + farRangeVertical &&
+                rect.right >= -farRangeHorizontal && rect.left <= viewportWidth + farRangeHorizontal;
+            
+            if (!isInRange) return;
+            
+            // Calculate distance from viewport center
+            const itemCenterX = rect.left + rect.width / 2;
+            const itemCenterY = rect.top + rect.height / 2;
+            const distanceX = Math.abs(itemCenterX - viewportCenterX);
+            const distanceY = Math.abs(itemCenterY - viewportCenterY);
+            const distance = Math.max(distanceX, distanceY);
+            
+            // Determine priority
+            let priority = 3; // far (lowest priority)
+            if (distance <= closeRange) {
+                priority = 1; // close (highest priority)
+            } else if (distance <= mediumRange) {
+                priority = 2; // medium
+            }
+            
+            itemsToLoad.push({ item, distance, priority });
+        });
+        
+        // Sort by priority (1 = close, 2 = medium, 3 = far), then by distance
+        itemsToLoad.sort((a, b) => {
+            if (a.priority !== b.priority) {
+                return a.priority - b.priority;
+            }
+            return a.distance - b.distance;
+        });
+        
+        // Load images in priority order
+        itemsToLoad.forEach(({ item }) => {
+            this.loadImage(item);
         });
     }
 
@@ -939,7 +970,12 @@ class Showcase {
     createGridItem(image, index) {
         const item = this.createGridItemElement(image, index);
         this.gridElement.appendChild(item);
-        this.imageObserver.observe(item);
+        // Only observe if preloadVisibleArea hasn't already loaded it
+        // This prevents conflicts between the two systems
+        const img = item.querySelector('img');
+        if (img && !img.dataset.loaded && img.dataset.loaded !== 'loading') {
+            this.imageObserver.observe(item);
+        }
     }
 
     /**
