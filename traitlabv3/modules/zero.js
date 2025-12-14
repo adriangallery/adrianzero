@@ -764,15 +764,6 @@ class ZeroManager {
      * Activate AdrianZERO token using AdrianLabCore contract
      */
     async activateToken() {
-        console.log('🔍 DEBUG ZeroManager.activateToken: Llamado');
-        console.log('🔍 DEBUG ZeroManager.activateToken: this.selectedERC721:', this.selectedERC721);
-        console.log('🔍 DEBUG ZeroManager.activateToken: window.TraitLABWallet existe?', !!window.TraitLABWallet);
-        console.log('🔍 DEBUG ZeroManager.activateToken: window.TraitLABWallet.isWalletConnected():', window.TraitLABWallet?.isWalletConnected());
-        console.log('🔍 DEBUG ZeroManager.activateToken: window.TraitLABConfig existe?', !!window.TraitLABConfig);
-        console.log('🔍 DEBUG ZeroManager.activateToken: window.TraitLABConfig keys:', window.TraitLABConfig ? Object.keys(window.TraitLABConfig) : 'undefined');
-        console.log('🔍 DEBUG ZeroManager.activateToken: ADRIAN_LAB_CORE_CONTRACT:', window.TraitLABConfig?.ADRIAN_LAB_CORE_CONTRACT);
-        console.log('🔍 DEBUG ZeroManager.activateToken: CONTRACTS:', window.TraitLABConfig?.CONTRACTS);
-        
         if (!this.selectedERC721) {
             throw new Error('Please select an AdrianZERO token first.');
         }
@@ -846,20 +837,13 @@ class ZeroManager {
 
             // Create contract instance
             const contract = new ethers.Contract(ADRIAN_LAB_CORE_CONTRACT, contractABI, signer);
-            console.log('🔍 DEBUG ZeroManager.executeActivateTokenTransaction: Contrato creado:', !!contract);
 
             // Prepare parameters
             const tokenId = this.selectedERC721.tokenId;
-            console.log('🔍 DEBUG ZeroManager.executeActivateTokenTransaction: Token ID:', tokenId);
-
-            console.log('Contract address:', ADRIAN_LAB_CORE_CONTRACT);
-            console.log('Token ID:', tokenId);
 
             // Call the contract function
-            console.log('🔍 DEBUG ZeroManager.executeActivateTokenTransaction: Llamando contract.assignTokenAttributes...');
             const tx = await contract.assignTokenAttributes(tokenId);
             
-            console.log('🔍 DEBUG ZeroManager.executeActivateTokenTransaction: Transacción enviada, hash:', tx.hash);
             console.log('Transaction hash:', tx.hash);
 
             // Wait for transaction confirmation

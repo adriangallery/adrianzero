@@ -194,21 +194,18 @@ class UIManager {
     renderTokenBatch(tokens, startIndex, endIndex, tokensGrid) {
         const batch = tokens.slice(startIndex, endIndex);
         
-        // Limpiar elementos fuera del viewport antes de agregar nuevos (solo en móvil)
-        if (this.isMobile()) {
-            this.cleanupOffscreenElements(tokensGrid, startIndex, endIndex);
-        }
+        // Limpiar elementos fuera del viewport antes de agregar nuevos
+        // Más agresivo en móvil para evitar problemas de memoria con 300+ traits
+        this.cleanupOffscreenElements(tokensGrid, startIndex, endIndex);
         
         batch.forEach(token => {
             const tokenCard = this.createTokenCard(token);
             tokensGrid.appendChild(tokenCard);
             
-            // Observar imágenes para cleanup (solo en móvil)
-            if (this.isMobile()) {
-                const img = tokenCard.querySelector('img');
-                if (img) {
-                    this.observeImageForCleanup(img);
-                }
+            // Observar imágenes para cleanup (siempre, pero más crítico en móvil)
+            const img = tokenCard.querySelector('img');
+            if (img) {
+                this.observeImageForCleanup(img);
             }
         });
         
@@ -216,12 +213,15 @@ class UIManager {
     }
 
     /**
-     * Limpiar elementos fuera del viewport (virtualización para móvil)
+     * Limpiar elementos fuera del viewport (virtualización)
+     * Más agresivo en móvil para evitar problemas de memoria con 300+ traits
      */
     cleanupOffscreenElements(tokensGrid, currentStart, currentEnd) {
         const allCards = Array.from(tokensGrid.querySelectorAll('.token-card'));
         const viewportHeight = window.innerHeight;
-        const bufferSize = 300; // Mantener 300px de buffer antes de limpiar
+        const isMobile = this.isMobile();
+        // Buffer más pequeño en móvil para limpiar más agresivamente
+        const bufferSize = isMobile ? 200 : 300; // Móvil: 200px, Desktop: 300px
         
         allCards.forEach(card => {
             const cardRect = card.getBoundingClientRect();
@@ -235,6 +235,7 @@ class UIManager {
                     // Limpiar src para liberar memoria
                     if (img.dataset.originalSrc) {
                         img.src = '';
+                        img.dataset.isUnloaded = 'true';
                     }
                 }
                 card.remove();
@@ -268,7 +269,8 @@ class UIManager {
                     }
                 });
             }, {
-                rootMargin: '200px' // Mantener 200px de margen
+                // Margen más pequeño en móvil para cleanup más agresivo
+                rootMargin: this.isMobile() ? '150px' : '200px'
             });
         }
     }
@@ -620,15 +622,23 @@ class UIManager {
         // Clean up any existing lazy loading
         this.cleanupLazyLoading();
         
-        // Ajustar batch size dinámicamente según cantidad total de traits
-        // Para wallets grandes (1000+), usar batch más pequeño para evitar memory issues
+        // Ajustar batch size dinámicamente según cantidad total de traits y dispositivo
+        // Optimización especial para móviles con 300+ traits (problema reportado)
+        const isMobile = this.isMobile();
         if (tokens.length > 500) {
-            this.lazyLoadingState.batchSize = 15; // Batch más pequeño para wallets grandes
-            console.log(`📱 Wallet grande detectada (${tokens.length} traits), usando batch size: ${this.lazyLoadingState.batchSize}`);
+            // Wallets muy grandes: batch muy pequeño
+            this.lazyLoadingState.batchSize = isMobile ? 10 : 15;
+            console.log(`📱 Wallet muy grande detectada (${tokens.length} traits), usando batch size: ${this.lazyLoadingState.batchSize} en ${isMobile ? 'móvil' : 'desktop'}`);
+        } else if (tokens.length > 300) {
+            // Wallets grandes (300+): batch pequeño, especialmente en móvil
+            this.lazyLoadingState.batchSize = isMobile ? 12 : 18;
+            console.log(`📱 Wallet grande detectada (${tokens.length} traits), usando batch size: ${this.lazyLoadingState.batchSize} en ${isMobile ? 'móvil' : 'desktop'}`);
         } else if (tokens.length > 200) {
-            this.lazyLoadingState.batchSize = 20; // Batch medio
+            // Wallets medianas: batch medio
+            this.lazyLoadingState.batchSize = isMobile ? 15 : 20;
         } else {
-            this.lazyLoadingState.batchSize = 25; // Default para wallets pequeñas
+            // Wallets pequeñas: batch normal
+            this.lazyLoadingState.batchSize = isMobile ? 20 : 25;
         }
         
         // Initialize state
@@ -636,10 +646,8 @@ class UIManager {
         this.lazyLoadingState.currentIndex = 0;
         this.lazyLoadingState.enabled = true;
         
-        // Configurar cleanup de imágenes si es móvil
-        if (this.isMobile()) {
-            this.setupImageCleanup();
-        }
+        // Configurar cleanup de imágenes (siempre, pero más agresivo en móvil)
+        this.setupImageCleanup();
         
         // Load first batch immediately
         this.loadNextBatch();
@@ -707,13 +715,16 @@ class UIManager {
 
         tokensGrid.innerHTML = "";
         
-        // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens)
-        const shouldUseLazyLoading = this.isMobile() && 
-                                     filter === 'traits' && 
-                                     tokens.length > 50; // Only use lazy loading if more than 50 traits
+        // 🚨 LAZY LOADING: Habilitar en móvil con >50 traits o desktop con >300 traits
+        // Optimización para evitar problemas de memoria, especialmente en móviles con 300+ traits
+        const shouldUseLazyLoading = filter === 'traits' && (
+            (this.isMobile() && tokens.length > 50) || // Móvil: >50 traits
+            (!this.isMobile() && tokens.length > 300)  // Desktop: >300 traits (optimización preventiva)
+        );
         
         if (shouldUseLazyLoading) {
-            console.log(`📱 Lazy loading enabled for ${tokens.length} traits on mobile`);
+            const device = this.isMobile() ? 'mobile' : 'desktop';
+            console.log(`📱 Lazy loading enabled for ${tokens.length} traits on ${device}`);
             this.setupLazyLoading(tokens);
             if (!skipSelectionUpdate) {
                 this.updateSelectionInfo();

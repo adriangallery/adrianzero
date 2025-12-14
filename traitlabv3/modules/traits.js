@@ -151,7 +151,8 @@ class TraitsManager {
             selectedTraits: this.selectedERC1155,
             selectedTraitsByCategory: Array.from(this.selectedTraitsByCategory.entries()),
             replacedTrait: existingTrait ? existingTrait.tokenId : null, // Informar qué trait fue reemplazado
-            newTrait: token.tokenId
+            newTrait: token.tokenId,
+            hasSelection: this.selectedERC1155.length > 0
         });
         
         return true;

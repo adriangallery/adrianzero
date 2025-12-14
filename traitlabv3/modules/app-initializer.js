@@ -53,7 +53,21 @@ class AppInitializer {
             }
         }
         
-        // Data Manager - después de zero y wallet
+        // Supabase Cache - antes de DataManager para que pueda usarlo
+        try {
+            if (window.SupabaseCache) {
+                this.app.modules.supabaseCache = new window.SupabaseCache();
+                await this.app.modules.supabaseCache.init();
+                console.log('✅ SupabaseCache inicializado');
+            } else {
+                console.warn('⚠️ SupabaseCache no disponible (módulo no cargado)');
+            }
+        } catch (error) {
+            console.warn('⚠️ Error inicializando SupabaseCache (continuando sin cache):', error);
+            // Continuar sin cache, no es crítico
+        }
+        
+        // Data Manager - después de zero y wallet (y supabaseCache si está disponible)
         try {
             this.app.modules.dataManager = new window.TraitLABDataManager();
             console.log('✅ DataManager creado (se inicializará después)');

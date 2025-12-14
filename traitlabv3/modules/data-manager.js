@@ -148,7 +148,7 @@ class TraitLABDataManager {
     }
 
     /**
-     * Cargar tokens AdrianZERO básicos (sin mejoras en background)
+     * Cargar tokens AdrianZERO básicos (con cache de Supabase)
      */
     async loadAdrianZeroTokensBasic() {
         if (this.cache.loading.adrianZero || this.cache.ready.adrianZero) return;
@@ -180,10 +180,56 @@ class TraitLABDataManager {
                 return;
             }
             
+            let tokens = null;
+            
+            // 🚨 NUEVO: Intentar cargar desde Supabase cache primero
+            if (window.app?.modules?.supabaseCache && window.app.modules.supabaseCache.initialized) {
+                try {
+                    const cachedData = await window.app.modules.supabaseCache.getWalletData(userAddress);
+                    if (cachedData && 
+                        cachedData.adrianzero_tokens && 
+                        cachedData.adrianzero_tokens.length > 0 &&
+                        window.app.modules.supabaseCache.isDataRecent(cachedData.last_updated)) {
+                        console.log('✅ Tokens AdrianZERO cargados desde cache Supabase:', cachedData.adrianzero_tokens.length);
+                        tokens = cachedData.adrianzero_tokens;
+                        this.cache.adrianZero = tokens;
+                        this.cache.loading.adrianZero = false;
+                        this.cache.ready.adrianZero = true;
+                        
+                        // Mostrar tokens inmediatamente
+                        if (window.app?.modules?.ui && tokens.length > 0) {
+                            if (!window.app.currentFilter) {
+                                window.app.currentFilter = 'adrianzero';
+                            }
+                            window.app.modules.ui.displayTokens(tokens, { 
+                                filter: 'adrianzero',
+                                hasLoadingWheels: true 
+                            });
+                        }
+                        
+                        // Actualizar en background desde blockchain
+                        this.updateAdrianZeroFromBlockchainInBackground(userAddress);
+                        
+                        this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
+                        return;
+                    }
+                } catch (cacheError) {
+                    console.warn('⚠️ Error al cargar desde cache, cargando desde blockchain:', cacheError);
+                }
+            }
+            
+            // Cargar desde blockchain si no hay cache o está desactualizado
             const contractAddress = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
-            const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
+            tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
             this.cache.adrianZero = tokens;
-            console.log('📊 AdrianZERO tokens básicos cargados:', tokens.length);
+            console.log('📊 AdrianZERO tokens básicos cargados desde blockchain:', tokens.length);
+            
+            // Actualizar cache en background
+            if (window.app?.modules?.supabaseCache && window.app.modules.supabaseCache.initialized) {
+                window.app.modules.supabaseCache.updateInBackground(userAddress, {
+                    adrianzero_tokens: tokens
+                });
+            }
             
             this.cache.loading.adrianZero = false;
             this.cache.ready.adrianZero = true;
@@ -214,6 +260,40 @@ class TraitLABDataManager {
             this.cache.loading.adrianZero = false;
             this.cache.ready.adrianZero = false; // Cambiar a false para permitir reintento
         }
+    }
+
+    /**
+     * Actualizar tokens AdrianZERO desde blockchain en background
+     */
+    async updateAdrianZeroFromBlockchainInBackground(userAddress) {
+        // Ejecutar en background sin bloquear
+        setTimeout(async () => {
+            try {
+                if (!window.app?.modules?.zero || !userAddress) {
+                    return;
+                }
+                
+                const contractAddress = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+                const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
+                
+                // Actualizar cache local
+                this.cache.adrianZero = tokens;
+                
+                // Actualizar Supabase
+                if (window.app?.modules?.supabaseCache && window.app.modules.supabaseCache.initialized) {
+                    await window.app.modules.supabaseCache.updateWalletData(userAddress, {
+                        adrianzero_tokens: tokens
+                    });
+                    
+                    // Sincronizar mappings
+                    await window.app.modules.supabaseCache.syncWalletTokens(userAddress, tokens, 'adrianzero');
+                }
+                
+                console.log('✅ Tokens AdrianZERO actualizados en background desde blockchain');
+            } catch (error) {
+                console.error('❌ Error actualizando tokens en background:', error);
+            }
+        }, 1000); // Esperar 1 segundo antes de actualizar
     }
 
     /**
@@ -251,7 +331,6 @@ class TraitLABDataManager {
                     const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
                     this.cache.adrianZero = tokens;
                     console.log('📊 AdrianZERO tokens cargados:', tokens.length);
-                    console.log('🔍 DEBUG: tokens type:', typeof tokens, 'isArray:', Array.isArray(tokens));
                     
                     // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con loading wheels
                     if (window.app?.modules?.ui) {
@@ -262,14 +341,12 @@ class TraitLABDataManager {
                     }
                     
                     // 🔄 MEJORAR nombres personalizados EN BACKGROUND (no bloquea)
-                    console.log('🔍 DEBUG: Iniciando mejora de nombres en background...');
                     this.improveTokenNamesInBackground(tokens);
                     
                     // Marcar como listo para continuar con AdrianLAB
                     this.cache.loading.adrianZero = false;
                     this.cache.ready.adrianZero = true;
                     this.emit('adrianZeroReady', { tokens: this.cache.adrianZero });
-                    console.log('🔍 DEBUG: AdrianZERO marcado como listo');
                 }
             }
         } catch (error) {
@@ -488,20 +565,15 @@ class TraitLABDataManager {
             
             // Actualizar el estado de la aplicación
             if (window.app.onTokensLoaded) {
-                console.log('🔍 DEBUG: Llamando a onTokensLoaded...');
                 window.app.onTokensLoaded({ tokens, filter });
             }
             
             // Ocultar loading si está visible
             if (window.app.hideLoading) {
-                console.log('🔍 DEBUG: Llamando a hideLoading...');
                 window.app.hideLoading();
             }
         } else {
             console.warn('⚠️ UI module no disponible para mostrar tokens');
-            console.log('🔍 DEBUG: window.app:', !!window.app);
-            console.log('🔍 DEBUG: window.app.modules:', !!window.app?.modules);
-            console.log('🔍 DEBUG: window.app.modules.ui:', !!window.app?.modules?.ui);
         }
     }
 

@@ -212,7 +212,7 @@ class StickyPopupManager {
                 // 🚨 CRÍTICO: Actualizar selectedERC1155 desde traits module ANTES de updateUI
                 if (window.app?.modules?.traits) {
                     const selectedTraits = window.app.modules.traits.getSelectedTraits();
-                    this.selectedERC1155 = selectedTraits;
+                    this.selectedERC1155 = selectedTraits || [];
                     console.log('🔄 selectedERC1155 actualizado desde traits module:', {
                         count: this.selectedERC1155.length,
                         ids: this.selectedERC1155.map(t => t.tokenId)
@@ -220,7 +220,16 @@ class StickyPopupManager {
                 } else if (window.app?.modules?.tokenSelection) {
                     this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || [];
                 }
-                this.updateUI();
+                
+                // Actualizar estado completo y forzar UI update
+                this.updateSelectionState({
+                    selectedERC721: this.selectedERC721,
+                    selectedERC1155: this.selectedERC1155,
+                    selectedFloppy: this.selectedFloppy,
+                    selectedSerum: this.selectedSerum,
+                    currentFilter: this.currentFilter,
+                    currentTab: this.currentTab
+                });
             });
             
             // Listener para cuando se actualiza la selección de traits
@@ -229,11 +238,14 @@ class StickyPopupManager {
                 // 🚨 CRÍTICO: Actualizar selectedERC1155 desde traits module ANTES de updateUI
                 if (window.app?.modules?.traits) {
                     const selectedTraits = window.app.modules.traits.getSelectedTraits();
-                    this.selectedERC1155 = selectedTraits;
+                    this.selectedERC1155 = selectedTraits || [];
                     console.log('🔄 selectedERC1155 actualizado desde traits module:', {
                         count: this.selectedERC1155.length,
                         ids: this.selectedERC1155.map(t => t.tokenId)
                     });
+                } else if (data.selectedTraits && Array.isArray(data.selectedTraits)) {
+                    // Fallback: usar datos del evento
+                    this.selectedERC1155 = data.selectedTraits;
                 } else if (window.app?.modules?.tokenSelection) {
                     this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || [];
                 }
@@ -243,8 +255,15 @@ class StickyPopupManager {
                     console.log(`🔄 Trait ${data.replacedTrait} reemplazado por ${data.newTrait}, regenerando imagen`);
                 }
                 
-                // Actualizar UI (esto llamará a generateCombinedImage si hay traits seleccionados)
-                this.updateUI();
+                // Actualizar estado completo y forzar UI update
+                this.updateSelectionState({
+                    selectedERC721: this.selectedERC721,
+                    selectedERC1155: this.selectedERC1155,
+                    selectedFloppy: this.selectedFloppy,
+                    selectedSerum: this.selectedSerum,
+                    currentFilter: this.currentFilter,
+                    currentTab: this.currentTab
+                });
             });
             
             // Listener para cuando se deselecciona un trait
@@ -253,7 +272,7 @@ class StickyPopupManager {
                 // 🚨 CRÍTICO: Actualizar selectedERC1155 desde traits module ANTES de updateUI
                 if (window.app?.modules?.traits) {
                     const selectedTraits = window.app.modules.traits.getSelectedTraits();
-                    this.selectedERC1155 = selectedTraits;
+                    this.selectedERC1155 = selectedTraits || [];
                     console.log('🔄 selectedERC1155 actualizado desde traits module:', {
                         count: this.selectedERC1155.length,
                         ids: this.selectedERC1155.map(t => t.tokenId)
@@ -261,7 +280,16 @@ class StickyPopupManager {
                 } else if (window.app?.modules?.tokenSelection) {
                     this.selectedERC1155 = window.app.modules.tokenSelection.selectedERC1155 || [];
                 }
-                this.updateUI();
+                
+                // Actualizar estado completo y forzar UI update
+                this.updateSelectionState({
+                    selectedERC721: this.selectedERC721,
+                    selectedERC1155: this.selectedERC1155,
+                    selectedFloppy: this.selectedFloppy,
+                    selectedSerum: this.selectedSerum,
+                    currentFilter: this.currentFilter,
+                    currentTab: this.currentTab
+                });
             });
             
             this._traitsListenersConfigured = true;
