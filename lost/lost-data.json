@@ -1972,6 +1972,83 @@
           "category": "defi"
         }
       ]
+    },
+    {
+      "weekNumber": 41,
+      "date": "2024-12-14",
+      "title": "Sunday Recap – 12/14",
+      "events": [
+        {
+          "emoji": "🎄",
+          "title": "XMAS Floppy Drop",
+          "description": "XMAS '25 Floppy live and **free til Christmas** — 38 awesome new traits by Tiger, 4 random per floppy. Extra copies in the shop for the greedy ones.",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "traits": 38,
+            "traitsPerFloppy": 4
+          }
+        },
+        {
+          "emoji": "👸🍌",
+          "title": "AdrianGF BANANA",
+          "description": "Filthy cooked the **first AdrianGF Banana** and it legit looks like a Disney princess LOL. NanoBanana going feral already.",
+          "status": "completed",
+          "category": "ai"
+        },
+        {
+          "emoji": "🧪🟦",
+          "title": "Uniswap V4 Hook for $ADRIAN Tax",
+          "description": "Built our own **Uni v4 hook** to route **$ADRIAN tax** straight from the pool into **FloorENGINE**. Much cleaner than taxing every tx in the token contract. Spent **TONS of hours**, real advanced dev shit — took almost a year to reach this level of performance. LFG.",
+          "status": "completed",
+          "category": "defi"
+        },
+        {
+          "emoji": "📊📡",
+          "title": "Activity + Stats UI",
+          "description": "Tweaked the **Activity + stats UI** a bit, more polish and features coming next week as data keeps filling in.",
+          "status": "in-progress",
+          "category": "ui"
+        },
+        {
+          "emoji": "🧠🧹",
+          "title": "FloorENGINE Sweeps",
+          "description": "Thanks to the new v4 hook, Engine keeps eating: we're now at **34 AdrianPunks bought** in total by the machine.",
+          "status": "completed",
+          "category": "marketplace",
+          "stats": {
+            "punksBought": 34
+          }
+        },
+        {
+          "emoji": "🖥️⚙️",
+          "title": "FloorENGINE UI Revamp",
+          "description": "New UI pass with **collapsible tabs, GeckoTerminal $ADRIAN chart, swap module** and other QoL tweaks. Cleaner, smoother, more usable.",
+          "status": "completed",
+          "category": "ui"
+        },
+        {
+          "emoji": "🖼️✨",
+          "title": "AdrianSHOWCASE",
+          "description": "Smol visual project requested by the artist to **brag about $ADRIAN this XMAS**. Needs a bit more tweaking — if all fits, we release it next week.",
+          "status": "in-progress",
+          "category": "website"
+        },
+        {
+          "emoji": "🥷🧬",
+          "title": "SamuraiZERO Stealth Launch",
+          "description": "samuraiZERO dropped quietly — curated Tiger-built ZEROS with **two new metadata fields** you should pay attention to. These will matter.",
+          "status": "completed",
+          "category": "collection"
+        },
+        {
+          "emoji": "🧰🔧",
+          "title": "TraitLAB v3 in the Works",
+          "description": "TraitLAB is our most used tool, and Wassa's hoarding issues gave me the excuse to go full internal revamp instead of a tiny fix 😂. Started heavy work on **TraitLAB v3** this week, and most of next week's dev time will go into making it faster, cleaner and harder to break.",
+          "status": "in-progress",
+          "category": "dapp"
+        }
+      ]
     }
   ]
 }
