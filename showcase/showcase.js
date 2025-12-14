@@ -306,7 +306,8 @@ class Showcase {
             {
                 // Precarga asimétrica: más hacia abajo (pantallas panorámicas)
                 // Formato: top right bottom left
-                rootMargin: '1000px 1000px 2500px 1000px', // Más precarga hacia abajo
+                // Aumentado significativamente para cargar más líneas anticipadamente
+                rootMargin: '1500px 1500px 5000px 1500px', // Mucha más precarga hacia abajo (5 viewports)
                 threshold: 0.01
             }
         );
@@ -325,7 +326,8 @@ class Showcase {
             {
                 // Precarga asimétrica para scroll: más hacia abajo
                 // Formato: top right bottom left
-                rootMargin: '1500px 1500px 3000px 1500px', // Más precarga hacia abajo
+                // Aumentado significativamente para cargar más líneas anticipadamente
+                rootMargin: '2000px 2000px 6000px 2000px', // Mucha más precarga hacia abajo (6 viewports)
                 threshold: 0.1
             }
         );
@@ -877,8 +879,21 @@ class Showcase {
      * Render initial grid items - render more items initially for better preloading
      */
     renderInitialGrid() {
-        // Render more items initially to preload images in all directions
-        const initialItemsCount = Math.min(this.config.itemsPerPage * 3, this.images.length); // 3x más items iniciales
+        // Render many more items initially to preload images in all directions
+        // Calcular items basado en viewport para asegurar múltiples líneas precargadas
+        const viewportHeight = this.gridWrapper.clientHeight;
+        const viewportWidth = this.gridWrapper.clientWidth;
+        // Estimar tamaño de item (incluyendo gap) - asumiendo ~200px por item + gap
+        const estimatedItemSize = 220; // 200px item + 20px gap aproximado
+        const itemsPerRow = Math.ceil(viewportWidth / estimatedItemSize);
+        const rowsVisible = Math.ceil(viewportHeight / estimatedItemSize);
+        // Renderizar suficientes items para cubrir viewport + 8-10 filas adicionales hacia abajo
+        const additionalRows = 10;
+        const initialItemsCount = Math.min(
+            itemsPerRow * (rowsVisible + additionalRows),
+            this.images.length
+        );
+        
         const initialItems = this.images.slice(0, initialItemsCount);
         initialItems.forEach((image, i) => {
             const index = this.state.totalItemsRendered;
@@ -908,11 +923,11 @@ class Showcase {
         const viewportCenterY = viewportHeight / 2;
         
         // Preload ranges: close (0-500px), medium (500-1500px), far (1500-2000px)
-        // Rango vertical aumentado para pantallas panorámicas
+        // Rango vertical aumentado significativamente para cargar más líneas anticipadamente
         const closeRange = 500;
         const mediumRange = 1500;
         const farRangeHorizontal = 2000; // Lados
-        const farRangeVertical = 3000; // Hacia abajo (más para pantallas panorámicas)
+        const farRangeVertical = 6000; // Hacia abajo (mucho más para pantallas panorámicas - ~6 viewports)
         
         // Categorize items by distance to viewport
         const itemsToLoad = [];
