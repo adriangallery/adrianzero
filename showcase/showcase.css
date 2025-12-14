@@ -388,6 +388,8 @@ body {
     image-rendering: crisp-edges;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Quitar cursor de mano del model-viewer */
+    cursor: default !important;
 }
 
 /* Ensure transparent background for 3D model wrapper */
@@ -747,7 +749,7 @@ body {
     right: 0;
     bottom: 0;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     padding: 0;
     transform-style: preserve-3d;
@@ -819,7 +821,7 @@ body {
 
 @keyframes scrollUp3D {
     0% {
-        transform: translateY(0) rotateX(30deg) scaleY(0.87);
+        transform: translateY(100vh) rotateX(30deg) scaleY(0.87);
         opacity: 1;
     }
     100% {
