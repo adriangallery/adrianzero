@@ -303,7 +303,7 @@ class Showcase {
                 });
             },
             {
-                rootMargin: '100px', // Start loading 100px before visible for smoother experience
+                rootMargin: '500px', // Start loading 500px before visible for smoother experience
                 threshold: 0.01
             }
         );
@@ -320,7 +320,7 @@ class Showcase {
                 });
             },
             {
-                rootMargin: '200px',
+                rootMargin: '800px',
                 threshold: 0.1
             }
         );
@@ -474,48 +474,58 @@ class Showcase {
         // Set text content
         if (this.idleStateText && this.idleStateConfig.text) {
             this.idleStateText.textContent = this.idleStateConfig.text.content;
-            // Force font family to ensure it loads
-            this.idleStateText.style.fontFamily = "'AdrianZero', 'Arial', sans-serif";
+            // Use font family from config (monospace for old computer style)
+            if (this.idleStateConfig.text.fontFamily) {
+                this.idleStateText.style.fontFamily = this.idleStateConfig.text.fontFamily;
+            }
             // Font size is now set via CSS (clamp), but we can override if needed
             if (this.idleStateConfig.text.fontSize) {
                 this.idleStateText.style.fontSize = this.idleStateConfig.text.fontSize;
             }
-            // Color is now set to Star Wars yellow in CSS
-            this.idleStateText.style.color = '#FFE81F';
-            this.idleStateText.style.opacity = '1';
-            
-            // Verificar carga de fuente y forzar carga
-            if (document.fonts) {
-                // Intentar cargar la fuente explícitamente
-                const font = new FontFace('AdrianZero', 'url(../components/fonts/ADRIAN_ZERO.otf)');
-                font.load().then((loadedFont) => {
-                    document.fonts.add(loadedFont);
-                    console.log('✅ Font AdrianZero loaded successfully');
-                    // Aplicar fuente después de cargar
-                    this.idleStateText.style.fontFamily = "'AdrianZero', 'Arial Black', 'Arial', sans-serif";
-                }).catch((error) => {
-                    console.warn('⚠️ Error loading AdrianZero font:', error);
-                    console.warn('⚠️ Using fallback font');
-                });
-                
-                // Verificar carga después de un momento
-                document.fonts.ready.then(() => {
-                    const fontLoaded = document.fonts.check('1em AdrianZero');
-                    console.log('🔤 Font AdrianZero check:', fontLoaded);
-                    if (!fontLoaded) {
-                        console.warn('⚠️ Font AdrianZero may not be loaded, using fallback');
-                    }
-                });
+            // Use color from config
+            if (this.idleStateConfig.text.color) {
+                this.idleStateText.style.color = this.idleStateConfig.text.color;
             }
+            this.idleStateText.style.opacity = '1';
             
             console.log('✅ Idle state text configured:', {
                 length: this.idleStateConfig.text.content.length,
                 fontSize: this.idleStateConfig.text.fontSize || 'CSS clamp',
-                fontFamily: 'AdrianZero',
-                color: '#FFE81F (Star Wars yellow)'
+                fontFamily: this.idleStateConfig.text.fontFamily || 'default',
+                color: this.idleStateConfig.text.color || '#ffffff'
             });
         } else {
             console.warn('⚠️ Idle state text element not found');
+        }
+        
+        // Set title content if exists
+        const idleStateTitle = document.getElementById('idleStateTitle');
+        if (idleStateTitle && this.idleStateConfig.title) {
+            if (this.idleStateConfig.title.content) {
+                idleStateTitle.textContent = this.idleStateConfig.title.content;
+            }
+            if (this.idleStateConfig.title.fontFamily) {
+                idleStateTitle.style.fontFamily = this.idleStateConfig.title.fontFamily;
+            }
+            if (this.idleStateConfig.title.fontSize) {
+                idleStateTitle.style.fontSize = this.idleStateConfig.title.fontSize;
+            }
+            if (this.idleStateConfig.title.color) {
+                idleStateTitle.style.color = this.idleStateConfig.title.color;
+            }
+            
+            // Load custom font for title if needed
+            if (this.idleStateConfig.title.fontFamily && this.idleStateConfig.title.fontFamily.includes('AdrianZero')) {
+                if (document.fonts) {
+                    const font = new FontFace('AdrianZero', 'url(../components/fonts/ADRIAN_ZERO.otf)');
+                    font.load().then((loadedFont) => {
+                        document.fonts.add(loadedFont);
+                        console.log('✅ Font AdrianZero loaded successfully for title');
+                    }).catch((error) => {
+                        console.warn('⚠️ Error loading AdrianZero font:', error);
+                    });
+                }
+            }
         }
 
         // Set overlay background
@@ -1183,12 +1193,7 @@ class Showcase {
             image-rendering: crisp-edges;
         `;
 
-        // Use CSS animation on the model-viewer itself for smooth continuous swing
-        // This avoids conflicts with auto-rotate
-        const swingDelay = (index % 8) * 0.1;
-        const swingDuration = 4; // Fixed duration for consistency
-        modelViewer.style.animation = `swing-3d-smooth ${swingDuration}s ease-in-out infinite`;
-        modelViewer.style.animationDelay = `${swingDelay}s`;
+        // No swing animation - removed as per user request
         modelViewer.style.transformOrigin = 'center center';
 
         modelWrapper.appendChild(modelViewer);
@@ -1467,7 +1472,6 @@ class Showcase {
                 background: transparent;
                 image-rendering: -webkit-optimize-contrast;
                 image-rendering: crisp-edges;
-                animation: swing-3d-smooth 4s ease-in-out infinite;
                 transform-origin: center center;
             `;
 

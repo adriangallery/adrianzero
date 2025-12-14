@@ -285,6 +285,11 @@ body {
 .grid-item-gif:hover,
 .grid-item-3d:hover {
     border: none !important;
+    border-radius: 0 !important;
+}
+
+.grid-item-gif:hover .image-container {
+    border-radius: 0 !important;
 }
 
 /* Compensate container rotation and scale to keep image flat and normal size */
@@ -348,11 +353,13 @@ body {
 /* Transparent background for floppy GIFs */
 .grid-item-gif .image-container {
     background: transparent;
+    border-radius: 0 !important;
 }
 
 .grid-item-gif {
     background: transparent;
     border: none !important;
+    border-radius: 0 !important;
 }
 
 /* 3D Model Viewer Styles */
@@ -756,21 +763,19 @@ body {
     width: 70%;
     max-width: 70%;
     box-sizing: border-box;
-    color: #FFE81F !important; /* Star Wars yellow - force */
-    font-family: 'AdrianZero', 'Arial Black', 'Arial', sans-serif !important;
-    font-size: clamp(2.5rem, 5vw, 4.5rem) !important;
+    color: #ffffff;
+    font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+    font-size: clamp(2rem, 4vw, 3.5rem) !important;
     line-height: 1.6;
     text-align: justify;
     font-weight: normal !important;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
     text-shadow: 
-        0 0 15px rgba(255, 232, 31, 0.8),
-        0 0 30px rgba(255, 232, 31, 0.6),
-        0 0 45px rgba(255, 232, 31, 0.4),
-        0 0 60px rgba(255, 232, 31, 0.2);
+        0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 20px rgba(255, 255, 255, 0.3);
     animation: scrollUp3D 40s linear infinite;
     will-change: transform;
     transform-style: preserve-3d;
@@ -779,6 +784,28 @@ body {
     opacity: 1 !important;
     /* Forzar renderizado 3D */
     backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.idle-state-title {
+    position: relative;
+    width: 70%;
+    max-width: 70%;
+    box-sizing: border-box;
+    color: #FFE81F;
+    font-family: 'AdrianZero', 'Arial Black', 'Arial', sans-serif !important;
+    font-size: clamp(3rem, 6vw, 5rem) !important;
+    line-height: 1.4;
+    text-align: center;
+    font-weight: normal !important;
+    letter-spacing: 4px;
+    text-shadow: 
+        0 0 15px rgba(255, 232, 31, 0.8),
+        0 0 30px rgba(255, 232, 31, 0.6),
+        0 0 45px rgba(255, 232, 31, 0.4),
+        0 0 60px rgba(255, 232, 31, 0.2);
+    margin-bottom: 2rem;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }

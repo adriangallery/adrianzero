@@ -9,7 +9,14 @@
       "scrollSpeed": 50,
       "fontSize": "clamp(2rem, 4vw, 3.5rem)",
       "color": "#ffffff",
-      "opacity": 0.9
+      "opacity": 0.9,
+      "fontFamily": "'Courier New', 'Monaco', 'Consolas', monospace"
+    },
+    "title": {
+      "content": "",
+      "fontSize": "clamp(3rem, 6vw, 5rem)",
+      "color": "#FFE81F",
+      "fontFamily": "'AdrianZero', 'Arial Black', 'Arial', sans-serif"
     },
     "overlay": {
       "backgroundColor": "rgba(0, 0, 0, 0.85)",
