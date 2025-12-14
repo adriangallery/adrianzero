@@ -747,9 +747,9 @@ body {
     right: 0;
     bottom: 0;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    padding-top: 100vh;
+    padding: 0;
     transform-style: preserve-3d;
     /* Aplicar perspectiva directamente al wrapper */
     transform: perspective(1200px);
@@ -763,21 +763,24 @@ body {
     width: 70%;
     max-width: 70%;
     box-sizing: border-box;
-    color: #ffffff;
-    font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+    color: #FFD700;
+    font-family: 'Roboto', sans-serif;
     font-size: clamp(2rem, 4vw, 3.5rem) !important;
     line-height: 1.6;
     text-align: justify;
-    font-weight: normal !important;
+    font-weight: 400 !important;
     letter-spacing: 2px;
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
     text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.5),
-        0 0 20px rgba(255, 255, 255, 0.3);
-    animation: scrollUp3D 40s linear infinite;
-    will-change: transform;
+        0 0 10px rgba(255, 215, 0, 0.6),
+        0 0 20px rgba(255, 215, 0, 0.4),
+        0 0 30px rgba(255, 215, 0, 0.3),
+        0 0 40px rgba(255, 215, 0, 0.2);
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+    animation: scrollUp3D 40s linear infinite, softGlow 3s ease-in-out infinite alternate;
+    will-change: transform, filter, text-shadow;
     transform-style: preserve-3d;
     transform-origin: center center;
     /* Asegurar que el texto sea visible desde el inicio */
@@ -822,6 +825,26 @@ body {
     100% {
         transform: translateY(calc(-100vh - 100%)) rotateX(30deg) scaleY(0.87);
         opacity: 1;
+    }
+}
+
+/* Glow suave animado para el texto idle */
+@keyframes softGlow {
+    0% {
+        filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+        text-shadow: 
+            0 0 10px rgba(255, 215, 0, 0.6),
+            0 0 20px rgba(255, 215, 0, 0.4),
+            0 0 30px rgba(255, 215, 0, 0.3),
+            0 0 40px rgba(255, 215, 0, 0.2);
+    }
+    100% {
+        filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.7));
+        text-shadow: 
+            0 0 15px rgba(255, 215, 0, 0.8),
+            0 0 25px rgba(255, 215, 0, 0.6),
+            0 0 35px rgba(255, 215, 0, 0.4),
+            0 0 50px rgba(255, 215, 0, 0.3);
     }
 }
 
