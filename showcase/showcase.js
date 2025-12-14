@@ -952,14 +952,24 @@ class Showcase {
             const itemCenterY = rect.top + rect.height / 2;
             const distanceX = Math.abs(itemCenterX - viewportCenterX);
             const distanceY = Math.abs(itemCenterY - viewportCenterY);
-            const distance = Math.max(distanceX, distanceY);
             
-            // Determine priority
+            // Prioritize vertical distance (hacia abajo) over horizontal
+            // Use weighted distance: vertical distance counts more
+            const distance = Math.max(distanceX * 0.7, distanceY * 1.3);
+            
+            // Determine priority - prioritize items below viewport
             let priority = 3; // far (lowest priority)
+            const isBelowViewport = rect.top > viewportHeight;
+            
             if (distance <= closeRange) {
                 priority = 1; // close (highest priority)
             } else if (distance <= mediumRange) {
                 priority = 2; // medium
+            }
+            
+            // Boost priority for items below viewport (most common scroll direction)
+            if (isBelowViewport && priority > 1) {
+                priority = Math.max(1, priority - 1);
             }
             
             itemsToLoad.push({ item, distance, priority });
@@ -985,11 +995,21 @@ class Showcase {
     createGridItem(image, index) {
         const item = this.createGridItemElement(image, index);
         this.gridElement.appendChild(item);
-        // Only observe if preloadVisibleArea hasn't already loaded it
-        // This prevents conflicts between the two systems
         const img = item.querySelector('img');
         if (img && !img.dataset.loaded && img.dataset.loaded !== 'loading') {
-            this.imageObserver.observe(item);
+            // Check if item is below viewport (within preload range)
+            // If so, load immediately instead of waiting for observer
+            const rect = item.getBoundingClientRect();
+            const viewportHeight = this.gridWrapper.clientHeight;
+            const preloadRangeDown = 6000; // Same as farRangeVertical
+            
+            // If item is below viewport and within preload range, load immediately
+            if (rect.top > 0 && rect.top <= viewportHeight + preloadRangeDown) {
+                this.loadImage(item);
+            } else {
+                // Otherwise, observe it
+                this.imageObserver.observe(item);
+            }
         }
     }
 
