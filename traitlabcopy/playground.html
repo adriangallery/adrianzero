@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraitLAB Playground - AdrianLAB</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="modules/styles.css" rel="stylesheet">
+    
+    <style>
+        /* Playground specific styles */
+        .playground-container {
+            display: flex;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+        }
+
+        .traits-sidebar {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.8);
+            border-right: 2px solid #00ffff;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .adrian-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .adrian-option {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .adrian-option:hover {
+            transform: translateY(-2px);
+        }
+
+        .adrian-option.selected {
+            transform: scale(1.05);
+        }
+
+        .adrian-image {
+            width: 120px;
+            height: 120px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .adrian-option.selected .adrian-image {
+            border-color: #ff00ff;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+        }
+
+        .adrian-option:not(.selected) .adrian-image {
+            opacity: 0.7;
+            transform: scale(0.8);
+        }
+
+        .adrian-name {
+            color: #00ffff;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .adrian-option.selected .adrian-name {
+            color: #ff00ff;
+        }
+
+        .preview-image-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .preview-image {
+            max-width: 400px;
+            max-height: 400px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .preview-image.loading {
+            opacity: 0.7;
+            filter: blur(2px);
+        }
+
+        .selected-traits-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            min-height: 100px;
+        }
+
+        .trait-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            color: #00ffff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .trait-item {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .trait-item:hover {
+            background: rgba(0, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .trait-item.selected {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+        }
+
+        .trait-image {
+            width: 100%;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        .trait-image[src$=".svg"] {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .trait-image-gif {
+            background: rgba(255, 0, 255, 0.05);
+            border: 1px solid rgba(255, 0, 255, 0.2);
+        }
+
+        .trait-image-png {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+        }
+
+        .trait-image-svg {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .trait-name {
+            font-size: 0.7rem;
+            color: #ffffff;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .trait-id {
+            font-size: 0.6rem;
+            color: #888;
+        }
+
+        .selected-trait {
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid #ff00ff;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trait-actions {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .buy-trait {
+            background: #00ff00;
+            color: #000;
+            text-decoration: none;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .buy-trait:hover {
+            background: #00cc00;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 255, 0, 0.3);
+        }
+
+        .remove-trait {
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .generate-btn {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            border: none;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .generate-btn:hover {
+            background: linear-gradient(45deg, #00cc00, #009900);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .base-image-info {
+            text-align: center;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ffff;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Menu styles - AdrianLAB Theme */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        #menu-container .navbar {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ffff;
+            font-family: 'VT323', monospace;
+        }
+
+        #menu-container .navbar-nav .nav-link {
+            color: #cccccc !important;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #00ffff !important;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        #menu-container .token-symbol {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.4rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        #menu-container .navbar-toggler {
+            border-color: #00ffff;
+        }
+
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3csvg%3e");
+        }
+
+        .playground-container {
+            padding-top: 60px; /* Space for fixed menu */
+        }
+
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: #00ffff;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .mobile-toggle:hover {
+            background: #00cc00;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+
+            .playground-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .traits-sidebar {
+                width: 100%;
+                max-height: 50vh;
+                border-right: none;
+                border-bottom: 2px solid #00ffff;
+                padding: 15px;
+                transition: max-height 0.3s ease;
+            }
+
+            .traits-sidebar.hidden {
+                max-height: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+
+            .preview-area {
+                padding: 15px;
+                min-height: 50vh;
+            }
+
+            .preview-image {
+                max-width: 300px;
+                max-height: 300px;
+            }
+
+            .traits-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+                gap: 8px;
+            }
+
+            .trait-item {
+                padding: 6px;
+            }
+
+            .trait-image {
+                height: 50px;
+            }
+
+            .trait-name {
+                font-size: 0.6rem;
+            }
+
+            .trait-id {
+                font-size: 0.5rem;
+            }
+
+            .selected-traits-info {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+
+            .selected-trait {
+                padding: 6px;
+                margin: 3px 0;
+            }
+
+            .trait-actions {
+                gap: 3px;
+            }
+
+            .buy-trait, .remove-trait {
+                padding: 1px 4px;
+                font-size: 0.6rem;
+            }
+
+            .category-title {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .base-image-info h3 {
+                font-size: 1.2rem;
+            }
+
+            .base-image-info p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .traits-sidebar {
+                padding: 10px;
+                max-height: 40vh;
+            }
+
+            .preview-area {
+                padding: 10px;
+                min-height: 60vh;
+            }
+
+            .preview-image {
+                max-width: 250px;
+                max-height: 250px;
+            }
+
+            .traits-grid {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+                gap: 6px;
+            }
+
+            .trait-item {
+                padding: 4px;
+            }
+
+            .trait-image {
+                height: 40px;
+            }
+
+            .trait-name {
+                font-size: 0.5rem;
+            }
+
+            .trait-id {
+                font-size: 0.4rem;
+            }
+
+            .selected-traits-info {
+                padding: 8px;
+            }
+
+            .selected-trait {
+                padding: 4px;
+                font-size: 0.8rem;
+            }
+
+            .buy-trait, .remove-trait {
+                padding: 1px 3px;
+                font-size: 0.5rem;
+            }
+
+            .search-box {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Include the menu -->
+    <div id="menu-container"></div>
+    <script>
+      // Load the menu
+      fetch('../components/menu.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('menu-container').innerHTML = html;
+          const script = document.createElement('script');
+          script.src = '../components/menu.js';
+          document.head.appendChild(script);
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    </script>
+
+    <div class="playground-container">
+        <!-- Mobile Toggle Button -->
+        <button class="mobile-toggle" id="mobileToggle">Traits</button>
+        
+        <!-- Traits Sidebar -->
+        <div class="traits-sidebar" id="traitsSidebar">
+            <h2 style="color: #00ffff; margin-bottom: 20px; text-align: center;">TraitLAB Playground</h2>
+            
+            <!-- Search Box -->
+            <input type="text" id="searchInput" class="search-box" placeholder="Search traits...">
+            
+            <!-- Selected Traits Info -->
+            <div class="selected-traits-info">
+                <h5 style="color: #00ffff; margin-bottom: 10px;">Selected Traits:</h5>
+                <div id="selectedTraitsList">
+                    <p style="color: #888; font-style: italic;">No traits selected</p>
+                </div>
+            </div>
+            
+            <!-- Generate Button (Hidden - Auto-update enabled) -->
+            <button id="generateBtn" class="generate-btn" disabled style="display: none;">
+                Generate Preview
+            </button>
+            
+            <!-- Traits by Category -->
+            <div id="traitsContainer">
+                <!-- Traits will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- Preview Area -->
+        <div class="preview-area">
+            <div class="base-image-info">
+                <h3 style="color: #00ffff; margin-bottom: 10px;">AdrianZERO Preview</h3>
+                <p>Select traits from the sidebar - preview updates automatically!</p>
+            </div>
+            
+            <!-- AdrianZERO Base Selector -->
+            <div class="adrian-selector">
+                <div class="adrian-option selected" data-adrian-id="208">
+                    <img src="https://adrianlab.vercel.app/api/render/208.png" alt="AdrianZERO" class="adrian-image">
+                    <div class="adrian-name">AdrianZERO</div>
+                </div>
+                <div class="adrian-option" data-adrian-id="146">
+                    <img src="https://adrianlab.vercel.app/api/render/146.png" alt="AdrianGF" class="adrian-image">
+                    <div class="adrian-name">AdrianGF</div>
+                </div>
+                <div class="adrian-option" data-adrian-id="365">
+                    <img src="https://adrianlab.vercel.app/api/render/365.png" alt="DarkAdrian" class="adrian-image">
+                    <div class="adrian-name">DarkAdrian</div>
+                </div>
+                <div class="adrian-option" data-adrian-id="328">
+                    <img src="https://adrianlab.vercel.app/api/render/328.png" alt="AdrianGOLD" class="adrian-image">
+                    <div class="adrian-name">AdrianGOLD</div>
+                </div>
+                <div class="adrian-option" data-adrian-id="393">
+                    <img src="https://adrianlab.vercel.app/api/render/393.png" alt="AlbinoZERO" class="adrian-image">
+                    <div class="adrian-name">AlbinoZERO</div>
+                </div>
+            </div>
+            
+            <div class="preview-image-container">
+                <img id="previewImage" class="preview-image" src="https://adrianlab.vercel.app/api/render/208.png" alt="AdrianZERO Preview">
+            </div>
+            
+            <div id="loadingIndicator" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p style="color: #00ffff; margin-top: 10px;">Updating preview...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- TraitLAB Modules -->
+    <script src="modules/config.js?v=3"></script>
+    <script src="modules/gallery-manager.js?v=9"></script>
+    
+    <script>
+        // Playground Trait Manager - Using Alchemy like gallery2.html
+        class PlaygroundTraitManager {
+            constructor() {
+                this.allTraits = [];
+                this.selectedTraits = [];
+                this.traitsByCategory = {};
+                this.baseTokenId = 208;
+                this.galleryManager = null;
+                this.isRendering = false;
+                this.isInitialized = false;
+                this.adrianOptions = [
+                    { id: 208, name: 'AdrianZERO' },
+                    { id: 146, name: 'AdrianGF' },
+                    { id: 365, name: 'DarkAdrian' },
+                    { id: 328, name: 'AdrianGOLD' },
+                    { id: 393, name: 'AlbinoZERO' }
+                ];
+                
+                // ========================================
+                // FILTROS DE CATEGORÍAS - CONFIGURACIÓN
+                // ========================================
+                // Añade aquí las categorías que NO quieres mostrar
+                this.hiddenCategories = [
+                    'FLOPPY DISCS',
+                    'Other', 
+                    'PAGERS'
+                ];
+                
+                // Añade aquí traits específicos que NO quieres mostrar (por tokenId)
+                this.hiddenTraits = [
+                    // Ejemplo: 15005, // ActionPACK ya eliminado
+                    // Añade más tokenIds aquí si necesitas ocultar traits específicos
+                ];
+                // ========================================
+            }
+
+            async init() {
+                if (this.isInitialized) return;
+                this.isInitialized = true;
+                await this.initializeLocal();
+                this.setupEventListeners();
+            }
+
+            async initializeLocal() {
+                try {
+                    await this.loadTraitsDatabase();
+                    this.renderTraits();
+                    
+                    // Set local images for all traits
+                    this.allTraits.forEach(trait => {
+                        const tokenId = trait.id || trait.tokenId;
+                        trait.image = `https://adrianzero.com/traitlab/assets/traits/${tokenId}.svg`;
+                        trait.localImage = true;
+                        trait.imageFormat = 'svg';
+                    });
+                    
+                    this.renderTraits();
+                    
+                } catch (error) {
+                    await this.loadTraitsDatabase();
+                    this.renderTraits();
+                }
+            }
+
+
+            async loadTraitsDatabase() {
+                try {
+                    let response;
+                    try {
+                        response = await fetch('./json/traits.json');
+                        if (!response.ok) throw new Error('Local file not found');
+                    } catch (localError) {
+                        response = await fetch('https://adrianlab.vercel.app/labmetadata/traits.json');
+                        if (!response.ok) throw new Error('Failed to load traits database');
+                    }
+                    
+                    const data = await response.json();
+                    this.allTraits = data.traits || [];
+                    this.groupTraitsByCategory();
+                    
+                } catch (error) {
+                    this.allTraits = [];
+                }
+            }
+
+            groupTraitsByCategory() {
+                this.traitsByCategory = {};
+                this.allTraits.forEach(trait => {
+                    const category = trait.category || 'Other';
+                    const tokenId = trait.id || trait.tokenId;
+                    
+                    // Aplicar filtros
+                    if (this.shouldHideTrait(trait, category, tokenId)) {
+                        return; // Saltar este trait
+                    }
+                    
+                    if (!this.traitsByCategory[category]) {
+                        this.traitsByCategory[category] = [];
+                    }
+                    this.traitsByCategory[category].push(trait);
+                });
+            }
+
+            shouldHideTrait(trait, category, tokenId) {
+                // Filtrar por categoría
+                if (this.hiddenCategories.includes(category)) {
+                    return true;
+                }
+                
+                // Filtrar por tokenId específico
+                if (this.hiddenTraits.includes(tokenId)) {
+                    return true;
+                }
+                
+                return false;
+            }
+
+            setupEventListeners() {
+                // Search input
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterTraits(e.target.value);
+                });
+
+                // Generate button
+                document.getElementById('generateBtn').addEventListener('click', () => {
+                    this.generatePreview();
+                });
+
+                // AdrianZERO base selector
+                document.querySelectorAll('.adrian-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        this.selectAdrianBase(parseInt(option.dataset.adrianId));
+                    });
+                });
+
+                // Mobile toggle button
+                const mobileToggle = document.getElementById('mobileToggle');
+                const traitsSidebar = document.getElementById('traitsSidebar');
+                
+                if (mobileToggle && traitsSidebar) {
+                    mobileToggle.addEventListener('click', () => {
+                        traitsSidebar.classList.toggle('hidden');
+                        mobileToggle.textContent = traitsSidebar.classList.contains('hidden') ? 'Traits' : 'Hide';
+                    });
+                }
+            }
+
+            selectAdrianBase(adrianId) {
+                // Update visual selection
+                document.querySelectorAll('.adrian-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                document.querySelector(`[data-adrian-id="${adrianId}"]`).classList.add('selected');
+                
+                // Update base token ID
+                this.baseTokenId = adrianId;
+                
+                // Update preview with current traits
+                this.updatePreviewImage();
+            }
+
+            filterTraits(searchTerm) {
+                const term = searchTerm.toLowerCase();
+                const traitItems = document.querySelectorAll('.trait-item');
+                
+                traitItems.forEach(item => {
+                    const traitName = item.querySelector('.trait-name').textContent.toLowerCase();
+                    const traitId = item.querySelector('.trait-id').textContent;
+                    
+                    if (traitName.includes(term) || traitId.includes(term)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
+            renderTraits() {
+                if (this.isRendering) return;
+                this.isRendering = true;
+                
+                try {
+                    const container = document.getElementById('traitsContainer');
+                    if (!container) return;
+                    
+                    container.innerHTML = '';
+
+                    Object.keys(this.traitsByCategory).sort().forEach(category => {
+                        const categoryDiv = document.createElement('div');
+                        categoryDiv.className = 'trait-category';
+                        
+                        const title = document.createElement('div');
+                        title.className = 'category-title';
+                        title.textContent = category;
+                        categoryDiv.appendChild(title);
+                        
+                        const grid = document.createElement('div');
+                        grid.className = 'traits-grid';
+                        
+                        this.traitsByCategory[category].forEach(trait => {
+                            const traitItem = this.createTraitItem(trait);
+                            grid.appendChild(traitItem);
+                        });
+                        
+                        categoryDiv.appendChild(grid);
+                        container.appendChild(categoryDiv);
+                    });
+                
+                } catch (error) {
+                    // Silent error handling
+                } finally {
+                    this.isRendering = false;
+                }
+            }
+
+            createTraitItem(trait) {
+                const item = document.createElement('div');
+                item.className = 'trait-item';
+                item.setAttribute('data-trait-id', trait.id || trait.tokenId);
+                
+                const imageUrl = trait.image || `https://adrianlab.vercel.app/labmetadata/traits/${trait.id || trait.tokenId}.png`;
+                const formatClass = trait.imageFormat ? `trait-image-${trait.imageFormat}` : '';
+                const formatBadge = trait.localImage ? 
+                    `<div class="local-badge" style="font-size: 0.6rem; color: #00ff00; margin-top: 2px;">${trait.floppy || 'N/A'}</div>` : '';
+                
+                item.innerHTML = `
+                    <img src="${imageUrl}" alt="${trait.name}" class="trait-image ${formatClass}" onerror="this.style.display='none'">
+                    <div class="trait-name">${trait.name}</div>
+                    <div class="trait-id">#${trait.id || trait.tokenId}</div>
+                    ${formatBadge}
+                `;
+                
+                item.addEventListener('click', () => {
+                    this.toggleTraitSelection(trait, item);
+                });
+                
+                return item;
+            }
+
+            toggleTraitSelection(trait, item) {
+                const isSelected = item.classList.contains('selected');
+                const traitId = trait.id || trait.tokenId;
+                
+                if (isSelected) {
+                    // Remove trait
+                    item.classList.remove('selected');
+                    this.selectedTraits = this.selectedTraits.filter(t => (t.id || t.tokenId) !== traitId);
+                } else {
+                    // Add trait
+                    item.classList.add('selected');
+                    this.selectedTraits.push(trait);
+                }
+                
+                this.updateSelectedTraitsList();
+                this.updateGenerateButton();
+                this.updatePreviewImage(); // Auto-update preview when traits change
+            }
+
+            updateSelectedTraitsList() {
+                const container = document.getElementById('selectedTraitsList');
+                
+                if (this.selectedTraits.length === 0) {
+                    container.innerHTML = '<p style="color: #888; font-style: italic;">No traits selected</p>';
+                    return;
+                }
+                
+                container.innerHTML = this.selectedTraits.map(trait => {
+                    const traitId = trait.id || trait.tokenId;
+                    const openseaUrl = `https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/${traitId}`;
+                    return `
+                        <div class="selected-trait">
+                            <span>${trait.name} (#${traitId})</span>
+                            <div class="trait-actions">
+                                <a href="${openseaUrl}" target="_blank" class="buy-trait" title="Comprar en OpenSea">🛒</a>
+                                <button class="remove-trait" onclick="playgroundManager.removeTrait(${traitId})">×</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            removeTrait(tokenId) {
+                this.selectedTraits = this.selectedTraits.filter(t => (t.id || t.tokenId) !== tokenId);
+                
+                // Update visual selection
+                const item = document.querySelector(`[data-trait-id="${tokenId}"]`);
+                if (item) {
+                    item.classList.remove('selected');
+                }
+                
+                this.updateSelectedTraitsList();
+                this.updateGenerateButton();
+                this.updatePreviewImage(); // Auto-update preview when traits change
+            }
+
+            updateGenerateButton() {
+                const btn = document.getElementById('generateBtn');
+                btn.disabled = this.selectedTraits.length === 0;
+            }
+
+            updatePreviewImage() {
+                const previewImage = document.getElementById('previewImage');
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                
+                if (this.selectedTraits.length === 0) {
+                    // Show base image when no traits selected
+                    previewImage.src = `https://adrianlab.vercel.app/api/render/${this.baseTokenId}.png`;
+                    loadingIndicator.style.display = 'none';
+                    return;
+                }
+                
+                // Show loading state
+                previewImage.classList.add('loading');
+                loadingIndicator.style.display = 'block';
+                
+                // Build query parameters - format: trait=475&trait=482
+                const queryParams = this.selectedTraits.map(trait => `trait=${trait.id || trait.tokenId}`);
+                const queryString = queryParams.join('&');
+                
+                // Generate image URL with timestamp to prevent caching
+                const timestamp = Date.now();
+                const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}&_t=${timestamp}`;
+                
+                console.log('🎮 Auto-updating preview URL:', imageUrl);
+                
+                // Preload image to ensure it loads properly
+                const img = new Image();
+                img.onload = () => {
+                    previewImage.src = imageUrl;
+                    previewImage.classList.remove('loading');
+                    loadingIndicator.style.display = 'none';
+                    console.log('✅ Preview auto-updated successfully');
+                };
+                
+                img.onerror = () => {
+                    console.error('❌ Error auto-updating preview image');
+                    previewImage.classList.remove('loading');
+                    loadingIndicator.style.display = 'none';
+                };
+                
+                img.src = imageUrl;
+            }
+
+            async generatePreview() {
+                if (this.selectedTraits.length === 0) return;
+                
+                console.log('🎮 Generating preview with traits:', this.selectedTraits.map(t => t.id || t.tokenId));
+                
+                const previewImage = document.getElementById('previewImage');
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                
+                // Show loading state
+                previewImage.classList.add('loading');
+                loadingIndicator.style.display = 'block';
+                
+                try {
+                    // Build query parameters - format: trait=475&trait=482
+                    const queryParams = this.selectedTraits.map(trait => `trait=${trait.id || trait.tokenId}`);
+                    const queryString = queryParams.join('&');
+                    
+                    // Generate image URL with timestamp to prevent caching
+                    const timestamp = Date.now();
+                    const imageUrl = `https://adrianlab.vercel.app/api/render/custom/${this.baseTokenId}?${queryString}&_t=${timestamp}`;
+                    
+                    console.log('🎮 Generated image URL:', imageUrl);
+                    console.log('🎮 Query string:', queryString);
+                    
+                    // Preload image
+                    const img = new Image();
+                    img.onload = () => {
+                        previewImage.src = imageUrl;
+                        previewImage.classList.remove('loading');
+                        loadingIndicator.style.display = 'none';
+                        console.log('✅ Preview generated successfully');
+                    };
+                    
+                    img.onerror = () => {
+                        console.error('❌ Error loading preview image');
+                        previewImage.classList.remove('loading');
+                        loadingIndicator.style.display = 'none';
+                        alert('Error generating preview. Please try again.');
+                    };
+                    
+                    img.src = imageUrl;
+                    
+                } catch (error) {
+                    console.error('❌ Error generating preview:', error);
+                    previewImage.classList.remove('loading');
+                    loadingIndicator.style.display = 'none';
+                    alert('Error generating preview. Please try again.');
+                }
+            }
+        }
+
+        // Contract configuration (same as gallery2.html)
+        window.TRAITS_CONTRACT = "0x90546848474FB3c9fda3fdAd887969bB244E7e58"; // AdrianLAB Core contract (ERC1155)
+        const BASE_CHAIN_ID = 8453;
+        const BASE_CHAIN_ID_HEX = "0x2105";
+
+        // Initialize playground when DOM is ready
+        let playgroundManager;
+        let isInitializing = false;
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (isInitializing) return;
+            isInitializing = true;
+            
+            try {
+                playgroundManager = new PlaygroundTraitManager();
+                await playgroundManager.init();
+            } catch (error) {
+                // Silent error handling
+            } finally {
+                isInitializing = false;
+            }
+        });
+
+        // Prevent page reload on errors
+        window.addEventListener('error', (event) => {
+            event.preventDefault();
+            return false;
+        });
+
+        // Prevent unhandled promise rejections from causing page reload
+        window.addEventListener('unhandledrejection', (event) => {
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>
