@@ -435,15 +435,15 @@
                         // Actualizar display si estamos en el tab correcto
                         if (this.currentFilter === 'floppy' && floppys.length > 0) {
                             console.log('✅ Mostrando floppy tokens inmediatamente');
-                            this.modules.ui.displayTokens(floppys, 'floppy');
+                            this.modules.ui.displayTokens(floppys);
                             this.hideLoading();
                         } else if (this.currentFilter === 'serum' && serums.length > 0) {
                             console.log('✅ Mostrando serum tokens inmediatamente');
-                            this.modules.ui.displayTokens(serums, 'serum');
+                            this.modules.ui.displayTokens(serums);
                             this.hideLoading();
                         } else if (this.currentFilter === 'traits' && traits.length > 0) {
-                            console.log('✅ Mostrando trait tokens inmediatamente');
-                            this.modules.ui.displayTokens(traits, 'traits');
+                            console.log('✅ Mostrando trait tokens inmediatamente:', traits.length, 'traits filtrados');
+                            this.modules.ui.displayTokens(traits);
                             this.hideLoading();
                         }
                     });
@@ -518,8 +518,8 @@
                         
                         if (filteredTokens.length > 0) {
                             // Traits ya están cargados, mostrar inmediatamente
-                            console.log('✅ Mostrando traits disponibles inmediatamente');
-                            this.modules.ui.displayTokens(filteredTokens, 'traits');
+                            console.log('✅ Mostrando traits disponibles inmediatamente:', filteredTokens.length, 'traits filtrados');
+                            this.modules.ui.displayTokens(filteredTokens);
                             this.hideLoading();
                         } else {
                             // Traits no están cargados, iniciar carga bajo demanda
@@ -531,8 +531,8 @@
                                 // Intentar obtener traits nuevamente después de iniciar la carga
                                 const traitsAfterLoad = this.modules.dataManager.getFilteredTokens('traits');
                                 if (traitsAfterLoad.length > 0) {
-                                    console.log('✅ Traits cargados, mostrando:', traitsAfterLoad.length);
-                                    this.modules.ui.displayTokens(traitsAfterLoad, 'traits');
+                                    console.log('✅ Traits cargados, mostrando:', traitsAfterLoad.length, 'traits filtrados');
+                                    this.modules.ui.displayTokens(traitsAfterLoad);
                                     this.hideLoading();
                                 } else {
                                     // Los traits aún se están cargando, mostrar loading
@@ -552,7 +552,7 @@
                         
                         if (filteredTokens.length > 0) {
                             console.log('✅ Mostrando tokens disponibles inmediatamente');
-                            this.modules.ui.displayTokens(filteredTokens, this.currentFilter || 'adrianzero');
+                            this.modules.ui.displayTokens(filteredTokens);
                             this.hideLoading();
                         } else {
                             // Mostrar loading mientras se cargan los tokens

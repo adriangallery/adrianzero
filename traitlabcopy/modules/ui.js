@@ -563,24 +563,50 @@ class UIManager {
         let traitsToDisplay = tokens;
         
         if (this.currentFilter === 'traits') {
-            // Guardar todos los traits para paginación
-            this.traitsPagination.allTraits = tokens;
-            this.traitsPagination.totalItems = tokens.length;
-            this.traitsPagination.totalPages = Math.ceil(tokens.length / this.traitsPagination.itemsPerPage);
-            
-            // Si los traits cambiaron (nueva carga), resetear a página 1
-            if (this.traitsPagination.allTraits.length !== tokens.length || 
-                (this.traitsPagination.allTraits.length > 0 && 
-                 this.traitsPagination.allTraits[0]?.tokenId !== tokens[0]?.tokenId)) {
-                this.traitsPagination.currentPage = 1;
+            // 🚨 IMPORTANTE: Asegurar que tokens es un array y contiene solo traits filtrados
+            if (!Array.isArray(tokens)) {
+                console.warn('⚠️ displayTokens: tokens no es un array para traits, usando array vacío');
+                tokens = [];
             }
             
-            // Mostrar solo los traits de la página actual
+            // 🚨 CRÍTICO: Siempre actualizar allTraits cuando se recibe un nuevo array de traits
+            // Esto asegura que la paginación siempre use los traits filtrados correctos
+            const previousCount = this.traitsPagination.allTraits.length;
+            const currentCount = tokens.length;
+            
+            // Verificar si los traits cambiaron comparando la cantidad y el primer tokenId
+            const traitsChanged = previousCount !== currentCount || 
+                (previousCount > 0 && currentCount > 0 &&
+                 this.traitsPagination.allTraits[0]?.tokenId !== tokens[0]?.tokenId) ||
+                (previousCount === 0 && currentCount > 0);
+            
+            if (traitsChanged || previousCount === 0) {
+                // Nueva carga o primera carga: actualizar allTraits y resetear a página 1
+                this.traitsPagination.allTraits = [...tokens]; // Crear copia del array
+                this.traitsPagination.currentPage = 1;
+                console.log(`🔄 Actualizando allTraits: ${previousCount} → ${currentCount} traits filtrados`);
+            }
+            
+            // 🚨 CRÍTICO: Calcular paginación basándose SOLO en los traits filtrados (allTraits)
+            // NO usar tokens.length directamente, siempre usar allTraits.length
+            this.traitsPagination.totalItems = this.traitsPagination.allTraits.length;
+            this.traitsPagination.totalPages = Math.ceil(this.traitsPagination.totalItems / this.traitsPagination.itemsPerPage);
+            
+            // Validar que totalItems sea correcto
+            if (this.traitsPagination.totalItems !== currentCount) {
+                console.warn(`⚠️ Discrepancia detectada: totalItems=${this.traitsPagination.totalItems}, tokens.length=${currentCount}`);
+                // Forzar actualización si hay discrepancia
+                this.traitsPagination.allTraits = [...tokens];
+                this.traitsPagination.totalItems = this.traitsPagination.allTraits.length;
+                this.traitsPagination.totalPages = Math.ceil(this.traitsPagination.totalItems / this.traitsPagination.itemsPerPage);
+            }
+            
+            // Mostrar solo los traits de la página actual desde allTraits
             const startIndex = (this.traitsPagination.currentPage - 1) * this.traitsPagination.itemsPerPage;
             const endIndex = startIndex + this.traitsPagination.itemsPerPage;
-            traitsToDisplay = tokens.slice(startIndex, endIndex);
+            traitsToDisplay = this.traitsPagination.allTraits.slice(startIndex, endIndex);
             
-            console.log(`📊 Paginación: Mostrando página ${this.traitsPagination.currentPage} de ${this.traitsPagination.totalPages} (${traitsToDisplay.length} traits de ${tokens.length} totales)`);
+            console.log(`📊 Paginación: Mostrando página ${this.traitsPagination.currentPage} de ${this.traitsPagination.totalPages} (${traitsToDisplay.length} traits de ${this.traitsPagination.totalItems} traits filtrados)`);
             
             // Renderizar selector de página
             this.renderPageSelector();
@@ -642,6 +668,14 @@ class UIManager {
         
         const { currentPage, totalPages, totalItems, itemsPerPage } = this.traitsPagination;
         
+        // 🚨 VALIDACIÓN: Asegurar que totalPages y totalItems sean correctos
+        if (totalItems !== this.traitsPagination.allTraits.length) {
+            console.warn(`⚠️ Discrepancia en renderPageSelector: totalItems=${totalItems}, allTraits.length=${this.traitsPagination.allTraits.length}`);
+            // Corregir si hay discrepancia
+            this.traitsPagination.totalItems = this.traitsPagination.allTraits.length;
+            this.traitsPagination.totalPages = Math.ceil(this.traitsPagination.totalItems / itemsPerPage);
+        }
+        
         // Solo mostrar selector si hay más de una página
         if (totalPages <= 1) {
             pageSelectorContainer.style.display = 'none';
@@ -654,6 +688,14 @@ class UIManager {
         const startItem = (currentPage - 1) * itemsPerPage + 1;
         const endItem = Math.min(currentPage * itemsPerPage, totalItems);
         
+        // 🚨 OPTIMIZACIÓN: Generar opciones del select de forma más eficiente
+        // Limitar a mostrar máximo 1000 páginas en el selector para evitar problemas de rendimiento
+        const maxPagesToShow = Math.min(totalPages, 1000);
+        const pageOptions = Array.from({ length: maxPagesToShow }, (_, i) => {
+            const page = i + 1;
+            return `<option value="${page}" ${page === currentPage ? 'selected' : ''}>Página ${page}</option>`;
+        }).join('');
+        
         pageSelectorContainer.innerHTML = `
             <div class="page-selector-info">
                 <span>Mostrando ${startItem}-${endItem} de ${totalItems} traits</span>
@@ -663,9 +705,7 @@ class UIManager {
                     ← Anterior
                 </button>
                 <select class="page-select" onchange="window.app.modules.ui.goToTraitsPage(parseInt(this.value))">
-                    ${Array.from({ length: totalPages }, (_, i) => i + 1).map(page => 
-                        `<option value="${page}" ${page === currentPage ? 'selected' : ''}>Página ${page}</option>`
-                    ).join('')}
+                    ${pageOptions}
                 </select>
                 <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="window.app.modules.ui.goToTraitsPage(${currentPage + 1})">
                     Siguiente →
@@ -678,7 +718,32 @@ class UIManager {
      * Cambiar a una página específica de traits
      */
     goToTraitsPage(page) {
-        if (page < 1 || page > this.traitsPagination.totalPages) return;
+        if (page < 1 || page > this.traitsPagination.totalPages) {
+            console.warn(`⚠️ goToTraitsPage: página ${page} fuera de rango (1-${this.traitsPagination.totalPages})`);
+            return;
+        }
+        
+        // Validar que allTraits tenga datos
+        if (!this.traitsPagination.allTraits || this.traitsPagination.allTraits.length === 0) {
+            console.warn('⚠️ goToTraitsPage: allTraits está vacío, recargando desde dataManager...');
+            // Intentar recargar desde dataManager
+            const dataManager = window.app?.modules?.dataManager;
+            if (dataManager) {
+                const filteredTraits = dataManager.getFilteredTokens('traits');
+                if (filteredTraits && filteredTraits.length > 0) {
+                    this.traitsPagination.allTraits = [...filteredTraits];
+                    this.traitsPagination.totalItems = this.traitsPagination.allTraits.length;
+                    this.traitsPagination.totalPages = Math.ceil(this.traitsPagination.totalItems / this.traitsPagination.itemsPerPage);
+                    console.log(`✅ allTraits recargado: ${this.traitsPagination.totalItems} traits`);
+                } else {
+                    console.error('❌ No se pudieron cargar traits desde dataManager');
+                    return;
+                }
+            } else {
+                console.error('❌ dataManager no disponible');
+                return;
+            }
+        }
         
         this.traitsPagination.currentPage = page;
         
@@ -686,6 +751,8 @@ class UIManager {
         const startIndex = (page - 1) * this.traitsPagination.itemsPerPage;
         const endIndex = startIndex + this.traitsPagination.itemsPerPage;
         const traitsToDisplay = this.traitsPagination.allTraits.slice(startIndex, endIndex);
+        
+        console.log(`📄 Cambiando a página ${page}: mostrando traits ${startIndex + 1}-${endIndex} de ${this.traitsPagination.totalItems}`);
         
         // Limpiar grid y mostrar nueva página
         const tokensGrid = this.domElements.get('tokens-grid');
@@ -699,8 +766,10 @@ class UIManager {
                 }
             });
             
+            // Limpiar grid
             tokensGrid.innerHTML = "";
             
+            // Renderizar solo los traits de la página actual (máximo 300)
             traitsToDisplay.forEach(token => {
                 const tokenCard = this.createTokenCard(token);
                 tokensGrid.appendChild(tokenCard);
@@ -712,8 +781,10 @@ class UIManager {
             // Actualizar selección visual (mantener traits seleccionados visibles)
             this.updateTraitsSelectionVisual();
             
-            // Scroll al inicio del grid
-            tokensGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Scroll al inicio del grid (solo si no estamos en la parte superior)
+            if (window.scrollY > 100) {
+                tokensGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
     }
     

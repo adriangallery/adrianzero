@@ -630,7 +630,18 @@ class TraitLABDataManager {
         } else if (filterType === 'serum') {
             return this.getTokens('adrianLab', 'serums');
         } else if (filterType === 'traits') {
-            return this.getTokens('adrianLab', 'traits');
+            // 🚨 CRÍTICO: Retornar solo traits filtrados, NO todos los tokens
+            const traits = this.getTokens('adrianLab', 'traits');
+            // Validación: asegurar que es un array y no contiene todos los tokens
+            if (Array.isArray(traits)) {
+                const allTokens = this.cache.adrianLab?.all || [];
+                if (traits.length > allTokens.length) {
+                    console.error('❌ ERROR: traits.length > allTokens.length, esto no debería pasar');
+                    return []; // Retornar array vacío si hay error
+                }
+                return traits;
+            }
+            return [];
         } else if (filterType === 'crafting') {
             return this.getTokens('adrianLab', 'traits'); // Crafting usa traits
         }
@@ -801,14 +812,7 @@ class TraitLABDataManager {
                     const floppys = window.app.modules.filters.filterFloppyTokens(basicTokens);
                     const serums = window.app.modules.filters.filterSerumTokens(basicTokens);
                     
-                    this.cache.adrianLab = {
-                        all: basicTokens,
-                        traits: traits,
-                        floppys: floppys,
-                        packs: [], // Por ahora vacío
-                        serums: serums
-                    };
-                    
+                    // 🚨 VALIDACIÓN: Asegurar que traits solo contiene traits filtrados
                     console.log('📊 Tokens ERC1155 básicos separados:', {
                         total: basicTokens.length,
                         traits: traits.length,
@@ -817,15 +821,31 @@ class TraitLABDataManager {
                         serums: serums.length
                     });
                     
+                    // Validar que traits.length sea menor o igual a basicTokens.length
+                    if (traits.length > basicTokens.length) {
+                        console.error('❌ ERROR: traits.length > basicTokens.length, esto no debería pasar');
+                    }
+                    
+                    this.cache.adrianLab = {
+                        all: basicTokens,
+                        traits: traits, // 🚨 CRÍTICO: Solo traits filtrados
+                        floppys: floppys,
+                        packs: [], // Por ahora vacío
+                        serums: serums
+                    };
+                    
                     // 🚀 NO MOSTRAR TOKENS AQUÍ - se mostrarán cuando el usuario cambie de tab
                     // Los tokens se mostrarán automáticamente via getFilteredTokens() cuando sea necesario
                     
                     // 🚨 NUEVO: Emitir evento para notificar que los tokens están listos
+                    // 🚨 CRÍTICO: Emitir solo los arrays filtrados, NO basicTokens
                     this.emit('adrianLabTokensReady', {
                         floppys: floppys,
                         serums: serums,
-                        traits: traits
+                        traits: traits // 🚨 Solo traits filtrados, NO todos los tokens
                     });
+                    
+                    console.log(`✅ Evento adrianLabTokensReady emitido con ${traits.length} traits filtrados (de ${basicTokens.length} tokens totales)`);
                     
                     // 🔄 MEJORAR METADATA EN BACKGROUND (no bloquear si falla)
                     try {
