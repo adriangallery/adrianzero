@@ -448,13 +448,20 @@
                             console.log('✅ Mostrando serum tokens inmediatamente');
                             this.modules.ui.displayTokens(serums);
                             this.hideLoading();
-                        } else if (this.currentFilter === 'traits' && traits.length > 0) {
-                            console.log('✅ Mostrando trait tokens inmediatamente:', traits.length, 'traits filtrados');
-                            this.modules.ui.displayTokens(traits);
-                            this.hideLoading();
-                        } else if (this.currentFilter === 'traits' && traits.length === 0) {
-                            // Si estamos en el tab traits pero no hay traits, puede que aún se estén cargando
-                            console.log('⏳ Tab traits activo pero no hay traits aún, esperando...');
+                        } else if (this.currentFilter === 'traits') {
+                            if (traits.length > 0) {
+                                console.log('✅ Mostrando trait tokens inmediatamente:', traits.length, 'traits filtrados');
+                                this.modules.ui.displayTokens(traits);
+                                this.hideLoading();
+                            } else {
+                                // Si estamos en el tab traits pero no hay traits, puede que aún se estén cargando
+                                console.log('⏳ Tab traits activo pero no hay traits aún, esperando...');
+                                // Configurar polling si no está activo
+                                if (!this._traitsPollingInterval) {
+                                    console.log('🔄 Configurando polling desde evento...');
+                                    this.setupTraitsPolling();
+                                }
+                            }
                         }
                     });
                 }
@@ -535,7 +542,7 @@
                             // Traits no están cargados, iniciar carga bajo demanda
                             console.log('⏳ Traits no están cargados, iniciando carga bajo demanda...');
                             try {
-                                // Iniciar carga de traits inmediatamente
+                                // Iniciar carga de traits inmediatamente (puede que ya estén cargando)
                                 await this.modules.dataManager.loadAdrianLabTokensOnDemand();
                                 
                                 // Intentar obtener traits nuevamente después de iniciar la carga
@@ -545,8 +552,8 @@
                                     this.modules.ui.displayTokens(traitsAfterLoad);
                                     this.hideLoading();
                                 } else {
-                                    // Los traits aún se están cargando, mostrar loading
-                                    // 🚨 NUEVO: Configurar verificación periódica para mostrar traits cuando estén listos
+                                    // Los traits aún se están cargando (o ya estaban cargando)
+                                    // 🚨 CRÍTICO: Siempre configurar polling cuando no hay traits disponibles
                                     console.log('⏳ Traits en proceso de carga, configurando verificación periódica...');
                                     this.setupTraitsPolling();
                                 }
@@ -728,11 +735,14 @@
             setupTraitsPolling() {
                 // Limpiar polling anterior si existe
                 if (this._traitsPollingInterval) {
+                    console.log('🔄 Limpiando polling anterior...');
                     clearInterval(this._traitsPollingInterval);
+                    this._traitsPollingInterval = null;
                 }
                 
+                console.log('🔄 Configurando polling para verificar traits...');
                 let attempts = 0;
-                const maxAttempts = 60; // 60 intentos = 30 segundos (500ms cada uno)
+                const maxAttempts = 120; // 120 intentos = 60 segundos (500ms cada uno)
                 
                 this._traitsPollingInterval = setInterval(() => {
                     attempts++;
@@ -754,6 +764,11 @@
                         clearInterval(this._traitsPollingInterval);
                         this._traitsPollingInterval = null;
                         return;
+                    }
+                    
+                    // Log cada 10 intentos para no saturar la consola
+                    if (attempts % 10 === 0) {
+                        console.log(`⏳ Polling: intento ${attempts}/${maxAttempts}, traits aún no disponibles...`);
                     }
                     
                     // Si excedemos el máximo de intentos, detener el polling
