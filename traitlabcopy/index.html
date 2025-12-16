@@ -432,6 +432,13 @@
                     this.modules.dataManager.on('adrianLabTokensReady', ({ floppys, serums, traits }) => {
                         console.log('🎯 Tokens ERC1155 listos:', { floppys: floppys.length, serums: serums.length, traits: traits.length });
                         
+                        // 🚨 CRÍTICO: Detener polling si está activo
+                        if (this._traitsPollingInterval) {
+                            clearInterval(this._traitsPollingInterval);
+                            this._traitsPollingInterval = null;
+                            console.log('🛑 Polling detenido: traits cargados vía evento');
+                        }
+                        
                         // Actualizar display si estamos en el tab correcto
                         if (this.currentFilter === 'floppy' && floppys.length > 0) {
                             console.log('✅ Mostrando floppy tokens inmediatamente');
@@ -445,6 +452,9 @@
                             console.log('✅ Mostrando trait tokens inmediatamente:', traits.length, 'traits filtrados');
                             this.modules.ui.displayTokens(traits);
                             this.hideLoading();
+                        } else if (this.currentFilter === 'traits' && traits.length === 0) {
+                            // Si estamos en el tab traits pero no hay traits, puede que aún se estén cargando
+                            console.log('⏳ Tab traits activo pero no hay traits aún, esperando...');
                         }
                     });
                 }
@@ -536,8 +546,9 @@
                                     this.hideLoading();
                                 } else {
                                     // Los traits aún se están cargando, mostrar loading
-                                    // Se mostrarán automáticamente cuando estén listos vía onTokensLoaded
-                                    console.log('⏳ Traits en proceso de carga, mostrando loading...');
+                                    // 🚨 NUEVO: Configurar verificación periódica para mostrar traits cuando estén listos
+                                    console.log('⏳ Traits en proceso de carga, configurando verificación periódica...');
+                                    this.setupTraitsPolling();
                                 }
                             } catch (error) {
                                 console.error('❌ Error iniciando carga de traits:', error);
@@ -709,6 +720,50 @@
                 } else {
                     console.log('⚠️ Saltando onTokensLoaded - Tab actual no coincide:', this.currentFilter, 'vs', filter);
                 }
+            }
+
+            /**
+             * Configurar polling para verificar cuando los traits estén disponibles
+             */
+            setupTraitsPolling() {
+                // Limpiar polling anterior si existe
+                if (this._traitsPollingInterval) {
+                    clearInterval(this._traitsPollingInterval);
+                }
+                
+                let attempts = 0;
+                const maxAttempts = 60; // 60 intentos = 30 segundos (500ms cada uno)
+                
+                this._traitsPollingInterval = setInterval(() => {
+                    attempts++;
+                    
+                    // Verificar si aún estamos en el tab traits
+                    if (this.currentFilter !== 'traits') {
+                        console.log('🛑 Polling detenido: usuario cambió de tab');
+                        clearInterval(this._traitsPollingInterval);
+                        this._traitsPollingInterval = null;
+                        return;
+                    }
+                    
+                    // Verificar si los traits están disponibles
+                    const filteredTokens = this.modules.dataManager.getFilteredTokens('traits');
+                    if (filteredTokens.length > 0) {
+                        console.log(`✅ Traits disponibles después de ${attempts} intentos: ${filteredTokens.length} traits`);
+                        this.modules.ui.displayTokens(filteredTokens);
+                        this.hideLoading();
+                        clearInterval(this._traitsPollingInterval);
+                        this._traitsPollingInterval = null;
+                        return;
+                    }
+                    
+                    // Si excedemos el máximo de intentos, detener el polling
+                    if (attempts >= maxAttempts) {
+                        console.warn('⚠️ Polling detenido: máximo de intentos alcanzado');
+                        clearInterval(this._traitsPollingInterval);
+                        this._traitsPollingInterval = null;
+                        this.hideLoading();
+                    }
+                }, 500); // Verificar cada 500ms
             }
         }
 
