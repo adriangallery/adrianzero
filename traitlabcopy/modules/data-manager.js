@@ -763,25 +763,51 @@ class TraitLABDataManager {
                     let pageCount = 0;
                     const MAX_PAGES = 1000; // Límite de seguridad
                     
+                    console.log(`🔄 Iniciando carga completa de tokens ERC1155 (máximo ${MAX_PAGES} páginas)...`);
+                    
                     while (hasMore && pageCount < MAX_PAGES) {
+                        pageCount++;
+                        console.log(`📄 Cargando página ${pageCount}/${MAX_PAGES}... (tokens acumulados: ${allTokens.length})`);
+                        
                         const result = await this.loadBasicTokens(userAddress, contractAddress, null, pageKey);
+                        
+                        // 🚨 CRÍTICO: Verificar el tipo de resultado
                         if (Array.isArray(result)) {
                             // Si retorna array directamente, no hay paginación
                             allTokens = allTokens.concat(result);
                             hasMore = false;
-                        } else if (result && result.tokens) {
+                            console.log(`✅ Carga completa: ${result.length} tokens en array único (total: ${allTokens.length})`);
+                        } else if (result && typeof result === 'object' && result.tokens) {
                             // Si retorna objeto con tokens, hay paginación
-                            allTokens = allTokens.concat(result.tokens);
+                            const tokensInPage = Array.isArray(result.tokens) ? result.tokens : [];
+                            allTokens = allTokens.concat(tokensInPage);
                             pageKey = result.nextPageKey;
-                            hasMore = result.hasMore || false;
+                            hasMore = result.hasMore === true; // Asegurar que es boolean
+                            
+                            console.log(`📦 Página ${pageCount}: ${tokensInPage.length} tokens (total: ${allTokens.length}, hasMore: ${hasMore}, nextPageKey: ${pageKey ? 'sí' : 'no'})`);
+                            
+                            // Si no hay más páginas o no hay tokens en esta página, detener
+                            if (!hasMore || tokensInPage.length === 0) {
+                                console.log(`🛑 Deteniendo carga: hasMore=${hasMore}, tokensEnPágina=${tokensInPage.length}`);
+                                hasMore = false;
+                            }
                         } else {
+                            console.log(`⚠️ Resultado inesperado en página ${pageCount}:`, result);
                             hasMore = false;
                         }
-                        pageCount++;
+                        
+                        // Log cada 10 páginas para no saturar
+                        if (pageCount % 10 === 0) {
+                            console.log(`📊 Progreso: ${pageCount} páginas, ${allTokens.length} tokens cargados`);
+                        }
+                    }
+                    
+                    if (pageCount >= MAX_PAGES) {
+                        console.warn(`⚠️ Se alcanzó el límite de ${MAX_PAGES} páginas, deteniendo carga`);
                     }
                     
                     basicTokens = allTokens;
-                    console.log(`✅ Cargados ${allTokens.length} traits totales (sin límite)`);
+                    console.log(`✅ Carga completa finalizada: ${allTokens.length} tokens totales (${pageCount} páginas)`);
                 }
             } catch (error) {
                 console.error('📊 Error cargando tokens básicos ERC1155:', error);
