@@ -206,6 +206,26 @@ class TraitLABDataManager {
         } finally {
             this.cache.loading.adrianLab = false;
             this.cache.ready.adrianLab = true;
+            
+            // 🚨 CRÍTICO: Emitir adrianLabTokensReady si no se emitió antes (por si acaso)
+            // Esto asegura que el evento se emita incluso si loadTokensProgressive no lo hizo
+            if (this.cache.adrianLab && this.cache.adrianLab.traits) {
+                console.log('🔄 Emitiendo adrianLabTokensReady desde finally (backup)');
+                this.emit('adrianLabTokensReady', {
+                    floppys: this.cache.adrianLab.floppys || [],
+                    serums: this.cache.adrianLab.serums || [],
+                    traits: this.cache.adrianLab.traits || []
+                });
+            } else {
+                console.log('⚠️ Cache adrianLab no tiene traits, emitiendo arrays vacíos');
+                this.emit('adrianLabTokensReady', {
+                    floppys: [],
+                    serums: [],
+                    traits: []
+                });
+            }
+            
+            // También emitir el evento legacy
             this.emit('adrianLabReady', { tokens: this.cache.adrianLab });
         }
     }
@@ -881,12 +901,25 @@ class TraitLABDataManager {
                     }
                 } else {
                     console.warn('📊 Módulo filters no disponible');
+                    // Si no hay módulo filters, emitir evento con arrays vacíos
+                    this.emit('adrianLabTokensReady', {
+                        floppys: [],
+                        serums: [],
+                        traits: []
+                    });
                 }
             } catch (error) {
                 console.error('📊 Error procesando tokens ERC1155:', error);
                 this.emit('adrianLabError', { 
                     error: error.message || 'Error procesando tokens',
                     step: 'filterTokens'
+                });
+                // 🚨 CRÍTICO: Emitir evento con arrays vacíos si hay error en el procesamiento
+                console.log('⚠️ Emitiendo adrianLabTokensReady con arrays vacíos debido a error en procesamiento');
+                this.emit('adrianLabTokensReady', {
+                    floppys: [],
+                    serums: [],
+                    traits: []
                 });
             }
         } catch (error) {
@@ -895,6 +928,14 @@ class TraitLABDataManager {
             this.emit('adrianLabError', { 
                 error: error.message || 'Error crítico en carga progresiva',
                 step: 'loadTokensProgressive'
+            });
+            
+            // 🚨 CRÍTICO: Emitir evento con arrays vacíos si hay error, para que el polling sepa que terminó
+            console.log('⚠️ Emitiendo adrianLabTokensReady con arrays vacíos debido a error');
+            this.emit('adrianLabTokensReady', {
+                floppys: [],
+                serums: [],
+                traits: []
             });
             // No lanzar el error para evitar crashes
         }
