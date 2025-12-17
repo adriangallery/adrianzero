@@ -782,10 +782,56 @@ class TraitLABDataManager {
                     let hasMore = true;
                     let pageCount = 0;
                     const MAX_PAGES = 1000; // Límite de seguridad
+                    const BATCH_SIZE_FOR_EVENTS = 5; // Emitir eventos cada 5 páginas
+                    const MAX_LOAD_TIME_MS = 120000; // 2 minutos máximo
+                    const startTime = Date.now();
                     
                     console.log(`🔄 Iniciando carga completa de tokens ERC1155 (máximo ${MAX_PAGES} páginas)...`);
                     
+                    // Función helper para procesar y emitir eventos parciales
+                    const processAndEmitPartial = (tokens) => {
+                        if (!window.app || !window.app.modules.filters || tokens.length === 0) {
+                            return;
+                        }
+                        
+                        try {
+                            const partialTraits = window.app.modules.filters.filterTraitTokens(tokens);
+                            const partialFloppys = window.app.modules.filters.filterFloppyTokens(tokens);
+                            const partialSerums = window.app.modules.filters.filterSerumTokens(tokens);
+                            
+                            // Actualizar cache parcial
+                            this.cache.adrianLab = {
+                                all: tokens,
+                                traits: partialTraits,
+                                floppys: partialFloppys,
+                                packs: [],
+                                serums: partialSerums
+                            };
+                            
+                            // Emitir evento parcial
+                            this.emit('adrianLabTokensReady', {
+                                floppys: partialFloppys,
+                                serums: partialSerums,
+                                traits: partialTraits,
+                                isPartial: true,
+                                totalLoaded: tokens.length,
+                                pageCount: pageCount
+                            });
+                            
+                            console.log(`📤 Evento parcial emitido: ${partialTraits.length} traits de ${tokens.length} tokens (página ${pageCount})`);
+                        } catch (error) {
+                            console.warn('⚠️ Error procesando batch parcial:', error);
+                        }
+                    };
+                    
                     while (hasMore && pageCount < MAX_PAGES) {
+                        // Verificar timeout
+                        if (Date.now() - startTime > MAX_LOAD_TIME_MS) {
+                            console.warn(`⚠️ Timeout alcanzado (${MAX_LOAD_TIME_MS}ms), deteniendo carga`);
+                            hasMore = false;
+                            break;
+                        }
+                        
                         pageCount++;
                         console.log(`📄 Cargando página ${pageCount}/${MAX_PAGES}... (tokens acumulados: ${allTokens.length})`);
                         
@@ -805,6 +851,12 @@ class TraitLABDataManager {
                             hasMore = result.hasMore === true; // Asegurar que es boolean
                             
                             console.log(`📦 Página ${pageCount}: ${tokensInPage.length} tokens (total: ${allTokens.length}, hasMore: ${hasMore}, nextPageKey: ${pageKey ? 'sí' : 'no'})`);
+                            
+                            // 🚨 NUEVO: Emitir eventos intermedios cada BATCH_SIZE_FOR_EVENTS páginas
+                            if (pageCount % BATCH_SIZE_FOR_EVENTS === 0 && allTokens.length > 0) {
+                                console.log(`📤 Procesando batch intermedio (página ${pageCount})...`);
+                                processAndEmitPartial(allTokens);
+                            }
                             
                             // Si no hay más páginas o no hay tokens en esta página, detener
                             if (!hasMore || tokensInPage.length === 0) {
@@ -828,6 +880,36 @@ class TraitLABDataManager {
                     
                     basicTokens = allTokens;
                     console.log(`✅ Carga completa finalizada: ${allTokens.length} tokens totales (${pageCount} páginas)`);
+                    
+                    // 🚨 CRÍTICO: Si la carga terminó antes de emitir un evento parcial (menos de 5 páginas),
+                    // emitir un evento parcial ahora para que el usuario vea algo
+                    if (allTokens.length > 0 && pageCount < BATCH_SIZE_FOR_EVENTS) {
+                        console.log(`📤 Emitiendo evento parcial inicial (carga terminó en ${pageCount} páginas)...`);
+                        if (window.app && window.app.modules.filters) {
+                            const partialTraits = window.app.modules.filters.filterTraitTokens(allTokens);
+                            const partialFloppys = window.app.modules.filters.filterFloppyTokens(allTokens);
+                            const partialSerums = window.app.modules.filters.filterSerumTokens(allTokens);
+                            
+                            this.cache.adrianLab = {
+                                all: allTokens,
+                                traits: partialTraits,
+                                floppys: partialFloppys,
+                                packs: [],
+                                serums: partialSerums
+                            };
+                            
+                            this.emit('adrianLabTokensReady', {
+                                floppys: partialFloppys,
+                                serums: partialSerums,
+                                traits: partialTraits,
+                                isPartial: true,
+                                totalLoaded: allTokens.length,
+                                pageCount: pageCount
+                            });
+                            
+                            console.log(`📤 Evento parcial inicial emitido: ${partialTraits.length} traits`);
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('📊 Error cargando tokens básicos ERC1155:', error);
@@ -885,13 +967,16 @@ class TraitLABDataManager {
                     
                     // 🚨 NUEVO: Emitir evento para notificar que los tokens están listos
                     // 🚨 CRÍTICO: Emitir solo los arrays filtrados, NO basicTokens
+                    // isPartial: false indica que es la carga completa
                     this.emit('adrianLabTokensReady', {
                         floppys: floppys,
                         serums: serums,
-                        traits: traits // 🚨 Solo traits filtrados, NO todos los tokens
+                        traits: traits, // 🚨 Solo traits filtrados, NO todos los tokens
+                        isPartial: false,
+                        totalLoaded: basicTokens.length
                     });
                     
-                    console.log(`✅ Evento adrianLabTokensReady emitido con ${traits.length} traits filtrados (de ${basicTokens.length} tokens totales)`);
+                    console.log(`✅ Evento adrianLabTokensReady FINAL emitido con ${traits.length} traits filtrados (de ${basicTokens.length} tokens totales)`);
                     
                     // 🔄 MEJORAR METADATA EN BACKGROUND (no bloquear si falla)
                     try {

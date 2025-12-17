@@ -429,11 +429,17 @@
                 
                 // 🚨 NUEVO: Escuchar eventos de tokens ERC1155 listos
                 if (this.modules.dataManager) {
-                    this.modules.dataManager.on('adrianLabTokensReady', ({ floppys, serums, traits }) => {
-                        console.log('🎯 Tokens ERC1155 listos:', { floppys: floppys.length, serums: serums.length, traits: traits.length });
+                    this.modules.dataManager.on('adrianLabTokensReady', ({ floppys, serums, traits, isPartial, totalLoaded }) => {
+                        console.log('🎯 Tokens ERC1155 listos:', { 
+                            floppys: floppys.length, 
+                            serums: serums.length, 
+                            traits: traits.length,
+                            isPartial: isPartial,
+                            totalLoaded: totalLoaded
+                        });
                         
-                        // 🚨 CRÍTICO: Detener polling si está activo
-                        if (this._traitsPollingInterval) {
+                        // 🚨 CRÍTICO: Detener polling si está activo (solo si es carga completa)
+                        if (!isPartial && this._traitsPollingInterval) {
                             clearInterval(this._traitsPollingInterval);
                             this._traitsPollingInterval = null;
                             console.log('🛑 Polling detenido: traits cargados vía evento');
@@ -450,9 +456,19 @@
                             this.hideLoading();
                         } else if (this.currentFilter === 'traits') {
                             if (traits.length > 0) {
-                                console.log('✅ Mostrando trait tokens inmediatamente:', traits.length, 'traits filtrados');
-                                this.modules.ui.displayTokens(traits);
-                                this.hideLoading();
+                                if (isPartial) {
+                                    // 🚨 NUEVO: Actualización parcial - añadir traits sin limpiar
+                                    console.log(`📤 Actualizando traits parcialmente: ${traits.length} traits (${totalLoaded} tokens cargados)`);
+                                    this.updateTraitsDisplay(traits, true, totalLoaded);
+                                    // No ocultar loading principal si es parcial, solo mostrar indicador
+                                } else {
+                                    // Carga completa - mostrar todos los traits
+                                    console.log('✅ Mostrando trait tokens (carga completa):', traits.length, 'traits filtrados');
+                                    // Usar displayTokens normal para carga completa (reemplaza todo)
+                                    this.modules.ui.displayTokens(traits);
+                                    this.hideLoading();
+                                    this.hideTraitsLoadingIndicator();
+                                }
                             } else {
                                 // Si estamos en el tab traits pero no hay traits, puede que aún se estén cargando
                                 console.log('⏳ Tab traits activo pero no hay traits aún, esperando...');
@@ -538,9 +554,13 @@
                             console.log('✅ Mostrando traits disponibles inmediatamente:', filteredTokens.length, 'traits filtrados');
                             this.modules.ui.displayTokens(filteredTokens);
                             this.hideLoading();
+                            this.hideTraitsLoadingIndicator();
                         } else {
                             // Traits no están cargados, iniciar carga bajo demanda
                             console.log('⏳ Traits no están cargados, iniciando carga bajo demanda...');
+                            // Mostrar indicador de carga inicial
+                            this.showTraitsLoadingIndicator(0);
+                            
                             try {
                                 // Iniciar carga de traits inmediatamente (puede que ya estén cargando)
                                 await this.modules.dataManager.loadAdrianLabTokensOnDemand();
@@ -551,6 +571,7 @@
                                     console.log('✅ Traits cargados, mostrando:', traitsAfterLoad.length, 'traits filtrados');
                                     this.modules.ui.displayTokens(traitsAfterLoad);
                                     this.hideLoading();
+                                    this.hideTraitsLoadingIndicator();
                                 } else {
                                     // Los traits aún se están cargando (o ya estaban cargando)
                                     // 🚨 CRÍTICO: Siempre configurar polling cuando no hay traits disponibles
@@ -560,6 +581,7 @@
                             } catch (error) {
                                 console.error('❌ Error iniciando carga de traits:', error);
                                 this.hideLoading();
+                                this.hideTraitsLoadingIndicator();
                                 this.showError(`Error cargando traits: ${error.message}`);
                             }
                         }
@@ -755,15 +777,26 @@
                         return;
                     }
                     
-                    // Verificar si los traits están disponibles
+                    // Verificar si los traits están disponibles (incluso parciales)
                     const filteredTokens = this.modules.dataManager.getFilteredTokens('traits');
                     if (filteredTokens.length > 0) {
                         console.log(`✅ Traits disponibles después de ${attempts} intentos: ${filteredTokens.length} traits`);
-                        this.modules.ui.displayTokens(filteredTokens);
-                        this.hideLoading();
-                        clearInterval(this._traitsPollingInterval);
-                        this._traitsPollingInterval = null;
-                        return;
+                        
+                        // Verificar si ya hay traits mostrados en el grid
+                        const tokensGrid = document.getElementById('tokens-grid');
+                        const existingTraitsCount = tokensGrid ? tokensGrid.querySelectorAll('.token-card').length : 0;
+                        
+                        if (existingTraitsCount === 0) {
+                            // Primera vez que encontramos traits, mostrarlos
+                            this.updateTraitsDisplay(filteredTokens, false);
+                        } else if (filteredTokens.length > existingTraitsCount) {
+                            // Hay más traits disponibles, actualizar
+                            this.updateTraitsDisplay(filteredTokens, false);
+                        }
+                        // Si filteredTokens.length === existingTraitsCount, no hacer nada (ya están mostrados)
+                        
+                        // No detener polling si puede haber más traits cargándose
+                        // El polling se detendrá cuando llegue el evento final
                     }
                     
                     // Log cada 10 intentos para no saturar la consola
@@ -778,7 +811,115 @@
                         this._traitsPollingInterval = null;
                         this.hideLoading();
                     }
-                }, 500); // Verificar cada 500ms
+                }, 2000); // Verificar cada 2s (reducido de 500ms para no saturar)
+            }
+
+            /**
+             * Actualizar display de traits de forma incremental
+             * @param {Array} traits - Array de traits a mostrar/añadir
+             * @param {boolean} appendMode - Si true, añade sin limpiar. Si false, reemplaza todo
+             * @param {number} totalLoaded - Total de tokens cargados (para indicador de progreso)
+             */
+            updateTraitsDisplay(traits, appendMode = false, totalLoaded = null) {
+                const tokensGrid = document.getElementById('tokens-grid');
+                if (!tokensGrid) {
+                    console.warn('⚠️ tokens-grid no encontrado');
+                    return;
+                }
+                
+                // Obtener IDs de traits ya mostrados para evitar duplicados
+                const existingIds = new Set();
+                if (appendMode) {
+                    tokensGrid.querySelectorAll('.token-card').forEach(card => {
+                        const tokenId = card.getAttribute('data-token-id');
+                        if (tokenId) existingIds.add(tokenId);
+                    });
+                }
+                
+                // Filtrar traits nuevos (que no estén ya en el grid)
+                const newTraits = appendMode 
+                    ? traits.filter(t => !existingIds.has(t.tokenId.toString()))
+                    : traits;
+                
+                if (newTraits.length === 0 && appendMode) {
+                    console.log('ℹ️ No hay traits nuevos para añadir');
+                    // Actualizar indicador aunque no haya nuevos traits
+                    if (totalLoaded) {
+                        this.showTraitsLoadingIndicator(totalLoaded);
+                    }
+                    return;
+                }
+                
+                // Si no es append mode, limpiar el grid primero
+                if (!appendMode) {
+                    // Limpiar event listeners
+                    const existingCards = tokensGrid.querySelectorAll('.token-card');
+                    existingCards.forEach(card => {
+                        if (card._clickHandler) {
+                            card.removeEventListener('click', card._clickHandler);
+                            delete card._clickHandler;
+                        }
+                    });
+                    tokensGrid.innerHTML = '';
+                }
+                
+                // Añadir nuevos traits al grid
+                newTraits.forEach(trait => {
+                    try {
+                        const tokenCard = this.modules.ui.createTokenCard(trait);
+                        tokensGrid.appendChild(tokenCard);
+                    } catch (error) {
+                        console.warn('⚠️ Error creando token card:', error);
+                    }
+                });
+                
+                // Mostrar indicador de progreso si hay carga en progreso
+                if (appendMode && totalLoaded) {
+                    this.showTraitsLoadingIndicator(totalLoaded);
+                } else if (!appendMode) {
+                    // Si no es append mode, ocultar indicador
+                    this.hideTraitsLoadingIndicator();
+                }
+                
+                // Ocultar loading principal si hay traits
+                if (newTraits.length > 0) {
+                    this.hideLoading();
+                }
+                
+                console.log(`${appendMode ? '➕ Añadidos' : '✅ Mostrados'} ${newTraits.length} traits al grid`);
+            }
+
+            /**
+             * Mostrar indicador de carga de traits
+             */
+            showTraitsLoadingIndicator(totalLoaded) {
+                let indicator = document.getElementById('traits-loading-indicator');
+                if (!indicator) {
+                    const tokensGrid = document.getElementById('tokens-grid');
+                    if (!tokensGrid) return;
+                    
+                    indicator = document.createElement('div');
+                    indicator.id = 'traits-loading-indicator';
+                    indicator.className = 'traits-loading-indicator';
+                    indicator.style.cssText = 'text-align: center; padding: 10px; color: #666; font-size: 14px; background: #f5f5f5; border-radius: 4px; margin: 10px 0;';
+                    tokensGrid.parentNode.insertBefore(indicator, tokensGrid.nextSibling);
+                }
+                
+                const message = totalLoaded !== null && totalLoaded !== undefined
+                    ? `Cargando traits... (${totalLoaded} tokens cargados)`
+                    : 'Cargando traits...';
+                indicator.textContent = message;
+                indicator.style.display = 'block';
+            }
+
+            /**
+             * Ocultar indicador de carga de traits
+             */
+            hideTraitsLoadingIndicator() {
+                const indicator = document.getElementById('traits-loading-indicator');
+                if (indicator) {
+                    indicator.style.display = 'none';
+                }
             }
         }
 

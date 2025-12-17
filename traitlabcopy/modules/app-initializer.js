@@ -158,7 +158,17 @@ class AppInitializer {
                     
                     // Update current contract and filter
                     this.app.currentContract = e.target.dataset.contract;
-                    this.app.currentFilter = e.target.dataset.filter;
+                    const newFilter = e.target.dataset.filter;
+                    
+                    // 🚨 NUEVO: Ocultar indicador de carga de traits si cambiamos de tab
+                    if (this.app.currentFilter === 'traits' && newFilter !== 'traits') {
+                        const indicator = document.getElementById('traits-loading-indicator');
+                        if (indicator) {
+                            indicator.style.display = 'none';
+                        }
+                    }
+                    
+                    this.app.currentFilter = newFilter;
                     
                     // 🚨 NUEVO: Reset flag cuando cambia de tab
                     this.app.tokensAlreadyDisplayed = false;

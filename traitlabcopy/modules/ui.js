@@ -154,6 +154,11 @@ class UIManager {
         // Clean up lazy loading if changing away from traits
         if (this.currentFilter === 'traits' && filter !== 'traits') {
             this.cleanupLazyLoading();
+            // Ocultar indicador de carga de traits si existe
+            const indicator = document.getElementById('traits-loading-indicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
         }
         
         this.currentFilter = filter;
