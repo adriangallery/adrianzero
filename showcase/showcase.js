@@ -112,29 +112,48 @@ class Showcase {
             'Serum-Gold_1-1.gif',
             'Serum-Gold_1.gif',
             'Serum-Gold_2.gif',
-            // 3D Models (GLTF/GLB)
-            // TEMPORAL: Solo GMtest.glb para test
+            // 3D Models (GLTF/GLB) - GLB y GLTF se usan indistintamente
+            // GLTF models
+            '$A-Snot.gltf',
+            '$A.gltf',
+            'DISCORD-Snot.gltf',
+            'Discord.gltf',
+            'FAQ-OFF-Snot.gltf',
+            'FAQ-OFF.gltf',
+            'GM-Snot.gltf',
+            'GM.gltf',
+            'GN-Snot.gltf',
+            'GN.gltf',
+            'LAB-Snot.gltf',
+            'LFG-Snot.gltf',
+            'LFG.gltf',
+            'V-Snot.gltf',
+            'WEN_LAMBO.gltf',
+            'WEN-LAMBO-Snot.gltf',
+            'WEN-LAMBO.gltf',
+            'WTF-Snot.gltf',
+            'WTF.gltf',
+            'X.gltf',
+            // GLB models (mismo tratamiento que GLTF)
+            '$A-SNOT.glb',
+            '$A.glb',
+            'Discord-SNOT.glb',
+            'Discord.glb',
+            'FAQ-SNOT.glb',
+            'FAQ.glb',
+            'GM-SNOT.glb',
+            'GM.glb',
             'GMtest.glb',
-            // '$A-Snot.gltf',
-            // '$A.gltf',
-            // 'DISCORD-Snot.gltf',
-            // 'Discord.gltf',
-            // 'FAQ-OFF-Snot.gltf',
-            // 'FAQ-OFF.gltf',
-            // 'GM-Snot.gltf',
-            // 'GM.gltf',
-            // 'GN-Snot.gltf',
-            // 'GN.gltf',
-            // 'LAB-Snot.gltf',
-            // 'LFG-Snot.gltf',
-            // 'LFG.gltf',
-            // 'V-Snot.gltf',
-            // 'WEN_LAMBO.gltf',
-            // 'WEN-LAMBO-Snot.gltf',
-            // 'WEN-LAMBO.gltf',
-            // 'WTF-Snot.gltf',
-            // 'WTF.gltf',
-            // 'X.gltf'
+            'GN-SNOT.glb',
+            'GN.glb',
+            'LAB-SNOT.glb',
+            'LFG-SNOT.glb',
+            'LFG.glb',
+            'WEN-Lambo.glb',
+            'WEN_LAMBO-SNOT.glb',
+            'WTF-SNOT.glb',
+            'X-SNOT.glb',
+            'X.glb'
         ];
 
         // Verify which files actually exist by trying to load them
@@ -176,15 +195,6 @@ class Showcase {
                 type: type
             };
         });
-
-        // TEMPORAL: Para test, filtrar modelos 3D para mostrar solo GMtest.glb
-        const floppyItems = this.floppyGifs.filter(f => f.type === 'floppy');
-        const gmTestModel = this.floppyGifs.find(f => f.filename === 'GMtest.glb' && f.type === '3d-model');
-        if (gmTestModel) {
-            // Solo incluir GMtest.glb como modelo 3D
-            this.floppyGifs = [...floppyItems, gmTestModel];
-            console.log('🧪 TEST MODE: Solo mostrando GMtest.glb como modelo 3D');
-        }
 
         // Shuffle for variety
         this.shuffleArray(this.floppyGifs);
