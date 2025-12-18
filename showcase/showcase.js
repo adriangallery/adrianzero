@@ -112,27 +112,29 @@ class Showcase {
             'Serum-Gold_1-1.gif',
             'Serum-Gold_1.gif',
             'Serum-Gold_2.gif',
-            // 3D Models (GLTF)
-            '$A-Snot.gltf',
-            '$A.gltf',
-            'DISCORD-Snot.gltf',
-            'Discord.gltf',
-            'FAQ-OFF-Snot.gltf',
-            'FAQ-OFF.gltf',
-            'GM-Snot.gltf',
-            'GM.gltf',
-            'GN-Snot.gltf',
-            'GN.gltf',
-            'LAB-Snot.gltf',
-            'LFG-Snot.gltf',
-            'LFG.gltf',
-            'V-Snot.gltf',
-            'WEN_LAMBO.gltf',
-            'WEN-LAMBO-Snot.gltf',
-            'WEN-LAMBO.gltf',
-            'WTF-Snot.gltf',
-            'WTF.gltf',
-            'X.gltf'
+            // 3D Models (GLTF/GLB)
+            // TEMPORAL: Solo GMtest.glb para test
+            'GMtest.glb',
+            // '$A-Snot.gltf',
+            // '$A.gltf',
+            // 'DISCORD-Snot.gltf',
+            // 'Discord.gltf',
+            // 'FAQ-OFF-Snot.gltf',
+            // 'FAQ-OFF.gltf',
+            // 'GM-Snot.gltf',
+            // 'GM.gltf',
+            // 'GN-Snot.gltf',
+            // 'GN.gltf',
+            // 'LAB-Snot.gltf',
+            // 'LFG-Snot.gltf',
+            // 'LFG.gltf',
+            // 'V-Snot.gltf',
+            // 'WEN_LAMBO.gltf',
+            // 'WEN-LAMBO-Snot.gltf',
+            // 'WEN-LAMBO.gltf',
+            // 'WTF-Snot.gltf',
+            // 'WTF.gltf',
+            // 'X.gltf'
         ];
 
         // Verify which files actually exist by trying to load them
@@ -158,13 +160,13 @@ class Showcase {
             let match = filename.match(/^(\d+)\.gif$/);
             let tokenId = match ? parseInt(match[1], 10) : null;
             
-            // Determine type
-            const is3D = filename.endsWith('.gltf');
+            // Determine type (GLTF or GLB)
+            const is3D = filename.endsWith('.gltf') || filename.endsWith('.glb');
             const type = is3D ? '3d-model' : 'floppy';
             
             // For non-numbered files, use filename as identifier
             if (!tokenId) {
-                tokenId = filename.replace(/\.(gif|gltf)$/, '');
+                tokenId = filename.replace(/\.(gif|gltf|glb)$/, '');
             }
             
             return {
@@ -174,6 +176,15 @@ class Showcase {
                 type: type
             };
         });
+
+        // TEMPORAL: Para test, filtrar modelos 3D para mostrar solo GMtest.glb
+        const floppyItems = this.floppyGifs.filter(f => f.type === 'floppy');
+        const gmTestModel = this.floppyGifs.find(f => f.filename === 'GMtest.glb' && f.type === '3d-model');
+        if (gmTestModel) {
+            // Solo incluir GMtest.glb como modelo 3D
+            this.floppyGifs = [...floppyItems, gmTestModel];
+            console.log('🧪 TEST MODE: Solo mostrando GMtest.glb como modelo 3D');
+        }
 
         // Shuffle for variety
         this.shuffleArray(this.floppyGifs);
@@ -1192,7 +1203,7 @@ class Showcase {
                 const randomItem = this.getRandomFloppyGif();
                 if (randomItem) {
                     if (randomItem.type === '3d-model') {
-                        // Show 3D model
+                        // Show 3D model (TEMPORAL: solo GMtest.glb gracias al filtro)
                         is3dModel = true;
                         item.classList.add('grid-item-3d');
                         item.dataset.type = '3d-model';
