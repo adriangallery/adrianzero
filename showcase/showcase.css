@@ -533,8 +533,10 @@ body {
 
 .modal-content {
     padding: 40px;
-    overflow-y: auto;
     max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .modal-content.loading {
@@ -546,18 +548,22 @@ body {
 
 .modal-image-container {
     width: 100%;
-    aspect-ratio: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 24px;
     background: transparent;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-image-container img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
     will-change: opacity;
 }
@@ -573,6 +579,30 @@ body {
 
 .modal-info {
     color: rgba(255, 255, 255, 0.9);
+    flex: 0 0 auto;
+    overflow-y: auto;
+    max-height: 40vh;
+    padding-right: 10px;
+    /* Smooth scrolling */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.modal-info::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-info::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-info::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.modal-info::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .modal-info h2 {
@@ -669,6 +699,15 @@ body {
 
     .modal-content {
         padding: 24px;
+        max-height: 95vh;
+    }
+    
+    .modal-image-container {
+        margin-bottom: 16px;
+    }
+    
+    .modal-info {
+        max-height: 30vh;
     }
 
     .modal-info h2 {
