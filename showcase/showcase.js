@@ -337,9 +337,16 @@ class Showcase {
         this.scrollObserver = new IntersectionObserver(
             (entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && this.state.hasMore) {
+                    if (entry.isIntersecting && this.state.hasMore && !this.state.isLoading) {
                         const sentinel = entry.target;
+                        // Verify the sentinel is still in the DOM
+                        if (!sentinel.parentNode) {
+                            console.warn('⚠️ Sentinel no longer in DOM, skipping...');
+                            return;
+                        }
                         const direction = sentinel.dataset.direction || 'vertical';
+                        // Unobserve immediately to prevent multiple triggers
+                        this.scrollObserver.unobserve(sentinel);
                         this.loadMoreItems(direction);
                     }
                 });
@@ -1108,9 +1115,12 @@ class Showcase {
      * Create scroll sentinels for infinite loading in all directions
      */
     createScrollSentinels() {
-        // Remove existing sentinels
+        // Remove existing sentinels and unobserve them first
         const existingSentinels = this.gridElement.querySelectorAll('.scroll-sentinel');
-        existingSentinels.forEach(s => s.remove());
+        existingSentinels.forEach(s => {
+            this.scrollObserver.unobserve(s);
+            s.remove();
+        });
 
         // Bottom sentinel (vertical down)
         const bottomSentinel = document.createElement('div');
@@ -1137,58 +1147,76 @@ class Showcase {
      * Load more items when scrolling (infinite scroll)
      */
     loadMoreItems(direction = 'vertical') {
-        if (this.state.isLoading) return;
+        if (this.state.isLoading) {
+            console.log('⏸️ Load more items already in progress, skipping...');
+            return;
+        }
 
         this.state.isLoading = true;
+        console.log(`📦 Loading more items (direction: ${direction}, current total: ${this.state.totalItemsRendered})`);
 
         // Use requestAnimationFrame to batch DOM operations
         requestAnimationFrame(() => {
-            // Remove sentinels temporarily
-            const sentinels = this.gridElement.querySelectorAll('.scroll-sentinel');
-            sentinels.forEach(s => s.remove());
-
-            // Load next batch
-            const batchSize = this.config.itemsPerPage;
-            const imagesToAdd = [];
-
-            for (let i = 0; i < batchSize; i++) {
-                // Use modulo to loop through images infinitely
-                const imageIndex = this.state.totalItemsRendered % this.images.length;
-                const image = this.images[imageIndex];
-                
-                // If we've looped back to the start, reshuffle for variety
-                if (imageIndex === 0 && this.state.totalItemsRendered > 0) {
-                    this.shuffleArray(this.images);
-                }
-                
-                imagesToAdd.push({
-                    image: image,
-                    index: this.state.totalItemsRendered
+            try {
+                // Remove sentinels temporarily and unobserve them first
+                const sentinels = this.gridElement.querySelectorAll('.scroll-sentinel');
+                sentinels.forEach(s => {
+                    this.scrollObserver.unobserve(s);
+                    s.remove();
                 });
-                
-                this.state.totalItemsRendered++;
+
+                // Load next batch
+                const batchSize = this.config.itemsPerPage;
+                const imagesToAdd = [];
+
+                for (let i = 0; i < batchSize; i++) {
+                    // Use modulo to loop through images infinitely
+                    const imageIndex = this.state.totalItemsRendered % this.images.length;
+                    const image = this.images[imageIndex];
+                    
+                    // If we've looped back to the start, reshuffle for variety
+                    if (imageIndex === 0 && this.state.totalItemsRendered > 0) {
+                        this.shuffleArray(this.images);
+                    }
+                    
+                    imagesToAdd.push({
+                        image: image,
+                        index: this.state.totalItemsRendered
+                    });
+                    
+                    this.state.totalItemsRendered++;
+                }
+
+                // Batch DOM updates
+                const fragment = document.createDocumentFragment();
+                imagesToAdd.forEach(({ image, index }) => {
+                    const item = this.createGridItemElement(image, index);
+                    fragment.appendChild(item);
+                });
+
+                // Single DOM operation
+                this.gridElement.appendChild(fragment);
+
+                // Observe new items
+                imagesToAdd.forEach(({ image, index }) => {
+                    const item = this.gridElement.querySelector(`[data-index="${index}"]`);
+                    if (item) {
+                        this.imageObserver.observe(item);
+                    } else {
+                        console.warn(`⚠️ Item with index ${index} not found after creation`);
+                    }
+                });
+
+                // Re-add sentinels for next batch
+                this.createScrollSentinels();
+
+                console.log(`✅ Loaded ${imagesToAdd.length} items (new total: ${this.state.totalItemsRendered})`);
+            } catch (error) {
+                console.error('❌ Error loading more items:', error);
+            } finally {
+                // Always reset loading state, even on error
+                this.state.isLoading = false;
             }
-
-            // Batch DOM updates
-            const fragment = document.createDocumentFragment();
-            imagesToAdd.forEach(({ image, index }) => {
-                const item = this.createGridItemElement(image, index);
-                fragment.appendChild(item);
-            });
-
-            // Single DOM operation
-            this.gridElement.appendChild(fragment);
-
-            // Observe new items
-            imagesToAdd.forEach(({ image, index }) => {
-                const item = this.gridElement.querySelector(`[data-index="${index}"]`);
-                if (item) this.imageObserver.observe(item);
-            });
-
-            // Re-add sentinels for next batch
-            this.createScrollSentinels();
-
-            this.state.isLoading = false;
         });
     }
 
@@ -1826,12 +1854,22 @@ class Showcase {
     }
 }
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        new Showcase();
-    });
+// Initialize when DOM is ready - ensure only one instance
+if (window.showcaseInstance) {
+    console.warn('⚠️ Showcase instance already exists, skipping initialization');
 } else {
-    new Showcase();
+    const initShowcase = () => {
+        if (window.showcaseInstance) {
+            console.warn('⚠️ Showcase already initialized');
+            return;
+        }
+        window.showcaseInstance = new Showcase();
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initShowcase);
+    } else {
+        initShowcase();
+    }
 }
 
