@@ -1347,9 +1347,9 @@ class Showcase {
         
         // Set initial camera position with slight offset for swing effect
         const swingOffset = (index % 8) * 0.5; // Small offset based on index
-        modelViewer.setAttribute('camera-orbit', `${swingOffset}deg 75deg 2.2m`); // Balanced distance to fit container
+        modelViewer.setAttribute('camera-orbit', `${swingOffset}deg 75deg 2.3m`); // Balanced distance to fit container
         modelViewer.setAttribute('camera-target', '0m 0m 0m');
-        modelViewer.setAttribute('field-of-view', '40deg'); // Balanced FOV to fit without clipping
+        modelViewer.setAttribute('field-of-view', '35deg'); // Balanced FOV to fit without clipping
         modelViewer.setAttribute('auto-rotate', '');
         modelViewer.setAttribute('auto-rotate-delay', '0');
         modelViewer.setAttribute('auto-rotate-speed', '0.3'); // Even slower for smoother rotation
@@ -1628,9 +1628,9 @@ class Showcase {
             const modelViewer = document.createElement('model-viewer');
             modelViewer.src = image.url;
             modelViewer.alt = '3D Model';
-            modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.2m'); // Balanced distance to fit container
+            modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.3m'); // Balanced distance to fit container
             modelViewer.setAttribute('camera-target', '0m 0m 0m');
-            modelViewer.setAttribute('field-of-view', '40deg'); // Balanced FOV to fit without clipping
+            modelViewer.setAttribute('field-of-view', '35deg'); // Balanced FOV to fit without clipping
             modelViewer.setAttribute('auto-rotate', '');
             modelViewer.setAttribute('auto-rotate-delay', '0');
             modelViewer.setAttribute('auto-rotate-speed', '0.3'); // Even slower for smoother rotation
