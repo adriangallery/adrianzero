@@ -1347,9 +1347,9 @@ class Showcase {
         
         // Set initial camera position with slight offset for swing effect
         const swingOffset = (index % 8) * 0.5; // Small offset based on index
-        modelViewer.setAttribute('camera-orbit', `${swingOffset}deg 75deg 2.5m`); // Slight horizontal offset
+        modelViewer.setAttribute('camera-orbit', `${swingOffset}deg 75deg 1.8m`); // Closer camera for larger appearance
         modelViewer.setAttribute('camera-target', '0m 0m 0m');
-        modelViewer.setAttribute('field-of-view', '30deg'); // Smaller FOV = smaller model
+        modelViewer.setAttribute('field-of-view', '50deg'); // Larger FOV = larger model appearance
         modelViewer.setAttribute('auto-rotate', '');
         modelViewer.setAttribute('auto-rotate-delay', '0');
         modelViewer.setAttribute('auto-rotate-speed', '0.3'); // Even slower for smoother rotation
@@ -1361,8 +1361,8 @@ class Showcase {
         modelViewer.setAttribute('camera-controls', ''); // Enable smooth camera controls
         modelViewer.style.cssText = `
             position: relative;
-            width: 80%;
-            height: 80%;
+            width: 100%;
+            height: 100%;
             max-width: 100%;
             max-height: 100%;
             background: transparent;
@@ -1628,9 +1628,9 @@ class Showcase {
             const modelViewer = document.createElement('model-viewer');
             modelViewer.src = image.url;
             modelViewer.alt = '3D Model';
-            modelViewer.setAttribute('camera-orbit', '0deg 75deg 2.5m'); // Further away to prevent clipping
+            modelViewer.setAttribute('camera-orbit', '0deg 75deg 1.8m'); // Closer camera for larger appearance
             modelViewer.setAttribute('camera-target', '0m 0m 0m');
-            modelViewer.setAttribute('field-of-view', '30deg'); // Smaller FOV = smaller model
+            modelViewer.setAttribute('field-of-view', '50deg'); // Larger FOV = larger model appearance
             modelViewer.setAttribute('auto-rotate', '');
             modelViewer.setAttribute('auto-rotate-delay', '0');
             modelViewer.setAttribute('auto-rotate-speed', '0.3'); // Even slower for smoother rotation
@@ -1642,8 +1642,8 @@ class Showcase {
             modelViewer.setAttribute('camera-controls', ''); // Enable smooth camera controls
             modelViewer.style.cssText = `
                 position: relative;
-                width: 80%;
-                height: 80%;
+                width: 100%;
+                height: 100%;
                 max-width: 100%;
                 max-height: 100%;
                 background: transparent;
