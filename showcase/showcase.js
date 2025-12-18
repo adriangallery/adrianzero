@@ -1683,9 +1683,23 @@ class Showcase {
             
             const imgLoader = new Image();
             imgLoader.onload = () => {
+                // Calculate aspect ratio from loaded image
+                const aspectRatio = imgLoader.naturalWidth / imgLoader.naturalHeight;
+                
+                // Set image dimensions to maintain aspect ratio
                 img.src = image.url;
                 img.style.opacity = '0';
                 img.style.transition = 'opacity 0.3s ease-out';
+                img.style.width = '100%';
+                img.style.height = 'auto';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '60vh';
+                img.style.objectFit = 'contain';
+                
+                // Set container to match image aspect ratio
+                modalImgContainer.style.aspectRatio = `${aspectRatio}`;
+                modalImgContainer.style.maxHeight = '60vh';
+                
                 modalImgContainer.innerHTML = '';
                 modalImgContainer.appendChild(img);
                 requestAnimationFrame(() => {
