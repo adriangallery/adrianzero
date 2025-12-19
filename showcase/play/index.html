@@ -434,13 +434,67 @@
         pointLight.position.set(0, 5, 0);
         scene.add(pointLight);
 
-        // Ground
+        // Ground con gradiente anaglyph animado
         const groundGeometry = new THREE.PlaneGeometry(100, 100);
+        
+        // Crear canvas para el gradiente anaglyph
+        const groundCanvas = document.createElement('canvas');
+        groundCanvas.width = 512;
+        groundCanvas.height = 512;
+        const groundCtx = groundCanvas.getContext('2d');
+        
+        // Función para actualizar el gradiente anaglyph
+        function updateGroundGradient(time) {
+            const width = groundCanvas.width;
+            const height = groundCanvas.height;
+            
+            // Limpiar canvas
+            groundCtx.clearRect(0, 0, width, height);
+            
+            // Crear gradiente anaglyph (rojo/cyan) con movimiento
+            const gradientX = Math.sin(time * 0.001) * width * 0.3 + width * 0.5;
+            const gradientY = Math.cos(time * 0.0015) * height * 0.3 + height * 0.5;
+            
+            // Gradiente radial rojo/cyan
+            const gradient = groundCtx.createRadialGradient(
+                gradientX, gradientY, 0,
+                gradientX, gradientY, Math.max(width, height) * 0.8
+            );
+            
+            // Colores anaglyph (rojo y cyan)
+            gradient.addColorStop(0, '#ff0000');      // Rojo en el centro
+            gradient.addColorStop(0.3, '#00ffff');   // Cyan
+            gradient.addColorStop(0.6, '#ff0000');   // Rojo
+            gradient.addColorStop(1, '#0000ff');     // Azul en los bordes
+            
+            groundCtx.fillStyle = gradient;
+            groundCtx.fillRect(0, 0, width, height);
+            
+            // Agregar patrón adicional para efecto 3D anaglyph
+            const patternGradient = groundCtx.createLinearGradient(0, 0, width, height);
+            patternGradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)');
+            patternGradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.3)');
+            patternGradient.addColorStop(1, 'rgba(255, 0, 0, 0.3)');
+            
+            groundCtx.fillStyle = patternGradient;
+            groundCtx.fillRect(0, 0, width, height);
+        }
+        
+        // Inicializar el gradiente
+        updateGroundGradient(0);
+        
+        // Crear textura desde el canvas
+        const groundTexture = new THREE.CanvasTexture(groundCanvas);
+        groundTexture.wrapS = THREE.RepeatWrapping;
+        groundTexture.wrapT = THREE.RepeatWrapping;
+        groundTexture.repeat.set(2, 2);
+        
         const groundMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x1a1a1a,
+            map: groundTexture,
             roughness: 0.8,
             metalness: 0.2
         });
+        
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
         ground.receiveShadow = true;
@@ -788,18 +842,12 @@
                 
                 enemy.position.add(direction.multiplyScalar(enemy.userData.speed * deltaTime * 60));
                 
-                // Rotación: si es sprite (ogpunk), hacer billboard, sino rotar normalmente
+                // Rotación: si es sprite (ogpunk), hacer billboard, sin rotación adicional
                 if (enemy.userData.isOgpunk) {
-                    // Es un ogpunk sprite - hacer billboard hacia la cámara
+                    // Es un ogpunk sprite - hacer billboard hacia la cámara (sin rotación sobre sí mismo)
                     enemy.lookAt(camera.position);
-                    // Rotación adicional para efecto visual
-                    if (enemy.userData.rotationSpeed) {
-                        enemy.rotation.z += enemy.userData.rotationSpeed * deltaTime * 60;
-                    }
-                } else {
-                    // Es un cubo - rotar normalmente
-                    enemy.rotation.y += deltaTime * 5;
                 }
+                // Los enemigos no giran sobre sí mismos
 
                 // Check collision with player
                 const collisionDistance = enemy.userData.isOgpunk ? 0.6 : 0.8;
@@ -1092,6 +1140,10 @@
 
             const deltaTime = (currentTime - lastTime) / 1000;
             lastTime = currentTime;
+
+            // Update ground gradient animation
+            updateGroundGradient(currentTime);
+            groundTexture.needsUpdate = true;
 
             // Update game
             gameState.time += deltaTime;
