@@ -348,18 +348,36 @@
         
         // Cargar imagen de fondo
         const backgroundLoader = new THREE.TextureLoader();
-        backgroundLoader.load(
+        // Intentar diferentes rutas para compatibilidad local/producción
+        const backgroundPaths = [
             '../shooter/Images/FFS-Foot-Town.jpg',
-            (texture) => {
-                scene.background = texture;
-                console.log('✅ Background cargado');
-            },
-            undefined,
-            (error) => {
-                console.warn('⚠️ Error cargando background, usando color sólido:', error);
-                scene.background = new THREE.Color(0x0a0a0a);
-            }
-        );
+            '/shooter/Images/FFS-Foot-Town.jpg',
+            'https://adrianzero.com/shooter/Images/FFS-Foot-Town.jpg',
+            './shooter/Images/FFS-Foot-Town.jpg'
+        ];
+        
+        let backgroundLoaded = false;
+        backgroundPaths.forEach((path, index) => {
+            if (backgroundLoaded) return;
+            
+            backgroundLoader.load(
+                path,
+                (texture) => {
+                    if (!backgroundLoaded) {
+                        scene.background = texture;
+                        console.log('✅ Background cargado desde:', path);
+                        backgroundLoaded = true;
+                    }
+                },
+                undefined,
+                (error) => {
+                    if (index === backgroundPaths.length - 1 && !backgroundLoaded) {
+                        console.warn('⚠️ Error cargando background desde todas las rutas, usando color sólido');
+                        scene.background = new THREE.Color(0x0a0a0a);
+                    }
+                }
+            );
+        });
         
         scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
 
@@ -437,38 +455,58 @@
             let loadedCount = 0;
             const loadPromises = ogpunkIds.map(id => {
                 return new Promise((resolve) => {
-                    const svgUrl = `../traitlab/assets/traits/ogpunks/${id}.svg`;
+                    // Intentar diferentes rutas para compatibilidad
+                    const svgPaths = [
+                        `../traitlab/assets/traits/ogpunks/${id}.svg`,
+                        `/traitlab/assets/traits/ogpunks/${id}.svg`,
+                        `https://adrianzero.com/traitlab/assets/traits/ogpunks/${id}.svg`,
+                        `./traitlab/assets/traits/ogpunks/${id}.svg`
+                    ];
+                    
+                    let svgLoaded = false;
                     const img = new Image();
                     img.crossOrigin = 'anonymous';
                     
-                    img.onload = () => {
-                        try {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = 256; // Escalar a tamaño razonable
-                            canvas.height = 256;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, 256, 256);
-                            
-                            const texture = new THREE.CanvasTexture(canvas);
-                            texture.magFilter = THREE.NearestFilter; // Pixel art
-                            texture.minFilter = THREE.NearestFilter;
-                            ogpunkTextures.set(id, texture);
-                            ogpunkModels.push(id);
-                            loadedCount++;
-                            console.log(`✅ Ogpunk ${id} cargado (${loadedCount}/${ogpunkIds.length})`);
-                            resolve();
-                        } catch (error) {
-                            console.warn(`⚠️ Error procesando ogpunk ${id}:`, error);
-                            resolve();
+                    const tryLoadSvg = (pathIndex) => {
+                        if (svgLoaded || pathIndex >= svgPaths.length) {
+                            if (!svgLoaded) resolve();
+                            return;
                         }
+                        
+                        img.onload = () => {
+                            if (!svgLoaded) {
+                                svgLoaded = true;
+                                try {
+                                    const canvas = document.createElement('canvas');
+                                    canvas.width = 256;
+                                    canvas.height = 256;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, 256, 256);
+                                    
+                                    const texture = new THREE.CanvasTexture(canvas);
+                                    texture.magFilter = THREE.NearestFilter;
+                                    texture.minFilter = THREE.NearestFilter;
+                                    ogpunkTextures.set(id, texture);
+                                    ogpunkModels.push(id);
+                                    loadedCount++;
+                                    console.log(`✅ Ogpunk ${id} cargado desde: ${svgPaths[pathIndex]} (${loadedCount}/${ogpunkIds.length})`);
+                                    resolve();
+                                } catch (error) {
+                                    console.warn(`⚠️ Error procesando ogpunk ${id}:`, error);
+                                    resolve();
+                                }
+                            }
+                        };
+                        
+                        img.onerror = () => {
+                            // Intentar siguiente ruta
+                            tryLoadSvg(pathIndex + 1);
+                        };
+                        
+                        img.src = svgPaths[pathIndex];
                     };
                     
-                    img.onerror = () => {
-                        console.warn(`⚠️ Error cargando ogpunk ${id}`);
-                        resolve(); // Continuar aunque falle
-                    };
-                    
-                    img.src = svgUrl;
+                    tryLoadSvg(0);
                 });
             });
             
