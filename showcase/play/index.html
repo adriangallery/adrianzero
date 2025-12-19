@@ -348,13 +348,17 @@
         
         // Cargar imagen de fondo
         const backgroundLoader = new THREE.TextureLoader();
+        // Detectar si estamos en producción o local
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseUrl = isLocal ? '' : 'https://adrianzero.com';
+        
         // Intentar diferentes rutas para compatibilidad local/producción
         const backgroundPaths = [
+            `${baseUrl}/shooter/Images/FFS-Foot-Town.jpg`,
+            `${baseUrl}/showcase/../shooter/Images/FFS-Foot-Town.jpg`,
             '../shooter/Images/FFS-Foot-Town.jpg',
             '/shooter/Images/FFS-Foot-Town.jpg',
-            'https://adrianzero.com/shooter/Images/FFS-Foot-Town.jpg',
-            './shooter/Images/FFS-Foot-Town.jpg',
-            'shooter/Images/FFS-Foot-Town.jpg'
+            './shooter/Images/FFS-Foot-Town.jpg'
         ];
         
         let backgroundLoaded = false;
@@ -471,11 +475,11 @@
                 return new Promise((resolve) => {
                     // Intentar diferentes rutas para compatibilidad
                     const svgPaths = [
+                        `${baseUrl}/traitlab/assets/traits/ogpunks/${id}.svg`,
+                        `${baseUrl}/showcase/../traitlab/assets/traits/ogpunks/${id}.svg`,
                         `../traitlab/assets/traits/ogpunks/${id}.svg`,
                         `/traitlab/assets/traits/ogpunks/${id}.svg`,
-                        `https://adrianzero.com/traitlab/assets/traits/ogpunks/${id}.svg`,
-                        `./traitlab/assets/traits/ogpunks/${id}.svg`,
-                        `traitlab/assets/traits/ogpunks/${id}.svg`
+                        `./traitlab/assets/traits/ogpunks/${id}.svg`
                     ];
                     
                     let svgLoaded = false;
@@ -1018,24 +1022,52 @@
             restartGame();
         });
 
-        // Load player model
-        loader.load(
-            'https://raw.githubusercontent.com/adriangallery/AdrianLAB/d05193bc1dbc1c577c051656111a3c07281ba019/showcase/floppy/WEN-LAMBO.gltf',
-            (gltf) => {
-                playerModel = gltf.scene;
-                gameState.player = createPlayer();
-            },
-            undefined,
-            (error) => {
-                console.error('Error loading model:', error);
-                // Create fallback player
-                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-                const material = new THREE.MeshStandardMaterial({ color: 0x00D632 });
-                gameState.player = new THREE.Mesh(geometry, material);
-                gameState.player.position.set(0, 0.25, 0);
-                scene.add(gameState.player);
+        // Load player model - intentar diferentes rutas
+        const playerModelPaths = [
+            `${baseUrl}/showcase/floppy/WEN-LAMBO.gltf`,
+            `${baseUrl}/showcase/floppy/WEN-LAMBO.glb`,
+            '../floppy/WEN-LAMBO.gltf',
+            '../floppy/WEN-LAMBO.glb',
+            'https://raw.githubusercontent.com/adriangallery/AdrianLAB/d05193bc1dbc1c577c051656111a3c07281ba019/showcase/floppy/WEN-LAMBO.gltf'
+        ];
+        
+        let playerModelLoaded = false;
+        const tryLoadPlayerModel = (pathIndex) => {
+            if (playerModelLoaded || pathIndex >= playerModelPaths.length) {
+                if (!playerModelLoaded) {
+                    console.warn('⚠️ No se pudo cargar modelo del jugador, usando fallback');
+                    // Create fallback player
+                    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                    const material = new THREE.MeshStandardMaterial({ color: 0x00D632 });
+                    gameState.player = new THREE.Mesh(geometry, material);
+                    gameState.player.position.set(0, 0.25, 0);
+                    scene.add(gameState.player);
+                }
+                return;
             }
-        );
+            
+            const path = playerModelPaths[pathIndex];
+            console.log(`🔄 Intentando cargar modelo del jugador desde: ${path}`);
+            
+            loader.load(
+                path,
+                (gltf) => {
+                    if (!playerModelLoaded) {
+                        playerModel = gltf.scene;
+                        gameState.player = createPlayer();
+                        playerModelLoaded = true;
+                        console.log('✅ Modelo del jugador cargado desde:', path);
+                    }
+                },
+                undefined,
+                (error) => {
+                    console.warn(`⚠️ Error cargando modelo desde ${path}:`, error);
+                    tryLoadPlayerModel(pathIndex + 1);
+                }
+            );
+        };
+        
+        tryLoadPlayerModel(0);
 
         // Handle window resize
         window.addEventListener('resize', () => {
