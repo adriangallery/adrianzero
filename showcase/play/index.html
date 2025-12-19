@@ -459,9 +459,13 @@
         async function loadOgpunkTextures() {
             const ogpunkIds = [];
             // Cargar algunos ogpunks aleatorios para variedad (20 diferentes)
+            // Los ogpunks van desde 100001 hasta aproximadamente 100661
             const usedIds = new Set();
-            while (ogpunkIds.length < 20) {
-                const id = 100001 + Math.floor(Math.random() * 600);
+            const maxAttempts = 100; // Evitar loop infinito
+            let attempts = 0;
+            while (ogpunkIds.length < 20 && attempts < maxAttempts) {
+                attempts++;
+                const id = 100001 + Math.floor(Math.random() * 661); // 100001 a 100661
                 if (!usedIds.has(id)) {
                     usedIds.add(id);
                     ogpunkIds.push(id);
