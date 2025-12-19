@@ -345,7 +345,22 @@
 
         // Scene setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a0a);
+        
+        // Cargar imagen de fondo
+        const backgroundLoader = new THREE.TextureLoader();
+        backgroundLoader.load(
+            '../shooter/Images/FFS-Foot-Town.jpg',
+            (texture) => {
+                scene.background = texture;
+                console.log('✅ Background cargado');
+            },
+            undefined,
+            (error) => {
+                console.warn('⚠️ Error cargando background, usando color sólido:', error);
+                scene.background = new THREE.Color(0x0a0a0a);
+            }
+        );
+        
         scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
 
         // Camera
@@ -397,7 +412,72 @@
 
         // Load player model
         const loader = new GLTFLoader();
+        const textureLoader = new THREE.TextureLoader();
         let playerModel = null;
+        
+        // Cache de ogpunks cargados
+        const ogpunkTextures = new Map();
+        const ogpunkModels = [];
+        
+        // Cargar ogpunks como texturas
+        async function loadOgpunkTextures() {
+            const ogpunkIds = [];
+            // Cargar algunos ogpunks aleatorios para variedad (20 diferentes)
+            const usedIds = new Set();
+            while (ogpunkIds.length < 20) {
+                const id = 100001 + Math.floor(Math.random() * 600);
+                if (!usedIds.has(id)) {
+                    usedIds.add(id);
+                    ogpunkIds.push(id);
+                }
+            }
+            
+            console.log('📦 Cargando ogpunks:', ogpunkIds);
+            
+            let loadedCount = 0;
+            const loadPromises = ogpunkIds.map(id => {
+                return new Promise((resolve) => {
+                    const svgUrl = `../traitlab/assets/traits/ogpunks/${id}.svg`;
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    img.onload = () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 256; // Escalar a tamaño razonable
+                            canvas.height = 256;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, 256, 256);
+                            
+                            const texture = new THREE.CanvasTexture(canvas);
+                            texture.magFilter = THREE.NearestFilter; // Pixel art
+                            texture.minFilter = THREE.NearestFilter;
+                            ogpunkTextures.set(id, texture);
+                            ogpunkModels.push(id);
+                            loadedCount++;
+                            console.log(`✅ Ogpunk ${id} cargado (${loadedCount}/${ogpunkIds.length})`);
+                            resolve();
+                        } catch (error) {
+                            console.warn(`⚠️ Error procesando ogpunk ${id}:`, error);
+                            resolve();
+                        }
+                    };
+                    
+                    img.onerror = () => {
+                        console.warn(`⚠️ Error cargando ogpunk ${id}`);
+                        resolve(); // Continuar aunque falle
+                    };
+                    
+                    img.src = svgUrl;
+                });
+            });
+            
+            await Promise.all(loadPromises);
+            console.log(`✅ ${ogpunkModels.length} ogpunks cargados exitosamente`);
+        }
+        
+        // Cargar ogpunks al inicio
+        loadOgpunkTextures();
 
         function createPlayer() {
             if (!playerModel) return;
@@ -426,15 +506,40 @@
             return player;
         }
 
-        // Create enemy
+        // Create enemy usando ogpunks
         function createEnemy() {
-            const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-            const material = new THREE.MeshStandardMaterial({ 
-                color: 0xff0000,
-                emissive: 0xff0000,
-                emissiveIntensity: 0.3
-            });
-            const enemy = new THREE.Mesh(geometry, material);
+            let enemy;
+            
+            // Intentar usar ogpunk si hay disponibles
+            if (ogpunkModels.length > 0) {
+                const randomOgpunkId = ogpunkModels[Math.floor(Math.random() * ogpunkModels.length)];
+                const texture = ogpunkTextures.get(randomOgpunkId);
+                
+                if (texture) {
+                    // Crear sprite 3D con el ogpunk
+                    const geometry = new THREE.PlaneGeometry(1, 1);
+                    const material = new THREE.MeshStandardMaterial({ 
+                        map: texture,
+                        transparent: true,
+                        alphaTest: 0.1,
+                        side: THREE.DoubleSide
+                    });
+                    enemy = new THREE.Mesh(geometry, material);
+                    
+                    // Hacer que siempre mire a la cámara (billboard)
+                    enemy.lookAt(camera.position);
+                    
+                    // Agregar rotación continua para efecto
+                    enemy.userData.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                } else {
+                    // Fallback a cubo si no hay textura
+                    enemy = createFallbackEnemy();
+                }
+            } else {
+                // Fallback si no hay ogpunks cargados aún
+                enemy = createFallbackEnemy();
+            }
+
             enemy.castShadow = true;
             enemy.receiveShadow = true;
 
@@ -443,7 +548,7 @@
             const distance = 15 + Math.random() * 10;
             enemy.position.set(
                 Math.cos(angle) * distance,
-                0.25,
+                0.5,
                 Math.sin(angle) * distance
             );
 
@@ -455,6 +560,17 @@
 
             scene.add(enemy);
             gameState.enemies.push(enemy);
+        }
+        
+        // Crear enemigo de fallback (cubo rojo)
+        function createFallbackEnemy() {
+            const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.3
+            });
+            return new THREE.Mesh(geometry, material);
         }
 
         // Create bullet
@@ -610,10 +726,23 @@
                     .normalize();
                 
                 enemy.position.add(direction.multiplyScalar(enemy.userData.speed * deltaTime * 60));
-                enemy.rotation.y += deltaTime * 5;
+                
+                // Rotación: si es sprite (ogpunk), hacer billboard, sino rotar normalmente
+                if (enemy.userData.isOgpunk) {
+                    // Es un ogpunk sprite - hacer billboard hacia la cámara
+                    enemy.lookAt(camera.position);
+                    // Rotación adicional para efecto visual
+                    if (enemy.userData.rotationSpeed) {
+                        enemy.rotation.z += enemy.userData.rotationSpeed * deltaTime * 60;
+                    }
+                } else {
+                    // Es un cubo - rotar normalmente
+                    enemy.rotation.y += deltaTime * 5;
+                }
 
                 // Check collision with player
-                if (enemy.position.distanceTo(gameState.player.position) < 0.8) {
+                const collisionDistance = enemy.userData.isOgpunk ? 0.6 : 0.8;
+                if (enemy.position.distanceTo(gameState.player.position) < collisionDistance) {
                     gameState.health -= enemy.userData.damage * deltaTime * 2;
                     updateHealth();
                     
@@ -894,6 +1023,13 @@
                 camera.position.x = gameState.player.position.x;
                 camera.position.z = gameState.player.position.z + 10;
                 camera.lookAt(gameState.player.position);
+                
+                // Actualizar billboards de ogpunks para que miren a la cámara
+                gameState.enemies.forEach(enemy => {
+                    if (enemy.userData.isOgpunk) {
+                        enemy.lookAt(camera.position);
+                    }
+                });
             }
 
             renderer.render(scene, camera);
