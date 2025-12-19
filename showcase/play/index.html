@@ -353,31 +353,45 @@
             '../shooter/Images/FFS-Foot-Town.jpg',
             '/shooter/Images/FFS-Foot-Town.jpg',
             'https://adrianzero.com/shooter/Images/FFS-Foot-Town.jpg',
-            './shooter/Images/FFS-Foot-Town.jpg'
+            './shooter/Images/FFS-Foot-Town.jpg',
+            'shooter/Images/FFS-Foot-Town.jpg'
         ];
         
         let backgroundLoaded = false;
-        backgroundPaths.forEach((path, index) => {
-            if (backgroundLoaded) return;
+        let backgroundAttempts = 0;
+        
+        const tryLoadBackground = (pathIndex) => {
+            if (backgroundLoaded || pathIndex >= backgroundPaths.length) {
+                if (!backgroundLoaded) {
+                    console.warn('⚠️ Error cargando background desde todas las rutas, usando color sólido');
+                    scene.background = new THREE.Color(0x0a0a0a);
+                }
+                return;
+            }
+            
+            const path = backgroundPaths[pathIndex];
+            console.log(`🔄 Intentando cargar background desde: ${path} (intento ${pathIndex + 1}/${backgroundPaths.length})`);
             
             backgroundLoader.load(
                 path,
                 (texture) => {
                     if (!backgroundLoaded) {
                         scene.background = texture;
-                        console.log('✅ Background cargado desde:', path);
+                        console.log('✅ Background cargado exitosamente desde:', path);
                         backgroundLoaded = true;
                     }
                 },
                 undefined,
                 (error) => {
-                    if (index === backgroundPaths.length - 1 && !backgroundLoaded) {
-                        console.warn('⚠️ Error cargando background desde todas las rutas, usando color sólido');
-                        scene.background = new THREE.Color(0x0a0a0a);
-                    }
+                    backgroundAttempts++;
+                    console.warn(`⚠️ Error cargando background desde ${path}:`, error);
+                    // Intentar siguiente ruta
+                    tryLoadBackground(pathIndex + 1);
                 }
             );
-        });
+        };
+        
+        tryLoadBackground(0);
         
         scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
 
@@ -460,7 +474,8 @@
                         `../traitlab/assets/traits/ogpunks/${id}.svg`,
                         `/traitlab/assets/traits/ogpunks/${id}.svg`,
                         `https://adrianzero.com/traitlab/assets/traits/ogpunks/${id}.svg`,
-                        `./traitlab/assets/traits/ogpunks/${id}.svg`
+                        `./traitlab/assets/traits/ogpunks/${id}.svg`,
+                        `traitlab/assets/traits/ogpunks/${id}.svg`
                     ];
                     
                     let svgLoaded = false;
