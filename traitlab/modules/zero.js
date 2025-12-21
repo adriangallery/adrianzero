@@ -662,14 +662,16 @@ class ZeroManager {
                     this.emit('tokensLoaded', { tokens: filteredTokens, contractAddress, tokenType });
                     return filteredTokens;
                 } else {
-                    // 🚨 NUEVO: Emitir tokens listos para mostrar inmediatamente (con loading wheels)
-                    console.log('🎯 Emitiendo tokens listos para mostrar inmediatamente...');
-                    this.emit('tokensReadyForDisplay', { 
-                        tokens: filteredTokens, 
-                        contractAddress, 
-                        tokenType,
-                        hasLoadingWheels: true 
-                    });
+                    // 🚨 NUEVO: Emitir tokens listos para mostrar inmediatamente (solo ERC721)
+                    if (tokenType === 'ERC721') {
+                        console.log('🎯 Emitiendo tokens listos para mostrar inmediatamente...');
+                        this.emit('tokensReadyForDisplay', { 
+                            tokens: filteredTokens, 
+                            contractAddress, 
+                            tokenType,
+                            hasLoadingWheels: true 
+                        });
+                    }
                     // #region agent log
                     fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4',location:'zero.js:loadTokens:emitReady',message:'emit tokensReadyForDisplay',data:{count:filteredTokens.length,tokenType,contractAddress},timestamp:Date.now()})}).catch(()=>{});
                     // #endregion
