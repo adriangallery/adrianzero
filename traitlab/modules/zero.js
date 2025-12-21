@@ -171,6 +171,8 @@ class ZeroManager {
     async fetchWithAlchemyFallback(urlTemplate, apiKeys, timeout = 15000) {
         const maxRetriesPerKey = 2;
         const retryDelays = [1000, 2000, 4000]; // Exponential backoff
+        const rateLimitDelay = 2000; // Delay cuando hay rate limit (2 segundos)
+        let rateLimitCount = 0; // Contador de rate limits consecutivos
         
         for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
             const apiKey = apiKeys[keyIndex];
@@ -193,10 +195,18 @@ class ZeroManager {
                     
                     clearTimeout(timeoutId);
                     
-                    // Si es rate limit (429), cambiar inmediatamente a siguiente key
+                    // Si es rate limit (429), esperar antes de cambiar a siguiente key
                     if (response.status === 429) {
-                        console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        rateLimitCount++;
+                        const delay = rateLimitDelay * rateLimitCount; // Delay incremental
+                        console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, esperando ${delay}ms antes de cambiar a siguiente key`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
                         break; // Salir del loop de retry y probar siguiente key
+                    }
+                    
+                    // Si llegamos aquí y no hay rate limit, resetear contador
+                    if (response.status !== 429) {
+                        rateLimitCount = 0;
                     }
                     
                     // Si es error del servidor (5xx), retry con misma key o cambiar
@@ -260,6 +270,34 @@ class ZeroManager {
                     console.warn(`⚠️ Error con key ${keyIndex + 1}: ${error.message}, cambiando a siguiente key`);
                     break;
                 }
+            }
+        }
+        
+        // Si todas las keys fallaron por rate limit, esperar más tiempo antes de reintentar
+        if (rateLimitCount >= apiKeys.length) {
+            const longDelay = rateLimitDelay * apiKeys.length * 2; // Delay más largo
+            console.warn(`⚠️ Todas las API keys tienen rate limit, esperando ${longDelay}ms antes de reintentar...`);
+            await new Promise(resolve => setTimeout(resolve, longDelay));
+            // Reintentar una vez más con la primera key
+            console.log(`🔄 Reintentando con la primera API key después del delay...`);
+            const firstKey = apiKeys[0];
+            const url = urlTemplate.replace('{API_KEY}', firstKey);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { 
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                clearTimeout(timeoutId);
+                if (response.ok) {
+                    console.log(`✅ Petición exitosa después del delay con API key 1`);
+                    return response;
+                }
+            } catch (error) {
+                clearTimeout(timeoutId);
             }
         }
         
@@ -377,9 +415,13 @@ class ZeroManager {
                     console.log(`📈 Progreso: ${pageCount} páginas, ${allNfts.length} tokens cargados`);
                 }
                 
-                // Optional: Add a small delay to avoid rate limiting
+                // Add delay between requests to avoid rate limiting
+                // Delay más largo si hay muchas páginas para evitar saturar las API keys
                 if (hasMore) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    const baseDelay = 200; // Delay base de 200ms
+                    const adaptiveDelay = Math.min(pageCount * 10, 500); // Delay adaptativo hasta 500ms
+                    const delay = baseDelay + adaptiveDelay;
+                    await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
             
