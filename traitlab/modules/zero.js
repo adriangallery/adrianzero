@@ -587,13 +587,20 @@ class ZeroManager {
                         // Extract balance
                         const balance = nft.balance || '1';
                         
+                        // Extract metadata - Verificar múltiples ubicaciones cuando includeMetadata=true
+                        let extractedMetadata = {};
+                        if (includeMetadata) {
+                            // Alchemy puede devolver metadata en diferentes lugares
+                            extractedMetadata = nft.metadata || nft.raw?.metadata || {};
+                        }
+                        
                         // Extract category - Manejar casos sin metadata
                         let category = '';
-                        if (nft.metadata) {
-                            category = nft.metadata.category || nft.metadata.Category || '';
+                        if (extractedMetadata && Object.keys(extractedMetadata).length > 0) {
+                            category = extractedMetadata.category || extractedMetadata.Category || '';
                             
-                            if (!category && nft.metadata.attributes) {
-                                const categoryAttr = nft.metadata.attributes.find(attr => 
+                            if (!category && extractedMetadata.attributes) {
+                                const categoryAttr = extractedMetadata.attributes.find(attr => 
                                     attr.trait_type && attr.trait_type.toLowerCase() === 'category'
                                 );
                                 if (categoryAttr) {
@@ -612,7 +619,7 @@ class ZeroManager {
                             tokenType: tokenType,
                             category: category,
                             balance: balance,
-                            metadata: nft.metadata || {}
+                            metadata: extractedMetadata
                         };
                         
                         // Add fallback image URL for traits if available
@@ -653,50 +660,58 @@ class ZeroManager {
                         hasLoadingWheels: true 
                     });
                     
-                    const tokensWithMetadata = await Promise.all(
-                        filteredTokens.map(async (token) => {
-                            if (!token.metadata || Object.keys(token.metadata).length === 0) {
-                                console.log(`Fetching individual metadata for token ${token.tokenId}`);
-                                try {
-                                    const metadataUrlTemplate = `https://base-mainnet.g.alchemy.com/nft/v3/{API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=ERC1155`;
-                                    const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
-                                    
-                                    const metadataResponse = await this.fetchWithAlchemyFallback(metadataUrlTemplate, apiKeys, 15000);
-                                    
-                                    if (metadataResponse.ok) {
-                                        const metadataData = await metadataResponse.json();
-                                        console.log(`Metadata for token ${token.tokenId}:`, metadataData);
+                    // Si includeMetadata=true, la metadata ya viene en la respuesta, no hacer llamadas individuales
+                    let tokensWithMetadata;
+                    if (includeMetadata) {
+                        // Metadata ya está incluida, usar tokens directamente
+                        console.log('✅ Usando metadata de la respuesta principal (includeMetadata=true)');
+                        tokensWithMetadata = filteredTokens;
+                    } else {
+                        // Solo hacer llamadas individuales si includeMetadata=false y no tenemos metadata
+                        tokensWithMetadata = await Promise.all(
+                            filteredTokens.map(async (token) => {
+                                if (!token.metadata || Object.keys(token.metadata).length === 0) {
+                                    console.log(`Fetching individual metadata for token ${token.tokenId}`);
+                                    try {
+                                        const metadataUrlTemplate = `https://base-mainnet.g.alchemy.com/nft/v3/{API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=ERC1155`;
+                                        const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
                                         
-                                        // Extract category from the new metadata
-                                        let category = '';
-                                        if (metadataData.metadata) {
-                                            category = metadataData.metadata.category || metadataData.metadata.Category || '';
+                                        const metadataResponse = await this.fetchWithAlchemyFallback(metadataUrlTemplate, apiKeys, 15000);
+                                        
+                                        if (metadataResponse.ok) {
+                                            const metadataData = await metadataResponse.json();
+                                            console.log(`Metadata for token ${token.tokenId}:`, metadataData);
                                             
-                                            if (!category && metadataData.metadata.attributes) {
-                                                const categoryAttr = metadataData.metadata.attributes.find(attr => 
-                                                    attr.trait_type && attr.trait_type.toLowerCase() === 'category'
-                                                );
-                                                if (categoryAttr) {
-                                                    category = categoryAttr.value.toLowerCase();
+                                            // Extract category from the new metadata
+                                            let category = '';
+                                            if (metadataData.metadata) {
+                                                category = metadataData.metadata.category || metadataData.metadata.Category || '';
+                                                
+                                                if (!category && metadataData.metadata.attributes) {
+                                                    const categoryAttr = metadataData.metadata.attributes.find(attr => 
+                                                        attr.trait_type && attr.trait_type.toLowerCase() === 'category'
+                                                    );
+                                                    if (categoryAttr) {
+                                                        category = categoryAttr.value.toLowerCase();
+                                                    }
                                                 }
                                             }
+                                            
+                                            return {
+                                                ...token,
+                                                metadata: metadataData.metadata || {},
+                                                category: category
+                                            };
                                         }
-                                        
-                                        return {
-                                            ...token,
-                                            metadata: metadataData.metadata || {},
-                                            category: category
-                                        };
+                                    } catch (error) {
+                                        console.error(`Error fetching metadata for token ${token.tokenId}:`, error);
                                     }
-                                } catch (error) {
-                                    console.error(`Error fetching metadata for token ${token.tokenId}:`, error);
                                 }
-                            }
-                            // Return the token as is, preserving the balance
-                            console.log(`Returning token ${token.tokenId} with balance: ${token.balance}`);
-                            return token;
-                        })
-                    );
+                                // Return the token as is, preserving the balance
+                                return token;
+                            })
+                        );
+                    }
                     
                     console.log(`Tokens with metadata:`, tokensWithMetadata);
                     this.emit('tokensLoaded', { tokens: tokensWithMetadata, contractAddress, tokenType });
