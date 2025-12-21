@@ -406,8 +406,18 @@ class ZeroManager {
                 return [];
             }
             
-            // Process all NFTs
-            let tokens = allNfts.map(nft => {
+            // Process all NFTs - Filtrar spam primero
+            const validNfts = allNfts.filter(nft => {
+                // Filtrar tokens marcados como spam
+                if (nft.isSpam === true) {
+                    return false;
+                }
+                return true;
+            });
+            
+            console.log(`📊 Tokens válidos después de filtrar spam: ${validNfts.length}/${allNfts.length}`);
+            
+            let tokens = validNfts.map(nft => {
                     try {
                         // Extract tokenId
                         let tokenId;
@@ -435,7 +445,7 @@ class ZeroManager {
                             return null;
                         }
                         
-                        // Extract title/name
+                        // Extract title/name - Manejar casos sin metadata
                         let title = `Token #${tokenIdInt}`;
                         
                         if (nft.title) {
@@ -446,6 +456,12 @@ class ZeroManager {
                             title = nft.metadata.name;
                         } else if (nft.contract && nft.contract.name) {
                             title = `${nft.contract.name} #${tokenIdInt}`;
+                        } else if (isERC721) {
+                            // Para ERC721 sin metadata, usar formato estándar
+                            title = `AdrianZERO #${tokenIdInt}`;
+                        } else {
+                            // Para ERC1155 sin metadata, usar formato estándar
+                            title = `Token #${tokenIdInt}`;
                         }
                         
                         // Extract image URL
@@ -514,7 +530,7 @@ class ZeroManager {
                         // Extract balance
                         const balance = nft.balance || '1';
                         
-                        // Extract category
+                        // Extract category - Manejar casos sin metadata
                         let category = '';
                         if (nft.metadata) {
                             category = nft.metadata.category || nft.metadata.Category || '';
@@ -528,13 +544,14 @@ class ZeroManager {
                                 }
                             }
                         }
+                        // Si no hay metadata, category queda vacío (OK para tokens básicos)
                         
                         const tokenObj = {
                             tokenId: tokenIdInt,
                             title: title,
                             imageUrl: mediaUrl,
-                            contract: nft.contract.address,
-                            contractName: nft.contract.name || 'Unknown Contract',
+                            contract: (nft.contract && nft.contract.address) ? nft.contract.address : contractAddress,
+                            contractName: (nft.contract && nft.contract.name) ? nft.contract.name : 'Unknown Contract',
                             tokenType: tokenType,
                             category: category,
                             balance: balance,

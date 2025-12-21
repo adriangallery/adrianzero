@@ -637,9 +637,14 @@
                     filter 
                 });
                 
-                // Si estamos en el tab correcto, mostrar los tokens inmediatamente
-                if (this.currentFilter === filter) {
+                // Si estamos en el tab correcto, o si no hay tab activo (carga inicial), mostrar los tokens
+                if (this.currentFilter === filter || (this.currentFilter === null && filter === 'adrianzero')) {
                     console.log('✅ Mostrando tokens cargados progresivamente para tab:', filter);
+                    // Establecer el filter si es null (carga inicial)
+                    if (this.currentFilter === null && filter === 'adrianzero') {
+                        this.currentFilter = 'adrianzero';
+                        this.modules.ui.setCurrentFilter('adrianzero');
+                    }
                     this.modules.ui.displayTokens(tokens, filter);
                     this.hideLoading();
                 } else {
