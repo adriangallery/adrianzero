@@ -949,15 +949,15 @@ class TraitLABDataManager {
     async loadBasicTokens(userAddress, contractAddress, limit = null, pageKey = null) {
         try {
             // Usar el método loadTokens del zero.js con parámetros de paginación
-            // includeMetadata=true por defecto ahora, así que la metadata viene en la respuesta principal
+            // includeMetadata=true para que la metadata venga en la respuesta principal (sin llamadas individuales)
             const result = await window.app.modules.zero.loadTokens(
                 userAddress, 
                 contractAddress, 
                 null, // filter
                 false, // skip individual metadata (false porque metadata viene en respuesta principal)
-                limit, // limit (para batch mode)
+                limit, // limit (null = cargar todos, sin límite)
                 pageKey, // startPageKey (para continuar desde donde quedó)
-                { includeMetadata: false } // Respuesta mínima (omitMetadata)
+                { includeMetadata: true } // includeMetadata=true para evitar llamadas individuales
             );
             
             // Si limit fue proporcionado, result es un objeto {tokens, hasMore, nextPageKey}

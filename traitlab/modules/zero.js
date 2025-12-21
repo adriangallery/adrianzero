@@ -356,11 +356,12 @@ class ZeroManager {
             let pageCount = 0;
             const MAX_PAGES = 1000; // Límite de seguridad para páginas
             // Por defecto, cargar todos los tokens disponibles (sin límite)
-            // Si se especifica un límite, usarlo; si no, cargar todos
-            const MAX_TOKENS = (limit ?? maxTokens) ?? 10000; // Default: cargar todos (hasta 10k por seguridad)
-            const isBatchMode = limit !== null || maxTokens !== null; // Modo batch si se proporciona límite
+            // Si se especifica un límite explícito (no null/undefined), usarlo; si no, cargar todos
+            const hasExplicitLimit = (limit !== null && limit !== undefined) || (maxTokens !== null && maxTokens !== undefined);
+            const MAX_TOKENS = hasExplicitLimit ? (limit ?? maxTokens ?? 10000) : 10000; // Default: cargar todos (hasta 10k por seguridad)
+            const isBatchMode = hasExplicitLimit; // Modo batch solo si se proporciona límite explícito
             
-            console.log(`🚀 Iniciando carga de tokens ${tokenType} con límites: max ${MAX_PAGES} páginas, max ${MAX_TOKENS} tokens${isBatchMode ? ' (BATCH MODE)' : ' (TODOS LOS TOKENS por defecto)'}`);
+            console.log(`🚀 Iniciando carga de tokens ${tokenType} con límites: max ${MAX_PAGES} páginas, max ${MAX_TOKENS === 10000 ? 'TODOS' : MAX_TOKENS} tokens${isBatchMode ? ' (BATCH MODE)' : ' (TODOS LOS TOKENS por defecto)'}`);
             
             while (hasMore && pageCount < MAX_PAGES && allNfts.length < MAX_TOKENS) {
                 pageCount++;
