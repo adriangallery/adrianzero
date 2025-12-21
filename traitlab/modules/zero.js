@@ -277,8 +277,20 @@ class ZeroManager {
      * @param {string|null} startPageKey - Page key to start from (optional, for batch loading)
      * @returns {Promise<{tokens: Array, hasMore: boolean, nextPageKey: string|null}>}
      */
-    async loadTokens(userAddress, contractAddress, filter = null, skipIndividualMetadata = false, limit = null, startPageKey = null) {
-        console.log('loadTokens called with:', { userAddress, contractAddress, filter, skipIndividualMetadata, limit, startPageKey });
+    async loadTokens(userAddress, contractAddress, filter = null, skipIndividualMetadata = false, limit = null, startPageKey = null, options = {}) {
+        // Permitir sobrecarga: si startPageKey es un objeto, se trata como options
+        if (startPageKey && typeof startPageKey === 'object' && options && Object.keys(options).length === 0) {
+            options = startPageKey;
+            startPageKey = null;
+        }
+
+        const {
+            includeMetadata = false, // false = omitMetadata para respuesta ligera
+            maxTokens = null,
+            pageSize = 100
+        } = options || {};
+
+        console.log('loadTokens called with:', { userAddress, contractAddress, filter, skipIndividualMetadata, limit, startPageKey, options });
         
         if (!userAddress) {
             throw new Error('User address is required');
@@ -305,8 +317,8 @@ class ZeroManager {
             let hasMore = true;
             let pageCount = 0;
             const MAX_PAGES = 1000; // Límite de seguridad para páginas
-            const MAX_TOKENS = limit || 10000; // Usar limit si se proporciona, sino 10k
-            const isBatchMode = limit !== null; // Modo batch si se proporciona limit
+            const MAX_TOKENS = (limit ?? maxTokens) ?? 10000; // Usar limit > maxTokens > default
+            const isBatchMode = limit !== null || maxTokens !== null; // Modo batch si se proporciona límite
             
             console.log(`🚀 Iniciando carga de tokens ${tokenType} con límites: max ${MAX_PAGES} páginas, max ${MAX_TOKENS} tokens${isBatchMode ? ' (BATCH MODE)' : ''}`);
             
@@ -315,7 +327,8 @@ class ZeroManager {
                 console.log(`📄 Loading page ${pageCount}/${MAX_PAGES}... (tokens: ${allNfts.length}/${MAX_TOKENS})`);
                 
                 // Build URL template with pagination (sin API key, se inyectará en fetchWithAlchemyFallback)
-                let urlParams = `owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=true&pageSize=100&tokenType=${tokenType}`;
+                const safePageSize = Math.min(Math.max(pageSize || 100, 1), 100); // 1..100
+                let urlParams = `owner=${userAddress}&contractAddresses[]=${contractAddress}&withMetadata=${includeMetadata ? 'true' : 'false'}&omitMetadata=${includeMetadata ? 'false' : 'true'}&pageSize=${safePageSize}&tokenType=${tokenType}`;
                 
                 if (pageKey) {
                     urlParams += `&pageKey=${encodeURIComponent(pageKey)}`;

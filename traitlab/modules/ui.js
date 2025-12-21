@@ -563,6 +563,19 @@ class UIManager {
     }
 
     /**
+     * Refrescar los tokens mostrados cuando llega metadata adicional
+     */
+    refreshTokensMetadata(tokens) {
+        if (!tokens || !Array.isArray(tokens)) {
+            console.warn('⚠️ refreshTokensMetadata: tokens inválidos', tokens);
+            return;
+        }
+        console.log(`🔄 Refrescando metadata visual para ${tokens.length} tokens`);
+        // Re-render pero sin tocar la selección actual
+        this.displayTokens(tokens, true, false);
+    }
+
+    /**
      * Display placeholders for tokens to give loading sensation
      */
     displayPlaceholders(tokens, filter) {

@@ -375,6 +375,14 @@
                             this.hideLoading();
                         }
                     });
+
+                    // 🚀 Metadata enriquecida para traits (primer batch)
+                    this.modules.dataManager.on('adrianLabMetadataUpdated', ({ traits = [], updatedCount = 0 }) => {
+                        console.log(`🧠 Metadata de traits enriquecida (${updatedCount} tokens)`);
+                        if (this.currentFilter === 'traits' && traits.length > 0) {
+                            this.modules.ui.refreshTokensMetadata(traits);
+                        }
+                    });
                 }
             }
 

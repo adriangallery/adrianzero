@@ -731,7 +731,7 @@ class TraitLABDataManager {
             let basicTokens = [];
             let loadResult = null;
             try {
-                // Modo completo: cargar todos los tokens (sin límite de batch)
+                // Modo completo: cargar todos los tokens (sin límite de batch) con metadata mínima
                 loadResult = await this.loadBasicTokens(userAddress, contractAddress);
                 basicTokens = Array.isArray(loadResult) ? loadResult : (loadResult?.tokens || []);
             } catch (error) {
@@ -788,6 +788,18 @@ class TraitLABDataManager {
                         serums: serums,
                         traits: traits
                     });
+
+                    // 🚀 Mejorar metadata solo para el primer batch visible (rápido y barato)
+                    try {
+                        const enrichedCount = await this.enrichFirstBatchMetadata(traits, contractAddress, 'ERC1155', 50, 3);
+                        console.log(`📊 Metadata enriquecida para ${enrichedCount} traits iniciales`);
+                        this.emit('adrianLabMetadataUpdated', {
+                            updatedCount: enrichedCount,
+                            traits: this.cache.adrianLab.traits
+                        });
+                    } catch (metadataError) {
+                        console.warn('📊 Error enriqueciendo metadata inicial de traits (no crítico):', metadataError);
+                    }
                     
                     // 🔄 MEJORAR METADATA EN BACKGROUND (no bloquear si falla)
                     try {
@@ -925,7 +937,8 @@ class TraitLABDataManager {
                 null, // filter
                 true, // skip individual metadata
                 limit, // limit (para batch mode)
-                pageKey // startPageKey (para continuar desde donde quedó)
+                pageKey, // startPageKey (para continuar desde donde quedó)
+                { includeMetadata: false } // Respuesta mínima (omitMetadata)
             );
             
             // Si limit fue proporcionado, result es un objeto {tokens, hasMore, nextPageKey}
@@ -935,6 +948,79 @@ class TraitLABDataManager {
             console.warn('📊 Error cargando tokens básicos:', error);
             return limit ? { tokens: [], hasMore: false, nextPageKey: null } : [];
         }
+    }
+
+    /**
+     * Mejorar metadata de tokens ERC1155 en background
+     */
+    async enrichFirstBatchMetadata(tokens, contractAddress, tokenType = 'ERC1155', batchLimit = 50, concurrency = 3) {
+        if (!tokens || tokens.length === 0) {
+            return 0;
+        }
+
+        const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+        const zeroModule = window.app?.modules?.zero;
+        if (!zeroModule || typeof zeroModule.fetchWithAlchemyFallback !== 'function') {
+            console.warn('📊 No se puede enriquecer metadata: zero module o fetchWithAlchemyFallback no disponible');
+            return 0;
+        }
+
+        const targetTokens = tokens.slice(0, batchLimit);
+        let enriched = 0;
+        let index = 0;
+
+        const worker = async () => {
+            while (index < targetTokens.length) {
+                const currentIndex = index++;
+                const token = targetTokens[currentIndex];
+
+                try {
+                    const metadataUrlTemplate = `https://base-mainnet.g.alchemy.com/nft/v3/{API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=${tokenType}`;
+                    const response = await zeroModule.fetchWithAlchemyFallback(metadataUrlTemplate, apiKeys, 12000);
+
+                    if (!response.ok) {
+                        console.warn(`📊 Metadata no disponible para token ${token.tokenId}: ${response.status}`);
+                        continue;
+                    }
+
+                    const metadataData = await response.json();
+                    const metadata = metadataData.metadata || {};
+
+                    token.metadata = metadata;
+
+                    // Categoria
+                    let category = metadata.category || metadata.Category || '';
+                    if (!category && metadata.attributes) {
+                        const categoryAttr = metadata.attributes.find(attr => attr.trait_type && attr.trait_type.toLowerCase() === 'category');
+                        if (categoryAttr) {
+                            category = categoryAttr.value.toLowerCase();
+                        }
+                    }
+                    if (category) {
+                        token.category = category;
+                    }
+
+                    // Imagen si no teníamos
+                    if (!token.imageUrl && metadata.image) {
+                        token.imageUrl = metadata.image;
+                    }
+
+                    enriched++;
+                } catch (error) {
+                    console.warn(`📊 Error enriqueciendo metadata para token ${token.tokenId}:`, error.message || error);
+                }
+            }
+        };
+
+        // Ejecutar con concurrencia limitada
+        const workers = [];
+        const workerCount = Math.max(1, Math.min(concurrency, batchLimit));
+        for (let i = 0; i < workerCount; i++) {
+            workers.push(worker());
+        }
+        await Promise.all(workers);
+
+        return enriched;
     }
 
     /**
