@@ -63,23 +63,26 @@ class TraitLABDataManager {
         if (this.cache.loading.adrianZero || this.cache.ready.adrianZero) return;
         
         this.cache.loading.adrianZero = true;
-        console.log('📊 Cargando primera página de tokens AdrianZERO...');
+        console.log('📊 Cargando todos los tokens AdrianZERO...');
         
         try {
             if (window.app && window.app.modules.zero) {
                 const userAddress = window.app.modules.wallet?.getCurrentAccount();
                 if (userAddress) {
                     const contractAddress = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
-                    // Cargar solo la primera página (100 tokens) para mostrar inmediatamente
-                    const tokens = await window.app.modules.zero.loadTokens(
+                    // Cargar todos los tokens disponibles (sin límite)
+                    const result = await window.app.modules.zero.loadTokens(
                         userAddress, 
                         contractAddress, 
                         null, // filter
                         false, // skipIndividualMetadata
-                        100, // limit: solo primera página
+                        null, // limit: sin límite, cargar todos
                         null, // startPageKey
-                        { includeMetadata: true, maxTokens: 100 } // options: limitar a 100 tokens
+                        { includeMetadata: true } // options: metadata completa
                     );
+                    
+                    // Manejar respuesta: puede ser array o objeto {tokens, hasMore, nextPageKey}
+                    const tokens = Array.isArray(result) ? result : (result?.tokens || []);
                     this.cache.adrianZero = tokens;
                     console.log('📊 AdrianZERO tokens básicos cargados:', tokens.length);
                     
@@ -736,15 +739,14 @@ class TraitLABDataManager {
      */
     async loadTokensProgressive(userAddress, contractAddress, batchMode = false) {
         try {
-            // Cargar tokens con metadata completa desde Alchemy - SOLO PRIMERA PÁGINA
-            console.log(`📊 Cargando primera página de tokens ERC1155 con metadata completa desde Alchemy...`);
+            // Cargar tokens con metadata completa desde Alchemy - TODOS LOS TOKENS
+            console.log(`📊 Cargando todos los tokens ERC1155 con metadata completa desde Alchemy...`);
             
             let basicTokens = [];
             let loadResult = null;
             try {
-                // Cargar solo la primera página (100 tokens) para mostrar inmediatamente
-                // El usuario puede cargar más después si lo necesita
-                loadResult = await this.loadBasicTokens(userAddress, contractAddress, 100); // Limitar a 100 tokens (1 página)
+                // Cargar todos los tokens disponibles (sin límite)
+                loadResult = await this.loadBasicTokens(userAddress, contractAddress, null); // Sin límite, cargar todos
                 basicTokens = Array.isArray(loadResult) ? loadResult : (loadResult?.tokens || []);
             } catch (error) {
                 console.error('📊 Error cargando tokens básicos ERC1155:', error);
