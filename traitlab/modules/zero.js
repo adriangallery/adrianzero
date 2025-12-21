@@ -406,16 +406,29 @@ class ZeroManager {
                 return [];
             }
             
-            // Process all NFTs - Filtrar spam primero
+            // Process all NFTs - Filtrar spam solo para contratos desconocidos
+            // Para contratos conocidos (AdrianZERO, AdrianLAB), no filtrar spam
+            // porque omitMetadata puede hacer que tokens legítimos se marquen como spam
+            const knownContracts = [
+                window.TraitLABConfig?.CONTRACTS?.ERC721?.toLowerCase(), // AdrianZERO
+                window.TraitLABConfig?.CONTRACTS?.ERC1155?.toLowerCase(), // AdrianLAB
+                "0x6e369bf0e4e0c106192d606fb6d85836d684da75".toLowerCase(), // AdrianZERO (fallback)
+                "0x90546848474fb3c9fda3fdad887969bb244e7e58".toLowerCase()  // AdrianLAB (fallback)
+            ];
+            
+            const contractLower = contractAddress.toLowerCase();
+            const isKnownContract = knownContracts.includes(contractLower);
+            
             const validNfts = allNfts.filter(nft => {
-                // Filtrar tokens marcados como spam
-                if (nft.isSpam === true) {
+                // Solo filtrar spam para contratos desconocidos
+                // Para contratos conocidos, confiar en que los tokens son legítimos
+                if (!isKnownContract && nft.isSpam === true) {
                     return false;
                 }
                 return true;
             });
             
-            console.log(`📊 Tokens válidos después de filtrar spam: ${validNfts.length}/${allNfts.length}`);
+            console.log(`📊 Tokens válidos después de filtrar spam: ${validNfts.length}/${allNfts.length} (contrato conocido: ${isKnownContract})`);
             
             let tokens = validNfts.map(nft => {
                     try {
