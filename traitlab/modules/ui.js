@@ -529,14 +529,8 @@ class UIManager {
 
         tokensGrid.innerHTML = "";
         
-        // 🚨 TEST N1: Limitar a máximo 150 traits
-        const maxTraits = 150;
-        let traitsToDisplay = tokens;
-        
-        if (this.currentFilter === 'traits' && tokens.length > maxTraits) {
-            console.log(`📊 Limitando display a ${maxTraits} traits de ${tokens.length} totales`);
-            traitsToDisplay = tokens.slice(0, maxTraits);
-        }
+        // Sin límite de traits: mostrar todos
+        const traitsToDisplay = tokens;
         
         // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens)
         const shouldUseLazyLoading = this.isMobile() && 

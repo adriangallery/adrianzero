@@ -721,36 +721,19 @@ class TraitLABDataManager {
      * Cargar tokens ERC1155 progresivamente
      * @param {string} userAddress - User wallet address
      * @param {string} contractAddress - Contract address
-     * @param {boolean} batchMode - Si true, cargar solo un batch de 150 tokens
+     * @param {boolean} batchMode - (Desactivado) antes limitaba a 150 tokens
      */
     async loadTokensProgressive(userAddress, contractAddress, batchMode = false) {
         try {
             // Cargar tokens básicos primero (sin metadata individual)
-            console.log(`📊 Cargando tokens básicos ERC1155${batchMode ? ' (BATCH MODE - 50 traits)' : ' (modo completo)'}...`);
+            console.log(`📊 Cargando tokens básicos ERC1155 (modo completo)...`);
             
             let basicTokens = [];
             let loadResult = null;
             try {
-                if (batchMode) {
-                    // Modo batch: cargar solo 150 tokens
-                    const batchSize = this.paginationState.traits.batchSize;
-                    loadResult = await this.loadBasicTokens(userAddress, contractAddress, batchSize, null);
-                    
-                    // loadResult es un objeto {tokens, hasMore, nextPageKey} en modo batch
-                    if (loadResult && typeof loadResult === 'object' && loadResult.tokens) {
-                        basicTokens = loadResult.tokens;
-                        this.paginationState.traits.pageKey = loadResult.nextPageKey;
-                        this.paginationState.traits.hasMore = loadResult.hasMore;
-                        console.log(`📦 Batch cargado: ${basicTokens.length} tokens, hasMore: ${loadResult.hasMore}`);
-                    } else {
-                        // Fallback si no retorna formato batch
-                        basicTokens = Array.isArray(loadResult) ? loadResult : [];
-                    }
-                } else {
-                    // Modo completo: cargar todos los tokens
-                    loadResult = await this.loadBasicTokens(userAddress, contractAddress);
-                    basicTokens = Array.isArray(loadResult) ? loadResult : (loadResult?.tokens || []);
-                }
+                // Modo completo: cargar todos los tokens (sin límite de batch)
+                loadResult = await this.loadBasicTokens(userAddress, contractAddress);
+                basicTokens = Array.isArray(loadResult) ? loadResult : (loadResult?.tokens || []);
             } catch (error) {
                 console.error('📊 Error cargando tokens básicos ERC1155:', error);
                 // Emitir evento de error
