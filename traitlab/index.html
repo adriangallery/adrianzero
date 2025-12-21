@@ -357,8 +357,8 @@
                 
                 // 🚨 NUEVO: Escuchar eventos de tokens ERC1155 listos
                 if (this.modules.dataManager) {
-                    this.modules.dataManager.on('adrianLabTokensReady', ({ floppys, serums, traits }) => {
-                        console.log('🎯 Tokens ERC1155 listos:', { floppys: floppys.length, serums: serums.length, traits: traits.length });
+                    this.modules.dataManager.on('adrianLabTokensReady', ({ floppys, serums, traits, hasMore }) => {
+                        console.log('🎯 Tokens ERC1155 listos:', { floppys: floppys.length, serums: serums.length, traits: traits.length, hasMore });
                         
                         // Actualizar display si estamos en el tab correcto
                         if (this.currentFilter === 'floppy' && floppys.length > 0) {
@@ -373,6 +373,9 @@
                             console.log('✅ Mostrando trait tokens inmediatamente');
                             this.modules.ui.displayTokens(traits, 'traits');
                             this.hideLoading();
+                            // Mostrar botón de cargar más si corresponde
+                            const ui = this.modules.ui;
+                            ui?.setLoadMoreVisibility && ui.setLoadMoreVisibility(hasMore && !ui.isMobile());
                         }
                     });
 
@@ -456,6 +459,9 @@
                             // Traits ya están cargados, mostrar inmediatamente
                             console.log('✅ Mostrando traits disponibles inmediatamente');
                             this.modules.ui.displayTokens(filteredTokens, 'traits');
+                            // Botón cargar más según estado de paginación
+                            const hasMore = this.modules.dataManager.getTraitsHasMore?.() ?? false;
+                            this.modules.ui.setLoadMoreVisibility?.(hasMore && !this.modules.ui.isMobile());
                             this.hideLoading();
                         } else {
                             // Traits no están cargados, iniciar carga bajo demanda

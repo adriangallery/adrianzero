@@ -699,6 +699,13 @@ class TraitLABDataManager {
     }
 
     /**
+     * Saber si hay más traits pendientes de cargar (paginación ERC1155)
+     */
+    getTraitsHasMore() {
+        return this.paginationState.traits.hasMore;
+    }
+
+    /**
      * Sistema de eventos
      */
     on(event, callback) {
@@ -808,14 +815,13 @@ class TraitLABDataManager {
                         serums: serums.length
                     });
                     
-                    // 🚀 NO MOSTRAR TOKENS AQUÍ - se mostrarán cuando el usuario cambie de tab
-                    // Los tokens se mostrarán automáticamente via getFilteredTokens() cuando sea necesario
-                    
-                    // 🚨 NUEVO: Emitir evento para notificar que los tokens están listos
+                    // 🚨 Emitir evento para notificar que los tokens están listos (primer batch)
                     this.emit('adrianLabTokensReady', {
                         floppys: floppys,
                         serums: serums,
-                        traits: traits
+                        traits: traits,
+                        hasMore: this.paginationState.traits.hasMore,
+                        nextPageKey: this.paginationState.traits.pageKey
                     });
 
                     // 🚀 MEJORA DE METADATA COMENTADA - Cargando metadata completa desde Alchemy

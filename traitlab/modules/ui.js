@@ -87,6 +87,21 @@ class UIManager {
                 this.domElements.set(id, element);
             }
         });
+
+        // Crear botón de carga incremental si no existe
+        const tokensGrid = document.getElementById('tokens-grid');
+        if (tokensGrid && !document.getElementById('load-more-traits')) {
+            const btn = document.createElement('button');
+            btn.id = 'load-more-traits';
+            btn.className = 'btn btn-secondary mt-3 load-more-btn';
+            btn.style.display = 'none';
+            btn.textContent = 'Cargar más traits';
+            tokensGrid.parentNode.insertBefore(btn, tokensGrid.nextSibling);
+            this.domElements.set('load-more-traits', btn);
+        } else if (tokensGrid) {
+            const btn = document.getElementById('load-more-traits');
+            this.domElements.set('load-more-traits', btn);
+        }
     }
 
     /**
@@ -112,6 +127,30 @@ class UIManager {
         const tokensGrid = this.domElements.get('tokens-grid');
         if (tokensGrid) {
             tokensGrid.classList.add('adrianlab-mobile'); // Default to AdrianLAB layout
+        }
+
+        // Botón "Cargar más traits"
+        const loadMoreBtn = this.domElements.get('load-more-traits');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', async () => {
+                const dataManager = window.app?.modules?.dataManager;
+                if (!dataManager) return;
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.textContent = 'Cargando...';
+                try {
+                    const newTraits = await dataManager.loadMoreTraits();
+                    if (newTraits && newTraits.length > 0) {
+                        this.appendTokens(newTraits);
+                    }
+                    const hasMore = dataManager.getTraitsHasMore?.() ?? false;
+                    this.setLoadMoreVisibility(hasMore && !this.isMobile()); // Desktop: botón; móvil: lazy
+                } catch (err) {
+                    console.error('❌ Error cargando más traits:', err);
+                } finally {
+                    loadMoreBtn.disabled = false;
+                    loadMoreBtn.textContent = 'Cargar más traits';
+                }
+            });
         }
     }
 
@@ -155,6 +194,15 @@ class UIManager {
     }
 
     /**
+     * Mostrar/ocultar botón "Cargar más traits" (solo desktop)
+     */
+    setLoadMoreVisibility(show) {
+        const btn = this.domElements.get('load-more-traits');
+        if (!btn) return;
+        btn.style.display = show ? 'block' : 'none';
+    }
+
+    /**
      * Clean up lazy loading observer
      */
     cleanupLazyLoading() {
@@ -177,6 +225,9 @@ class UIManager {
         this.lazyLoadingState.enabled = false;
         this.lazyLoadingState.allTokens = [];
         this.lazyLoadingState.currentIndex = 0;
+
+        // Ocultar botón de carga incremental si estaba visible
+        this.setLoadMoreVisibility(false);
     }
 
     /**
@@ -556,10 +607,32 @@ class UIManager {
             const tokenCard = this.createTokenCard(token);
             tokensGrid.appendChild(tokenCard);
         });
+
+        // Mostrar/ocultar botón de carga incremental (solo desktop)
+        if (!this.isMobile()) {
+            const dataManager = window.app?.modules?.dataManager;
+            const hasMore = dataManager?.getTraitsHasMore?.() ?? false;
+            this.setLoadMoreVisibility(hasMore && this.currentFilter === 'traits');
+        } else {
+            this.setLoadMoreVisibility(false);
+        }
         
         if (!skipSelectionUpdate) {
             this.updateSelectionInfo();
         }
+    }
+
+    /**
+     * Append tokens without limpiar grid (para cargar más)
+     */
+    appendTokens(tokens) {
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid || !tokens || !Array.isArray(tokens)) return;
+        tokens.forEach(token => {
+            const tokenCard = this.createTokenCard(token);
+            tokensGrid.appendChild(tokenCard);
+        });
+        this.updateSelectionInfo();
     }
 
     /**
