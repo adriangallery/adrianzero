@@ -88,6 +88,9 @@ class TraitLABDataManager {
                     
                     // Mostrar tokens inmediatamente
                     this.displayTokensImmediately(tokens, 'adrianzero');
+                    // #region agent log
+                    fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H5',location:'data-manager.js:loadAdrianZeroTokensBasic',message:'tokens loaded for adrianzero',data:{count:tokens.length,isArray:Array.isArray(tokens)},timestamp:Date.now()})}).catch(()=>{});
+                    // #endregion
                     
                     this.cache.loading.adrianZero = false;
                     this.cache.ready.adrianZero = true;
@@ -324,6 +327,9 @@ class TraitLABDataManager {
         // 🚨 VERIFICACIÓN: Validar que tokens existe y es un array
         if (!tokens || !Array.isArray(tokens)) {
             console.warn('⚠️ displayTokensImmediately: tokens es undefined, null o no es un array:', tokens);
+            // #region agent log
+            fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H6',location:'data-manager.js:displayTokensImmediately',message:'tokens not array',data:{receivedType:typeof tokens,hasTokensProp:tokens && !!tokens.tokens,length:tokens && tokens.length,filter},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             return;
         }
         
@@ -745,9 +751,18 @@ class TraitLABDataManager {
             let basicTokens = [];
             let loadResult = null;
             try {
-                // Cargar todos los tokens disponibles (sin límite)
-                loadResult = await this.loadBasicTokens(userAddress, contractAddress, null); // Sin límite, cargar todos
+                // Cargar solo la primera página (p.ej. 100) para mostrar rápido
+                const initialLimit = 100;
+                loadResult = await this.loadBasicTokens(userAddress, contractAddress, initialLimit);
                 basicTokens = Array.isArray(loadResult) ? loadResult : (loadResult?.tokens || []);
+                
+                // Guardar estado de paginación para posibles cargas posteriores
+                const hasMore = !!(loadResult && typeof loadResult === 'object' && loadResult.hasMore);
+                const nextPageKey = (loadResult && typeof loadResult === 'object') ? loadResult.nextPageKey : null;
+                this.paginationState.traits.pageKey = nextPageKey;
+                this.paginationState.traits.hasMore = hasMore;
+                this.paginationState.traits.batchSize = initialLimit;
+                this.paginationState.traits.isBatchMode = hasMore; // activar sólo si hay más páginas
             } catch (error) {
                 console.error('📊 Error cargando tokens básicos ERC1155:', error);
                 // Emitir evento de error
