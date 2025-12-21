@@ -285,7 +285,7 @@ class ZeroManager {
         }
 
         const {
-            includeMetadata = false, // false = omitMetadata para respuesta ligera
+            includeMetadata = true, // true = cargar metadata completa desde Alchemy (más eficiente)
             maxTokens = null,
             pageSize = 100
         } = options || {};

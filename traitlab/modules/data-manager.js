@@ -49,8 +49,9 @@ class TraitLABDataManager {
             this.loadAdrianLabTokens()
         ]);
         
-        // 2. Mejorar nombres AdrianZERO en background (no bloquea)
-        this.improveAdrianZeroNamesInBackground();
+        // 2. MEJORA DE NOMBRES COMENTADA - Cargando metadata completa desde Alchemy
+        // Si necesitamos reactivar la mejora de nombres, descomentar:
+        // this.improveAdrianZeroNamesInBackground();
         
         console.log('📊 TraitLABDataManager: Carga en paralelo completada');
     }
@@ -128,9 +129,10 @@ class TraitLABDataManager {
                     // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con loading wheels
                     this.displayTokensImmediately(tokens, 'adrianzero');
                     
-                    // 🔄 MEJORAR nombres personalizados EN BACKGROUND (no bloquea)
-                    console.log('🔍 DEBUG: Iniciando mejora de nombres en background...');
-                    this.improveTokenNamesInBackground(tokens);
+                    // 🔄 MEJORA DE NOMBRES COMENTADA - Cargando metadata completa desde Alchemy
+                    // Si necesitamos reactivar la mejora de nombres, descomentar:
+                    // console.log('🔍 DEBUG: Iniciando mejora de nombres en background...');
+                    // this.improveTokenNamesInBackground(tokens);
                     
                     // Marcar como listo para continuar con AdrianLAB
                     this.cache.loading.adrianZero = false;
@@ -725,8 +727,8 @@ class TraitLABDataManager {
      */
     async loadTokensProgressive(userAddress, contractAddress, batchMode = false) {
         try {
-            // Cargar tokens básicos primero (sin metadata individual)
-            console.log(`📊 Cargando tokens básicos ERC1155 (modo completo)...`);
+            // Cargar tokens con metadata completa desde Alchemy
+            console.log(`📊 Cargando tokens ERC1155 con metadata completa desde Alchemy...`);
             
             let basicTokens = [];
             let loadResult = null;
@@ -789,6 +791,9 @@ class TraitLABDataManager {
                         traits: traits
                     });
 
+                    // 🚀 MEJORA DE METADATA COMENTADA - Cargando metadata completa desde Alchemy
+                    // Si necesitamos reactivar la mejora de metadata, descomentar estas secciones:
+                    /*
                     // 🚀 Mejorar metadata solo para el primer batch visible (rápido y barato)
                     try {
                         const enrichedCount = await this.enrichFirstBatchMetadata(traits, contractAddress, 'ERC1155', 50, 3);
@@ -807,6 +812,7 @@ class TraitLABDataManager {
                     } catch (metadataError) {
                         console.warn('📊 Error mejorando metadata en background (no crítico):', metadataError);
                     }
+                    */
                 } else {
                     console.warn('📊 Módulo filters no disponible');
                 }
@@ -921,7 +927,7 @@ class TraitLABDataManager {
     }
 
     /**
-     * Cargar tokens básicos sin metadata individual
+     * Cargar tokens con metadata completa desde Alchemy
      * @param {string} userAddress - User wallet address
      * @param {string} contractAddress - Contract address
      * @param {number|null} limit - Maximum number of tokens to load (null = all)
@@ -931,11 +937,12 @@ class TraitLABDataManager {
     async loadBasicTokens(userAddress, contractAddress, limit = null, pageKey = null) {
         try {
             // Usar el método loadTokens del zero.js con parámetros de paginación
+            // includeMetadata=true por defecto ahora, así que la metadata viene en la respuesta principal
             const result = await window.app.modules.zero.loadTokens(
                 userAddress, 
                 contractAddress, 
                 null, // filter
-                true, // skip individual metadata
+                false, // skip individual metadata (false porque metadata viene en respuesta principal)
                 limit, // limit (para batch mode)
                 pageKey, // startPageKey (para continuar desde donde quedó)
                 { includeMetadata: false } // Respuesta mínima (omitMetadata)
