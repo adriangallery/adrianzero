@@ -26,6 +26,15 @@ class UIManager {
             sentinel: null
         };
         
+        // Pagination state for traits (max 300 per page)
+        this.paginationState = {
+            enabled: false,
+            allTokens: [], // Todos los traits cargados (cache completo)
+            currentPage: 1,
+            tokensPerPage: 300, // Máximo de tokens por pantalla
+            totalPages: 1
+        };
+        
         // Bind methods
         this.displayTokens = this.displayTokens.bind(this);
         this.displayPlaceholders = this.displayPlaceholders.bind(this);
@@ -95,12 +104,41 @@ class UIManager {
             btn.id = 'load-more-traits';
             btn.className = 'btn btn-secondary mt-3 load-more-btn';
             btn.style.display = 'none';
-            btn.textContent = 'Cargar más traits';
+            btn.textContent = 'Load More';
             tokensGrid.parentNode.insertBefore(btn, tokensGrid.nextSibling);
             this.domElements.set('load-more-traits', btn);
         } else if (tokensGrid) {
             const btn = document.getElementById('load-more-traits');
+            if (btn) {
+                btn.textContent = 'Load More';
+            }
             this.domElements.set('load-more-traits', btn);
+        }
+        
+        // Crear controles de paginación si no existen
+        if (tokensGrid && !document.getElementById('pagination-controls')) {
+            const paginationDiv = document.createElement('div');
+            paginationDiv.id = 'pagination-controls';
+            paginationDiv.className = 'pagination-controls';
+            paginationDiv.style.display = 'none';
+            paginationDiv.innerHTML = `
+                <button id="prev-page-btn" class="btn btn-secondary">Previous</button>
+                <span id="page-info" class="page-info">Page 1 of 1</span>
+                <button id="next-page-btn" class="btn btn-secondary">Next</button>
+            `;
+            tokensGrid.parentNode.insertBefore(paginationDiv, tokensGrid.nextSibling);
+            this.domElements.set('pagination-controls', paginationDiv);
+            this.domElements.set('prev-page-btn', paginationDiv.querySelector('#prev-page-btn'));
+            this.domElements.set('next-page-btn', paginationDiv.querySelector('#next-page-btn'));
+            this.domElements.set('page-info', paginationDiv.querySelector('#page-info'));
+        } else if (tokensGrid) {
+            const paginationDiv = document.getElementById('pagination-controls');
+            if (paginationDiv) {
+                this.domElements.set('pagination-controls', paginationDiv);
+                this.domElements.set('prev-page-btn', paginationDiv.querySelector('#prev-page-btn'));
+                this.domElements.set('next-page-btn', paginationDiv.querySelector('#next-page-btn'));
+                this.domElements.set('page-info', paginationDiv.querySelector('#page-info'));
+            }
         }
     }
 
@@ -129,28 +167,48 @@ class UIManager {
             tokensGrid.classList.add('adrianlab-mobile'); // Default to AdrianLAB layout
         }
 
-        // Botón "Cargar más traits"
+        // Botón "Load More"
         const loadMoreBtn = this.domElements.get('load-more-traits');
         if (loadMoreBtn) {
             loadMoreBtn.addEventListener('click', async () => {
                 const dataManager = window.app?.modules?.dataManager;
                 if (!dataManager) return;
                 loadMoreBtn.disabled = true;
-                loadMoreBtn.textContent = 'Cargando...';
+                loadMoreBtn.textContent = 'Loading...';
                 try {
                     const newTraits = await dataManager.loadMoreTraits();
                     if (newTraits && newTraits.length > 0) {
-                        this.appendTokens(newTraits);
+                        // Agregar nuevos traits al cache de paginación
+                        this.paginationState.allTokens = [...this.paginationState.allTokens, ...newTraits];
+                        this.paginationState.totalPages = Math.ceil(this.paginationState.allTokens.length / this.paginationState.tokensPerPage);
+                        
+                        // Si estamos en modo paginación, actualizar la vista
+                        if (this.paginationState.enabled) {
+                            this.updatePaginationDisplay();
+                        } else {
+                            // Si no estamos en modo paginación, simplemente agregar
+                            this.appendTokens(newTraits);
+                        }
                     }
                     const hasMore = dataManager.getTraitsHasMore?.() ?? false;
-                    this.setLoadMoreVisibility(hasMore && !this.isMobile()); // Desktop: botón; móvil: lazy
+                    this.setLoadMoreVisibility(hasMore && !this.isMobile() && !this.paginationState.enabled); // Ocultar si estamos en modo paginación
                 } catch (err) {
-                    console.error('❌ Error cargando más traits:', err);
+                    console.error('❌ Error loading more traits:', err);
                 } finally {
                     loadMoreBtn.disabled = false;
-                    loadMoreBtn.textContent = 'Cargar más traits';
+                    loadMoreBtn.textContent = 'Load More';
                 }
             });
+        }
+        
+        // Controles de paginación
+        const prevBtn = this.domElements.get('prev-page-btn');
+        const nextBtn = this.domElements.get('next-page-btn');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => this.goToPreviousPage());
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => this.goToNextPage());
         }
     }
 
@@ -163,6 +221,9 @@ class UIManager {
         // Clean up lazy loading if changing away from traits
         if (this.currentFilter === 'traits' && filter !== 'traits') {
             this.cleanupLazyLoading();
+            // Mantener cache pero desactivar paginación
+            this.paginationState.enabled = false;
+            this.hidePaginationControls();
         }
         
         this.currentFilter = filter;
@@ -580,17 +641,59 @@ class UIManager {
 
         tokensGrid.innerHTML = "";
         
-        // Sin límite de traits: mostrar todos
-        const traitsToDisplay = tokens;
+        // 🚨 PAGINACIÓN: Si estamos en tab traits y hay más de 300 tokens, activar paginación
+        const isTraitsTab = this.currentFilter === 'traits';
+        
+        // Si ya estamos en modo paginación y recibimos nuevos tokens, actualizar cache
+        if (this.paginationState.enabled && isTraitsTab) {
+            // Actualizar cache con nuevos tokens (evitar duplicados)
+            const existingTokenIds = new Set(this.paginationState.allTokens.map(t => t.tokenId));
+            const newTokens = tokens.filter(t => !existingTokenIds.has(t.tokenId));
+            if (newTokens.length > 0) {
+                this.paginationState.allTokens = [...this.paginationState.allTokens, ...newTokens];
+                this.paginationState.totalPages = Math.ceil(this.paginationState.allTokens.length / this.paginationState.tokensPerPage);
+                console.log(`📄 Cache actualizado: ${newTokens.length} nuevos traits agregados. Total: ${this.paginationState.allTokens.length}`);
+            } else {
+                // Si no hay nuevos tokens, usar los que ya tenemos en cache
+                tokens = this.paginationState.allTokens;
+            }
+        }
+        
+        const shouldUsePagination = isTraitsTab && tokens.length > 300 && !this.isMobile();
+        
+        if (shouldUsePagination) {
+            // Activar modo paginación
+            this.paginationState.enabled = true;
+            this.paginationState.allTokens = [...tokens]; // Guardar todos los tokens en cache
+            this.paginationState.currentPage = 1;
+            this.paginationState.totalPages = Math.ceil(tokens.length / this.paginationState.tokensPerPage);
+            
+            console.log(`📄 Pagination enabled: ${tokens.length} tokens, ${this.paginationState.totalPages} pages`);
+            
+            // Mostrar primera página
+            this.updatePaginationDisplay();
+            
+            // Mostrar controles de paginación
+            this.showPaginationControls();
+            
+            if (!skipSelectionUpdate) {
+                this.updateSelectionInfo();
+            }
+            return;
+        } else {
+            // Desactivar paginación si no es necesario
+            this.paginationState.enabled = false;
+            this.hidePaginationControls();
+        }
         
         // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens)
         const shouldUseLazyLoading = this.isMobile() && 
                                      this.currentFilter === 'traits' && 
-                                     traitsToDisplay.length > 50; // Only use lazy loading if more than 50 traits
+                                     tokens.length > 50; // Only use lazy loading if more than 50 traits
         
         if (shouldUseLazyLoading) {
-            console.log(`📱 Lazy loading enabled for ${traitsToDisplay.length} traits on mobile`);
-            this.setupLazyLoading(traitsToDisplay);
+            console.log(`📱 Lazy loading enabled for ${tokens.length} traits on mobile`);
+            this.setupLazyLoading(tokens);
             if (!skipSelectionUpdate) {
                 this.updateSelectionInfo();
             }
@@ -602,14 +705,25 @@ class UIManager {
             console.log('🔄 Mostrando tokens con loading wheels...');
         }
         
-        // Standard rendering for desktop or non-traits tabs
+        // Standard rendering: mostrar todos los tokens (o hasta 300 si es traits)
+        let traitsToDisplay = tokens;
+        if (isTraitsTab && tokens.length > 300 && !this.isMobile()) {
+            // Limitar a 300 tokens y activar paginación
+            traitsToDisplay = tokens.slice(0, 300);
+            this.paginationState.enabled = true;
+            this.paginationState.allTokens = [...tokens];
+            this.paginationState.currentPage = 1;
+            this.paginationState.totalPages = Math.ceil(tokens.length / this.paginationState.tokensPerPage);
+            this.showPaginationControls();
+        }
+        
         traitsToDisplay.forEach(token => {
             const tokenCard = this.createTokenCard(token);
             tokensGrid.appendChild(tokenCard);
         });
 
-        // Mostrar/ocultar botón de carga incremental (solo desktop)
-        if (!this.isMobile()) {
+        // Mostrar/ocultar botón de carga incremental (solo desktop, solo si no hay paginación)
+        if (!this.isMobile() && !this.paginationState.enabled) {
             const dataManager = window.app?.modules?.dataManager;
             const hasMore = dataManager?.getTraitsHasMore?.() ?? false;
             this.setLoadMoreVisibility(hasMore && this.currentFilter === 'traits');
@@ -628,11 +742,147 @@ class UIManager {
     appendTokens(tokens) {
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid || !tokens || !Array.isArray(tokens)) return;
+        
+        // Agregar al cache de paginación si estamos en modo paginación
+        if (this.paginationState.enabled) {
+            this.paginationState.allTokens = [...this.paginationState.allTokens, ...tokens];
+            this.paginationState.totalPages = Math.ceil(this.paginationState.allTokens.length / this.paginationState.tokensPerPage);
+            
+            // Verificar si necesitamos activar paginación ahora
+            if (this.paginationState.allTokens.length > this.paginationState.tokensPerPage) {
+                // Recalcular qué tokens mostrar en la página actual
+                this.updatePaginationDisplay();
+                return;
+            }
+        }
+        
         tokens.forEach(token => {
             const tokenCard = this.createTokenCard(token);
             tokensGrid.appendChild(tokenCard);
         });
         this.updateSelectionInfo();
+    }
+    
+    /**
+     * Update pagination display - show current page tokens
+     */
+    updatePaginationDisplay() {
+        if (!this.paginationState.enabled || this.paginationState.allTokens.length === 0) {
+            return;
+        }
+        
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid) return;
+        
+        // Limpiar grid
+        const existingCards = tokensGrid.querySelectorAll('.token-card');
+        existingCards.forEach(card => {
+            if (card._clickHandler) {
+                card.removeEventListener('click', card._clickHandler);
+                delete card._clickHandler;
+            }
+        });
+        tokensGrid.innerHTML = "";
+        
+        // Calcular índices para la página actual
+        const startIndex = (this.paginationState.currentPage - 1) * this.paginationState.tokensPerPage;
+        const endIndex = Math.min(startIndex + this.paginationState.tokensPerPage, this.paginationState.allTokens.length);
+        const pageTokens = this.paginationState.allTokens.slice(startIndex, endIndex);
+        
+        console.log(`📄 Displaying page ${this.paginationState.currentPage}: tokens ${startIndex + 1}-${endIndex} of ${this.paginationState.allTokens.length}`);
+        
+        // Renderizar tokens de la página actual
+        pageTokens.forEach(token => {
+            const tokenCard = this.createTokenCard(token);
+            tokensGrid.appendChild(tokenCard);
+        });
+        
+        // Actualizar información de página
+        this.updatePageInfo();
+        
+        // Actualizar botones de navegación
+        this.updatePaginationButtons();
+        
+        this.updateSelectionInfo();
+    }
+    
+    /**
+     * Go to previous page
+     */
+    goToPreviousPage() {
+        if (this.paginationState.currentPage > 1) {
+            this.paginationState.currentPage--;
+            this.updatePaginationDisplay();
+            // Scroll to top of grid
+            const tokensGrid = this.domElements.get('tokens-grid');
+            if (tokensGrid) {
+                tokensGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+    
+    /**
+     * Go to next page
+     */
+    goToNextPage() {
+        if (this.paginationState.currentPage < this.paginationState.totalPages) {
+            this.paginationState.currentPage++;
+            this.updatePaginationDisplay();
+            // Scroll to top of grid
+            const tokensGrid = this.domElements.get('tokens-grid');
+            if (tokensGrid) {
+                tokensGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+    
+    /**
+     * Update page info display
+     */
+    updatePageInfo() {
+        const pageInfo = this.domElements.get('page-info');
+        if (pageInfo) {
+            pageInfo.textContent = `Page ${this.paginationState.currentPage} of ${this.paginationState.totalPages}`;
+        }
+    }
+    
+    /**
+     * Update pagination buttons state
+     */
+    updatePaginationButtons() {
+        const prevBtn = this.domElements.get('prev-page-btn');
+        const nextBtn = this.domElements.get('next-page-btn');
+        
+        if (prevBtn) {
+            prevBtn.disabled = this.paginationState.currentPage <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = this.paginationState.currentPage >= this.paginationState.totalPages;
+        }
+    }
+    
+    /**
+     * Show pagination controls
+     */
+    showPaginationControls() {
+        const paginationControls = this.domElements.get('pagination-controls');
+        if (paginationControls) {
+            paginationControls.style.display = 'flex';
+            paginationControls.style.justifyContent = 'center';
+            paginationControls.style.alignItems = 'center';
+            paginationControls.style.gap = '1rem';
+            paginationControls.style.marginTop = '1rem';
+        }
+    }
+    
+    /**
+     * Hide pagination controls
+     */
+    hidePaginationControls() {
+        const paginationControls = this.domElements.get('pagination-controls');
+        if (paginationControls) {
+            paginationControls.style.display = 'none';
+        }
     }
 
     /**
