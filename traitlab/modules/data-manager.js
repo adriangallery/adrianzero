@@ -649,7 +649,47 @@ class TraitLABDataManager {
         if (filterType === 'adrianzero' || filterType === 'rename' || filterType === 'customise') {
             return this.getTokens('adrianZero');
         } else if (filterType === 'floppy') {
-            return this.getTokens('adrianLab', 'floppys');
+            // Re-filtrar floppys para asegurar que todos los floppys estén correctamente clasificados
+            const cachedFloppys = this.getTokens('adrianLab', 'floppys');
+            const allTokens = this.getTokens('adrianLab', 'all');
+            
+            // Si hay tokens pero no floppys en cache, o si hay tokens que deberían ser floppys, re-filtrar
+            if (window.app && window.app.modules.filters && allTokens && allTokens.length > 0) {
+                // Verificar si hay tokens que deberían ser floppys pero no están en el cache
+                const shouldBeFloppys = allTokens.filter(t => {
+                    const tokenId = parseInt(t.tokenId);
+                    return (tokenId >= 10000 && tokenId <= 10013) || 
+                           tokenId === 10015 ||
+                           (tokenId >= 15000 && tokenId <= 15015) ||
+                           tokenId === 1123;
+                });
+                
+                // Si encontramos tokens que deberían ser floppys pero no están en cache, re-filtrar
+                if (shouldBeFloppys.length > 0 && cachedFloppys.length === 0) {
+                    console.log(`🔧 Re-filtrando floppys: ${shouldBeFloppys.length} tokens deberían ser floppys pero no están en cache`);
+                    const floppys = window.app.modules.filters.filterFloppyTokens(allTokens);
+                    // Actualizar cache
+                    if (this.cache.adrianLab) {
+                        this.cache.adrianLab.floppys = floppys;
+                        // También re-filtrar traits para asegurar que no haya duplicados
+                        const traits = window.app.modules.filters.filterTraitTokens(allTokens);
+                        this.cache.adrianLab.traits = traits;
+                    }
+                    return floppys;
+                } else if (cachedFloppys.length === 0 && shouldBeFloppys.length > 0) {
+                    // Re-filtrar incluso si hay floppys en shouldBeFloppys pero no en cache
+                    console.log(`🔧 Re-filtrando floppys: tokens encontrados pero no en cache`);
+                    const floppys = window.app.modules.filters.filterFloppyTokens(allTokens);
+                    if (this.cache.adrianLab) {
+                        this.cache.adrianLab.floppys = floppys;
+                        const traits = window.app.modules.filters.filterTraitTokens(allTokens);
+                        this.cache.adrianLab.traits = traits;
+                    }
+                    return floppys;
+                }
+            }
+            
+            return cachedFloppys;
         } else if (filterType === 'serum') {
             return this.getTokens('adrianLab', 'serums');
         } else if (filterType === 'traits') {
@@ -669,10 +709,13 @@ class TraitLABDataManager {
                     if (allTokens && allTokens.length > 0) {
                         const traits = window.app.modules.filters.filterTraitTokens(allTokens);
                         const floppys = window.app.modules.filters.filterFloppyTokens(allTokens);
-                        // Actualizar cache
+                        const serums = window.app.modules.filters.filterSerumTokens(allTokens);
+                        // Actualizar cache completo
                         if (this.cache.adrianLab) {
                             this.cache.adrianLab.traits = traits;
                             this.cache.adrianLab.floppys = floppys;
+                            this.cache.adrianLab.serums = serums;
+                            console.log(`✅ Cache actualizado: ${traits.length} traits, ${floppys.length} floppys, ${serums.length} serums`);
                         }
                         return traits;
                     }
