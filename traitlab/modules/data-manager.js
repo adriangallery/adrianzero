@@ -653,7 +653,32 @@ class TraitLABDataManager {
         } else if (filterType === 'serum') {
             return this.getTokens('adrianLab', 'serums');
         } else if (filterType === 'traits') {
-            return this.getTokens('adrianLab', 'traits');
+            // Re-filtrar traits para asegurar que tokens como 10015 no estén mal clasificados
+            const cachedTraits = this.getTokens('adrianLab', 'traits');
+            if (window.app && window.app.modules.filters && cachedTraits.length > 0) {
+                // Verificar si hay tokens mal clasificados (como 10015 en traits)
+                const misclassified = cachedTraits.filter(t => {
+                    const tokenId = parseInt(t.tokenId);
+                    return tokenId === 10015; // Token que debería ser floppy
+                });
+                
+                if (misclassified.length > 0) {
+                    console.log(`🔧 Re-filtrando traits: ${misclassified.length} tokens mal clasificados encontrados (incluyendo 10015)`);
+                    // Re-filtrar todos los tokens básicos
+                    const allTokens = this.getTokens('adrianLab', 'all');
+                    if (allTokens && allTokens.length > 0) {
+                        const traits = window.app.modules.filters.filterTraitTokens(allTokens);
+                        const floppys = window.app.modules.filters.filterFloppyTokens(allTokens);
+                        // Actualizar cache
+                        if (this.cache.adrianLab) {
+                            this.cache.adrianLab.traits = traits;
+                            this.cache.adrianLab.floppys = floppys;
+                        }
+                        return traits;
+                    }
+                }
+            }
+            return cachedTraits;
         } else if (filterType === 'crafting') {
             return this.getTokens('adrianLab', 'traits'); // Crafting usa traits
         }
