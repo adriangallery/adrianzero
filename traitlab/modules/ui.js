@@ -229,6 +229,16 @@ class UIManager {
         this.currentFilter = filter;
         console.log('✅ currentFilter set to:', this.currentFilter);
         
+        // Aplicar nombres pendientes si volvemos a adrianzero
+        if (filter === 'adrianzero' && window.app?.pendingAdrianZeroNameMap) {
+            const pendingMap = window.app.pendingAdrianZeroNameMap;
+            if (pendingMap && Object.keys(pendingMap).length > 0) {
+                console.log('📝 Aplicando nombres personalizados pendientes al volver a adrianzero');
+                this.updateTokenNamesOnly(pendingMap);
+                this.finalizeProgressiveLoading?.();
+            }
+        }
+        
         // Update mobile grid layout based on current tab
         const tokensGrid = this.domElements.get('tokens-grid');
         if (tokensGrid) {

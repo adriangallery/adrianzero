@@ -904,8 +904,13 @@ class ZeroManager {
                     });
 
                     console.log(`🔄 Updating display with ${nameMap.size} custom names found so far...`);
-                    // Emit event to update names progressively
-                    this.emit('customNamesProgressUpdate', { nameMap, tokens });
+                    // Emit event to update names progresivamente (enviar objeto plano para la UI)
+                    this.emit('customNamesProgressUpdate', { 
+                        nameMap: Object.fromEntries(nameMap),
+                        updatedCount: nameMap.size,
+                        totalCount: adrianZeroTokens.length,
+                        tokens 
+                    });
                 }
 
                 // Add delay between batches (except for the last batch)
@@ -930,8 +935,13 @@ class ZeroManager {
 
             console.log(`✅ Custom names loading complete: ${nameMap.size} tokens updated`);
             
-            // Emit final event with complete name map
-            this.emit('customNamesLoaded', { nameMap, tokens: finalUpdatedTokens });
+            // Emit final event with complete name map (objeto plano + conteos)
+            this.emit('customNamesLoaded', { 
+                nameMap: Object.fromEntries(nameMap), 
+                updatedCount: nameMap.size,
+                totalCount: adrianZeroTokens.length,
+                tokens: finalUpdatedTokens 
+            });
             
             return { nameMap, tokens: finalUpdatedTokens }; // Return an object with nameMap and finalTokens
 

@@ -343,15 +343,40 @@
                     });
                     
                     // Actualizar nombres progresivamente sin re-renderizar todo
+                    this.pendingAdrianZeroNameMap = this.pendingAdrianZeroNameMap || {};
+                    
                     this.modules.zero.on('customNamesProgressUpdate', (data) => {
                         console.log('📝 Actualizando nombres progresivamente:', data.updatedCount, '/', data.totalCount);
-                        this.modules.ui.updateTokenNamesOnly(data.nameMap);
+                        
+                        // Cachear siempre; actualizar UI solo si estamos en adrianzero
+                        this.pendingAdrianZeroNameMap = { 
+                            ...this.pendingAdrianZeroNameMap, 
+                            ...(data.nameMap || {}) 
+                        };
+                        
+                        if (this.currentFilter === 'adrianzero') {
+                            this.modules.ui.updateTokenNamesOnly(this.pendingAdrianZeroNameMap);
+                        } else {
+                            console.log('⚠️ Saltando updateTokenNamesOnly porque tab actual no es adrianzero:', this.currentFilter);
+                        }
                     });
                     
                     // Finalizar carga progresiva
                     this.modules.zero.on('customNamesLoaded', (data) => {
                         console.log('✅ Nombres personalizados cargados completamente');
-                        this.modules.ui.finalizeProgressiveLoading();
+                        
+                        // Unir mapas y aplicar solo si estamos en adrianzero
+                        this.pendingAdrianZeroNameMap = { 
+                            ...this.pendingAdrianZeroNameMap, 
+                            ...(data.nameMap || {}) 
+                        };
+                        
+                        if (this.currentFilter === 'adrianzero') {
+                            this.modules.ui.updateTokenNamesOnly(this.pendingAdrianZeroNameMap);
+                            this.modules.ui.finalizeProgressiveLoading();
+                        } else {
+                            console.log('⚠️ Finalización de nombres diferida hasta volver a adrianzero. Tab actual:', this.currentFilter);
+                        }
                     });
                 }
                 
