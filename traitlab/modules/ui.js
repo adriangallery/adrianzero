@@ -238,6 +238,16 @@ class UIManager {
                 this.finalizeProgressiveLoading?.();
             }
         }
+
+        // Mostrar tokens pendientes si estaban diferidos mientras el usuario estaba en otra pestaña
+        if (filter === 'adrianzero' && window.app?.pendingAdrianZeroTokens) {
+            const pendingTokens = window.app.pendingAdrianZeroTokens;
+            if (pendingTokens && Array.isArray(pendingTokens) && pendingTokens.length > 0) {
+                console.log('🎯 Mostrando AdrianZERO tokens pendientes al volver a adrianzero');
+                this.displayTokens(pendingTokens, 'adrianzero');
+                window.app.pendingAdrianZeroTokens = null;
+            }
+        }
         
         // Update mobile grid layout based on current tab
         const tokensGrid = this.domElements.get('tokens-grid');

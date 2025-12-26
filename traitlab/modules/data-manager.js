@@ -336,6 +336,15 @@ class TraitLABDataManager {
             console.log(`⚠️ Saltando displayTokensImmediately - Solo AdrianZERO se muestra inmediatamente. Filter: ${filter}`);
             return;
         }
+
+        // 🚧 Nuevo: si el usuario está en otra pestaña (p. ej., traits), no recargar la UI
+        const currentFilter = window.app?.modules?.ui?.getCurrentFilter?.() || window.app?.currentFilter;
+        if (currentFilter && currentFilter !== 'adrianzero') {
+            console.log(`⚠️ displayTokensImmediately diferido porque currentFilter=${currentFilter}`);
+            // Guardar tokens para mostrarlos cuando el usuario vuelva a adrianzero
+            window.app.pendingAdrianZeroTokens = tokens;
+            return;
+        }
         
         if (window.app && window.app.modules.ui) {
             // Mostrar tokens inmediatamente sin esperar mejoras

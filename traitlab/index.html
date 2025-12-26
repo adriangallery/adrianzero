@@ -335,11 +335,17 @@
                 
                 // Suscribirse a eventos del módulo zero para actualizaciones progresivas
                 if (this.modules.zero) {
-                    // Mostrar tokens inmediatamente cuando estén listos
+                    // Mostrar tokens inmediatamente cuando estén listos (solo si estamos en adrianzero o sin tab)
                     this.modules.zero.on('tokensReadyForDisplay', (data) => {
                         console.log('🎯 Tokens listos para mostrar inmediatamente:', data.tokens.length);
-                        this.modules.ui.displayTokens(data.tokens, 'adrianzero');
-                        this.hideLoading();
+                        
+                        if (!this.currentFilter || this.currentFilter === 'adrianzero') {
+                            this.modules.ui.displayTokens(data.tokens, 'adrianzero');
+                            this.hideLoading();
+                        } else {
+                            console.log('⚠️ tokensReadyForDisplay diferido porque tab actual no es adrianzero:', this.currentFilter);
+                            this.pendingAdrianZeroTokens = data.tokens;
+                        }
                     });
                     
                     // Actualizar nombres progresivamente sin re-renderizar todo
