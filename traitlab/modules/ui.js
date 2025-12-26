@@ -782,6 +782,59 @@ class UIManager {
         });
         this.updateSelectionInfo();
     }
+
+    /**
+     * Append traits incremental sin repintar todo el grid
+     */
+    appendTraits(newTraits = [], { hasMore = false } = {}) {
+        if (this.currentFilter !== 'traits') {
+            console.log('⚠️ appendTraits ignorado: currentFilter no es traits');
+            return;
+        }
+        if (!Array.isArray(newTraits) || newTraits.length === 0) return;
+
+        // Dedupe contra cache existente
+        const existingIds = new Set();
+        if (this.paginationState.enabled && this.paginationState.allTokens.length > 0) {
+            this.paginationState.allTokens.forEach(t => existingIds.add(t.tokenId));
+        } else {
+            const tokensGrid = this.domElements.get('tokens-grid');
+            tokensGrid?.querySelectorAll('.token-card').forEach(card => {
+                const id = card.getAttribute('data-token-id');
+                if (id) existingIds.add(id);
+            });
+        }
+        const deduped = newTraits.filter(t => !existingIds.has(String(t.tokenId)));
+        if (deduped.length === 0) {
+            console.log('ℹ️ appendTraits: no hay nuevos traits después de dedupe');
+            this.setLoadMoreVisibility?.(hasMore && !this.isMobile() && !this.paginationState.enabled);
+            return;
+        }
+
+        // Si está activo paginación (desktop con >300)
+        if (this.paginationState.enabled) {
+            this.paginationState.allTokens = [...this.paginationState.allTokens, ...deduped];
+            this.paginationState.totalPages = Math.ceil(this.paginationState.allTokens.length / this.paginationState.tokensPerPage);
+            // No re-render de la página actual; solo actualizar controles si cambia hasMore
+            this.setLoadMoreVisibility?.(hasMore && !this.isMobile() && !this.paginationState.enabled);
+            return;
+        }
+
+        // Si está activo lazy loading (mobile)
+        if (this.lazyLoadingState.enabled) {
+            this.lazyLoadingState.allTokens = [...this.lazyLoadingState.allTokens, ...deduped];
+            // Asegurar que el sentinel siga observado para cargar siguientes lotes
+            if (hasMore && this.lazyLoadingState.sentinel && this.lazyLoadingState.observer) {
+                this.lazyLoadingState.observer.observe(this.lazyLoadingState.sentinel);
+            }
+            this.setLoadMoreVisibility?.(false);
+            return;
+        }
+
+        // Caso estándar sin paginación ni lazy: append directo al grid
+        this.appendTokens(deduped);
+        this.setLoadMoreVisibility?.(hasMore && !this.isMobile());
+    }
     
     /**
      * Update pagination display - show current page tokens

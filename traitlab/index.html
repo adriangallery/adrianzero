@@ -422,12 +422,8 @@
                     this.modules.dataManager.on('adrianLabMoreTraitsLoaded', ({ newTraits = [], hasMore = false, totalTraits = 0 }) => {
                         console.log(`📦 Más traits cargados: ${newTraits.length} nuevos, total: ${totalTraits}, hasMore: ${hasMore}`);
                         if (this.currentFilter === 'traits' && newTraits.length > 0) {
-                            // Obtener todos los traits del cache (incluyendo los nuevos)
-                            const allTraits = this.modules.dataManager.getFilteredTokens('traits');
-                            // Actualizar display con todos los traits (el UI manejará la paginación)
-                            this.modules.ui.displayTokens(allTraits, 'traits');
-                            // Actualizar visibilidad del botón Load More
-                            this.modules.ui.setLoadMoreVisibility?.(hasMore && !this.modules.ui.isMobile());
+                            // 🚫 No re-render completo; actualizar incrementalmente
+                            this.modules.ui.appendTraits(newTraits, { hasMore, totalTraits });
                         }
                     });
                 }
