@@ -328,10 +328,6 @@ class ZeroManager {
             pageSize = 100
         } = options || {};
 
-        // #region agent log
-        fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H1',location:'zero.js:loadTokens:init',message:'loadTokens params',data:{includeMetadata,limit,startPageKey,maxTokens,pageSize,filter,skipIndividualMetadata,contractAddress},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
-
         console.log('loadTokens called with:', { userAddress, contractAddress, filter, skipIndividualMetadata, limit, startPageKey, options });
         
         if (!userAddress) {
@@ -366,10 +362,6 @@ class ZeroManager {
             const isBatchMode = hasExplicitLimit; // Modo batch solo si se proporciona límite explícito
             
             console.log(`🚀 Iniciando carga de tokens ${tokenType} con límites: max ${MAX_PAGES} páginas, max ${MAX_TOKENS === 10000 ? 'TODOS' : MAX_TOKENS} tokens${isBatchMode ? ' (BATCH MODE)' : ' (LIMITADO RÁPIDO por defecto)'}`);
-            // #region agent log
-            fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H2',location:'zero.js:loadTokens:limits',message:'limits computed',data:{MAX_TOKENS,isBatchMode,hasExplicitLimit,MAX_PAGES,pageSize},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
-            
             while (hasMore && pageCount < MAX_PAGES && allNfts.length < MAX_TOKENS) {
                 pageCount++;
                 console.log(`📄 Loading page ${pageCount}/${MAX_PAGES}... (tokens: ${allNfts.length}/${MAX_TOKENS})`);
@@ -396,10 +388,6 @@ class ZeroManager {
                 const nftsData = await alchemyResponse.json();
                 const tokensInPage = nftsData.ownedNfts?.length || 0;
                 console.log(`📦 Page ${pageCount}: ${tokensInPage} tokens received`);
-                // #region agent log
-                fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H3',location:'zero.js:loadTokens:page',message:'page received',data:{pageCount,tokensInPage,pageKey,allNftsCount:allNfts.length + tokensInPage},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
-                
                 // Add tokens from this page
                 if (nftsData.ownedNfts && nftsData.ownedNfts.length > 0) {
                     allNfts = allNfts.concat(nftsData.ownedNfts);
@@ -672,10 +660,6 @@ class ZeroManager {
                             hasLoadingWheels: true 
                         });
                     }
-                    // #region agent log
-                    fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4',location:'zero.js:loadTokens:emitReady',message:'emit tokensReadyForDisplay',data:{count:filteredTokens.length,tokenType,contractAddress},timestamp:Date.now()})}).catch(()=>{});
-                    // #endregion
-                    
                     // Si includeMetadata=true, la metadata ya viene en la respuesta, no hacer llamadas individuales
                     let tokensWithMetadata;
                     if (includeMetadata) {

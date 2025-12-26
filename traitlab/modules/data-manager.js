@@ -88,9 +88,7 @@ class TraitLABDataManager {
                     
                     // Mostrar tokens inmediatamente
                     this.displayTokensImmediately(tokens, 'adrianzero');
-                    // #region agent log
-                    fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H5',location:'data-manager.js:loadAdrianZeroTokensBasic',message:'tokens loaded for adrianzero',data:{count:tokens.length,isArray:Array.isArray(tokens)},timestamp:Date.now()})}).catch(()=>{});
-                    // #endregion
+                    // Agent log eliminado para evitar intentos de POST locales que generan errores en consola
                     
                     this.cache.loading.adrianZero = false;
                     this.cache.ready.adrianZero = true;
@@ -327,9 +325,6 @@ class TraitLABDataManager {
         // 🚨 VERIFICACIÓN: Validar que tokens existe y es un array
         if (!tokens || !Array.isArray(tokens)) {
             console.warn('⚠️ displayTokensImmediately: tokens es undefined, null o no es un array:', tokens);
-            // #region agent log
-            fetch('http://127.0.0.1:7243/ingest/be0b08a0-e0a9-41ae-9095-294f3cb74ebc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H6',location:'data-manager.js:displayTokensImmediately',message:'tokens not array',data:{receivedType:typeof tokens,hasTokensProp:tokens && !!tokens.tokens,length:tokens && tokens.length,filter},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
             return;
         }
         
@@ -649,71 +644,11 @@ class TraitLABDataManager {
         if (filterType === 'adrianzero' || filterType === 'rename' || filterType === 'customise') {
             return this.getTokens('adrianZero');
         } else if (filterType === 'floppy') {
-            // Re-filtrar floppys para asegurar que todos los floppys estén correctamente clasificados
-            const cachedFloppys = this.getTokens('adrianLab', 'floppys');
-            const allTokens = this.getTokens('adrianLab', 'all');
-            
-            // Re-filtrar floppys si el cache está vacío pero hay tokens que deberían ser floppys
-            if (window.app && window.app.modules.filters && allTokens && allTokens.length > 0) {
-                // Verificar si hay tokens que deberían ser floppys
-                const shouldBeFloppys = allTokens.filter(t => {
-                    const tokenId = parseInt(t.tokenId);
-                    return (tokenId >= 10000 && tokenId <= 10013) || 
-                           tokenId === 10015 ||
-                           (tokenId >= 15000 && tokenId <= 15015) ||
-                           tokenId === 1123;
-                });
-                
-                // Si hay tokens que deberían ser floppys pero el cache está vacío, re-filtrar
-                if (shouldBeFloppys.length > 0 && cachedFloppys.length === 0) {
-                    console.log(`🔧 Re-filtrando floppys: ${shouldBeFloppys.length} tokens deberían ser floppys pero no están en cache`);
-                    const floppys = window.app.modules.filters.filterFloppyTokens(allTokens);
-                    const traits = window.app.modules.filters.filterTraitTokens(allTokens);
-                    const serums = window.app.modules.filters.filterSerumTokens(allTokens);
-                    // Actualizar cache completo
-                    if (this.cache.adrianLab) {
-                        this.cache.adrianLab.floppys = floppys;
-                        this.cache.adrianLab.traits = traits;
-                        this.cache.adrianLab.serums = serums;
-                        console.log(`✅ Cache de floppys actualizado: ${floppys.length} floppys encontrados`);
-                    }
-                    return floppys;
-                }
-            }
-            
-            return cachedFloppys;
+            return this.getTokens('adrianLab', 'floppys');
         } else if (filterType === 'serum') {
             return this.getTokens('adrianLab', 'serums');
         } else if (filterType === 'traits') {
-            // Re-filtrar traits para asegurar que tokens como 10015 no estén mal clasificados
-            const cachedTraits = this.getTokens('adrianLab', 'traits');
-            if (window.app && window.app.modules.filters && cachedTraits.length > 0) {
-                // Verificar si hay tokens mal clasificados (como 10015 en traits)
-                const misclassified = cachedTraits.filter(t => {
-                    const tokenId = parseInt(t.tokenId);
-                    return tokenId === 10015; // Token que debería ser floppy
-                });
-                
-                if (misclassified.length > 0) {
-                    console.log(`🔧 Re-filtrando traits: ${misclassified.length} tokens mal clasificados encontrados (incluyendo 10015)`);
-                    // Re-filtrar todos los tokens básicos
-                    const allTokens = this.getTokens('adrianLab', 'all');
-                    if (allTokens && allTokens.length > 0) {
-                        const traits = window.app.modules.filters.filterTraitTokens(allTokens);
-                        const floppys = window.app.modules.filters.filterFloppyTokens(allTokens);
-                        const serums = window.app.modules.filters.filterSerumTokens(allTokens);
-                        // Actualizar cache completo
-                        if (this.cache.adrianLab) {
-                            this.cache.adrianLab.traits = traits;
-                            this.cache.adrianLab.floppys = floppys;
-                            this.cache.adrianLab.serums = serums;
-                            console.log(`✅ Cache actualizado: ${traits.length} traits, ${floppys.length} floppys, ${serums.length} serums`);
-                        }
-                        return traits;
-                    }
-                }
-            }
-            return cachedTraits;
+            return this.getTokens('adrianLab', 'traits');
         } else if (filterType === 'crafting') {
             return this.getTokens('adrianLab', 'traits'); // Crafting usa traits
         }
