@@ -302,18 +302,23 @@ class TraitLABDataManager {
             return;
         }
         
-        if (window.app && window.app.modules.ui) {
-            // Mostrar placeholders inmediatamente
-            console.log('🎯 Mostrando placeholders AdrianZERO inmediatamente en la UI...');
-            window.app.modules.ui.displayPlaceholders(tokens, filter);
-            
-            // Ocultar loading si está visible
-            if (window.app.hideLoading) {
-                window.app.hideLoading();
-            }
-        } else {
-            console.warn('⚠️ UI module no disponible para mostrar placeholders');
+        // 🚧 Evitar tocar el grid si el usuario no está en AdrianZERO
+        const currentFilter = window.app?.modules?.ui?.getCurrentFilter?.() || window.app?.currentFilter;
+        if (currentFilter && currentFilter !== 'adrianzero') {
+            console.log(`⚠️ displayPlaceholdersImmediately cancelado: currentFilter=${currentFilter}`);
+            return;
         }
+        
+        if (!window.app || !window.app.modules?.ui) {
+            console.warn('⚠️ UI module no disponible para mostrar placeholders');
+            return;
+        }
+        
+        console.log('🎯 Mostrando placeholders AdrianZERO inmediatamente en la UI...');
+        window.app.modules.ui.displayPlaceholders(tokens, filter);
+        
+        // Ocultar loading si está visible
+        window.app.hideLoading?.();
     }
 
     /**
