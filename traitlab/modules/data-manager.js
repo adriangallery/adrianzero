@@ -139,8 +139,8 @@ class TraitLABDataManager {
                     console.log('📊 AdrianZERO tokens cargados:', tokens.length);
                     console.log('🔍 DEBUG: tokens type:', typeof tokens, 'isArray:', Array.isArray(tokens));
                     
-                    // 🚀 MOSTRAR TOKENS INMEDIATAMENTE con loading wheels
-                    this.displayTokensImmediately(tokens, 'adrianzero');
+                    // 🚫 Repaint temporalmente desactivado para evitar recarga de imágenes
+                    console.log('⛔️ Repaint AdrianZERO desactivado temporalmente (no displayTokensImmediately)');
                     
                     // 🔄 MEJORA DE NOMBRES COMENTADA - Cargando metadata completa desde Alchemy
                     // Si necesitamos reactivar la mejora de nombres, descomentar:
