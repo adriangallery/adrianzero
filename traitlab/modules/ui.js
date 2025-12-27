@@ -178,11 +178,23 @@ class UIManager {
                 loadMoreBtn.disabled = true;
                 loadMoreBtn.textContent = 'Loading...';
                 try {
+                    // 🚨 FIX: Obtener estado antes de cargar
+                    const statusBefore = dataManager.getTraitsStatus?.() || {};
+                    console.log(`📊 UI: Estado antes de cargar más traits: ${statusBefore.totalLoaded || 0} en cache, ${this.paginationState.allTokens.length} en pantalla`);
+                    
                     const newTraits = await dataManager.loadMoreTraits();
+                    
+                    // 🚨 FIX: Obtener estado después de cargar
+                    const statusAfter = dataManager.getTraitsStatus?.() || {};
+                    console.log(`📊 UI: Estado después de cargar: ${statusAfter.totalLoaded || 0} en cache, ${newTraits?.length || 0} nuevos traits recibidos`);
+                    
                     if (newTraits && newTraits.length > 0) {
-                        // Agregar nuevos traits al cache de paginación
-                        this.paginationState.allTokens = [...this.paginationState.allTokens, ...newTraits];
+                        // 🚨 FIX: Sincronizar con cache de data-manager como fuente única de verdad
+                        const allTraitsFromCache = dataManager.getFilteredTokens?.('traits') || [];
+                        this.paginationState.allTokens = allTraitsFromCache;
                         this.paginationState.totalPages = Math.ceil(this.paginationState.allTokens.length / this.paginationState.tokensPerPage);
+                        
+                        console.log(`📊 UI: Sincronizado con cache - ${this.paginationState.allTokens.length} traits totales en pantalla`);
                         
                         // Si estamos en modo paginación, actualizar la vista
                         if (this.paginationState.enabled) {
@@ -191,6 +203,8 @@ class UIManager {
                             // Si no estamos en modo paginación, simplemente agregar
                             this.appendTokens(newTraits);
                         }
+                    } else {
+                        console.log(`📊 UI: No se agregaron nuevos traits (${newTraits?.length || 0} recibidos)`);
                     }
                     const hasMore = dataManager.getTraitsHasMore?.() ?? false;
                     this.setLoadMoreVisibility(hasMore && !this.isMobile() && !this.paginationState.enabled); // Ocultar si estamos en modo paginación
@@ -626,7 +640,11 @@ class UIManager {
             // Crear nuevo handler
             this._moreTraitsLoadedHandler = (data) => {
                 if (this.lazyLoadingState.enabled && data.newTraits) {
-                    console.log(`📡 Nuevos traits cargados desde Alchemy: ${data.newTraits.length}`);
+                    const dataManager = window.app?.modules?.dataManager;
+                    const status = dataManager?.getTraitsStatus?.() || {};
+                    console.log(`📡 UI: Nuevos traits cargados desde Alchemy: ${data.newTraits.length} nuevos, ${data.totalTraits || 0} totales en cache`);
+                    console.log(`📊 UI: Estado actual - ${status.totalLoaded || 0} en cache, ${status.totalUnique || 0} únicos, hasMore: ${status.hasMore}`);
+                    
                     // Los nuevos traits ya fueron agregados a allTokens en loadNextBatch
                     // Solo necesitamos verificar si debemos continuar cargando
                     if (data.hasMore && this.lazyLoadingState.sentinel) {
