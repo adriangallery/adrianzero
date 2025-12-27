@@ -1220,10 +1220,7 @@ class TraitLABDataManager {
                         // El pageKey cambió, hay más, y el nextPageKey es nuevo - puede haber más tokens pero todos son duplicados
                         console.warn('⚠️ Batch completamente duplicado pero pageKey cambió y nextPageKey es nuevo - puede haber más tokens pero todos son duplicados. Continuando...');
                         // Continuar intentando cargar más, pero solo si el pageKey cambió y el nextPageKey es nuevo
-                        // Agregar nextPageKey a seenPageKeys solo si vamos a continuar
-                        if (loadResult.nextPageKey) {
-                            this.paginationState.traits.seenPageKeys.add(loadResult.nextPageKey);
-                        }
+                        // NO agregar nextPageKey a seenPageKeys aquí - se agregará cuando lo usemos en la siguiente llamada
                         this.paginationState.traits.pageKey = loadResult.nextPageKey;
                         this.paginationState.traits.hasMore = loadResult.hasMore;
                         return [];
@@ -1235,11 +1232,10 @@ class TraitLABDataManager {
                     }
                 }
                 
-                // 🚨 FIX: Solo agregar nextPageKey a seenPageKeys si hay traits nuevos
-                // Si llegamos aquí, significa que hay traits nuevos, así que podemos continuar
-                if (loadResult.nextPageKey && !this.paginationState.traits.seenPageKeys.has(loadResult.nextPageKey)) {
-                    this.paginationState.traits.seenPageKeys.add(loadResult.nextPageKey);
-                }
+                // 🚨 FIX: NO agregar nextPageKey a seenPageKeys aquí
+                // El nextPageKey se convertirá en el pageKey de la siguiente llamada,
+                // y se agregará a seenPageKeys cuando lo usemos (línea 1155-1157)
+                // Esto evita falsos positivos de ciclos
                 
                 // Actualizar estado de paginación
                 this.paginationState.traits.pageKey = loadResult.nextPageKey;
