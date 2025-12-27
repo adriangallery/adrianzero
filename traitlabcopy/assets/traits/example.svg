@@ -1,7 +1,0 @@
-<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Example SVG trait - replace with your actual trait designs -->
-  <rect width="200" height="200" fill="rgba(0,255,255,0.1)" stroke="#00ffff" stroke-width="2"/>
-  <circle cx="100" cy="100" r="50" fill="none" stroke="#00ffff" stroke-width="3"/>
-  <text x="100" y="110" text-anchor="middle" fill="#00ffff" font-family="monospace" font-size="14">TRAIT</text>
-  <text x="100" y="130" text-anchor="middle" fill="#00ffff" font-family="monospace" font-size="10">EXAMPLE</text>
-</svg>

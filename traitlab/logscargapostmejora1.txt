@@ -1,0 +1,913 @@
+config.js?v=12:100 ✅ TraitLABConfig: API keys cargadas desde config-keys.js
+config.js?v=12:65 ⚙️ TraitLABConfig: Configuración inicializada
+config.js?v=12:166 🔧 DEBUG Config: Módulo config.js cargado
+config.js?v=12:167 🔧 DEBUG Config: window.TraitLABConfig: TraitLABConfig {CONTRACTS: {…}, ADRIAN_LAB_CORE_CONTRACT: '0x6e369bf0e4e0c106192d606fb6d85836d684da75', TRAITS_EXTENSIONS_CONTRACT: '0x0995c0dA1ca071b792E852b6Ec531b7cD7d1F8D6', ADRIAN_CRAFTING_CONTRACT: '0x9ab651F50ac78A13a1612CCDDF5a074B2e570829', ADRIAN_NAME_REGISTRY_CONTRACT: '0xaeC5ED33c88c1943BB7452aC4B571ad0b4c4068C', …}
+config.js?v=12:168 🔧 DEBUG Config: ADRIAN_LAB_CORE_CONTRACT: 0x6e369bf0e4e0c106192d606fb6d85836d684da75
+config.js?v=12:169 🔧 DEBUG Config: TRAITS_EXTENSIONS_CONTRACT: 0x0995c0dA1ca071b792E852b6Ec531b7cD7d1F8D6
+app-initializer.js?v=12:215 🔧 AppInitializer: Módulo cargado correctamente
+app-initializer.js?v=12:216 🔧 AppInitializer: window.AppInitializer disponible: true
+traitlab/:658 🚀 TraitLAB v2: DOM listo, inicializando...
+traitlab/:300 🚀 TraitLAB v2: Inicializando...
+ui-templates.js?v=13:405 ✅ UITemplates: Todos los templates renderizados correctamente
+app-initializer.js?v=12:190 🚀 AppInitializer: Iniciando inicialización completa...
+app-initializer.js?v=12:14 🔧 AppInitializer: Inicializando módulos...
+app-initializer.js?v=12:18 🔧 Inicializando Wallet Manager...
+zero.js?v=12:36 🚀 ZeroManager inicializado
+sticky-popup-manager.js?v=12:31 🔧 StickyPopupManager: Inicializando...
+sticky-popup-manager.js?v=12:125 ✅ StickyPopupManager: Elementos mapeados: (50) ['selectionInfo', 'selectionText', 'generatedImage', 'combinedImage', 'imageLoadingOverlay', 'erc721ActionsSection', 'traitsActionsSection', 'openFloppySection', 'openPackSection', 'useSerumSection', 'renameSection', 'applyTraitsSection', 'refreshMetadataSection', 'activateTokenBtn', 'showRenameSectionBtn', 'zoomInBtn', 'commitBtn', 'applyTraitsBtn', 'openFloppyBtn', 'openMultiplePacksBtn', 'packQuantity', 'useSerumBtn', 'approveRenameBtn', 'renameTokenBtn', 'refreshMetadataBtn', 'newTokenName', 'customiseNewTokenName', 'customiseModal', 'customiseModalClose', 'customiseSelectedToken', 'customisePreviewImage', 'customiseLoading', 'customiseZoomBtn', 'customiseShadowBtn', 'customiseGlowBtn', 'customiseBnBtn', 'customiseBlackoutBtn', 'customiseBananaBtn', 'customiseCommitBtn', 'customiseRenameTokenBtn', 'applyStatus', 'openFloppyStatus', 'openPackStatus', 'useSerumStatus', 'activateTokenStatus', 'renameStatus', 'customiseCommitStatus', 'customiseRenameStatus', 'refreshMetadataStatus', 'commitStatus']
+sticky-popup-manager.js?v=12:192 ✅ StickyPopupManager: Event listeners configured
+sticky-popup-manager.js?v=12:333 ✅ StickyPopupManager: Side menu buttons configured
+sticky-popup-manager.js?v=12:47 ✅ StickyPopupManager: Inicializado correctamente
+data-manager.js?v=12:34 📊 TraitLABDataManager: Inicializado
+filters.js?v=12:8 🔍 TokenFilters inicializado
+display-manager.js?v=12:8 🎨 DisplayManager inicializado
+traits.js?v=12:36 Loading traits database...
+traits.js?v=12:41 Trying local traits.json file...
+floppy.js?v=12:32 🚀 FloppyManager inicializado
+serums.js?v=12:24 🚀 SerumsManager inicializado
+crafting.js?v=12:14 🔨 TraitLABCrafting: Módulo simplificado inicializado
+crafting.js?v=12:21 🔨 TraitLABCrafting: Inicializando módulo...
+lambo.js?v=12:39 🚗 LamboManager initialized
+customise.js?v=12:36 🎨 CustomiseManager inicializado
+app-initializer.js?v=12:84 ✅ AppInitializer: Todos los módulos inicializados
+app-initializer.js?v=12:96 🔧 AppInitializer: Configurando event listeners...
+app-initializer.js?v=12:134 ✅ AppInitializer: Event listeners configurados
+app-initializer.js?v=12:146 🔧 AppInitializer: Configurando tabs...
+app-initializer.js?v=12:178 ✅ AppInitializer: Tabs configurados
+app-initializer.js?v=12:202 ✅ AppInitializer: Aplicación inicializada correctamente
+traitlab/:334 🔄 Configurando carga progresiva...
+traitlab/:312 ✅ TraitLAB v2: Inicializada correctamente
+wallet.js?v=12:64 WalletConnect: Connected event received
+wallet.js?v=12:257 Found existing connection: 0x4943407105999e3e97efa2035f5cbc64d72581c6
+traitlab/:559 🔌 TraitLAB v2: Wallet conectada: {account: '0x4943407105999e3e97efa2035f5cbc64d72581c6', contract: '0x6e369bf0e4e0c106192d606fb6d85836d684da75'}
+traitlab/:580 🚀 TraitLAB v2: Iniciando carga en background...
+traitlab/:587 📊 TraitLAB v2: Iniciando DataManager en background...
+data-manager.js?v=12:43 📊 TraitLABDataManager: Iniciando carga en paralelo...
+data-manager.js?v=12:66 📊 Cargando todos los tokens AdrianZERO...
+zero.js?v=12:331 loadTokens called with: {userAddress: '0x4943407105999e3e97efa2035f5cbc64d72581c6', contractAddress: '0x6e369bf0e4e0c106192d606fb6d85836d684da75', filter: null, skipIndividualMetadata: false, limit: null, …}
+zero.js?v=12:342 Loading ERC721 tokens from contract: 0x6e369bf0e4e0c106192d606fb6d85836d684da75
+zero.js?v=12:346 🔍 Loading active toggles for AdrianZERO tokens...
+zero.js?v=12:76 🔍 Loading active toggles from contract...
+data-manager.js?v=12:196 📊 Cargando tokens AdrianLAB (ERC1155)...
+data-manager.js?v=12:210 📊 Cargando tokens ERC1155 progresivamente...
+data-manager.js?v=12:743 📊 Cargando todos los tokens ERC1155 con metadata completa desde Alchemy...
+zero.js?v=12:331 loadTokens called with: {userAddress: '0x4943407105999e3e97efa2035f5cbc64d72581c6', contractAddress: '0x90546848474fb3c9fda3fdad887969bb244e7e58', filter: null, skipIndividualMetadata: false, limit: null, …}
+zero.js?v=12:342 Loading ERC1155 tokens from contract: 0x90546848474fb3c9fda3fdad887969bb244e7e58
+zero.js?v=12:363 🚀 Iniciando carga de tokens ERC1155 con límites: max 1000 páginas, max 10000 tokens (TODOS LOS TOKENS por defecto)
+zero.js?v=12:367 📄 Loading page 1/1000... (tokens: 0/10000)
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+wallet.js?v=12:257 Found existing connection: 0x4943407105999e3e97efa2035f5cbc64d72581c6
+traitlab/:559 🔌 TraitLAB v2: Wallet conectada: {account: '0x4943407105999e3e97efa2035f5cbc64d72581c6', contract: '0x6e369bf0e4e0c106192d606fb6d85836d684da75'}
+traitlab/:580 🚀 TraitLAB v2: Iniciando carga en background...
+traitlab/:587 📊 TraitLAB v2: Iniciando DataManager en background...
+traitlab/:589 📊 TraitLAB v2: DataManager cargado en background
+traitlab/:591 📊 TraitLAB v2: Estado del cache: {adrianZero: {…}, adrianLab: {…}}
+traitlab/:595 🚀 TraitLAB v2: Cargando tokens del contrato actual en background...
+traitlab/:394 🚀 TraitLAB v2: Cargando tokens para tab: null
+traitlab/:395 🔍 Contrato actual: 0x6e369bf0e4e0c106192d606fb6d85836d684da75
+traitlab/:487 📊 Tokens filtrados obtenidos: 0
+traitlab/:495 ⏳ Mostrando loading mientras se cargan tokens...
+traits.js?v=12:46 Local traits.json loaded successfully
+traits.js?v=12:58 Traits database loaded successfully: {traits: Array(1102), metadata: {…}}
+zero.js?v=12:138 ✅ Ethers library loaded
+wallet.js?v=12:48 WalletConnect listener: Page loaded, checking for WalletConnect...
+favicon.ico:1  GET https://adrianzero.com/favicon.ico 404 (Not Found)
+Image
+M @ content.js:1
+O @ content.js:1
+(anonymous) @ content.js:1
+favicon.ico:1  GET https://adrianzero.com/favicon.ico 404 (Not Found)
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 1: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 100/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 2/1000... (tokens: 100/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 2: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 200/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 3/1000... (tokens: 200/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:107 🔍 Active toggles loaded: (24) [Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2), Array(2)]
+zero.js?v=12:115 🔍 Token 202 has toggle 1
+zero.js?v=12:115 🔍 Token 422 has toggle 13
+zero.js?v=12:115 🔍 Token 434 has toggle 1
+zero.js?v=12:115 🔍 Token 290 has toggle 2
+zero.js?v=12:115 🔍 Token 346 has toggle 2
+zero.js?v=12:115 🔍 Token 148 has toggle 2
+zero.js?v=12:115 🔍 Token 423 has toggle 2
+zero.js?v=12:115 🔍 Token 456 has toggle 3
+zero.js?v=12:115 🔍 Token 457 has toggle 2
+zero.js?v=12:115 🔍 Token 323 has toggle 13
+zero.js?v=12:115 🔍 Token 391 has toggle 13
+zero.js?v=12:115 🔍 Token 326 has toggle 13
+zero.js?v=12:115 🔍 Token 4 has toggle 13
+zero.js?v=12:115 🔍 Token 309 has toggle 13
+zero.js?v=12:115 🔍 Token 18 has toggle 13
+zero.js?v=12:115 🔍 Token 299 has toggle 13
+zero.js?v=12:115 🔍 Token 342 has toggle 13
+zero.js?v=12:115 🔍 Token 236 has toggle 13
+zero.js?v=12:115 🔍 Token 438 has toggle 13
+zero.js?v=12:115 🔍 Token 111 has toggle 13
+zero.js?v=12:115 🔍 Token 147 has toggle 13
+zero.js?v=12:115 🔍 Token 156 has toggle 13
+zero.js?v=12:115 🔍 Token 279 has toggle 13
+zero.js?v=12:115 🔍 Token 374 has toggle 13
+zero.js?v=12:363 🚀 Iniciando carga de tokens ERC721 con límites: max 1000 páginas, max 10000 tokens (TODOS LOS TOKENS por defecto)
+zero.js?v=12:367 📄 Loading page 1/1000... (tokens: 0/10000)
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 3: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 300/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 4/1000... (tokens: 300/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 1: 69 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 69/10000. Has more: false
+zero.js?v=12:438 Total tokens loaded: 69 from 1 pages
+zero.js?v=12:475 📊 Tokens válidos después de filtrar spam: 69/69 (contrato conocido: true)
+zero.js?v=12:536 🔍 Token 202 has zoom toggle - using closeup=true
+zero.js?v=12:536 🔍 Token 434 has zoom toggle - using closeup=true
+zero.js?v=12:641 Processed tokens: (69) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+zero.js?v=12:781 Loading custom names for 69 AdrianZERO tokens with cascading approach...
+ui.js?v=12:122 🔧 setCurrentFilter called with: traits
+ui.js?v=12:130 ✅ currentFilter set to: traits
+app-initializer.js?v=12:165 🔄 Flag tokensAlreadyDisplayed reseteado por cambio de tab
+traitlab/:394 🚀 TraitLAB v2: Cargando tokens para tab: traits
+traitlab/:395 🔍 Contrato actual: 0x90546848474fb3c9fda3fdad887969bb244e7e58
+traitlab/:449 🎨 TRAITS: Verificando estado de carga de traits...
+traitlab/:453 📊 Traits disponibles actualmente: 0
+traitlab/:462 ⏳ Traits no están cargados, iniciando carga bajo demanda...
+data-manager.js?v=12:243 📊 Traits ya están en proceso de carga
+traitlab/:476 ⏳ Traits en proceso de carga, mostrando loading...
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 4: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 400/10000. Has more: true
+zero.js?v=12:834 Using ABI from config
+zero.js?v=12:857 🔄 Displaying tokens with Alchemy names first...
+traitlab/:340 🎯 Tokens listos para mostrar inmediatamente: 69
+zero.js?v=12:872 📦 Processing batch 1/14 (5 tokens)
+zero.js?v=12:890 📊 Progress: 1/69 tokens processed
+zero.js?v=12:367 📄 Loading page 5/1000... (tokens: 400/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 5: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 500/10000. Has more: true
+zero.js?v=12:883 ✅ Custom name found for token 118: "AdrianGF"
+zero.js?v=12:890 📊 Progress: 2/69 tokens processed
+zero.js?v=12:367 📄 Loading page 6/1000... (tokens: 500/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 6: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 600/10000. Has more: true
+zero.js?v=12:883 ✅ Custom name found for token 148: "Adrian"
+zero.js?v=12:890 📊 Progress: 3/69 tokens processed
+ui.js?v=12:122 🔧 setCurrentFilter called with: adrianzero
+ui.js?v=12:130 ✅ currentFilter set to: adrianzero
+app-initializer.js?v=12:165 🔄 Flag tokensAlreadyDisplayed reseteado por cambio de tab
+traitlab/:394 🚀 TraitLAB v2: Cargando tokens para tab: adrianzero
+traitlab/:395 🔍 Contrato actual: 0x6e369bf0e4e0c106192d606fb6d85836d684da75
+traitlab/:487 📊 Tokens filtrados obtenidos: 0
+traitlab/:495 ⏳ Mostrando loading mientras se cargan tokens...
+zero.js?v=12:367 📄 Loading page 7/1000... (tokens: 600/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 7: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 700/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 4/69 tokens processed
+ui.js?v=12:122 🔧 setCurrentFilter called with: traits
+ui.js?v=12:130 ✅ currentFilter set to: traits
+app-initializer.js?v=12:165 🔄 Flag tokensAlreadyDisplayed reseteado por cambio de tab
+traitlab/:394 🚀 TraitLAB v2: Cargando tokens para tab: traits
+traitlab/:395 🔍 Contrato actual: 0x90546848474fb3c9fda3fdad887969bb244e7e58
+traitlab/:449 🎨 TRAITS: Verificando estado de carga de traits...
+traitlab/:453 📊 Traits disponibles actualmente: 0
+traitlab/:462 ⏳ Traits no están cargados, iniciando carga bajo demanda...
+data-manager.js?v=12:243 📊 Traits ya están en proceso de carga
+traitlab/:476 ⏳ Traits en proceso de carga, mostrando loading...
+zero.js?v=12:367 📄 Loading page 8/1000... (tokens: 700/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 8: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 800/10000. Has more: true
+zero.js?v=12:883 ✅ Custom name found for token 202: "TexRanger"
+zero.js?v=12:890 📊 Progress: 5/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 3 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:367 📄 Loading page 9/1000... (tokens: 800/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 9: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 900/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 10/1000... (tokens: 900/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 10: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1000/10000. Has more: true
+zero.js?v=12:417 📈 Progreso: 10 páginas, 1000 tokens cargados
+zero.js?v=12:367 📄 Loading page 11/1000... (tokens: 1000/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 11: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1100/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 12/1000... (tokens: 1100/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:872 📦 Processing batch 2/14 (5 tokens)
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 12: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1200/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 6/69 tokens processed
+zero.js?v=12:367 📄 Loading page 13/1000... (tokens: 1200/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 7/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 13: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1300/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 14/1000... (tokens: 1300/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 8/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 14: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1400/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 15/1000... (tokens: 1400/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 9/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 15: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1500/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 10/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 3 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:367 📄 Loading page 16/1000... (tokens: 1500/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 16: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1600/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 17/1000... (tokens: 1600/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 17: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1700/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 18/1000... (tokens: 1700/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 18: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1800/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 19/1000... (tokens: 1800/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:872 📦 Processing batch 3/14 (5 tokens)
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 19: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 1900/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 11/69 tokens processed
+zero.js?v=12:367 📄 Loading page 20/1000... (tokens: 1900/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 12/69 tokens processed
+zero.js?v=12:890 📊 Progress: 13/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 20: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2000/10000. Has more: true
+zero.js?v=12:417 📈 Progreso: 20 páginas, 2000 tokens cargados
+zero.js?v=12:367 📄 Loading page 21/1000... (tokens: 2000/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 21: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2100/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 14/69 tokens processed
+zero.js?v=12:890 📊 Progress: 15/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 3 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:367 📄 Loading page 22/1000... (tokens: 2100/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 22: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2200/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 23/1000... (tokens: 2200/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 23: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2300/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 24/1000... (tokens: 2300/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:872 📦 Processing batch 4/14 (5 tokens)
+zero.js?v=12:890 📊 Progress: 16/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 24: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2400/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 25/1000... (tokens: 2400/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 17/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 25: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2500/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 26/1000... (tokens: 2500/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 26: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2600/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 18/69 tokens processed
+zero.js?v=12:890 📊 Progress: 19/69 tokens processed
+zero.js?v=12:890 📊 Progress: 20/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 3 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:367 📄 Loading page 27/1000... (tokens: 2600/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 27: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2700/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 28/1000... (tokens: 2700/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 28: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2800/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 29/1000... (tokens: 2800/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 29: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 2900/10000. Has more: true
+zero.js?v=12:872 📦 Processing batch 5/14 (5 tokens)
+zero.js?v=12:890 📊 Progress: 21/69 tokens processed
+zero.js?v=12:367 📄 Loading page 30/1000... (tokens: 2900/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 30: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3000/10000. Has more: true
+zero.js?v=12:417 📈 Progreso: 30 páginas, 3000 tokens cargados
+zero.js?v=12:890 📊 Progress: 22/69 tokens processed
+zero.js?v=12:367 📄 Loading page 31/1000... (tokens: 3000/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 23/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 31: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3100/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 24/69 tokens processed
+zero.js?v=12:367 📄 Loading page 32/1000... (tokens: 3100/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 25/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 3 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 32: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3200/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 33/1000... (tokens: 3200/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 33: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3300/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 34/1000... (tokens: 3300/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 34: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3400/10000. Has more: true
+zero.js?v=12:872 📦 Processing batch 6/14 (5 tokens)
+zero.js?v=12:367 📄 Loading page 35/1000... (tokens: 3400/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 26/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 35: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3500/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 27/69 tokens processed
+zero.js?v=12:367 📄 Loading page 36/1000... (tokens: 3500/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 36: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3600/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 28/69 tokens processed
+zero.js?v=12:890 📊 Progress: 29/69 tokens processed
+zero.js?v=12:367 📄 Loading page 37/1000... (tokens: 3600/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 37: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3700/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 30/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 3 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:367 📄 Loading page 38/1000... (tokens: 3700/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 38: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3800/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 39/1000... (tokens: 3800/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:872 📦 Processing batch 7/14 (5 tokens)
+zero.js?v=12:890 📊 Progress: 31/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 39: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 3900/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 40/1000... (tokens: 3900/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 32/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 40: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4000/10000. Has more: true
+zero.js?v=12:417 📈 Progreso: 40 páginas, 4000 tokens cargados
+zero.js?v=12:367 📄 Loading page 41/1000... (tokens: 4000/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 33/69 tokens processed
+zero.js?v=12:890 📊 Progress: 34/69 tokens processed
+zero.js?v=12:883 ✅ Custom name found for token 423: "SubZERO"
+zero.js?v=12:890 📊 Progress: 35/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 4 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 41: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4100/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 42/1000... (tokens: 4100/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 42: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4200/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 43/1000... (tokens: 4200/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 43: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4300/10000. Has more: true
+zero.js?v=12:872 📦 Processing batch 8/14 (5 tokens)
+zero.js?v=12:367 📄 Loading page 44/1000... (tokens: 4300/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 44: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4400/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 36/69 tokens processed
+zero.js?v=12:367 📄 Loading page 45/1000... (tokens: 4400/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:883 ✅ Custom name found for token 435: "FredZero"
+zero.js?v=12:890 📊 Progress: 37/69 tokens processed
+zero.js?v=12:890 📊 Progress: 38/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 45: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4500/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 46/1000... (tokens: 4500/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 39/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 46: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4600/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 40/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 5 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:367 📄 Loading page 47/1000... (tokens: 4600/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 47: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4700/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 48/1000... (tokens: 4700/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 48: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4800/10000. Has more: true
+zero.js?v=12:872 📦 Processing batch 9/14 (5 tokens)
+zero.js?v=12:883 ✅ Custom name found for token 455: "WAGMI"
+zero.js?v=12:890 📊 Progress: 41/69 tokens processed
+zero.js?v=12:367 📄 Loading page 49/1000... (tokens: 4800/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 42/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 49: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 4900/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 43/69 tokens processed
+zero.js?v=12:367 📄 Loading page 50/1000... (tokens: 4900/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 44/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 50: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5000/10000. Has more: true
+zero.js?v=12:417 📈 Progreso: 50 páginas, 5000 tokens cargados
+zero.js?v=12:367 📄 Loading page 51/1000... (tokens: 5000/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 45/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 6 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 51: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5100/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 52/1000... (tokens: 5100/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 52: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5200/10000. Has more: true
+zero.js?v=12:872 📦 Processing batch 10/14 (5 tokens)
+zero.js?v=12:890 📊 Progress: 46/69 tokens processed
+zero.js?v=12:367 📄 Loading page 53/1000... (tokens: 5200/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 53: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5300/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 47/69 tokens processed
+zero.js?v=12:890 📊 Progress: 48/69 tokens processed
+zero.js?v=12:890 📊 Progress: 49/69 tokens processed
+zero.js?v=12:367 📄 Loading page 54/1000... (tokens: 5300/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 50/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 6 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 54: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5400/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 55/1000... (tokens: 5400/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 55: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5500/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 56/1000... (tokens: 5500/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 56: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5600/10000. Has more: true
+zero.js?v=12:872 📦 Processing batch 11/14 (5 tokens)
+zero.js?v=12:367 📄 Loading page 57/1000... (tokens: 5600/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 51/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 57: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5700/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 58/1000... (tokens: 5700/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 52/69 tokens processed
+zero.js?v=12:890 📊 Progress: 53/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 58: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5800/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 59/1000... (tokens: 5800/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 54/69 tokens processed
+zero.js?v=12:890 📊 Progress: 55/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 6 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 59: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 5900/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 60/1000... (tokens: 5900/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 60: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6000/10000. Has more: true
+zero.js?v=12:417 📈 Progreso: 60 páginas, 6000 tokens cargados
+zero.js?v=12:872 📦 Processing batch 12/14 (5 tokens)
+zero.js?v=12:367 📄 Loading page 61/1000... (tokens: 6000/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 56/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 61: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6100/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 62/1000... (tokens: 6100/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 57/69 tokens processed
+zero.js?v=12:890 📊 Progress: 58/69 tokens processed
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 62: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6200/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 63/1000... (tokens: 6200/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:890 📊 Progress: 59/69 tokens processed
+zero.js?v=12:890 📊 Progress: 60/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 6 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 63: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6300/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 64/1000... (tokens: 6300/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 64: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6400/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 65/1000... (tokens: 6400/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:872 📦 Processing batch 13/14 (5 tokens)
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 65: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6500/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 61/69 tokens processed
+zero.js?v=12:890 📊 Progress: 62/69 tokens processed
+zero.js?v=12:367 📄 Loading page 66/1000... (tokens: 6500/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 66: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6600/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 63/69 tokens processed
+zero.js?v=12:890 📊 Progress: 64/69 tokens processed
+zero.js?v=12:367 📄 Loading page 67/1000... (tokens: 6600/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 67: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6700/10000. Has more: true
+zero.js?v=12:890 📊 Progress: 65/69 tokens processed
+zero.js?v=12:906 🔄 Updating display with 6 custom names found so far...
+traitlab/:347 📝 Actualizando nombres progresivamente: undefined / undefined
+ui.js?v=12:808 📝 Actualizando nombres de tokens progresivamente...
+zero.js?v=12:913 ⏳ Waiting 2000ms before next batch...
+zero.js?v=12:367 📄 Loading page 68/1000... (tokens: 6700/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+zero.js?v=12:227 ✅ Petición exitosa con API key 1
+zero.js?v=12:390 📦 Page 68: 100 tokens received
+zero.js?v=12:413 📊 Total tokens loaded so far: 6800/10000. Has more: true
+zero.js?v=12:367 📄 Loading page 69/1000... (tokens: 6800/10000)
+zero.js?v=12:375 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+zero.js?v=12:383 🌐 Requesting NFTs con 2 API key(s) disponibles
+zero.js?v=12:183 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 69: 100 tokens received
+ 📊 Total tokens loaded so far: 6900/10000. Has more: true
+ 📦 Processing batch 14/14 (4 tokens)
+ 📄 Loading page 70/1000... (tokens: 6900/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ 📊 Progress: 66/69 tokens processed
+ 📊 Progress: 67/69 tokens processed
+ ✅ Petición exitosa con API key 1
+ 📦 Page 70: 100 tokens received
+ 📊 Total tokens loaded so far: 7000/10000. Has more: true
+ 📈 Progreso: 70 páginas, 7000 tokens cargados
+ 📊 Progress: 68/69 tokens processed
+ 📄 Loading page 71/1000... (tokens: 7000/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ 📊 Progress: 69/69 tokens processed
+ 🔄 Updating display with 6 custom names found so far...
+ 📝 Actualizando nombres progresivamente: undefined / undefined
+ 📝 Actualizando nombres de tokens progresivamente...
+ ✅ Custom names loading complete: 6 tokens updated
+ ✅ Nombres personalizados cargados completamente
+ ✅ Finalizando carga progresiva...
+ 📊 AdrianZERO tokens básicos cargados: 69
+ 🚀 Mostrando tokens inmediatamente con nombres de Alchemy...
+ 📊 Tokens a mostrar: 69, Filter: adrianzero
+ 🎯 Mostrando AdrianZERO tokens inmediatamente en la UI...
+ 🔍 DEBUG: Llamando a window.app.modules.ui.displayTokens con: {tokensCount: 69, filter: 'adrianzero'}
+ 🔄 Mostrando tokens con loading wheels...
+ ✅ displayTokens ejecutado exitosamente con loading wheels
+ 🚩 Flag tokensAlreadyDisplayed establecido a true
+ 🔍 DEBUG: Llamando a onTokensLoaded...
+ 🚀 TraitLAB v2: Tokens cargados progresivamente: {count: 69, filter: 'adrianzero'}
+ ⚠️ Saltando onTokensLoaded - Tab actual no coincide: traits vs adrianzero
+ 🔍 DEBUG: Llamando a hideLoading...
+ ✅ Petición exitosa con API key 1
+ 📦 Page 71: 100 tokens received
+ 📊 Total tokens loaded so far: 7100/10000. Has more: true
+ 📄 Loading page 72/1000... (tokens: 7100/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 72: 100 tokens received
+ 📊 Total tokens loaded so far: 7200/10000. Has more: true
+ 📄 Loading page 73/1000... (tokens: 7200/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 73: 100 tokens received
+ 📊 Total tokens loaded so far: 7300/10000. Has more: true
+ 📄 Loading page 74/1000... (tokens: 7300/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 74: 100 tokens received
+ 📊 Total tokens loaded so far: 7400/10000. Has more: true
+ 📄 Loading page 75/1000... (tokens: 7400/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 75: 100 tokens received
+ 📊 Total tokens loaded so far: 7500/10000. Has more: true
+ 📄 Loading page 76/1000... (tokens: 7500/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 76: 100 tokens received
+ 📊 Total tokens loaded so far: 7600/10000. Has more: true
+ 📄 Loading page 77/1000... (tokens: 7600/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 77: 100 tokens received
+ 📊 Total tokens loaded so far: 7700/10000. Has more: true
+ 📄 Loading page 78/1000... (tokens: 7700/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 78: 100 tokens received
+ 📊 Total tokens loaded so far: 7800/10000. Has more: true
+ 📄 Loading page 79/1000... (tokens: 7800/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 79: 100 tokens received
+ 📊 Total tokens loaded so far: 7900/10000. Has more: true
+ 📄 Loading page 80/1000... (tokens: 7900/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 80: 100 tokens received
+ 📊 Total tokens loaded so far: 8000/10000. Has more: true
+ 📈 Progreso: 80 páginas, 8000 tokens cargados
+ 📄 Loading page 81/1000... (tokens: 8000/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 81: 100 tokens received
+ 📊 Total tokens loaded so far: 8100/10000. Has more: true
+ 📄 Loading page 82/1000... (tokens: 8100/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 82: 100 tokens received
+ 📊 Total tokens loaded so far: 8200/10000. Has more: true
+ 📄 Loading page 83/1000... (tokens: 8200/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 83: 100 tokens received
+ 📊 Total tokens loaded so far: 8300/10000. Has more: true
+ 📄 Loading page 84/1000... (tokens: 8300/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 84: 100 tokens received
+ 📊 Total tokens loaded so far: 8400/10000. Has more: true
+ 📄 Loading page 85/1000... (tokens: 8400/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 85: 100 tokens received
+ 📊 Total tokens loaded so far: 8500/10000. Has more: true
+ 📄 Loading page 86/1000... (tokens: 8500/10000)
+ 🔗 Using pageKey: MHg5MDU0Njg0ODQ3NGZi...
+ 🌐 Requesting NFTs con 2 API key(s) disponibles
+ 🌐 Intentando con API key 1/2
+ ✅ Petición exitosa con API key 1
+ 📦 Page 86: 100 tokens received
+ 📊 Total tokens loaded so far: 8600/10000. Has more: true

@@ -1,0 +1,1104 @@
+Scene JSON schema (formato recomendado)
+
+Archivo: assets/scenes/<sceneId>/scene.json
+
+{
+    "version": 1,
+    "id": "suburban_street",
+    "title": "Suburban Street",
+    "assets": {
+      "background": "background.png",
+      "walkmask": "walkmask.png",
+      "atlas": null
+    },
+    "render": {
+      "world": { "width": 2400, "height": 1350 },
+      "camera": {
+        "start": { "x": 600, "y": 675 },
+        "followPlayer": true,
+        "lerp": 0.12,
+        "clampToWorld": true
+      }
+    },
+    "player": {
+      "spawn": { "x": 520, "y": 1020 },
+      "speed": 280,
+      "sprite": {
+        "sheet": null,
+        "idle": null,
+        "walk": null
+      }
+    },
+    "ui": {
+      "verbs": ["LOOK", "USE", "TALK", "PICK", "OPEN", "CLOSE"],
+      "mobileDrawerDefault": "collapsed"
+    },
+    "maskMapping": {
+      "walkableColor": "#0000FF",
+      "hotspotColor": "#FFFF00",
+      "triggerColor": "#FF00FF",
+      "regionIdStrategy": "manual"
+    },
+    "regions": {
+      "hotspots": [
+        {
+          "id": "hs_mailbox",
+          "maskRegionId": "hs_mailbox",
+          "name": "Mailbox",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [],
+            "USE": [],
+            "TALK": [],
+            "PICK": [],
+            "OPEN": [],
+            "CLOSE": []
+          }
+        }
+      ],
+      "triggers": [
+        {
+          "id": "tr_to_frontdoor",
+          "maskRegionId": "tr_to_frontdoor",
+          "once": false,
+          "onEnter": []
+        }
+      ]
+    },
+    "items": {
+      "sceneItems": [
+        {
+          "id": "itm_rusty_key",
+          "name": "Rusty Key",
+          "icon": "ui/items/rusty_key.png",
+          "spawn": { "type": "hotspot", "hotspotId": "hs_doormat" },
+          "pickup": {
+            "enabled": true,
+            "verb": "PICK",
+            "onPickup": []
+          }
+        }
+      ]
+    },
+    "combos": [
+      {
+        "a": "itm_rusty_key",
+        "b": "itm_old_note",
+        "result": "itm_note_with_code",
+        "script": []
+      }
+    ],
+    "dialogue": {
+      "defaultVoice": null,
+      "lines": {
+        "SOME_ID": "Text..."
+      }
+    },
+    "audio": {
+      "music": null,
+      "ambience": null,
+      "sfx": {}
+    },
+    "transitions": {
+      "goto": [
+        {
+          "id": "go_front_door",
+          "toScene": "front_door",
+          "spawn": { "x": 540, "y": 1030 }
+        }
+      ]
+    }
+  }
+
+  
+  A) assets/scenes/suburban_street/scene.json
+
+  {
+    "version": 1,
+    "id": "suburban_street",
+    "title": "Suburban Street",
+    "assets": {
+      "background": "background.png",
+      "walkmask": "walkmask.png",
+      "atlas": null
+    },
+    "render": {
+      "world": { "width": 2400, "height": 1350 },
+      "camera": {
+        "start": { "x": 650, "y": 675 },
+        "followPlayer": true,
+        "lerp": 0.12,
+        "clampToWorld": true
+      }
+    },
+    "player": {
+      "spawn": { "x": 520, "y": 1040 },
+      "speed": 280,
+      "sprite": { "sheet": null, "idle": null, "walk": null }
+    },
+    "ui": {
+      "verbs": ["LOOK", "USE", "TALK", "PICK", "OPEN", "CLOSE"],
+      "mobileDrawerDefault": "collapsed"
+    },
+    "maskMapping": {
+      "walkableColor": "#0000FF",
+      "hotspotColor": "#FFFF00",
+      "triggerColor": "#FF00FF",
+      "regionIdStrategy": "manual"
+    },
+    "regions": {
+      "hotspots": [
+        {
+          "id": "hs_mailbox",
+          "maskRegionId": "hs_mailbox",
+          "name": "Mailbox",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "A mailbox. It looks normal… which is suspicious in this town." }
+            ],
+            "OPEN": [
+              { "op": "ifFlag", "flag": "street_mailbox_opened", "then": [
+                { "op": "say", "text": "Already open. Empty." }
+              ], "else": [
+                { "op": "setFlag", "flag": "street_mailbox_opened", "value": true },
+                { "op": "say", "text": "Empty. Not even junk mail. That’s the real horror." }
+              ] }
+            ],
+            "USE": [
+              { "op": "say", "text": "Use it how? I’m not mailing my soul today." }
+            ],
+            "TALK": [
+              { "op": "say", "text": "No response." }
+            ],
+            "PICK": [
+              { "op": "say", "text": "It’s bolted down. Coward mailbox." }
+            ],
+            "CLOSE": [
+              { "op": "say", "text": "Sure. Closed." }
+            ]
+          }
+        },
+        {
+          "id": "hs_street_sign",
+          "maskRegionId": "hs_street_sign",
+          "name": "Street Sign",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "‘WELCOME’. The rest is scratched out like someone panicked mid-lettering." }
+            ],
+            "USE": [
+              { "op": "say", "text": "I could… lean on it? That’s not a plan." }
+            ],
+            "TALK": [
+              { "op": "say", "text": "I’m not arguing with signage." }
+            ],
+            "PICK": [
+              { "op": "say", "text": "If I rip that out, the whole street will probably collapse. Pass." }
+            ],
+            "OPEN": [{ "op": "say", "text": "It doesn’t open. It warns." }],
+            "CLOSE": [{ "op": "say", "text": "It’s already emotionally closed." }]
+          }
+        },
+        {
+          "id": "hs_driveway_glitch",
+          "maskRegionId": "hs_driveway_glitch",
+          "name": "Glitched Patch",
+          "cursor": "warning",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "Pixels don’t melt in real life. Unless… this isn’t real life." }
+            ],
+            "USE": [
+              { "op": "say", "text": "My fingers pass through it like a broken texture." }
+            ],
+            "TALK": [
+              { "op": "say", "text": "It whispers: ‘WALLET NOT FOUND’." }
+            ],
+            "PICK": [
+              { "op": "say", "text": "I’m not picking up the void." }
+            ],
+            "OPEN": [{ "op": "say", "text": "Nope." }],
+            "CLOSE": [{ "op": "say", "text": "Nope." }]
+          }
+        }
+      ],
+      "triggers": [
+        {
+          "id": "tr_to_frontdoor",
+          "maskRegionId": "tr_to_frontdoor",
+          "once": false,
+          "onEnter": [
+            { "op": "gotoScene", "sceneId": "front_door", "spawn": { "x": 540, "y": 1040 } }
+          ]
+        }
+      ]
+    },
+    "items": {
+      "sceneItems": [
+        {
+          "id": "itm_old_note",
+          "name": "Old Note",
+          "icon": "ui/items/old_note.png",
+          "spawn": { "type": "hotspot", "hotspotId": "hs_mailbox" },
+          "pickup": {
+            "enabled": true,
+            "verb": "PICK",
+            "onPickup": [
+              { "op": "say", "text": "There WAS something. A folded note stuck behind the frame." },
+              { "op": "addItem", "itemId": "itm_old_note" },
+              { "op": "setFlag", "flag": "street_found_note", "value": true }
+            ]
+          }
+        }
+      ]
+    },
+    "combos": [],
+    "audio": { "music": null, "ambience": null, "sfx": {} },
+    "transitions": { "goto": [] }
+  }
+
+  B) assets/scenes/front_door/scene.json
+  {
+    "version": 1,
+    "id": "front_door",
+    "title": "Front Door",
+    "assets": {
+      "background": "background.png",
+      "walkmask": "walkmask.png",
+      "atlas": null
+    },
+    "render": {
+      "world": { "width": 2000, "height": 1350 },
+      "camera": {
+        "start": { "x": 780, "y": 675 },
+        "followPlayer": true,
+        "lerp": 0.12,
+        "clampToWorld": true
+      }
+    },
+    "player": {
+      "spawn": { "x": 540, "y": 1040 },
+      "speed": 280,
+      "sprite": { "sheet": null, "idle": null, "walk": null }
+    },
+    "ui": {
+      "verbs": ["LOOK", "USE", "TALK", "PICK", "OPEN", "CLOSE"],
+      "mobileDrawerDefault": "collapsed"
+    },
+    "maskMapping": {
+      "walkableColor": "#0000FF",
+      "hotspotColor": "#FFFF00",
+      "triggerColor": "#FF00FF",
+      "regionIdStrategy": "manual"
+    },
+    "regions": {
+      "hotspots": [
+        {
+          "id": "hs_door",
+          "maskRegionId": "hs_door",
+          "name": "Front Door",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "A door that looks like it remembers every mistake you’ve ever made." }
+            ],
+            "OPEN": [
+              { "op": "ifFlag", "flag": "door_unlocked", "then": [
+                { "op": "say", "text": "Unlocked." },
+                { "op": "gotoScene", "sceneId": "bedroom", "spawn": { "x": 360, "y": 1040 } }
+              ], "else": [
+                { "op": "say", "text": "Locked. Of course." }
+              ] }
+            ],
+            "USE": [
+              { "op": "say", "text": "I should probably OPEN it. That’s usually how doors work." }
+            ],
+            "TALK": [
+              { "op": "say", "text": "‘Hello?’ The door remains employed as a door." }
+            ],
+            "PICK": [
+              { "op": "say", "text": "I’m not carrying a door. Not today." }
+            ],
+            "CLOSE": [
+              { "op": "say", "text": "Closed. Emotionally, too." }
+            ]
+          }
+        },
+        {
+          "id": "hs_doormat",
+          "maskRegionId": "hs_doormat",
+          "name": "Doormat",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "It says ‘BE REAL’. Under it, the dirt forms a neat little spiral." }
+            ],
+            "PICK": [
+              { "op": "say", "text": "It’s heavier than it looks. Like it’s hiding secrets… or taxes." }
+            ],
+            "USE": [
+              { "op": "say", "text": "I lift it slightly. Something metallic scratches the stone." }
+            ],
+            "OPEN": [{ "op": "say", "text": "It’s a mat, not a chest." }],
+            "CLOSE": [{ "op": "say", "text": "It’s already flat." }],
+            "TALK": [{ "op": "say", "text": "No." }]
+          }
+        },
+        {
+          "id": "hs_door_lock",
+          "maskRegionId": "hs_door_lock",
+          "name": "Lock",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "A modern lock. The kind that hates improvisation." }
+            ],
+            "USE": [
+              { "op": "ifItemSelected", "itemId": "itm_rusty_key", "then": [
+                { "op": "say", "text": "The rusty key… fits. That’s unsettling." },
+                { "op": "setFlag", "flag": "door_unlocked", "value": true }
+              ], "else": [
+                { "op": "say", "text": "I need a key. Or a miracle." }
+              ] }
+            ],
+            "OPEN": [
+              { "op": "say", "text": "You open locks by unlocking them. I’m learning." }
+            ],
+            "TALK": [{ "op": "say", "text": "It’s not a smart lock. Just a rude one." }],
+            "PICK": [{ "op": "say", "text": "If I pick it, it’ll pick me back." }],
+            "CLOSE": [{ "op": "say", "text": "It’s… closed." }]
+          }
+        }
+      ],
+      "triggers": [
+        {
+          "id": "tr_back_to_street",
+          "maskRegionId": "tr_back_to_street",
+          "once": false,
+          "onEnter": [
+            { "op": "gotoScene", "sceneId": "suburban_street", "spawn": { "x": 520, "y": 1040 } }
+          ]
+        }
+      ]
+    },
+    "items": {
+      "sceneItems": [
+        {
+          "id": "itm_rusty_key",
+          "name": "Rusty Key",
+          "icon": "ui/items/rusty_key.png",
+          "spawn": { "type": "hotspot", "hotspotId": "hs_doormat" },
+          "pickup": {
+            "enabled": true,
+            "verb": "PICK",
+            "onPickup": [
+              { "op": "say", "text": "A rusty key under the mat. Classic. Almost too classic." },
+              { "op": "addItem", "itemId": "itm_rusty_key" },
+              { "op": "setFlag", "flag": "frontdoor_got_key", "value": true }
+            ]
+          }
+        }
+      ]
+    },
+    "combos": [
+      {
+        "a": "itm_old_note",
+        "b": "itm_rusty_key",
+        "result": "itm_note_with_key",
+        "script": [
+          { "op": "say", "text": "The note and the key feel… related. Like a breadcrumb trail from a past life." },
+          { "op": "removeItem", "itemId": "itm_old_note" },
+          { "op": "removeItem", "itemId": "itm_rusty_key" },
+          { "op": "addItem", "itemId": "itm_note_with_key" }
+        ]
+      }
+    ],
+    "audio": { "music": null, "ambience": null, "sfx": {} },
+    "transitions": { "goto": [] }
+  }
+
+
+  C) assets/scenes/bedroom/scene.json
+
+  {
+    "version": 1,
+    "id": "bedroom",
+    "title": "Bedroom",
+    "assets": {
+      "background": "background.png",
+      "walkmask": "walkmask.png",
+      "atlas": null
+    },
+    "render": {
+      "world": { "width": 2200, "height": 1350 },
+      "camera": {
+        "start": { "x": 520, "y": 675 },
+        "followPlayer": true,
+        "lerp": 0.12,
+        "clampToWorld": true
+      }
+    },
+    "player": {
+      "spawn": { "x": 360, "y": 1040 },
+      "speed": 280,
+      "sprite": { "sheet": null, "idle": null, "walk": null }
+    },
+    "ui": {
+      "verbs": ["LOOK", "USE", "TALK", "PICK", "OPEN", "CLOSE"],
+      "mobileDrawerDefault": "collapsed"
+    },
+    "maskMapping": {
+      "walkableColor": "#0000FF",
+      "hotspotColor": "#FFFF00",
+      "triggerColor": "#FF00FF",
+      "regionIdStrategy": "manual"
+    },
+    "regions": {
+      "hotspots": [
+        {
+          "id": "hs_desk_pc",
+          "maskRegionId": "hs_desk_pc",
+          "name": "Old Computer",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "A beige relic. It hums like it’s waiting for a password… or a wallet." }
+            ],
+            "USE": [
+              { "op": "ifWeb3Connected", "then": [
+                { "op": "say", "text": "Wallet connected. The screen flickers like it recognizes fear." },
+                { "op": "setFlag", "flag": "bedroom_pc_awake", "value": true }
+              ], "else": [
+                { "op": "say", "text": "The computer displays: ‘CONNECT WALLET’. Of course." }
+              ] }
+            ],
+            "OPEN": [
+              { "op": "say", "text": "It’s not a laptop. You don’t OPEN it. You worship it." }
+            ],
+            "CLOSE": [
+              { "op": "say", "text": "I power it down. The room feels… less watched." }
+            ],
+            "TALK": [
+              { "op": "say", "text": "It answers in fan noise." }
+            ],
+            "PICK": [
+              { "op": "say", "text": "Nope." }
+            ]
+          }
+        },
+        {
+          "id": "hs_drawer",
+          "maskRegionId": "hs_drawer",
+          "name": "Drawer",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "A drawer. The universal container of forgotten decisions." }
+            ],
+            "OPEN": [
+              { "op": "ifFlag", "flag": "drawer_opened", "then": [
+                { "op": "say", "text": "Already open." }
+              ], "else": [
+                { "op": "setFlag", "flag": "drawer_opened", "value": true },
+                { "op": "say", "text": "Inside: dust… and a floppy disk with a handwritten label." }
+              ] }
+            ],
+            "PICK": [
+              { "op": "ifFlag", "flag": "drawer_opened", "then": [
+                { "op": "say", "text": "I take the floppy disk." },
+                { "op": "addItem", "itemId": "itm_floppy_zero" }
+              ], "else": [
+                { "op": "say", "text": "I should OPEN it first." }
+              ] }
+            ],
+            "USE": [{ "op": "say", "text": "I need to OPEN it before I can do anything clever." }],
+            "TALK": [{ "op": "say", "text": "It stays silent. Professional." }],
+            "CLOSE": [{ "op": "say", "text": "Closed." }]
+          }
+        },
+        {
+          "id": "hs_window",
+          "maskRegionId": "hs_window",
+          "name": "Window",
+          "cursor": "pointer",
+          "scripts": {
+            "LOOK": [
+              { "op": "say", "text": "Outside is the same street… but the pixels don’t align. Like a bad render." }
+            ],
+            "OPEN": [
+              { "op": "say", "text": "It won’t budge. The glass feels… sealed from the other side." }
+            ],
+            "USE": [
+              { "op": "ifFlag", "flag": "bedroom_pc_awake", "then": [
+                { "op": "say", "text": "The reflection shows a UI overlay for a second. Like a hidden layer." }
+              ], "else": [
+                { "op": "say", "text": "Just glass. Cold and honest." }
+              ] }
+            ],
+            "TALK": [{ "op": "say", "text": "No." }],
+            "PICK": [{ "op": "say", "text": "It’s a whole window." }],
+            "CLOSE": [{ "op": "say", "text": "Closed." }]
+          }
+        }
+      ],
+      "triggers": [
+        {
+          "id": "tr_back_to_frontdoor",
+          "maskRegionId": "tr_back_to_frontdoor",
+          "once": false,
+          "onEnter": [
+            { "op": "gotoScene", "sceneId": "front_door", "spawn": { "x": 780, "y": 1040 } }
+          ]
+        }
+      ]
+    },
+    "items": {
+      "sceneItems": [
+        {
+          "id": "itm_floppy_zero",
+          "name": "Floppy Disk (ZERO)",
+          "icon": "ui/items/floppy_zero.png",
+          "spawn": { "type": "none" },
+          "pickup": { "enabled": false, "verb": "PICK", "onPickup": [] }
+        }
+      ]
+    },
+    "combos": [
+      {
+        "a": "itm_floppy_zero",
+        "b": "itm_note_with_key",
+        "result": "itm_boot_sequence",
+        "script": [
+          { "op": "say", "text": "The note’s scribbles match the floppy label. That can’t be a coincidence." },
+          { "op": "removeItem", "itemId": "itm_floppy_zero" },
+          { "op": "removeItem", "itemId": "itm_note_with_key" },
+          { "op": "addItem", "itemId": "itm_boot_sequence" }
+        ]
+      }
+    ],
+    "audio": { "music": null, "ambience": null, "sfx": {} },
+    "transitions": { "goto": [] }
+  }
+
+  
+  estos son los ops que ya usé arriba:
+
+say { text }
+
+setFlag { flag, value }
+
+ifFlag { flag, then: [], else: [] }
+
+addItem { itemId }
+
+removeItem { itemId }
+
+ifItemSelected { itemId, then: [], else: [] }
+
+gotoScene { sceneId, spawn: {x,y} }
+
+ifWeb3Connected { then: [], else: [] }
+
+assets/game/items.json (catálogo global de ítems)
+
+{
+    "version": 1,
+    "items": [
+      {
+        "id": "itm_old_note",
+        "name": "Old Note",
+        "description": "A folded note that feels like it was meant for you. Or against you.",
+        "icon": "ui/items/old_note.png",
+        "stackable": false
+      },
+      {
+        "id": "itm_rusty_key",
+        "name": "Rusty Key",
+        "description": "Rusty, ordinary, and somehow confident it belongs here.",
+        "icon": "ui/items/rusty_key.png",
+        "stackable": false
+      },
+      {
+        "id": "itm_note_with_key",
+        "name": "Note + Key",
+        "description": "The note and the key feel linked, like a cheap prophecy with real consequences.",
+        "icon": "ui/items/note_with_key.png",
+        "stackable": false
+      },
+      {
+        "id": "itm_floppy_zero",
+        "name": "Floppy Disk (ZERO)",
+        "description": "A floppy with a label that looks newer than the dust around it.",
+        "icon": "ui/items/floppy_zero.png",
+        "stackable": false
+      },
+      {
+        "id": "itm_boot_sequence",
+        "name": "Boot Sequence",
+        "description": "A combined clue: the floppy and the note align like a key to a hidden layer.",
+        "icon": "ui/items/boot_sequence.png",
+        "stackable": false
+      }
+    ]
+  }
+
+  
+  assets/game/gameState.initial.json
+
+  {
+    "version": 1,
+    "currentSceneId": "suburban_street",
+    "player": {
+      "x": 520,
+      "y": 1040
+    },
+    "ui": {
+      "selectedVerb": "WALK",
+      "selectedItemId": null,
+      "mobileDrawer": "collapsed"
+    },
+    "inventory": [],
+    "flags": {
+      "street_mailbox_opened": false,
+      "street_found_note": false,
+  
+      "frontdoor_got_key": false,
+      "door_unlocked": false,
+  
+      "drawer_opened": false,
+      "bedroom_pc_awake": false
+    },
+    "web3": {
+      "connected": false,
+      "address": null,
+      "chainId": null
+    }
+  }
+
+  
+  assets/game/verbs.json
+
+  {
+    "version": 1,
+    "defaultVerb": "WALK",
+    "verbs": [
+      {
+        "id": "WALK",
+        "label": "Walk",
+        "icon": "ui/verbs/walk.png",
+        "isMovement": true,
+        "priority": 0,
+        "mobileQuickSlot": true
+      },
+      {
+        "id": "LOOK",
+        "label": "Look",
+        "icon": "ui/verbs/look.png",
+        "isMovement": false,
+        "priority": 10,
+        "mobileQuickSlot": true
+      },
+      {
+        "id": "USE",
+        "label": "Use",
+        "icon": "ui/verbs/use.png",
+        "isMovement": false,
+        "priority": 20,
+        "mobileQuickSlot": true
+      },
+      {
+        "id": "TALK",
+        "label": "Talk",
+        "icon": "ui/verbs/talk.png",
+        "isMovement": false,
+        "priority": 30,
+        "mobileQuickSlot": false
+      },
+      {
+        "id": "PICK",
+        "label": "Pick",
+        "icon": "ui/verbs/pick.png",
+        "isMovement": false,
+        "priority": 40,
+        "mobileQuickSlot": false
+      },
+      {
+        "id": "OPEN",
+        "label": "Open",
+        "icon": "ui/verbs/open.png",
+        "isMovement": false,
+        "priority": 50,
+        "mobileQuickSlot": false
+      },
+      {
+        "id": "CLOSE",
+        "label": "Close",
+        "icon": "ui/verbs/close.png",
+        "isMovement": false,
+        "priority": 60,
+        "mobileQuickSlot": false
+      }
+    ],
+    "rules": {
+      "tapHotspotWhenWalkSelected": "moveToAndInteract",
+      "tapEmptyWhenVerbSelected": "moveIfWalkableElsePan",
+      "inventoryUseMode": "itemOnHotspot",
+      "interactionFallback": {
+        "onMissingVerbScript": [
+          { "op": "say", "text": "That doesn’t do anything." }
+        ]
+      }
+    }
+  }
+
+  
+  assets/game/combos.json
+
+  {
+    "version": 1,
+    "combos": [
+      {
+        "id": "cmb_note_plus_key",
+        "a": "itm_old_note",
+        "b": "itm_rusty_key",
+        "result": "itm_note_with_key",
+        "consume": true,
+        "script": [
+          { "op": "say", "text": "The note and the key feel… related. Like a breadcrumb trail from a past life." },
+          { "op": "removeItem", "itemId": "itm_old_note" },
+          { "op": "removeItem", "itemId": "itm_rusty_key" },
+          { "op": "addItem", "itemId": "itm_note_with_key" }
+        ]
+      },
+      {
+        "id": "cmb_floppy_plus_note_with_key",
+        "a": "itm_floppy_zero",
+        "b": "itm_note_with_key",
+        "result": "itm_boot_sequence",
+        "consume": true,
+        "script": [
+          { "op": "say", "text": "The note’s scribbles match the floppy label. That can’t be a coincidence." },
+          { "op": "removeItem", "itemId": "itm_floppy_zero" },
+          { "op": "removeItem", "itemId": "itm_note_with_key" },
+          { "op": "addItem", "itemId": "itm_boot_sequence" }
+        ]
+      }
+    ],
+    "rules": {
+      "commutative": true,
+      "ifNoComboMatch": [
+        { "op": "say", "text": "Those don’t combine." }
+      ]
+    }
+  }
+
+  assets/game/opcodes.json
+
+  {
+    "version": 1,
+    "purpose": "Defines the allowed script operations (opcodes) for AdrianAdventure. The engine must only execute these ops and ignore/throw on unknown ops.",
+    "conventions": {
+      "script": "An array of operations executed in order.",
+      "text": "UI dialogue line shown to the player (subtitle style).",
+      "flags": "Boolean or small primitive values stored in GameState.flags.",
+      "inventory": "Array of itemIds stored in GameState.inventory.",
+      "web3": "Read-only checks based on wallet connection state + provider calls."
+    },
+    "ops": [
+      {
+        "op": "say",
+        "desc": "Display a dialogue line in the UI log/subtitles.",
+        "payload": {
+          "text": "string"
+        },
+        "example": { "op": "say", "text": "Something feels off." }
+      },
+      {
+        "op": "setFlag",
+        "desc": "Set a flag value in game state.",
+        "payload": {
+          "flag": "string",
+          "value": "boolean | number | string | null"
+        },
+        "example": { "op": "setFlag", "flag": "door_unlocked", "value": true }
+      },
+      {
+        "op": "ifFlag",
+        "desc": "Branch based on a flag value. Truthy = then, falsy = else.",
+        "payload": {
+          "flag": "string",
+          "then": "script[]",
+          "else": "script[]"
+        },
+        "example": {
+          "op": "ifFlag",
+          "flag": "drawer_opened",
+          "then": [{ "op": "say", "text": "Already open." }],
+          "else": [{ "op": "setFlag", "flag": "drawer_opened", "value": true }]
+        }
+      },
+      {
+        "op": "addItem",
+        "desc": "Add an item to inventory (if not present) unless stackable logic exists.",
+        "payload": {
+          "itemId": "string"
+        },
+        "example": { "op": "addItem", "itemId": "itm_rusty_key" }
+      },
+      {
+        "op": "removeItem",
+        "desc": "Remove an item from inventory if present.",
+        "payload": {
+          "itemId": "string"
+        },
+        "example": { "op": "removeItem", "itemId": "itm_old_note" }
+      },
+      {
+        "op": "selectVerb",
+        "desc": "Force-select a verb in UI (optional convenience).",
+        "payload": {
+          "verbId": "string"
+        },
+        "example": { "op": "selectVerb", "verbId": "LOOK" }
+      },
+      {
+        "op": "selectItem",
+        "desc": "Force-select an inventory item (or clear selection with null).",
+        "payload": {
+          "itemId": "string | null"
+        },
+        "example": { "op": "selectItem", "itemId": "itm_rusty_key" }
+      },
+      {
+        "op": "clearSelection",
+        "desc": "Clear selected verb back to WALK and clear selected item.",
+        "payload": {},
+        "example": { "op": "clearSelection" }
+      },
+      {
+        "op": "gotoScene",
+        "desc": "Transition to another scene and optionally set player spawn position.",
+        "payload": {
+          "sceneId": "string",
+          "spawn": { "x": "number", "y": "number" }
+        },
+        "example": { "op": "gotoScene", "sceneId": "front_door", "spawn": { "x": 540, "y": 1040 } }
+      },
+      {
+        "op": "queueScript",
+        "desc": "Append another script by id (useful for reuse).",
+        "payload": {
+          "scriptId": "string"
+        },
+        "example": { "op": "queueScript", "scriptId": "scr_intro_glitch" }
+      },
+      {
+        "op": "ifItemSelected",
+        "desc": "Branch if the currently selected inventory item matches itemId.",
+        "payload": {
+          "itemId": "string",
+          "then": "script[]",
+          "else": "script[]"
+        },
+        "example": {
+          "op": "ifItemSelected",
+          "itemId": "itm_rusty_key",
+          "then": [{ "op": "setFlag", "flag": "door_unlocked", "value": true }],
+          "else": [{ "op": "say", "text": "I need a key." }]
+        }
+      },
+      {
+        "op": "requireItem",
+        "desc": "Gate a script: if player lacks item, show message and stop execution.",
+        "payload": {
+          "itemId": "string",
+          "onFail": "script[]"
+        },
+        "example": {
+          "op": "requireItem",
+          "itemId": "itm_rusty_key",
+          "onFail": [{ "op": "say", "text": "I don’t have that." }]
+        }
+      },
+      {
+        "op": "ifWeb3Connected",
+        "desc": "Branch based on wallet connection state.",
+        "payload": {
+          "then": "script[]",
+          "else": "script[]"
+        },
+        "example": {
+          "op": "ifWeb3Connected",
+          "then": [{ "op": "say", "text": "Wallet connected." }],
+          "else": [{ "op": "say", "text": "CONNECT WALLET." }]
+        }
+      },
+      {
+        "op": "web3Require",
+        "desc": "Hard gate: if not connected, run onFail and stop script.",
+        "payload": {
+          "onFail": "script[]"
+        },
+        "example": {
+          "op": "web3Require",
+          "onFail": [{ "op": "say", "text": "You must connect a wallet to do that." }]
+        }
+      },
+      {
+        "op": "web3CheckERC721",
+        "desc": "Async check: does the connected wallet own >= minBalance of an ERC721 collection? Sets a flag with the result.",
+        "payload": {
+          "chainId": "number",
+          "contract": "string",
+          "minBalance": "number",
+          "setFlag": "string",
+          "onError": "script[]"
+        },
+        "example": {
+          "op": "web3CheckERC721",
+          "chainId": 8453,
+          "contract": "0xYourErc721AddressHere",
+          "minBalance": 1,
+          "setFlag": "has_adrianpunks",
+          "onError": [{ "op": "say", "text": "Couldn’t verify ownership right now." }]
+        }
+      },
+      {
+        "op": "web3CheckERC20",
+        "desc": "Async check: does the connected wallet have >= minBalance (human units) of an ERC20? Sets a flag with the result.",
+        "payload": {
+          "chainId": "number",
+          "contract": "string",
+          "minBalance": "string",
+          "decimals": "number | null",
+          "setFlag": "string",
+          "onError": "script[]"
+        },
+        "example": {
+          "op": "web3CheckERC20",
+          "chainId": 8453,
+          "contract": "0xYourErc20AddressHere",
+          "minBalance": "1000",
+          "decimals": null,
+          "setFlag": "has_adrian_tokens",
+          "onError": [{ "op": "say", "text": "Token check failed." }]
+        }
+      },
+      {
+        "op": "stop",
+        "desc": "Stop executing the current script immediately.",
+        "payload": {},
+        "example": { "op": "stop" }
+      }
+    ],
+    "scriptLibrary": {
+      "version": 1,
+      "scripts": [
+        {
+          "id": "scr_generic_locked",
+          "script": [
+            { "op": "say", "text": "Locked. Of course." }
+          ]
+        },
+        {
+          "id": "scr_need_wallet",
+          "script": [
+            { "op": "say", "text": "CONNECT WALLET." }
+          ]
+        }
+      ]
+    },
+    "engine_requirements": {
+      "strictMode": true,
+      "unknownOpBehavior": "throw",
+      "asyncOps": ["web3CheckERC721", "web3CheckERC20"],
+      "asyncPolicy": {
+        "sequential": true,
+        "timeoutMs": 8000,
+        "onTimeout": [{ "op": "say", "text": "Request timed out." }]
+      }
+    }
+  }
+
+  ----
+
+  {
+    "id": "ADVN-02",
+    "name": "Bedroom – Pre-Glitch",
+    "background": "bedroom_pre_glitch.png",
+    "music": "lofi_loop_01",
+    "flagsRequired": [],
+    "flagsSetOnEnter": [],
+    "hotspots": [
+      {
+        "id": "pc_monitor",
+        "area": "RECT(x1,y1,x2,y2)",
+        "onLook": "Graphs jittering, owner fields flickering… okay, that’s not normal.",
+        "onUse": [
+          {
+            "type": "dialog",
+            "text": "‘CHAIN DESYNCHRONIZED · PLEASE RESYNC HISTORY.’ Great. Very helpful."
+          },
+          {
+            "type": "setFlag",
+            "flag": "FLAG_SEEN_WARNING",
+            "value": true
+          }
+        ]
+      },
+      {
+        "id": "coffee_mug",
+        "area": "RECT(...)",
+        "onLook": "Cold coffee. Again.",
+        "onUse": "If this bug doesn’t kill me, the caffeine will."
+      },
+      {
+        "id": "phone",
+        "area": "RECT(...)",
+        "onLook": "Group chat muted. Notifications ignored.",
+        "onUse": "Someone asking if devs are still building. Cute."
+      },
+      {
+        "id": "window",
+        "area": "RECT(...)",
+        "onLook": "Quiet street, parked cars, the usual. For now.",
+        "onUse": "No reason to go outside. The problem is in here."
+      },
+      {
+        "id": "bed",
+        "area": "RECT(...)",
+        "onLook": "Bed. Foreign concept.",
+        "onUse": "Not until I fix this bug."
+      },
+      {
+        "id": "door",
+        "area": "RECT(...)",
+        "onLook": "Door to the hallway.",
+        "onUse": "If the chain is breaking, I can’t just walk away."
+      },
+      {
+        "id": "posters_wall",
+        "area": "RECT(...)",
+        "onLook": "Pixel art, prototypes, half-finished ideas pinned to the wall."
+      }
+    ],
+    "exits": [
+      {
+        "id": "trigger_glitch",
+        "condition": "FLAG_READY_FOR_GLITCH == true",
+        "onExit": [
+          {
+            "type": "cutscene",
+            "id": "BEDROOM_GLITCH_SEQUENCE"
+          },
+          {
+            "type": "changeScene",
+            "target": "ADVN-03"
+          }
+        ]
+      }
+    ]
+  }
+  

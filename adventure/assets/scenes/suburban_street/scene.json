@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "id": "suburban_street",
+  "title": "Suburban Street",
+  "assets": {
+    "background": "background.png",
+    "walkmask": "walkmask.png",
+    "atlas": null
+  },
+  "render": {
+    "world": { "width": 2400, "height": 1350 },
+    "camera": {
+      "start": { "x": 650, "y": 675 },
+      "followPlayer": true,
+      "lerp": 0.12,
+      "clampToWorld": true
+    }
+  },
+  "player": {
+    "spawn": { "x": 520, "y": 1040 },
+    "speed": 280,
+    "sprite": { "sheet": null, "idle": null, "walk": null }
+  },
+  "ui": {
+    "verbs": ["LOOK", "USE", "TALK", "PICK", "OPEN", "CLOSE"],
+    "mobileDrawerDefault": "collapsed"
+  },
+  "maskMapping": {
+    "walkableColor": "#0000FF",
+    "hotspotColor": "#FFFF00",
+    "triggerColor": "#FF00FF",
+    "regionIdStrategy": "manual"
+  },
+  "regions": {
+    "hotspots": [
+      {
+        "id": "hs_mailbox",
+        "maskRegionId": "hs_mailbox",
+        "name": "Mailbox",
+        "cursor": "pointer",
+        "scripts": {
+          "LOOK": [
+            { "op": "say", "text": "A mailbox. It looks normal… which is suspicious in this town." }
+          ],
+          "OPEN": [
+            { "op": "ifFlag", "flag": "street_mailbox_opened", "then": [
+              { "op": "say", "text": "Already open. Empty." }
+            ], "else": [
+              { "op": "setFlag", "flag": "street_mailbox_opened", "value": true },
+              { "op": "say", "text": "Empty. Not even junk mail. That's the real horror." }
+            ] }
+          ],
+          "USE": [
+            { "op": "say", "text": "Use it how? I'm not mailing my soul today." }
+          ],
+          "TALK": [
+            { "op": "say", "text": "No response." }
+          ],
+          "PICK": [
+            { "op": "say", "text": "It's bolted down. Coward mailbox." }
+          ],
+          "CLOSE": [
+            { "op": "say", "text": "Sure. Closed." }
+          ]
+        }
+      }
+    ],
+    "triggers": [
+      {
+        "id": "tr_to_frontdoor",
+        "maskRegionId": "tr_to_frontdoor",
+        "once": false,
+        "onEnter": [
+          { "op": "gotoScene", "sceneId": "front_door", "spawn": { "x": 540, "y": 1040 } }
+        ]
+      }
+    ]
+  },
+  "items": {
+    "sceneItems": []
+  },
+  "combos": [],
+  "audio": { "music": null, "ambience": null, "sfx": {} },
+  "transitions": { "goto": [] }
+}
+

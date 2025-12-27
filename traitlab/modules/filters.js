@@ -146,11 +146,6 @@ class TokenFilters {
             
             // Verificar que no sea floppy ni serum
             if (this.isFloppyToken(token) || this.isSerumToken(token)) {
-                // Debug: log cuando se excluye un token que es floppy o serum
-                const tokenId = parseInt(token.tokenId);
-                if (tokenId === 10015) {
-                    console.log(`🚫 Token 10015 (XMAS Floppy) excluido de traits - es floppy`);
-                }
                 return false;
             }
             
@@ -179,18 +174,11 @@ class TokenFilters {
     isFloppyToken(token) {
         const tokenId = parseInt(token.tokenId);
         
-        // Debug: verificar token 10015 específicamente
-        if (tokenId === 10015) {
-            console.log(`🔍 isFloppyToken: Token 10015 detectado como floppy`);
-        }
-        
         // Solo usar rangos específicos de index.html: 10000-10013, 10015, 15000-15015, y pack 1123
-        const isFloppy = (tokenId >= 10000 && tokenId <= 10013) || 
+        return (tokenId >= 10000 && tokenId <= 10013) || 
                tokenId === 10015 ||
                (tokenId >= 15000 && tokenId <= 15015) ||
                tokenId === 1123;
-        
-        return isFloppy;
     }
 
     /**

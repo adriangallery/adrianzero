@@ -815,6 +815,10 @@ class TraitLABDataManager {
                         packs: [], // Por ahora vacío
                         serums: serums
                     };
+
+                    // 🧹 Inicializar set de dedupe con el primer batch para evitar repeticiones
+                    this._traitsSeenIds = this._traitsSeenIds || new Set();
+                    traits.forEach(t => this._traitsSeenIds.add(String(t.tokenId)));
                     
                     console.log('📊 Tokens ERC1155 básicos separados:', {
                         total: basicTokens.length,
@@ -931,7 +935,9 @@ class TraitLABDataManager {
                 const newTraits = window.app.modules.filters.filterTraitTokens(newTokens);
 
                 // Dedupe global por tokenId para evitar repetir primer batch
-                this._traitsSeenIds = this._traitsSeenIds || new Set();
+                this._traitsSeenIds = this._traitsSeenIds || new Set(
+                    (this.cache.adrianLab?.traits || []).map(t => String(t.tokenId))
+                );
                 const dedupedTraits = newTraits.filter(t => {
                     const id = String(t.tokenId);
                     if (this._traitsSeenIds.has(id)) return false;

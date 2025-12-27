@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Placeholders</title>
+</head>
+<body>
+  <h1>Creating placeholder images...</h1>
+  <canvas id="bg-canvas" width="2400" height="1350"></canvas>
+  <canvas id="mask-canvas" width="2400" height="1350"></canvas>
+  <script>
+    // Background (gris oscuro)
+    const bgCanvas = document.getElementById('bg-canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    bgCtx.fillStyle = '#282828';
+    bgCtx.fillRect(0, 0, 2400, 1350);
+    
+    // Agregar texto
+    bgCtx.fillStyle = '#0f0';
+    bgCtx.font = '48px monospace';
+    bgCtx.textAlign = 'center';
+    bgCtx.fillText('Suburban Street', 1200, 675);
+    bgCtx.fillText('(Placeholder Background)', 1200, 750);
+    
+    // Walkmask (azul = walkable)
+    const maskCanvas = document.getElementById('mask-canvas');
+    const maskCtx = maskCanvas.getContext('2d');
+    maskCtx.fillStyle = '#0000FF'; // Azul = walkable
+    maskCtx.fillRect(0, 0, 2400, 1350);
+    
+    // Agregar hotspot de ejemplo (amarillo)
+    maskCtx.fillStyle = '#FFFF00'; // Amarillo = hotspot
+    maskCtx.fillRect(600, 600, 100, 100);
+    
+    // Descargar imágenes
+    function downloadCanvas(canvas, filename) {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+    
+    setTimeout(() => {
+      downloadCanvas(bgCanvas, 'background.png');
+      setTimeout(() => {
+        downloadCanvas(maskCanvas, 'walkmask.png');
+        document.body.innerHTML = '<h1>✅ Placeholders creados! Descarga los archivos y colócalos en assets/scenes/suburban_street/</h1>';
+      }, 500);
+    }, 1000);
+  </script>
+</body>
+</html>
+
