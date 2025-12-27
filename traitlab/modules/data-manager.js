@@ -973,10 +973,12 @@ class TraitLABDataManager {
                 // Guardar estado de paginación para posibles cargas posteriores
                 const hasMore = !!(loadResult && typeof loadResult === 'object' && loadResult.hasMore);
                 const nextPageKey = (loadResult && typeof loadResult === 'object') ? loadResult.nextPageKey : null;
+                console.log(`📊 Estado de paginación inicial: hasMore=${hasMore}, nextPageKey=${nextPageKey ? nextPageKey.substring(0, 30) + '...' : 'null'}`);
                 this.paginationState.traits.pageKey = nextPageKey;
                 this.paginationState.traits.hasMore = hasMore;
                 this.paginationState.traits.batchSize = initialLimit;
                 this.paginationState.traits.isBatchMode = hasMore; // activar sólo si hay más páginas
+                console.log(`📊 Paginación configurada: pageKey=${this.paginationState.traits.pageKey ? this.paginationState.traits.pageKey.substring(0, 30) + '...' : 'null'}, hasMore=${this.paginationState.traits.hasMore}, batchSize=${this.paginationState.traits.batchSize}`);
             } catch (error) {
                 console.error('📊 Error cargando tokens básicos ERC1155:', error);
                 // Emitir evento de error
@@ -1121,36 +1123,55 @@ class TraitLABDataManager {
             
             const newTokens = loadResult.tokens;
             
+            // 🚨 FIX: Verificar si el pageKey cambió antes de actualizar
+            const pageKeyChanged = pageKey !== loadResult.nextPageKey;
+            console.log(`🔗 pageKey in: ${pageKey ? pageKey.substring(0, 30) + '...' : 'null'} -> out: ${loadResult.nextPageKey ? loadResult.nextPageKey.substring(0, 30) + '...' : 'null'}`);
+            console.log(`🔗 pageKey cambió: ${pageKeyChanged}`);
+            
             // Actualizar estado de paginación
             this.paginationState.traits.pageKey = loadResult.nextPageKey;
             this.paginationState.traits.hasMore = loadResult.hasMore;
-            console.log(`🔗 pageKey in: ${pageKey || 'null'} -> out: ${loadResult.nextPageKey || 'null'}`);
             
-            console.log(`✅ Batch cargado: ${newTokens.length} nuevos traits, hasMore: ${loadResult.hasMore}`);
+            console.log(`✅ Batch cargado: ${newTokens.length} nuevos tokens, hasMore: ${loadResult.hasMore}`);
             
             // Separar por tipo usando filters.js
             if (window.app && window.app.modules.filters) {
                 const newTraits = window.app.modules.filters.filterTraitTokens(newTokens);
+                console.log(`🎭 Traits encontrados en batch: ${newTraits.length}`);
 
                 // Dedupe global por tokenId para evitar repetir primer batch
                 this._traitsSeenIds = this._traitsSeenIds || new Set(
                     (this.cache.adrianLab?.traits || []).map(t => String(t.tokenId))
                 );
+                const totalSeenBefore = this._traitsSeenIds.size;
                 const dedupedTraits = newTraits.filter(t => {
                     const id = String(t.tokenId);
                     if (this._traitsSeenIds.has(id)) return false;
                     this._traitsSeenIds.add(id);
                     return true;
                 });
+                const totalSeenAfter = this._traitsSeenIds.size;
+                console.log(`🔍 Dedupe: ${newTraits.length} traits -> ${dedupedTraits.length} nuevos (vistos antes: ${totalSeenBefore}, después: ${totalSeenAfter})`);
                 
-                // Si todo era duplicado, registrar y salir
+                // 🚨 FIX: Si todo era duplicado, verificar si el pageKey cambió
                 if (dedupedTraits.length === 0) {
                     console.log('ℹ️ loadMoreTraits: batch duplicado, no se agregan traits nuevos');
-                    // 🚨 FIX: Si todos son duplicados, puede ser que el pageKey esté ciclando
-                    // No actualizar pageKey y marcar hasMore como false para detener
-                    console.warn('⚠️ Batch completamente duplicado - posible ciclo de pageKey. Deteniendo carga.');
-                    this.paginationState.traits.hasMore = false;
-                    return [];
+                    if (!pageKeyChanged && pageKey !== null) {
+                        // El pageKey no cambió y no es null - esto indica un ciclo
+                        console.warn('⚠️ Batch completamente duplicado y pageKey no cambió - ciclo de pageKey detectado. Deteniendo carga.');
+                        this.paginationState.traits.hasMore = false;
+                        return [];
+                    } else if (pageKeyChanged && loadResult.hasMore) {
+                        // El pageKey cambió pero todos son duplicados - puede ser que simplemente no hay más traits nuevos
+                        console.warn('⚠️ Batch completamente duplicado pero pageKey cambió - puede haber más tokens pero todos son duplicados. Continuando...');
+                        // Continuar intentando cargar más, pero solo si el pageKey cambió
+                        // No actualizar hasMore aquí, dejarlo como está en loadResult
+                    } else {
+                        // No hay más páginas
+                        console.log('ℹ️ No hay más traits nuevos y no hay más páginas disponibles');
+                        this.paginationState.traits.hasMore = false;
+                        return [];
+                    }
                 }
                 
                 // Agregar nuevos traits al cache existente

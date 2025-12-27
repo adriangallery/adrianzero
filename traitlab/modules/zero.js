@@ -451,9 +451,29 @@ class ZeroManager {
             
             console.log(`Total tokens loaded: ${allNfts.length} from ${pageCount} pages`);
             
-            // Capturar nextPageKey antes de procesar (para modo batch)
-            const nextPageKey = pageKey;
+            // 🚨 FIX: Capturar nextPageKey correctamente
+            // Si se alcanzó el límite pero hay más páginas, usar el pageKey de la última respuesta
+            // Si no hay más páginas, nextPageKey debe ser null
+            let nextPageKey = null;
+            if (isBatchMode) {
+                // En modo batch, si hay más páginas disponibles, usar el pageKey actual
+                // Si se alcanzó el límite pero hasMore es true, significa que hay más tokens
+                if (hasMore && allNfts.length >= MAX_TOKENS) {
+                    // Se alcanzó el límite pero hay más tokens disponibles
+                    nextPageKey = pageKey;
+                    console.log(`🔗 Modo batch: Límite alcanzado (${allNfts.length}/${MAX_TOKENS}), pero hay más tokens. nextPageKey=${nextPageKey ? nextPageKey.substring(0, 30) + '...' : 'null'}`);
+                } else if (hasMore && allNfts.length < MAX_TOKENS) {
+                    // No se alcanzó el límite pero hay más páginas
+                    nextPageKey = pageKey;
+                    console.log(`🔗 Modo batch: No se alcanzó límite (${allNfts.length}/${MAX_TOKENS}), hay más páginas. nextPageKey=${nextPageKey ? nextPageKey.substring(0, 30) + '...' : 'null'}`);
+                } else {
+                    // No hay más páginas
+                    nextPageKey = null;
+                    console.log(`🔗 Modo batch: No hay más páginas. nextPageKey=null`);
+                }
+            }
             const hasMoreTokens = hasMore && allNfts.length >= MAX_TOKENS;
+            console.log(`🔗 Resumen paginación: hasMore=${hasMore}, hasMoreTokens=${hasMoreTokens}, nextPageKey=${nextPageKey ? nextPageKey.substring(0, 30) + '...' : 'null'}`);
             
             if (allNfts.length === 0) {
                 console.log('No NFTs found for this user');
