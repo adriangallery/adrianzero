@@ -922,16 +922,32 @@ class TraitLABDataManager {
             // Actualizar estado de paginación
             this.paginationState.traits.pageKey = loadResult.nextPageKey;
             this.paginationState.traits.hasMore = loadResult.hasMore;
+            console.log(`🔗 pageKey in: ${pageKey || 'null'} -> out: ${loadResult.nextPageKey || 'null'}`);
             
             console.log(`✅ Batch cargado: ${newTokens.length} nuevos traits, hasMore: ${loadResult.hasMore}`);
             
             // Separar por tipo usando filters.js
             if (window.app && window.app.modules.filters) {
                 const newTraits = window.app.modules.filters.filterTraitTokens(newTokens);
+
+                // Dedupe global por tokenId para evitar repetir primer batch
+                this._traitsSeenIds = this._traitsSeenIds || new Set();
+                const dedupedTraits = newTraits.filter(t => {
+                    const id = String(t.tokenId);
+                    if (this._traitsSeenIds.has(id)) return false;
+                    this._traitsSeenIds.add(id);
+                    return true;
+                });
+                
+                // Si todo era duplicado, registrar y salir
+                if (dedupedTraits.length === 0) {
+                    console.log('ℹ️ loadMoreTraits: batch duplicado, no se agregan traits nuevos');
+                    return [];
+                }
                 
                 // Agregar nuevos traits al cache existente
                 if (this.cache.adrianLab && this.cache.adrianLab.traits) {
-                    this.cache.adrianLab.traits = [...this.cache.adrianLab.traits, ...newTraits];
+                    this.cache.adrianLab.traits = [...this.cache.adrianLab.traits, ...dedupedTraits];
                     this.cache.adrianLab.all = [...(this.cache.adrianLab.all || []), ...newTokens];
                 } else {
                     // Si no hay cache, inicializarlo
@@ -939,7 +955,7 @@ class TraitLABDataManager {
                     const serums = window.app.modules.filters.filterSerumTokens(newTokens);
                     this.cache.adrianLab = {
                         all: newTokens,
-                        traits: newTraits,
+                        traits: dedupedTraits,
                         floppys: floppys,
                         packs: [],
                         serums: serums
@@ -948,12 +964,12 @@ class TraitLABDataManager {
                 
                 // Emitir evento con nuevos traits
                 this.emit('adrianLabMoreTraitsLoaded', {
-                    newTraits: newTraits,
+                    newTraits: dedupedTraits,
                     hasMore: loadResult.hasMore,
                     totalTraits: this.cache.adrianLab.traits.length
                 });
                 
-                return newTraits;
+                return dedupedTraits;
             } else {
                 console.warn('📊 Módulo filters no disponible');
                 return [];

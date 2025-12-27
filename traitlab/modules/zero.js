@@ -348,7 +348,7 @@ class ZeroManager {
                 this.activeTogglesLoaded = true;
             }
             
-            // Load tokens with pagination
+        // Load tokens with pagination
             let allNfts = [];
             let pageKey = startPageKey || null;
             let previousPageKey = null;
@@ -357,9 +357,10 @@ class ZeroManager {
             const MAX_PAGES = 1000; // Límite de seguridad para páginas
             // Por defecto, limitar ERC1155 a una página para respuesta rápida; ERC721 mantiene 10k
             const hasExplicitLimit = (limit !== null && limit !== undefined) || (maxTokens !== null && maxTokens !== undefined);
-            const defaultMaxTokens = (!hasExplicitLimit && tokenType === 'ERC1155') ? 100 : 10000;
-            const MAX_TOKENS = hasExplicitLimit ? (limit ?? maxTokens ?? defaultMaxTokens) : defaultMaxTokens;
-            const isBatchMode = hasExplicitLimit; // Modo batch solo si se proporciona límite explícito
+        // Para ERC1155 en modo batch, no cortar por defecto en 100 para no repetir primera página
+        const defaultMaxTokens = (!hasExplicitLimit && tokenType === 'ERC1155') ? 100 : 10000;
+        const MAX_TOKENS = hasExplicitLimit ? (maxTokens ?? limit ?? defaultMaxTokens) : defaultMaxTokens;
+        const isBatchMode = hasExplicitLimit; // Modo batch solo si se proporciona límite explícito
             
             console.log(`🚀 Iniciando carga de tokens ${tokenType} con límites: max ${MAX_PAGES} páginas, max ${MAX_TOKENS === 10000 ? 'TODOS' : MAX_TOKENS} tokens${isBatchMode ? ' (BATCH MODE)' : ' (LIMITADO RÁPIDO por defecto)'}`);
             while (hasMore && pageCount < MAX_PAGES && allNfts.length < MAX_TOKENS) {
