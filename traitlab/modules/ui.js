@@ -8,6 +8,7 @@ class UIManager {
         this.eventListeners = new Map();
         this.domElements = new Map();
         this.currentFilter = null;
+        this._traitsSeenIds = new Set();
         
         // Selection state properties (like in original index.html)
         this.selectedERC721 = null;
@@ -40,6 +41,7 @@ class UIManager {
         this.displayPlaceholders = this.displayPlaceholders.bind(this);
         this.updateSelectionInfo = this.updateSelectionInfo.bind(this);
         this.getImagePath = this.getImagePath.bind(this);
+        this.getTokenKey = this.getTokenKey.bind(this);
         this.showLoading = this.showLoading.bind(this);
         this.hideLoading = this.hideLoading.bind(this);
         this.showError = this.showError.bind(this);
@@ -660,6 +662,8 @@ class UIManager {
         this.cleanupLazyLoading();
 
         tokensGrid.innerHTML = "";
+        // Reiniciar mapa de vistos con los tokens mostrados actualmente
+        this._traitsSeenIds = new Set(tokens.map(t => this.getTokenKey(t)));
         
         // 🚨 PAGINACIÓN: Si estamos en tab traits y hay más de 300 tokens, activar paginación
         const isTraitsTab = this.currentFilter === 'traits';
@@ -800,18 +804,23 @@ class UIManager {
         }
         if (!Array.isArray(newTraits) || newTraits.length === 0) return;
 
-        // Dedupe contra cache existente
-        const existingIds = new Set();
-        if (this.paginationState.enabled && this.paginationState.allTokens.length > 0) {
-            this.paginationState.allTokens.forEach(t => existingIds.add(t.tokenId));
-        } else {
-            const tokensGrid = this.domElements.get('tokens-grid');
-            tokensGrid?.querySelectorAll('.token-card').forEach(card => {
-                const id = card.getAttribute('data-token-id');
-                if (id) existingIds.add(id);
-            });
+        // Dedupe robusto usando llave contract:tokenId
+        if (!this._traitsSeenIds || this._traitsSeenIds.size === 0) {
+            // Pre-cargar con lo ya renderizado o cacheado
+            const seedTokens = this.paginationState.enabled
+                ? (this.paginationState.allTokens || [])
+                : Array.from(this.domElements.get('tokens-grid')?.querySelectorAll('.token-card') || []).map(card => ({
+                    tokenId: card.getAttribute('data-token-id'),
+                    contract: card.getAttribute('data-contract') || ''
+                }));
+            seedTokens.forEach(t => this._traitsSeenIds.add(this.getTokenKey(t)));
         }
-        const deduped = newTraits.filter(t => !existingIds.has(String(t.tokenId)));
+        const deduped = newTraits.filter(t => {
+            const key = this.getTokenKey(t);
+            if (this._traitsSeenIds.has(key)) return false;
+            this._traitsSeenIds.add(key);
+            return true;
+        });
         if (deduped.length === 0) {
             console.log('ℹ️ appendTraits: no hay nuevos traits después de dedupe');
             this.setLoadMoreVisibility?.(hasMore && !this.isMobile() && !this.paginationState.enabled);
@@ -1192,6 +1201,14 @@ class UIManager {
             // Production - use absolute path from root
             return '/components/images/' + assetId + extension;
         }
+    }
+
+    /**
+     * Build unique key for token (contract + tokenId)
+     */
+    getTokenKey(token) {
+        const contract = (token.contract || '').toLowerCase();
+        return `${contract}:${String(token.tokenId)}`;
     }
 
     /**
