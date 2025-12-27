@@ -256,6 +256,199 @@ class TraitLABDataManager {
     }
 
     /**
+     * Cargar floppy tokens bajo demanda
+     * Carga tokens adicionales hasta encontrar floppy tokens o hasta que no haya más páginas
+     */
+    async loadFloppyTokensOnDemand() {
+        try {
+            // Si ya hay floppy tokens en cache, no hacer nada
+            if (this.cache.adrianLab?.floppys?.length > 0) {
+                console.log('💾 Floppy tokens ya están en cache');
+                return;
+            }
+            
+            if (!window.app || !window.app.modules.zero || !window.app.modules.wallet) {
+                console.warn('📊 Módulos necesarios no disponibles para cargar floppy tokens');
+                return;
+            }
+            
+            const userAddress = window.app.modules.wallet.getCurrentAccount();
+            if (!userAddress) {
+                console.warn('📊 No hay wallet conectada');
+                return;
+            }
+            
+            const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+            const batchSize = 100;
+            const maxBatches = 10; // Máximo 10 batches (1000 tokens) para buscar floppy tokens
+            let pageKey = this.paginationState.traits.pageKey || null;
+            let batchesLoaded = 0;
+            let floppyTokensFound = 0;
+            
+            console.log('💾 Iniciando carga de floppy tokens bajo demanda...');
+            
+            // Si no hay pageKey inicial, empezar desde el principio
+            // Pero primero verificar si ya tenemos tokens cargados
+            if (!pageKey && this.cache.adrianLab?.all?.length > 0) {
+                // Ya tenemos tokens cargados, usar el pageKey del estado de paginación
+                pageKey = this.paginationState.traits.pageKey;
+            }
+            
+            while (batchesLoaded < maxBatches && floppyTokensFound === 0) {
+                batchesLoaded++;
+                console.log(`💾 Cargando batch ${batchesLoaded}/${maxBatches} para buscar floppy tokens...`);
+                
+                try {
+                    const loadResult = await this.loadBasicTokens(userAddress, contractAddress, batchSize, pageKey);
+                    
+                    if (!loadResult || typeof loadResult !== 'object' || !loadResult.tokens) {
+                        console.warn('📊 Resultado inválido de loadBasicTokens');
+                        break;
+                    }
+                    
+                    const newTokens = loadResult.tokens;
+                    
+                    // Actualizar pageKey para siguiente iteración
+                    pageKey = loadResult.nextPageKey;
+                    this.paginationState.traits.pageKey = pageKey;
+                    this.paginationState.traits.hasMore = loadResult.hasMore;
+                    
+                    // Filtrar floppy tokens de este batch
+                    if (window.app && window.app.modules.filters) {
+                        const newFloppys = window.app.modules.filters.filterFloppyTokens(newTokens);
+                        
+                        if (newFloppys.length > 0) {
+                            floppyTokensFound = newFloppys.length;
+                            console.log(`💾 ¡Floppy tokens encontrados! ${newFloppys.length} en este batch`);
+                            
+                            // Agregar floppy tokens al cache
+                            if (this.cache.adrianLab) {
+                                // Dedupe: verificar que no estén ya en cache
+                                const existingFloppyIds = new Set(
+                                    (this.cache.adrianLab.floppys || []).map(f => String(f.tokenId))
+                                );
+                                const dedupedFloppys = newFloppys.filter(f => 
+                                    !existingFloppyIds.has(String(f.tokenId))
+                                );
+                                
+                                if (dedupedFloppys.length > 0) {
+                                    this.cache.adrianLab.floppys = [
+                                        ...(this.cache.adrianLab.floppys || []),
+                                        ...dedupedFloppys
+                                    ];
+                                    this.cache.adrianLab.all = [
+                                        ...(this.cache.adrianLab.all || []),
+                                        ...newTokens
+                                    ];
+                                    
+                                    // También actualizar traits y serums si hay nuevos
+                                    const newTraits = window.app.modules.filters.filterTraitTokens(newTokens);
+                                    const newSerums = window.app.modules.filters.filterSerumTokens(newTokens);
+                                    
+                                    // Dedupe traits
+                                    this._traitsSeenIds = this._traitsSeenIds || new Set(
+                                        (this.cache.adrianLab.traits || []).map(t => String(t.tokenId))
+                                    );
+                                    const dedupedTraits = newTraits.filter(t => {
+                                        const id = String(t.tokenId);
+                                        if (this._traitsSeenIds.has(id)) return false;
+                                        this._traitsSeenIds.add(id);
+                                        return true;
+                                    });
+                                    
+                                    if (dedupedTraits.length > 0) {
+                                        this.cache.adrianLab.traits = [
+                                            ...(this.cache.adrianLab.traits || []),
+                                            ...dedupedTraits
+                                        ];
+                                    }
+                                    
+                                    if (newSerums.length > 0) {
+                                        const existingSerumIds = new Set(
+                                            (this.cache.adrianLab.serums || []).map(s => String(s.tokenId))
+                                        );
+                                        const dedupedSerums = newSerums.filter(s => 
+                                            !existingSerumIds.has(String(s.tokenId))
+                                        );
+                                        
+                                        if (dedupedSerums.length > 0) {
+                                            this.cache.adrianLab.serums = [
+                                                ...(this.cache.adrianLab.serums || []),
+                                                ...dedupedSerums
+                                            ];
+                                        }
+                                    }
+                                    
+                                    console.log(`💾 Floppy tokens agregados al cache. Total: ${this.cache.adrianLab.floppys.length}`);
+                                    
+                                    // Emitir evento para notificar que hay nuevos floppy tokens
+                                    this.emit('adrianLabTokensReady', {
+                                        floppys: this.cache.adrianLab.floppys,
+                                        serums: this.cache.adrianLab.serums || [],
+                                        traits: this.cache.adrianLab.traits || [],
+                                        hasMore: this.paginationState.traits.hasMore,
+                                        nextPageKey: this.paginationState.traits.pageKey
+                                    });
+                                    
+                                    break; // Salir del loop, ya encontramos floppy tokens
+                                }
+                            } else {
+                                // Inicializar cache si no existe
+                                const newTraits = window.app.modules.filters.filterTraitTokens(newTokens);
+                                const newSerums = window.app.modules.filters.filterSerumTokens(newTokens);
+                                
+                                this.cache.adrianLab = {
+                                    all: newTokens,
+                                    traits: newTraits,
+                                    floppys: newFloppys,
+                                    packs: [],
+                                    serums: newSerums
+                                };
+                                
+                                // Inicializar set de dedupe
+                                this._traitsSeenIds = new Set(newTraits.map(t => String(t.tokenId)));
+                                
+                                console.log(`💾 Cache inicializado con floppy tokens: ${newFloppys.length}`);
+                                
+                                // Emitir evento
+                                this.emit('adrianLabTokensReady', {
+                                    floppys: newFloppys,
+                                    serums: newSerums,
+                                    traits: newTraits,
+                                    hasMore: loadResult.hasMore,
+                                    nextPageKey: pageKey
+                                });
+                                
+                                break; // Salir del loop
+                            }
+                        }
+                    }
+                    
+                    // Si no hay más páginas, salir
+                    if (!loadResult.hasMore) {
+                        console.log('💾 No hay más tokens para cargar');
+                        break;
+                    }
+                    
+                } catch (error) {
+                    console.error(`📊 Error cargando batch ${batchesLoaded} para floppy tokens:`, error);
+                    break;
+                }
+            }
+            
+            if (floppyTokensFound === 0) {
+                console.warn('💾 No se encontraron floppy tokens después de cargar', batchesLoaded, 'batches');
+            } else {
+                console.log(`✅ Carga de floppy tokens completada: ${floppyTokensFound} encontrados en ${batchesLoaded} batch(es)`);
+            }
+            
+        } catch (error) {
+            console.error('📊 Error en loadFloppyTokensOnDemand:', error);
+            // No lanzar el error para evitar crashes
+        }
+    }
+
+    /**
      * Cargar tokens con reintentos y rate limiting - SIN FILTRO
      */
     async loadTokensWithRetry(userAddress, contractAddress, maxRetries = 3) {

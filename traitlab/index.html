@@ -527,6 +527,44 @@
                                 this.showError(`Error cargando traits: ${error.message}`);
                             }
                         }
+                    } else if (this.currentFilter === 'floppy') {
+                        // 🎯 CASO ESPECIAL: Floppy - Iniciar carga bajo demanda si es necesario
+                        console.log('💾 FLOPPY: Verificando estado de carga de floppy tokens...');
+                        
+                        // Verificar si los floppy tokens ya están cargados
+                        const filteredTokens = this.modules.dataManager.getFilteredTokens('floppy');
+                        console.log(`📊 Floppy tokens disponibles actualmente: ${filteredTokens.length}`);
+                        
+                        if (filteredTokens.length > 0) {
+                            // Floppy tokens ya están cargados, mostrar inmediatamente
+                            console.log('✅ Mostrando floppy tokens disponibles inmediatamente');
+                            this.modules.ui.displayTokens(filteredTokens, 'floppy');
+                            this.hideLoading();
+                        } else {
+                            // Floppy tokens no están cargados, iniciar carga bajo demanda
+                            console.log('⏳ Floppy tokens no están cargados, iniciando carga bajo demanda...');
+                            try {
+                                // Iniciar carga de floppy tokens inmediatamente
+                                await this.modules.dataManager.loadFloppyTokensOnDemand();
+                                
+                                // Intentar obtener floppy tokens nuevamente después de iniciar la carga
+                                const floppyTokensAfterLoad = this.modules.dataManager.getFilteredTokens('floppy');
+                                if (floppyTokensAfterLoad.length > 0) {
+                                    console.log('✅ Floppy tokens cargados, mostrando:', floppyTokensAfterLoad.length);
+                                    this.modules.ui.displayTokens(floppyTokensAfterLoad, 'floppy');
+                                    this.hideLoading();
+                                } else {
+                                    // Los floppy tokens aún se están cargando o no se encontraron
+                                    // Se mostrarán automáticamente cuando estén listos vía onTokensLoaded
+                                    console.log('⏳ Floppy tokens en proceso de carga o no encontrados, mostrando loading...');
+                                    // El loading ya se mostró al inicio del método
+                                }
+                            } catch (error) {
+                                console.error('❌ Error iniciando carga de floppy tokens:', error);
+                                this.hideLoading();
+                                this.showError(`Error cargando floppy tokens: ${error.message}`);
+                            }
+                        }
                     } else {
                         // 🚀 MOSTRAR TOKENS PROGRESIVAMENTE (para otros tabs)
                         const filteredTokens = this.modules.dataManager.getFilteredTokens(this.currentFilter || 'adrianzero');
