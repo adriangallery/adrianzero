@@ -392,14 +392,21 @@
                         console.log('🎯 Tokens ERC1155 listos:', { floppys: floppys.length, serums: serums.length, traits: traits.length, hasMore });
                         
                         // Actualizar display si estamos en el tab correcto
-                        if (this.currentFilter === 'floppy' && floppys.length > 0) {
-                            console.log('✅ Mostrando floppy tokens inmediatamente');
-                            this.modules.ui.displayTokens(floppys, 'floppy');
-                            this.hideLoading();
-                        } else if (this.currentFilter === 'serum' && serums.length > 0) {
-                            console.log('✅ Mostrando serum tokens inmediatamente');
-                            this.modules.ui.displayTokens(serums, 'serum');
-                            this.hideLoading();
+                        // 🚨 FIX: No mostrar traits si estamos en tab floppy o serum
+                        if (this.currentFilter === 'floppy') {
+                            if (floppys.length > 0) {
+                                console.log('✅ Mostrando floppy tokens inmediatamente');
+                                this.modules.ui.displayTokens(floppys, 'floppy');
+                                this.hideLoading();
+                            }
+                            // No mostrar traits si estamos en tab floppy
+                        } else if (this.currentFilter === 'serum') {
+                            if (serums.length > 0) {
+                                console.log('✅ Mostrando serum tokens inmediatamente');
+                                this.modules.ui.displayTokens(serums, 'serum');
+                                this.hideLoading();
+                            }
+                            // No mostrar traits si estamos en tab serum
                         } else if (this.currentFilter === 'traits' && traits.length > 0) {
                             console.log('✅ Mostrando trait tokens inmediatamente');
                             this.modules.ui.displayTokens(traits, 'traits');
@@ -530,6 +537,12 @@
                     } else if (this.currentFilter === 'floppy') {
                         // 🎯 CASO ESPECIAL: Floppy - Iniciar carga bajo demanda si es necesario
                         console.log('💾 FLOPPY: Verificando estado de carga de floppy tokens...');
+                        
+                        // 🚨 FIX: Limpiar display antes de cargar floppy tokens para evitar mostrar traits
+                        const tokensGrid = document.getElementById('tokens-grid');
+                        if (tokensGrid) {
+                            tokensGrid.innerHTML = '';
+                        }
                         
                         // Verificar si los floppy tokens ya están cargados
                         const filteredTokens = this.modules.dataManager.getFilteredTokens('floppy');

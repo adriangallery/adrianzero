@@ -382,12 +382,15 @@ class TraitLABDataManager {
                                     console.log(`💾 Floppy tokens agregados al cache. Total: ${this.cache.adrianLab.floppys.length}`);
                                     
                                     // Emitir evento para notificar que hay nuevos floppy tokens
+                                    // 🚨 FIX: No incluir traits cuando se están cargando floppy tokens bajo demanda
+                                    // para evitar que se muestren traits en el tab floppy
                                     this.emit('adrianLabTokensReady', {
                                         floppys: this.cache.adrianLab.floppys,
                                         serums: this.cache.adrianLab.serums || [],
-                                        traits: this.cache.adrianLab.traits || [],
+                                        traits: [], // No incluir traits cuando se cargan floppy tokens bajo demanda
                                         hasMore: this.paginationState.traits.hasMore,
-                                        nextPageKey: this.paginationState.traits.pageKey
+                                        nextPageKey: this.paginationState.traits.pageKey,
+                                        loadingFloppy: true // Flag para indicar que se están cargando floppy tokens
                                     });
                                     
                                     break; // Salir del loop, ya encontramos floppy tokens
@@ -411,12 +414,14 @@ class TraitLABDataManager {
                                 console.log(`💾 Cache inicializado con floppy tokens: ${newFloppys.length}`);
                                 
                                 // Emitir evento
+                                // 🚨 FIX: No incluir traits cuando se están cargando floppy tokens bajo demanda
                                 this.emit('adrianLabTokensReady', {
                                     floppys: newFloppys,
                                     serums: newSerums,
-                                    traits: newTraits,
+                                    traits: [], // No incluir traits cuando se cargan floppy tokens bajo demanda
                                     hasMore: loadResult.hasMore,
-                                    nextPageKey: pageKey
+                                    nextPageKey: pageKey,
+                                    loadingFloppy: true // Flag para indicar que se están cargando floppy tokens
                                 });
                                 
                                 break; // Salir del loop
