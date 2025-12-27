@@ -679,6 +679,8 @@ class UIManager {
             }
         }
         
+        // Limitar render duro en móvil (sin paginación) a 150
+        const MAX_MOBILE_RENDER = 150;
         const shouldUsePagination = isTraitsTab && tokens.length > 300 && !this.isMobile();
         
         if (shouldUsePagination) {
@@ -725,7 +727,7 @@ class UIManager {
             console.log('🔄 Mostrando tokens con loading wheels...');
         }
         
-        // Standard rendering: mostrar todos los tokens (o hasta 300 si es traits)
+        // Standard rendering: mostrar tokens
         let traitsToDisplay = tokens;
         if (isTraitsTab && tokens.length > 300 && !this.isMobile()) {
             // Limitar a 300 tokens y activar paginación
@@ -735,6 +737,11 @@ class UIManager {
             this.paginationState.currentPage = 1;
             this.paginationState.totalPages = Math.ceil(tokens.length / this.paginationState.tokensPerPage);
             this.showPaginationControls();
+        } else if (isTraitsTab && this.isMobile() && tokens.length > MAX_MOBILE_RENDER) {
+            // En móvil sin paginación: limitar render a 150
+            traitsToDisplay = tokens.slice(0, MAX_MOBILE_RENDER);
+            this.paginationState.enabled = false;
+            this.hidePaginationControls();
         }
         
         traitsToDisplay.forEach(token => {
@@ -822,12 +829,15 @@ class UIManager {
 
         // Si está activo lazy loading (mobile)
         if (this.lazyLoadingState.enabled) {
-            this.lazyLoadingState.allTokens = [...this.lazyLoadingState.allTokens, ...deduped];
+            // Mantener un límite duro de elementos en DOM para móvil
+            const MAX_MOBILE_RENDER = 150;
+            this.lazyLoadingState.allTokens = [...this.lazyLoadingState.allTokens, ...deduped].slice(-MAX_MOBILE_RENDER);
             // Asegurar que el sentinel siga observado para cargar siguientes lotes
             if (hasMore && this.lazyLoadingState.sentinel && this.lazyLoadingState.observer) {
                 this.lazyLoadingState.observer.observe(this.lazyLoadingState.sentinel);
             }
             this.setLoadMoreVisibility?.(false);
+            // No forzar repaint inmediato; lazy loader agregará cuando se acerque al sentinel
             return;
         }
 
