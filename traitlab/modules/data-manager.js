@@ -997,10 +997,9 @@ class TraitLABDataManager {
                 if (!this.paginationState.traits.seenPageKeys) {
                     this.paginationState.traits.seenPageKeys = new Set();
                 }
-                // Agregar el pageKey inicial a seenPageKeys (null no se agrega)
-                if (nextPageKey) {
-                    this.paginationState.traits.seenPageKeys.add(nextPageKey);
-                }
+                // 🚨 FIX: NO agregar el nextPageKey inicial a seenPageKeys
+                // El nextPageKey es el que vamos a usar en la siguiente carga, así que no debe estar en seenPageKeys
+                // Solo agregamos pageKeys que ya hemos usado para hacer peticiones
                 
                 this.paginationState.traits.pageKey = nextPageKey;
                 this.paginationState.traits.hasMore = hasMore;
