@@ -1125,8 +1125,12 @@ class TraitLABDataManager {
             
             // 🚨 FIX: Verificar si el pageKey cambió antes de actualizar
             const pageKeyChanged = pageKey !== loadResult.nextPageKey;
-            console.log(`🔗 pageKey in: ${pageKey ? pageKey.substring(0, 30) + '...' : 'null'} -> out: ${loadResult.nextPageKey ? loadResult.nextPageKey.substring(0, 30) + '...' : 'null'}`);
-            console.log(`🔗 pageKey cambió: ${pageKeyChanged}`);
+            console.log(`🔗 pageKey in: ${pageKey ? (pageKey.length > 100 ? pageKey.substring(0, 100) + '...' : pageKey) : 'null'}`);
+            console.log(`🔗 pageKey out: ${loadResult.nextPageKey ? (loadResult.nextPageKey.length > 100 ? loadResult.nextPageKey.substring(0, 100) + '...' : loadResult.nextPageKey) : 'null'}`);
+            console.log(`🔗 pageKey cambió: ${pageKeyChanged}, son iguales: ${pageKey === loadResult.nextPageKey}`);
+            if (!pageKeyChanged && pageKey !== null) {
+                console.warn('⚠️ ADVERTENCIA: El pageKey NO cambió, esto puede causar tokens duplicados!');
+            }
             
             // Actualizar estado de paginación
             this.paginationState.traits.pageKey = loadResult.nextPageKey;

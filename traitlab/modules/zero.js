@@ -402,6 +402,11 @@ class ZeroManager {
                 
                 // Check if there are more pages
                 const newPageKey = nftsData.pageKey;
+                console.log(`🔗 newPageKey de Alchemy: ${newPageKey ? newPageKey.substring(0, 50) + '...' : 'null'}`);
+                console.log(`🔗 pageKey actual antes de actualizar: ${pageKey ? pageKey.substring(0, 50) + '...' : 'null'}`);
+                
+                // 🚨 FIX: Verificar si se alcanzó el límite ANTES de actualizar el pageKey
+                const limitReached = allNfts.length >= MAX_TOKENS;
                 
                 // NUEVA VALIDACIÓN: Verificar si el pageKey es diferente al anterior
                 if (newPageKey && newPageKey === previousPageKey) {
@@ -418,6 +423,7 @@ class ZeroManager {
                     if (newPageKey) {
                         seenPageKeys.add(newPageKey);
                     }
+                    // 🚨 FIX: Actualizar pageKey con el newPageKey de la respuesta ANTES de verificar el límite
                     pageKey = newPageKey;
                     hasMore = !!pageKey;
                 }
@@ -425,6 +431,13 @@ class ZeroManager {
                 previousPageKey = newPageKey;
                 
                 console.log(`📊 Total tokens loaded so far: ${allNfts.length}/${MAX_TOKENS}. Has more: ${hasMore}`);
+                console.log(`🔗 PageKey actualizado: ${pageKey ? pageKey.substring(0, 30) + '...' : 'null'}`);
+                
+                // 🚨 FIX: Si se alcanzó el límite, salir del loop pero mantener el pageKey actualizado
+                if (limitReached) {
+                    console.log(`⚠️ Límite de tokens alcanzado (${allNfts.length}/${MAX_TOKENS}), saliendo del loop pero manteniendo pageKey para siguiente batch`);
+                    break; // Salir del loop pero mantener el pageKey actualizado
+                }
                 
                 // Log de progreso cada 10 páginas
                 if (pageCount % 10 === 0) {
@@ -461,11 +474,17 @@ class ZeroManager {
                 if (hasMore && allNfts.length >= MAX_TOKENS) {
                     // Se alcanzó el límite pero hay más tokens disponibles
                     nextPageKey = pageKey;
-                    console.log(`🔗 Modo batch: Límite alcanzado (${allNfts.length}/${MAX_TOKENS}), pero hay más tokens. nextPageKey=${nextPageKey ? nextPageKey.substring(0, 30) + '...' : 'null'}`);
+                    // 🚨 FIX: Verificar si el nextPageKey es diferente al startPageKey
+                    if (nextPageKey === initialPageKey && initialPageKey !== null) {
+                        console.warn('⚠️ ADVERTENCIA: nextPageKey es igual al pageKey inicial, esto puede causar un ciclo!');
+                        console.warn(`🔗 initialPageKey: ${initialPageKey.substring(0, 50) + '...'}`);
+                        console.warn(`🔗 nextPageKey: ${nextPageKey.substring(0, 50) + '...'}`);
+                    }
+                    console.log(`🔗 Modo batch: Límite alcanzado (${allNfts.length}/${MAX_TOKENS}), pero hay más tokens. nextPageKey=${nextPageKey ? (nextPageKey.length > 100 ? nextPageKey.substring(0, 100) + '...' : nextPageKey) : 'null'}`);
                 } else if (hasMore && allNfts.length < MAX_TOKENS) {
                     // No se alcanzó el límite pero hay más páginas
                     nextPageKey = pageKey;
-                    console.log(`🔗 Modo batch: No se alcanzó límite (${allNfts.length}/${MAX_TOKENS}), hay más páginas. nextPageKey=${nextPageKey ? nextPageKey.substring(0, 30) + '...' : 'null'}`);
+                    console.log(`🔗 Modo batch: No se alcanzó límite (${allNfts.length}/${MAX_TOKENS}), hay más páginas. nextPageKey=${nextPageKey ? (nextPageKey.length > 100 ? nextPageKey.substring(0, 100) + '...' : nextPageKey) : 'null'}`);
                 } else {
                     // No hay más páginas
                     nextPageKey = null;
@@ -473,7 +492,7 @@ class ZeroManager {
                 }
             }
             const hasMoreTokens = hasMore && allNfts.length >= MAX_TOKENS;
-            console.log(`🔗 Resumen paginación: hasMore=${hasMore}, hasMoreTokens=${hasMoreTokens}, nextPageKey=${nextPageKey ? nextPageKey.substring(0, 30) + '...' : 'null'}`);
+            console.log(`🔗 Resumen paginación: hasMore=${hasMore}, hasMoreTokens=${hasMoreTokens}, nextPageKey=${nextPageKey ? (nextPageKey.length > 100 ? nextPageKey.substring(0, 100) + '...' : nextPageKey) : 'null'}`);
             
             if (allNfts.length === 0) {
                 console.log('No NFTs found for this user');
