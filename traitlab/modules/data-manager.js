@@ -948,6 +948,10 @@ class TraitLABDataManager {
                 // Si todo era duplicado, registrar y salir
                 if (dedupedTraits.length === 0) {
                     console.log('ℹ️ loadMoreTraits: batch duplicado, no se agregan traits nuevos');
+                    // 🚨 FIX: Si todos son duplicados, puede ser que el pageKey esté ciclando
+                    // No actualizar pageKey y marcar hasMore como false para detener
+                    console.warn('⚠️ Batch completamente duplicado - posible ciclo de pageKey. Deteniendo carga.');
+                    this.paginationState.traits.hasMore = false;
                     return [];
                 }
                 

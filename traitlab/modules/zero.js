@@ -355,6 +355,12 @@ class ZeroManager {
             let hasMore = true;
             let pageCount = 0;
             const MAX_PAGES = 1000; // Límite de seguridad para páginas
+            // 🚨 FIX: Guardar el pageKey inicial para detectar ciclos
+            const initialPageKey = startPageKey;
+            const seenPageKeys = new Set();
+            if (startPageKey) {
+                seenPageKeys.add(startPageKey);
+            }
             // Por defecto, limitar ERC1155 a una página para respuesta rápida; ERC721 mantiene 10k
             const hasExplicitLimit = (limit !== null && limit !== undefined) || (maxTokens !== null && maxTokens !== undefined);
         // Para ERC1155 en modo batch, no cortar por defecto en 100 para no repetir primera página
@@ -403,7 +409,15 @@ class ZeroManager {
                     console.warn(`🔄 PageKey anterior: ${previousPageKey?.substring(0, 20)}...`);
                     console.warn(`🔄 PageKey actual: ${newPageKey?.substring(0, 20)}...`);
                     hasMore = false;
+                } else if (newPageKey && seenPageKeys.has(newPageKey)) {
+                    // 🚨 FIX: Detectar si el pageKey ya se vio antes (ciclo)
+                    console.warn('⚠️ PageKey ciclando detectado - este pageKey ya se usó antes');
+                    console.warn(`🔄 PageKey repetido: ${newPageKey?.substring(0, 20)}...`);
+                    hasMore = false;
                 } else {
+                    if (newPageKey) {
+                        seenPageKeys.add(newPageKey);
+                    }
                     pageKey = newPageKey;
                     hasMore = !!pageKey;
                 }
