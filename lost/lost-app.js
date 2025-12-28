@@ -133,6 +133,9 @@ function getFilteredEvents() {
 function renderEvents(events) {
     const grid = document.getElementById('eventsGrid');
     
+    // Remove year view mode class when showing weeks view
+    grid.classList.remove('year-view-mode');
+    
     if (events.length === 0) {
         grid.innerHTML = '<div class="no-events">No events found in the selected time period.</div>';
         return;
@@ -287,6 +290,9 @@ function getYearEvents(year) {
 // Render year view (list format)
 function renderYearView(eventsByMonth, totalEvents) {
     const grid = document.getElementById('eventsGrid');
+    
+    // Add class to grid for year view mode
+    grid.classList.add('year-view-mode');
     
     if (totalEvents === 0) {
         grid.innerHTML = '<div class="no-events">No events found for this year.</div>';
