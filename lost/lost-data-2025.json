@@ -2049,6 +2049,124 @@
           "category": "dapp"
         }
       ]
+    },
+    {
+      "weekNumber": 42,
+      "date": "2024-12-21",
+      "title": "Sunday Recap — 21 Dec",
+      "events": [
+        {
+          "emoji": "🤒",
+          "title": "Flu Week From Hell",
+          "description": "Had the flu, hit the Cursor Pro limit, IRL XMAS work went crazy… Green snot was literally here bro 💀 And somehow… we still shipped.",
+          "status": "completed",
+          "category": "personal"
+        },
+        {
+          "emoji": "💸",
+          "title": "Economic Updates (OG Punk Economy)",
+          "description": "⚔️ PunkQUEST stake/unstake fees now go back into QUEST pool. 🧪 Updated v4 hook: a smol part of $ADRIAN tax now routes to PunkQUEST rewards. Tax → community again. Nothing to the team.",
+          "status": "completed",
+          "category": "token"
+        },
+        {
+          "emoji": "🧠",
+          "title": "FloorENGINE Activity",
+          "description": "The machine crossed 30+ fckn Punks bought (insane week). Engine keeps looping and providing exit liquidity while pushing floor organically 👀",
+          "status": "completed",
+          "category": "marketplace",
+          "stats": {
+            "punksBought": 30
+          }
+        },
+        {
+          "emoji": "⚔️",
+          "title": "PunkQUEST Remake",
+          "description": "One of our first dapps needed love. Now it matches the modern vibe: cleaner UI, smoother flow, less dusty early 2025 energy.",
+          "status": "completed",
+          "category": "staking"
+        },
+        {
+          "emoji": "📊",
+          "title": "Stats Page Revamp",
+          "description": "Collapsible windows, better layout, more readable… Stats still populating but the UI is already looking sexy.",
+          "status": "completed",
+          "category": "ui"
+        },
+        {
+          "emoji": "🤖",
+          "title": "AdrianBOT (Arb Bot)",
+          "description": "FFS my most advanced creature to date. Reads OpenSea FP + $A/ETH + Engine state… buys paperhands on OpenSea and flips back to the Engine. The ecosystem is so alive it's spawning bots by itself 🤣🫣",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🖼️",
+          "title": "SHOWCASE (WIP)",
+          "description": "Smol visual tool requested by the artist to brag about $ADRIAN this XMAS. Needs tweaks, likely launching soon.",
+          "status": "in-progress",
+          "category": "website"
+        },
+        {
+          "emoji": "🎭",
+          "title": "WAGMI / NGMI Roles",
+          "description": "LOL. Let's see if Wassa finishes his part 👀",
+          "status": "in-progress",
+          "category": "social"
+        },
+        {
+          "emoji": "💳",
+          "title": "Cursor PRO+ Pain",
+          "description": "Paid that fcking PRO+ plan… $60/month 🤯 Shipping isn't free, mfers.",
+          "status": "completed",
+          "category": "personal",
+          "stats": {
+            "cost": "$60/month"
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 43,
+      "date": "2024-12-28",
+      "title": "Sunday Recap — 28 Dec",
+      "events": [
+        {
+          "emoji": "🤖",
+          "title": "AdrianBOT v1 Launch",
+          "description": "A bot that hunts paperhands on OpenSea and loops it back into the ecosystem: Reads OpenSea floor, checks ENGINE balance. If ENGINE can pay more than OS price → buys on OpenSea → lists on Engine → claims $ADRIAN. And yes… it will even dump $ADRIAN for ETH if it spots a buy but has no ETH in wallet 🤣💀",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🧪",
+          "title": "AdrianBOT v2 (Cooking)",
+          "description": "Next version in the works with: $ADRIAN arbitrage between LP routes, OpenSea offers logic, and more cursed features I'm not leaking yet 👀⚡",
+          "status": "in-progress",
+          "category": "bot"
+        },
+        {
+          "emoji": "🧩",
+          "title": "TraitLAB Performance Polish",
+          "description": "Spent hours smoothing it out because Wassa won't stop crying he can't play 😭😂 He's STILL not fixed (mf), but for everyone else it's quicker + smoother already. I'll keep pushing this next week, promise.",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "📱",
+          "title": "Side Quest: iPhone TODO App",
+          "description": "Made myself a dumb TODO app to track all the pending chaos… not $ADRIAN related but yeah, dev brain doesn't turn off LOL.",
+          "status": "completed",
+          "category": "personal"
+        },
+        {
+          "emoji": "🎆",
+          "title": "New Year's Eve Art (WIP)",
+          "description": "Artist is slowly cooking something for NYE… no spoilers yet but expect vibes.",
+          "status": "in-progress",
+          "category": "art"
+        }
+      ]
     }
   ]
 }

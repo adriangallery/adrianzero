@@ -350,6 +350,29 @@
     /* When showing year view, always use single column full width */
     .events-grid.year-view-mode {
       grid-template-columns: 1fr !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    
+    .events-grid.year-view-mode .year-view {
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    .events-grid.year-view-mode .month-group {
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    .events-grid.year-view-mode .events-list {
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    .events-grid.year-view-mode .event-item {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     
     @media (min-width: 768px) {
