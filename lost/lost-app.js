@@ -234,21 +234,34 @@ function createEventCard(event, index) {
 // Get all events for a specific year, grouped by month
 function getYearEvents(year) {
     if (!lostData || !lostData.weeks) {
-        return {};
+        return { eventsByMonth: {}, totalEvents: 0 };
     }
     
-    const yearStr = String(year);
+    // Map: 2025 -> 2024 (because lost-data-2025.json contains 2024 dates)
+    // 2026 -> 2025 (when we add 2026 data, it will contain 2025 dates)
+    const yearMapping = {
+        '2025': '2024',
+        '2026': '2025'
+    };
+    
+    // Use mapped year for searching, but display the selected year
+    const searchYear = yearMapping[String(year)] || String(year);
+    const displayYear = String(year);
+    
     const eventsByMonth = {};
     let totalEvents = 0;
+    
+    console.log(`🔍 Buscando eventos para año ${displayYear} (buscando en datos de ${searchYear})`);
     
     lostData.weeks.forEach(week => {
         // Extract year from date (format: YYYY-MM-DD)
         const weekYear = week.date ? week.date.substring(0, 4) : null;
         
-        if (weekYear === yearStr && week.events && week.events.length > 0) {
+        if (weekYear === searchYear && week.events && week.events.length > 0) {
             // Extract month from date
             const month = week.date ? week.date.substring(5, 7) : '00';
-            const monthKey = `${yearStr}-${month}`;
+            // Use displayYear for the month key so it shows correctly
+            const monthKey = `${displayYear}-${month}`;
             
             if (!eventsByMonth[monthKey]) {
                 eventsByMonth[monthKey] = [];
@@ -265,6 +278,8 @@ function getYearEvents(year) {
             });
         }
     });
+    
+    console.log(`✅ Encontrados ${totalEvents} eventos en ${Object.keys(eventsByMonth).length} meses`);
     
     return { eventsByMonth, totalEvents };
 }
