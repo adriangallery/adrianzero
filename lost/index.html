@@ -344,16 +344,22 @@
       grid-template-columns: 1fr;
       gap: 24px;
       margin: 40px 0;
+      width: 100%;
+    }
+    
+    /* When showing year view, always use single column full width */
+    .events-grid.year-view-mode {
+      grid-template-columns: 1fr !important;
     }
     
     @media (min-width: 768px) {
-      .events-grid {
+      .events-grid:not(.year-view-mode) {
         grid-template-columns: repeat(2, 1fr);
       }
     }
     
     @media (min-width: 992px) {
-      .events-grid {
+      .events-grid:not(.year-view-mode) {
         grid-template-columns: repeat(3, 1fr);
       }
     }
