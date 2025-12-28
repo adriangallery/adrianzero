@@ -3,18 +3,32 @@
 let lostData = null;
 let currentWeek = 0;
 let selectedWeeks = 4;
+let selectedYear = 'all'; // 'all', '2025', '2026', or null
 
 // Load JSON data
-async function loadData() {
+async function loadData(year = null) {
     try {
+        // Determine which JSON file to load
+        const yearToLoad = year || selectedYear;
+        let filename;
+        
+        if (yearToLoad === '2025' || yearToLoad === 2025) {
+            filename = 'lost-data-2025.json';
+        } else if (yearToLoad === '2026' || yearToLoad === 2026) {
+            filename = 'lost-data-2026.json';
+        } else {
+            // Default to 2025 for "all" or initial load
+            filename = 'lost-data-2025.json';
+        }
+        
         // Try to load from current directory first, then try relative path
         let response;
         try {
-            response = await fetch('./lost-data.json');
+            response = await fetch(`./${filename}`);
             if (!response.ok) throw new Error('Failed to fetch');
         } catch (e) {
             // Fallback: try without leading dot
-            response = await fetch('lost-data.json');
+            response = await fetch(filename);
         }
         
         if (!response.ok) {
@@ -217,21 +231,176 @@ function createEventCard(event, index) {
     `;
 }
 
-// Update display based on selected weeks
-function updateDisplay() {
-    const events = getFilteredEvents();
-    renderEvents(events);
-    
-    // Update counter
-    const counter = document.getElementById('eventsCounter');
-    if (events.length === 0) {
-        counter.textContent = 'No events found';
-    } else {
-        counter.textContent = `${events.length} event${events.length !== 1 ? 's' : ''} found in the last ${selectedWeeks} week${selectedWeeks !== 1 ? 's' : ''}`;
+// Get all events for a specific year, grouped by month
+function getYearEvents(year) {
+    if (!lostData || !lostData.weeks) {
+        return {};
     }
     
-    // Update slider value display
-    document.getElementById('sliderValue').textContent = selectedWeeks;
+    const yearStr = String(year);
+    const eventsByMonth = {};
+    let totalEvents = 0;
+    
+    lostData.weeks.forEach(week => {
+        // Extract year from date (format: YYYY-MM-DD)
+        const weekYear = week.date ? week.date.substring(0, 4) : null;
+        
+        if (weekYear === yearStr && week.events && week.events.length > 0) {
+            // Extract month from date
+            const month = week.date ? week.date.substring(5, 7) : '00';
+            const monthKey = `${yearStr}-${month}`;
+            
+            if (!eventsByMonth[monthKey]) {
+                eventsByMonth[monthKey] = [];
+            }
+            
+            week.events.forEach(event => {
+                eventsByMonth[monthKey].push({
+                    ...event,
+                    weekNumber: week.weekNumber,
+                    weekDate: week.date,
+                    weekTitle: week.title
+                });
+                totalEvents++;
+            });
+        }
+    });
+    
+    return { eventsByMonth, totalEvents };
+}
+
+// Render year view (list format)
+function renderYearView(eventsByMonth, totalEvents) {
+    const grid = document.getElementById('eventsGrid');
+    
+    if (totalEvents === 0) {
+        grid.innerHTML = '<div class="no-events">No events found for this year.</div>';
+        return;
+    }
+    
+    // Sort months descending (most recent first)
+    const monthKeys = Object.keys(eventsByMonth).sort((a, b) => b.localeCompare(a));
+    
+    const monthNames = {
+        '01': 'January', '02': 'February', '03': 'March', '04': 'April',
+        '05': 'May', '06': 'June', '07': 'July', '08': 'August',
+        '09': 'September', '10': 'October', '11': 'November', '12': 'December'
+    };
+    
+    let html = '<div class="year-view">';
+    
+    monthKeys.forEach(monthKey => {
+        const [year, month] = monthKey.split('-');
+        const monthName = monthNames[month] || `Month ${month}`;
+        const events = eventsByMonth[monthKey];
+        
+        // Sort events by week number (newest first)
+        events.sort((a, b) => b.weekNumber - a.weekNumber);
+        
+        html += `
+            <div class="month-group">
+                <div class="month-header">
+                    <div class="month-title">${monthName} ${year}</div>
+                    <div class="month-count">${events.length} event${events.length !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="events-list">
+                    ${events.map(event => createEventListItem(event)).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    grid.innerHTML = html;
+}
+
+// Create event list item HTML (compact format)
+function createEventListItem(event) {
+    const emoji = event.emoji || '📅';
+    const title = event.title || 'Untitled Event';
+    const description = event.description || '';
+    const status = event.status || 'completed';
+    const category = event.category || 'general';
+    const date = event.weekDate || '';
+    
+    // Format date for display
+    let dateDisplay = '';
+    if (date) {
+        const dateObj = new Date(date);
+        dateDisplay = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    
+    // Status badge class
+    const statusClass = status === 'completed' ? 'badge-status' : 
+                       status === 'in-progress' ? 'badge-status in-progress' : 
+                       'badge-status future';
+    
+    return `
+        <div class="event-item">
+            <div class="event-item-emoji">${emoji}</div>
+            <div class="event-item-content">
+                <div class="event-item-header">
+                    <h3 class="event-item-title">${title}</h3>
+                    <div class="event-item-badges">
+                        <span class="event-item-badge ${statusClass}">${status}</span>
+                        <span class="event-item-badge badge-category">${category}</span>
+                    </div>
+                </div>
+                <p class="event-item-description">${description}</p>
+                ${dateDisplay ? `<div class="event-item-date">${dateDisplay}</div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+// Update display based on selected weeks or year
+function updateDisplay() {
+    const grid = document.getElementById('eventsGrid');
+    
+    // If a specific year is selected, show year view
+    if (selectedYear && selectedYear !== 'all') {
+        const { eventsByMonth, totalEvents } = getYearEvents(selectedYear);
+        renderYearView(eventsByMonth, totalEvents);
+        
+        // Update year counter
+        const yearCounter = document.getElementById('yearCounter');
+        if (yearCounter) {
+            if (totalEvents === 0) {
+                yearCounter.textContent = 'No events found';
+            } else {
+                yearCounter.textContent = `${totalEvents} event${totalEvents !== 1 ? 's' : ''} in ${selectedYear}`;
+            }
+        }
+        
+        // Hide weeks counter
+        const counter = document.getElementById('eventsCounter');
+        if (counter) {
+            counter.textContent = '';
+        }
+    } else {
+        // Show weeks view
+        const events = getFilteredEvents();
+        renderEvents(events);
+        
+        // Update counter
+        const counter = document.getElementById('eventsCounter');
+        if (counter) {
+            if (events.length === 0) {
+                counter.textContent = 'No events found';
+            } else {
+                counter.textContent = `${events.length} event${events.length !== 1 ? 's' : ''} found in the last ${selectedWeeks} week${selectedWeeks !== 1 ? 's' : ''}`;
+            }
+        }
+        
+        // Update slider value display
+        document.getElementById('sliderValue').textContent = selectedWeeks;
+        
+        // Clear year counter
+        const yearCounter = document.getElementById('yearCounter');
+        if (yearCounter) {
+            yearCounter.textContent = '';
+        }
+    }
 }
 
 // Initialize slider
@@ -239,21 +408,72 @@ function initSlider() {
     const slider = document.getElementById('weeksSlider');
     
     slider.addEventListener('input', (e) => {
-        selectedWeeks = parseInt(e.target.value);
-        updateDisplay();
+        if (selectedYear === 'all' || !selectedYear) {
+            selectedWeeks = parseInt(e.target.value);
+            updateDisplay();
+        }
     });
     
     slider.addEventListener('change', (e) => {
-        selectedWeeks = parseInt(e.target.value);
-        updateDisplay();
-        // Smooth scroll to top of events
-        document.getElementById('eventsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (selectedYear === 'all' || !selectedYear) {
+            selectedWeeks = parseInt(e.target.value);
+            updateDisplay();
+            // Smooth scroll to top of events
+            document.getElementById('eventsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+}
+
+// Initialize year selector
+function initYearSelector() {
+    const yearButtons = document.querySelectorAll('.year-btn');
+    
+    yearButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const year = btn.getAttribute('data-year');
+            
+            // Update active state
+            yearButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Update selected year
+            selectedYear = year;
+            
+            // Enable/disable weeks slider based on selection
+            const slider = document.getElementById('weeksSlider');
+            const weeksSection = document.getElementById('weeksSection');
+            
+            if (year === 'all') {
+                // Enable weeks selector
+                slider.disabled = false;
+                weeksSection.style.opacity = '1';
+                weeksSection.style.pointerEvents = 'auto';
+                
+                // Load default data (2025)
+                await loadData('2025');
+            } else {
+                // Disable weeks selector
+                slider.disabled = true;
+                weeksSection.style.opacity = '0.5';
+                weeksSection.style.pointerEvents = 'none';
+                
+                // Load data for selected year
+                await loadData(year);
+            }
+            
+            // Update display
+            updateDisplay();
+            
+            // Smooth scroll to top
+            document.getElementById('eventsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     });
 }
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     initSlider();
+    initYearSelector();
     loadData();
 });
 
