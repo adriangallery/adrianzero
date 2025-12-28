@@ -80,6 +80,15 @@
 
     .subtitle{text-align:center;color:#cccccc;margin-bottom:32px;font-size:24px}
     
+    /* Selectors Container */
+    .selectors-container {
+      display: flex;
+      gap: 24px;
+      margin: 40px auto;
+      max-width: 1200px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
     /* Slider Section */
     .slider-section {
       background: var(--card);
@@ -87,7 +96,9 @@
       border-radius: 12px;
       padding: 32px;
       margin: 40px auto;
-      max-width: 600px;
+      flex: 1;
+      min-width: 280px;
+      max-width: 500px;
       box-shadow: var(--ring1);
     }
     
@@ -454,15 +465,29 @@
     </div>
     <p class="subtitle" style="font-family: 'VT323', monospace;">What did I miss in these X weeks?</p>
 
-    <!-- Slider Section -->
-    <div class="slider-section">
-      <div class="slider-label">Select how many weeks back you want to see:</div>
-      <div class="slider-container">
-        <input type="range" min="1" max="52" value="4" class="slider" id="weeksSlider">
-        <div class="slider-value" id="sliderValue">4</div>
-        <div class="weeks-text">weeks</div>
+    <!-- Selectors Section -->
+    <div class="selectors-container">
+      <!-- Weeks Selector -->
+      <div class="slider-section" id="weeksSection">
+        <div class="slider-label">Select how many weeks back you want to see:</div>
+        <div class="slider-container">
+          <input type="range" min="1" max="52" value="4" class="slider" id="weeksSlider">
+          <div class="slider-value" id="sliderValue">4</div>
+          <div class="weeks-text">weeks</div>
+        </div>
+        <div class="events-counter" id="eventsCounter">Loading events...</div>
       </div>
-      <div class="events-counter" id="eventsCounter">Loading events...</div>
+
+      <!-- Year Selector -->
+      <div class="slider-section" id="yearSection">
+        <div class="slider-label">Or select a year:</div>
+        <div class="year-buttons">
+          <button class="year-btn" data-year="2025">2025</button>
+          <button class="year-btn" data-year="2026">2026</button>
+          <button class="year-btn active" data-year="all">All</button>
+        </div>
+        <div class="events-counter" id="yearCounter"></div>
+      </div>
     </div>
 
     <!-- Events Grid -->
