@@ -423,19 +423,42 @@ function initSlider() {
     const slider = document.getElementById('weeksSlider');
     
     slider.addEventListener('input', (e) => {
-        if (selectedYear === 'all' || !selectedYear) {
-            selectedWeeks = parseInt(e.target.value);
-            updateDisplay();
+        // Allow switching back to weeks view by moving the slider
+        // This will override the year selection
+        selectedWeeks = parseInt(e.target.value);
+        if (selectedYear && selectedYear !== 'all') {
+            // Reset to weeks view when slider is moved
+            selectedYear = 'all';
+            // Update active button
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                if (btn.getAttribute('data-year') === 'all') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
         }
+        updateDisplay();
     });
     
     slider.addEventListener('change', (e) => {
-        if (selectedYear === 'all' || !selectedYear) {
-            selectedWeeks = parseInt(e.target.value);
-            updateDisplay();
-            // Smooth scroll to top of events
-            document.getElementById('eventsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Allow switching back to weeks view by moving the slider
+        selectedWeeks = parseInt(e.target.value);
+        if (selectedYear && selectedYear !== 'all') {
+            // Reset to weeks view when slider is moved
+            selectedYear = 'all';
+            // Update active button
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                if (btn.getAttribute('data-year') === 'all') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
         }
+        updateDisplay();
+        // Smooth scroll to top of events
+        document.getElementById('eventsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 }
 
@@ -459,7 +482,7 @@ function initYearSelector() {
             const weeksSection = document.getElementById('weeksSection');
             
             if (year === 'all') {
-                // Enable weeks selector
+                // Enable weeks selector - allow switching back to weeks view
                 slider.disabled = false;
                 weeksSection.style.opacity = '1';
                 weeksSection.style.pointerEvents = 'auto';
@@ -467,10 +490,11 @@ function initYearSelector() {
                 // Load default data (2025)
                 await loadData('2025');
             } else {
-                // Disable weeks selector
-                slider.disabled = true;
-                weeksSection.style.opacity = '0.5';
-                weeksSection.style.pointerEvents = 'none';
+                // When selecting a year, still allow weeks selector to work
+                // User can click on weeks slider to switch back to weeks view
+                slider.disabled = false;
+                weeksSection.style.opacity = '1';
+                weeksSection.style.pointerEvents = 'auto';
                 
                 // Load data for selected year
                 await loadData(year);
