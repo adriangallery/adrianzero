@@ -80,7 +80,7 @@ class TraitLABConfig {
 
     /**
      * Cargar API keys desde config-keys.js (generado por GitHub Actions)
-     * Si no está disponible, usa las keys de fallback
+     * Solo usa la primary key desde GitHub Secrets
      */
     loadAlchemyKeysFromConfig() {
         try {
@@ -96,7 +96,7 @@ class TraitLABConfig {
                 this.ALCHEMY_API_KEY = this.ALCHEMY_API_KEYS[0] || null;
                 console.log('✅ TraitLABConfig: API keys cargadas desde config-keys.js');
             } else {
-                console.log('⚠️ TraitLABConfig: config-keys.js no disponible, usando keys de fallback');
+                console.warn('⚠️ TraitLABConfig: config-keys.js no disponible. No hay API keys configuradas.');
             }
         } catch (error) {
             console.warn('⚠️ TraitLABConfig: Error cargando config-keys.js:', error.message);
