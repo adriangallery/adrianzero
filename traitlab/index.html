@@ -261,7 +261,8 @@
 
     <!-- Scripts de módulos -->
     <!-- Cargar config-keys.js primero (generado por GitHub Actions desde ALCHEMY_PRIMARY_KEY secret) -->
-    <script src="config-keys.js" onerror="console.warn('⚠️ config-keys.js no disponible. Verificar que ALCHEMY_PRIMARY_KEY esté configurado en GitHub Secrets.')"></script>
+    <!-- Añadir timestamp para evitar caché del navegador -->
+    <script src="config-keys.js?v=2" onerror="console.warn('⚠️ config-keys.js no disponible. Verificar que ALCHEMY_PRIMARY_KEY esté configurado en GitHub Secrets.')"></script>
     <script src="modules/config.js?v=12"></script>
     <script src="modules/utils/image-loader.js?v=1"></script>
     <script src="modules/wallet.js?v=12"></script>
