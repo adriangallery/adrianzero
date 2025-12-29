@@ -38,16 +38,15 @@ export class BlockchainConfig {
     explorer: "https://basescan.org"
   };
 
-  // API keys de Alchemy (con fallback)
-  // Se pueden cargar desde variables de entorno o config externa
-  private _alchemyApiKeys: string[] = ["pqRmKgTaLqm2eak9iML1f"];
+  // API keys de Alchemy - solo primary key desde secrets
+  // Se cargan desde config-keys.js (generado por GitHub Actions)
+  private _alchemyApiKeys: string[] = [];
   private _alchemyBaseUrl = "https://base-mainnet.g.alchemy.com/nft/v3";
   private _alchemyRpcUrl = "https://base-mainnet.g.alchemy.com/v2";
 
-  // RPC providers con fallback
+  // RPC providers (sin key hardcodeada)
   public readonly RPC_PROVIDERS: string[] = [
     "https://mainnet.base.org",
-    "https://base-mainnet.g.alchemy.com/v2/pqRmKgTaLqm2eak9iML1f",
     "https://base.llamarpc.com",
     "https://base-rpc.publicnode.com"
   ];
@@ -93,10 +92,7 @@ export class BlockchainConfig {
         if (config.primary) {
           this._alchemyApiKeys.push(config.primary);
         }
-        
-        if (config.fallbacks && Array.isArray(config.fallbacks)) {
-          this._alchemyApiKeys.push(...config.fallbacks);
-        }
+        // NO agregar fallbacks - solo usar primary key
         
         console.log('✅ BlockchainConfig: API keys cargadas desde config externa');
       } else {
@@ -117,8 +113,8 @@ export class BlockchainConfig {
   /**
    * Obtener API key primaria de Alchemy
    */
-  public getPrimaryAlchemyApiKey(): string {
-    return this._alchemyApiKeys[0] || "pqRmKgTaLqm2eak9iML1f";
+  public getPrimaryAlchemyApiKey(): string | null {
+    return this._alchemyApiKeys[0] || null;
   }
 
   /**

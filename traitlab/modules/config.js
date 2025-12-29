@@ -26,8 +26,8 @@ class TraitLABConfig {
         this.ADRIAN_TOKEN = "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea";
         
         // API keys de Alchemy - se cargarán desde config-keys.js si está disponible
-        this.ALCHEMY_API_KEYS = ["pqRmKgTaLqm2eak9iML1f"]; // Fallback keys (sin primary key hardcodeada)
-        this.ALCHEMY_API_KEY = "pqRmKgTaLqm2eak9iML1f"; // Mantener para compatibilidad
+        this.ALCHEMY_API_KEYS = []; // Sin fallback hardcodeado
+        this.ALCHEMY_API_KEY = null; // Sin fallback hardcodeado
         this.ALCHEMY_BASE_URL = "https://base-mainnet.g.alchemy.com/nft/v3";
         
         this.NETWORK = {
@@ -39,7 +39,6 @@ class TraitLABConfig {
         // Múltiples RPC providers para Base con fallback
         this.BASE_RPC_URLS = [
             "https://mainnet.base.org",
-            "https://base-mainnet.g.alchemy.com/v2/pqRmKgTaLqm2eak9iML1f",
             "https://base.llamarpc.com",
             "https://base-rpc.publicnode.com"
         ];
@@ -87,16 +86,14 @@ class TraitLABConfig {
         try {
             if (window.ALCHEMY_KEYS_CONFIG) {
                 const config = window.ALCHEMY_KEYS_CONFIG;
-                // Construir array con primary primero, luego fallbacks
+                // Construir array con SOLO la primary key (sin fallbacks)
                 this.ALCHEMY_API_KEYS = [];
                 if (config.primary) {
                     this.ALCHEMY_API_KEYS.push(config.primary);
                 }
-                if (config.fallbacks && Array.isArray(config.fallbacks)) {
-                    this.ALCHEMY_API_KEYS.push(...config.fallbacks);
-                }
+                // NO agregar fallbacks
                 // Actualizar también ALCHEMY_API_KEY para compatibilidad
-                this.ALCHEMY_API_KEY = this.ALCHEMY_API_KEYS[0] || "pqRmKgTaLqm2eak9iML1f";
+                this.ALCHEMY_API_KEY = this.ALCHEMY_API_KEYS[0] || null;
                 console.log('✅ TraitLABConfig: API keys cargadas desde config-keys.js');
             } else {
                 console.log('⚠️ TraitLABConfig: config-keys.js no disponible, usando keys de fallback');

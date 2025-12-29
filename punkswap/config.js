@@ -18,9 +18,9 @@ class PunkswapConfig {
             rpcUrl: "https://mainnet.base.org"
         };
         
-        // Alchemy configuration
-        this.ALCHEMY_API_KEY = "pqRmKgTaLqm2eak9iML1f";
-        this.ALCHEMY_RPC_URL = `https://base-mainnet.g.alchemy.com/v2/${this.ALCHEMY_API_KEY}`;
+        // Alchemy configuration - se carga desde config-keys.js (generado por GitHub Actions)
+        this.ALCHEMY_API_KEY = (typeof window !== 'undefined' && window.ALCHEMY_KEYS_CONFIG?.primary) || null;
+        this.ALCHEMY_RPC_URL = this.ALCHEMY_API_KEY ? `https://base-mainnet.g.alchemy.com/v2/${this.ALCHEMY_API_KEY}` : "https://mainnet.base.org";
         
         // Cache configuration
         this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutos

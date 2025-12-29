@@ -1332,7 +1332,7 @@ class TraitLABDataManager {
             return 0;
         }
 
-        const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+        const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [];
         const zeroModule = window.app?.modules?.zero;
         if (!zeroModule || typeof zeroModule.fetchWithAlchemyFallback !== 'function') {
             console.warn('📊 No se puede enriquecer metadata: zero module o fetchWithAlchemyFallback no disponible');

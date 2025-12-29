@@ -325,7 +325,7 @@ class ZeroManager {
                 const urlTemplate = `https://base-mainnet.g.alchemy.com/nft/v3/{API_KEY}/getNFTsForOwner?${urlParams}`;
                 
                 // Obtener todas las API keys disponibles
-                const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+                const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [];
                 
                 console.log(`🌐 Requesting NFTs con ${apiKeys.length} API key(s) disponibles`);
                 
@@ -572,7 +572,7 @@ class ZeroManager {
                                 console.log(`Fetching individual metadata for token ${token.tokenId}`);
                                 try {
                                     const metadataUrlTemplate = `https://base-mainnet.g.alchemy.com/nft/v3/{API_KEY}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${token.tokenId}&tokenType=ERC1155`;
-                                    const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+                                    const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [];
                                     
                                     const metadataResponse = await this.fetchWithAlchemyFallback(metadataUrlTemplate, apiKeys, 15000);
                                     

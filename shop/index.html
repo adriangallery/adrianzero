@@ -833,7 +833,8 @@
 
     <script>
         // Configuration
-        const ALCHEMY_API_KEY = "pqRmKgTaLqm2eak9iML1f";
+        // API key se carga desde config-keys.js (generado por GitHub Actions)
+        const ALCHEMY_API_KEY = (typeof window !== 'undefined' && window.ALCHEMY_KEYS_CONFIG?.primary) || null;
         const BASE_NETWORK = {
             chainId: "0x2105", // 8453 in hex
             chainName: "Base Mainnet",

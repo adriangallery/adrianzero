@@ -51,10 +51,9 @@ async function initAlchemyProvider() {
             console.log('✅ Using Alchemy key from config');
         }
         
-        // Fallback to public key
+        // No fallback - solo usar primary key desde secrets
         if (!alchemyKey) {
-            alchemyKey = "pqRmKgTaLqm2eak9iML1f";
-            console.log('⚠️ Using fallback Alchemy key');
+            console.error('❌ No Alchemy API key available. Check ALCHEMY_PRIMARY_KEY in GitHub Secrets.');
         }
         
         const alchemyUrl = `https://base-mainnet.g.alchemy.com/v2/${alchemyKey}`;

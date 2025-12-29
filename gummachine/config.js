@@ -49,9 +49,9 @@ const CONFIG = {
         ENABLE_SOUNDS: false
     },
     
-    // API Configuration
+    // API Configuration - se carga desde config-keys.js (generado por GitHub Actions)
     API: {
-        ALCHEMY_KEY: 'pqRmKgTaLqm2eak9iML1f', // Same as traitlab
+        ALCHEMY_KEY: (typeof window !== 'undefined' && window.ALCHEMY_KEYS_CONFIG?.primary) || null,
         ALCHEMY_RPC: 'https://base-mainnet.g.alchemy.com/v2/',
         IPFS_GATEWAY: 'https://ipfs.io/ipfs/'
     },

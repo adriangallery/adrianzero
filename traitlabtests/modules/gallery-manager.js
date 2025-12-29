@@ -222,7 +222,7 @@ class GalleryManager {
             }
             
             const urlTemplate = `${this.alchemyBaseUrl}/{API_KEY}/getNFTsForCollection?${urlParams}`;
-            const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+            const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [];
 
             console.log(`Requesting AdrianZERO NFTs from Alchemy con ${apiKeys.length} key(s)`);
             
@@ -266,7 +266,7 @@ class GalleryManager {
             }
             
             const urlTemplate = `${this.alchemyBaseUrl}/{API_KEY}/getNFTsForCollection?${urlParams}`;
-            const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [window.TraitLABConfig?.ALCHEMY_API_KEY || "pqRmKgTaLqm2eak9iML1f"];
+            const apiKeys = window.TraitLABConfig?.getAllAlchemyApiKeys() || [];
 
             console.log(`Requesting traits from Alchemy con ${apiKeys.length} key(s)`);
             
