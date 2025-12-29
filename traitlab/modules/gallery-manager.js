@@ -25,8 +25,13 @@ class GalleryManager {
      * @returns {Promise<Response>} Response de la petición exitosa
      */
     async fetchWithAlchemyFallback(urlTemplate, apiKeys, timeout = 15000) {
+        if (!apiKeys || apiKeys.length === 0) {
+            throw new Error('No hay API keys de Alchemy disponibles. Verificar que ALCHEMY_PRIMARY_KEY esté configurado en GitHub Secrets.');
+        }
+        
         const maxRetriesPerKey = 2;
         const retryDelays = [1000, 2000, 4000];
+        const hasMultipleKeys = apiKeys.length > 1;
         
         for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
             const apiKey = apiKeys[keyIndex];
@@ -46,7 +51,11 @@ class GalleryManager {
                     if (timeoutId) clearTimeout(timeoutId);
                     
                     if (response.status === 429) {
-                        console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        if (hasMultipleKeys) {
+                            console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        } else {
+                            console.warn(`⚠️ Rate limit (429), esperando antes de reintentar...`);
+                        }
                         break;
                     }
                     
@@ -56,6 +65,9 @@ class GalleryManager {
                             await new Promise(resolve => setTimeout(resolve, delay));
                             continue;
                         } else {
+                            if (!hasMultipleKeys || keyIndex === apiKeys.length - 1) {
+                                throw new Error(`Error del servidor (${response.status}) después de ${maxRetriesPerKey + 1} intentos.`);
+                            }
                             break;
                         }
                     }
@@ -65,7 +77,15 @@ class GalleryManager {
                     }
                     
                     if (response.status >= 400 && response.status < 500) {
-                        break;
+                        if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
+                            break; // Cambiar a siguiente key
+                        } else {
+                            // Última key o solo hay una key
+                            const errorMsg = response.status === 403 
+                                ? `Error 403 (Forbidden). La API key no tiene permisos o está inválida. Verificar ALCHEMY_PRIMARY_KEY en GitHub Secrets.`
+                                : `Error ${response.status} con la API key. Verificar que ALCHEMY_PRIMARY_KEY esté configurado correctamente.`;
+                            throw new Error(errorMsg);
+                        }
                     }
                     
                     if (retry < maxRetriesPerKey) {
@@ -76,9 +96,18 @@ class GalleryManager {
                 } catch (error) {
                     if (timeoutId) clearTimeout(timeoutId);
                     
+                    // Si el error ya es un Error con mensaje, relanzarlo
+                    if (error instanceof Error && error.message.includes('API key')) {
+                        throw error;
+                    }
+                    
                     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-                        console.warn(`⏱️ Timeout con key ${keyIndex + 1}, cambiando a siguiente key`);
-                        break;
+                        if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
+                            console.warn(`⏱️ Timeout con key ${keyIndex + 1}, cambiando a siguiente key`);
+                            break;
+                        } else {
+                            throw new Error(`Timeout después de ${maxRetriesPerKey + 1} intentos.`);
+                        }
                     }
                     
                     if (error.message.includes('fetch') || error.message.includes('network')) {
@@ -87,15 +116,24 @@ class GalleryManager {
                             await new Promise(resolve => setTimeout(resolve, delay));
                             continue;
                         } else {
-                            break;
+                            if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
+                                break;
+                            } else {
+                                throw new Error(`Error de red después de ${maxRetriesPerKey + 1} intentos.`);
+                            }
                         }
                     }
-                    break;
+                    
+                    if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
+                        break;
+                    } else {
+                        throw error;
+                    }
                 }
             }
         }
         
-        throw new Error(`Todas las API keys de Alchemy fallaron`);
+        throw new Error(`Todas las API keys de Alchemy fallaron. Verificar que ALCHEMY_PRIMARY_KEY esté configurado correctamente en GitHub Secrets.`);
     }
 
     async initialize(provider, signer) {

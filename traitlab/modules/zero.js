@@ -169,10 +169,15 @@ class ZeroManager {
      * @returns {Promise<Response>} Response de la petición exitosa
      */
     async fetchWithAlchemyFallback(urlTemplate, apiKeys, timeout = 15000) {
+        if (!apiKeys || apiKeys.length === 0) {
+            throw new Error('No hay API keys de Alchemy disponibles. Verificar que ALCHEMY_PRIMARY_KEY esté configurado en GitHub Secrets.');
+        }
+        
         const maxRetriesPerKey = 2;
         const retryDelays = [1000, 2000, 4000]; // Exponential backoff
         const rateLimitDelay = 2000; // Delay cuando hay rate limit (2 segundos)
         let rateLimitCount = 0; // Contador de rate limits consecutivos
+        const hasMultipleKeys = apiKeys.length > 1;
         
         for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
             const apiKey = apiKeys[keyIndex];
@@ -180,7 +185,8 @@ class ZeroManager {
             
             for (let retry = 0; retry <= maxRetriesPerKey; retry++) {
                 try {
-                    console.log(`🌐 Intentando con API key ${keyIndex + 1}/${apiKeys.length}${retry > 0 ? ` (retry ${retry}/${maxRetriesPerKey})` : ''}`);
+                    const keyInfo = hasMultipleKeys ? `API key ${keyIndex + 1}/${apiKeys.length}` : 'API key';
+                    console.log(`🌐 Intentando con ${keyInfo}${retry > 0 ? ` (retry ${retry}/${maxRetriesPerKey})` : ''}`);
                     
                     // Crear AbortController para timeout
                     const controller = new AbortController();
@@ -195,13 +201,21 @@ class ZeroManager {
                     
                     clearTimeout(timeoutId);
                     
-                    // Si es rate limit (429), esperar antes de cambiar a siguiente key
+                    // Si es rate limit (429), esperar antes de reintentar
                     if (response.status === 429) {
                         rateLimitCount++;
                         const delay = rateLimitDelay * rateLimitCount; // Delay incremental
-                        console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, esperando ${delay}ms antes de cambiar a siguiente key`);
+                        if (hasMultipleKeys) {
+                            console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, esperando ${delay}ms antes de cambiar a siguiente key`);
+                        } else {
+                            console.warn(`⚠️ Rate limit (429), esperando ${delay}ms antes de reintentar...`);
+                        }
                         await new Promise(resolve => setTimeout(resolve, delay));
-                        break; // Salir del loop de retry y probar siguiente key
+                        if (hasMultipleKeys) {
+                            break; // Salir del loop de retry y probar siguiente key
+                        } else {
+                            continue; // Reintentar con misma key
+                        }
                     }
                     
                     // Si llegamos aquí y no hay rate limit, resetear contador
@@ -209,7 +223,7 @@ class ZeroManager {
                         rateLimitCount = 0;
                     }
                     
-                    // Si es error del servidor (5xx), retry con misma key o cambiar
+                    // Si es error del servidor (5xx), retry con misma key
                     if (response.status >= 500 && response.status < 600) {
                         if (retry < maxRetriesPerKey) {
                             const delay = retryDelays[retry] || 4000;
@@ -217,21 +231,33 @@ class ZeroManager {
                             await new Promise(resolve => setTimeout(resolve, delay));
                             continue; // Retry con misma key
                         } else {
-                            console.warn(`⚠️ Error del servidor (${response.status}) después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
-                            break; // Cambiar a siguiente key
+                            if (hasMultipleKeys) {
+                                console.warn(`⚠️ Error del servidor (${response.status}) después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
+                                break; // Cambiar a siguiente key
+                            } else {
+                                throw new Error(`Error del servidor (${response.status}) después de ${maxRetriesPerKey + 1} intentos. La API key puede no tener permisos o estar inválida.`);
+                            }
                         }
                     }
                     
                     // Si la respuesta es OK, retornarla
                     if (response.ok) {
-                        console.log(`✅ Petición exitosa con API key ${keyIndex + 1}`);
+                        console.log(`✅ Petición exitosa con ${keyInfo}`);
                         return response;
                     }
                     
-                    // Si es otro error (4xx), cambiar a siguiente key
+                    // Si es otro error (4xx), no hay más keys disponibles
                     if (response.status >= 400 && response.status < 500) {
-                        console.warn(`⚠️ Error ${response.status} con key ${keyIndex + 1}, cambiando a siguiente key`);
-                        break;
+                        if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
+                            console.warn(`⚠️ Error ${response.status} con key ${keyIndex + 1}, cambiando a siguiente key`);
+                            break;
+                        } else {
+                            // Última key o solo hay una key
+                            const errorMsg = response.status === 403 
+                                ? `Error 403 (Forbidden). La API key no tiene permisos o está inválida. Verificar ALCHEMY_PRIMARY_KEY en GitHub Secrets.`
+                                : `Error ${response.status} con la API key. Verificar que ALCHEMY_PRIMARY_KEY esté configurado correctamente.`;
+                            throw new Error(errorMsg);
+                        }
                     }
                     
                     // Si llegamos aquí, retry
@@ -242,6 +268,11 @@ class ZeroManager {
                     }
                     
                 } catch (error) {
+                    // Si el error ya es un Error con mensaje, relanzarlo
+                    if (error instanceof Error && error.message.includes('API key')) {
+                        throw error;
+                    }
+                    
                     // Limpiar timeout si existe
                     if (typeof timeoutId !== 'undefined') {
                         clearTimeout(timeoutId);
@@ -249,8 +280,12 @@ class ZeroManager {
                     
                     // Timeout o abort
                     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-                        console.warn(`⏱️ Timeout (${timeout}ms) con key ${keyIndex + 1}, cambiando a siguiente key`);
-                        break; // Cambiar a siguiente key
+                        if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
+                            console.warn(`⏱️ Timeout (${timeout}ms) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                            break; // Cambiar a siguiente key
+                        } else {
+                            throw new Error(`Timeout (${timeout}ms) después de ${maxRetriesPerKey + 1} intentos.`);
+                        }
                     }
                     
                     // Network error - retry con exponential backoff
@@ -261,22 +296,30 @@ class ZeroManager {
                             await new Promise(resolve => setTimeout(resolve, delay));
                             continue;
                         } else {
-                            console.warn(`🌐 Error de red después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
-                            break;
+                            if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
+                                console.warn(`🌐 Error de red después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
+                                break;
+                            } else {
+                                throw new Error(`Error de red después de ${maxRetriesPerKey + 1} intentos.`);
+                            }
                         }
                     }
                     
-                    // Otro error - cambiar a siguiente key
-                    console.warn(`⚠️ Error con key ${keyIndex + 1}: ${error.message}, cambiando a siguiente key`);
-                    break;
+                    // Otro error
+                    if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
+                        console.warn(`⚠️ Error con key ${keyIndex + 1}: ${error.message}, cambiando a siguiente key`);
+                        break;
+                    } else {
+                        throw new Error(`Error con la API key: ${error.message}`);
+                    }
                 }
             }
         }
         
         // Si todas las keys fallaron por rate limit, esperar más tiempo antes de reintentar
-        if (rateLimitCount >= apiKeys.length) {
+        if (rateLimitCount >= apiKeys.length && apiKeys.length > 0) {
             const longDelay = rateLimitDelay * apiKeys.length * 2; // Delay más largo
-            console.warn(`⚠️ Todas las API keys tienen rate limit, esperando ${longDelay}ms antes de reintentar...`);
+            console.warn(`⚠️ Rate limit en todas las API keys, esperando ${longDelay}ms antes de reintentar...`);
             await new Promise(resolve => setTimeout(resolve, longDelay));
             // Reintentar una vez más con la primera key
             console.log(`🔄 Reintentando con la primera API key después del delay...`);
@@ -293,7 +336,7 @@ class ZeroManager {
                 });
                 clearTimeout(timeoutId);
                 if (response.ok) {
-                    console.log(`✅ Petición exitosa después del delay con API key 1`);
+                    console.log(`✅ Petición exitosa después del delay`);
                     return response;
                 }
             } catch (error) {
@@ -302,7 +345,7 @@ class ZeroManager {
         }
         
         // Si todas las keys fallaron
-        throw new Error(`Todas las API keys de Alchemy fallaron después de ${maxRetriesPerKey + 1} intentos cada una`);
+        throw new Error(`Todas las API keys de Alchemy fallaron después de ${maxRetriesPerKey + 1} intentos cada una. Verificar que ALCHEMY_PRIMARY_KEY esté configurado correctamente en GitHub Secrets.`);
     }
 
     /**
