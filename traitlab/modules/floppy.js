@@ -123,6 +123,8 @@ class FloppyManager {
             return this.getImagePath(10012, '.gif');
         } else if (tokenId === 10013) {
             return this.getImagePath(10013, '.gif');
+        } else if (tokenId === 10014) {
+            return this.getImagePath(10014, '.gif');
         } else if (tokenId === 10015) {
             return this.getImagePath(10015, '.gif');
         } else if (tokenId === 1123) {
@@ -335,7 +337,7 @@ class FloppyManager {
 
     /**
      * Open Pack V4 function for OpenPackV4 contract
-     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10015, 15010
+     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 15010
      */
     async openPackV4() {
         console.log('openPackV4 called');
@@ -344,7 +346,7 @@ class FloppyManager {
         }
         
         // Check if this pack is supported by OpenPackV4
-        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10015, 15010];
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 15010];
         if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is not supported by OpenPackV4.');
         }
@@ -398,7 +400,7 @@ class FloppyManager {
         }
         
         // Check if this pack is supported by OpenPackV4
-        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10015, 15010];
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 15010];
         if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is not supported by OpenPackV4.');
         }
