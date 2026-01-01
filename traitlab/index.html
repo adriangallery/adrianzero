@@ -400,6 +400,13 @@
                                 this.modules.ui.displayTokens(floppys, 'floppy');
                                 this.hideLoading();
                             }
+                            
+                            // 📱 Carga automática en móviles: cargar más páginas hasta encontrar todos los floppys
+                            const ui = this.modules.ui;
+                            if (ui && ui.isMobile && ui.isMobile() && hasMore) {
+                                console.log('📱 [Móvil] Iniciando carga automática de floppys...');
+                                this.loadFloppysAutomatically();
+                            }
                             // No mostrar traits si estamos en tab floppy
                         } else if (this.currentFilter === 'serum') {
                             if (serums.length > 0) {
@@ -435,6 +442,63 @@
                         }
                     });
                 }
+            }
+
+            /**
+             * Cargar floppys automáticamente en móviles
+             * Continúa cargando más páginas hasta que no haya más o se encuentren todos los floppys
+             */
+            async loadFloppysAutomatically() {
+                if (!this.modules.dataManager || !this.modules.ui) {
+                    return;
+                }
+                
+                const ui = this.modules.ui;
+                if (!ui.isMobile || !ui.isMobile()) {
+                    console.log('📱 loadFloppysAutomatically: Solo para móviles');
+                    return;
+                }
+                
+                if (this.currentFilter !== 'floppy') {
+                    console.log('📱 loadFloppysAutomatically: Solo para pestaña floppy');
+                    return;
+                }
+                
+                console.log('📱 [Auto] Iniciando carga automática de floppys...');
+                
+                let maxBatches = 10; // Máximo 10 batches para evitar loops infinitos
+                let batchCount = 0;
+                
+                while (batchCount < maxBatches) {
+                    const result = await this.modules.dataManager.loadMoreFloppys();
+                    
+                    batchCount++;
+                    
+                    // Actualizar display con los nuevos floppys si hay alguno nuevo
+                    if (result.floppys.length > 0 && this.currentFilter === 'floppy') {
+                        const currentFloppys = this.modules.dataManager.cache?.adrianLab?.floppys || [];
+                        console.log(`📱 [Auto] Batch ${batchCount}: ${result.floppys.length} nuevos floppys, total: ${currentFloppys.length}`);
+                        ui.displayTokens(currentFloppys, 'floppy');
+                    } else if (result.floppys.length === 0) {
+                        console.log(`📱 [Auto] Batch ${batchCount}: No se encontraron nuevos floppys en este batch`);
+                    }
+                    
+                    // Si no hay más páginas, salir del loop
+                    if (!result.hasMore) {
+                        console.log(`📱 [Auto] Carga automática completada. Batches: ${batchCount}, hasMore: ${result.hasMore}`);
+                        break;
+                    }
+                    
+                    // Pequeña pausa entre batches para no sobrecargar
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                if (batchCount >= maxBatches) {
+                    console.warn(`📱 [Auto] Carga automática detenida: máximo de batches alcanzado (${maxBatches})`);
+                }
+                
+                const finalFloppys = this.modules.dataManager.cache?.adrianLab?.floppys || [];
+                console.log(`📱 [Auto] Carga automática finalizada. Total floppys encontrados: ${finalFloppys.length}`);
             }
 
             /**

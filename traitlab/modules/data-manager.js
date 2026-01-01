@@ -1111,6 +1111,118 @@ class TraitLABDataManager {
      * Cargar más traits (siguiente batch) desde Alchemy
      * @returns {Promise<Array>} Array de nuevos traits cargados
      */
+    /**
+     * Cargar más floppys automáticamente (para móviles)
+     * Similar a loadMoreTraits pero enfocado en floppys
+     */
+    async loadMoreFloppys() {
+        if (!this.paginationState.traits.isBatchMode) {
+            console.warn('📊 loadMoreFloppys llamado pero no estamos en modo batch');
+            return { floppys: [], hasMore: false };
+        }
+        
+        if (!this.paginationState.traits.hasMore) {
+            console.log('📊 No hay más tokens para cargar (floppys)');
+            return { floppys: [], hasMore: false };
+        }
+        
+        if (!window.app || !window.app.modules.zero || !window.app.modules.wallet) {
+            console.warn('📊 Módulos necesarios no disponibles');
+            return { floppys: [], hasMore: false };
+        }
+        
+        const userAddress = window.app.modules.wallet.getCurrentAccount();
+        if (!userAddress) {
+            console.warn('📊 No hay wallet conectada');
+            return { floppys: [], hasMore: false };
+        }
+        
+        const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+        const batchSize = this.paginationState.traits.batchSize;
+        const pageKey = this.paginationState.traits.pageKey;
+        
+        // Inicializar seenPageKeys si no existe
+        if (!this.paginationState.traits.seenPageKeys) {
+            this.paginationState.traits.seenPageKeys = new Set();
+        }
+        
+        // Detectar ciclos de pageKey
+        if (pageKey && this.paginationState.traits.seenPageKeys.has(pageKey)) {
+            console.warn('⚠️ PageKey ciclando detectado en loadMoreFloppys');
+            this.paginationState.traits.hasMore = false;
+            return { floppys: [], hasMore: false };
+        }
+        
+        // Agregar pageKey actual a seenPageKeys antes de usarlo
+        if (pageKey) {
+            this.paginationState.traits.seenPageKeys.add(pageKey);
+        }
+        
+        console.log(`📦 [Floppys Auto] Cargando siguiente batch de ${batchSize} tokens desde Alchemy...`);
+        
+        try {
+            // Cargar siguiente batch
+            const loadResult = await this.loadBasicTokens(userAddress, contractAddress, batchSize, pageKey);
+            
+            if (!loadResult || typeof loadResult !== 'object' || !loadResult.tokens) {
+                console.warn('📊 Resultado inválido de loadBasicTokens en loadMoreFloppys');
+                return { floppys: [], hasMore: false };
+            }
+            
+            const newTokens = loadResult.tokens;
+            
+            // Actualizar estado de paginación
+            this.paginationState.traits.pageKey = loadResult.nextPageKey;
+            this.paginationState.traits.hasMore = !!loadResult.nextPageKey;
+            
+            // Filtrar solo floppys
+            if (window.app && window.app.modules.filters) {
+                const newFloppys = window.app.modules.filters.filterFloppyTokens(newTokens);
+                
+                // Dedupe: verificar que no estén ya en cache
+                const existingFloppyIds = new Set(
+                    (this.cache.adrianLab?.floppys || []).map(f => String(f.tokenId))
+                );
+                const dedupedFloppys = newFloppys.filter(f => 
+                    !existingFloppyIds.has(String(f.tokenId))
+                );
+                
+                // Agregar nuevos floppys al cache
+                if (this.cache.adrianLab && dedupedFloppys.length > 0) {
+                    this.cache.adrianLab.floppys = [
+                        ...(this.cache.adrianLab.floppys || []),
+                        ...dedupedFloppys
+                    ];
+                    this.cache.adrianLab.all = [
+                        ...(this.cache.adrianLab.all || []),
+                        ...dedupedFloppys
+                    ];
+                }
+                
+                console.log(`💾 [Floppys Auto] ${dedupedFloppys.length} nuevos floppys encontrados (total: ${this.cache.adrianLab?.floppys?.length || 0}), hasMore: ${this.paginationState.traits.hasMore}`);
+                
+                // Emitir evento para notificar que se cargaron más floppys
+                if (dedupedFloppys.length > 0) {
+                    this.emit('adrianLabMoreFloppysLoaded', {
+                        newFloppys: dedupedFloppys,
+                        hasMore: this.paginationState.traits.hasMore,
+                        totalFloppys: this.cache.adrianLab?.floppys?.length || 0
+                    });
+                }
+                
+                return {
+                    floppys: dedupedFloppys,
+                    hasMore: this.paginationState.traits.hasMore
+                };
+            }
+            
+            return { floppys: [], hasMore: this.paginationState.traits.hasMore };
+        } catch (error) {
+            console.error('📊 Error en loadMoreFloppys:', error);
+            return { floppys: [], hasMore: false };
+        }
+    }
+
     async loadMoreTraits() {
         if (!this.paginationState.traits.isBatchMode) {
             console.warn('📊 loadMoreTraits llamado pero no estamos en modo batch');
