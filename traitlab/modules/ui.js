@@ -295,6 +295,14 @@ class UIManager {
         this.currentFilter = filter;
         console.log('✅ currentFilter set to:', this.currentFilter);
         
+        // Ocultar botones "Load More" cuando cambiamos de pestaña
+        if (filter !== 'traits') {
+            this.setLoadMoreVisibility(false);
+        }
+        if (filter !== 'floppy') {
+            this.setLoadMoreFloppysVisibility(false);
+        }
+        
         // Aplicar nombres pendientes si volvemos a adrianzero
         if (filter === 'adrianzero' && window.app?.pendingAdrianZeroNameMap) {
             const pendingMap = window.app.pendingAdrianZeroNameMap;
