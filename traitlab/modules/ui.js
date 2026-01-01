@@ -422,7 +422,19 @@ class UIManager {
             const isTraitsTab = this.currentFilter === 'traits';
             const shouldSkipImage = isSafuMode && isTraitsTab;
             
+            // Debug logs
+            if (isSafuMode) {
+                console.log('🛡️ SAFU MODE detectado en createTokenCard:', {
+                    isSafuMode,
+                    isTraitsTab,
+                    currentFilter: this.currentFilter,
+                    shouldSkipImage,
+                    tokenId: token.tokenId
+                });
+            }
+            
             if (shouldSkipImage) {
+                console.log('🛡️ Creando tarjeta SAFU sin imagen para trait:', token.tokenId);
                 // Crear tarjeta compacta sin imagen, solo texto con toda la información
                 let displayTitle = token.title || `Trait ${token.tokenId}`;
                 
@@ -778,8 +790,18 @@ class UIManager {
 
     /**
      * Display tokens in grid
+     * @param {Array} tokens - Array of tokens to display
+     * @param {string|boolean} filterOrSkipSelection - Filter type (e.g., 'traits', 'floppy') OR boolean for skipSelectionUpdate
+     * @param {boolean} hasLoadingWheels - Whether to show loading wheels
      */
-    displayTokens(tokens, skipSelectionUpdate = false, hasLoadingWheels = false) {
+    displayTokens(tokens, filterOrSkipSelection = false, hasLoadingWheels = false) {
+        // Si el segundo parámetro es un string, es el filtro (compatibilidad con código legacy)
+        if (typeof filterOrSkipSelection === 'string') {
+            this.setCurrentFilter(filterOrSkipSelection);
+        }
+        
+        const skipSelectionUpdate = typeof filterOrSkipSelection === 'boolean' ? filterOrSkipSelection : false;
+        
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid) return;
 
@@ -880,6 +902,11 @@ class UIManager {
             traitsToDisplay = tokens.slice(0, MAX_MOBILE_RENDER);
             this.paginationState.enabled = false;
             this.hidePaginationControls();
+        }
+        
+        // Debug: Verificar modo safu antes de crear tarjetas
+        if (window.SAFU_MODE && isTraitsTab) {
+            console.log('🛡️ SAFU MODE: Creando tarjetas sin imagen para', traitsToDisplay.length, 'traits');
         }
         
         traitsToDisplay.forEach(token => {
