@@ -340,6 +340,67 @@ body {
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
 }
 
+/* 🛡️ SAFU MODE: Estilos para tarjetas sin imagen (solo texto) */
+.token-card.safu-mode {
+    min-height: auto;
+    padding: 12px;
+    height: auto;
+}
+
+.token-card.safu-mode .safu-trait-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.token-card.safu-mode .token-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #00ff00;
+    margin-bottom: 4px;
+    word-wrap: break-word;
+}
+
+.token-card.safu-mode .token-id {
+    font-size: 0.85rem;
+    color: #ccc;
+    font-weight: normal;
+}
+
+.token-card.safu-mode .token-category,
+.token-card.safu-mode .token-balance,
+.token-card.safu-mode .token-type,
+.token-card.safu-mode .token-contract {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 2px;
+}
+
+.token-card.safu-mode .token-quantity-tag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.token-card.safu-mode:hover {
+    transform: translateY(-2px);
+    border-color: #00ff00;
+    box-shadow: 0 4px 12px rgba(0, 255, 0, 0.3);
+}
+
+.token-card.safu-mode.selected {
+    border-color: #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+}
+
 .token-image {
     width: 100%;
     height: auto;

@@ -417,6 +417,53 @@ class UIManager {
             tokenCard.setAttribute('data-token-id', token.tokenId);
             tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
             
+            // 🛡️ SAFU MODE: Detectar modo safu y crear tarjeta sin imagen para traits
+            const isSafuMode = window.SAFU_MODE === true;
+            const isTraitsTab = this.currentFilter === 'traits';
+            const shouldSkipImage = isSafuMode && isTraitsTab;
+            
+            if (shouldSkipImage) {
+                // Crear tarjeta compacta sin imagen, solo texto con toda la información
+                let displayTitle = token.title || `Trait ${token.tokenId}`;
+                
+                // Crear quantity tag si existe
+                const quantityTag = token.tokenType === 'ERC1155' && token.balance > 1 ? 
+                    `<div class="token-quantity-tag">x${token.balance}</div>` : '';
+                
+                // Crear información completa del trait
+                const categoryDisplay = token.category ? 
+                    `<div class="token-category">Categoría: ${token.category}</div>` : '';
+                const balanceDisplay = token.balance ? 
+                    `<div class="token-balance">Balance: ${token.balance}</div>` : '';
+                const typeDisplay = token.tokenType ? 
+                    `<div class="token-type">Tipo: ${token.tokenType}</div>` : '';
+                const contractDisplay = token.contract ? 
+                    `<div class="token-contract">Contrato: ${token.contract.substring(0, 10)}...</div>` : '';
+                
+                tokenCard.classList.add('safu-mode');
+                tokenCard.innerHTML = `
+                    <div class="token-info safu-trait-info">
+                        ${quantityTag}
+                        <div class="token-title">${displayTitle}</div>
+                        <div class="token-id">ID: ${token.tokenId}</div>
+                        ${categoryDisplay}
+                        ${balanceDisplay}
+                        ${typeDisplay}
+                        ${contractDisplay}
+                    </div>
+                `;
+                
+                // Add click event for token selection
+                const clickHandler = () => {
+                    this.handleTokenSelection(tokenCard, token);
+                };
+                
+                tokenCard._clickHandler = clickHandler;
+                tokenCard.addEventListener('click', clickHandler);
+                
+                return tokenCard;
+            }
+            
             // Use specific image URLs for different token types
             let imageUrl = token.imageUrl || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjVGNUY1Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+';
             
