@@ -117,6 +117,23 @@ class UIManager {
             this.domElements.set('load-more-traits', btn);
         }
         
+        // Crear botón de carga incremental para floppys si no existe
+        if (tokensGrid && !document.getElementById('load-more-floppys')) {
+            const btn = document.createElement('button');
+            btn.id = 'load-more-floppys';
+            btn.className = 'btn btn-secondary mt-3 load-more-btn';
+            btn.style.display = 'none';
+            btn.textContent = 'Load More Packs';
+            tokensGrid.parentNode.insertBefore(btn, tokensGrid.nextSibling);
+            this.domElements.set('load-more-floppys', btn);
+        } else if (tokensGrid) {
+            const btn = document.getElementById('load-more-floppys');
+            if (btn) {
+                btn.textContent = 'Load More Packs';
+            }
+            this.domElements.set('load-more-floppys', btn);
+        }
+        
         // Crear controles de paginación si no existen
         if (tokensGrid && !document.getElementById('pagination-controls')) {
             const paginationDiv = document.createElement('div');
@@ -217,6 +234,39 @@ class UIManager {
             });
         }
         
+        // Botón "Load More" para floppys
+        const loadMoreFloppysBtn = this.domElements.get('load-more-floppys');
+        if (loadMoreFloppysBtn) {
+            loadMoreFloppysBtn.addEventListener('click', async () => {
+                const dataManager = window.app?.modules?.dataManager;
+                if (!dataManager) return;
+                loadMoreFloppysBtn.disabled = true;
+                loadMoreFloppysBtn.textContent = 'Loading...';
+                try {
+                    console.log('💾 UI: Cargando más floppys...');
+                    const result = await dataManager.loadMoreFloppys();
+                    
+                    if (result.floppys && result.floppys.length > 0) {
+                        console.log(`💾 UI: ${result.floppys.length} nuevos floppys cargados`);
+                        // Obtener todos los floppys del cache y actualizar la vista
+                        const allFloppys = dataManager.cache?.adrianLab?.floppys || [];
+                        console.log(`💾 UI: Total floppys en cache: ${allFloppys.length}`);
+                        this.displayTokens(allFloppys, 'floppy');
+                    } else {
+                        console.log('💾 UI: No se encontraron nuevos floppys');
+                    }
+                    
+                    // Actualizar visibilidad del botón
+                    this.setLoadMoreFloppysVisibility(result.hasMore);
+                } catch (err) {
+                    console.error('❌ Error loading more floppys:', err);
+                } finally {
+                    loadMoreFloppysBtn.disabled = false;
+                    loadMoreFloppysBtn.textContent = 'Load More Packs';
+                }
+            });
+        }
+        
         // Controles de paginación
         const prevBtn = this.domElements.get('prev-page-btn');
         const nextBtn = this.domElements.get('next-page-btn');
@@ -295,6 +345,15 @@ class UIManager {
      */
     setLoadMoreVisibility(show) {
         const btn = this.domElements.get('load-more-traits');
+        if (!btn) return;
+        btn.style.display = show ? 'block' : 'none';
+    }
+    
+    /**
+     * Mostrar/ocultar botón "Cargar más floppys" (móviles y desktop)
+     */
+    setLoadMoreFloppysVisibility(show) {
+        const btn = this.domElements.get('load-more-floppys');
         if (!btn) return;
         btn.style.display = show ? 'block' : 'none';
     }
@@ -780,6 +839,15 @@ class UIManager {
             this.setLoadMoreVisibility(hasMore && this.currentFilter === 'traits');
         } else {
             this.setLoadMoreVisibility(false);
+        }
+        
+        // Mostrar/ocultar botón "Load More" para floppys (móviles y desktop)
+        if (this.currentFilter === 'floppy') {
+            const dataManager = window.app?.modules?.dataManager;
+            const hasMore = dataManager?.getTraitsHasMore?.() ?? false;
+            this.setLoadMoreFloppysVisibility(hasMore);
+        } else {
+            this.setLoadMoreFloppysVisibility(false);
         }
         
         if (!skipSelectionUpdate) {

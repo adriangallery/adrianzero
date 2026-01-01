@@ -401,12 +401,18 @@
                                 this.hideLoading();
                             }
                             
-                            // 📱 Carga automática en móviles: cargar más páginas hasta encontrar todos los floppys
+                            // Mostrar botón "Load More" si hay más páginas (móviles y desktop)
                             const ui = this.modules.ui;
-                            if (ui && ui.isMobile && ui.isMobile() && hasMore) {
-                                console.log('📱 [Móvil] Iniciando carga automática de floppys...');
-                                this.loadFloppysAutomatically();
+                            if (ui && ui.setLoadMoreFloppysVisibility) {
+                                ui.setLoadMoreFloppysVisibility(hasMore);
                             }
+                            
+                            // 📱 Carga automática en móviles: cargar más páginas hasta encontrar todos los floppys
+                            // (Comentado por ahora, usar botón manual)
+                            // if (ui && ui.isMobile && ui.isMobile() && hasMore) {
+                            //     console.log('📱 [Móvil] Iniciando carga automática de floppys...');
+                            //     this.loadFloppysAutomatically();
+                            // }
                             // No mostrar traits si estamos en tab floppy
                         } else if (this.currentFilter === 'serum') {
                             if (serums.length > 0) {
