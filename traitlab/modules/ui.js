@@ -1101,6 +1101,21 @@ class UIManager {
             return;
         }
         
+        // 🔍 FILTRAR POR CATEGORÍA: Si hay un filtro de categoría activo, filtrar los tokens antes de mostrar
+        let tokensToDisplay = this.paginationState.allTokens;
+        if (this.currentFilter === 'traits' && this.currentCategoryFilter) {
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                tokensToDisplay = this.paginationState.allTokens.filter(token => {
+                    const category = traitsManager.getTraitCategory(token.tokenId);
+                    return category === this.currentCategoryFilter;
+                });
+                console.log(`🔍 updatePaginationDisplay: Filtrados ${this.paginationState.allTokens.length} traits -> ${tokensToDisplay.length} coinciden con categoría: ${this.currentCategoryFilter}`);
+                // Recalcular totalPages con los tokens filtrados
+                this.paginationState.totalPages = Math.ceil(tokensToDisplay.length / this.paginationState.tokensPerPage);
+            }
+        }
+        
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid) return;
         
@@ -1116,10 +1131,10 @@ class UIManager {
         
         // Calcular índices para la página actual
         const startIndex = (this.paginationState.currentPage - 1) * this.paginationState.tokensPerPage;
-        const endIndex = Math.min(startIndex + this.paginationState.tokensPerPage, this.paginationState.allTokens.length);
-        const pageTokens = this.paginationState.allTokens.slice(startIndex, endIndex);
+        const endIndex = Math.min(startIndex + this.paginationState.tokensPerPage, tokensToDisplay.length);
+        const pageTokens = tokensToDisplay.slice(startIndex, endIndex);
         
-        console.log(`📄 Displaying page ${this.paginationState.currentPage}: tokens ${startIndex + 1}-${endIndex} of ${this.paginationState.allTokens.length}`);
+        console.log(`📄 Displaying page ${this.paginationState.currentPage}: tokens ${startIndex + 1}-${endIndex} of ${tokensToDisplay.length}`);
         
         // Renderizar tokens de la página actual
         pageTokens.forEach(token => {
