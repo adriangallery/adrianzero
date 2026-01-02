@@ -311,38 +311,40 @@ class FloppyManager {
         }
         
         console.log('openSelectedPack: selectedFloppy.tokenId =', this.selectedFloppy.tokenId);
+        const tokenId = parseInt(this.selectedFloppy.tokenId);
+        console.log('openSelectedPack: tokenId (parsed) =', tokenId);
         
         // Check if this pack uses OpenPackV4
-        const contractInfo = this.getContractForFloppy(this.selectedFloppy.tokenId);
+        const contractInfo = this.getContractForFloppy(tokenId);
         if (contractInfo.function === 'openPacks') {
-            console.log('Redirecting to openPackV4() for token', this.selectedFloppy.tokenId);
+            console.log('Redirecting to openPackV4() for token', tokenId);
             return await this.openPackV4();
-        } else if (this.selectedFloppy.tokenId === 10007) {
+        } else if (tokenId === 10007) {
             console.log('Redirecting to openActionPack10007() for token', this.selectedFloppy.tokenId);
             return await this.openActionPack10007();
-        } else if (this.selectedFloppy.tokenId === 10008) {
-            console.log('Redirecting to openActionPack() for OPTICALpack', this.selectedFloppy.tokenId);
+        } else if (tokenId === 10008) {
+            console.log('Redirecting to openActionPack() for OPTICALpack', tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId === 10011) {
-            console.log('Redirecting to openActionPack() for PACK10011', this.selectedFloppy.tokenId);
+        } else if (tokenId === 10011) {
+            console.log('Redirecting to openActionPack() for PACK10011', tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId === 10012) {
-            console.log('Redirecting to openActionPack() for PACK10012', this.selectedFloppy.tokenId);
+        } else if (tokenId === 10012) {
+            console.log('Redirecting to openActionPack() for PACK10012', tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId === 10016) {
-            console.log('Redirecting to openActionPack() for PACK10016', this.selectedFloppy.tokenId);
+        } else if (tokenId === 10016) {
+            console.log('Redirecting to openActionPack() for PACK10016', tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId === 1123) {
-            console.log('Redirecting to openActionPack() for PACK1123', this.selectedFloppy.tokenId);
+        } else if (tokenId === 1123) {
+            console.log('Redirecting to openActionPack() for PACK1123', tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015 && this.selectedFloppy.tokenId !== 15010) {
-            console.log('Redirecting to openActionPack() for token', this.selectedFloppy.tokenId);
+        } else if (tokenId >= 15008 && tokenId <= 15015 && tokenId !== 15010) {
+            console.log('Redirecting to openActionPack() for token', tokenId);
             return await this.openActionPack();
-        } else if (this.selectedFloppy.tokenId === 10006) {
-            console.log('Redirecting to openFloppy() for floppy token', this.selectedFloppy.tokenId);
+        } else if (tokenId === 10006) {
+            console.log('Redirecting to openFloppy() for floppy token', tokenId);
             return await this.openFloppy();
         } else {
-            console.log('Redirecting to openPack() for token', this.selectedFloppy.tokenId);
+            console.log('Redirecting to openPack() for token', tokenId);
             return await this.openPack();
         }
     }
