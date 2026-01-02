@@ -207,19 +207,47 @@ class UIManager {
                     console.log(`📊 UI: Estado después de cargar: ${statusAfter.totalLoaded || 0} en cache, ${newTraits?.length || 0} nuevos traits recibidos`);
                     
                     if (newTraits && newTraits.length > 0) {
+                        // 🔍 FILTRAR POR CATEGORÍA: Si hay un filtro de categoría activo, filtrar los nuevos traits
+                        if (this.currentCategoryFilter) {
+                            const traitsManager = window.app?.modules?.traits;
+                            if (traitsManager) {
+                                const originalLength = newTraits.length;
+                                newTraits = newTraits.filter(token => {
+                                    const category = traitsManager.getTraitCategory(token.tokenId);
+                                    return category === this.currentCategoryFilter;
+                                });
+                                console.log(`🔍 Load More: Filtrados ${originalLength} traits -> ${newTraits.length} coinciden con categoría: ${this.currentCategoryFilter}`);
+                            }
+                        }
+
                         // 🚨 FIX: Sincronizar con cache de data-manager como fuente única de verdad
                         const allTraitsFromCache = dataManager.getFilteredTokens?.('traits') || [];
-                        this.paginationState.allTokens = allTraitsFromCache;
+                        
+                        // 🔍 FILTRAR CACHE POR CATEGORÍA: Si hay un filtro de categoría activo, filtrar también el cache
+                        let filteredCache = allTraitsFromCache;
+                        if (this.currentCategoryFilter) {
+                            const traitsManager = window.app?.modules?.traits;
+                            if (traitsManager) {
+                                filteredCache = allTraitsFromCache.filter(token => {
+                                    const category = traitsManager.getTraitCategory(token.tokenId);
+                                    return category === this.currentCategoryFilter;
+                                });
+                            }
+                        }
+                        
+                        this.paginationState.allTokens = filteredCache;
                         this.paginationState.totalPages = Math.ceil(this.paginationState.allTokens.length / this.paginationState.tokensPerPage);
                         
-                        console.log(`📊 UI: Sincronizado con cache - ${this.paginationState.allTokens.length} traits totales en pantalla`);
+                        console.log(`📊 UI: Sincronizado con cache - ${this.paginationState.allTokens.length} traits totales en pantalla (filtrados por categoría: ${this.currentCategoryFilter || 'ninguna'})`);
                         
                         // Si estamos en modo paginación, actualizar la vista
                         if (this.paginationState.enabled) {
                             this.updatePaginationDisplay();
                         } else {
-                            // Si no estamos en modo paginación, simplemente agregar
-                            this.appendTokens(newTraits);
+                            // Si no estamos en modo paginación, simplemente agregar (solo si hay traits que coinciden)
+                            if (newTraits.length > 0) {
+                                this.appendTokens(newTraits);
+                            }
                         }
                     } else {
                         console.log(`📊 UI: No se agregaron nuevos traits (${newTraits?.length || 0} recibidos)`);
@@ -995,6 +1023,24 @@ class UIManager {
             return;
         }
         if (!Array.isArray(newTraits) || newTraits.length === 0) return;
+
+        // 🔍 FILTRAR POR CATEGORÍA: Si hay un filtro de categoría activo, filtrar los nuevos traits
+        if (this.currentCategoryFilter) {
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                const originalLength = newTraits.length;
+                newTraits = newTraits.filter(token => {
+                    const category = traitsManager.getTraitCategory(token.tokenId);
+                    return category === this.currentCategoryFilter;
+                });
+                console.log(`🔍 appendTraits: Filtrados ${originalLength} traits -> ${newTraits.length} coinciden con categoría: ${this.currentCategoryFilter}`);
+                if (newTraits.length === 0) {
+                    // Si no hay traits que coincidan, no hacer nada pero mantener el botón visible si hay más
+                    this.setLoadMoreVisibility?.(hasMore && !this.isMobile() && !this.paginationState.enabled);
+                    return;
+                }
+            }
+        }
 
         // Dedupe robusto usando llave contract:tokenId
         if (!this._traitsSeenIds || this._traitsSeenIds.size === 0) {
