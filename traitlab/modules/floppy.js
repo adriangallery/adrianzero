@@ -205,7 +205,7 @@ class FloppyManager {
     shouldShowOpenPack(tokenId) {
         return tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || tokenId === 10003 || tokenId === 10004 || tokenId === 10007 || 
                tokenId === 10008 || tokenId === 10009 || tokenId === 10010 || tokenId === 10011 || tokenId === 10012 || tokenId === 10013 ||
-               tokenId === 10014 ||
+               tokenId === 10014 || tokenId === 10016 ||
                (tokenId >= 15008 && tokenId <= 15015);
     }
 
@@ -733,8 +733,8 @@ class FloppyManager {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
-            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 1123, 15008-15015).');
+        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
+            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 10016, 1123, 15008-15015).');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');

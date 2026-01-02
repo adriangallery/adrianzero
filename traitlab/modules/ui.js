@@ -572,6 +572,8 @@ class UIManager {
                     imageUrl = this.getImagePath(10014, '.gif');
                 } else if (token.tokenId === 10015) {
                     imageUrl = this.getImagePath(10015, '.gif');
+                } else if (token.tokenId === 10016) {
+                    imageUrl = this.getImagePath(10016, '.gif');
                 }
             }
             

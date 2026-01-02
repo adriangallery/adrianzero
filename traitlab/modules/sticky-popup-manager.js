@@ -795,7 +795,7 @@ class StickyPopupManager {
 
         // Para packs, intentar .gif primero y luego .png como fallback
         const tokenId = parseInt(this.selectedFloppy.tokenId);
-        const isPack = (tokenId >= 10000 && tokenId <= 10015) || 
+        const isPack = (tokenId >= 10000 && tokenId <= 10016) || 
                        (tokenId >= 15000 && tokenId <= 15015) || 
                        tokenId === 1123;
         
