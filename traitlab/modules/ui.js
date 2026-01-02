@@ -8,6 +8,7 @@ class UIManager {
         this.eventListeners = new Map();
         this.domElements = new Map();
         this.currentFilter = null;
+        this.currentCategoryFilter = null; // Filtro de categoría para traits
         this._traitsSeenIds = new Set();
         
         // Selection state properties (like in original index.html)
@@ -290,10 +291,17 @@ class UIManager {
             // Mantener cache pero desactivar paginación
             this.paginationState.enabled = false;
             this.hidePaginationControls();
+            // Ocultar selector de categorías cuando salimos del tab traits
+            this.hideCategoryFilter();
         }
         
         this.currentFilter = filter;
         console.log('✅ currentFilter set to:', this.currentFilter);
+        
+        // Mostrar selector de categorías cuando entramos al tab traits
+        if (filter === 'traits') {
+            this.showCategoryFilter();
+        }
         
         // Ocultar botones "Load More" cuando cambiamos de pestaña
         if (filter !== 'traits') {
@@ -823,8 +831,20 @@ class UIManager {
         // Reiniciar mapa de vistos con los tokens mostrados actualmente
         this._traitsSeenIds = new Set(tokens.map(t => this.getTokenKey(t)));
         
-        // 🚨 PAGINACIÓN: Si estamos en tab traits y hay más de 300 tokens, activar paginación
+        // 🚨 FILTRADO POR CATEGORÍA: Si estamos en tab traits y hay un filtro de categoría activo
         const isTraitsTab = this.currentFilter === 'traits';
+        if (isTraitsTab && this.currentCategoryFilter) {
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                tokens = tokens.filter(token => {
+                    const category = traitsManager.getTraitCategory(token.tokenId);
+                    return category === this.currentCategoryFilter;
+                });
+                console.log(`🔍 Filtrados ${tokens.length} traits por categoría: ${this.currentCategoryFilter}`);
+            }
+        }
+        
+        // 🚨 PAGINACIÓN: Si estamos en tab traits y hay más de 300 tokens, activar paginación
         
         // Si ya estamos en modo paginación y recibimos nuevos tokens, actualizar cache
         if (this.paginationState.enabled && isTraitsTab) {
@@ -1816,6 +1836,109 @@ class UIManager {
                     console.error(`Error in event listener for ${event}:`, error);
                 }
             });
+        }
+    }
+
+    /**
+     * Mostrar selector de categorías para el tab traits
+     */
+    showCategoryFilter() {
+        const tokensSection = document.getElementById('tokens-section');
+        if (!tokensSection) return;
+
+        // Verificar si ya existe el contenedor de categorías
+        let categoryFilterContainer = document.getElementById('category-filter-container');
+        if (!categoryFilterContainer) {
+            // Crear contenedor de filtros de categorías
+            categoryFilterContainer = document.createElement('div');
+            categoryFilterContainer.id = 'category-filter-container';
+            categoryFilterContainer.className = 'category-filter-container';
+            
+            // Insertar después del contract-filter
+            const contractFilter = tokensSection.querySelector('.contract-filter');
+            if (contractFilter) {
+                contractFilter.insertAdjacentElement('afterend', categoryFilterContainer);
+            } else {
+                tokensSection.insertBefore(categoryFilterContainer, tokensSection.querySelector('#tokens-grid'));
+            }
+        }
+
+        // Obtener categorías del metadata de traits
+        const traitsManager = window.app?.modules?.traits;
+        if (!traitsManager || !traitsManager.traitsDatabase) {
+            console.warn('⚠️ TraitsManager no disponible o traitsDatabase no cargado');
+            categoryFilterContainer.style.display = 'none';
+            return;
+        }
+
+        const categories = traitsManager.traitsDatabase.metadata?.categories || [];
+        if (categories.length === 0) {
+            console.warn('⚠️ No hay categorías disponibles en el metadata');
+            categoryFilterContainer.style.display = 'none';
+            return;
+        }
+
+        // Crear botones de categorías
+        categoryFilterContainer.innerHTML = `
+            <div class="category-filter-label">Filtrar por categoría:</div>
+            <div class="category-filter-buttons">
+                <button class="category-btn ${this.currentCategoryFilter === null ? 'active' : ''}" data-category="all">
+                    Todas
+                </button>
+                ${categories.map(cat => `
+                    <button class="category-btn ${this.currentCategoryFilter === cat ? 'active' : ''}" data-category="${cat}">
+                        ${cat}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+
+        // Añadir event listeners a los botones
+        categoryFilterContainer.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const category = btn.dataset.category === 'all' ? null : btn.dataset.category;
+                this.setCategoryFilter(category);
+            });
+        });
+
+        categoryFilterContainer.style.display = 'block';
+    }
+
+    /**
+     * Ocultar selector de categorías
+     */
+    hideCategoryFilter() {
+        const categoryFilterContainer = document.getElementById('category-filter-container');
+        if (categoryFilterContainer) {
+            categoryFilterContainer.style.display = 'none';
+        }
+    }
+
+    /**
+     * Establecer filtro de categoría y actualizar la vista
+     */
+    setCategoryFilter(category) {
+        console.log('🔍 setCategoryFilter called with:', category);
+        this.currentCategoryFilter = category;
+
+        // Actualizar botones activos
+        const categoryFilterContainer = document.getElementById('category-filter-container');
+        if (categoryFilterContainer) {
+            categoryFilterContainer.querySelectorAll('.category-btn').forEach(btn => {
+                const btnCategory = btn.dataset.category === 'all' ? null : btn.dataset.category;
+                if (btnCategory === category) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // Recargar tokens filtrados
+        if (this.currentFilter === 'traits' && window.app?.modules?.dataManager) {
+            const dataManager = window.app.modules.dataManager;
+            const allTraits = dataManager.getFilteredTokens('traits');
+            this.displayTokens(allTraits, 'traits');
         }
     }
 }
