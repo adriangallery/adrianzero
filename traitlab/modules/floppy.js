@@ -127,6 +127,8 @@ class FloppyManager {
             return this.getImagePath(10014, '.gif');
         } else if (tokenId === 10015) {
             return this.getImagePath(10015, '.gif');
+        } else if (tokenId === 10016) {
+            return this.getImagePath(10016, '.gif');
         } else if (tokenId === 1123) {
             // CensorPACK: intentar .gif primero, luego .png como fallback
             const gifPath = this.getImagePath(1123, '.gif');
