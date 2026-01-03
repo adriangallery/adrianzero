@@ -560,9 +560,12 @@ class UIManager {
 
         batch.forEach((token, batchIndex) => {
             // Usar el índice original del token en allTokens para tracking
+            // Esto es importante para mantener consistencia cuando se aplica filtro de categoría
             const originalIndex = state.allTokens.findIndex(t => 
                 this.getTokenKey(t) === this.getTokenKey(token)
             );
+            
+            // Si no encontramos el índice original, usar el índice calculado
             const actualIndex = originalIndex !== -1 ? originalIndex : startIndex + batchIndex;
             
             // Skip if already rendered
@@ -790,38 +793,8 @@ class UIManager {
             // 🚨 FIX: Verificar también que el token sea un trait (ERC1155) y no AdrianZERO (ERC721)
             const isTraitToken = token.tokenType === 'ERC1155' || (token.contract && token.contract.toLowerCase() === '0x90546848474fb3c9fda3fdad887969bb244e7e58');
             // Si virtual DOM está activo, NO saltar imágenes (limitamos a 100 elementos DOM)
-            // Verificar si virtual DOM está activo de manera más robusta
             const isVirtualDOMActive = !!(this.virtualDOMState && this.virtualDOMState.enabled === true);
             const shouldSkipImage = isSafuMode && isTraitsTab && isTraitToken && !isVirtualDOMActive;
-            
-            // Debug adicional para entender el problema
-            if (isSafuMode && isTraitsTab && isTraitToken) {
-                const isMobileDevice = this.isMobile();
-                console.log('🛡️ SAFU MODE + TRAITS: Verificando si saltar imagen:', {
-                    virtualDOMStateExists: !!this.virtualDOMState,
-                    virtualDOMStateEnabled: this.virtualDOMState?.enabled,
-                    isVirtualDOMActive,
-                    shouldSkipImage,
-                    tokenId: token.tokenId,
-                    isMobile: isMobileDevice,
-                    windowInnerWidth: window.innerWidth
-                });
-            }
-            
-            // Debug logs
-            if (isSafuMode) {
-                console.log('🛡️ SAFU MODE detectado en createTokenCard:', {
-                    isSafuMode,
-                    isTraitsTab,
-                    currentFilter: this.currentFilter,
-                    isTraitToken,
-                    virtualDOMState: this.virtualDOMState,
-                    isVirtualDOMActive,
-                    shouldSkipImage,
-                    tokenId: token.tokenId,
-                    hasImageUrl: !!token.imageUrl
-                });
-            }
             
             if (shouldSkipImage) {
                 console.log('🛡️ Creando tarjeta SAFU sin imagen para trait:', token.tokenId);
@@ -1248,21 +1221,8 @@ class UIManager {
                                      isTraitsTab && 
                                      tokens.length > 50; // Only use virtual DOM if more than 50 traits
         
-        // Debug: Log para entender por qué no se activa virtual DOM
-        if (isSafuMode && isTraitsTab) {
-            console.log(`🛡️ DEBUG Virtual DOM check (ANTES de filtro categoría):`, {
-                isSafuMode,
-                isTraitsTab,
-                tokensLength: tokens.length,
-                shouldUseVirtualDOM,
-                currentFilter: this.currentFilter,
-                currentCategoryFilter: this.currentCategoryFilter
-            });
-        }
-        
         if (shouldUseVirtualDOM) {
-            const deviceType = this.isMobile() ? 'mobile' : 'desktop';
-            console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode (${deviceType})`);
+            console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode`);
             // Guardar tokens originales (sin filtrar por categoría) para virtual DOM
             // El filtro de categoría se aplicará en renderVirtualBatch
             this.setupVirtualDOM(tokens);
