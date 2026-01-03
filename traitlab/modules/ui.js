@@ -1279,14 +1279,15 @@ class UIManager {
             this.hidePaginationControls();
         }
         
-        // 🛡️ VIRTUAL DOM: Check if we should use virtual DOM (SAFU mode + mobile + traits tab)
+        // 🛡️ VIRTUAL DOM: Check if we should use virtual DOM (SAFU mode + traits tab)
+        // Activado también en desktop para poder ver logs y debuggear
         const shouldUseVirtualDOM = isSafuMode && 
-                                     this.isMobile() && 
                                      isTraitsTab && 
                                      tokens.length > 50; // Only use virtual DOM if more than 50 traits
         
         if (shouldUseVirtualDOM) {
-            console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode (mobile)`);
+            const deviceType = this.isMobile() ? 'mobile' : 'desktop';
+            console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode (${deviceType})`);
             this.setupVirtualDOM(tokens);
             if (!skipSelectionUpdate) {
                 this.updateSelectionInfo();
