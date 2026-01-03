@@ -1977,7 +1977,8 @@ class UIManager {
             'KIMONO',
             'MASK',
             'PAGERS',
-            'WEAPON'
+            'WEAPON',
+            'SKIN' // Ocultar SKIN pero mantener SKINTRAIT
         ];
         
         // Filtrar categorías ocultas
@@ -1995,9 +1996,8 @@ class UIManager {
         }
         const activeCategory = this.currentCategoryFilter;
 
-        // Crear botones de categorías: BACKGROUND primero, luego otras, "Todas" al final
+        // Crear botones de categorías: BACKGROUND primero, luego otras, "ALL" al final
         categoryFilterContainer.innerHTML = `
-            <div class="category-filter-label">Filtrar por categoría:</div>
             <div class="category-filter-buttons">
                 ${sortedCategories.map(cat => `
                     <button class="category-btn ${activeCategory === cat ? 'active' : ''}" data-category="${cat}">
@@ -2005,7 +2005,7 @@ class UIManager {
                     </button>
                 `).join('')}
                 <button class="category-btn ${activeCategory === null ? 'active' : ''}" data-category="all">
-                    Todas
+                    ALL
                 </button>
             </div>
         `;
