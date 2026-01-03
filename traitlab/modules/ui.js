@@ -1968,9 +1968,24 @@ class UIManager {
             return;
         }
 
+        // 🚫 Categorías a ocultar del selector
+        const hiddenCategories = [
+            'ACTION PACKS',
+            'ARMOUR',
+            'FLOPPY DISCS',
+            'GI',
+            'KIMONO',
+            'MASK',
+            'PAGERS',
+            'WEAPON'
+        ];
+        
+        // Filtrar categorías ocultas
+        const visibleCategories = categories.filter(cat => !hiddenCategories.includes(cat));
+
         // 🎯 BACKGROUND como categoría predeterminada, "Todas" al final
         const backgroundCategory = 'BACKGROUND';
-        const otherCategories = categories.filter(cat => cat !== backgroundCategory).sort();
+        const otherCategories = visibleCategories.filter(cat => cat !== backgroundCategory).sort();
         const sortedCategories = [backgroundCategory, ...otherCategories];
         
         // Determinar categoría activa (BACKGROUND por defecto si no hay ninguna seleccionada)
