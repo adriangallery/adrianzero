@@ -775,8 +775,20 @@ class UIManager {
             // 🚨 FIX: Verificar también que el token sea un trait (ERC1155) y no AdrianZERO (ERC721)
             const isTraitToken = token.tokenType === 'ERC1155' || (token.contract && token.contract.toLowerCase() === '0x90546848474fb3c9fda3fdad887969bb244e7e58');
             // Si virtual DOM está activo, NO saltar imágenes (limitamos a 100 elementos DOM)
-            const isVirtualDOMActive = this.virtualDOMState && this.virtualDOMState.enabled === true;
+            // Verificar si virtual DOM está activo de manera más robusta
+            const isVirtualDOMActive = !!(this.virtualDOMState && this.virtualDOMState.enabled === true);
             const shouldSkipImage = isSafuMode && isTraitsTab && isTraitToken && !isVirtualDOMActive;
+            
+            // Debug adicional para entender el problema
+            if (isSafuMode && isTraitsTab && isTraitToken) {
+                console.log('🛡️ SAFU MODE + TRAITS: Verificando si saltar imagen:', {
+                    virtualDOMStateExists: !!this.virtualDOMState,
+                    virtualDOMStateEnabled: this.virtualDOMState?.enabled,
+                    isVirtualDOMActive,
+                    shouldSkipImage,
+                    tokenId: token.tokenId
+                });
+            }
             
             // Debug logs
             if (isSafuMode) {
