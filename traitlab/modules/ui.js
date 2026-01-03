@@ -543,11 +543,27 @@ class UIManager {
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid || !state.enabled) return 0;
 
-        const batch = state.allTokens.slice(startIndex, endIndex);
+        // Aplicar filtro de categoría si está activo
+        let tokensToRender = state.allTokens;
+        if (this.currentFilter === 'traits' && this.currentCategoryFilter) {
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                tokensToRender = state.allTokens.filter(token => {
+                    const category = traitsManager.getTraitCategory(token.tokenId);
+                    return category === this.currentCategoryFilter;
+                });
+            }
+        }
+
+        const batch = tokensToRender.slice(startIndex, endIndex);
         let renderedCount = 0;
 
         batch.forEach((token, batchIndex) => {
-            const actualIndex = startIndex + batchIndex;
+            // Usar el índice original del token en allTokens para tracking
+            const originalIndex = state.allTokens.findIndex(t => 
+                this.getTokenKey(t) === this.getTokenKey(token)
+            );
+            const actualIndex = originalIndex !== -1 ? originalIndex : startIndex + batchIndex;
             
             // Skip if already rendered
             if (state.renderedIndices.has(actualIndex)) {
