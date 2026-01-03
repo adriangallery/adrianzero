@@ -561,6 +561,11 @@ class UIManager {
                 this.removeVirtualElementsOutsideViewport();
             }
 
+            // Debug: Verificar estado antes de crear tarjeta
+            if (state.enabled) {
+                console.log(`🛡️ Virtual DOM: Creando tarjeta para token ${token.tokenId}, índice ${actualIndex}, virtualDOMState.enabled = ${state.enabled}`);
+            }
+            
             const tokenCard = this.createTokenCard(token);
             tokenCard.setAttribute('data-token-index', actualIndex);
             tokenCard.setAttribute('data-token-id', this.getTokenKey(token));
@@ -606,9 +611,11 @@ class UIManager {
         state.enabled = true;
 
         console.log(`🛡️ Virtual DOM activado: ${tokens.length} tokens en cache, máximo ${state.maxDOMElements} elementos DOM simultáneos`);
+        console.log(`🛡️ Virtual DOM state.enabled = ${state.enabled}`);
 
         // Render initial batch (first 100 elements)
         const initialEnd = Math.min(state.maxDOMElements, tokens.length);
+        console.log(`🛡️ Renderizando batch inicial: 0 a ${initialEnd}`);
         this.renderVirtualBatch(0, initialEnd);
 
         // Setup Intersection Observer for sentinel (scroll down)
@@ -768,7 +775,7 @@ class UIManager {
             // 🚨 FIX: Verificar también que el token sea un trait (ERC1155) y no AdrianZERO (ERC721)
             const isTraitToken = token.tokenType === 'ERC1155' || (token.contract && token.contract.toLowerCase() === '0x90546848474fb3c9fda3fdad887969bb244e7e58');
             // Si virtual DOM está activo, NO saltar imágenes (limitamos a 100 elementos DOM)
-            const isVirtualDOMActive = this.virtualDOMState?.enabled === true;
+            const isVirtualDOMActive = this.virtualDOMState && this.virtualDOMState.enabled === true;
             const shouldSkipImage = isSafuMode && isTraitsTab && isTraitToken && !isVirtualDOMActive;
             
             // Debug logs
@@ -777,9 +784,12 @@ class UIManager {
                     isSafuMode,
                     isTraitsTab,
                     currentFilter: this.currentFilter,
+                    isTraitToken,
+                    virtualDOMState: this.virtualDOMState,
                     isVirtualDOMActive,
                     shouldSkipImage,
-                    tokenId: token.tokenId
+                    tokenId: token.tokenId,
+                    hasImageUrl: !!token.imageUrl
                 });
             }
             
