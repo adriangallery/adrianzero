@@ -390,6 +390,11 @@ class UIManager {
     setLoadMoreVisibility(show) {
         const btn = this.domElements.get('load-more-traits');
         if (!btn) return;
+        // 🛡️ SAFU MODE: Siempre ocultar botón Load More en SAFU mode (carga automática)
+        if (window.SAFU_MODE === true) {
+            btn.style.display = 'none';
+            return;
+        }
         btn.style.display = show ? 'block' : 'none';
     }
     
@@ -873,9 +878,16 @@ class UIManager {
         }
         
         // 🚨 PAGINACIÓN: Si estamos en tab traits y hay más de 300 tokens, activar paginación
+        // 🛡️ SAFU MODE: Desactivar paginación visual en SAFU mode
+        const isSafuMode = window.SAFU_MODE === true;
+        
+        // 🛡️ SAFU MODE: Desactivar paginación visual
+        if (isSafuMode && isTraitsTab) {
+            this.paginationState.enabled = false;
+        }
         
         // Si ya estamos en modo paginación y recibimos nuevos tokens, actualizar cache
-        if (this.paginationState.enabled && isTraitsTab) {
+        if (this.paginationState.enabled && isTraitsTab && !isSafuMode) {
             // Actualizar cache con nuevos tokens (evitar duplicados)
             const existingTokenIds = new Set(this.paginationState.allTokens.map(t => t.tokenId));
             const newTokens = tokens.filter(t => !existingTokenIds.has(t.tokenId));
