@@ -711,24 +711,41 @@ class UIManager {
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid || !state.enabled) return;
 
-        // Find highest rendered index
-        const renderedIndices = Array.from(state.renderedIndices);
-        const maxRenderedIndex = renderedIndices.length > 0 ? Math.max(...renderedIndices) : -1;
-        
-        const startIndex = maxRenderedIndex + 1;
-        const endIndex = Math.min(startIndex + state.batchSize, state.allTokens.length);
+        // Aplicar filtro de categoría si está activo para calcular cuántos tokens hay
+        let tokensToRender = state.allTokens;
+        if (this.currentFilter === 'traits' && this.currentCategoryFilter) {
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                tokensToRender = state.allTokens.filter(token => {
+                    const category = traitsManager.getTraitCategory(token.tokenId);
+                    return category === this.currentCategoryFilter;
+                });
+            }
+        }
 
-        if (startIndex >= state.allTokens.length) {
-            // All tokens loaded, remove sentinel
+        // Contar cuántos tokens filtrados ya se han renderizado
+        // Buscar tokens filtrados que ya están en renderedIndices
+        const renderedFilteredTokens = tokensToRender.filter((token, index) => {
+            const originalIndex = state.allTokens.findIndex(t => 
+                this.getTokenKey(t) === this.getTokenKey(token)
+            );
+            return originalIndex !== -1 && state.renderedIndices.has(originalIndex);
+        });
+        
+        const startIndex = renderedFilteredTokens.length;
+        const endIndex = Math.min(startIndex + state.batchSize, tokensToRender.length);
+
+        if (startIndex >= tokensToRender.length) {
+            // All filtered tokens loaded, remove sentinel
             if (state.sentinel) {
                 state.sentinel.remove();
                 state.sentinel = null;
             }
-            console.log('✅ Virtual DOM: Todos los tokens cargados');
+            console.log('✅ Virtual DOM: Todos los tokens filtrados cargados');
             return;
         }
 
-        console.log(`📦 Virtual DOM: Renderizando batch ${startIndex} a ${endIndex} (${endIndex - startIndex} tokens)`);
+        console.log(`📦 Virtual DOM: Renderizando batch ${startIndex} a ${endIndex} (${endIndex - startIndex} tokens) de ${tokensToRender.length} filtrados`);
 
         // Render batch
         this.renderVirtualBatch(startIndex, endIndex);
