@@ -1068,6 +1068,12 @@ class TraitLABDataManager {
                         nextPageKey: this.paginationState.traits.pageKey
                     });
 
+                    // 🛡️ SAFU MODE: Carga automática completa de todos los batches
+                    if (isSafuMode && this.paginationState.traits.hasMore) {
+                        console.log('🛡️ SAFU MODE: Iniciando carga automática completa de todos los tokens...');
+                        await this.loadAllTraitsAutomatically(userAddress, contractAddress);
+                    }
+
                     // 🚀 MEJORA DE METADATA COMENTADA - Cargando metadata completa desde Alchemy
                     // Si necesitamos reactivar la mejora de metadata, descomentar estas secciones:
                     /*
@@ -1407,6 +1413,50 @@ class TraitLABDataManager {
             });
             return [];
         }
+    }
+
+    /**
+     * 🛡️ SAFU MODE: Cargar todos los traits automáticamente en batches consecutivos
+     * @param {string} userAddress - User wallet address
+     * @param {string} contractAddress - Contract address
+     */
+    async loadAllTraitsAutomatically(userAddress, contractAddress) {
+        console.log('🛡️ SAFU MODE: Iniciando carga automática completa...');
+        let batchCount = 0;
+        const maxBatches = 1000; // Límite de seguridad para evitar loops infinitos
+        
+        while (this.paginationState.traits.hasMore && batchCount < maxBatches) {
+            batchCount++;
+            
+            // Pequeña pausa entre batches para no sobrecargar
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            try {
+                const newTraits = await this.loadMoreTraits();
+                
+                if (newTraits.length === 0 && !this.paginationState.traits.hasMore) {
+                    console.log(`🛡️ SAFU MODE: Carga automática completada. Total batches: ${batchCount}`);
+                    break;
+                }
+                
+                console.log(`🛡️ SAFU MODE: Batch ${batchCount} cargado - ${newTraits.length} nuevos traits, total: ${this.cache.adrianLab?.traits?.length || 0}`);
+                
+                // Si no hay más páginas, salir del loop
+                if (!this.paginationState.traits.hasMore) {
+                    console.log(`🛡️ SAFU MODE: Carga automática completada. Total batches: ${batchCount}, total traits: ${this.cache.adrianLab?.traits?.length || 0}`);
+                    break;
+                }
+            } catch (error) {
+                console.error(`🛡️ SAFU MODE: Error en batch ${batchCount}:`, error);
+                // Continuar intentando cargar más batches a pesar del error
+            }
+        }
+        
+        if (batchCount >= maxBatches) {
+            console.warn(`🛡️ SAFU MODE: Carga automática detenida por límite de seguridad (${maxBatches} batches)`);
+        }
+        
+        console.log(`🛡️ SAFU MODE: Carga automática finalizada. Total traits cargados: ${this.cache.adrianLab?.traits?.length || 0}`);
     }
 
     /**
