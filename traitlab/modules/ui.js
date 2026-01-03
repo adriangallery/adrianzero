@@ -868,14 +868,29 @@ class UIManager {
         
         // 🚨 FILTRADO POR CATEGORÍA: Si estamos en tab traits y hay un filtro de categoría activo
         const isTraitsTab = this.currentFilter === 'traits';
+        
+        // 🛡️ SAFU MODE: En tab traits, solo mostrar tokens ERC1155 (traits), no AdrianZERO (ERC721)
+        if (isTraitsTab) {
+            const originalLength = tokens.length;
+            tokens = tokens.filter(token => {
+                // Solo incluir tokens ERC1155 (traits), excluir ERC721 (AdrianZERO)
+                return token.tokenType === 'ERC1155' || 
+                       (token.contract && token.contract.toLowerCase() === '0x90546848474fb3c9fda3fdad887969bb244e7e58');
+            });
+            if (originalLength !== tokens.length) {
+                console.log(`🛡️ SAFU MODE: Filtrados ${originalLength - tokens.length} tokens AdrianZERO del tab traits`);
+            }
+        }
+        
         if (isTraitsTab && this.currentCategoryFilter) {
             const traitsManager = window.app?.modules?.traits;
             if (traitsManager) {
+                const beforeCategoryFilter = tokens.length;
                 tokens = tokens.filter(token => {
                     const category = traitsManager.getTraitCategory(token.tokenId);
                     return category === this.currentCategoryFilter;
                 });
-                console.log(`🔍 Filtrados ${tokens.length} traits por categoría: ${this.currentCategoryFilter}`);
+                console.log(`🔍 Filtrados ${beforeCategoryFilter} traits -> ${tokens.length} por categoría: ${this.currentCategoryFilter}`);
             }
         }
         
