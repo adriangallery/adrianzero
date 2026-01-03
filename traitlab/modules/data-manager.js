@@ -1422,6 +1422,15 @@ class TraitLABDataManager {
                     totalTraits: this.cache.adrianLab.traits.length
                 });
                 
+                // 🚨 FIX: Emitir evento actualizado con serums y floppys también para que el tab SERUM se actualice
+                this.emit('adrianLabTokensReady', {
+                    floppys: this.cache.adrianLab.floppys || [],
+                    serums: this.cache.adrianLab.serums || [],
+                    traits: this.cache.adrianLab.traits || [],
+                    hasMore: this.paginationState.traits.hasMore,
+                    nextPageKey: this.paginationState.traits.pageKey
+                });
+                
                 return dedupedTraits;
             } else {
                 console.warn('📊 Módulo filters no disponible');
