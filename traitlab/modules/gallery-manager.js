@@ -52,7 +52,7 @@ class GalleryManager {
                     
                     if (response.status === 429) {
                         if (hasMultipleKeys) {
-                            console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, cambiando a siguiente key`);
                         } else {
                             console.warn(`⚠️ Rate limit (429), esperando antes de reintentar...`);
                         }
@@ -103,8 +103,8 @@ class GalleryManager {
                     
                     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
                         if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
-                            console.warn(`⏱️ Timeout con key ${keyIndex + 1}, cambiando a siguiente key`);
-                            break;
+                        console.warn(`⏱️ Timeout con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        break;
                         } else {
                             throw new Error(`Timeout después de ${maxRetriesPerKey + 1} intentos.`);
                         }
@@ -117,7 +117,7 @@ class GalleryManager {
                             continue;
                         } else {
                             if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
-                                break;
+                            break;
                             } else {
                                 throw new Error(`Error de red después de ${maxRetriesPerKey + 1} intentos.`);
                             }
@@ -125,7 +125,7 @@ class GalleryManager {
                     }
                     
                     if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
-                        break;
+                    break;
                     } else {
                         throw error;
                     }

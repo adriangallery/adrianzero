@@ -206,13 +206,13 @@ class ZeroManager {
                         rateLimitCount++;
                         const delay = rateLimitDelay * rateLimitCount; // Delay incremental
                         if (hasMultipleKeys) {
-                            console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, esperando ${delay}ms antes de cambiar a siguiente key`);
+                        console.warn(`⚠️ Rate limit (429) con key ${keyIndex + 1}, esperando ${delay}ms antes de cambiar a siguiente key`);
                         } else {
                             console.warn(`⚠️ Rate limit (429), esperando ${delay}ms antes de reintentar...`);
                         }
                         await new Promise(resolve => setTimeout(resolve, delay));
                         if (hasMultipleKeys) {
-                            break; // Salir del loop de retry y probar siguiente key
+                        break; // Salir del loop de retry y probar siguiente key
                         } else {
                             continue; // Reintentar con misma key
                         }
@@ -232,8 +232,8 @@ class ZeroManager {
                             continue; // Retry con misma key
                         } else {
                             if (hasMultipleKeys) {
-                                console.warn(`⚠️ Error del servidor (${response.status}) después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
-                                break; // Cambiar a siguiente key
+                            console.warn(`⚠️ Error del servidor (${response.status}) después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
+                            break; // Cambiar a siguiente key
                             } else {
                                 throw new Error(`Error del servidor (${response.status}) después de ${maxRetriesPerKey + 1} intentos. La API key puede no tener permisos o estar inválida.`);
                             }
@@ -249,8 +249,8 @@ class ZeroManager {
                     // Si es otro error (4xx), no hay más keys disponibles
                     if (response.status >= 400 && response.status < 500) {
                         if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
-                            console.warn(`⚠️ Error ${response.status} con key ${keyIndex + 1}, cambiando a siguiente key`);
-                            break;
+                        console.warn(`⚠️ Error ${response.status} con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        break;
                         } else {
                             // Última key o solo hay una key
                             const errorMsg = response.status === 403 
@@ -281,8 +281,8 @@ class ZeroManager {
                     // Timeout o abort
                     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
                         if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
-                            console.warn(`⏱️ Timeout (${timeout}ms) con key ${keyIndex + 1}, cambiando a siguiente key`);
-                            break; // Cambiar a siguiente key
+                        console.warn(`⏱️ Timeout (${timeout}ms) con key ${keyIndex + 1}, cambiando a siguiente key`);
+                        break; // Cambiar a siguiente key
                         } else {
                             throw new Error(`Timeout (${timeout}ms) después de ${maxRetriesPerKey + 1} intentos.`);
                         }
@@ -297,8 +297,8 @@ class ZeroManager {
                             continue;
                         } else {
                             if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
-                                console.warn(`🌐 Error de red después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
-                                break;
+                            console.warn(`🌐 Error de red después de ${maxRetriesPerKey} intentos, cambiando a siguiente key`);
+                            break;
                             } else {
                                 throw new Error(`Error de red después de ${maxRetriesPerKey + 1} intentos.`);
                             }
@@ -307,8 +307,8 @@ class ZeroManager {
                     
                     // Otro error
                     if (hasMultipleKeys && keyIndex < apiKeys.length - 1) {
-                        console.warn(`⚠️ Error con key ${keyIndex + 1}: ${error.message}, cambiando a siguiente key`);
-                        break;
+                    console.warn(`⚠️ Error con key ${keyIndex + 1}: ${error.message}, cambiando a siguiente key`);
+                    break;
                     } else {
                         throw new Error(`Error con la API key: ${error.message}`);
                     }

@@ -400,21 +400,21 @@ function updateDisplay() {
         }
     } else {
         // Show weeks view
-        const events = getFilteredEvents();
-        renderEvents(events);
-        
-        // Update counter
-        const counter = document.getElementById('eventsCounter');
+    const events = getFilteredEvents();
+    renderEvents(events);
+    
+    // Update counter
+    const counter = document.getElementById('eventsCounter');
         if (counter) {
-            if (events.length === 0) {
-                counter.textContent = 'No events found';
-            } else {
-                counter.textContent = `${events.length} event${events.length !== 1 ? 's' : ''} found in the last ${selectedWeeks} week${selectedWeeks !== 1 ? 's' : ''}`;
+    if (events.length === 0) {
+        counter.textContent = 'No events found';
+    } else {
+        counter.textContent = `${events.length} event${events.length !== 1 ? 's' : ''} found in the last ${selectedWeeks} week${selectedWeeks !== 1 ? 's' : ''}`;
             }
-        }
-        
-        // Update slider value display
-        document.getElementById('sliderValue').textContent = selectedWeeks;
+    }
+    
+    // Update slider value display
+    document.getElementById('sliderValue').textContent = selectedWeeks;
         
         // Clear year counter
         const yearCounter = document.getElementById('yearCounter');
