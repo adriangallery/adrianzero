@@ -1346,23 +1346,37 @@ class UIManager {
         
         // Debug: Log para entender por qué no se activa virtual DOM
         if (isSafuMode && isTraitsTab) {
+            const isMobileDevice = this.isMobile();
             console.log(`🛡️ DEBUG Virtual DOM check:`, {
                 isSafuMode,
                 isTraitsTab,
                 tokensLength: tokens.length,
                 shouldUseVirtualDOM,
-                currentFilter: this.currentFilter
+                currentFilter: this.currentFilter,
+                isMobile: isMobileDevice,
+                windowInnerWidth: window.innerWidth
             });
         }
         
         if (shouldUseVirtualDOM) {
             const deviceType = this.isMobile() ? 'mobile' : 'desktop';
             console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode (${deviceType})`);
+            console.log(`🛡️ DEBUG: isMobile() = ${this.isMobile()}, window.innerWidth = ${window.innerWidth}`);
             this.setupVirtualDOM(tokens);
             if (!skipSelectionUpdate) {
                 this.updateSelectionInfo();
             }
             return;
+        } else if (isSafuMode && isTraitsTab) {
+            // Si no se activó virtual DOM pero estamos en SAFU mode + traits, log para debug
+            console.warn(`⚠️ Virtual DOM NO se activó en SAFU mode + traits:`, {
+                isSafuMode,
+                isTraitsTab,
+                tokensLength: tokens.length,
+                shouldUseVirtualDOM,
+                isMobile: this.isMobile(),
+                windowInnerWidth: window.innerWidth
+            });
         }
         
         // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens, but not SAFU mode)
