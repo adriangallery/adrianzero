@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TraitLAB SAFU - Debug Mode</title>
+    <title>TraitLAB v2 - Modular & Clean</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="modules/styles.css" rel="stylesheet">
@@ -260,11 +260,6 @@
     <div id="app-container"></div>
 
     <!-- Scripts de módulos -->
-    <!-- SAFU MODE: Activar modo sin imágenes para debug -->
-    <script>
-        window.SAFU_MODE = true;
-        console.log('🛡️ SAFU MODE activado - Modo debug sin imágenes en tab TRAITS');
-    </script>
     <!-- Cargar config-keys.js primero (generado por GitHub Actions desde ALCHEMY_PRIMARY_KEY secret) -->
     <!-- Añadir timestamp para evitar caché del navegador -->
     <script src="config-keys.js?v=2" onerror="console.warn('⚠️ config-keys.js no disponible. Verificar que ALCHEMY_PRIMARY_KEY esté configurado en GitHub Secrets.')"></script>
