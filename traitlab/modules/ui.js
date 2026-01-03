@@ -628,7 +628,18 @@ class UIManager {
 
         // Render initial batch (first 100 elements)
         // El filtro de categoría se aplicará dentro de renderVirtualBatch
-        const initialEnd = Math.min(state.maxDOMElements, tokens.length);
+        // IMPORTANTE: Pasar índices basados en tokens filtrados, no en allTokens
+        let tokensToRender = tokens;
+        if (this.currentFilter === 'traits' && this.currentCategoryFilter) {
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                tokensToRender = tokens.filter(token => {
+                    const category = traitsManager.getTraitCategory(token.tokenId);
+                    return category === this.currentCategoryFilter;
+                });
+            }
+        }
+        const initialEnd = Math.min(state.maxDOMElements, tokensToRender.length);
         this.renderVirtualBatch(0, initialEnd);
 
         // Setup Intersection Observer for sentinel (scroll down)
