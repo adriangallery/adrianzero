@@ -461,7 +461,9 @@ class UIManager {
             // 🛡️ SAFU MODE: Detectar modo safu y crear tarjeta sin imagen para traits
             const isSafuMode = window.SAFU_MODE === true;
             const isTraitsTab = this.currentFilter === 'traits';
-            const shouldSkipImage = isSafuMode && isTraitsTab;
+            // 🚨 FIX: Verificar también que el token sea un trait (ERC1155) y no AdrianZERO (ERC721)
+            const isTraitToken = token.tokenType === 'ERC1155' || (token.contract && token.contract.toLowerCase() === '0x90546848474fb3c9fda3fdad887969bb244e7e58');
+            const shouldSkipImage = isSafuMode && isTraitsTab && isTraitToken;
             
             // Debug logs
             if (isSafuMode) {
