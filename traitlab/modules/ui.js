@@ -1957,10 +1957,11 @@ class UIManager {
         const sortedCategories = [backgroundCategory, ...otherCategories];
         
         // Determinar categoría activa (BACKGROUND por defecto si no hay ninguna seleccionada)
-        const activeCategory = this.currentCategoryFilter === null ? backgroundCategory : this.currentCategoryFilter;
+        // Solo establecer BACKGROUND como predeterminada si no hay filtro activo Y no estamos en medio de una carga
         if (this.currentCategoryFilter === null) {
             this.currentCategoryFilter = backgroundCategory;
         }
+        const activeCategory = this.currentCategoryFilter;
 
         // Crear botones de categorías: BACKGROUND primero, luego otras, "Todas" al final
         categoryFilterContainer.innerHTML = `
@@ -1987,10 +1988,8 @@ class UIManager {
 
         categoryFilterContainer.style.display = 'block';
         
-        // Aplicar filtro de BACKGROUND automáticamente si no hay filtro activo
-        if (this.currentCategoryFilter === backgroundCategory) {
-            this.setCategoryFilter(backgroundCategory);
-        }
+        // 🚨 FIX: NO llamar a setCategoryFilter() aquí para evitar loop infinito
+        // El filtro ya está establecido arriba si era null, y los tokens se cargarán cuando se muestren
     }
 
     /**
@@ -2008,6 +2007,13 @@ class UIManager {
      */
     setCategoryFilter(category) {
         console.log('🔍 setCategoryFilter called with:', category);
+        
+        // 🚨 FIX: Evitar loop infinito - no hacer nada si la categoría no cambió
+        if (this.currentCategoryFilter === category) {
+            console.log('🔍 setCategoryFilter: Categoría ya está activa, evitando recarga');
+            return;
+        }
+        
         this.currentCategoryFilter = category;
 
         // Actualizar botones activos
@@ -2023,11 +2029,12 @@ class UIManager {
             });
         }
 
-        // Recargar tokens filtrados
+        // Recargar tokens filtrados (solo si estamos en tab traits)
         if (this.currentFilter === 'traits' && window.app?.modules?.dataManager) {
             const dataManager = window.app.modules.dataManager;
             const allTraits = dataManager.getFilteredTokens('traits');
-            this.displayTokens(allTraits, 'traits');
+            // 🚨 FIX: Usar skipSelectionUpdate para evitar llamar a setCurrentFilter() de nuevo
+            this.displayTokens(allTraits, false);
         }
     }
 }
