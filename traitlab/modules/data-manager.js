@@ -1367,9 +1367,31 @@ class TraitLABDataManager {
                 console.log(`📊 Estado después de cargar: pageKey=${loadResult.nextPageKey ? loadResult.nextPageKey.substring(0, 50) + '...' : 'null'}, seenPageKeys=${this.paginationState.traits.seenPageKeys.size}`);
                 
                 // Agregar nuevos traits al cache existente
+                // 🚨 FIX: También actualizar serums y floppys de los nuevos batches
                 if (this.cache.adrianLab && this.cache.adrianLab.traits) {
                     this.cache.adrianLab.traits = [...this.cache.adrianLab.traits, ...dedupedTraits];
                     this.cache.adrianLab.all = [...(this.cache.adrianLab.all || []), ...newTokens];
+                    
+                    // Actualizar serums y floppys de los nuevos tokens
+                    const newFloppys = window.app.modules.filters.filterFloppyTokens(newTokens);
+                    const newSerums = window.app.modules.filters.filterSerumTokens(newTokens);
+                    
+                    // Dedupe serums y floppys antes de agregar
+                    const existingFloppyIds = new Set((this.cache.adrianLab.floppys || []).map(f => String(f.tokenId)));
+                    const existingSerumIds = new Set((this.cache.adrianLab.serums || []).map(s => String(s.tokenId)));
+                    
+                    const dedupedFloppys = newFloppys.filter(f => !existingFloppyIds.has(String(f.tokenId)));
+                    const dedupedSerums = newSerums.filter(s => !existingSerumIds.has(String(s.tokenId)));
+                    
+                    if (dedupedFloppys.length > 0) {
+                        this.cache.adrianLab.floppys = [...(this.cache.adrianLab.floppys || []), ...dedupedFloppys];
+                        console.log(`💾 Agregados ${dedupedFloppys.length} nuevos floppys al cache (total: ${this.cache.adrianLab.floppys.length})`);
+                    }
+                    
+                    if (dedupedSerums.length > 0) {
+                        this.cache.adrianLab.serums = [...(this.cache.adrianLab.serums || []), ...dedupedSerums];
+                        console.log(`🧪 Agregados ${dedupedSerums.length} nuevos serums al cache (total: ${this.cache.adrianLab.serums.length})`);
+                    }
                 } else {
                     // Si no hay cache, inicializarlo
                     const floppys = window.app.modules.filters.filterFloppyTokens(newTokens);
