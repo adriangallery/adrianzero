@@ -762,11 +762,14 @@ class UIManager {
             tokenCard.setAttribute('data-contract', token.contract.toLowerCase());
             
             // 🛡️ SAFU MODE: Detectar modo safu y crear tarjeta sin imagen para traits
+            // PERO: Si virtual DOM está activo, reactivar imágenes (máximo 100 elementos DOM)
             const isSafuMode = window.SAFU_MODE === true;
             const isTraitsTab = this.currentFilter === 'traits';
             // 🚨 FIX: Verificar también que el token sea un trait (ERC1155) y no AdrianZERO (ERC721)
             const isTraitToken = token.tokenType === 'ERC1155' || (token.contract && token.contract.toLowerCase() === '0x90546848474fb3c9fda3fdad887969bb244e7e58');
-            const shouldSkipImage = isSafuMode && isTraitsTab && isTraitToken;
+            // Si virtual DOM está activo, NO saltar imágenes (limitamos a 100 elementos DOM)
+            const isVirtualDOMActive = this.virtualDOMState?.enabled === true;
+            const shouldSkipImage = isSafuMode && isTraitsTab && isTraitToken && !isVirtualDOMActive;
             
             // Debug logs
             if (isSafuMode) {
@@ -774,6 +777,7 @@ class UIManager {
                     isSafuMode,
                     isTraitsTab,
                     currentFilter: this.currentFilter,
+                    isVirtualDOMActive,
                     shouldSkipImage,
                     tokenId: token.tokenId
                 });
