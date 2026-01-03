@@ -622,30 +622,15 @@ class UIManager {
         this.cleanupVirtualDOM();
 
         const state = this.virtualDOMState;
-        state.allTokens = [...tokens]; // Guardar todos los tokens en cache
+        state.allTokens = [...tokens]; // Guardar todos los tokens en cache (sin filtrar)
         state.renderedIndices.clear();
         state.enabled = true;
 
         console.log(`🛡️ Virtual DOM activado: ${tokens.length} tokens en cache, máximo ${state.maxDOMElements} elementos DOM simultáneos`);
-        console.log(`🛡️ Virtual DOM state.enabled = ${state.enabled}`);
-
-        // Aplicar filtro de categoría si está activo antes de renderizar
-        let tokensToRender = tokens;
-        if (this.currentFilter === 'traits' && this.currentCategoryFilter) {
-            const traitsManager = window.app?.modules?.traits;
-            if (traitsManager) {
-                const beforeFilter = tokens.length;
-                tokensToRender = tokens.filter(token => {
-                    const category = traitsManager.getTraitCategory(token.tokenId);
-                    return category === this.currentCategoryFilter;
-                });
-                console.log(`🔍 Virtual DOM: Filtrados ${beforeFilter} traits -> ${tokensToRender.length} por categoría: ${this.currentCategoryFilter}`);
-            }
-        }
 
         // Render initial batch (first 100 elements)
-        const initialEnd = Math.min(state.maxDOMElements, tokensToRender.length);
-        console.log(`🛡️ Renderizando batch inicial: 0 a ${initialEnd} de ${tokensToRender.length} traits filtrados`);
+        // El filtro de categoría se aplicará dentro de renderVirtualBatch
+        const initialEnd = Math.min(state.maxDOMElements, tokens.length);
         this.renderVirtualBatch(0, initialEnd);
 
         // Setup Intersection Observer for sentinel (scroll down)
@@ -1344,41 +1329,6 @@ class UIManager {
             this.hidePaginationControls();
         }
         
-        // Debug: Log para entender por qué no se activa virtual DOM
-        if (isSafuMode && isTraitsTab) {
-            const isMobileDevice = this.isMobile();
-            console.log(`🛡️ DEBUG Virtual DOM check:`, {
-                isSafuMode,
-                isTraitsTab,
-                tokensLength: tokens.length,
-                shouldUseVirtualDOM,
-                currentFilter: this.currentFilter,
-                isMobile: isMobileDevice,
-                windowInnerWidth: window.innerWidth
-            });
-        }
-        
-        if (shouldUseVirtualDOM) {
-            const deviceType = this.isMobile() ? 'mobile' : 'desktop';
-            console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode (${deviceType})`);
-            console.log(`🛡️ DEBUG: isMobile() = ${this.isMobile()}, window.innerWidth = ${window.innerWidth}`);
-            this.setupVirtualDOM(tokens);
-            if (!skipSelectionUpdate) {
-                this.updateSelectionInfo();
-            }
-            return;
-        } else if (isSafuMode && isTraitsTab) {
-            // Si no se activó virtual DOM pero estamos en SAFU mode + traits, log para debug
-            console.warn(`⚠️ Virtual DOM NO se activó en SAFU mode + traits:`, {
-                isSafuMode,
-                isTraitsTab,
-                tokensLength: tokens.length,
-                shouldUseVirtualDOM,
-                isMobile: this.isMobile(),
-                windowInnerWidth: window.innerWidth
-            });
-        }
-        
         // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens, but not SAFU mode)
         const shouldUseLazyLoading = !isSafuMode &&
                                      this.isMobile() && 
@@ -1414,11 +1364,6 @@ class UIManager {
             traitsToDisplay = tokens.slice(0, MAX_MOBILE_RENDER);
             this.paginationState.enabled = false;
             this.hidePaginationControls();
-        }
-        
-        // Debug: Verificar modo safu antes de crear tarjetas
-        if (window.SAFU_MODE && isTraitsTab) {
-            console.log('🛡️ SAFU MODE: Creando tarjetas sin imagen para', traitsToDisplay.length, 'traits');
         }
         
         traitsToDisplay.forEach(token => {
