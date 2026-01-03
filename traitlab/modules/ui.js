@@ -1285,6 +1285,17 @@ class UIManager {
                                      isTraitsTab && 
                                      tokens.length > 50; // Only use virtual DOM if more than 50 traits
         
+        // Debug: Log para entender por qué no se activa virtual DOM
+        if (isSafuMode && isTraitsTab) {
+            console.log(`🛡️ DEBUG Virtual DOM check:`, {
+                isSafuMode,
+                isTraitsTab,
+                tokensLength: tokens.length,
+                shouldUseVirtualDOM,
+                currentFilter: this.currentFilter
+            });
+        }
+        
         if (shouldUseVirtualDOM) {
             const deviceType = this.isMobile() ? 'mobile' : 'desktop';
             console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode (${deviceType})`);
