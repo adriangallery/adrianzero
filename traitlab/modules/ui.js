@@ -580,11 +580,6 @@ class UIManager {
                 this.removeVirtualElementsOutsideViewport();
             }
 
-            // Debug: Verificar estado antes de crear tarjeta
-            if (state.enabled) {
-                console.log(`🛡️ Virtual DOM: Creando tarjeta para token ${token.tokenId}, índice ${actualIndex}, virtualDOMState.enabled = ${state.enabled}`);
-            }
-            
             const tokenCard = this.createTokenCard(token);
             tokenCard.setAttribute('data-token-index', actualIndex);
             tokenCard.setAttribute('data-token-id', this.getTokenKey(token));
