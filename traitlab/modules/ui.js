@@ -811,12 +811,15 @@ class UIManager {
             
             // Debug adicional para entender el problema
             if (isSafuMode && isTraitsTab && isTraitToken) {
+                const isMobileDevice = this.isMobile();
                 console.log('🛡️ SAFU MODE + TRAITS: Verificando si saltar imagen:', {
                     virtualDOMStateExists: !!this.virtualDOMState,
                     virtualDOMStateEnabled: this.virtualDOMState?.enabled,
                     isVirtualDOMActive,
                     shouldSkipImage,
-                    tokenId: token.tokenId
+                    tokenId: token.tokenId,
+                    isMobile: isMobileDevice,
+                    windowInnerWidth: window.innerWidth
                 });
             }
             
