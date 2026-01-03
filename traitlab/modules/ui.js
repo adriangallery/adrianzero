@@ -37,6 +37,18 @@ class UIManager {
             totalPages: 1
         };
         
+        // Virtual DOM state for SAFU mode (limitar elementos DOM en móviles)
+        this.virtualDOMState = {
+            enabled: false,
+            allTokens: [], // Todos los tokens en cache (sin renderizar)
+            renderedIndices: new Set(), // Índices de tokens actualmente renderizados en DOM
+            maxDOMElements: 100, // Máximo de elementos DOM simultáneos
+            batchSize: 50, // Tamaño de batch para renderizar
+            observer: null, // Intersection Observer para detectar scroll
+            sentinel: null, // Elemento sentinela para detectar cuando hacer scroll
+            viewportObserver: null // Observer para detectar elementos fuera del viewport
+        };
+        
         // Bind methods
         this.displayTokens = this.displayTokens.bind(this);
         this.displayPlaceholders = this.displayPlaceholders.bind(this);
@@ -316,6 +328,8 @@ class UIManager {
         // Clean up lazy loading if changing away from traits
         if (this.currentFilter === 'traits' && filter !== 'traits') {
             this.cleanupLazyLoading();
+            // Clean up virtual DOM if changing away from traits
+            this.cleanupVirtualDOM();
             // Mantener cache pero desactivar paginación
             this.paginationState.enabled = false;
             this.hidePaginationControls();
@@ -433,6 +447,295 @@ class UIManager {
 
         // Ocultar botón de carga incremental si estaba visible
         this.setLoadMoreVisibility(false);
+    }
+
+    /**
+     * Clean up virtual DOM observer
+     */
+    cleanupVirtualDOM() {
+        if (this.virtualDOMState.observer) {
+            this.virtualDOMState.observer.disconnect();
+            this.virtualDOMState.observer = null;
+        }
+        if (this.virtualDOMState.viewportObserver) {
+            this.virtualDOMState.viewportObserver.disconnect();
+            this.virtualDOMState.viewportObserver = null;
+        }
+        if (this.virtualDOMState.sentinel) {
+            this.virtualDOMState.sentinel.remove();
+            this.virtualDOMState.sentinel = null;
+        }
+        
+        this.virtualDOMState.enabled = false;
+        this.virtualDOMState.allTokens = [];
+        this.virtualDOMState.renderedIndices.clear();
+    }
+
+    /**
+     * Remove elements outside viewport to maintain max DOM elements
+     */
+    removeVirtualElementsOutsideViewport() {
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid || !this.virtualDOMState.enabled) return;
+
+        const state = this.virtualDOMState;
+        const renderedCards = Array.from(tokensGrid.querySelectorAll('.token-card'));
+        
+        if (renderedCards.length <= state.maxDOMElements) {
+            return; // No need to remove anything
+        }
+
+        // Use Intersection Observer to detect which elements are outside viewport
+        const elementsToRemove = [];
+        const viewportTop = window.scrollY;
+        const viewportBottom = window.scrollY + window.innerHeight;
+        const buffer = window.innerHeight * 0.5; // Buffer zone: 50% of viewport height
+
+        renderedCards.forEach((card) => {
+            const rect = card.getBoundingClientRect();
+            const cardTop = rect.top + window.scrollY;
+            const cardBottom = cardTop + rect.height;
+
+            // Check if element is outside viewport + buffer
+            const isOutsideTop = cardBottom < (viewportTop - buffer);
+            const isOutsideBottom = cardTop > (viewportBottom + buffer);
+
+            if (isOutsideTop || isOutsideBottom) {
+                elementsToRemove.push(card);
+            }
+        });
+
+        // Remove elements that are far outside viewport
+        // Keep only maxDOMElements, prioritizing those closer to viewport
+        if (elementsToRemove.length > 0 && renderedCards.length > state.maxDOMElements) {
+            const toRemove = elementsToRemove.slice(0, renderedCards.length - state.maxDOMElements);
+            
+            toRemove.forEach(card => {
+                const tokenId = card.getAttribute('data-token-id');
+                if (tokenId) {
+                    // Find index in allTokens
+                    const index = state.allTokens.findIndex(t => 
+                        this.getTokenKey(t) === tokenId
+                    );
+                    if (index !== -1) {
+                        state.renderedIndices.delete(index);
+                    }
+                }
+                
+                // Remove click handler
+                if (card._clickHandler) {
+                    card.removeEventListener('click', card._clickHandler);
+                    delete card._clickHandler;
+                }
+                
+                card.remove();
+            });
+
+            console.log(`🧹 Virtual DOM: Eliminados ${toRemove.length} elementos fuera del viewport. Restantes: ${tokensGrid.querySelectorAll('.token-card').length}`);
+        }
+    }
+
+    /**
+     * Render a batch of tokens in virtual DOM mode
+     */
+    renderVirtualBatch(startIndex, endIndex) {
+        const state = this.virtualDOMState;
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid || !state.enabled) return 0;
+
+        const batch = state.allTokens.slice(startIndex, endIndex);
+        let renderedCount = 0;
+
+        batch.forEach((token, batchIndex) => {
+            const actualIndex = startIndex + batchIndex;
+            
+            // Skip if already rendered
+            if (state.renderedIndices.has(actualIndex)) {
+                return;
+            }
+
+            // Check if we're at max DOM elements limit
+            const currentDOMCount = tokensGrid.querySelectorAll('.token-card').length;
+            if (currentDOMCount >= state.maxDOMElements) {
+                // Remove some elements outside viewport first
+                this.removeVirtualElementsOutsideViewport();
+            }
+
+            const tokenCard = this.createTokenCard(token);
+            tokenCard.setAttribute('data-token-index', actualIndex);
+            tokenCard.setAttribute('data-token-id', this.getTokenKey(token));
+            
+            // Find insertion point (maintain order)
+            const existingCards = Array.from(tokensGrid.querySelectorAll('.token-card'));
+            let insertBefore = null;
+            
+            for (const card of existingCards) {
+                const cardIndex = parseInt(card.getAttribute('data-token-index') || '999999');
+                if (cardIndex > actualIndex) {
+                    insertBefore = card;
+                    break;
+                }
+            }
+            
+            if (insertBefore) {
+                tokensGrid.insertBefore(tokenCard, insertBefore);
+            } else {
+                tokensGrid.appendChild(tokenCard);
+            }
+
+            state.renderedIndices.add(actualIndex);
+            renderedCount++;
+        });
+
+        return renderedCount;
+    }
+
+    /**
+     * Setup virtual DOM for SAFU mode (limitar elementos DOM en móviles)
+     */
+    setupVirtualDOM(tokens) {
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid) return;
+
+        // Clean up any existing virtual DOM
+        this.cleanupVirtualDOM();
+
+        const state = this.virtualDOMState;
+        state.allTokens = [...tokens]; // Guardar todos los tokens en cache
+        state.renderedIndices.clear();
+        state.enabled = true;
+
+        console.log(`🛡️ Virtual DOM activado: ${tokens.length} tokens en cache, máximo ${state.maxDOMElements} elementos DOM simultáneos`);
+
+        // Render initial batch (first 100 elements)
+        const initialEnd = Math.min(state.maxDOMElements, tokens.length);
+        this.renderVirtualBatch(0, initialEnd);
+
+        // Setup Intersection Observer for sentinel (scroll down)
+        state.observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && state.enabled) {
+                    this.loadNextVirtualBatch();
+                }
+            });
+        }, {
+            rootMargin: '200px' // Start loading 200px before sentinel is visible
+        });
+
+        // Setup viewport observer to clean up elements outside viewport
+        state.viewportObserver = new IntersectionObserver((entries) => {
+            // Clean up periodically when scrolling
+            if (state.enabled) {
+                requestAnimationFrame(() => {
+                    this.removeVirtualElementsOutsideViewport();
+                });
+            }
+        }, {
+            root: null,
+            rootMargin: '50%', // Buffer zone
+            threshold: 0
+        });
+
+        // Observe all rendered cards
+        const renderedCards = tokensGrid.querySelectorAll('.token-card');
+        renderedCards.forEach(card => {
+            state.viewportObserver.observe(card);
+            card.setAttribute('data-viewport-observed', 'true');
+        });
+
+        // Add sentinel at the end if there are more tokens
+        if (tokens.length > initialEnd) {
+            this.addVirtualDOMSentinel();
+        }
+
+        // Update selection info
+        this.updateSelectionInfo();
+    }
+
+    /**
+     * Add sentinel element for virtual DOM scrolling
+     */
+    addVirtualDOMSentinel() {
+        const state = this.virtualDOMState;
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid || !state.enabled) return;
+
+        // Remove old sentinel if exists
+        if (state.sentinel) {
+            state.sentinel.remove();
+        }
+
+        // Create new sentinel
+        state.sentinel = document.createElement('div');
+        state.sentinel.className = 'virtual-dom-sentinel';
+        state.sentinel.style.height = '20px';
+        state.sentinel.style.width = '100%';
+        tokensGrid.appendChild(state.sentinel);
+
+        // Observe sentinel
+        if (state.observer) {
+            state.observer.observe(state.sentinel);
+        }
+    }
+
+    /**
+     * Load next batch of tokens in virtual DOM mode
+     */
+    loadNextVirtualBatch() {
+        const state = this.virtualDOMState;
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid || !state.enabled) return;
+
+        // Find highest rendered index
+        const renderedIndices = Array.from(state.renderedIndices);
+        const maxRenderedIndex = renderedIndices.length > 0 ? Math.max(...renderedIndices) : -1;
+        
+        const startIndex = maxRenderedIndex + 1;
+        const endIndex = Math.min(startIndex + state.batchSize, state.allTokens.length);
+
+        if (startIndex >= state.allTokens.length) {
+            // All tokens loaded, remove sentinel
+            if (state.sentinel) {
+                state.sentinel.remove();
+                state.sentinel = null;
+            }
+            console.log('✅ Virtual DOM: Todos los tokens cargados');
+            return;
+        }
+
+        console.log(`📦 Virtual DOM: Renderizando batch ${startIndex} a ${endIndex} (${endIndex - startIndex} tokens)`);
+
+        // Render batch
+        this.renderVirtualBatch(startIndex, endIndex);
+
+        // Clean up elements outside viewport
+        this.removeVirtualElementsOutsideViewport();
+
+        // Update viewport observer for new cards
+        const newCards = tokensGrid.querySelectorAll('.token-card');
+        newCards.forEach(card => {
+            if (!state.viewportObserver) return;
+            // Check if already observed
+            const isObserved = card.hasAttribute('data-viewport-observed');
+            if (!isObserved) {
+                state.viewportObserver.observe(card);
+                card.setAttribute('data-viewport-observed', 'true');
+            }
+        });
+
+        // Add/update sentinel if there are more tokens
+        if (endIndex < state.allTokens.length) {
+            this.addVirtualDOMSentinel();
+        } else {
+            // All loaded, remove sentinel
+            if (state.sentinel) {
+                state.sentinel.remove();
+                state.sentinel = null;
+            }
+        }
+
+        // Update selection info
+        this.updateSelectionInfo();
     }
 
     /**
@@ -861,6 +1164,9 @@ class UIManager {
 
         // Clean up any existing lazy loading
         this.cleanupLazyLoading();
+        
+        // Clean up any existing virtual DOM
+        this.cleanupVirtualDOM();
 
         tokensGrid.innerHTML = "";
         // Reiniciar mapa de vistos con los tokens mostrados actualmente
@@ -947,8 +1253,24 @@ class UIManager {
             this.hidePaginationControls();
         }
         
-        // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens)
-        const shouldUseLazyLoading = this.isMobile() && 
+        // 🛡️ VIRTUAL DOM: Check if we should use virtual DOM (SAFU mode + mobile + traits tab)
+        const shouldUseVirtualDOM = isSafuMode && 
+                                     this.isMobile() && 
+                                     isTraitsTab && 
+                                     tokens.length > 50; // Only use virtual DOM if more than 50 traits
+        
+        if (shouldUseVirtualDOM) {
+            console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode (mobile)`);
+            this.setupVirtualDOM(tokens);
+            if (!skipSelectionUpdate) {
+                this.updateSelectionInfo();
+            }
+            return;
+        }
+        
+        // 🚨 LAZY LOADING: Check if we should use lazy loading (mobile + traits tab + many tokens, but not SAFU mode)
+        const shouldUseLazyLoading = !isSafuMode &&
+                                     this.isMobile() && 
                                      this.currentFilter === 'traits' && 
                                      tokens.length > 50; // Only use lazy loading if more than 50 traits
         
