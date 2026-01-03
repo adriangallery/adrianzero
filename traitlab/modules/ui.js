@@ -1939,18 +1939,29 @@ class UIManager {
             return;
         }
 
-        // Crear botones de categorías
+        // 🎯 BACKGROUND como categoría predeterminada, "Todas" al final
+        const backgroundCategory = 'BACKGROUND';
+        const otherCategories = categories.filter(cat => cat !== backgroundCategory).sort();
+        const sortedCategories = [backgroundCategory, ...otherCategories];
+        
+        // Determinar categoría activa (BACKGROUND por defecto si no hay ninguna seleccionada)
+        const activeCategory = this.currentCategoryFilter === null ? backgroundCategory : this.currentCategoryFilter;
+        if (this.currentCategoryFilter === null) {
+            this.currentCategoryFilter = backgroundCategory;
+        }
+
+        // Crear botones de categorías: BACKGROUND primero, luego otras, "Todas" al final
         categoryFilterContainer.innerHTML = `
             <div class="category-filter-label">Filtrar por categoría:</div>
             <div class="category-filter-buttons">
-                <button class="category-btn ${this.currentCategoryFilter === null ? 'active' : ''}" data-category="all">
-                    Todas
-                </button>
-                ${categories.map(cat => `
-                    <button class="category-btn ${this.currentCategoryFilter === cat ? 'active' : ''}" data-category="${cat}">
+                ${sortedCategories.map(cat => `
+                    <button class="category-btn ${activeCategory === cat ? 'active' : ''}" data-category="${cat}">
                         ${cat}
                     </button>
                 `).join('')}
+                <button class="category-btn ${activeCategory === null ? 'active' : ''}" data-category="all">
+                    Todas
+                </button>
             </div>
         `;
 
@@ -1963,6 +1974,11 @@ class UIManager {
         });
 
         categoryFilterContainer.style.display = 'block';
+        
+        // Aplicar filtro de BACKGROUND automáticamente si no hay filtro activo
+        if (this.currentCategoryFilter === backgroundCategory) {
+            this.setCategoryFilter(backgroundCategory);
+        }
     }
 
     /**

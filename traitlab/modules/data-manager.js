@@ -977,13 +977,17 @@ class TraitLABDataManager {
      */
     async loadTokensProgressive(userAddress, contractAddress, batchMode = false) {
         try {
+            // 🛡️ SAFU MODE: Detectar si estamos en modo SAFU para carga automática completa
+            const isSafuMode = window.SAFU_MODE === true;
+            
             // Cargar tokens con metadata completa desde Alchemy - TODOS LOS TOKENS
-            console.log(`📊 Cargando todos los tokens ERC1155 con metadata completa desde Alchemy...`);
+            console.log(`📊 Cargando todos los tokens ERC1155 con metadata completa desde Alchemy...${isSafuMode ? ' (SAFU MODE: carga automática completa)' : ''}`);
             
             let basicTokens = [];
             let loadResult = null;
             try {
-                // Cargar solo la primera página (p.ej. 100) para mostrar rápido
+                // 🛡️ SAFU MODE: En modo SAFU, usar batchSize más grande (100) pero cargar automáticamente todos
+                // En modo normal, mantener límite inicial de 100 para mostrar rápido
                 const initialLimit = 100;
                 loadResult = await this.loadBasicTokens(userAddress, contractAddress, initialLimit);
                 basicTokens = Array.isArray(loadResult) ? loadResult : (loadResult?.tokens || []);
