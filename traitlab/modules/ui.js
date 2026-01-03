@@ -613,9 +613,23 @@ class UIManager {
         console.log(`🛡️ Virtual DOM activado: ${tokens.length} tokens en cache, máximo ${state.maxDOMElements} elementos DOM simultáneos`);
         console.log(`🛡️ Virtual DOM state.enabled = ${state.enabled}`);
 
+        // Aplicar filtro de categoría si está activo antes de renderizar
+        let tokensToRender = tokens;
+        if (this.currentFilter === 'traits' && this.currentCategoryFilter) {
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                const beforeFilter = tokens.length;
+                tokensToRender = tokens.filter(token => {
+                    const category = traitsManager.getTraitCategory(token.tokenId);
+                    return category === this.currentCategoryFilter;
+                });
+                console.log(`🔍 Virtual DOM: Filtrados ${beforeFilter} traits -> ${tokensToRender.length} por categoría: ${this.currentCategoryFilter}`);
+            }
+        }
+
         // Render initial batch (first 100 elements)
-        const initialEnd = Math.min(state.maxDOMElements, tokens.length);
-        console.log(`🛡️ Renderizando batch inicial: 0 a ${initialEnd}`);
+        const initialEnd = Math.min(state.maxDOMElements, tokensToRender.length);
+        console.log(`🛡️ Renderizando batch inicial: 0 a ${initialEnd} de ${tokensToRender.length} traits filtrados`);
         this.renderVirtualBatch(0, initialEnd);
 
         // Setup Intersection Observer for sentinel (scroll down)
@@ -1214,6 +1228,47 @@ class UIManager {
             }
         }
         
+        // 🚨 PAGINACIÓN: Si estamos en tab traits y hay más de 300 tokens, activar paginación
+        // 🛡️ SAFU MODE: Desactivar paginación visual en SAFU mode
+        const isSafuMode = window.SAFU_MODE === true;
+        
+        // 🛡️ SAFU MODE: Desactivar paginación visual
+        if (isSafuMode && isTraitsTab) {
+            this.paginationState.enabled = false;
+        }
+        
+        // 🛡️ VIRTUAL DOM: Check if we should use virtual DOM (SAFU mode + traits tab)
+        // IMPORTANTE: Verificar ANTES del filtro de categoría para usar todos los tokens
+        // El filtro de categoría se aplicará dentro del virtual DOM
+        const shouldUseVirtualDOM = isSafuMode && 
+                                     isTraitsTab && 
+                                     tokens.length > 50; // Only use virtual DOM if more than 50 traits
+        
+        // Debug: Log para entender por qué no se activa virtual DOM
+        if (isSafuMode && isTraitsTab) {
+            console.log(`🛡️ DEBUG Virtual DOM check (ANTES de filtro categoría):`, {
+                isSafuMode,
+                isTraitsTab,
+                tokensLength: tokens.length,
+                shouldUseVirtualDOM,
+                currentFilter: this.currentFilter,
+                currentCategoryFilter: this.currentCategoryFilter
+            });
+        }
+        
+        if (shouldUseVirtualDOM) {
+            const deviceType = this.isMobile() ? 'mobile' : 'desktop';
+            console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode (${deviceType})`);
+            // Guardar tokens originales (sin filtrar por categoría) para virtual DOM
+            // El filtro de categoría se aplicará en renderVirtualBatch
+            this.setupVirtualDOM(tokens);
+            if (!skipSelectionUpdate) {
+                this.updateSelectionInfo();
+            }
+            return;
+        }
+        
+        // Si no usamos virtual DOM, aplicar filtro de categoría normalmente
         if (isTraitsTab && this.currentCategoryFilter) {
             const traitsManager = window.app?.modules?.traits;
             if (traitsManager) {
@@ -1224,15 +1279,6 @@ class UIManager {
                 });
                 console.log(`🔍 Filtrados ${beforeCategoryFilter} traits -> ${tokens.length} por categoría: ${this.currentCategoryFilter}`);
             }
-        }
-        
-        // 🚨 PAGINACIÓN: Si estamos en tab traits y hay más de 300 tokens, activar paginación
-        // 🛡️ SAFU MODE: Desactivar paginación visual en SAFU mode
-        const isSafuMode = window.SAFU_MODE === true;
-        
-        // 🛡️ SAFU MODE: Desactivar paginación visual
-        if (isSafuMode && isTraitsTab) {
-            this.paginationState.enabled = false;
         }
         
         // Si ya estamos en modo paginación y recibimos nuevos tokens, actualizar cache
@@ -1278,12 +1324,6 @@ class UIManager {
             this.paginationState.enabled = false;
             this.hidePaginationControls();
         }
-        
-        // 🛡️ VIRTUAL DOM: Check if we should use virtual DOM (SAFU mode + traits tab)
-        // Activado también en desktop para poder ver logs y debuggear
-        const shouldUseVirtualDOM = isSafuMode && 
-                                     isTraitsTab && 
-                                     tokens.length > 50; // Only use virtual DOM if more than 50 traits
         
         // Debug: Log para entender por qué no se activa virtual DOM
         if (isSafuMode && isTraitsTab) {
