@@ -455,7 +455,7 @@ function updateDisplay() {
 function initSlider() {
     const slider = document.getElementById('weeksSlider');
     
-    slider.addEventListener('input', (e) => {
+    slider.addEventListener('input', async (e) => {
         // Allow switching back to weeks view by moving the slider
         // This will override the year selection
         selectedWeeks = parseInt(e.target.value);
@@ -470,11 +470,13 @@ function initSlider() {
                     btn.classList.remove('active');
                 }
             });
+            // Reload merged data so weeks view includes all years
+            await loadData('all');
         }
         updateDisplay();
     });
     
-    slider.addEventListener('change', (e) => {
+    slider.addEventListener('change', async (e) => {
         // Allow switching back to weeks view by moving the slider
         selectedWeeks = parseInt(e.target.value);
         if (selectedYear && selectedYear !== 'all') {
@@ -488,6 +490,8 @@ function initSlider() {
                     btn.classList.remove('active');
                 }
             });
+            // Reload merged data so weeks view includes all years
+            await loadData('all');
         }
         updateDisplay();
         // Smooth scroll to top of events
