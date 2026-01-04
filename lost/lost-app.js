@@ -5,37 +5,70 @@ let currentWeek = 0;
 let selectedWeeks = 4;
 let selectedYear = 'all'; // 'all', '2025', '2026', or null
 
+// Helpers
+async function fetchJsonFile(filename) {
+    // Try to load from current directory first, then try relative path
+    let response;
+    try {
+        response = await fetch(`./${filename}`);
+        if (!response.ok) throw new Error('Failed to fetch');
+    } catch (e) {
+        // Fallback: try without leading dot
+        response = await fetch(filename);
+    }
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+}
+
+function addComputedWeekNumbers(weeks) {
+    if (!weeks || weeks.length === 0) return [];
+    // Sort by date to create a continuous timeline across files/years
+    const sorted = [...weeks].sort((a, b) => {
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return -1;
+        if (!b.date) return 1;
+        return new Date(a.date) - new Date(b.date);
+    });
+    return sorted.map((week, idx) => ({
+        ...week,
+        computedWeekNumber: idx + 1
+    }));
+}
+
 // Load JSON data
 async function loadData(year = null) {
     try {
         // Determine which JSON file to load
         const yearToLoad = year || selectedYear;
-        let filename;
-        
         if (yearToLoad === '2025' || yearToLoad === 2025) {
-            filename = 'lost-data-2025.json';
+            const data2025 = await fetchJsonFile('lost-data-2025.json');
+            lostData = {
+                ...data2025,
+                weeks: addComputedWeekNumbers(data2025.weeks || [])
+            };
         } else if (yearToLoad === '2026' || yearToLoad === 2026) {
-            filename = 'lost-data-2026.json';
+            const data2026 = await fetchJsonFile('lost-data-2026.json');
+            lostData = {
+                ...data2026,
+                weeks: addComputedWeekNumbers(data2026.weeks || [])
+            };
         } else {
-            // Default to 2025 for "all" or initial load
-            filename = 'lost-data-2025.json';
+            // Default "all": merge both years so weeks + year view include everything
+            const data2025 = await fetchJsonFile('lost-data-2025.json');
+            let mergedWeeks = data2025.weeks || [];
+            try {
+                const data2026 = await fetchJsonFile('lost-data-2026.json');
+                mergedWeeks = mergedWeeks.concat(data2026.weeks || []);
+            } catch (e) {
+                console.warn('Could not load 2026 data, continuing with 2025 only', e);
+            }
+            lostData = {
+                startDate: data2025.startDate,
+                weeks: addComputedWeekNumbers(mergedWeeks)
+            };
         }
-        
-        // Try to load from current directory first, then try relative path
-        let response;
-        try {
-            response = await fetch(`./${filename}`);
-            if (!response.ok) throw new Error('Failed to fetch');
-        } catch (e) {
-            // Fallback: try without leading dot
-            response = await fetch(filename);
-        }
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        lostData = await response.json();
         
         if (!lostData || !lostData.weeks) {
             throw new Error('Invalid data format');
@@ -83,9 +116,9 @@ function calculateCurrentWeek() {
         return;
     }
     
-    // Use the highest week number in the data as current week
-    // This ensures we only show weeks that actually have data
-    currentWeek = Math.max(...lostData.weeks.map(w => w.weekNumber));
+    // Use computed week numbers (continuous timeline) when available
+    const weekNumbers = lostData.weeks.map(w => w.computedWeekNumber || w.weekNumber || 0);
+    currentWeek = Math.max(...weekNumbers);
     
     console.log(`Current week calculated: ${currentWeek} (based on data)`);
 }
@@ -103,7 +136,7 @@ function getFilteredEvents() {
     console.log(`Filtering weeks ${startWeek} to ${endWeek} (showing last ${selectedWeeks} weeks)`);
     
     const filteredWeeks = lostData.weeks.filter(week => {
-        const weekNum = week.weekNumber;
+        const weekNum = week.computedWeekNumber || week.weekNumber;
         return weekNum >= startWeek && weekNum <= endWeek;
     });
     
@@ -116,7 +149,7 @@ function getFilteredEvents() {
             week.events.forEach(event => {
                 events.push({
                     ...event,
-                    weekNumber: week.weekNumber,
+                    weekNumber: week.computedWeekNumber || week.weekNumber,
                     weekDate: week.date,
                     weekTitle: week.title
                 });
@@ -241,14 +274,8 @@ function getYearEvents(year) {
     }
     
     // Map: 2025 -> 2024 (because lost-data-2025.json contains 2024 dates)
-    // 2026 -> 2025 (when we add 2026 data, it will contain 2025 dates)
-    const yearMapping = {
-        '2025': '2024',
-        '2026': '2025'
-    };
-    
-    // Use mapped year for searching, but display the selected year
-    const searchYear = yearMapping[String(year)] || String(year);
+    // (mapping removed — data files now match their actual year)
+    const searchYear = String(year);
     const displayYear = String(year);
     
     const eventsByMonth = {};
@@ -273,7 +300,7 @@ function getYearEvents(year) {
             week.events.forEach(event => {
                 eventsByMonth[monthKey].push({
                     ...event,
-                    weekNumber: week.weekNumber,
+                    weekNumber: week.computedWeekNumber || week.weekNumber,
                     weekDate: week.date,
                     weekTitle: week.title
                 });
