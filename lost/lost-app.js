@@ -274,8 +274,11 @@ function getYearEvents(year) {
     }
     
     // Map: 2025 -> 2024 (because lost-data-2025.json contains 2024 dates)
-    // (mapping removed — data files now match their actual year)
-    const searchYear = String(year);
+    // 2026 stays as 2026 (dates match the file)
+    const yearMapping = {
+        '2025': '2024'
+    };
+    const searchYear = yearMapping[String(year)] || String(year);
     const displayYear = String(year);
     
     const eventsByMonth = {};
