@@ -10,6 +10,47 @@
     <link href="modules/styles.css" rel="stylesheet">
     
     <style>
+        /* Shared menu styles */
+        #menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        #menu-container .navbar {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ff00;
+            font-family: 'VT323', monospace;
+        }
+        #menu-container .navbar-nav .nav-link {
+            color: #00ff00 !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        #menu-container .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        #menu-container .token-symbol {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.3rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        #menu-container .navbar-toggler {
+            border-color: #00ff00;
+        }
+        #menu-container .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        #app-container {
+            padding-top: 80px;
+        }
+
         /* Crafting Container Styles */
         .crafting-container {
             width: 100%;
