@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SVG Mini-Game (Cigarette)</title>
+  <style>
+    :root {
+      --ui: 14px;
+      /* stage background can be changed by the user */
+      --stage-bg: #fff;
+      --stage-bg-img: none;
+      --stage-bg-size: auto;
+      --stage-bg-pos: 0 0;
+      --stage-bg-repeat: no-repeat;
+    }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
+    .wrap { display: grid; gap: 14px; grid-template-columns: 1fr; max-width: 920px; margin: 0 auto; }
+    .hud { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    button { padding: 8px 12px; border: 1px solid #ddd; background:#fff; border-radius: 10px; cursor:pointer; }
+    button:active { transform: translateY(1px); }
+    select { padding: 7px 10px; border: 1px solid #ddd; background:#fff; border-radius: 10px; cursor:pointer; }
+    input[type="color"] { width: 42px; height: 34px; border: 1px solid #ddd; background:#fff; border-radius: 10px; padding: 0; }
+    .pill { border:1px solid #eee; border-radius: 999px; padding: 6px 10px; font-size: var(--ui); }
+    .bar { width: 180px; height: 10px; border-radius: 999px; border:1px solid #eee; overflow:hidden; background:#fafafa; }
+    .bar > div { height: 100%; width: 100%; background:#111; transform-origin:left center; }
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border: 1px solid #eee;
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--stage-bg);
+      background-image: var(--stage-bg-img);
+      background-size: var(--stage-bg-size);
+      background-position: var(--stage-bg-pos);
+      background-repeat: var(--stage-bg-repeat);
+      touch-action: manipulation;
+      user-select: none;
+    }
+    .frame {
+      position:absolute; inset:0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      display:none;
+    }
+    .frame.show { display:block; }
+    .hitbox {
+      position:absolute;
+      /* Adjust these percentages to match your cigarette location */
+      left: 56%;
+      top: 28%;
+      width: 30%;
+      height: 30%;
+      cursor: pointer;
+      border-radius: 16px;
+    }
+    .hint {
+      position:absolute; left: 12px; bottom: 12px;
+      background: rgba(255,255,255,.85);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 14px;
+      padding: 8px 10px;
+      font-size: 12px;
+      backdrop-filter: blur(6px);
+    }
+    .toast {
+      position:absolute; right: 12px; top: 12px;
+      background: rgba(17,17,17,.86);
+      color:#fff;
+      border-radius: 14px;
+      padding: 8px 10px;
+      font-size: 12px;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events: none;
+    }
+    .toast.on { opacity: 1; transform: translateY(0); }
+    .shake { animation: shake 120ms linear 1; }
+    @keyframes shake {
+      0% { transform: translate(0,0); }
+      25% { transform: translate(2px,0); }
+      50% { transform: translate(0,0); }
+      75% { transform: translate(-2px,0); }
+      100% { transform: translate(0,0); }
+    }
+    .muted { opacity:.65; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    input[type="range"] { width: 220px; }
+    code { background:#f6f6f6; padding:2px 6px; border-radius: 8px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="hud">
+      <button id="toggleBtn">Light</button>
+      <button id="resetBtn" class="muted">Reset</button>
+
+      <div class="pill">State: <b id="state">OFF</b></div>
+      <div class="pill">Puffs: <b id="puffs">0</b></div>
+
+      <div class="row pill">
+        <span>HP</span>
+        <div class="bar" aria-label="health"><div id="hpFill"></div></div>
+        <b id="hpText">100</b>
+      </div>
+
+      <div class="row pill">
+        <span>Speed</span>
+        <input id="speed" type="range" min="40" max="260" value="110" />
+        <span><b id="speedVal">110</b>ms</span>
+      </div>
+
+      <div class="row pill">
+        <span>Background</span>
+        <select id="bgPreset" aria-label="background preset">
+          <option value="white">White</option>
+          <option value="paper">Paper</option>
+          <option value="sunset">Sunset</option>
+          <option value="gridLight">Grid (light)</option>
+          <option value="checkers">Checkers</option>
+          <option value="charcoal">Charcoal</option>
+          <option value="gridDark">Grid (dark)</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input id="bgColor" class="hidden" type="color" value="#ffffff" aria-label="custom background color" />
+      </div>
+    </div>
+
+    <div id="stage" class="stage">
+            <img class="frame show" src="cigarette_off.svg" alt="off" />
+      <img class="frame" src="cigarette_light_1.svg" alt="light1" />
+      <img class="frame" src="cigarette_light_2.svg" alt="light2" />
+      <img class="frame" src="cigarette_frame_1.svg" alt="smoke1" />
+      <img class="frame" src="cigarette_frame_2.svg" alt="smoke2" />
+      <img class="frame" src="cigarette_frame_3.svg" alt="smoke3" />
+      <img class="frame" src="cigarette_frame_4.svg" alt="smoke4" />
+      <img class="frame" src="cigarette_frame_5.svg" alt="smoke5" />
+      <img class="frame" src="cigarette_frame_6.svg" alt="smoke6" />
+      <img class="frame" src="cigarette_frame_7.svg" alt="smoke7" />
+      <img class="frame" src="cigarette_frame_8.svg" alt="smoke8" />
+
+
+      <!-- clickable region (game hotspot) -->
+      <div id="hitbox" class="hitbox" aria-label="hotspot"></div>
+
+      <div class="toast" id="toast"></div>
+      <div class="hint">
+        Tap/click the cigarette to <b>Light/Extinguish</b>.<br/>
+        Hold click (or hold on mobile) to <b>Puff</b>. Also: press <code>Space</code>.
+      </div>
+    </div>
+
+    <div class="pill muted">
+      Tip: if your browser blocks local SVG loading, run a local server: <code>python -m http.server</code> and open <code>http://localhost:8000</code>.
+    </div>
+  </div>
+
+  <script>
+
+    const frames = Array.from(document.querySelectorAll(".frame"));
+    const stage = document.getElementById("stage");
+    const hitbox = document.getElementById("hitbox");
+
+    const toggleBtn = document.getElementById("toggleBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const stateEl = document.getElementById("state");
+    const puffsEl = document.getElementById("puffs");
+    const hpFill = document.getElementById("hpFill");
+    const hpText = document.getElementById("hpText");
+
+    const speed = document.getElementById("speed");
+    const speedVal = document.getElementById("speedVal");
+    const toast = document.getElementById("toast");
+
+    const bgPreset = document.getElementById("bgPreset");
+    const bgColor = document.getElementById("bgColor");
+
+    // Frame indices:
+    // 0: off, 1: lighting1, 2: lighting2, 3..10: smoke loop (8 frames)
+    const OFF = 0, LIGHT1 = 1, LIGHT2 = 2, SMOKE_START = 3, SMOKE_COUNT = 8;
+
+    const game = {
+      state: "OFF", // OFF | LIGHTING | LIT | OUT
+      frame: 0,
+      puffs: 0,
+      hp: 100,
+      puffing: false,
+      puffTimer: null,
+      msPerFrame: 120,
+      smokeTick: 0,
+      lightingLock: false,
+      pointer: { downAt: 0, held: false, holdTimer: null, pointerId: null }
+    };
+
+    // ---------- Background presets ----------
+    const BG_PRESETS = {
+      white: { bg: "#ffffff", img: "none", size: "auto", pos: "0 0", repeat: "no-repeat" },
+      paper: {
+        bg: "#fbf7f0",
+        img: "radial-gradient(circle at 20% 20%, rgba(0,0,0,.05), transparent 35%), radial-gradient(circle at 80% 60%, rgba(0,0,0,.04), transparent 40%)",
+        size: "cover", pos: "center", repeat: "no-repeat"
+      },
+      sunset: {
+        bg: "#0b0b10",
+        img: "linear-gradient(140deg, rgba(255,214,10,.55), rgba(255,90,192,.45) 45%, rgba(80,120,255,.45))",
+        size: "cover", pos: "center", repeat: "no-repeat"
+      },
+      gridLight: {
+        bg: "#ffffff",
+        img: "repeating-linear-gradient(0deg, rgba(0,0,0,.06), rgba(0,0,0,.06) 1px, transparent 1px, transparent 24px), repeating-linear-gradient(90deg, rgba(0,0,0,.06), rgba(0,0,0,.06) 1px, transparent 1px, transparent 24px)",
+        size: "auto", pos: "0 0", repeat: "repeat"
+      },
+      checkers: {
+        bg: "#ffffff",
+        img: "linear-gradient(45deg, rgba(0,0,0,.06) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.06) 75%, rgba(0,0,0,.06)), linear-gradient(45deg, rgba(0,0,0,.06) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.06) 75%, rgba(0,0,0,.06))",
+        size: "48px 48px", pos: "0 0, 24px 24px", repeat: "repeat"
+      },
+      charcoal: {
+        bg: "#0b0b10",
+        img: "radial-gradient(circle at 20% 30%, rgba(255,255,255,.06), transparent 35%), radial-gradient(circle at 70% 60%, rgba(255,255,255,.05), transparent 45%)",
+        size: "cover", pos: "center", repeat: "no-repeat"
+      },
+      gridDark: {
+        bg: "#0b0b10",
+        img: "repeating-linear-gradient(0deg, rgba(255,255,255,.08), rgba(255,255,255,.08) 1px, transparent 1px, transparent 24px), repeating-linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,.08) 1px, transparent 1px, transparent 24px)",
+        size: "auto", pos: "0 0", repeat: "repeat"
+      }
+    };
+
+    function applyStageBackground({ bg, img, size, pos, repeat }) {
+      stage.style.setProperty("--stage-bg", bg ?? "#fff");
+      stage.style.setProperty("--stage-bg-img", img ?? "none");
+      stage.style.setProperty("--stage-bg-size", size ?? "auto");
+      stage.style.setProperty("--stage-bg-pos", pos ?? "0 0");
+      stage.style.setProperty("--stage-bg-repeat", repeat ?? "no-repeat");
+    }
+
+    function setBackgroundPreset(preset) {
+      const keyPreset = "svgMiniGame.bgPreset";
+      const keyColor = "svgMiniGame.bgColor";
+
+      if (preset === "custom") {
+        bgColor.classList.remove("hidden");
+        const c = bgColor.value || "#ffffff";
+        applyStageBackground({ bg: c, img: "none", size: "auto", pos: "0 0", repeat: "no-repeat" });
+        localStorage.setItem(keyPreset, "custom");
+        localStorage.setItem(keyColor, c);
+        return;
+      }
+
+      bgColor.classList.add("hidden");
+      const cfg = BG_PRESETS[preset] || BG_PRESETS.white;
+      applyStageBackground(cfg);
+      localStorage.setItem(keyPreset, preset);
+    }
+
+    // ---------- UI ----------
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove("show"), 1200);
+    }
+
+    function showFrame(idx) {
+      frames.forEach((f, i) => f.classList.toggle("show", i === idx));
+      game.frame = idx;
+    }
+
+    function renderHUD() {
+      stateEl.textContent = game.state;
+      puffsEl.textContent = String(game.puffs);
+      hpText.textContent = String(game.hp);
+      hpFill.style.width = `${game.hp}%`;
+      speedVal.textContent = String(game.msPerFrame);
+      toggleBtn.textContent = (game.state === "LIT") ? "Extinguish" : "Light";
+    }
+
+    function reset() {
+      stopPuffing();
+      game.state = "OFF";
+      game.hp = 100;
+      game.puffs = 0;
+      game.smokeTick = 0;
+      game.lightingLock = false;
+      showFrame(OFF);
+      renderHUD();
+      showToast("Reset");
+    }
+
+    // ---------- State transitions ----------
+    async function lightSequence(alsoStartPuff = false) {
+      if (game.lightingLock || game.state === "LIT" || game.state === "OUT") return;
+      game.lightingLock = true;
+      game.state = "LIGHTING";
+      renderHUD();
+
+      showFrame(LIGHT1);
+      await wait(140);
+      showFrame(LIGHT2);
+      await wait(140);
+
+      game.state = "LIT";
+      game.smokeTick = 0;
+      showFrame(SMOKE_START);
+      renderHUD();
+      showToast("Lit 🔥");
+
+      game.lightingLock = false;
+      if (alsoStartPuff) startPuffing();
+    }
+
+    function extinguish() {
+      if (game.state !== "LIT") return;
+      stopPuffing();
+      game.state = "OFF";
+      showFrame(OFF);
+      renderHUD();
+      showToast("Extinguished");
+    }
+
+    function burnout() {
+      stopPuffing();
+      game.state = "OUT";
+      showFrame(OFF);
+      renderHUD();
+      showToast("Burned out 💀");
+    }
+
+    function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+    // ---------- Puffing ----------
+    function puffOnce() {
+      if (game.state !== "LIT") return;
+
+      game.puffs += 1;
+      game.hp = Math.max(0, game.hp - 3);
+
+      // tiny hit feedback
+      stage.animate([{ transform: "translateY(0px)" }, { transform: "translateY(2px)" }, { transform: "translateY(0px)" }], {
+        duration: 140, iterations: 1
+      });
+
+      if (game.hp === 0) burnout();
+      renderHUD();
+    }
+
+    function startPuffing() {
+      if (game.puffing || game.state !== "LIT") return;
+      game.puffing = true;
+      puffOnce();
+      game.puffTimer = setInterval(() => puffOnce(), 260);
+    }
+
+    function stopPuffing() {
+      game.puffing = false;
+      if (game.puffTimer) clearInterval(game.puffTimer);
+      game.puffTimer = null;
+    }
+
+    // ---------- Main loop (smoke animation while lit) ----------
+    function loop() {
+      if (game.state === "LIT") {
+        const ms = game.puffing ? Math.max(30, game.msPerFrame * 0.55) : game.msPerFrame;
+        game.smokeTick += 1;
+        const next = SMOKE_START + (game.smokeTick % SMOKE_COUNT);
+        showFrame(next);
+        setTimeout(loop, ms);
+        return;
+      }
+      setTimeout(loop, 100);
+    }
+
+    // ---------- Interaction (tap/click vs hold) ----------
+    function clearHoldTimer(){
+      if (game.pointer.holdTimer) clearTimeout(game.pointer.holdTimer);
+      game.pointer.holdTimer = null;
+    }
+
+    function onPointerDown(e){
+      e.preventDefault();
+      hitbox.setPointerCapture?.(e.pointerId);
+      game.pointer.pointerId = e.pointerId;
+      game.pointer.downAt = performance.now();
+      game.pointer.held = false;
+
+      clearHoldTimer();
+      game.pointer.holdTimer = setTimeout(() => {
+        game.pointer.held = true;
+        if (game.state === "OFF") {
+          lightSequence(true);
+        } else if (game.state === "LIT") {
+          startPuffing();
+        }
+      }, 220);
+    }
+
+    function onPointerUp(){
+      clearHoldTimer();
+
+      if (game.pointer.held) {
+        stopPuffing();
+        return;
+      }
+
+      if (game.state === "OFF") {
+        lightSequence(false);
+      } else if (game.state === "LIT") {
+        extinguish();
+      }
+    }
+
+    function onPointerCancel(){
+      clearHoldTimer();
+      stopPuffing();
+    }
+
+    // UI buttons
+    toggleBtn.addEventListener("click", () => {
+      if (game.state === "OFF") lightSequence(false);
+      else if (game.state === "LIT") extinguish();
+    });
+    resetBtn.addEventListener("click", reset);
+
+    speed.addEventListener("input", () => {
+      game.msPerFrame = Number(speed.value);
+      renderHUD();
+    });
+
+    // background selector
+    bgPreset.addEventListener("change", () => {
+      setBackgroundPreset(bgPreset.value);
+      showToast(`Background: ${bgPreset.options[bgPreset.selectedIndex]?.text || bgPreset.value}`);
+    });
+    bgColor.addEventListener("input", () => {
+      if (bgPreset.value === "custom") setBackgroundPreset("custom");
+    });
+
+    // Stage hotspot
+    hitbox.addEventListener("pointerdown", onPointerDown);
+    hitbox.addEventListener("pointerup", onPointerUp);
+    hitbox.addEventListener("pointercancel", onPointerCancel);
+    hitbox.addEventListener("pointerleave", onPointerCancel);
+
+    // Keyboard
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (game.state === "OFF") lightSequence(true);
+        else if (game.state === "LIT") startPuffing();
+      }
+      if (e.key.toLowerCase() === "r") reset();
+    });
+    window.addEventListener("keyup", (e) => {
+      if (e.code === "Space") stopPuffing();
+    });
+
+    // init
+    {
+      const keyPreset = "svgMiniGame.bgPreset";
+      const keyColor = "svgMiniGame.bgColor";
+      const savedPreset = localStorage.getItem(keyPreset) || "white";
+      const savedColor = localStorage.getItem(keyColor) || "#ffffff";
+
+      bgColor.value = savedColor;
+      bgPreset.value = (savedPreset in BG_PRESETS || savedPreset === "custom") ? savedPreset : "white";
+      setBackgroundPreset(bgPreset.value);
+    }
+
+    showFrame(OFF);
+    renderHUD();
+    loop();
+    
+  </script>
+</body>
+</html>
