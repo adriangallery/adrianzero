@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Cigarette Mini (Canvas)</title>
+  <style>
+    :root {
+      --bg: #000;
+      --fg: #fff;
+      --muted: rgba(255,255,255,.7);
+      --panel: rgba(0,0,0,.55);
+      --border: rgba(255,255,255,.15);
+      --btn: rgba(255,255,255,.12);
+      --btnH: rgba(255,255,255,.18);
+    }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    #wrap { position: relative; width: 100%; height: 100%; overflow: hidden; }
+    canvas { width: 100%; height: 100%; display: block; }
+    .hud {
+      position: absolute; left: 12px; right: 12px; bottom: 12px;
+      display: flex; gap: 10px; align-items: center; justify-content: space-between;
+      padding: 10px 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--border);
+      backdrop-filter: blur(6px);
+    }
+    .left, .right { display:flex; gap:10px; align-items:center; }
+    .stat { font-size: 12px; color: var(--muted); }
+    .btn {
+      border: 1px solid var(--border); background: var(--btn); color: var(--fg);
+      padding: 8px 12px; border-radius: 12px; cursor: pointer; font-weight: 600;
+      user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:hover { background: var(--btnH); }
+    select {
+      border: 1px solid var(--border); background: rgba(0,0,0,.25); color: var(--fg);
+      padding: 8px 10px; border-radius: 12px;
+    }
+    .hint {
+      position: absolute; top: 12px; left: 12px;
+      padding: 8px 10px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border);
+      font-size: 12px; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="c"></canvas>
+    <div class="hint">Tap/click “Puff” (or press Space). Watch it burn down 🔥</div>
+    <div class="hud">
+      <div class="left">
+        <button class="btn" id="puffBtn">Puff</button>
+        <button class="btn" id="resetBtn">Reset</button>
+        <label class="stat">
+          BG
+          <select id="bgSel">
+            <option value="void">Void</option>
+            <option value="neon">Neon</option>
+            <option value="paper">Paper</option>
+            <option value="grid">Grid</option>
+          </select>
+        </label>
+      </div>
+      <div class="right">
+        <div class="stat">Puffs left: <span id="puffs">10</span></div>
+        <div class="stat">Burn: <span id="burn">0%</span></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // Embedded PNG frames (smoke + cigarette body) – no external assets.
+  const FRAMES = [{"smoke": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAJCAYAAAARml2dAAAAQ0lEQVR42n3NsRGAIBQE0f20ZDvG1EGDxJazJsoAIhvezJtDPViU+CkBvKrX0Q8RUdUTuBqd1fDxjPlzqJal2KYWgBvXaSXqjlkmvQAAAABJRU5ErkJggg==", "ox": 25, "oy": 11, "w": 6, "h": 9}, "body": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAABCAYAAADjAO9DAAAAIUlEQVR42mOskLFqYGJkqpd0/MWQ07+MgYGJgYHhPwIDAIZNB8hjvY1HAAAAAElFTkSuQmCC", "ox": 21, "oy": 20, "w": 8, "h": 1}}, {"smoke": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAKCAYAAACXDi8zAAAASklEQVR42n2OwQ2AMAwDz9mGd+Zgjc7BgszBGO6HSlVouVdkR7YBsJ0Ugh2rbwBVQ9INEON4OT4JtnMWa3kbZpTs52/lZTu1mX92mKMka1a1rXwAAAAASUVORK5CYII=", "ox": 25, "oy": 10, "w": 6, "h": 10}, "body": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAABCAYAAADjAO9DAAAAIUlEQVR42mOskLFqYGJkqpd0/MWQ07+MgYGJgYHhPwIDAIZNB8hjvY1HAAAAAElFTkSuQmCC", "ox": 21, "oy": 20, "w": 8, "h": 1}}, {"smoke": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAKCAYAAAB4zEQNAAAASElEQVR42oWNsRGAMAzE9GxDnZ3Y1jUjMIbT4DtD7Itb6WUA3H1QXQt2wvGXsqgMJNkLT+Au81H4ZNPyWn6GADwljLQk65YATK6LLKlTCmbvAAAAAElFTkSuQmCC", "ox": 24, "oy": 10, "w": 7, "h": 10}, "body": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAABCAYAAADjAO9DAAAAIUlEQVR42mOskLFqYGJkqpd0/MWQ07+MgYGJgYHhPwIDAIZNB8hjvY1HAAAAAElFTkSuQmCC", "ox": 21, "oy": 20, "w": 8, "h": 1}}, {"smoke": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAKCAYAAACXDi8zAAAAP0lEQVR42mNgYGBg+P//vzEDOoAJYkhiVY1PFyOapCYDA8N1RkbGs1h1oBj///9/Yyieic2uBhibCZdDcOoCAIL0NdTSom1IAAAAAElFTkSuQmCC", "ox": 25, "oy": 10, "w": 6, "h": 10}, "body": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAABCAYAAADjAO9DAAAAIUlEQVR42mOskLFqYGJkqpd0/MWQ07+MgYGJgYHhPwIDAIZNB8hjvY1HAAAAAElFTkSuQmCC", "ox": 21, "oy": 20, "w": 8, "h": 1}}, {"smoke": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAJCAYAAAD+WDajAAAATUlEQVR42n2OwQmAQBADJ9vS1WEHvq3j6rCn7cBe4kfhkF3zCsxAAoDtQZUWrMIrlfJH2AHUTUjKWKGkfOoBEMWFDTj/Dk7bIxp+Scob0REoJ09e5PkAAAAASUVORK5CYII=", "ox": 24, "oy": 11, "w": 7, "h": 9}, "body": {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAABCAYAAADjAO9DAAAAIUlEQVR42mOskLFqYGJkqpd0/MWQ07+MgYGJgYHhPwIDAIZNB8hjvY1HAAAAAElFTkSuQmCC", "ox": 21, "oy": 20, "w": 8, "h": 1}}];
+
+  const EMBER = { r: 255, g: 19, b: 0, a: 255 };
+  const SPRITE_W = 37, SPRITE_H = 37;
+
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: true });
+  ctx.imageSmoothingEnabled = false;
+
+  const puffBtn = document.getElementById('puffBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const bgSel = document.getElementById('bgSel');
+  const puffsEl = document.getElementById('puffs');
+  const burnEl = document.getElementById('burn');
+
+  // Load images
+  const loaded = FRAMES.map(f => {
+    const smoke = new Image();
+    const body = new Image();
+    smoke.src = f.smoke.src;
+    body.src  = f.body.src;
+    return {
+      smokeImg: smoke, bodyImg: body,
+      smoke: f.smoke, body: f.body
+    };
+  });
+
+  let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  function resize() {
+    dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    const rect = canvas.getBoundingClientRect();
+    canvas.width  = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dpr, dpr);
+    ctx.imageSmoothingEnabled = false;
+  }
+  window.addEventListener('resize', resize, { passive: true });
+  resize();
+
+  // Game state
+  const MAX_PUFFS = 10;
+  let puffsLeft = MAX_PUFFS;
+  let burnLevel = 0; // 0..1
+  let frame = 0;
+  let lastT = 0;
+  const FPS = 7; // smoke speed
+
+  function setHUD() {
+    puffsEl.textContent = String(puffsLeft);
+    burnEl.textContent = Math.round(burnLevel * 100) + '%';
+  }
+  setHUD();
+
+  function reset() {
+    puffsLeft = MAX_PUFFS;
+    burnLevel = 0;
+    frame = 0;
+    setHUD();
+  }
+
+  function puff() {
+    if (puffsLeft <= 0) return;
+    puffsLeft--;
+    burnLevel = 1 - (puffsLeft / MAX_PUFFS);
+    setHUD();
+  }
+
+  puffBtn.addEventListener('click', puff);
+  resetBtn.addEventListener('click', reset);
+  canvas.addEventListener('pointerdown', (e) => {
+    // Optional: tap canvas to puff
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    // Tap upper area to puff (avoid accidental UI taps)
+    if (y < rect.height * 0.75) puff();
+  }, { passive: true });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      puff();
+    }
+  });
+
+  function drawBackground(w, h, mode) {
+    if (mode === 'void') {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0,0,w,h);
+      return;
+    }
+    if (mode === 'paper') {
+      ctx.fillStyle = '#0b0b0b';
+      ctx.fillRect(0,0,w,h);
+      // subtle paper-ish noise grid
+      ctx.globalAlpha = 0.06;
+      ctx.fillStyle = '#fff';
+      const step = 14;
+      for (let y=0; y<h; y+=step) {
+        for (let x=0; x<w; x+=step) {
+          if (((x/step + y/step) | 0) % 3 === 0) ctx.fillRect(x, y, 1, 1);
+        }
+      }
+      ctx.globalAlpha = 1;
+      return;
+    }
+    if (mode === 'grid') {
+      ctx.fillStyle = '#050505';
+      ctx.fillRect(0,0,w,h);
+      ctx.globalAlpha = 0.14;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      const step = 24;
+      for (let x=0; x<w; x+=step) {
+        ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,h); ctx.stroke();
+      }
+      for (let y=0; y<h; y+=step) {
+        ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(w,y+0.5); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      return;
+    }
+    // neon
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,w,h);
+    ctx.globalAlpha = 0.10;
+    ctx.fillStyle = '#0ff';
+    ctx.fillRect(0,0,w,h*0.25);
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = '#f0f';
+    ctx.fillRect(0,h*0.65,w,h*0.35);
+    ctx.globalAlpha = 1;
+  }
+
+  function render(t) {
+    const w = canvas.getBoundingClientRect().width;
+    const h = canvas.getBoundingClientRect().height;
+
+    // animate smoke frames
+    if (!lastT) lastT = t;
+    const dt = (t - lastT) / 1000;
+    if (dt >= 1 / FPS) {
+      frame = (frame + 1) % loaded.length;
+      lastT = t;
+    }
+
+    drawBackground(w, h, bgSel.value);
+
+    // Place sprite center-ish
+    const scale = Math.max(10, Math.min(18, Math.floor(Math.min(w, h) / 30))); // responsive pixel scale
+    const x0 = Math.floor(w/2 - (SPRITE_W * scale)/2);
+    const y0 = Math.floor(h/2 - (SPRITE_H * scale)/2) - Math.floor(scale*2);
+
+    // Draw smoke (full)
+    const f = loaded[frame];
+    if (f.smokeImg.complete) {
+      ctx.drawImage(
+        f.smokeImg,
+        x0 + f.smoke.ox * scale,
+        y0 + f.smoke.oy * scale,
+        f.smoke.w * scale,
+        f.smoke.h * scale
+      );
+    }
+
+    // Draw body (consumable)
+    if (f.bodyImg.complete) {
+      const bw = f.body.w;            // 8
+      const bh = f.body.h;            // 1
+      const minRemain = 2;
+      const remain = Math.max(minRemain, Math.round(bw * (1 - burnLevel))); // 8..2
+      // source crop from left side to keep the filter side intact
+      ctx.drawImage(
+        f.bodyImg,
+        0, 0, remain, bh,
+        x0 + f.body.ox * scale,
+        y0 + f.body.oy * scale,
+        remain * scale,
+        bh * scale
+      );
+
+      // Ember pixel shifts left as it burns down
+      const emberX = f.body.ox + remain; // original was 21 + 8 = 29
+      const emberY = f.body.oy;         // 20
+      ctx.fillStyle = `rgba(${EMBER.r},${EMBER.g},${EMBER.b},${EMBER.a/255})`;
+      ctx.fillRect(
+        x0 + emberX * scale,
+        y0 + emberY * scale,
+        scale,
+        scale
+      );
+    }
+
+    // If finished, draw small “dead” indicator
+    if (puffsLeft === 0) {
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 14px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+      ctx.fillText('Finished.', 12, 22);
+      ctx.globalAlpha = 1;
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
