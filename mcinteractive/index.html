@@ -178,9 +178,13 @@
       hudLives.textContent = String(lives);
     }
 
+    function isReady(img) {
+      return img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
+    }
+
     function drawBackground(w, h) {
       const img = assets.back;
-      if (!img || !img.complete) {
+      if (!isReady(img)) {
         ctx.fillStyle = '#000';
         ctx.fillRect(0,0,w,h);
         return;
@@ -197,7 +201,7 @@
       const img = player.facing >= 0 ? assets.managerR : assets.managerL;
       const laneWidth = w / lanes;
       const x = laneWidth * player.lane + laneWidth / 2 - 30;
-      if (img && img.complete) {
+      if (isReady(img)) {
         ctx.drawImage(img, x, player.y, 60, 60);
       } else {
         ctx.fillStyle = '#fff';
@@ -210,7 +214,7 @@
       for (const it of items) {
         const img = assets[it.kind];
         const x = laneWidth * it.lane + laneWidth / 2 - 20;
-        if (img && img.complete) ctx.drawImage(img, x, it.y, 40, 40);
+        if (isReady(img)) ctx.drawImage(img, x, it.y, 40, 40);
         else { ctx.fillStyle = '#ff0'; ctx.fillRect(x, it.y, 40, 40); }
       }
     }
