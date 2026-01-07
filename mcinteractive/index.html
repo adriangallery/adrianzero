@@ -25,6 +25,7 @@
       display: flex; gap: 10px; align-items: center; justify-content: space-between;
       padding: 10px 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--border);
       backdrop-filter: blur(8px);
+      z-index: 3;
     }
     .hud .stat { font-size: 12px; color: var(--muted); }
     .hud .value { color: var(--fg); font-weight: 700; }
@@ -33,6 +34,7 @@
       display: flex; gap: 10px; align-items: center; justify-content: space-between;
       padding: 10px 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--border);
       backdrop-filter: blur(8px);
+      z-index: 3;
     }
     .btn {
       border: 1px solid var(--border); background: var(--btn); color: var(--fg);
@@ -46,6 +48,7 @@
       position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 10px; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); text-align: center;
       padding: 20px;
+      z-index: 4;
     }
     .overlay h1 { margin: 0; font-size: 24px; letter-spacing: 0.5px; }
     .overlay p { margin: 0; color: var(--muted); max-width: 520px; }
@@ -131,6 +134,7 @@
       ctx.scale(dpr, dpr);
       ctx.imageSmoothingEnabled = false;
       player.y = rect.height - 120;
+      if (!running) renderScene(false);
     }
 
     function randLane() {
@@ -209,6 +213,15 @@
         if (img && img.complete) ctx.drawImage(img, x, it.y, 40, 40);
         else { ctx.fillStyle = '#ff0'; ctx.fillRect(x, it.y, 40, 40); }
       }
+    }
+
+    function renderScene(includeItems = true) {
+      const w = canvas.getBoundingClientRect().width;
+      const h = canvas.getBoundingClientRect().height;
+      ctx.clearRect(0,0,w,h);
+      drawBackground(w,h);
+      drawPlayer(w);
+      if (includeItems) drawItems(w);
     }
 
     function collide(it, w) {
@@ -300,6 +313,7 @@
     preload().then(() => {
       resize();
       overlay.querySelector('p').textContent = 'Mini juego offline. Presiona Start para jugar.';
+      renderScene(false);
     });
   })();
   </script>
