@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>MCINTERACTIVE — Offline NFT Mini Game</title>
+  <title>McORDER DASH</title>
   <style>
     :root {
       --bg: #0b0b0b;
@@ -77,8 +77,8 @@
     </div>
 
     <div class="overlay" id="overlay">
-      <h1>MCINTERACTIVE</h1>
-      <p>Mini juego offline, listo para <code>animation_url</code> en OpenSea. Atrapa los ítems, evita que caigan. Flechas o botones para moverte.</p>
+      <h1>McORDER DASH</h1>
+      <p>Adrian LAB's first interactive NFT</p>
       <button class="btn" id="overlayBtn">Start</button>
     </div>
   </div>
@@ -138,7 +138,7 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
       ctx.imageSmoothingEnabled = false;
-      player.y = availableHeight() - 120;
+      player.y = availableHeight() - 105;
       if (!running) renderScene(false);
     }
 
@@ -317,7 +317,7 @@
 
     preload().then(() => {
       resize();
-      overlay.querySelector('p').textContent = 'Mini juego offline. Presiona Start para jugar.';
+      overlay.querySelector('p').textContent = "Adrian LAB's first interactive NFT";
       renderScene(false);
     });
   })();
