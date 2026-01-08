@@ -54,7 +54,7 @@
     .overlay p { margin: 0; color: var(--muted); max-width: 520px; }
     .hidden { display: none; }
     @media (max-width: 640px) {
-      .hud, .controls { flex-direction: column; gap: 8px; align-items: stretch; }
+      .controls { flex-direction: column; gap: 8px; align-items: stretch; }
       .controls .btn { width: 100%; text-align: center; }
     }
   </style>
@@ -123,7 +123,6 @@
     const overlayBtn = document.getElementById('overlayBtn');
     const leftBtn = document.getElementById('leftBtn');
     const rightBtn = document.getElementById('rightBtn');
-    let musicStarted = false;
 
     function availableHeight() {
       const rect = canvas.getBoundingClientRect();
@@ -139,7 +138,7 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
       ctx.imageSmoothingEnabled = false;
-      player.y = availableHeight() - 80;
+      player.y = availableHeight() - 120;
       if (!running) renderScene(false);
     }
 
@@ -176,11 +175,8 @@
       overlay.classList.add('hidden');
       lastTime = performance.now();
       updateHUD();
-      if (!musicStarted) {
-        musicStarted = true;
-        music.currentTime = 0;
-        music.play().catch(() => {});
-      }
+      music.currentTime = 0;
+      music.play().catch(() => {});
       requestAnimationFrame(loop);
     }
 
@@ -211,12 +207,12 @@
     function drawPlayer(w) {
       const img = player.facing >= 0 ? assets.managerR : assets.managerL;
       const laneWidth = w / lanes;
-      const x = laneWidth * player.lane + laneWidth / 2 - 30;
+      const x = laneWidth * player.lane + laneWidth / 2 - 60;
       if (isReady(img)) {
-        ctx.drawImage(img, x, player.y, 60, 60);
+        ctx.drawImage(img, x, player.y, 120, 120);
       } else {
         ctx.fillStyle = '#fff';
-        ctx.fillRect(x, player.y, 60, 60);
+        ctx.fillRect(x, player.y, 120, 120);
       }
     }
 
@@ -242,12 +238,12 @@
     function collide(it, w) {
       const laneWidth = w / lanes;
       const px = laneWidth * player.lane + laneWidth / 2;
-      const py = player.y + 20;
+      const py = player.y + 60;
       const ix = laneWidth * it.lane + laneWidth / 2;
       const iy = it.y + 20;
       const dx = Math.abs(px - ix);
       const dy = Math.abs(py - iy);
-      return dx < 30 && dy < 30;
+      return dx < 45 && dy < 45;
     }
 
     function loop(ts) {
@@ -283,6 +279,7 @@
           lives -= 1;
           if (lives <= 0) {
             running = false;
+            music.pause();
             overlay.classList.remove('hidden');
             overlay.querySelector('p').textContent = 'Game over. Score: ' + score;
           }
