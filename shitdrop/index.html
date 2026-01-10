@@ -359,7 +359,9 @@
                 const container = document.getElementById('previousDrops');
                 if (!container) return;
                 container.innerHTML = '';
-                list
+                // Exclude the first drop (current mint) from previous drops
+                const previousDrops = list.slice(1);
+                previousDrops
                   .sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')))
                   .forEach(drop => {
                     const col = document.createElement('div');
