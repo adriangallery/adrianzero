@@ -3,6 +3,14 @@
   "updatedAt": "2025-11-20T00:00:00Z",
   "drops": [
     {
+      "id": 1168,
+      "title": "SMOKING CIGARETTE",
+      "short": "a new animated trait for your ZERO",
+      "image": "https://adrianzero.com/shitdrop/images/1168.gif",
+      "opensea": "https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/1168",
+      "date": "2025-11-20"
+    },
+    {
       "id": 1123,
       "title": "CensorPACK",
       "short": "Contains 4 censor traits. Unlock the secrets inside.",
