@@ -1292,6 +1292,26 @@ class TraitLABDataManager {
             
             const newTokens = loadResult.tokens;
             
+            // 🔍 FIX: Verificar si el batch tiene menos tokens de los esperados y hasMore es false
+            // Esto puede indicar que hay más tokens disponibles pero Alchemy no los está devolviendo correctamente
+            const batchSizeExpected = batchSize || 100;
+            const receivedLessThanExpected = newTokens.length > 0 && newTokens.length < batchSizeExpected;
+            const hasMoreIsFalse = !loadResult.hasMore;
+            
+            if (hasMoreIsFalse && receivedLessThanExpected) {
+                console.warn(`⚠️ ADVERTENCIA: Batch recibido con menos tokens de los esperados (${newTokens.length} < ${batchSizeExpected}) y hasMore=false`);
+                console.warn(`🔍 Esto puede indicar que hay más tokens disponibles pero Alchemy no los está devolviendo correctamente`);
+                console.warn(`📊 Total traits en cache actualmente: ${this.cache.adrianLab?.traits?.length || 0}`);
+                
+                // Si recibimos menos tokens de los esperados, puede haber más disponibles
+                // La lógica en zero.js ya maneja este caso manteniendo hasMore=true cuando se reciben menos tokens
+                // Aquí solo actualizamos hasMore para que el sistema intente cargar más en el siguiente batch
+                // Mantenemos el nextPageKey original (que puede ser null) para que el sistema maneje la paginación correctamente
+                console.warn(`🔧 Actualizando hasMore a true para permitir que el sistema intente cargar más en el siguiente batch`);
+                loadResult.hasMore = true;
+                // No cambiamos nextPageKey - lo mantenemos como está para que el sistema maneje la paginación
+            }
+            
             // 🚨 FIX: Verificar si el pageKey cambió antes de actualizar
             const pageKeyChanged = pageKey !== loadResult.nextPageKey;
             console.log(`🔗 pageKey in: ${pageKey ? (pageKey.length > 100 ? pageKey.substring(0, 100) + '...' : pageKey) : 'null'}`);
@@ -1365,6 +1385,12 @@ class TraitLABDataManager {
                 
                 console.log(`✅ Batch cargado: ${newTokens.length} nuevos tokens, hasMore: ${loadResult.hasMore}`);
                 console.log(`📊 Estado después de cargar: pageKey=${loadResult.nextPageKey ? loadResult.nextPageKey.substring(0, 50) + '...' : 'null'}, seenPageKeys=${this.paginationState.traits.seenPageKeys.size}`);
+                
+                // 🔍 LOGGING MEJORADO: Información sobre el batch recibido
+                if (receivedLessThanExpected) {
+                    console.warn(`⚠️ BATCH PEQUEÑO DETECTADO: Se recibieron ${newTokens.length} tokens cuando se esperaban ${batchSizeExpected}`);
+                    console.warn(`📊 hasMore después de verificación: ${loadResult.hasMore}`);
+                }
                 
                 // Agregar nuevos traits al cache existente
                 // 🚨 FIX: También actualizar serums y floppys de los nuevos batches

@@ -451,6 +451,18 @@ class ZeroManager {
                 // 🚨 FIX: Verificar si se alcanzó el límite ANTES de actualizar el pageKey
                 const limitReached = allNfts.length >= MAX_TOKENS;
                 
+                // 🔍 FIX: Verificar si el batch tiene menos tokens de los esperados
+                // Si tokensInPage < pageSize y newPageKey es null, puede haber más tokens disponibles
+                const pageSizeRequested = safePageSize;
+                const receivedLessThanExpected = tokensInPage > 0 && tokensInPage < pageSizeRequested && !newPageKey;
+                
+                if (receivedLessThanExpected && isBatchMode) {
+                    console.warn(`⚠️ ADVERTENCIA: Batch recibido con menos tokens de los esperados (${tokensInPage} < ${pageSizeRequested}) y pageKey=null`);
+                    console.warn(`🔍 Esto puede indicar que hay más tokens disponibles pero Alchemy no los está devolviendo correctamente`);
+                    // En modo batch, si recibimos menos tokens de los esperados, puede haber más disponibles
+                    // No establecer hasMore a false inmediatamente, dejar que el sistema intente cargar más
+                }
+                
                 // NUEVA VALIDACIÓN: Verificar si el pageKey es diferente al anterior
                 if (newPageKey && newPageKey === previousPageKey) {
                     console.warn('⚠️ PageKey duplicado detectado, deteniendo paginación para evitar bucle infinito');
@@ -468,7 +480,14 @@ class ZeroManager {
                     }
                     // 🚨 FIX: Actualizar pageKey con el newPageKey de la respuesta ANTES de verificar el límite
                     pageKey = newPageKey;
-                    hasMore = !!pageKey;
+                    // 🔍 FIX: En modo batch, si recibimos menos tokens de los esperados, mantener hasMore como true
+                    // para permitir que el sistema intente cargar más en el siguiente batch
+                    if (isBatchMode && receivedLessThanExpected && !newPageKey) {
+                        console.warn(`🔧 MODO BATCH: Manteniendo hasMore=true temporalmente para permitir verificación adicional`);
+                        hasMore = true; // Mantener hasMore como true para permitir verificación
+                    } else {
+                        hasMore = !!pageKey;
+                    }
                 }
                 
                 previousPageKey = newPageKey;
@@ -526,8 +545,15 @@ class ZeroManager {
                     console.log(`🔗 Modo batch: Límite alcanzado (${allNfts.length}/${MAX_TOKENS}), pero hay más tokens. nextPageKey=${nextPageKey ? (nextPageKey.length > 100 ? nextPageKey.substring(0, 100) + '...' : nextPageKey) : 'null'}`);
                 } else if (hasMore && allNfts.length < MAX_TOKENS) {
                     // No se alcanzó el límite pero hay más páginas
-                    nextPageKey = pageKey;
-                    console.log(`🔗 Modo batch: No se alcanzó límite (${allNfts.length}/${MAX_TOKENS}), hay más páginas. nextPageKey=${nextPageKey ? (nextPageKey.length > 100 ? nextPageKey.substring(0, 100) + '...' : nextPageKey) : 'null'}`);
+                    // 🔍 FIX: Si pageKey es null pero hasMore es true (debido a nuestra verificación),
+                    // usar null como nextPageKey para permitir verificación adicional
+                    if (pageKey === null) {
+                        console.log(`🔗 Modo batch: hasMore=true pero pageKey=null (verificación adicional activada). nextPageKey=null`);
+                        nextPageKey = null;
+                    } else {
+                        nextPageKey = pageKey;
+                        console.log(`🔗 Modo batch: No se alcanzó límite (${allNfts.length}/${MAX_TOKENS}), hay más páginas. nextPageKey=${nextPageKey ? (nextPageKey.length > 100 ? nextPageKey.substring(0, 100) + '...' : nextPageKey) : 'null'}`);
+                    }
                 } else {
                     // No hay más páginas
                     nextPageKey = null;
