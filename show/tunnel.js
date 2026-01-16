@@ -147,10 +147,17 @@ class InfiniteTunnel {
     }
 
     async loadAssets() {
+            // Ensure imagePath is defined (fallback for old configs)
+            const imagePath = CONFIG.imagePath || 'public/rendered-toggles';
+            if (!CONFIG.imagePath) {
+                console.warn('⚠️ CONFIG.imagePath is undefined, using fallback:', imagePath);
+            }
         // Load image list (similar to showcase)
         try {
-            const response = await fetch(
-                `https://api.github.com/repos/${CONFIG.githubRepo}/contents/${CONFIG.githubBranch}/public/rendered-toggles`
+                        const apiUrl = `https://api.github.com/repos/${CONFIG.githubRepo}/contents/${imagePath}?ref=${CONFIG.githubBranch}`;
+            console.log('🔍 Loading assets from:', apiUrl);
+            const response = await fetch(apiUrl);
+                `https://api.github.com/repos/${CONFIG.githubRepo}/contents/${imagePath}?ref=${CONFIG.githubBranch}`
             );
             const files = await response.json();
             
