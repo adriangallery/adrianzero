@@ -6,6 +6,7 @@ export const CONFIG = {
     // GitHub repository configuration (same as showcase)
     githubRepo: 'adriangallery/AdrianLAB',
     githubBranch: 'd05193bc1dbc1c577c051656111a3c07281ba019',
+    imagePath: 'public/rendered-toggles',
     baseImageUrl: 'https://raw.githubusercontent.com/adriangallery/AdrianLAB/d05193bc1dbc1c577c051656111a3c07281ba019/public/rendered-toggles',
     
     // Tunnel settings
@@ -14,10 +15,10 @@ export const CONFIG = {
         segments: 32,          // Number of segments around the tunnel
         segmentLength: 10,     // Length of each segment
         numSegments: 20,       // Number of segments to keep in memory
-        speed: 0.5,            // Base speed of movement
-        minSpeed: 0.1,         // Minimum speed
-        maxSpeed: 3.0,         // Maximum speed
-        speedStep: 0.1,        // Speed increment/decrement step
+        speed: 0.05,            // Base speed of movement
+        minSpeed: 0.01,         // Minimum speed
+        maxSpeed: 0.5,         // Maximum speed
+        speedStep: 0.01,        // Speed increment/decrement step
     },
 
     // Camera settings
