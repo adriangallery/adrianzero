@@ -147,23 +147,32 @@ class InfiniteTunnel {
     }
 
     async loadAssets() {
+        // Load image list (same way as showcase)
+        try {
             // Ensure imagePath is defined (fallback for old configs)
             const imagePath = CONFIG.imagePath || 'public/rendered-toggles';
             if (!CONFIG.imagePath) {
                 console.warn('⚠️ CONFIG.imagePath is undefined, using fallback:', imagePath);
             }
-        // Load image list (similar to showcase)
-        try {
-                        const apiUrl = `https://api.github.com/repos/${CONFIG.githubRepo}/contents/${imagePath}?ref=${CONFIG.githubBranch}`;
+            const apiUrl = `https://api.github.com/repos/${CONFIG.githubRepo}/contents/${imagePath}?ref=${CONFIG.githubBranch}`;
             console.log('🔍 Loading assets from:', apiUrl);
+            
             const response = await fetch(apiUrl);
-                `https://api.github.com/repos/${CONFIG.githubRepo}/contents/${imagePath}?ref=${CONFIG.githubBranch}`
-            );
+            if (!response.ok) {
+                throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+            }
+            
             const files = await response.json();
             
-            // Filter for image files
+            // Check if files is an array
+            if (!Array.isArray(files)) {
+                console.error('GitHub API returned non-array:', files);
+                throw new Error('Invalid response format from GitHub API');
+            }
+            
+            // Filter for image files (PNG only, like showcase)
             const imageFiles = files
-                .filter(file => /\.(png|jpg|jpeg|gif|webp)$/i.test(file.name))
+                .filter(file => file.name && file.name.endsWith('.png'))
                 .map(file => ({
                     name: file.name,
                     url: `${CONFIG.baseImageUrl}/${file.name}`,
@@ -171,10 +180,18 @@ class InfiniteTunnel {
                 }));
             
             this.assets = imageFiles;
-            console.log(`Loaded ${this.assets.length} assets`);
+            console.log(`Loaded ${this.assets.length} assets from GitHub`);
             
-            // Preload first batch of textures
-            await this.preloadTextures(0, CONFIG.assets.preloadCount);
+            if (this.assets.length === 0) {
+                console.warn('No assets loaded, using placeholder');
+                this.assets = [{
+                    name: 'placeholder',
+                    url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwRDM2MiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+QURSSUFOWkVSTzwvdGV4dD48L3N2Zz4='
+                }];
+            } else {
+                // Preload first batch of textures
+                await this.preloadTextures(0, CONFIG.assets.preloadCount);
+            }
         } catch (error) {
             console.error('Error loading assets:', error);
             // Use placeholder if loading fails
@@ -184,7 +201,6 @@ class InfiniteTunnel {
             }];
         }
     }
-
     async preloadTextures(startIndex, count) {
         const endIndex = Math.min(startIndex + count, this.assets.length);
         const promises = [];
