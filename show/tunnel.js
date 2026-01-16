@@ -23,6 +23,7 @@ class InfiniteTunnel {
         this.animationId = null;
         this.particles = null;
         this.particleSystem = null;
+        this.particleSprites = []; // Array of sprites with images
         
         this.init();
     }
@@ -43,7 +44,7 @@ class InfiniteTunnel {
             this.createTunnel();
             
             // Create particles
-            this.createParticles();
+            await this.createParticles();
             
             // Setup UI
             this.setupUI();
@@ -254,7 +255,7 @@ class InfiniteTunnel {
         this.currentZ = numSegments * segmentLength;
     }
 
-    createParticles() {
+    async createParticles() {
         const particleCount = 1000;
         const particles = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
