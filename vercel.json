@@ -8,6 +8,14 @@
   ],
   "routes": [
     {
+      "src": "/show",
+      "dest": "/SHOW/index.html"
+    },
+    {
+      "src": "/show/(.*)",
+      "dest": "/SHOW/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1"
     }
