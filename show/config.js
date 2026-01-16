@@ -54,6 +54,15 @@ export const CONFIG = {
         preloadCount: 10,
     },
 
+    // Particle sprites (images)
+    particles: {
+        count: 200,              // Number of particle sprites with images
+        size: 2.0,               // Size of each sprite
+        minRadius: 3,            // Minimum distance from center
+        maxRadius: 8,            // Maximum distance from center
+        spreadZ: 200,            // Spread along Z axis
+    },
+
     // UI settings
     ui: {
         showInfo: true,

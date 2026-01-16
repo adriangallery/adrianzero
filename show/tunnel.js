@@ -242,58 +242,71 @@ class InfiniteTunnel {
     }
 
     createTunnel() {
-        const { radius, segments, segmentLength, numSegments } = CONFIG.tunnel;
-        
-        // Create initial tunnel segments
-        for (let i = 0; i < numSegments; i++) {
-            const z = i * segmentLength;
-            const segment = this.createTunnelSegment(z);
-            this.tunnelSegments.push(segment);
-            this.scene.add(segment);
-        }
-        
+        // Tunnel is now hidden - only particle sprites with images are visible
+        // Keep this method for compatibility but don't create any segments
+        const { numSegments, segmentLength } = CONFIG.tunnel;
         this.currentZ = numSegments * segmentLength;
     }
 
     async createParticles() {
-        const particleCount = 1000;
-        const particles = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
+        const particleCount = CONFIG.particles.count;
+        this.particleSprites = [];
         
-        const color = new THREE.Color();
-        color.setHex(CONFIG.lighting.point.color);
-        
-        for (let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-            
-            // Random positions in tunnel
-            const angle = Math.random() * Math.PI * 2;
-            const radius = CONFIG.tunnel.radius * (0.3 + Math.random() * 0.7);
-            positions[i3] = Math.cos(angle) * radius;
-            positions[i3 + 1] = (Math.random() - 0.5) * 20;
-            positions[i3 + 2] = Math.random() * 200 - 100;
-            
-            // Colors
-            const intensity = 0.5 + Math.random() * 0.5;
-            colors[i3] = color.r * intensity;
-            colors[i3 + 1] = color.g * intensity;
-            colors[i3 + 2] = color.b * intensity;
+        // If no assets loaded, create placeholder sprites
+        if (this.assets.length === 0) {
+            console.warn('No assets loaded, creating placeholder sprites');
+            return;
         }
         
-        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        // Create sprites with images
+        for (let i = 0; i < particleCount; i++) {
+            // Select an asset (cycle through available assets)
+            const assetIndex = i % this.assets.length;
+            const asset = this.assets[assetIndex];
+            
+            // Load texture for this sprite
+            let texture = this.textureCache.get(asset.url);
+            if (!texture) {
+                try {
+                    texture = await this.loadTexture(asset.url);
+                } catch (error) {
+                    console.warn(`Failed to load texture for ${asset.name}:`, error);
+                    continue; // Skip this sprite if texture fails to load
+                }
+            }
+            
+            // Create sprite material
+            const spriteMaterial = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                opacity: 1.0,
+                depthTest: true,
+                depthWrite: false,
+            });
+            
+            // Create sprite
+            const sprite = new THREE.Sprite(spriteMaterial);
+            
+            // Set sprite size
+            sprite.scale.set(CONFIG.particles.size, CONFIG.particles.size, 1);
+            
+            // Random position in tunnel
+            const angle = Math.random() * Math.PI * 2;
+            const radius = CONFIG.particles.minRadius + 
+                          Math.random() * (CONFIG.particles.maxRadius - CONFIG.particles.minRadius);
+            sprite.position.x = Math.cos(angle) * radius;
+            sprite.position.y = (Math.random() - 0.5) * 20;
+            sprite.position.z = Math.random() * CONFIG.particles.spreadZ - CONFIG.particles.spreadZ / 2;
+            
+            // Store asset index for recycling
+            sprite.userData.assetIndex = assetIndex;
+            sprite.userData.originalZ = sprite.position.z;
+            
+            this.particleSprites.push(sprite);
+            this.scene.add(sprite);
+        }
         
-        const particleMaterial = new THREE.PointsMaterial({
-            size: 0.1,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.6,
-            blending: THREE.AdditiveBlending,
-        });
-        
-        this.particleSystem = new THREE.Points(particles, particleMaterial);
-        this.scene.add(this.particleSystem);
+        console.log(`✅ Created ${this.particleSprites.length} particle sprites with images`);
     }
 
     createTunnelSegment(z) {
@@ -380,56 +393,48 @@ class InfiniteTunnel {
             this.pointLight.position.z = this.camera.position.z;
         }
         
-        // Update particles
-        if (this.particleSystem) {
-            const positions = this.particleSystem.geometry.attributes.position.array;
-            for (let i = 0; i < positions.length; i += 3) {
-                positions[i + 2] -= moveDistance;
+        // Update particle sprites
+        if (this.particleSprites && this.particleSprites.length > 0) {
+            this.particleSprites.forEach((sprite) => {
+                // Move sprite backward
+                sprite.position.z -= moveDistance;
                 
-                // Reset particles that are behind
-                if (positions[i + 2] < this.camera.position.z - 50) {
+                // If sprite is behind camera, recycle it forward with a new image
+                if (sprite.position.z < this.camera.position.z - 50) {
+                    // Move sprite forward
+                    sprite.position.z = this.camera.position.z + 100 + Math.random() * 50;
+                    
+                    // Assign a new random image from assets
+                    if (this.assets.length > 0) {
+                        const newAssetIndex = Math.floor(Math.random() * this.assets.length);
+                        const newAsset = this.assets[newAssetIndex];
+                        
+                        // Load new texture
+                        this.loadTexture(newAsset.url).then((texture) => {
+                            if (texture && sprite.material) {
+                                sprite.material.map = texture;
+                                sprite.material.needsUpdate = true;
+                                sprite.userData.assetIndex = newAssetIndex;
+                                
+                                // Update current trait info
+                                this.updateTraitInfo(newAsset);
+                            }
+                        }).catch(() => {
+                            // If texture fails to load, keep current texture
+                        });
+                    }
+                    
+                    // Reposition sprite in circular pattern
                     const angle = Math.random() * Math.PI * 2;
-                    const radius = CONFIG.tunnel.radius * (0.3 + Math.random() * 0.7);
-                    positions[i] = Math.cos(angle) * radius;
-                    positions[i + 1] = (Math.random() - 0.5) * 20;
-                    positions[i + 2] = this.camera.position.z + 100 + Math.random() * 50;
+                    const radius = CONFIG.particles.minRadius + 
+                                  Math.random() * (CONFIG.particles.maxRadius - CONFIG.particles.minRadius);
+                    sprite.position.x = Math.cos(angle) * radius;
+                    sprite.position.y = (Math.random() - 0.5) * 20;
                 }
-            }
-            this.particleSystem.geometry.attributes.position.needsUpdate = true;
+            });
         }
         
-        // Check if segments need to be recycled
-        this.tunnelSegments.forEach((segment, index) => {
-            segment.position.z -= moveDistance;
-            segment.userData.z -= moveDistance;
-            
-            // If segment is behind camera, move it forward
-            if (segment.position.z < -segmentLength) {
-                const newZ = this.currentZ + (numSegments - 1) * segmentLength;
-                segment.position.z = newZ;
-                segment.userData.z = newZ;
-                
-                // Update texture for recycled segment
-                const assetIndex = Math.floor(newZ / segmentLength) % this.assets.length;
-                segment.userData.assetIndex = assetIndex;
-                
-                // Update material with new texture
-                const texture = this.getTextureForSegment(assetIndex);
-                if (texture && segment.material) {
-                    segment.material.map = texture;
-                    segment.material.needsUpdate = true;
-                }
-                
-                // Update current trait info
-                if (assetIndex < this.assets.length) {
-                    this.updateTraitInfo(this.assets[assetIndex]);
-                }
-            }
-        });
-        
-        // Preload textures for upcoming segments
-        const upcomingZ = this.currentZ + segmentLength * 5;
-        const upcomingAssetIndex = Math.floor(upcomingZ / segmentLength);
+        // Preload textures for upcoming sprites
         if (upcomingAssetIndex < this.assets.length) {
             this.preloadTextures(upcomingAssetIndex, CONFIG.assets.preloadCount);
         }
