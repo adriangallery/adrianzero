@@ -5,9 +5,9 @@
 export const CONFIG = {
     // GitHub repository configuration (same as showcase)
     githubRepo: 'adriangallery/AdrianLAB',
-    githubBranch: 'd05193bc1dbc1c577c051656111a3c07281ba019',
+    githubBranch: '1c42b1dc4ba7e817a2d3070cd94e8333aaf1ec62',
     imagePath: 'public/rendered-toggles',
-    baseImageUrl: 'https://raw.githubusercontent.com/adriangallery/AdrianLAB/d05193bc1dbc1c577c051656111a3c07281ba019/public/rendered-toggles',
+    baseImageUrl: 'https://raw.githubusercontent.com/adriangallery/AdrianLAB/1c42b1dc4ba7e817a2d3070cd94e8333aaf1ec62/public/rendered-toggles',
     
     // Tunnel settings
     tunnel: {
