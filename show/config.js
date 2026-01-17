@@ -15,7 +15,7 @@ export const CONFIG = {
         segments: 32,          // Number of segments around the tunnel
         segmentLength: 10,     // Length of each segment
         numSegments: 20,       // Number of segments to keep in memory
-        speed: 0.05,            // Base speed of movement
+        speed: 0.05,           // Base speed of movement (0.05 = 1.0x display)
         minSpeed: 0.01,        // Minimum speed
         maxSpeed: 0.5,         // Maximum speed
         speedStep: 0.01,       // Speed increment/decrement step
@@ -57,7 +57,7 @@ export const CONFIG = {
     // Particle sprites (images)
     particles: {
         count: 100,              // Number of particle sprites with images
-        size: 3.0,               // Size of each sprite
+        size: 3.0,               // Size of each sprite (50% más grande)
         minRadius: 3,            // Minimum distance from center
         maxRadius: 8,            // Maximum distance from center
         spreadZ: 200,            // Spread along Z axis
