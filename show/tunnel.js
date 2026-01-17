@@ -166,8 +166,8 @@ class InfiniteTunnel {
             // Create image files array with local paths (relative from show/ folder)
             const imageFiles = localImages.map(fileName => ({
                 name: fileName,
-                url: `../components/images/${fileName}`,
-                path: `../components/images/${fileName}`
+                url: `/components/images/${fileName}`,
+                path: `/components/images/${fileName}`
             }));
             
             this.assets = imageFiles;
