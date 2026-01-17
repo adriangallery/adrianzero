@@ -15,7 +15,8 @@ class InfiniteTunnel {
         this.controls = null;
         this.tunnelSegments = [];
         this.currentZ = 0;
-        this.speed = CONFIG.tunnel.speed;
+        // Initialize speed to show 0.1x in display (0.005 / 0.05 = 0.1x)
+        this.speed = CONFIG.tunnel.speed * 0.1;
         this.isPaused = false;
         this.assets = [];
         this.textureCache = new Map();
@@ -644,7 +645,8 @@ class InfiniteTunnel {
                 CONFIG.camera.position.y,
                 CONFIG.camera.position.z
             );
-            this.speed = CONFIG.tunnel.speed;
+            // Initialize speed to show 0.1x in display (0.005 / 0.05 = 0.1x)
+        this.speed = CONFIG.tunnel.speed * 0.1;
             // Reset particle sprites positions
             if (this.particleSprites && this.particleSprites.length > 0) {
                 this.particleSprites.forEach((sprite) => {
