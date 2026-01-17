@@ -151,7 +151,6 @@ class InfiniteTunnel {
     async loadAssets() {
         // DEBUG: Using local images from components/images/ instead of GitHub
         try {
-            // List of local images from components/images/ folder
             // List of local images from components/images/ folder (PNG only, no GIFs)
             const localImages = [
                 '10007.png', '1011.png', '150.png', '15009.png', '15010.png',
