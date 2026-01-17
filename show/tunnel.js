@@ -152,18 +152,16 @@ class InfiniteTunnel {
         // DEBUG: Using local images from components/images/ instead of GitHub
         try {
             // List of local images from components/images/ folder
+            // List of local images from components/images/ folder (PNG only, no GIFs)
             const localImages = [
-                '10000.gif', '10001.gif', '10002.gif', '10003.gif', '10004.gif', '10005.gif',
-                '10007.gif', '10007.png', '10008.gif', '10009.gif', '10010.gif', '10011.gif',
-                '10012.gif', '10013.gif', '1011.png', '150.png', '15009.png', '15010.png',
-                '262144.gif', '262145.gif', '262146.gif', '262147.gif', '559.png', '595.png',
-                '983.png', '989.png', 'ADRIAN_Coin_Back.gif', 'ADRIAN_Coin.gif',
-                'ADRIAN_ZERO_Banner.gif', 'adrianlogo.png', 'adrianzero.png', 'bereal.png',
-                'com1.png', 'com2.png', 'com3.png', 'com4.png', 'comrades.gif', 'glasses.png',
-                'hellowenlogo.png', 'pumpkin.gif'
+                '10007.png', '1011.png', '150.png', '15009.png', '15010.png',
+                '559.png', '595.png', '983.png', '989.png',
+                'adrianlogo.png', 'adrianzero.png', 'bereal.png',
+                'com1.png', 'com2.png', 'com3.png', 'com4.png', 'glasses.png',
+                'hellowenlogo.png'
             ];
             
-            // Create image files array with local paths (relative from show/ folder)
+            // Create image files array with local paths (absolute from root)
             const imageFiles = localImages.map(fileName => ({
                 name: fileName,
                 url: `/components/images/${fileName}`,

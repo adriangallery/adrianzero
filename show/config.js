@@ -56,7 +56,7 @@ export const CONFIG = {
 
     // Particle sprites (images)
     particles: {
-        count: 200,              // Number of particle sprites with images
+        count: 100,              // Number of particle sprites with images
         size: 2.0,               // Size of each sprite
         minRadius: 3,            // Minimum distance from center
         maxRadius: 8,            // Maximum distance from center
