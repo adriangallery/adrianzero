@@ -15,13 +15,10 @@ class InfiniteTunnel {
         this.controls = null;
         this.tunnelSegments = [];
         this.currentZ = 0;
-        // Initialize speed to show 0.01x in display (10 veces más lento que 0.1x)
-        this.speed = CONFIG.tunnel.speed * 0.01;
+        this.speed = CONFIG.tunnel.speed;
         this.isPaused = false;
         this.assets = [];
         this.textureCache = new Map();
-        this.loadingTextures = new Set(); // Track textures currently loading to avoid duplicates
-        this.textureLoader = new THREE.TextureLoader(); // Initialize texture loader once
         this.currentTraitIndex = 0;
         this.animationId = null;
         this.particles = null;
@@ -46,7 +43,7 @@ class InfiniteTunnel {
             // Create tunnel
             this.createTunnel();
             
-            // Create particles (sprites with images)
+            // Create particles
             await this.createParticles();
             
             // Setup UI
@@ -151,55 +148,50 @@ class InfiniteTunnel {
     }
 
     async loadAssets() {
-        // Load image list from GitHub API (only URLs/metadata, not textures)
+        // Load image list (same way as showcase)
         try {
-            const apiUrl = `https://api.github.com/repos/${CONFIG.githubRepo}/contents/${CONFIG.imagePath}?ref=${CONFIG.githubBranch}`;
+            // Ensure imagePath is defined (fallback for old configs)
+            const imagePath = CONFIG.imagePath || 'public/rendered-toggles';
+            if (!CONFIG.imagePath) {
+                console.warn('⚠️ CONFIG.imagePath is undefined, using fallback:', imagePath);
+            }
+            const apiUrl = `https://api.github.com/repos/${CONFIG.githubRepo}/contents/${imagePath}?ref=${CONFIG.githubBranch}`;
             console.log('🔍 Loading assets from:', apiUrl);
             
             const response = await fetch(apiUrl);
-            
-            // If 403, handle gracefully - tunnel will be invisible, only stars visible
-            if (!response.ok && response.status === 403) {
-                console.warn('⚠️ GitHub API returned 403 (rate limit or access denied)');
-                console.warn('💡 Tunnel structure will be hidden, only stars visible');
-                // Set empty assets - tunnel will be invisible, only particles (stars) will show
-                this.assets = [];
-                return;
-            }
-            
             if (!response.ok) {
                 throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
             }
             
             const files = await response.json();
             
-            // Check if files is an array (same validation as showcase)
+            // Check if files is an array
             if (!Array.isArray(files)) {
-                console.error('❌ GitHub API returned non-array:', files);
-                console.error('Response type:', typeof files);
-                console.error('Response keys:', files ? Object.keys(files) : 'null');
+                console.error('GitHub API returned non-array:', files);
                 throw new Error('Invalid response format from GitHub API');
             }
             
-            // Filter PNG files (same as showcase)
-            const allPngFiles = files.filter(file => file.name && file.name.endsWith('.png'));
-            
-            const imageFiles = allPngFiles.map(file => ({
-                name: file.name,
-                url: `${CONFIG.baseImageUrl}/${file.name}`,
-                path: file.path
-            }));
+            // Filter for image files (PNG only, like showcase)
+            const imageFiles = files
+                .filter(file => file.name && file.name.endsWith('.png'))
+                .map(file => ({
+                    name: file.name,
+                    url: `${CONFIG.baseImageUrl}/${file.name}`,
+                    path: file.path
+                }));
             
             this.assets = imageFiles;
-            console.log(`✅ Loaded ${this.assets.length} asset URLs from ${allPngFiles.length} PNG files (textures will load lazy)`);
+            console.log(`Loaded ${this.assets.length} assets from GitHub`);
             
-            // No preload textures here - they will load lazy when needed
             if (this.assets.length === 0) {
                 console.warn('No assets loaded, using placeholder');
                 this.assets = [{
                     name: 'placeholder',
                     url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwRDM2MiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+QURSSUFOWkVSTzwvdGV4dD48L3N2Zz4='
                 }];
+            } else {
+                // Preload first batch of textures
+                await this.preloadTextures(0, CONFIG.assets.preloadCount);
             }
         } catch (error) {
             console.error('Error loading assets:', error);
@@ -210,7 +202,6 @@ class InfiniteTunnel {
             }];
         }
     }
-
     async preloadTextures(startIndex, count) {
         const endIndex = Math.min(startIndex + count, this.assets.length);
         const promises = [];
@@ -225,66 +216,24 @@ class InfiniteTunnel {
     }
 
     loadTexture(url) {
-        // Always return a Promise for consistency
+        if (this.textureCache.has(url)) {
+            return this.textureCache.get(url);
+        }
+        
         return new Promise((resolve, reject) => {
-            // Check cache first
-            if (this.textureCache.has(url)) {
-                const cachedTexture = this.textureCache.get(url);
-                resolve(cachedTexture);
-                return;
-            }
-            
-            // Check if already loading to avoid duplicate requests
-            if (this.loadingTextures.has(url)) {
-                // Wait for existing load to complete
-                const checkInterval = setInterval(() => {
-                    if (this.textureCache.has(url)) {
-                        clearInterval(checkInterval);
-                        resolve(this.textureCache.get(url));
-                    } else if (!this.loadingTextures.has(url)) {
-                        // Loading failed or was cancelled
-                        clearInterval(checkInterval);
-                        reject(new Error('Texture loading was cancelled or failed'));
-                    }
-                }, 100);
-                
-                // Timeout after 10 seconds
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    if (!this.textureCache.has(url)) {
-                        reject(new Error('Texture loading timeout'));
-                    }
-                }, 10000);
-                return;
-            }
-            
-            // Mark as loading
-            this.loadingTextures.add(url);
-            
-            // Ensure textureLoader is initialized
-            if (!this.textureLoader) {
-                this.textureLoader = new THREE.TextureLoader();
-            }
-            
-            // Load texture
-            this.textureLoader.load(
+            const loader = new THREE.TextureLoader();
+            loader.load(
                 url,
                 (texture) => {
-                    this.loadingTextures.delete(url); // Remove from loading set
-                    if (texture) {
-                        texture.wrapS = THREE.RepeatWrapping;
-                        texture.wrapT = THREE.RepeatWrapping;
-                        texture.minFilter = THREE.LinearFilter;
-                        texture.magFilter = THREE.LinearFilter;
-                        this.textureCache.set(url, texture);
-                        resolve(texture);
-                    } else {
-                        reject(new Error('Texture loaded but is null'));
-                    }
+                    texture.wrapS = THREE.RepeatWrapping;
+                    texture.wrapT = THREE.RepeatWrapping;
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    this.textureCache.set(url, texture);
+                    resolve(texture);
                 },
-                undefined, // onProgress
+                undefined,
                 (error) => {
-                    this.loadingTextures.delete(url); // Remove from loading set on error
                     console.warn('Error loading texture:', url, error);
                     reject(error);
                 }
@@ -309,18 +258,26 @@ class InfiniteTunnel {
             return;
         }
         
-        // Create placeholder texture for initial sprites
-        const placeholderTexture = this.createPlaceholderTexture();
-        
-        // Create sprites with placeholder textures (lazy load real textures)
+        // Create sprites with images
         for (let i = 0; i < particleCount; i++) {
             // Select an asset (cycle through available assets)
             const assetIndex = i % this.assets.length;
             const asset = this.assets[assetIndex];
             
-            // Create sprite material with placeholder initially
+            // Load texture for this sprite
+            let texture = this.textureCache.get(asset.url);
+            if (!texture) {
+                try {
+                    texture = await this.loadTexture(asset.url);
+                } catch (error) {
+                    console.warn(`Failed to load texture for ${asset.name}:`, error);
+                    continue; // Skip this sprite if texture fails to load
+                }
+            }
+            
+            // Create sprite material
             const spriteMaterial = new THREE.SpriteMaterial({
-                map: placeholderTexture,
+                map: texture,
                 transparent: true,
                 opacity: 1.0,
                 depthTest: true,
@@ -344,84 +301,12 @@ class InfiniteTunnel {
             // Store asset index for recycling
             sprite.userData.assetIndex = assetIndex;
             sprite.userData.originalZ = sprite.position.z;
-            sprite.userData.assetUrl = asset.url;
             
             this.particleSprites.push(sprite);
             this.scene.add(sprite);
-            
-            // Load texture lazy in background (don't await)
-            this.loadTextureLazy(asset.url, sprite, spriteMaterial);
         }
         
-        console.log(`✅ Created ${this.particleSprites.length} particle sprites (textures loading lazy)`);
-    }
-    
-    createPlaceholderTexture() {
-        // Create a simple placeholder texture
-        const canvas = document.createElement('canvas');
-        canvas.width = 64;
-        canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#00D632';
-        ctx.fillRect(0, 0, 64, 64);
-        ctx.fillStyle = '#000000';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('LOADING', 32, 32);
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        return texture;
-    }
-    
-    async loadTextureLazy(url, sprite, material) {
-        try {
-            const texture = await this.loadTexture(url);
-            if (texture && sprite && material) {
-                material.map = texture;
-                material.needsUpdate = true;
-            }
-        } catch (error) {
-            // Texture failed to load, keep placeholder
-            console.warn(`Failed to load texture lazy for sprite:`, error);
-        }
-    }
-    
-    preloadNearbyTextures() {
-        if (!this.particleSprites || this.particleSprites.length === 0 || this.assets.length === 0) {
-            return;
-        }
-        
-        const cameraZ = this.camera.position.z;
-        const preloadDistance = 150; // Preload textures for sprites within this distance
-        const maxConcurrent = 5; // Limit concurrent loads
-        
-        // Find sprites that are approaching visibility and need textures
-        const spritesToPreload = this.particleSprites
-            .filter(sprite => {
-                const distance = sprite.position.z - cameraZ;
-                // Sprites ahead of camera, within preload distance
-                return distance > 0 && distance < preloadDistance;
-            })
-            .filter(sprite => {
-                // Only preload if texture is not cached and not already loading
-                const url = sprite.userData.assetUrl;
-                return url && !this.textureCache.has(url) && !this.loadingTextures.has(url);
-            })
-            .slice(0, maxConcurrent); // Limit to max concurrent
-        
-        // Preload textures for these sprites (lazy, don't block)
-        spritesToPreload.forEach(sprite => {
-            const url = sprite.userData.assetUrl;
-            if (url) {
-                // Load in background without blocking
-                this.loadTexture(url).catch(() => {
-                    // Silently fail, texture will load when needed
-                });
-            }
-        });
+        console.log(`✅ Created ${this.particleSprites.length} particle sprites with images`);
     }
 
     createTunnelSegment(z) {
@@ -445,15 +330,12 @@ class InfiniteTunnel {
         const assetIndex = Math.floor(z / segmentLength) % this.assets.length;
         const texture = this.getTextureForSegment(assetIndex);
         
-        // Create material - completely invisible when no texture (only show stars/particles)
+        // Create material
         const material = new THREE.MeshStandardMaterial({
             map: texture,
             side: THREE.BackSide, // Inside of tunnel
             emissive: 0x000000,
             emissiveIntensity: 0.2,
-            transparent: true,
-            opacity: texture ? 1.0 : 0.0, // Completely invisible if no texture
-            visible: texture !== null && texture !== undefined, // Only visible when texture exists
         });
         
         const mesh = new THREE.Mesh(geometry, material);
@@ -475,17 +357,7 @@ class InfiniteTunnel {
         }
         
         // Load texture if not cached
-        this.loadTexture(asset.url).then((loadedTexture) => {
-            // Update material when texture loads
-            this.tunnelSegments.forEach(segment => {
-                if (segment.userData.assetIndex === assetIndex) {
-                    segment.material.map = loadedTexture;
-                    segment.material.opacity = 1.0;
-                    segment.material.visible = true;
-                    segment.material.needsUpdate = true;
-                }
-            });
-        }).catch(() => {});
+        this.loadTexture(asset.url).catch(() => {});
         
         // Return placeholder or null
         return null;
@@ -537,22 +409,19 @@ class InfiniteTunnel {
                         const newAssetIndex = Math.floor(Math.random() * this.assets.length);
                         const newAsset = this.assets[newAssetIndex];
                         
-                        // Update asset info
-                        sprite.userData.assetIndex = newAssetIndex;
-                        sprite.userData.assetUrl = newAsset.url;
-                        
-                        // Check if texture is already cached
-                        const cachedTexture = this.textureCache.get(newAsset.url);
-                        if (cachedTexture && sprite.material) {
-                            // Use cached texture immediately
-                            sprite.material.map = cachedTexture;
-                            sprite.material.needsUpdate = true;
-                            this.updateTraitInfo(newAsset);
-                        } else {
-                            // Load texture lazy (don't block)
-                            this.loadTextureLazy(newAsset.url, sprite, sprite.material);
-                            this.updateTraitInfo(newAsset);
-                        }
+                        // Load new texture
+                        this.loadTexture(newAsset.url).then((texture) => {
+                            if (texture && sprite.material) {
+                                sprite.material.map = texture;
+                                sprite.material.needsUpdate = true;
+                                sprite.userData.assetIndex = newAssetIndex;
+                                
+                                // Update current trait info
+                                this.updateTraitInfo(newAsset);
+                            }
+                        }).catch(() => {
+                            // If texture fails to load, keep current texture
+                        });
                     }
                     
                     // Reposition sprite in circular pattern
@@ -565,8 +434,10 @@ class InfiniteTunnel {
             });
         }
         
-        // Preload textures for sprites that are approaching visibility
-        this.preloadNearbyTextures();
+        // Preload textures for upcoming sprites
+        if (upcomingAssetIndex < this.assets.length) {
+            this.preloadTextures(upcomingAssetIndex, CONFIG.assets.preloadCount);
+        }
     }
 
     updateTraitInfo(asset) {
@@ -662,10 +533,7 @@ class InfiniteTunnel {
     updateSpeedDisplay() {
         const speedDisplay = document.getElementById('speedDisplay');
         if (speedDisplay) {
-            // Show speed as multiplier of base speed
-            const baseSpeed = CONFIG.tunnel.speed;
-            const multiplier = (this.speed / baseSpeed).toFixed(1);
-            speedDisplay.textContent = `${multiplier}x`;
+            speedDisplay.textContent = `${this.speed.toFixed(1)}x`;
         }
     }
 
@@ -688,23 +556,16 @@ class InfiniteTunnel {
                 onUpdate: () => this.updateSpeedDisplay()
             });
             
-            // Reset particle sprites positions
-            if (this.particleSprites && this.particleSprites.length > 0) {
-                this.particleSprites.forEach((sprite) => {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = CONFIG.particles.minRadius + 
-                                  Math.random() * (CONFIG.particles.maxRadius - CONFIG.particles.minRadius);
-                    const z = Math.random() * CONFIG.particles.spreadZ - CONFIG.particles.spreadZ / 2;
-                    
-                    gsap.to(sprite.position, {
-                        x: Math.cos(angle) * radius,
-                        y: (Math.random() - 0.5) * 20,
-                        z: z,
-                        duration: 1.5,
-                        ease: 'power2.inOut'
-                    });
+            // Reset tunnel segments
+            this.tunnelSegments.forEach((segment, index) => {
+                const z = index * CONFIG.tunnel.segmentLength;
+                gsap.to(segment.position, {
+                    z: z,
+                    duration: 1.5,
+                    ease: 'power2.inOut'
                 });
-            }
+                segment.userData.z = z;
+            });
         } else {
             // Fallback if GSAP not loaded
             this.camera.position.set(
@@ -713,17 +574,11 @@ class InfiniteTunnel {
                 CONFIG.camera.position.z
             );
             this.speed = CONFIG.tunnel.speed;
-            // Reset particle sprites positions
-            if (this.particleSprites && this.particleSprites.length > 0) {
-                this.particleSprites.forEach((sprite) => {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = CONFIG.particles.minRadius + 
-                                  Math.random() * (CONFIG.particles.maxRadius - CONFIG.particles.minRadius);
-                    sprite.position.x = Math.cos(angle) * radius;
-                    sprite.position.y = (Math.random() - 0.5) * 20;
-                    sprite.position.z = Math.random() * CONFIG.particles.spreadZ - CONFIG.particles.spreadZ / 2;
-                });
-            }
+            this.tunnelSegments.forEach((segment, index) => {
+                const z = index * CONFIG.tunnel.segmentLength;
+                segment.position.z = z;
+                segment.userData.z = z;
+            });
         }
         
         this.currentZ = CONFIG.tunnel.numSegments * CONFIG.tunnel.segmentLength;
@@ -736,16 +591,16 @@ class InfiniteTunnel {
         }
         
         // Reset particles
-        // Reset particle sprites positions
-        if (this.particleSprites && this.particleSprites.length > 0) {
-            this.particleSprites.forEach((sprite) => {
+        if (this.particleSystem) {
+            const positions = this.particleSystem.geometry.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
                 const angle = Math.random() * Math.PI * 2;
-                const radius = CONFIG.particles.minRadius + 
-                              Math.random() * (CONFIG.particles.maxRadius - CONFIG.particles.minRadius);
-                sprite.position.x = Math.cos(angle) * radius;
-                sprite.position.y = (Math.random() - 0.5) * 20;
-                sprite.position.z = Math.random() * CONFIG.particles.spreadZ - CONFIG.particles.spreadZ / 2;
-            });
+                const radius = CONFIG.tunnel.radius * (0.3 + Math.random() * 0.7);
+                positions[i] = Math.cos(angle) * radius;
+                positions[i + 1] = (Math.random() - 0.5) * 20;
+                positions[i + 2] = Math.random() * 200 - 100;
+            }
+            this.particleSystem.geometry.attributes.position.needsUpdate = true;
         }
     }
 
