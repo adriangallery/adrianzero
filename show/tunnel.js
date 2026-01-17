@@ -163,11 +163,11 @@ class InfiniteTunnel {
                 'hellowenlogo.png', 'pumpkin.gif'
             ];
             
-            // Create image files array with local paths
+            // Create image files array with local paths (relative from show/ folder)
             const imageFiles = localImages.map(fileName => ({
                 name: fileName,
-                url: `components/images/${fileName}`,
-                path: `components/images/${fileName}`
+                url: `../components/images/${fileName}`,
+                path: `../components/images/${fileName}`
             }));
             
             this.assets = imageFiles;

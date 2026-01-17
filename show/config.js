@@ -15,7 +15,7 @@ export const CONFIG = {
         segments: 32,          // Number of segments around the tunnel
         segmentLength: 10,     // Length of each segment
         numSegments: 20,       // Number of segments to keep in memory
-        speed: 0.4,           // Base speed of movement (much slower)
+        speed: 0.4,            // Base speed of movement
         minSpeed: 0.01,        // Minimum speed
         maxSpeed: 0.5,         // Maximum speed
         speedStep: 0.01,       // Speed increment/decrement step
