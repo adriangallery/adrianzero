@@ -30,6 +30,10 @@ class InfiniteTunnel {
         this.raycaster = new THREE.Raycaster(); // For detecting sprite clicks
         this.mouse = new THREE.Vector2(); // Mouse position in normalized coordinates
         this.selectedSprite = null; // Currently selected sprite
+        this.batchIndex = 0; // Current batch index for progressive loading
+        this.batchSize = 100; // Load 100 textures per batch
+        this.isLoadingBatch = false; // Track if a batch is currently loading
+
         
         this.init();
     }
