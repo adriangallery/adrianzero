@@ -428,7 +428,6 @@ class InfiniteTunnel {
     }
         
         // Progressive background loading: load textures in batches
-        this.progressiveBackgroundLoad();
     }
     
     /**
@@ -438,6 +437,9 @@ class InfiniteTunnel {
         // Only load if we have capacity (not too many concurrent loads)
         if (this.loadingTextures.size >= 15) {
             return; // Too many concurrent loads, wait
+        
+        // Progressive background loading: load textures in batches
+        this.progressiveBackgroundLoad();
         }
         
         // Load next batch of textures progressively
