@@ -15,8 +15,8 @@ class InfiniteTunnel {
         this.controls = null;
         this.tunnelSegments = [];
         this.currentZ = 0;
-        // Initialize speed to show 0.01x in display (10 veces más lento que 0.1x)
-        this.speed = CONFIG.tunnel.speed * 0.01;
+        // Initialize speed to show 0.2x in display
+        this.speed = CONFIG.tunnel.speed * 0.2;
         this.isPaused = false;
         this.assets = [];
         this.textureCache = new Map();
@@ -27,6 +27,9 @@ class InfiniteTunnel {
         this.particles = null;
         this.particleSystem = null;
         this.particleSprites = []; // Array of sprites with images
+        this.raycaster = new THREE.Raycaster(); // For detecting sprite clicks
+        this.mouse = new THREE.Vector2(); // Mouse position in normalized coordinates
+        this.selectedSprite = null; // Currently selected sprite
         
         this.init();
     }
@@ -538,7 +541,7 @@ class InfiniteTunnel {
                         const newAsset = this.assets[newAssetIndex];
                         
                         // Update asset info
-                        sprite.userData.assetIndex = newAssetIndex;
+                                sprite.userData.assetIndex = newAssetIndex;
                         sprite.userData.assetUrl = newAsset.url;
                         
                         // Check if texture is already cached
@@ -551,8 +554,8 @@ class InfiniteTunnel {
                         } else {
                             // Load texture lazy (don't block)
                             this.loadTextureLazy(newAsset.url, sprite, sprite.material);
-                            this.updateTraitInfo(newAsset);
-                        }
+                                this.updateTraitInfo(newAsset);
+                            }
                     }
                     
                     // Reposition sprite in circular pattern
@@ -569,6 +572,134 @@ class InfiniteTunnel {
         this.preloadNearbyTextures();
     }
 
+    /**
+     * Parse filename to extract tokenId and hash
+     * Formats: {tokenId}_{hash}.png
+     */
+    parseFileName(filename) {
+        // Try standard format: {tokenId}_{hash}.png
+        let match = filename.match(/^(\d+)_([a-f0-9]+)\.png$/i);
+        if (match) {
+            return {
+                tokenId: parseInt(match[1], 10),
+                hash: match[2]
+            };
+        }
+        return { tokenId: null, hash: null };
+    }
+
+    /**
+     * Handle click on sprites using raycasting
+     */
+    handleSpriteClick(event) {
+        if (!this.camera || !this.particleSprites || this.particleSprites.length === 0) return;
+
+        // Calculate mouse position in normalized device coordinates (-1 to +1)
+        const rect = this.renderer.domElement.getBoundingClientRect();
+        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        // Update raycaster with camera and mouse position
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+
+        // Find intersections with sprites
+        const intersects = this.raycaster.intersectObjects(this.particleSprites, false);
+
+        if (intersects.length > 0) {
+            // Get the first intersected sprite
+            const clickedSprite = intersects[0].object;
+            this.openModal(clickedSprite);
+        }
+    }
+
+    /**
+     * Open modal with sprite information
+     */
+    async openModal(sprite) {
+        if (!sprite || !sprite.userData.assetUrl) return;
+
+        // Get asset from sprite userData
+        const assetIndex = sprite.userData.assetIndex;
+        const asset = this.assets[assetIndex];
+        
+        if (!asset) return;
+
+        // Parse filename to get tokenId and hash
+        const parsed = this.parseFileName(asset.name);
+        const tokenId = parsed.tokenId;
+        const hash = parsed.hash;
+
+        // Create metadata
+        const metadata = {
+            tokenId: tokenId,
+            name: tokenId ? `AdrianZERO #${tokenId}` : asset.name.replace(/\.(png|jpg|jpeg|gif|webp)$/i, ''),
+            hash: hash,
+            description: hash ? `Trait hash: ${hash}` : 'Exploring trait collection'
+        };
+
+        // Show modal
+        const modalOverlay = document.getElementById('modalOverlay');
+        if (modalOverlay) {
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Render modal content
+        this.renderModalContent(asset, metadata);
+    }
+
+    /**
+     * Close modal
+     */
+    closeModal() {
+        const modalOverlay = document.getElementById('modalOverlay');
+        if (modalOverlay) {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    /**
+     * Render modal content
+     */
+    renderModalContent(asset, metadata) {
+        const modalContent = document.getElementById('modalContent');
+        if (!modalContent) return;
+
+        modalContent.classList.remove('loading');
+
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'modal-image-container';
+
+        // Create image
+        const img = document.createElement('img');
+        img.src = asset.url;
+        img.alt = metadata.name;
+        img.onload = () => {
+            // Image loaded successfully
+        };
+        img.onerror = () => {
+            // Handle error - show placeholder
+            imageContainer.innerHTML = '<div class="modal-image-placeholder">Failed to load image</div>';
+        };
+        imageContainer.appendChild(img);
+
+        // Create info section
+        const hashText = metadata.hash ? `<div class="trait-hash">Trait Hash: ${metadata.hash}</div>` : '';
+        
+        const html = `
+            ${imageContainer.outerHTML}
+            <div class="modal-info">
+                <h2>${metadata.name}</h2>
+                ${metadata.tokenId ? `<div class="token-id">Token ID: #${metadata.tokenId}</div>` : ''}
+                ${hashText}
+                ${metadata.description ? `<p class="modal-description">${metadata.description}</p>` : ''}
+            </div>
+        `;
+
+        modalContent.innerHTML = html;
+    }
+
     updateTraitInfo(asset) {
         if (!asset) return;
         
@@ -576,7 +707,10 @@ class InfiniteTunnel {
         const infoElement = document.getElementById('currentTraitInfo');
         
         if (nameElement) {
-            const newName = asset.name.replace(/\.(png|jpg|jpeg|gif|webp)$/i, '').toUpperCase();
+            // Parse filename to extract tokenId
+            const parsed = this.parseFileName(asset.name);
+            const newName = parsed.tokenId ? `AdrianZERO #${parsed.tokenId}` : asset.name.replace(/\.(png|jpg|jpeg|gif|webp)$/i, '').toUpperCase();
+            
             if (nameElement.textContent !== newName) {
                 // Animate text change with GSAP
                 if (typeof gsap !== 'undefined') {
@@ -636,6 +770,34 @@ class InfiniteTunnel {
                 this.adjustSpeed(1);
             }
         }, { passive: true });
+        
+        // Click detection for sprites
+        if (this.renderer && this.renderer.domElement) {
+            this.renderer.domElement.addEventListener('click', (event) => this.handleSpriteClick(event));
+        }
+
+        // Modal close button
+        const modalClose = document.getElementById('modalClose');
+        if (modalClose) {
+            modalClose.addEventListener('click', () => this.closeModal());
+        }
+
+        // Close modal on overlay click
+        const modalOverlay = document.getElementById('modalOverlay');
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    this.closeModal();
+                }
+            });
+        }
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+            }
+        });
         
         // Update speed display
         this.updateSpeedDisplay();
