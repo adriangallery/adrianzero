@@ -426,47 +426,6 @@ class InfiniteTunnel {
             }
         });
     }
-        
-        // Progressive background loading: load textures in batches
-    }
-    
-    /**
-     * Progressive background loading of textures in batches
-     */
-    progressiveBackgroundLoad() {
-        // Only load if we have capacity (not too many concurrent loads)
-        if (this.loadingTextures.size >= 15) {
-            return; // Too many concurrent loads, wait
-        
-        // Progressive background loading: load textures in batches
-        this.progressiveBackgroundLoad();
-        }
-        
-        // Load next batch of textures progressively
-        const batchSize = 5; // Load 5 textures at a time
-        let loaded = 0;
-        
-        while (loaded < batchSize && this.progressiveLoadIndex < this.assets.length) {
-            const asset = this.assets[this.progressiveLoadIndex];
-            
-            // Skip if already cached or loading
-            if (!this.textureCache.has(asset.url) && !this.loadingTextures.has(asset.url)) {
-                // Load in background
-                this.loadTexture(asset.url).catch(() => {
-                    // Silently fail
-                });
-                loaded++;
-            }
-            
-            this.progressiveLoadIndex++;
-            
-            // Reset if we've gone through all assets (cycle through)
-            if (this.progressiveLoadIndex >= this.assets.length) {
-                this.progressiveLoadIndex = 0;
-            }
-        }
-    }
-
 
     createTunnelSegment(z) {
         const { radius, segments, segmentLength } = CONFIG.tunnel;
