@@ -364,6 +364,59 @@ class InfiniteTunnel {
     }
     
     createPlaceholderTexture() {
+
+        // Start loading first batch of textures
+        this.loadTextureBatch();
+    }
+    
+    /**
+     * Load a batch of 100 textures progressively
+     */
+    async loadTextureBatch() {
+        if (this.isLoadingBatch || this.batchIndex >= this.assets.length) {
+            return; // Already loading or all textures loaded
+        }
+        
+        this.isLoadingBatch = true;
+        const startIndex = this.batchIndex;
+        const endIndex = Math.min(this.batchIndex + this.batchSize, this.assets.length);
+        
+        console.log(`📦 Loading batch ${Math.floor(this.batchIndex / this.batchSize) + 1}: textures ${startIndex + 1}-${endIndex} of ${this.assets.length}`);
+        
+        // Load all textures in this batch
+        const promises = [];
+        for (let i = startIndex; i < endIndex; i++) {
+            const asset = this.assets[i];
+            if (asset && asset.url && !this.textureCache.has(asset.url) && !this.loadingTextures.has(asset.url)) {
+                promises.push(
+                    this.loadTexture(asset.url).catch(() => {
+                        // Silently fail, will retry if needed
+                    })
+                );
+            }
+        }
+        
+        // Wait for batch to complete
+        await Promise.all(promises);
+        
+        this.batchIndex = endIndex;
+        this.isLoadingBatch = false;
+        
+        const loaded = this.textureCache.size;
+        const total = this.assets.length;
+        console.log(`✅ Batch complete: ${loaded}/${total} textures loaded (${Math.round(loaded / total * 100)}%)`);
+        
+        // Load next batch if there are more textures
+        if (this.batchIndex < this.assets.length) {
+            // Load next batch after a short delay to avoid blocking
+            setTimeout(() => {
+                this.loadTextureBatch();
+            }, 100);
+        } else {
+            console.log(`🎉 All ${total} textures loaded!`);
+        }
+    }
+
         // Create a simple placeholder texture
         const canvas = document.createElement('canvas');
         canvas.width = 64;
