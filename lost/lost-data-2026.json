@@ -92,6 +92,128 @@
           }
         }
       ]
+    },
+    {
+      "weekNumber": 2,
+      "date": "2026-01-11",
+      "title": "Sunday Recap — 11.01",
+      "events": [
+        {
+          "emoji": "🤖",
+          "title": "AdrianBOT Fix Hell (but worth it)",
+          "description": "Fixed offers logic + a bunch of edge cases. New tools: SWEEP Engine automation. Alchemy webhooks for instant data (no more laggy polling).",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🧠",
+          "title": "Alchemy Cost War",
+          "description": "Spent almost all my spare time killing AdrianBOT bugs + lowering Alchemy rates… Requests were insane and it was costing way too much money to maintain 💀 Now it finally feels under control so I can build new shit again.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🛏️",
+          "title": "AdrianBedroom Builder",
+          "description": "That feature has been sitting there for almost a year… Now it's time to actually use it. Items soon 👀",
+          "status": "in-progress",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎮",
+          "title": "Interactive SVG Minigame Tests",
+          "description": "Been testing interactive SVG mini-games… Expect new cursed stuff soon.",
+          "status": "in-progress",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎞️",
+          "title": "GIF Render Fixes",
+          "description": "More fixes on animated/GIF rendering so it behaves properly across the stack.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "⚙️",
+          "title": "Bot Optimisations",
+          "description": "More optimisations to lower Alchemy rate usage across bots. Less spam, more efficient.",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🧬",
+          "title": "AdrianZERO Mint is back",
+          "description": "AdrianZERO is available to mint again with $ADRIAN 🟦",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🕵️",
+          "title": "Lost dApp (Year Edition)",
+          "description": "\"What did I miss?\" but for the whole year vibe. For returning mfers that are lost 😂",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "💩",
+          "title": "ShitDrop #6 — Smoking Cigarettes",
+          "description": "24h drop: animated cigarette trait for your ZERO 🚬",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🤯",
+          "title": "Side Quest: Trading Bots",
+          "description": "Outside the project I've been playing with trading bots… Crazy autonomous shit… NFI what I'm doing LOL. WAGMI!!!!!",
+          "status": "in-progress",
+          "category": "other"
+        }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "date": "2026-01-18",
+      "title": "Sunday Recap — 18.01",
+      "events": [
+        {
+          "emoji": "🤖",
+          "title": "BOB Saga",
+          "description": "Spent almost all my spare time with BOB… getting nowhere 💀 But still on it — giving him one more week. Also yeah: hit limits everywhere… CURSOR+, ClaudePLUS, ClaudeCODE… dev life 🤡⚡",
+          "status": "in-progress",
+          "category": "bot"
+        },
+        {
+          "emoji": "🎂",
+          "title": "1st Year $ADRIAN Prep",
+          "description": "Next week we become 1 year old mfers!!! Don't rug me 🤣 I literally built this so I don't get rugged again… and yet I still need humans to play with my shit LOL",
+          "status": "in-progress",
+          "category": "announcement"
+        },
+        {
+          "emoji": "⚡",
+          "title": "Render Cache Upgrades (Hash System)",
+          "description": "Big infra W: every token + traits combo now generates a unique hash + backup. So if you pick a combo you already rendered before → it doesn't re-render, it just serves it. Result: faster TraitLAB, less wasted compute, and we're more ready if year 2 goes boom 🧪🟦",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🖼️",
+          "title": "Showcase WIP",
+          "description": "Working on a gallery view to browse ZEROS. Maybe I'll share the link later 👀",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🧠",
+          "title": "FloorENGINE Milestone",
+          "description": "100th AdrianPunk bought by the Engine 🔥 In these slow days that's a feat… but also: why tf almost no one using it?? Go buy some OG Punks mfers!!",
+          "status": "completed",
+          "category": "marketplace",
+          "stats": {
+            "punksBought": 100
+          }
+        }
+      ]
     }
   ]
 }
