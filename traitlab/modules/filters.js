@@ -94,6 +94,9 @@ class TokenFilters {
                 } else if (tokenId === 10016) {
                     token.displayName = 'PACK10016';
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
+                } else if (tokenId === 10018) {
+                    token.displayName = 'PACK10018';
+                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
                 } else if (tokenId === 1123) {
                     token.displayName = 'CensorPACK';
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;

@@ -119,6 +119,8 @@ class FloppyManager {
             return this.getImagePath(10010, '.gif');
         } else if (tokenId === 10011) {
             return this.getImagePath(10011, '.gif');
+        } else if (tokenId === 10018) {
+            return this.getImagePath(10018, '.gif');
         } else if (tokenId === 10012) {
             return this.getImagePath(10012, '.gif');
         } else if (tokenId === 10013) {
@@ -196,6 +198,8 @@ class FloppyManager {
                 return 'PACK10011';
             case 10012:
                 return 'PACK10012';
+            case 10018:
+                return 'PACK10018';
             default:
                 return `Floppy ${tokenId}`;
         }
@@ -207,7 +211,7 @@ class FloppyManager {
     shouldShowOpenPack(tokenId) {
         return tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || tokenId === 10003 || tokenId === 10004 || tokenId === 10007 || 
                tokenId === 10008 || tokenId === 10009 || tokenId === 10010 || tokenId === 10011 || tokenId === 10012 || tokenId === 10013 ||
-               tokenId === 10014 || tokenId === 10016 ||
+               tokenId === 10014 || tokenId === 10016 || tokenId === 10018 ||
                (tokenId >= 15008 && tokenId <= 15015);
     }
 
@@ -269,6 +273,13 @@ class FloppyManager {
                 type: 'pack',
                 name: 'PACK10016'
             };
+        } else if (tokenId === 10018) {
+            // PACK10018 - ActionPack contract (same as 10011)
+            return {
+                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
+                type: 'pack',
+                name: 'PACK10018'
+            };
         } else if (tokenId === 1123) {
             // CensorPACK - ActionPack contract
             return {
@@ -327,6 +338,9 @@ class FloppyManager {
             return await this.openActionPack();
         } else if (tokenId === 10011) {
             console.log('Redirecting to openActionPack() for PACK10011', tokenId);
+            return await this.openActionPack();
+        } else if (tokenId === 10018) {
+            console.log('Redirecting to openActionPack() for PACK10018', tokenId);
             return await this.openActionPack();
         } else if (tokenId === 10012) {
             console.log('Redirecting to openActionPack() for PACK10012', tokenId);
@@ -747,8 +761,8 @@ class FloppyManager {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
-            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 10016, 1123, 15008-15015).');
+        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 || this.selectedFloppy.tokenId === 10018 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
+            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 10016, 10018, 1123, 15008-15015).');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
