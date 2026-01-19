@@ -220,11 +220,11 @@ class FloppyManager {
      * Updated to use OpenPackV4 for specified packs
      */
     getContractForFloppy(tokenId) {
-        // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 15010
+        // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 10018, 15010
         if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || 
             tokenId === 10003 || tokenId === 10004 || tokenId === 10005 || 
             tokenId === 10009 || tokenId === 10010 || tokenId === 10013 || 
-            tokenId === 10014 || tokenId === 10015 || tokenId === 15010) {
+            tokenId === 10014 || tokenId === 10015 || tokenId === 10018 || tokenId === 15010) {
             return {
                 address: window.TraitLABConfig.OPENPACK_V4_CONTRACT,
                 type: 'pack',
@@ -272,13 +272,6 @@ class FloppyManager {
                 address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
                 type: 'pack',
                 name: 'PACK10016'
-            };
-        } else if (tokenId === 10018) {
-            // PACK10018 - ActionPack contract (same as 10011)
-            return {
-                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-                type: 'pack',
-                name: 'PACK10018'
             };
         } else if (tokenId === 1123) {
             // CensorPACK - ActionPack contract
@@ -339,9 +332,6 @@ class FloppyManager {
         } else if (tokenId === 10011) {
             console.log('Redirecting to openActionPack() for PACK10011', tokenId);
             return await this.openActionPack();
-        } else if (tokenId === 10018) {
-            console.log('Redirecting to openActionPack() for PACK10018', tokenId);
-            return await this.openActionPack();
         } else if (tokenId === 10012) {
             console.log('Redirecting to openActionPack() for PACK10012', tokenId);
             return await this.openActionPack();
@@ -374,7 +364,7 @@ class FloppyManager {
         }
         
         // Check if this pack is supported by OpenPackV4
-        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 15010];
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 10018, 15010];
         if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is not supported by OpenPackV4.');
         }
@@ -428,7 +418,7 @@ class FloppyManager {
         }
         
         // Check if this pack is supported by OpenPackV4
-        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 15010];
+        const supportedPacks = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 10018, 15010];
         if (!supportedPacks.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is not supported by OpenPackV4.');
         }
@@ -761,8 +751,8 @@ class FloppyManager {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 || this.selectedFloppy.tokenId === 10018 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
-            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 10016, 10018, 1123, 15008-15015).');
+        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
+            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 10016, 1123, 15008-15015).');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
