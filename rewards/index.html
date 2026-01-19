@@ -571,9 +571,15 @@
         let campaigns = [];
 
         // Multicall configuration - Multicall3 contract address (same on all chains)
-        // Normalize address to fix checksum errors
         const MULTICALL_ADDRESS_RAW = '0xcA11bde05977b3631167028862bE2a1752A10533'; // Multicall3 on Base Mainnet
-        const MULTICALL_ADDRESS = ethers.utils.getAddress(MULTICALL_ADDRESS_RAW);
+        
+        // Function to get normalized Multicall address (lazy initialization to avoid checksum errors)
+        function getMulticallAddress() {
+            if (typeof ethers === 'undefined' || !ethers.utils) {
+                throw new Error('Ethers library not loaded');
+            }
+            return ethers.utils.getAddress(MULTICALL_ADDRESS_RAW);
+        }
         
         // Multicall3 ABI (only the functions we need)
         const MULTICALL_ABI = [
@@ -600,8 +606,8 @@
                 
                 console.log(`📦 Loading ${punkCount} punks with multicall...`);
                 
-                // Create multicall contract
-                const multicallContract = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, readProvider);
+                // Create multicall contract with normalized address
+                const multicallContract = new ethers.Contract(getMulticallAddress(), MULTICALL_ABI, readProvider);
                 
                 // If there are many punks, divide into batches to avoid rate limits
                 const BATCH_SIZE = 50; // Process 50 punks at a time
@@ -707,7 +713,7 @@
                 
                 const readProvider = window.RewardsConfig.getReadProvider();
                 const rewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
-                const multicallContract = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, readProvider);
+                const multicallContract = new ethers.Contract(getMulticallAddress(), MULTICALL_ABI, readProvider);
                 
                 // Prepare calls for multicall
                 const calls = punkIds.map(punkId => {
@@ -803,7 +809,7 @@
                 
                 const readProvider = window.RewardsConfig.getReadProvider();
                 const rewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
-                const multicallContract = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, readProvider);
+                const multicallContract = new ethers.Contract(getMulticallAddress(), MULTICALL_ABI, readProvider);
                 
                 // Create array of all combinations (campaign × punk)
                 const calls = [];
@@ -868,7 +874,7 @@
                 
                 const readProvider = window.RewardsConfig.getReadProvider();
                 const rewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
-                const multicallContract = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, readProvider);
+                const multicallContract = new ethers.Contract(getMulticallAddress(), MULTICALL_ABI, readProvider);
                 
                 // Prepare calls for multicall
                 const calls = [];
