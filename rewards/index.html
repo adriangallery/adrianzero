@@ -571,14 +571,16 @@
         let campaigns = [];
 
         // Multicall configuration - Multicall3 contract address (same on all chains)
-        const MULTICALL_ADDRESS_RAW = '0xcA11bde05977b3631167028862bE2a1752A10533'; // Multicall3 on Base Mainnet
+        // Use lowercase address and let ethers calculate the correct checksum
+        const MULTICALL_ADDRESS_RAW = '0xca11bde05977b3631167028862be2a1752a10533'; // Multicall3 on Base Mainnet (lowercase)
         
         // Function to get normalized Multicall address (lazy initialization to avoid checksum errors)
         function getMulticallAddress() {
             if (typeof ethers === 'undefined' || !ethers.utils) {
                 throw new Error('Ethers library not loaded');
             }
-            return ethers.utils.getAddress(MULTICALL_ADDRESS_RAW);
+            // Use lowercase address - ethers will calculate the correct checksum
+            return ethers.utils.getAddress(MULTICALL_ADDRESS_RAW.toLowerCase());
         }
         
         // Multicall3 ABI (only the functions we need)
