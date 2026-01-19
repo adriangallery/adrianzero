@@ -171,7 +171,7 @@ class FloppyManager {
      * Check if token is a floppy token
      */
     isFloppyToken(tokenId) {
-        return (tokenId >= 10000 && tokenId <= 10013) || 
+        return (tokenId >= 10000 && tokenId <= 10018) || 
                (tokenId >= 15000 && tokenId <= 15015);
     }
 

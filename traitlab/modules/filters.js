@@ -46,8 +46,8 @@ class TokenFilters {
         const floppyTokens = tokens.filter(token => {
             const tokenId = parseInt(token.tokenId);
             
-            // Solo usar rangos específicos de index.html: 10000-10016, 15000-15015, y pack 1123
-            const isFloppyById = (tokenId >= 10000 && tokenId <= 10016) || 
+            // Solo usar rangos específicos de index.html: 10000-10018, 15000-15015, y pack 1123
+            const isFloppyById = (tokenId >= 10000 && tokenId <= 10018) || 
                                  (tokenId >= 15000 && tokenId <= 15015) ||
                                  tokenId === 1123;
             
@@ -84,7 +84,7 @@ class TokenFilters {
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
                 } else if (tokenId === 10013) {
                     token.displayName = 'PACK10013';
-                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
+                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
                 } else if (tokenId === 10014) {
                     token.displayName = 'PACK10014';
                     token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
@@ -182,8 +182,8 @@ class TokenFilters {
     isFloppyToken(token) {
         const tokenId = parseInt(token.tokenId);
         
-        // Solo usar rangos específicos de index.html: 10000-10016, 15000-15015, y pack 1123
-        return (tokenId >= 10000 && tokenId <= 10016) || 
+        // Solo usar rangos específicos de index.html: 10000-10018, 15000-15015, y pack 1123
+        return (tokenId >= 10000 && tokenId <= 10018) || 
                (tokenId >= 15000 && tokenId <= 15015) ||
                tokenId === 1123;
     }
