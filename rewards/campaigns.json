@@ -13,6 +13,13 @@
       "description": "Part of the Hello-WEN 2025 season series - what is scarier for a degen than a red candle?",
       "assetId": 971,
       "amountPerToken": 1
+    },
+    {
+      "id": 3,
+      "name": "OG REWARD",
+      "description": "Each box contains 1 random OG trait from the AdrianPunks collection",
+      "assetId": 10018,
+      "amountPerToken": 1
     }
   ]
 }
