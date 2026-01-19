@@ -355,7 +355,7 @@ class FloppyManager {
 
     /**
      * Open Pack V4 function for OpenPackV4 contract
-     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 15010
+     * Handles packs: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 10018, 15010
      */
     async openPackV4() {
         console.log('openPackV4 called');
@@ -531,7 +531,7 @@ class FloppyManager {
             throw new Error('Please select a pack first.');
         }
         // This function is now only for legacy packs not handled by OpenPackV4
-        const openPackV4Packs = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 15010];
+        const openPackV4Packs = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 10018, 15010];
         if (openPackV4Packs.includes(this.selectedFloppy.tokenId)) {
             throw new Error('This pack is now handled by OpenPackV4. Please use the correct function.');
         }
