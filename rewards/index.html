@@ -571,7 +571,9 @@
         let campaigns = [];
 
         // Multicall configuration - Multicall3 contract address (same on all chains)
-        const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a1752A10533'; // Multicall3 on Base Mainnet
+        // Normalize address to fix checksum errors
+        const MULTICALL_ADDRESS_RAW = '0xcA11bde05977b3631167028862bE2a1752A10533'; // Multicall3 on Base Mainnet
+        const MULTICALL_ADDRESS = ethers.utils.getAddress(MULTICALL_ADDRESS_RAW);
         
         // Multicall3 ABI (only the functions we need)
         const MULTICALL_ABI = [
@@ -779,6 +781,81 @@
                 }
                 
                 return claimsData;
+            }
+        }
+
+        /**
+         * Batch check ALL claims for ALL campaigns and ALL punks in a single multicall (highly optimized)
+         * This replaces multiple multicall calls (one per campaign) with a single multicall
+         * Example: 3 campaigns × 99 punks = 297 calls in ONE multicall instead of 3 multicalls
+         */
+        async function batchCheckAllClaims(campaignIds, punkIds) {
+            try {
+                if (campaignIds.length === 0 || punkIds.length === 0) {
+                    // Return empty structure
+                    const emptyResult = {};
+                    campaignIds.forEach(id => emptyResult[id] = []);
+                    return emptyResult;
+                }
+                
+                const totalCalls = campaignIds.length * punkIds.length;
+                console.log(`🚀 Checking ALL claims: ${campaignIds.length} campaigns × ${punkIds.length} punks = ${totalCalls} calls in ONE multicall...`);
+                
+                const readProvider = window.RewardsConfig.getReadProvider();
+                const rewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
+                const multicallContract = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, readProvider);
+                
+                // Create array of all combinations (campaign × punk)
+                const calls = [];
+                const callIndexMap = []; // Map call index to (campaignId, punkId)
+                
+                for (const campaignId of campaignIds) {
+                    for (const punkId of punkIds) {
+                        const callData = rewardsContract.interface.encodeFunctionData('hasClaimed', [campaignId, punkId]);
+                        calls.push({
+                            target: REWARDS_CONTRACT,
+                            allowFailure: true, // Allow individual failures
+                            callData: callData
+                        });
+                        callIndexMap.push({ campaignId, punkId });
+                    }
+                }
+                
+                // Execute single multicall with retry
+                const results = await retryContractCall(() => multicallContract.aggregate3(calls));
+                
+                // Process results and group by campaign
+                const claimsByCampaign = {};
+                campaignIds.forEach(id => claimsByCampaign[id] = []);
+                
+                results.forEach((result, index) => {
+                    const { campaignId, punkId } = callIndexMap[index];
+                    let hasClaimed = false;
+                    
+                    if (result.success) {
+                        try {
+                            const decoded = rewardsContract.interface.decodeFunctionResult('hasClaimed', result.returnData);
+                            hasClaimed = decoded[0];
+                        } catch (decodeError) {
+                            console.warn(`Error decoding result for campaign ${campaignId}, punk ${punkId}:`, decodeError);
+                        }
+                    } else {
+                        console.warn(`Multicall failed for campaign ${campaignId}, punk ${punkId}`);
+                    }
+                    
+                    claimsByCampaign[campaignId].push({ punkId, hasClaimed });
+                });
+                
+                console.log(`✅ Checked ALL ${totalCalls} claims in ONE multicall`);
+                return claimsByCampaign;
+                
+            } catch (error) {
+                console.error('Error in batchCheckAllClaims:', error);
+                // Fallback: return empty structure and let individual campaign processing handle it
+                console.warn('⚠️ batchCheckAllClaims failed, will fall back to per-campaign processing');
+                const emptyResult = {};
+                campaignIds.forEach(id => emptyResult[id] = []);
+                return emptyResult;
             }
         }
 
@@ -1321,10 +1398,10 @@
             }
         }
 
-        // Update campaigns with user data using multicall (optimized)
+        // Update campaigns with user data using single optimized multicall (highly optimized)
         async function updateCampaignsWithUserData() {
             try {
-                console.log('🔄 Actualizando campañas con datos de usuario usando multicall...');
+                console.log('🔄 Actualizando campañas con datos de usuario usando multicall optimizado...');
                 
                 if (userPunks.length === 0) {
                     console.log('⚠️ No user punks to check');
@@ -1339,13 +1416,16 @@
                     return;
                 }
                 
-                // Procesar campañas en paralelo usando multicall
-                const campaignUpdates = campaigns.map(async (campaign) => {
+                // Get all campaign IDs
+                const campaignIds = campaigns.map(c => c.id);
+                
+                // Check ALL claims for ALL campaigns in a SINGLE multicall
+                const claimsByCampaign = await batchCheckAllClaims(campaignIds, userPunks);
+                
+                // Process results for each campaign
+                campaigns.forEach(campaign => {
                     try {
-                        console.log(`🔄 Processing campaign ${campaign.id} with multicall...`);
-                        
-                        // Use multicall to check all claims at once
-                        const claimsData = await batchCheckClaims(campaign.id, userPunks);
+                        const claimsData = claimsByCampaign[campaign.id] || [];
                         
                         // Filtrar punks que pueden reclamar
                         const userPunksForCampaign = claimsData
@@ -1370,15 +1450,46 @@
                         updateCampaignCard(campaign);
                         
                     } catch (error) {
-                        console.warn(`⚠️ Error actualizando campaña ${campaign.id}:`, error);
+                        console.warn(`⚠️ Error procesando resultados para campaña ${campaign.id}:`, error);
                         campaign.loading = false;
                         campaign.userDataLoaded = false;
                         updateCampaignCard(campaign);
                     }
                 });
                 
-                // Esperar a que todas las campañas se actualicen
-                await Promise.all(campaignUpdates);
+                // If batchCheckAllClaims failed, fall back to per-campaign processing
+                const hasEmptyResults = campaignIds.some(id => !claimsByCampaign[id] || claimsByCampaign[id].length === 0);
+                if (hasEmptyResults && campaignIds.length > 0 && userPunks.length > 0) {
+                    console.warn('⚠️ batchCheckAllClaims returned empty results, falling back to per-campaign processing...');
+                    
+                    // Fallback: process each campaign individually
+                    for (const campaign of campaigns) {
+                        try {
+                            const claimsData = await batchCheckClaims(campaign.id, userPunks);
+                            
+                            const userPunksForCampaign = claimsData
+                                .filter(data => !data.hasClaimed)
+                                .map(data => data.punkId);
+                            
+                            const userClaimedCount = claimsData
+                                .filter(data => data.hasClaimed)
+                                .length;
+                            
+                            campaign.userPunks = userPunksForCampaign;
+                            campaign.userClaimed = userClaimedCount;
+                            campaign.canClaim = userPunksForCampaign.length > 0;
+                            campaign.loading = false;
+                            campaign.userDataLoaded = true;
+                            
+                            updateCampaignCard(campaign);
+                        } catch (error) {
+                            console.warn(`⚠️ Error en fallback para campaña ${campaign.id}:`, error);
+                            campaign.loading = false;
+                            campaign.userDataLoaded = false;
+                            updateCampaignCard(campaign);
+                        }
+                    }
+                }
                 
                 // Guardar en caché
                 const cachedData = window.RewardsConfig.getCachedData() || {};
