@@ -570,6 +570,13 @@
 
         // Generate image URL for reward asset using AdrianLAB ERC1155
         function getRewardImageUrl(assetId) {
+            // Use local file for assetId 10018
+            if (assetId === 10018) {
+                const imageUrl = '10018.gif';
+                console.log(`🖼️ Using local image for asset ${assetId}:`, imageUrl);
+                return imageUrl;
+            }
+            
             // Use AdrianLAB ERC1155 contract for reward images
             // Pattern: https://adrianlab.vercel.app/api/render/floppy/{assetId}.png?simple=true
             const imageUrl = `https://adrianlab.vercel.app/api/render/floppy/${assetId}.png?simple=true`;
