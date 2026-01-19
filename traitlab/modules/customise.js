@@ -293,29 +293,51 @@ class CustomiseManager {
     }
 
     /**
-     * Toggle BANANA mode (requiere pago)
+     * Toggle BANANA mode
+     * - Activar (0 → 13): requiere pago
+     * - Desactivar (13 → 0): gratis, solo actualiza contrato
      */
-    toggleBanana() {
+    async toggleBanana() {
         if (!this.selectedERC721) {
             console.warn('⚠️ CustomiseManager: No AdrianZERO selected for BANANA');
             return;
         }
 
-        // Si ya está activo, desactivarlo
+        // Si ya está activo, quitar el toggle del contrato (gratis)
         if (this.isBananaMode) {
-            this.isBananaMode = false;
-            console.log('🍌 CustomiseManager: BANANA mode: OFF');
-            
-            // Actualizar imagen si hay sticky popup manager
-            if (window.app?.stickyPopupManager) {
-                window.app.stickyPopupManager.updateCustomiseImage();
+            try {
+                // Cargar ethers si no está disponible
+                let ethers = window.ethers;
+                if (typeof ethers === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                    await new Promise((resolve, reject) => {
+                        script.onload = () => {
+                            ethers = window.ethers;
+                            resolve();
+                        };
+                        script.onerror = () => reject(new Error('Failed to load ethers'));
+                        document.head.appendChild(script);
+                    });
+                }
+
+                // Verificar que la wallet esté conectada
+                if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
+                    alert('Please connect your wallet first to remove the toggle.');
+                    return;
+                }
+
+                // Quitar toggle del contrato (gratis)
+                await this.removeBananaToggle(ethers);
+                console.log('🍌 CustomiseManager: BANANA toggle removed from contract');
+            } catch (error) {
+                console.error('Error removing BANANA toggle:', error);
+                alert(`Error removing toggle: ${error.message}`);
             }
-            
-            this.emit('bananaToggled', { isBanana: this.isBananaMode });
             return;
         }
 
-        // Si no está activo, iniciar proceso de pago
+        // Si no está activo, iniciar proceso de pago para activar
         this.initiateBananaPayment();
     }
 
@@ -517,6 +539,87 @@ class CustomiseManager {
         } catch (error) {
             console.error('Error in executeBananaToggle:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Quitar toggle BANANA del contrato (gratis, no requiere pago)
+     * Cambia toggleId de 13 a 0
+     */
+    async removeBananaToggle(ethers) {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            // Verificar red
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                throw new Error('Please switch to Base network to use this feature.');
+            }
+
+            // Cargar ABI del contrato de toggles
+            const response = await fetch('./zoom-toggle-abi.json');
+            if (!response.ok) {
+                throw new Error('Failed to load contract ABI');
+            }
+            const contractABI = await response.json();
+
+            const contract = new ethers.Contract(
+                window.TraitLABConfig.ZOOM_TOGGLE_CONTRACT,
+                contractABI,
+                signer
+            );
+
+            const tokenId = this.selectedERC721.tokenId;
+            
+            console.log('💾 CustomiseManager: Removing BANANA toggle (setting to 0) for token', tokenId);
+            
+            // Ejecutar setToggle con toggleId 0 para quitar el toggle (gratis, no requiere pago)
+            const tx = await contract.setToggle(tokenId, 0);
+            console.log('⏳ Waiting for transaction confirmation...');
+            const receipt = await tx.wait();
+            console.log('✅ BANANA toggle removed successfully');
+
+            // Desactivar modo BANANA localmente
+            this.isBananaMode = false;
+            
+            // Actualizar imagen
+            if (window.app?.stickyPopupManager) {
+                window.app.stickyPopupManager.updateCustomiseImage();
+                window.app.stickyPopupManager.updateCustomiseButtonsState();
+            }
+
+            // Mostrar mensaje de éxito
+            this.showBananaRemovedMessage(tokenId, receipt);
+
+            this.emit('bananaToggled', { isBanana: this.isBananaMode });
+            
+            return receipt;
+        } catch (error) {
+            console.error('Error in removeBananaToggle:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Mostrar mensaje de éxito cuando el toggle BANANA se quita
+     */
+    showBananaRemovedMessage(tokenId, receipt) {
+        try {
+            // Mostrar mensaje en el status del modal de customise
+            if (window.app?.stickyPopupManager?.elements?.customiseCommitStatus) {
+                const statusElement = window.app.stickyPopupManager.elements.customiseCommitStatus;
+                statusElement.textContent = `✅ BANANA toggle removed successfully! Transaction: ${receipt.transactionHash.substring(0, 10)}...`;
+                statusElement.className = 'apply-status success';
+                statusElement.style.display = 'block';
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 10000);
+            }
+        } catch (error) {
+            console.warn('Error showing banana removed message:', error);
         }
     }
 

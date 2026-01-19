@@ -1798,22 +1798,31 @@ class StickyPopupManager {
     }
 
     /**
-     * 🎨 Customise: Toggle BANANA (requiere pago)
+     * 🎨 Customise: Toggle BANANA
+     * - Activar (0 → 13): requiere pago
+     * - Desactivar (13 → 0): gratis, solo actualiza contrato
      */
     async toggleCustomiseBanana() {
         if (!window.app?.modules?.customise) return;
         
-        // Si ya está activo, desactivarlo directamente
+        // Si ya está activo, quitar el toggle del contrato (gratis)
         if (window.app.modules.customise.isBananaMode) {
-            window.app.modules.customise.toggleBanana();
-            
-            // Actualizar texto del botón
-            if (this.elements.customiseBananaBtn) {
-                this.elements.customiseBananaBtn.textContent = '🍌 BANANA';
+            try {
+                // Llamar a toggleBanana que ahora actualiza el contrato
+                await window.app.modules.customise.toggleBanana();
+                
+                // Actualizar texto del botón
+                if (this.elements.customiseBananaBtn) {
+                    this.elements.customiseBananaBtn.textContent = '🍌 BANANA';
+                }
+                
+                // Actualizar imagen
+                this.updateCustomiseImage();
+                this.updateCustomiseButtonsState();
+            } catch (error) {
+                console.error('Error removing BANANA toggle:', error);
+                alert(`Error removing toggle: ${error.message}`);
             }
-            
-            // Actualizar imagen
-            this.updateCustomiseImage();
             return;
         }
         
@@ -1831,6 +1840,7 @@ class StickyPopupManager {
             
             // Actualizar imagen con la real después del pago
             this.updateCustomiseImage();
+            this.updateCustomiseButtonsState();
         } catch (error) {
             console.error('Error in toggleCustomiseBanana:', error);
             // Si hay error, restaurar imagen normal
