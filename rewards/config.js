@@ -137,13 +137,23 @@ class RewardsConfig {
     }
 
     /**
+     * Verificar si Alchemy está disponible
+     */
+    isAlchemyAvailable() {
+        return !!this.ALCHEMY_API_KEY;
+    }
+
+    /**
      * Obtener provider para lecturas (Alchemy RPC)
      */
     getReadProvider() {
         if (typeof window.ethers === 'undefined') {
             throw new Error('Ethers library not loaded');
         }
-        return new window.ethers.providers.JsonRpcProvider(this.ALCHEMY_RPC_URL);
+        const url = this.ALCHEMY_RPC_URL;
+        const isAlchemy = url.includes('alchemy.com');
+        console.log(`🔗 Using ${isAlchemy ? 'Alchemy' : 'Public RPC'}: ${isAlchemy ? '✅' : '⚠️ Rate limits may apply'}`);
+        return new window.ethers.providers.JsonRpcProvider(url);
     }
 
     /**

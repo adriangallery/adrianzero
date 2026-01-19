@@ -8,6 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <!-- Cargar config-keys.js primero (generado por GitHub Actions desde ALCHEMY_PRIMARY_KEY secret) -->
+    <script src="../traitlab/config-keys.js?v=1" onerror="console.warn('⚠️ config-keys.js no disponible. Verificar que ALCHEMY_PRIMARY_KEY esté configurado en GitHub Secrets.')"></script>
     <script src="config.js"></script>
     <link rel="icon" href="/favicon.png">
     <style>
@@ -568,6 +570,280 @@
         let userPunks = [];
         let campaigns = [];
 
+        // Multicall configuration - Multicall3 contract address (same on all chains)
+        const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a1752A10533'; // Multicall3 on Base Mainnet
+        
+        // Multicall3 ABI (only the functions we need)
+        const MULTICALL_ABI = [
+            "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) public view returns (tuple(bool success, bytes returnData)[] returnData)"
+        ];
+
+        /**
+         * Batch load user punks using multicall (optimized)
+         * Divides into smaller batches if there are many punks to avoid rate limits
+         */
+        async function batchGetUserPunks(userAddress) {
+            try {
+                console.log('🚀 Loading user punks with multicall...');
+                const readProvider = window.RewardsConfig.getReadProvider();
+                const punksContract = new ethers.Contract(PUNKS_CONTRACT, PUNKS_ABI, readProvider);
+                
+                // First get balance
+                const balance = await retryContractCall(() => punksContract.balanceOf(userAddress));
+                const punkCount = balance.toNumber();
+                
+                if (punkCount === 0) {
+                    return [];
+                }
+                
+                console.log(`📦 Loading ${punkCount} punks with multicall...`);
+                
+                // Create multicall contract
+                const multicallContract = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, readProvider);
+                
+                // If there are many punks, divide into batches to avoid rate limits
+                const BATCH_SIZE = 50; // Process 50 punks at a time
+                const allPunks = [];
+                
+                if (punkCount <= BATCH_SIZE) {
+                    // Small batch, process all at once
+                    const calls = [];
+                    for (let i = 0; i < punkCount; i++) {
+                        const callData = punksContract.interface.encodeFunctionData('tokenOfOwnerByIndex', [userAddress, i]);
+                        calls.push({
+                            target: PUNKS_CONTRACT,
+                            allowFailure: false,
+                            callData: callData
+                        });
+                    }
+                    
+                    // Execute multicall with retry
+                    const results = await retryContractCall(() => multicallContract.aggregate3(calls));
+                    
+                    // Decode results
+                    const punks = results.map((result, index) => {
+                        if (!result.success) {
+                            throw new Error(`Multicall failed for index ${index}`);
+                        }
+                        const decoded = punksContract.interface.decodeFunctionResult('tokenOfOwnerByIndex', result.returnData);
+                        return decoded[0].toNumber();
+                    });
+                    
+                    allPunks.push(...punks);
+                } else {
+                    // Large batch, process in chunks
+                    console.log(`📦 Processing ${punkCount} punks in batches of ${BATCH_SIZE}...`);
+                    
+                    for (let startIndex = 0; startIndex < punkCount; startIndex += BATCH_SIZE) {
+                        const endIndex = Math.min(startIndex + BATCH_SIZE, punkCount);
+                        const batchNum = Math.floor(startIndex / BATCH_SIZE) + 1;
+                        const totalBatches = Math.ceil(punkCount / BATCH_SIZE);
+                        
+                        console.log(`📦 Batch ${batchNum}/${totalBatches}: Loading punks ${startIndex + 1}-${endIndex}...`);
+                        
+                        const calls = [];
+                        for (let i = startIndex; i < endIndex; i++) {
+                            const callData = punksContract.interface.encodeFunctionData('tokenOfOwnerByIndex', [userAddress, i]);
+                            calls.push({
+                                target: PUNKS_CONTRACT,
+                                allowFailure: false,
+                                callData: callData
+                            });
+                        }
+                        
+                        try {
+                            // Execute multicall with retry
+                            const results = await retryContractCall(() => multicallContract.aggregate3(calls));
+                            
+                            // Decode results
+                            const punks = results.map((result, index) => {
+                                if (!result.success) {
+                                    throw new Error(`Multicall failed for index ${startIndex + index}`);
+                                }
+                                const decoded = punksContract.interface.decodeFunctionResult('tokenOfOwnerByIndex', result.returnData);
+                                return decoded[0].toNumber();
+                            });
+                            
+                            allPunks.push(...punks);
+                            console.log(`✅ Batch ${batchNum}/${totalBatches} complete: ${punks.length} punks loaded`);
+                            
+                            // Add small delay between batches to avoid rate limiting
+                            if (endIndex < punkCount) {
+                                await new Promise(resolve => setTimeout(resolve, 200));
+                            }
+                        } catch (batchError) {
+                            console.error(`❌ Batch ${batchNum}/${totalBatches} failed:`, batchError);
+                            // If it's a rate limit error, wait longer before continuing
+                            if (batchError.message && batchError.message.includes('429')) {
+                                console.log('⏳ Rate limited, waiting 5 seconds before next batch...');
+                                await new Promise(resolve => setTimeout(resolve, 5000));
+                            }
+                            throw batchError;
+                        }
+                    }
+                }
+                
+                console.log(`✅ Loaded ${allPunks.length} punks with multicall`);
+                return allPunks;
+                
+            } catch (error) {
+                console.error('Error in batchGetUserPunks:', error);
+                throw error;
+            }
+        }
+
+        /**
+         * Batch check claims for multiple punks in a campaign using multicall (optimized)
+         */
+        async function batchCheckClaims(campaignId, punkIds) {
+            try {
+                if (punkIds.length === 0) {
+                    return punkIds.map(punkId => ({ punkId, hasClaimed: false }));
+                }
+                
+                console.log(`🚀 Checking ${punkIds.length} claims for campaign ${campaignId} with multicall...`);
+                
+                const readProvider = window.RewardsConfig.getReadProvider();
+                const rewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
+                const multicallContract = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, readProvider);
+                
+                // Prepare calls for multicall
+                const calls = punkIds.map(punkId => {
+                    const callData = rewardsContract.interface.encodeFunctionData('hasClaimed', [campaignId, punkId]);
+                    return {
+                        target: REWARDS_CONTRACT,
+                        allowFailure: true, // Allow individual failures
+                        callData: callData
+                    };
+                });
+                
+                // Execute multicall with retry
+                const results = await retryContractCall(() => multicallContract.aggregate3(calls));
+                
+                // Decode results and map to punkIds
+                const claimsData = punkIds.map((punkId, index) => {
+                    const result = results[index];
+                    let hasClaimed = false;
+                    
+                    if (result.success) {
+                        try {
+                            const decoded = rewardsContract.interface.decodeFunctionResult('hasClaimed', result.returnData);
+                            hasClaimed = decoded[0];
+                        } catch (decodeError) {
+                            console.warn(`Error decoding result for punk ${punkId}:`, decodeError);
+                        }
+                    } else {
+                        console.warn(`Multicall failed for punk ${punkId}`);
+                    }
+                    
+                    return { punkId, hasClaimed };
+                });
+                
+                console.log(`✅ Checked ${claimsData.length} claims with multicall`);
+                return claimsData;
+                
+            } catch (error) {
+                console.error('Error in batchCheckClaims:', error);
+                // Fallback to individual calls if multicall fails
+                console.warn('⚠️ Multicall failed, falling back to individual calls with throttling...');
+                const readProvider = window.RewardsConfig.getReadProvider();
+                const readRewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
+                
+                const claimsData = [];
+                const THROTTLE_DELAY = 100; // 100ms delay between calls
+                
+                for (let i = 0; i < punkIds.length; i++) {
+                    const punkId = punkIds[i];
+                    try {
+                        const hasClaimed = await retryContractCall(() => 
+                            readRewardsContract.hasClaimed(campaignId, punkId)
+                        );
+                        claimsData.push({ punkId, hasClaimed });
+                        
+                        // Add throttle delay between calls (except for the last one)
+                        if (i < punkIds.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, THROTTLE_DELAY));
+                        }
+                    } catch (error) {
+                        console.warn(`Error checking claim for punk ${punkId}:`, error);
+                        claimsData.push({ punkId, hasClaimed: false });
+                        
+                        // If rate limited, wait longer
+                        if (error.message && error.message.includes('429')) {
+                            console.warn('⚠️ Rate limited, waiting 2 seconds...');
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                        } else if (i < punkIds.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, THROTTLE_DELAY));
+                        }
+                    }
+                }
+                
+                return claimsData;
+            }
+        }
+
+        /**
+         * Batch load campaigns using multicall (optimized)
+         */
+        async function batchGetCampaigns(maxCampaignId) {
+            try {
+                console.log(`🚀 Loading ${maxCampaignId} campaigns with multicall...`);
+                
+                const readProvider = window.RewardsConfig.getReadProvider();
+                const rewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
+                const multicallContract = new ethers.Contract(MULTICALL_ADDRESS, MULTICALL_ABI, readProvider);
+                
+                // Prepare calls for multicall
+                const calls = [];
+                for (let i = 1; i <= maxCampaignId; i++) {
+                    const callData = rewardsContract.interface.encodeFunctionData('getCampaign', [i]);
+                    calls.push({
+                        target: REWARDS_CONTRACT,
+                        allowFailure: true, // Allow individual failures
+                        callData: callData
+                    });
+                }
+                
+                // Execute multicall with retry
+                const results = await retryContractCall(() => multicallContract.aggregate3(calls));
+                
+                // Decode results and convert to campaign objects
+                const campaignsData = [];
+                for (let i = 0; i < results.length; i++) {
+                    const result = results[i];
+                    const campaignId = i + 1;
+                    
+                    if (result.success) {
+                        try {
+                            const decoded = rewardsContract.interface.decodeFunctionResult('getCampaign', result.returnData);
+                            const campaignData = decoded[0];
+                            
+                            campaignsData.push({
+                                id: campaignId,
+                                assetId: campaignData.assetId.toNumber(),
+                                amountPerToken: campaignData.amountPerToken.toNumber(),
+                                startTime: campaignData.startTime.toNumber(),
+                                endTime: campaignData.endTime.toNumber(),
+                                active: campaignData.active,
+                                totalClaimed: campaignData.totalClaimed.toNumber()
+                            });
+                        } catch (decodeError) {
+                            console.warn(`Error decoding campaign ${campaignId}:`, decodeError);
+                        }
+                    } else {
+                        console.warn(`Multicall failed for campaign ${campaignId}`);
+                    }
+                }
+                
+                console.log(`✅ Loaded ${campaignsData.length} campaigns with multicall`);
+                return campaignsData;
+                
+            } catch (error) {
+                console.error('Error in batchGetCampaigns:', error);
+                throw error;
+            }
+        }
+
         // Generate image URL for reward asset using AdrianLAB ERC1155
         function getRewardImageUrl(assetId) {
             // Use local file for assetId 10018
@@ -600,29 +876,51 @@
             }
         }
 
-        // Retry contract call with limited retries and longer delays
-        async function retryContractCall(contractCall, maxRetries = 2, baseDelay = 3000) {
+        // Retry contract call with limited retries and exponential backoff for rate limiting
+        async function retryContractCall(contractCall, maxRetries = 3, baseDelay = 1000) {
             let lastError;
             
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    console.log(`🔄 Attempt ${attempt}/${maxRetries} - Contract call`);
                     const result = await contractCall();
-                    console.log(`✅ Contract call successful on attempt ${attempt}`);
+                    if (attempt > 1) {
+                        console.log(`✅ Contract call successful on attempt ${attempt}`);
+                    }
                     return result;
                 } catch (error) {
                     lastError = error;
-                    console.warn(`❌ Attempt ${attempt}/${maxRetries} failed:`, error.message);
                     
-                    // Only retry for specific RPC errors, not for all errors
-                    if (attempt < maxRetries && 
+                    // Check if it's a rate limiting error (429)
+                    const isRateLimit = error.message && (
+                        error.message.includes('429') ||
+                        error.message.includes('Too Many Requests') ||
+                        error.message.includes('rate limit') ||
+                        error.code === 429 ||
+                        error.status === 429
+                    );
+                    
+                    // Check if it's a network/RPC error that should be retried
+                    const isRetryableError = isRateLimit ||
                         (error.message && error.message.includes('state histories haven\'t been fully indexed yet')) ||
-                        error.code === 'CALL_EXCEPTION' || error.code === -32603) {
+                        error.code === 'CALL_EXCEPTION' ||
+                        error.code === -32603 ||
+                        error.code === 'NETWORK_ERROR' ||
+                        error.code === 'TIMEOUT';
+                    
+                    if (attempt < maxRetries && isRetryableError) {
+                        // Exponential backoff: longer delays for rate limiting
+                        const delay = isRateLimit 
+                            ? baseDelay * Math.pow(2, attempt) * 2  // Exponential backoff for 429: 2s, 4s, 8s
+                            : baseDelay * attempt;  // Linear backoff for other errors: 1s, 2s, 3s
                         
-                        console.log(`⏳ Waiting ${baseDelay}ms before retry...`);
-                        await new Promise(resolve => setTimeout(resolve, baseDelay));
+                        console.warn(`⚠️ Attempt ${attempt}/${maxRetries} failed${isRateLimit ? ' (Rate Limited)' : ''}: ${error.message?.substring(0, 100)}`);
+                        console.log(`⏳ Waiting ${delay}ms before retry...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
                     } else {
                         // For other errors or max retries reached, don't retry
+                        if (attempt >= maxRetries) {
+                            console.error(`❌ All ${maxRetries} attempts failed`);
+                        }
                         throw error;
                     }
                 }
@@ -737,27 +1035,15 @@
             }
         }
 
-        // Load user's AdrianPunks with Alchemy RPC
+        // Load user's AdrianPunks with multicall (optimized)
         async function loadUserPunks() {
             try {
                 showLoading(true);
                 
-                // Usar Alchemy RPC para lecturas (más confiable)
-                const readProvider = window.RewardsConfig.getReadProvider();
-                const punksContract = new ethers.Contract(PUNKS_CONTRACT, PUNKS_ABI, readProvider);
+                // Use multicall for batch loading
+                userPunks = await batchGetUserPunks(currentAccount);
                 
-                // Retry logic for balanceOf call
-                const balance = await retryContractCall(() => punksContract.balanceOf(currentAccount));
-                const punkCount = balance.toNumber();
-                
-                document.getElementById('punkCount').textContent = punkCount;
-                
-                userPunks = [];
-                for (let i = 0; i < punkCount; i++) {
-                    // Retry logic for each tokenOfOwnerByIndex call
-                    const tokenId = await retryContractCall(() => punksContract.tokenOfOwnerByIndex(currentAccount, i));
-                    userPunks.push(tokenId.toNumber());
-                }
+                document.getElementById('punkCount').textContent = userPunks.length;
                 
                 console.log('User punks loaded:', userPunks);
                 
@@ -772,18 +1058,72 @@
             } catch (error) {
                 console.error('Error loading user punks:', error);
                 
-                // Intentar usar datos en caché
-                const cachedData = window.RewardsConfig.getCachedData();
-                if (cachedData && cachedData.userPunks) {
-                    userPunks = cachedData.userPunks;
-                    document.getElementById('punkCount').textContent = userPunks.length;
-                    showError('⚠️ Usando datos en caché debido a problemas de red');
-                } else {
-                // Check if it's a state indexing error
-                    if (error.message && error.message.includes('historical state')) {
-                    showError('⏳ La red está sincronizando. Por favor espera unos minutos y recarga la página.');
-                } else {
-                    showError('Error loading AdrianPunks: ' + error.message);
+                // Fallback to sequential loading if multicall fails
+                console.warn('⚠️ Multicall failed, falling back to sequential loading with throttling...');
+                try {
+                    const readProvider = window.RewardsConfig.getReadProvider();
+                    const punksContract = new ethers.Contract(PUNKS_CONTRACT, PUNKS_ABI, readProvider);
+                    
+                    const balance = await retryContractCall(() => punksContract.balanceOf(currentAccount));
+                    const punkCount = balance.toNumber();
+                    
+                    document.getElementById('punkCount').textContent = punkCount;
+                    
+                    userPunks = [];
+                    const THROTTLE_DELAY = 150; // 150ms delay between calls to avoid rate limiting
+                    
+                    for (let i = 0; i < punkCount; i++) {
+                        try {
+                            const tokenId = await retryContractCall(() => punksContract.tokenOfOwnerByIndex(currentAccount, i));
+                            userPunks.push(tokenId.toNumber());
+                            
+                            // Log progress every 10 punks
+                            if ((i + 1) % 10 === 0 || i === punkCount - 1) {
+                                console.log(`📦 Fallback progress: ${i + 1}/${punkCount} punks loaded`);
+                            }
+                            
+                            // Add throttle delay between calls (except for the last one)
+                            if (i < punkCount - 1) {
+                                await new Promise(resolve => setTimeout(resolve, THROTTLE_DELAY));
+                            }
+                        } catch (callError) {
+                            // Check if it's a rate limit error
+                            const isRateLimit = callError.message && (
+                                callError.message.includes('429') ||
+                                callError.message.includes('Too Many Requests') ||
+                                callError.message.includes('rate limit')
+                            );
+                            
+                            if (isRateLimit) {
+                                console.warn(`⚠️ Rate limited at punk ${i + 1}, waiting 3 seconds...`);
+                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                // Retry this call
+                                i--; // Decrement to retry this index
+                                continue;
+                            } else {
+                                console.warn(`⚠️ Error loading punk ${i + 1}:`, callError.message);
+                                // Continue with next punk
+                            }
+                        }
+                    }
+                    
+                    console.log(`✅ User punks loaded (fallback): ${userPunks.length} punks`);
+                } catch (fallbackError) {
+                    console.error('Fallback loading also failed:', fallbackError);
+                    
+                    // Intentar usar datos en caché
+                    const cachedData = window.RewardsConfig.getCachedData();
+                    if (cachedData && cachedData.userPunks) {
+                        userPunks = cachedData.userPunks;
+                        document.getElementById('punkCount').textContent = userPunks.length;
+                        showError('⚠️ Usando datos en caché debido a problemas de red');
+                    } else {
+                        // Check if it's a state indexing error
+                        if (error.message && error.message.includes('historical state')) {
+                            showError('⏳ La red está sincronizando. Por favor espera unos minutos y recarga la página.');
+                        } else {
+                            showError('Error loading AdrianPunks: ' + error.message);
+                        }
                     }
                 }
             } finally {
@@ -791,67 +1131,118 @@
             }
         }
 
-        // Load campaigns basic data (without user-specific data)
+        // Load campaigns basic data (without user-specific data) using multicall (optimized)
         async function loadCampaignsBasic() {
             try {
-                console.log('📋 Loading basic campaigns data...');
+                console.log('📋 Loading basic campaigns data with multicall...');
                 
                 // Load campaign metadata from JSON
                 const campaignMetadata = await loadCampaignData();
                 
-                // Usar Alchemy RPC para lecturas (más confiable)
+                // Get current campaign ID from contract
                 const readProvider = window.RewardsConfig.getReadProvider();
                 const readRewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
-                
-                // Get current campaign ID from contract with retry
                 const currentCampaignId = await retryContractCall(() => readRewardsContract.currentCampaignId());
-                console.log('Current campaign ID:', currentCampaignId.toString());
+                const maxCampaignId = currentCampaignId.toNumber();
                 
-                campaigns = [];
+                console.log('Current campaign ID:', maxCampaignId);
                 
-                // Load all campaigns from the contract
-                for (let i = 1; i <= currentCampaignId.toNumber(); i++) {
-                    try {
-                        const campaignData = await retryContractCall(() => readRewardsContract.getCampaign(i));
-                        console.log(`Campaign ${i}:`, campaignData);
-                        
-                        // Find metadata for this campaign
-                        const metadata = campaignMetadata.find(m => m.id === i) || {
-                            name: `Campaign ${i}`,
-                            description: `Asset ID: ${campaignData.assetId.toString()}, Amount: ${campaignData.amountPerToken.toString()}`
-                        };
-                        
-                        // Convert BigNumber values to numbers
-                        const campaign = {
-                            id: i,
-                            assetId: campaignData.assetId.toNumber(),
-                            amountPerToken: campaignData.amountPerToken.toNumber(),
-                            startTime: campaignData.startTime.toNumber(),
-                            endTime: campaignData.endTime.toNumber(),
-                            active: campaignData.active,
-                            totalClaimed: campaignData.totalClaimed.toNumber(),
-                            name: metadata.name,
-                            description: metadata.description,
-                            // Datos de usuario se añadirán después
-                            userPunks: [],
-                            userClaimed: 0, // Claims específicos del usuario
-                            canClaim: false,
-                            loading: true,
-                            userDataLoaded: false
-                        };
-                        
-                        campaigns.push(campaign);
-                    } catch (error) {
-                        console.warn(`Error loading campaign ${i}:`, error);
-                        // Continue with other campaigns
-                    }
+                if (maxCampaignId === 0) {
+                    campaigns = [];
+                    console.log('📋 No campaigns found');
+                    return;
                 }
+                
+                // Load all campaigns using multicall
+                const campaignsData = await batchGetCampaigns(maxCampaignId);
+                
+                // Combine with metadata
+                campaigns = campaignsData.map(campaignData => {
+                    // Find metadata for this campaign
+                    const metadata = campaignMetadata.find(m => m.id === campaignData.id) || {
+                        name: `Campaign ${campaignData.id}`,
+                        description: `Asset ID: ${campaignData.assetId}, Amount: ${campaignData.amountPerToken}`
+                    };
+                    
+                    return {
+                        ...campaignData,
+                        name: metadata.name,
+                        description: metadata.description,
+                        // Datos de usuario se añadirán después
+                        userPunks: [],
+                        userClaimed: 0,
+                        canClaim: false,
+                        loading: true,
+                        userDataLoaded: false
+                    };
+                });
                 
                 console.log('📋 Basic campaigns loaded:', campaigns.length);
                 
             } catch (error) {
                 console.error('Error loading basic campaigns:', error);
-                throw error;
+                
+                // Fallback to sequential loading if multicall fails
+                console.warn('⚠️ Multicall failed, falling back to sequential loading with throttling...');
+                try {
+                    const campaignMetadata = await loadCampaignData();
+                    const readProvider = window.RewardsConfig.getReadProvider();
+                    const readRewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
+                    
+                    const currentCampaignId = await retryContractCall(() => readRewardsContract.currentCampaignId());
+                    const maxCampaignId = currentCampaignId.toNumber();
+                    
+                    campaigns = [];
+                    const THROTTLE_DELAY = 200; // 200ms delay between calls
+                    
+                    for (let i = 1; i <= maxCampaignId; i++) {
+                        try {
+                            const campaignData = await retryContractCall(() => readRewardsContract.getCampaign(i));
+                            
+                            const metadata = campaignMetadata.find(m => m.id === i) || {
+                                name: `Campaign ${i}`,
+                                description: `Asset ID: ${campaignData.assetId.toString()}, Amount: ${campaignData.amountPerToken.toString()}`
+                            };
+                            
+                            campaigns.push({
+                                id: i,
+                                assetId: campaignData.assetId.toNumber(),
+                                amountPerToken: campaignData.amountPerToken.toNumber(),
+                                startTime: campaignData.startTime.toNumber(),
+                                endTime: campaignData.endTime.toNumber(),
+                                active: campaignData.active,
+                                totalClaimed: campaignData.totalClaimed.toNumber(),
+                                name: metadata.name,
+                                description: metadata.description,
+                                userPunks: [],
+                                userClaimed: 0,
+                                canClaim: false,
+                                loading: true,
+                                userDataLoaded: false
+                            });
+                            
+                            // Add throttle delay between calls (except for the last one)
+                            if (i < maxCampaignId) {
+                                await new Promise(resolve => setTimeout(resolve, THROTTLE_DELAY));
+                            }
+                        } catch (campaignError) {
+                            console.warn(`Error loading campaign ${i}:`, campaignError);
+                            
+                            // If rate limited, wait longer
+                            if (campaignError.message && campaignError.message.includes('429')) {
+                                console.warn('⚠️ Rate limited, waiting 3 seconds...');
+                                await new Promise(resolve => setTimeout(resolve, 3000));
+                            } else if (i < maxCampaignId) {
+                                await new Promise(resolve => setTimeout(resolve, THROTTLE_DELAY));
+                            }
+                        }
+                    }
+                    
+                    console.log(`📋 Basic campaigns loaded (fallback): ${campaigns.length} campaigns`);
+                } catch (fallbackError) {
+                    console.error('Fallback loading also failed:', fallbackError);
+                    throw error;
+                }
             }
         }
 
@@ -930,26 +1321,31 @@
             }
         }
 
-        // Update campaigns with user data progressively
+        // Update campaigns with user data using multicall (optimized)
         async function updateCampaignsWithUserData() {
             try {
-                console.log('🔄 Actualizando campañas con datos de usuario...');
-                const readProvider = window.RewardsConfig.getReadProvider();
-                const readRewardsContract = new ethers.Contract(REWARDS_CONTRACT, REWARDS_ABI, readProvider);
+                console.log('🔄 Actualizando campañas con datos de usuario usando multicall...');
                 
-                // Procesar campañas en paralelo para mejor rendimiento
+                if (userPunks.length === 0) {
+                    console.log('⚠️ No user punks to check');
+                    campaigns.forEach(campaign => {
+                        campaign.userPunks = [];
+                        campaign.userClaimed = 0;
+                        campaign.canClaim = false;
+                        campaign.loading = false;
+                        campaign.userDataLoaded = true;
+                        updateCampaignCard(campaign);
+                    });
+                    return;
+                }
+                
+                // Procesar campañas en paralelo usando multicall
                 const campaignUpdates = campaigns.map(async (campaign) => {
                     try {
-                        console.log(`🔄 Processing campaign ${campaign.id}...`);
+                        console.log(`🔄 Processing campaign ${campaign.id} with multicall...`);
                         
-                        // Verificar claims en lote (más eficiente que uno por uno)
-                        const claimsData = await Promise.all(
-                            userPunks.map(punkId => 
-                                readRewardsContract.hasClaimed(campaign.id, punkId)
-                                    .then(hasClaimed => ({ punkId, hasClaimed }))
-                                    .catch(() => ({ punkId, hasClaimed: false }))
-                            )
-                        );
+                        // Use multicall to check all claims at once
+                        const claimsData = await batchCheckClaims(campaign.id, userPunks);
                         
                         // Filtrar punks que pueden reclamar
                         const userPunksForCampaign = claimsData
