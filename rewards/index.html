@@ -929,16 +929,26 @@
             }
         }
 
-        // Generate image URL for reward asset using AdrianLAB ERC1155
+        // Generate image URL for reward asset using local files or AdrianLAB ERC1155
         function getRewardImageUrl(assetId) {
-            // Use local file for assetId 10018
+            // Use local files for specific assetIds
             if (assetId === 10018) {
                 const imageUrl = '10018.gif';
                 console.log(`🖼️ Using local image for asset ${assetId}:`, imageUrl);
                 return imageUrl;
             }
+            if (assetId === 850) {
+                const imageUrl = '850.png';
+                console.log(`🖼️ Using local image for asset ${assetId}:`, imageUrl);
+                return imageUrl;
+            }
+            if (assetId === 971) {
+                const imageUrl = '971.png';
+                console.log(`🖼️ Using local image for asset ${assetId}:`, imageUrl);
+                return imageUrl;
+            }
             
-            // Use AdrianLAB ERC1155 contract for reward images
+            // Use AdrianLAB ERC1155 contract for reward images (fallback for other assets)
             // Pattern: https://adrianlab.vercel.app/api/render/floppy/{assetId}.png?simple=true
             const imageUrl = `https://adrianlab.vercel.app/api/render/floppy/${assetId}.png?simple=true`;
             console.log(`🖼️ Generating reward image URL for asset ${assetId}:`, imageUrl);
