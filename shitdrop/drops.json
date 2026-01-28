@@ -1,7 +1,15 @@
 {
   "version": 1,
-  "updatedAt": "2025-11-20T00:00:00Z",
+  "updatedAt": "2026-01-28T00:00:00Z",
   "drops": [
+    {
+      "id": 10019,
+      "title": "CLAWbot",
+      "short": "You've seen the hype around that self-hosted AI agent (Clawdbot… aka Moltbot now) that helps you build shit like a degenerate wizard. So Tiger reimagined it into a pack: 4 traits for your ZERO 🧪🔥",
+      "image": "https://adrianzero.com/shitdrop/images/10019.png",
+      "opensea": "https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/10019",
+      "date": "2026-01-28"
+    },
     {
       "id": 1168,
       "title": "SMOKING CIGARETTE",
