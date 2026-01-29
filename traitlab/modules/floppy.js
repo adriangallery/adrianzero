@@ -350,6 +350,9 @@ class FloppyManager {
         } else if (tokenId === 10016) {
             console.log('Redirecting to openActionPack() for PACK10016', tokenId);
             return await this.openActionPack();
+        } else if (tokenId === 10019) {
+            console.log('Redirecting to openActionPack() for PACK10019', tokenId);
+            return await this.openActionPack();
         } else if (tokenId === 1123) {
             console.log('Redirecting to openActionPack() for PACK1123', tokenId);
             return await this.openActionPack();
