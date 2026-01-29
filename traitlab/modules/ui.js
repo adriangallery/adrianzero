@@ -571,15 +571,16 @@ class UIManager {
         batch.forEach((token, batchIndex) => {
             // Usar el índice original del token en allTokens para tracking
             // Esto es importante para mantener consistencia cuando se aplica filtro de categoría
-            const originalIndex = state.allTokens.findIndex(t => 
+            const originalIndex = state.allTokens.findIndex(t =>
                 this.getTokenKey(t) === this.getTokenKey(token)
             );
-            
+
             // Si no encontramos el índice original, usar el índice calculado
             const actualIndex = originalIndex !== -1 ? originalIndex : startIndex + batchIndex;
-            
+
             // Skip if already rendered
             if (state.renderedIndices.has(actualIndex)) {
+                console.log(`⏭️ Skip token ${this.getTokenKey(token)} - already rendered at index ${actualIndex}`);
                 return;
             }
 
@@ -830,7 +831,17 @@ class UIManager {
         console.log(`📦 Virtual DOM: Renderizando batch ${startIndex} a ${endIndex} (${endIndex - startIndex} tokens) de ${tokensToRender.length} filtrados`);
 
         // Render batch
-        this.renderVirtualBatch(startIndex, endIndex);
+        const renderedCount = this.renderVirtualBatch(startIndex, endIndex);
+
+        // 🐛 FIX: Si no se renderizó nada nuevo, detener el proceso (evitar loop infinito)
+        if (renderedCount === 0) {
+            console.warn('⚠️ Virtual DOM: No se pudo renderizar ningún elemento nuevo. Deteniendo proceso.');
+            if (state.sentinel) {
+                state.sentinel.remove();
+                state.sentinel = null;
+            }
+            return;
+        }
 
         // Clean up elements outside viewport
         this.removeVirtualElementsOutsideViewport();
@@ -848,7 +859,8 @@ class UIManager {
         });
 
         // Add/update sentinel if there are more tokens
-        if (endIndex < state.allTokens.length) {
+        // 🐛 FIX: Comparar con tokensToRender (filtrados), no con allTokens
+        if (endIndex < tokensToRender.length) {
             this.addVirtualDOMSentinel();
         } else {
             // All loaded, remove sentinel
@@ -856,6 +868,7 @@ class UIManager {
                 state.sentinel.remove();
                 state.sentinel = null;
             }
+            console.log('✅ Virtual DOM: Todos los tokens filtrados cargados');
         }
 
         // Update selection info
