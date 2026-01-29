@@ -278,6 +278,13 @@ class FloppyManager {
                 type: 'pack',
                 name: 'PACK10016'
             };
+        } else if (tokenId === 10019) {
+            // PACK10019 - ActionPack contract
+            return {
+                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
+                type: 'pack',
+                name: 'PACK10019'
+            };
         } else if (tokenId === 1123) {
             // CensorPACK - ActionPack contract
             return {
