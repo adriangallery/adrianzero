@@ -1294,6 +1294,12 @@ class UIManager {
                     imageUrl = this.getImagePath(10015, '.gif');
                 } else if (token.tokenId === 10016) {
                     imageUrl = this.getImagePath(10016, '.gif');
+                } else if (token.tokenId === 10017) {
+                    imageUrl = this.getImagePath(10017, '.gif');
+                } else if (token.tokenId === 10018) {
+                    imageUrl = this.getImagePath(10018, '.gif');
+                } else if (token.tokenId === 10019) {
+                    imageUrl = this.getImagePath(10019, '.png');
                 }
             }
             
@@ -2230,7 +2236,17 @@ class UIManager {
     getImagePath(assetId, extension) {
         // Check if we're running locally (localhost) or online
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        
+
+        // For floppy discs/packs (10000-20000 range), use traitlab/assets/traits/ path
+        if (assetId >= 10000 && assetId <= 20000) {
+            if (isLocal) {
+                return `./assets/traits/${assetId}${extension}`;
+            } else {
+                return `https://adrianzero.com/traitlab/assets/traits/${assetId}${extension}`;
+            }
+        }
+
+        // For other items, use components/images/ path
         if (isLocal) {
             // Local development - use relative path from current directory
             return '../components/images/' + assetId + extension;
