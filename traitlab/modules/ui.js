@@ -51,7 +51,12 @@ class UIManager {
             selectedStates: new Map(), // 🔴 WHALE FIX: Preservar estado de selección
             cardHeight: null, // 🟡 WHALE FIX: Cache de altura de cards
             cardsPerRow: null, // 🟡 WHALE FIX: Cache de cards por fila
-            deviceCapacity: null // 🟡 WHALE FIX: Capacidad del dispositivo
+            deviceCapacity: null, // 🟡 WHALE FIX: Capacidad del dispositivo
+            // 🎯 BIDIRECTIONAL SCROLLING
+            lastScrollY: 0, // Última posición de scroll
+            scrollDirection: 'down', // Dirección actual: 'up' o 'down'
+            bufferSize: 2.0, // Buffer: 2x viewport height
+            isRendering: false // Flag para evitar renders simultáneos
         };
         
         // Bind methods
@@ -466,6 +471,11 @@ class UIManager {
             this.virtualDOMState.viewportObserver.disconnect();
             this.virtualDOMState.viewportObserver = null;
         }
+        // 🎯 BIDIRECTIONAL: Limpiar scroll handler
+        if (this.virtualDOMState.scrollHandler) {
+            window.removeEventListener('scroll', this.virtualDOMState.scrollHandler);
+            this.virtualDOMState.scrollHandler = null;
+        }
         if (this.virtualDOMState.sentinel) {
             this.virtualDOMState.sentinel.remove();
             this.virtualDOMState.sentinel = null;
@@ -478,7 +488,8 @@ class UIManager {
     }
 
     /**
-     * Remove elements outside viewport to maintain max DOM elements
+     * 🎯 BIDIRECTIONAL: Remove elements outside viewport to maintain max DOM elements
+     * Usa buffer grande (2x viewport) y dirección de scroll para ser inteligente
      */
     removeVirtualElementsOutsideViewport() {
         const tokensGrid = this.domElements.get('tokens-grid');
@@ -486,16 +497,26 @@ class UIManager {
 
         const state = this.virtualDOMState;
         const renderedCards = Array.from(tokensGrid.querySelectorAll('.token-card'));
-        
+
         if (renderedCards.length <= state.maxDOMElements) {
             return; // No need to remove anything
         }
 
-        // Use Intersection Observer to detect which elements are outside viewport
-        const elementsToRemove = [];
+        // 🎯 Detectar dirección de scroll
+        const currentScrollY = window.scrollY;
+        if (currentScrollY > state.lastScrollY) {
+            state.scrollDirection = 'down';
+        } else if (currentScrollY < state.lastScrollY) {
+            state.scrollDirection = 'up';
+        }
+        state.lastScrollY = currentScrollY;
+
+        // 🎯 Buffer grande: 2x viewport height
         const viewportTop = window.scrollY;
         const viewportBottom = window.scrollY + window.innerHeight;
-        const buffer = window.innerHeight * 0.5; // Buffer zone: 50% of viewport height
+        const buffer = window.innerHeight * state.bufferSize;
+
+        const elementsToRemove = [];
 
         renderedCards.forEach((card) => {
             const rect = card.getBoundingClientRect();
@@ -506,17 +527,28 @@ class UIManager {
             const isOutsideTop = cardBottom < (viewportTop - buffer);
             const isOutsideBottom = cardTop > (viewportBottom + buffer);
 
-            if (isOutsideTop || isOutsideBottom) {
-                elementsToRemove.push(card);
+            // 🎯 Priorizar remoción en dirección opuesta al scroll
+            if (state.scrollDirection === 'down' && isOutsideTop) {
+                // Scrolling down → remover elementos arriba primero
+                elementsToRemove.push({ card, priority: 1, position: 'top' });
+            } else if (state.scrollDirection === 'up' && isOutsideBottom) {
+                // Scrolling up → remover elementos abajo primero
+                elementsToRemove.push({ card, priority: 1, position: 'bottom' });
+            } else if (isOutsideTop || isOutsideBottom) {
+                // Fuera de buffer pero en misma dirección de scroll
+                elementsToRemove.push({ card, priority: 2, position: isOutsideTop ? 'top' : 'bottom' });
             }
         });
 
+        // Ordenar por prioridad (remover primero los de dirección opuesta)
+        elementsToRemove.sort((a, b) => a.priority - b.priority);
+
         // Remove elements that are far outside viewport
-        // Keep only maxDOMElements, prioritizing those closer to viewport
         if (elementsToRemove.length > 0 && renderedCards.length > state.maxDOMElements) {
             const toRemove = elementsToRemove.slice(0, renderedCards.length - state.maxDOMElements);
 
-            toRemove.forEach(card => {
+            toRemove.forEach(item => {
+                const card = item.card; // 🐛 FIX: Extraer card del objeto
                 const tokenId = card.getAttribute('data-token-id');
                 if (tokenId) {
                     // 🔴 WHALE FIX: Guardar estado de selección ANTES de remover
@@ -531,6 +563,8 @@ class UIManager {
                     );
                     if (index !== -1) {
                         state.renderedIndices.delete(index);
+                        // 🎯 BIDIRECTIONAL: NO eliminar de processedIndices - permitir re-renderizar
+                        // state.processedIndices.delete(index); // NO hacer esto
                     }
                 }
 
@@ -543,7 +577,7 @@ class UIManager {
                 card.remove();
             });
 
-            console.log(`🧹 Virtual DOM: Eliminados ${toRemove.length} elementos fuera del viewport. Restantes: ${tokensGrid.querySelectorAll('.token-card').length}`);
+            console.log(`🧹 Virtual DOM: Eliminados ${toRemove.length} elementos (${toRemove[0].position}) fuera del viewport. Restantes: ${tokensGrid.querySelectorAll('.token-card').length}`);
         }
     }
 
@@ -752,6 +786,29 @@ class UIManager {
             card.setAttribute('data-viewport-observed', 'true');
         });
 
+        // 🎯 BIDIRECTIONAL: Setup scroll listener for gap detection
+        let scrollTimeout;
+        state.scrollHandler = () => {
+            // Detectar dirección de scroll
+            const currentScrollY = window.scrollY;
+            if (currentScrollY < state.lastScrollY) {
+                state.scrollDirection = 'up';
+            } else if (currentScrollY > state.lastScrollY) {
+                state.scrollDirection = 'down';
+            }
+            state.lastScrollY = currentScrollY;
+
+            // Debounce: solo verificar gaps después de 150ms sin scroll
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                if (state.enabled && state.scrollDirection === 'up') {
+                    this.renderVisibleGaps();
+                }
+            }, 150);
+        };
+
+        window.addEventListener('scroll', state.scrollHandler, { passive: true });
+
         // Add sentinel at the end if there are more tokens
         if (tokens.length > initialEnd) {
             this.addVirtualDOMSentinel();
@@ -791,12 +848,144 @@ class UIManager {
     }
 
     /**
+     * 🎯 BIDIRECTIONAL: Render elements that are in viewport but not in DOM
+     * Usado cuando el usuario hace scroll a áreas previamente renderizadas pero limpiadas
+     */
+    renderVisibleGaps() {
+        const state = this.virtualDOMState;
+        const tokensGrid = this.domElements.get('tokens-grid');
+        if (!tokensGrid || !state.enabled || state.isRendering) return;
+
+        state.isRendering = true;
+
+        try {
+            // Aplicar filtro de categoría
+            let tokensToRender = state.allTokens;
+            if (this.currentFilter === 'traits' && this.currentCategoryFilter) {
+                const traitsManager = window.app?.modules?.traits;
+                if (traitsManager) {
+                    tokensToRender = state.allTokens.filter(token => {
+                        const category = traitsManager.getTraitCategory(token.tokenId);
+                        return category === this.currentCategoryFilter;
+                    });
+                }
+            }
+
+            // Calcular rango visible (con buffer)
+            const viewportTop = window.scrollY;
+            const viewportBottom = window.scrollY + window.innerHeight;
+            const buffer = window.innerHeight * state.bufferSize;
+
+            // Estimar qué índices deberían estar visibles
+            // (esto es aproximado, basado en altura promedio de cards)
+            const cardHeight = state.cardHeight || 200;
+            const cardsPerRow = state.cardsPerRow || 3;
+            const rowHeight = cardHeight + 20; // margin
+
+            const visibleStartRow = Math.max(0, Math.floor((viewportTop - buffer) / rowHeight));
+            const visibleEndRow = Math.ceil((viewportBottom + buffer) / rowHeight);
+
+            const visibleStartIndex = visibleStartRow * cardsPerRow;
+            const visibleEndIndex = Math.min(visibleEndRow * cardsPerRow, tokensToRender.length);
+
+            // Encontrar gaps (tokens que deberían estar visibles pero no están renderizados)
+            const gapsToRender = [];
+            for (let i = visibleStartIndex; i < visibleEndIndex; i++) {
+                const token = tokensToRender[i];
+                if (!token) continue;
+
+                const originalIndex = state.allTokens.findIndex(t =>
+                    this.getTokenKey(t) === this.getTokenKey(token)
+                );
+
+                if (originalIndex !== -1 && !state.renderedIndices.has(originalIndex)) {
+                    gapsToRender.push({ token, index: i, originalIndex });
+                }
+            }
+
+            if (gapsToRender.length > 0) {
+                console.log(`🎯 Detectados ${gapsToRender.length} gaps en viewport, re-renderizando...`);
+
+                // Renderizar gaps en pequeños batches
+                const batchSize = Math.min(20, gapsToRender.length);
+                const batch = gapsToRender.slice(0, batchSize);
+
+                batch.forEach(({ token, index, originalIndex }) => {
+                    // Check DOM limit
+                    const currentDOMCount = tokensGrid.querySelectorAll('.token-card').length;
+                    if (currentDOMCount >= state.maxDOMElements) {
+                        this.removeVirtualElementsOutsideViewport();
+                    }
+
+                    // Render the token
+                    const tokenCard = this.createTokenCard(token);
+                    tokenCard.setAttribute('data-token-index', originalIndex);
+                    const tokenKey = this.getTokenKey(token);
+                    tokenCard.setAttribute('data-token-id', tokenKey);
+
+                    // Restaurar estado de selección
+                    if (state.selectedStates && state.selectedStates.has(tokenKey)) {
+                        tokenCard.classList.add('selected');
+                    }
+
+                    // Insertar en la posición correcta (ordenado)
+                    const existingCards = Array.from(tokensGrid.querySelectorAll('.token-card'));
+                    let insertBefore = null;
+                    for (const card of existingCards) {
+                        const cardIndex = parseInt(card.getAttribute('data-token-index'));
+                        if (cardIndex > originalIndex) {
+                            insertBefore = card;
+                            break;
+                        }
+                    }
+
+                    if (insertBefore) {
+                        tokensGrid.insertBefore(tokenCard, insertBefore);
+                    } else {
+                        // Insert before sentinel if exists, otherwise append
+                        if (state.sentinel && state.sentinel.parentNode === tokensGrid) {
+                            tokensGrid.insertBefore(tokenCard, state.sentinel);
+                        } else {
+                            tokensGrid.appendChild(tokenCard);
+                        }
+                    }
+
+                    state.renderedIndices.add(originalIndex);
+                    // También marcar como procesado
+                    state.processedIndices.add(originalIndex);
+
+                    // Add click handler
+                    const clickHandler = () => this.handleTokenClick(token);
+                    tokenCard.addEventListener('click', clickHandler);
+                    tokenCard._clickHandler = clickHandler;
+
+                    // Add to viewport observer
+                    if (state.viewportObserver) {
+                        state.viewportObserver.observe(tokenCard);
+                        tokenCard.setAttribute('data-viewport-observed', 'true');
+                    }
+                });
+
+                console.log(`✅ Re-renderizados ${batch.length} elementos en gaps`);
+            }
+        } finally {
+            state.isRendering = false;
+        }
+    }
+
+    /**
      * Load next batch of tokens in virtual DOM mode
      */
     loadNextVirtualBatch() {
         const state = this.virtualDOMState;
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid || !state.enabled) return;
+
+        // 🎯 BIDIRECTIONAL: Si estamos scrolling up, buscar gaps primero
+        if (state.scrollDirection === 'up') {
+            this.renderVisibleGaps();
+            return; // No cargar nuevos, solo rellenar gaps
+        }
 
         // Aplicar filtro de categoría si está activo para calcular cuántos tokens hay
         let tokensToRender = state.allTokens;
