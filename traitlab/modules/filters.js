@@ -1,6 +1,7 @@
 /**
  * TRAITLAB - Módulo de Filtros
  * Maneja el filtrado de tokens por tipo (floppy, serum, traits, etc.)
+ * Updated: 2026-01-29 - Pack 10019 agregado con ACTION_PACKS_CONTRACT
  */
 
 class TokenFilters {
