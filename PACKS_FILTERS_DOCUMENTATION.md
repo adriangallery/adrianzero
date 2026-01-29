@@ -285,6 +285,35 @@ if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 1
       (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
 ```
 
+**2.4. floppy.js - Agregar routing en openSelectedPack() (línea ~324)**
+
+⚠️ **CRÍTICO**: Agregar case de routing es OBLIGATORIO (pack 10019 falló por esto)
+
+Si el pack usa `ACTION_PACKS_CONTRACT`, agregar case antes del 1123:
+
+```javascript
+// ANTES
+} else if (tokenId === 10016) {
+    console.log('Redirecting to openActionPack() for PACK10016', tokenId);
+    return await this.openActionPack();
+} else if (tokenId === 1123) {
+
+// DESPUÉS
+} else if (tokenId === 10016) {
+    console.log('Redirecting to openActionPack() for PACK10016', tokenId);
+    return await this.openActionPack();
+} else if (tokenId === 10020) {  // ← NUEVO
+    console.log('Redirecting to openActionPack() for PACK10020', tokenId);
+    return await this.openActionPack();
+} else if (tokenId === 1123) {
+```
+
+**¿Por qué es crítico?**
+- `openSelectedPack()` decide QUÉ MÉTODO llamar (openPack, openPackV4, openActionPack, etc.)
+- Si falta el case, el pack cae al `else` que usa `openPack()` con contrato incorrecto
+- Resultado: Transacción enviada a contrato equivocado, error "Pack not active"
+- **Ejemplo real**: Pack 10019 fue enviado a PACK_TOKEN_MINTER_CONTRACT en vez de ACTION_PACKS_CONTRACT
+
 #### ✅ Paso 3: Agregar Imagen
 
 **3.1. Ubicación**
@@ -378,7 +407,14 @@ console.log('Floppy tokens:', window.app.modules.dataManager.cache.adrianLab.flo
 
 **Posibles Causas:**
 
-1. **❌ getContractForFloppy() no actualizado** ⚠️ CAUSA MÁS COMÚN
+1. **❌ openSelectedPack() no actualizado** ⚠️ CAUSA MÁS COMÚN
+   - **Síntomas**: Error "execution reverted: Pack not active", transacción a contrato incorrecto
+   - **Verificar**: DevTools Console → error muestra "to":"0x673bE..." (contrato equivocado)
+   - **Causa**: Falta case en floppy.js:324 openSelectedPack(), cae a else con openPack()
+   - **Fix**: Agregar case explícito para redirigir a openActionPack() (ver Paso 2.4)
+   - **Ejemplo real**: Pack 10019 usaba openPack() → PACK_TOKEN_MINTER_CONTRACT incorrecto
+
+2. **❌ getContractForFloppy() no actualizado**
    - **Síntomas**: Error "execution reverted: Pack not active"
    - **Verificar**: DevTools Console → "Using contract from getContractForFloppy: 0x..."
    - **Causa**: Falta case en floppy.js:227 getContractForFloppy()
@@ -433,8 +469,11 @@ traitlab/
 | `isFloppyToken()` | floppy.js | ~173 | Verifica si un token es floppy |
 | `isFloppyToken()` | zero.js | ~156 | Verifica si un token es floppy |
 | `openFloppy()` | floppy.js | ~50 | Abre un pack usando su contrato |
+| **`openSelectedPack()`** | **floppy.js** | **~324** | **⚠️ CRÍTICO: Decide qué método usar (openPack/openPackV4/openActionPack)** |
 | **`getContractForFloppy()`** | **floppy.js** | **~227** | **⚠️ CRÍTICO: Determina qué contrato usar para abrir cada pack** |
 | `openActionPack()` | floppy.js | ~760 | Abre packs con ACTION_PACKS_CONTRACT |
+| `openPack()` | floppy.js | ~540 | Abre packs con PACK_TOKEN_MINTER_CONTRACT (default fallback) |
+| `openPackV4()` | floppy.js | ~372 | Abre packs con OPENPACK_V4_CONTRACT |
 | `loadFloppyTokensOnDemand()` | data-manager.js | ~287 | Carga floppys bajo demanda |
 
 ### 🎨 Sistema de Imágenes
@@ -453,16 +492,29 @@ traitlab/
 
 ## HISTORIAL DE CAMBIOS
 
-### 2026-01-29 - Pack 10019 Agregado y Corregido
+### 2026-01-29 - Pack 10019 Agregado y Corregido (2 bugs)
 - **Commit inicial**: 0466131f1
-- **Commit fix**: ff86af342
+- **Commit fix #1**: ff86af342 (getContractForFloppy)
+- **Commit fix #2**: e536792f3 (openSelectedPack)
 - **Cambios**:
   - Actualizado rango 10000-10018 → 10000-10019 en 4 archivos
   - Agregada configuración de PACK10019 con ACTION_PACKS_CONTRACT en filters.js
   - Agregada imagen 10019.png en assets
-  - **⚠️ BUG ENCONTRADO**: Pack 10019 no abría (error "Pack not active")
-  - **FIX**: Faltaba case en getContractForFloppy() en floppy.js:280-287
-  - **LECCIÓN**: SIEMPRE actualizar getContractForFloppy() al agregar nuevo pack
+
+- **⚠️ BUG #1**: Pack 10019 no abría (error "Pack not active" con contrato incorrecto)
+  - **Causa**: Faltaba case en getContractForFloppy() en floppy.js:280-287
+  - **Fix**: Agregado case para retornar ACTION_PACKS_CONTRACT
+
+- **⚠️ BUG #2**: Pack 10019 seguía usando contrato incorrecto después de fix #1
+  - **Causa**: Faltaba case en openSelectedPack() en floppy.js:324-356
+  - **Síntoma**: Transacción enviada a 0x673bE... en vez de ACTION_PACKS_CONTRACT
+  - **Fix**: Agregado case para redirigir a openActionPack()
+
+- **LECCIONES CRÍTICAS**:
+  1. ✅ Actualizar getContractForFloppy() (determina contrato)
+  2. ✅ Actualizar openSelectedPack() (decide método a llamar) ← **MÁS CRÍTICO**
+  3. ✅ Actualizar validación en openActionPack()
+  4. ✅ Hard refresh no es suficiente si deployment no completó
 
 ### Futuros Packs
 - **10020**: *(Pendiente)*
