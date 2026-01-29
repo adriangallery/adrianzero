@@ -42,6 +42,7 @@ class UIManager {
             enabled: false,
             allTokens: [], // Todos los tokens en cache (sin renderizar)
             renderedIndices: new Set(), // Índices de tokens actualmente renderizados en DOM
+            processedIndices: new Set(), // 🐛 FIX: Índices ya procesados (no volver atrás al hacer cleanup)
             maxDOMElements: 100, // Máximo de elementos DOM simultáneos (ajustado dinámicamente)
             batchSize: 50, // Tamaño de batch para renderizar
             observer: null, // Intersection Observer para detectar scroll
@@ -473,6 +474,7 @@ class UIManager {
         this.virtualDOMState.enabled = false;
         this.virtualDOMState.allTokens = [];
         this.virtualDOMState.renderedIndices.clear();
+        this.virtualDOMState.processedIndices.clear(); // 🐛 FIX: Limpiar procesados también
     }
 
     /**
@@ -620,6 +622,7 @@ class UIManager {
             }
 
             state.renderedIndices.add(actualIndex);
+            state.processedIndices.add(actualIndex); // 🐛 FIX: Marcar como procesado
             renderedCount++;
         });
 
@@ -696,6 +699,7 @@ class UIManager {
 
         state.allTokens = [...tokens]; // Guardar todos los tokens en cache (sin filtrar)
         state.renderedIndices.clear();
+        state.processedIndices.clear(); // 🐛 FIX: Resetear procesados al iniciar
         state.enabled = true;
 
         console.log(`🛡️ Virtual DOM activado: ${tokens.length} tokens en cache, máximo ${state.maxDOMElements} elementos DOM simultáneos`);
@@ -806,27 +810,33 @@ class UIManager {
             }
         }
 
-        // Contar cuántos tokens filtrados ya se han renderizado
-        // Buscar tokens filtrados que ya están en renderedIndices
-        const renderedFilteredTokens = tokensToRender.filter((token, index) => {
-            const originalIndex = state.allTokens.findIndex(t => 
+        // 🐛 FIX: Encontrar el primer token NO procesado en el array filtrado
+        // Usar processedIndices (no renderedIndices) para no volver atrás después del cleanup
+        let startIndex = -1;
+        for (let i = 0; i < tokensToRender.length; i++) {
+            const token = tokensToRender[i];
+            const originalIndex = state.allTokens.findIndex(t =>
                 this.getTokenKey(t) === this.getTokenKey(token)
             );
-            return originalIndex !== -1 && state.renderedIndices.has(originalIndex);
-        });
-        
-        const startIndex = renderedFilteredTokens.length;
-        const endIndex = Math.min(startIndex + state.batchSize, tokensToRender.length);
 
-        if (startIndex >= tokensToRender.length) {
-            // All filtered tokens loaded, remove sentinel
+            // Si encontramos un token que NO ha sido procesado, ese es nuestro startIndex
+            if (originalIndex !== -1 && !state.processedIndices.has(originalIndex)) {
+                startIndex = i;
+                break;
+            }
+        }
+
+        // Si no encontramos tokens sin procesar, todos están cargados
+        if (startIndex === -1) {
             if (state.sentinel) {
                 state.sentinel.remove();
                 state.sentinel = null;
             }
-            console.log('✅ Virtual DOM: Todos los tokens filtrados cargados');
+            console.log('✅ Virtual DOM: Todos los tokens filtrados ya están procesados');
             return;
         }
+
+        const endIndex = Math.min(startIndex + state.batchSize, tokensToRender.length);
 
         console.log(`📦 Virtual DOM: Renderizando batch ${startIndex} a ${endIndex} (${endIndex - startIndex} tokens) de ${tokensToRender.length} filtrados`);
 
