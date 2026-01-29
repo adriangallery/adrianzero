@@ -69,7 +69,11 @@ class UIManager {
             lastScrollY: 0, // Última posición de scroll
             scrollDirection: 'down', // Dirección actual: 'up' o 'down'
             bufferSize: 2.0, // Buffer: 2x viewport height
-            isRendering: false // Flag para evitar renders simultáneos
+            isRendering: false, // Flag para evitar renders simultáneos
+            // 🐛 FIX: Prevenir loop infinito de gap detection
+            isFillingGaps: false, // Flag para prevenir cleanup durante gap filling
+            lastGapFillTime: 0, // Timestamp del último gap fill
+            gapFillThrottleMs: 500 // Mínimo tiempo entre gap fills (throttling)
         };
         
         // Bind methods
@@ -509,6 +513,13 @@ class UIManager {
         if (!tokensGrid || !this.virtualDOMState.enabled) return;
 
         const state = this.virtualDOMState;
+
+        // 🐛 FIX: NO ejecutar cleanup mientras se están llenando gaps
+        if (state.isFillingGaps) {
+            console.log('🛑 Cleanup cancelado: llenando gaps');
+            return;
+        }
+
         const renderedCards = Array.from(tokensGrid.querySelectorAll('.token-card'));
 
         if (renderedCards.length <= state.maxDOMElements) {
@@ -869,7 +880,15 @@ class UIManager {
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid || !state.enabled || state.isRendering) return;
 
+        // 🐛 FIX: Throttling - no ejecutar más de 1 vez cada 500ms
+        const now = Date.now();
+        if (now - state.lastGapFillTime < state.gapFillThrottleMs) {
+            console.log('🛑 Gap detection throttled');
+            return;
+        }
+
         state.isRendering = true;
+        state.isFillingGaps = true; // 🐛 FIX: Activar flag para prevenir cleanup
 
         try {
             // Aplicar filtro de categoría
@@ -924,11 +943,8 @@ class UIManager {
                 const batch = gapsToRender.slice(0, batchSize);
 
                 batch.forEach(({ token, index, originalIndex }) => {
-                    // Check DOM limit
-                    const currentDOMCount = tokensGrid.querySelectorAll('.token-card').length;
-                    if (currentDOMCount >= state.maxDOMElements) {
-                        this.removeVirtualElementsOutsideViewport();
-                    }
+                    // 🐛 FIX: NO llamar a cleanup aquí - se ejecutará después con delay
+                    // Esto previene el loop infinito de gap detection
 
                     // Render the token
                     const tokenCard = this.createTokenCard(token);
@@ -980,9 +996,21 @@ class UIManager {
                 });
 
                 console.log(`✅ Re-renderizados ${batch.length} elementos en gaps`);
+
+                // 🐛 FIX: Actualizar timestamp del último gap fill
+                state.lastGapFillTime = Date.now();
             }
         } finally {
             state.isRendering = false;
+            state.isFillingGaps = false; // 🐛 FIX: Desactivar flag
+
+            // 🐛 FIX: Ejecutar cleanup DESPUÉS de gap filling (con delay)
+            // Esto permite que las imágenes se carguen y evita el flickering
+            setTimeout(() => {
+                if (!state.isFillingGaps) {
+                    this.removeVirtualElementsOutsideViewport();
+                }
+            }, 300);
         }
     }
 
