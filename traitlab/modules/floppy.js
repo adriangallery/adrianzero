@@ -131,6 +131,10 @@ class FloppyManager {
             return this.getImagePath(10015, '.gif');
         } else if (tokenId === 10016) {
             return this.getImagePath(10016, '.gif');
+        } else if (tokenId === 10017) {
+            return this.getImagePath(10017, '.gif');
+        } else if (tokenId === 10019) {
+            return this.getImagePath(10019, '.png');
         } else if (tokenId === 1123) {
             // CensorPACK: intentar .gif primero, luego .png como fallback
             const gifPath = this.getImagePath(1123, '.gif');
@@ -139,7 +143,7 @@ class FloppyManager {
             // Por ahora retornamos png ya que sabemos que existe
             return pngPath;
         }
-        
+
         // Fallback to default image
         return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
     }
@@ -752,8 +756,8 @@ class FloppyManager {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
-            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 10016, 1123, 15008-15015).');
+        if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 || this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 || this.selectedFloppy.tokenId === 10019 || this.selectedFloppy.tokenId === 1123 || (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
+            throw new Error('This function is only available for Action Packs (10008, 10011, 10012, 10016, 10019, 1123, 15008-15015).');
         }
         if (!window.TraitLABWallet || !window.TraitLABWallet.isWalletConnected()) {
             throw new Error('Please connect your wallet first.');
