@@ -42,11 +42,15 @@ class UIManager {
             enabled: false,
             allTokens: [], // Todos los tokens en cache (sin renderizar)
             renderedIndices: new Set(), // Índices de tokens actualmente renderizados en DOM
-            maxDOMElements: 100, // Máximo de elementos DOM simultáneos
+            maxDOMElements: 100, // Máximo de elementos DOM simultáneos (ajustado dinámicamente)
             batchSize: 50, // Tamaño de batch para renderizar
             observer: null, // Intersection Observer para detectar scroll
             sentinel: null, // Elemento sentinela para detectar cuando hacer scroll
-            viewportObserver: null // Observer para detectar elementos fuera del viewport
+            viewportObserver: null, // Observer para detectar elementos fuera del viewport
+            selectedStates: new Map(), // 🔴 WHALE FIX: Preservar estado de selección
+            cardHeight: null, // 🟡 WHALE FIX: Cache de altura de cards
+            cardsPerRow: null, // 🟡 WHALE FIX: Cache de cards por fila
+            deviceCapacity: null // 🟡 WHALE FIX: Capacidad del dispositivo
         };
         
         // Bind methods
@@ -509,25 +513,31 @@ class UIManager {
         // Keep only maxDOMElements, prioritizing those closer to viewport
         if (elementsToRemove.length > 0 && renderedCards.length > state.maxDOMElements) {
             const toRemove = elementsToRemove.slice(0, renderedCards.length - state.maxDOMElements);
-            
+
             toRemove.forEach(card => {
                 const tokenId = card.getAttribute('data-token-id');
                 if (tokenId) {
+                    // 🔴 WHALE FIX: Guardar estado de selección ANTES de remover
+                    const isSelected = card.classList.contains('selected');
+                    if (isSelected) {
+                        state.selectedStates.set(tokenId, true);
+                    }
+
                     // Find index in allTokens
-                    const index = state.allTokens.findIndex(t => 
+                    const index = state.allTokens.findIndex(t =>
                         this.getTokenKey(t) === tokenId
                     );
                     if (index !== -1) {
                         state.renderedIndices.delete(index);
                     }
                 }
-                
+
                 // Remove click handler
                 if (card._clickHandler) {
                     card.removeEventListener('click', card._clickHandler);
                     delete card._clickHandler;
                 }
-                
+
                 card.remove();
             });
 
@@ -582,8 +592,14 @@ class UIManager {
 
             const tokenCard = this.createTokenCard(token);
             tokenCard.setAttribute('data-token-index', actualIndex);
-            tokenCard.setAttribute('data-token-id', this.getTokenKey(token));
-            
+            const tokenKey = this.getTokenKey(token);
+            tokenCard.setAttribute('data-token-id', tokenKey);
+
+            // 🔴 WHALE FIX: Restaurar estado de selección si existía
+            if (state.selectedStates && state.selectedStates.has(tokenKey)) {
+                tokenCard.classList.add('selected');
+            }
+
             // Find insertion point (maintain order)
             const existingCards = Array.from(tokensGrid.querySelectorAll('.token-card'));
             let insertBefore = null;
@@ -606,7 +622,56 @@ class UIManager {
             renderedCount++;
         });
 
+        // 🔴 WHALE FIX: Update counter after rendering batch
+        if (renderedCount > 0) {
+            this.updateTokenCounter();
+        }
+
         return renderedCount;
+    }
+
+    /**
+     * 🟡 WHALE FIX: Detect device capacity and adjust Virtual DOM limits
+     * @returns {Object} Device capacity info with recommended DOM limits
+     */
+    detectDeviceCapacity() {
+        const deviceInfo = {
+            memory: navigator.deviceMemory || 4, // RAM en GB (default 4GB si no disponible)
+            cores: navigator.hardwareConcurrency || 4, // Núcleos CPU
+            connection: navigator.connection?.effectiveType || '4g', // Velocidad de red
+            isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+        };
+
+        // Calcular límite de elementos DOM basado en capacidad del dispositivo
+        let maxElements = 100; // Default
+
+        if (deviceInfo.memory <= 2 || deviceInfo.cores <= 2) {
+            maxElements = 30; // Dispositivos de gama baja
+        } else if (deviceInfo.memory <= 4 || deviceInfo.cores <= 4) {
+            maxElements = 50; // Dispositivos de gama media
+        } else if (deviceInfo.memory >= 8) {
+            maxElements = 150; // Dispositivos de gama alta
+        }
+
+        // Reducir en móviles (usan más memoria para otros procesos)
+        if (deviceInfo.isMobile) {
+            maxElements = Math.floor(maxElements * 0.7);
+        }
+
+        // Reducir en conexiones lentas (menos imágenes cargadas = menos memoria pero más lag)
+        if (deviceInfo.connection === '3g' || deviceInfo.connection === '2g' || deviceInfo.connection === 'slow-2g') {
+            maxElements = Math.floor(maxElements * 0.6);
+        }
+
+        const capacity = {
+            maxDOMElements: Math.max(20, maxElements), // Mínimo 20 elementos
+            batchSize: Math.max(10, Math.floor(maxElements / 2)), // Batch = mitad del máximo
+            deviceInfo
+        };
+
+        console.log(`📱 Capacidad detectada:`, deviceInfo, `→ Max DOM elements: ${capacity.maxDOMElements}, Batch size: ${capacity.batchSize}`);
+
+        return capacity;
     }
 
     /**
@@ -620,6 +685,14 @@ class UIManager {
         this.cleanupVirtualDOM();
 
         const state = this.virtualDOMState;
+
+        // 🟡 WHALE FIX: Detect device capacity and adjust limits dynamically
+        if (!state.deviceCapacity) {
+            state.deviceCapacity = this.detectDeviceCapacity();
+            state.maxDOMElements = state.deviceCapacity.maxDOMElements;
+            state.batchSize = state.deviceCapacity.batchSize;
+        }
+
         state.allTokens = [...tokens]; // Guardar todos los tokens en cache (sin filtrar)
         state.renderedIndices.clear();
         state.enabled = true;
@@ -681,6 +754,9 @@ class UIManager {
 
         // Update selection info
         this.updateSelectionInfo();
+
+        // 🔴 WHALE FIX: Update token counter
+        this.updateTokenCounter();
     }
 
     /**
@@ -1244,10 +1320,41 @@ class UIManager {
         // 🛡️ VIRTUAL DOM: Check if we should use virtual DOM (SAFU mode + traits tab)
         // IMPORTANTE: Verificar ANTES del filtro de categoría para usar todos los tokens
         // El filtro de categoría se aplicará dentro del virtual DOM
-        const shouldUseVirtualDOM = isSafuMode && 
-                                     isTraitsTab && 
-                                     tokens.length > 50; // Only use virtual DOM if more than 50 traits
+        // 🔴 WHALE FIX: Activar siempre en SAFU mode, sin importar cantidad de tokens
+        // Esto asegura que wallets grandes puedan acceder a todos sus traits
+        const shouldUseVirtualDOM = isSafuMode && isTraitsTab; // Activar siempre en SAFU mode
         
+        // 🟢 WHALE FIX: Show/hide search box (only for traits tab)
+        const searchContainer = document.getElementById('trait-search-container');
+        if (searchContainer) {
+            searchContainer.style.display = isTraitsTab ? 'block' : 'none';
+
+            // Setup search event listeners (only once)
+            if (!this._searchListenersSetup && isTraitsTab) {
+                this._searchListenersSetup = true;
+                const searchInput = document.getElementById('trait-search');
+                const clearBtn = document.getElementById('clear-search');
+
+                if (searchInput) {
+                    // Debounce search input
+                    let searchTimeout;
+                    searchInput.addEventListener('input', (e) => {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(() => {
+                            this.searchTraits(e.target.value);
+                        }, 300);
+                    });
+                }
+
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', () => {
+                        if (searchInput) searchInput.value = '';
+                        this.searchTraits('');
+                    });
+                }
+            }
+        }
+
         if (shouldUseVirtualDOM) {
             console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode`);
             // Guardar tokens originales (sin filtrar por categoría) para virtual DOM
@@ -1832,6 +1939,137 @@ class UIManager {
     updateSelectionInfo() {
         // This will be implemented when we have the selection state management
         this.emit('selectionInfoUpdate');
+    }
+
+    /**
+     * 🔴 WHALE FIX: Update token counter display
+     * Shows "Mostrando X de Y traits" to inform user about total available
+     */
+    updateTokenCounter() {
+        const counterElement = document.getElementById('token-counter');
+        if (!counterElement) return;
+
+        const state = this.virtualDOMState;
+
+        // Si Virtual DOM no está activo, ocultar contador
+        if (!state.enabled) {
+            counterElement.style.display = 'none';
+            return;
+        }
+
+        // Aplicar filtro de categoría para contar correctamente
+        let totalTokens = state.allTokens.length;
+        let filteredTokens = state.allTokens;
+
+        if (this.currentFilter === 'traits' && this.currentCategoryFilter) {
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                filteredTokens = state.allTokens.filter(token => {
+                    const category = traitsManager.getTraitCategory(token.tokenId);
+                    return category === this.currentCategoryFilter;
+                });
+                totalTokens = filteredTokens.length;
+            }
+        }
+
+        // Contar cuántos tokens filtrados están actualmente renderizados
+        const renderedFilteredTokens = filteredTokens.filter((token, index) => {
+            const originalIndex = state.allTokens.findIndex(t =>
+                this.getTokenKey(t) === this.getTokenKey(token)
+            );
+            return originalIndex !== -1 && state.renderedIndices.has(originalIndex);
+        });
+
+        const visibleTokens = renderedFilteredTokens.length;
+
+        // Actualizar HTML del contador
+        counterElement.style.display = 'block';
+        counterElement.innerHTML = `
+            <div class="token-counter-content">
+                <span class="counter-text">
+                    Mostrando <strong>${visibleTokens}</strong> de <strong>${totalTokens}</strong> traits
+                </span>
+                ${visibleTokens < totalTokens ?
+                    '<span class="counter-hint">↓ Scroll para cargar más</span>' :
+                    '<span class="counter-complete">✓ Todos cargados</span>'
+                }
+            </div>
+        `;
+    }
+
+    /**
+     * 🟢 WHALE FIX: Search/filter traits by ID or name
+     * @param {string} query - Search query
+     */
+    searchTraits(query) {
+        const searchContainer = document.getElementById('trait-search-container');
+        const clearBtn = document.getElementById('clear-search');
+
+        if (!searchContainer || !clearBtn) return;
+
+        // Show/hide clear button
+        clearBtn.style.display = query ? 'block' : 'none';
+
+        // If no query, show all traits
+        if (!query) {
+            const dataManager = window.app?.modules?.dataManager;
+            if (dataManager) {
+                const allTraits = dataManager.getFilteredTokens?.('traits') || [];
+                this.displayTokens(allTraits, 'traits');
+            }
+            return;
+        }
+
+        const lowerQuery = query.toLowerCase().trim();
+        const state = this.virtualDOMState;
+
+        // Search in cached tokens
+        let tokensToSearch = state.enabled && state.allTokens.length > 0 ?
+            state.allTokens :
+            (window.app?.modules?.dataManager?.getFilteredTokens?.('traits') || []);
+
+        const results = tokensToSearch.filter(token => {
+            // Search by token ID
+            if (token.tokenId.toString().includes(lowerQuery)) {
+                return true;
+            }
+
+            // Search by title/name
+            if (token.title && token.title.toLowerCase().includes(lowerQuery)) {
+                return true;
+            }
+
+            // Search by category
+            const traitsManager = window.app?.modules?.traits;
+            if (traitsManager) {
+                const category = traitsManager.getTraitCategory(token.tokenId);
+                if (category && category.toLowerCase().includes(lowerQuery)) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        console.log(`🔍 Search: "${query}" → ${results.length} results`);
+
+        // Display results
+        if (results.length > 0) {
+            this.displayTokens(results, 'traits');
+        } else {
+            // Show "no results" message
+            const tokensGrid = this.domElements.get('tokens-grid');
+            if (tokensGrid) {
+                tokensGrid.innerHTML = `
+                    <div class="no-results-message">
+                        <p>No se encontraron traits para "${query}"</p>
+                        <button class="btn btn-secondary" onclick="document.getElementById('trait-search').value = ''; window.app.modules.ui.searchTraits('');">
+                            Limpiar búsqueda
+                        </button>
+                    </div>
+                `;
+            }
+        }
     }
 
     /**
