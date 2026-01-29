@@ -981,8 +981,9 @@ class UIManager {
         const tokensGrid = this.domElements.get('tokens-grid');
         if (!tokensGrid || !state.enabled) return;
 
-        // 🎯 BIDIRECTIONAL: Si estamos scrolling up, buscar gaps primero
-        if (state.scrollDirection === 'up') {
+        // 🎯 BIDIRECTIONAL: Si estamos scrolling up Y ya hay tokens renderizados, buscar gaps primero
+        // Solo usar lógica de gaps si ya hay algo renderizado, sino seguir con carga normal
+        if (state.scrollDirection === 'up' && state.renderedIndices.size > 0) {
             this.renderVisibleGaps();
             return; // No cargar nuevos, solo rellenar gaps
         }
