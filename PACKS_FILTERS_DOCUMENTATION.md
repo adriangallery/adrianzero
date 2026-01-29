@@ -228,6 +228,63 @@ return (tokenId >= 10000 && tokenId <= 10020) ||
 - `PACK_TOKEN_MINTER_CONTRACT` - Para packs genéricos
 - O crear un nuevo contrato en config.js
 
+**2.2. floppy.js - Agregar case en getContractForFloppy() (línea ~227)**
+
+⚠️ **CRÍTICO**: Agregar el pack a la función `getContractForFloppy()` es OBLIGATORIO
+
+```javascript
+// Encontrar la sección apropiada según el contrato elegido
+
+// Si usas ACTION_PACKS_CONTRACT, agregar después de pack 10016 (línea ~280):
+} else if (tokenId === 10019) {
+    // PACK10019 - ActionPack contract
+    return {
+        address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
+        type: 'pack',
+        name: 'PACK10019'
+    };
+} else if (tokenId === 10020) {  // ← NUEVO
+    // PACK10020 - ActionPack contract
+    return {
+        address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
+        type: 'pack',
+        name: 'PACK10020'
+    };
+} else if (tokenId === 1123) {
+
+// Si usas OPENPACK_V4_CONTRACT, agregar al condicional de línea ~229:
+if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002 ||
+    tokenId === 10003 || tokenId === 10004 || tokenId === 10005 ||
+    tokenId === 10009 || tokenId === 10010 || tokenId === 10013 ||
+    tokenId === 10014 || tokenId === 10015 || tokenId === 10018 ||
+    tokenId === 10020 || tokenId === 15010) {  // ← Agregar 10020 aquí
+```
+
+**¿Por qué es crítico?**
+- `filters.js` solo asigna `targetContract` para mostrar el pack
+- `floppy.js.getContractForFloppy()` determina qué contrato se usa REALMENTE al abrir
+- Si falta esta configuración, el pack caerá al caso default (ADRIAN_FLOPPY_DISCS_CONTRACT)
+- Resultado: Error "Pack not active" al intentar abrir
+
+**2.3. floppy.js - Agregar validación en openActionPack() (línea ~766)**
+
+Si el pack usa `ACTION_PACKS_CONTRACT`, agregar a la validación:
+
+```javascript
+// ANTES
+if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 ||
+      this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 ||
+      this.selectedFloppy.tokenId === 10019 || this.selectedFloppy.tokenId === 1123 ||
+      (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
+
+// DESPUÉS
+if (!(this.selectedFloppy.tokenId === 10008 || this.selectedFloppy.tokenId === 10011 ||
+      this.selectedFloppy.tokenId === 10012 || this.selectedFloppy.tokenId === 10016 ||
+      this.selectedFloppy.tokenId === 10019 || this.selectedFloppy.tokenId === 10020 ||  // ← NUEVO
+      this.selectedFloppy.tokenId === 1123 ||
+      (this.selectedFloppy.tokenId >= 15008 && this.selectedFloppy.tokenId <= 15015))) {
+```
+
 #### ✅ Paso 3: Agregar Imagen
 
 **3.1. Ubicación**
@@ -321,15 +378,22 @@ console.log('Floppy tokens:', window.app.modules.dataManager.cache.adrianLab.flo
 
 **Posibles Causas:**
 
-1. **❌ Contrato incorrecto**
+1. **❌ getContractForFloppy() no actualizado** ⚠️ CAUSA MÁS COMÚN
+   - **Síntomas**: Error "execution reverted: Pack not active"
+   - **Verificar**: DevTools Console → "Using contract from getContractForFloppy: 0x..."
+   - **Causa**: Falta case en floppy.js:227 getContractForFloppy()
+   - **Fix**: Agregar case explícito para el nuevo pack (ver Paso 2.2)
+   - **Ejemplo real**: Pack 10019 caía a default porque no tenía case
+
+2. **❌ Contrato incorrecto en filters.js**
    - **Verificar**: targetContract en filters.js
    - **Fix**: Usar el contrato correcto para ese pack
 
-2. **❌ Contrato no configurado en config.js**
+3. **❌ Contrato no configurado en config.js**
    - **Verificar**: window.TraitLABConfig.XXX_CONTRACT existe
    - **Fix**: Agregar a config.js
 
-3. **❌ Usuario no aprobó el contrato**
+4. **❌ Usuario no aprobó el contrato**
    - **Verificar**: allowance en blockchain
    - **Fix**: Usuario debe aprobar primero
 
@@ -369,6 +433,8 @@ traitlab/
 | `isFloppyToken()` | floppy.js | ~173 | Verifica si un token es floppy |
 | `isFloppyToken()` | zero.js | ~156 | Verifica si un token es floppy |
 | `openFloppy()` | floppy.js | ~50 | Abre un pack usando su contrato |
+| **`getContractForFloppy()`** | **floppy.js** | **~227** | **⚠️ CRÍTICO: Determina qué contrato usar para abrir cada pack** |
+| `openActionPack()` | floppy.js | ~760 | Abre packs con ACTION_PACKS_CONTRACT |
 | `loadFloppyTokensOnDemand()` | data-manager.js | ~287 | Carga floppys bajo demanda |
 
 ### 🎨 Sistema de Imágenes
@@ -387,12 +453,16 @@ traitlab/
 
 ## HISTORIAL DE CAMBIOS
 
-### 2026-01-29 - Pack 10019 Agregado
-- **Commit**: 0466131f1
+### 2026-01-29 - Pack 10019 Agregado y Corregido
+- **Commit inicial**: 0466131f1
+- **Commit fix**: ff86af342
 - **Cambios**:
   - Actualizado rango 10000-10018 → 10000-10019 en 4 archivos
-  - Agregada configuración de PACK10019 con ACTION_PACKS_CONTRACT
-  - Verificada imagen 10019.png en assets
+  - Agregada configuración de PACK10019 con ACTION_PACKS_CONTRACT en filters.js
+  - Agregada imagen 10019.png en assets
+  - **⚠️ BUG ENCONTRADO**: Pack 10019 no abría (error "Pack not active")
+  - **FIX**: Faltaba case en getContractForFloppy() en floppy.js:280-287
+  - **LECCIÓN**: SIEMPRE actualizar getContractForFloppy() al agregar nuevo pack
 
 ### Futuros Packs
 - **10020**: *(Pendiente)*
