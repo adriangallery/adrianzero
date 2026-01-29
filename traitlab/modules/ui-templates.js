@@ -134,17 +134,6 @@ class UITemplates {
                     <button class="contract-btn" data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75" data-filter="lambo">Lambo</button>
                 </div>
 
-                <!-- 🟢 WHALE FIX: Search box for traits -->
-                <div id="trait-search-container" class="trait-search-container" style="display: none;">
-                    <input
-                        type="text"
-                        id="trait-search"
-                        class="trait-search-input"
-                        placeholder="🔍 Buscar trait por ID o nombre..."
-                    />
-                    <button id="clear-search" class="clear-search-btn" style="display: none;">✕</button>
-                </div>
-
                 <!-- 🔴 WHALE FIX: Token counter for Virtual DOM -->
                 <div id="token-counter" class="token-counter" style="display: none;"></div>
 

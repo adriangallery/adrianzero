@@ -3,6 +3,19 @@
  * Maneja todas las funciones helper de interfaz, mensajes, estados y gestión de DOM
  */
 
+// 🚀 OPTIMIZACIÓN: Utility function para debouncing
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 class UIManager {
     constructor() {
         this.eventListeners = new Map();
@@ -1537,37 +1550,6 @@ class UIManager {
         // Esto asegura que wallets grandes puedan acceder a todos sus traits
         const shouldUseVirtualDOM = isSafuMode && isTraitsTab; // Activar siempre en SAFU mode
         
-        // 🟢 WHALE FIX: Show/hide search box (only for traits tab)
-        const searchContainer = document.getElementById('trait-search-container');
-        if (searchContainer) {
-            searchContainer.style.display = isTraitsTab ? 'block' : 'none';
-
-            // Setup search event listeners (only once)
-            if (!this._searchListenersSetup && isTraitsTab) {
-                this._searchListenersSetup = true;
-                const searchInput = document.getElementById('trait-search');
-                const clearBtn = document.getElementById('clear-search');
-
-                if (searchInput) {
-                    // Debounce search input
-                    let searchTimeout;
-                    searchInput.addEventListener('input', (e) => {
-                        clearTimeout(searchTimeout);
-                        searchTimeout = setTimeout(() => {
-                            this.searchTraits(e.target.value);
-                        }, 300);
-                    });
-                }
-
-                if (clearBtn) {
-                    clearBtn.addEventListener('click', () => {
-                        if (searchInput) searchInput.value = '';
-                        this.searchTraits('');
-                    });
-                }
-            }
-        }
-
         if (shouldUseVirtualDOM) {
             console.log(`🛡️ Virtual DOM enabled for ${tokens.length} traits in SAFU mode`);
             // Guardar tokens originales (sin filtrar por categoría) para virtual DOM
@@ -2214,77 +2196,6 @@ class UIManager {
      * 🟢 WHALE FIX: Search/filter traits by ID or name
      * @param {string} query - Search query
      */
-    searchTraits(query) {
-        const searchContainer = document.getElementById('trait-search-container');
-        const clearBtn = document.getElementById('clear-search');
-
-        if (!searchContainer || !clearBtn) return;
-
-        // Show/hide clear button
-        clearBtn.style.display = query ? 'block' : 'none';
-
-        // If no query, show all traits
-        if (!query) {
-            const dataManager = window.app?.modules?.dataManager;
-            if (dataManager) {
-                const allTraits = dataManager.getFilteredTokens?.('traits') || [];
-                this.displayTokens(allTraits, 'traits');
-            }
-            return;
-        }
-
-        const lowerQuery = query.toLowerCase().trim();
-        const state = this.virtualDOMState;
-
-        // Search in cached tokens
-        let tokensToSearch = state.enabled && state.allTokens.length > 0 ?
-            state.allTokens :
-            (window.app?.modules?.dataManager?.getFilteredTokens?.('traits') || []);
-
-        const results = tokensToSearch.filter(token => {
-            // Search by token ID
-            if (token.tokenId.toString().includes(lowerQuery)) {
-                return true;
-            }
-
-            // Search by title/name
-            if (token.title && token.title.toLowerCase().includes(lowerQuery)) {
-                return true;
-            }
-
-            // Search by category
-            const traitsManager = window.app?.modules?.traits;
-            if (traitsManager) {
-                const category = traitsManager.getTraitCategory(token.tokenId);
-                if (category && category.toLowerCase().includes(lowerQuery)) {
-                    return true;
-                }
-            }
-
-            return false;
-        });
-
-        console.log(`🔍 Search: "${query}" → ${results.length} results`);
-
-        // Display results
-        if (results.length > 0) {
-            this.displayTokens(results, 'traits');
-        } else {
-            // Show "no results" message
-            const tokensGrid = this.domElements.get('tokens-grid');
-            if (tokensGrid) {
-                tokensGrid.innerHTML = `
-                    <div class="no-results-message">
-                        <p>No se encontraron traits para "${query}"</p>
-                        <button class="btn btn-secondary" onclick="document.getElementById('trait-search').value = ''; window.app.modules.ui.searchTraits('');">
-                            Limpiar búsqueda
-                        </button>
-                    </div>
-                `;
-            }
-        }
-    }
-
     /**
      * Function to get correct image path based on environment
      */
@@ -2826,11 +2737,25 @@ class UIManager {
             </div>
         `;
 
-        // Añadir event listeners a los botones
+        // 🚀 OPTIMIZACIÓN: Debounced category filter (300ms)
+        // Crear función debounced si no existe
+        if (!this._debouncedSetCategoryFilter) {
+            this._debouncedSetCategoryFilter = debounce((category) => {
+                this.setCategoryFilter(category);
+            }, 300);
+        }
+
+        // Añadir event listeners a los botones con debouncing
         categoryFilterContainer.querySelectorAll('.category-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const category = btn.dataset.category === 'all' ? null : btn.dataset.category;
-                this.setCategoryFilter(category);
+
+                // Actualizar UI inmediatamente para feedback visual
+                categoryFilterContainer.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Aplicar filtro con debounce
+                this._debouncedSetCategoryFilter(category);
             });
         });
 
