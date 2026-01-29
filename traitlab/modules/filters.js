@@ -48,7 +48,7 @@ class TokenFilters {
             const tokenId = parseInt(token.tokenId);
             
             // Solo usar rangos específicos de index.html: 10000-10019, 15000-15015, y pack 1123
-            const isFloppyById = (tokenId >= 10000 && tokenId <= 10018) || 
+            const isFloppyById = (tokenId >= 10000 && tokenId <= 10019) ||
                                  (tokenId >= 15000 && tokenId <= 15015) ||
                                  tokenId === 1123;
             
@@ -185,9 +185,9 @@ class TokenFilters {
      */
     isFloppyToken(token) {
         const tokenId = parseInt(token.tokenId);
-        
+
         // Solo usar rangos específicos de index.html: 10000-10019, 15000-15015, y pack 1123
-        return (tokenId >= 10000 && tokenId <= 10018) || 
+        return (tokenId >= 10000 && tokenId <= 10019) ||
                (tokenId >= 15000 && tokenId <= 15015) ||
                tokenId === 1123;
     }

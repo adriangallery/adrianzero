@@ -169,9 +169,10 @@ class FloppyManager {
 
     /**
      * Check if token is a floppy token
+     * Rangos: 10000-10019 (packs/floppys), 15000-15015 (floppys especiales)
      */
     isFloppyToken(tokenId) {
-        return (tokenId >= 10000 && tokenId <= 10018) || 
+        return (tokenId >= 10000 && tokenId <= 10019) ||
                (tokenId >= 15000 && tokenId <= 15015);
     }
 
