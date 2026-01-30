@@ -148,7 +148,7 @@ class GalleryManager {
             ];
 
             this.traitsContract = new ethers.Contract(
-                window.TRAITS_CONTRACT || "0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea",
+                window.TraitLABConfig.ADRIAN_TOKEN,
                 traitsABI,
                 provider
             );
@@ -251,7 +251,7 @@ class GalleryManager {
 
     async loadNftsFromAlchemy() {
         try {
-            const contractAddress = window.ADRIANZERO_CONTRACT || "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+            const contractAddress = window.TraitLABConfig.CONTRACTS.ERC721;
             const pageKey = this.currentPage > 0 ? this.pageKey : null;
             
             let urlParams = `contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC721`;
@@ -295,7 +295,7 @@ class GalleryManager {
 
     async loadTraitsFromAlchemy() {
         try {
-            const contractAddress = window.TRAITS_CONTRACT || "0x90546848474FB3c9fda3fdAd887969bB244E7e58";
+            const contractAddress = window.TraitLABConfig.CONTRACTS.ERC1155;
             const pageKey = this.currentPage > 0 ? this.pageKey : null;
             
             let urlParams = `contractAddress=${contractAddress}&withMetadata=true&pageSize=${this.batchSize}&tokenType=ERC1155`;
@@ -402,7 +402,7 @@ class GalleryManager {
             maxSupply: trait.maxSupply || '1000',
             uri: '',
             metadata: trait,
-            contractAddress: window.TRAITS_CONTRACT || "0x90546848474FB3c9fda3fdAd887969bB244E7e58"
+            contractAddress: window.TraitLABConfig.CONTRACTS.ERC1155
         };
     }
 
@@ -419,7 +419,7 @@ class GalleryManager {
             maxSupply: trait.maxSupply || '1000',
             uri: '',
             metadata: trait,
-            contractAddress: window.TRAITS_CONTRACT || "0x90546848474FB3c9fda3fdAd887969bB244E7e58"
+            contractAddress: window.TraitLABConfig.CONTRACTS.ERC1155
         };
     }
 

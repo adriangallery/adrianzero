@@ -70,7 +70,7 @@ class TraitLABDataManager {
             if (window.app && window.app.modules.zero) {
                 const userAddress = window.app.modules.wallet?.getCurrentAccount();
                 if (userAddress) {
-                    const contractAddress = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+                    const contractAddress = window.TraitLABConfig.CONTRACTS.ERC721;
                     // Cargar todos los tokens disponibles (sin límite)
                     const result = await window.app.modules.zero.loadTokens(
                         userAddress, 
@@ -134,7 +134,7 @@ class TraitLABDataManager {
             if (window.app && window.app.modules.zero) {
                 const userAddress = window.app.modules.wallet?.getCurrentAccount();
                 if (userAddress) {
-                    const contractAddress = "0x6e369bf0e4e0c106192d606fb6d85836d684da75";
+                    const contractAddress = window.TraitLABConfig.CONTRACTS.ERC721;
                     const tokens = await window.app.modules.zero.loadTokens(userAddress, contractAddress);
                     this.cache.adrianZero = tokens;
                     console.log('📊 AdrianZERO tokens cargados:', tokens.length);
@@ -203,7 +203,7 @@ class TraitLABDataManager {
             if (window.app && window.app.modules.zero) {
                 const userAddress = window.app.modules.wallet?.getCurrentAccount();
                 if (userAddress) {
-                    const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+                    const contractAddress = window.TraitLABConfig.CONTRACTS.ERC1155;
                     
                     // 🚀 VERIFICAR SI USAR MODO BATCH
                     const useBatchMode = this.shouldUseBatchMode();
@@ -594,9 +594,9 @@ class TraitLABDataManager {
         console.log('🔄 Iniciando mejora de nombres en background...');
         
         // Solo procesar tokens AdrianZERO (ERC721)
-        const adrianZeroTokens = tokens.filter(token => 
-            token.tokenType === 'ERC721' && 
-            token.contract?.toLowerCase() === "0x6e369bf0e4e0c106192d606fb6d85836d684da75".toLowerCase()
+        const adrianZeroTokens = tokens.filter(token =>
+            token.tokenType === 'ERC721' &&
+            token.contract?.toLowerCase() === window.TraitLABConfig.CONTRACTS.ERC721.toLowerCase()
         );
         
         if (adrianZeroTokens.length === 0) {
@@ -653,8 +653,8 @@ class TraitLABDataManager {
             
             // Crear instancia del contrato
             const nameRegistryContract = new ethers.Contract(
-                window.TraitLABConfig?.ADRIAN_NAME_REGISTRY_CONTRACT || "0xaeC5ED33c88c1943BB7452aC4B571ad0b4c4068C",
-                contractABI, 
+                window.TraitLABConfig.ADRIAN_NAME_REGISTRY_CONTRACT,
+                contractABI,
                 provider
             );
             
@@ -782,7 +782,7 @@ class TraitLABDataManager {
         requestAnimationFrame(() => {
             nameMap.forEach((customName, tokenId) => {
                 // Buscar el token card por token ID
-                const selector = `[data-token-id="${tokenId}"][data-contract="0x6e369bf0e4e0c106192d606fb6d85836d684da75"]`;
+                const selector = `[data-token-id="${tokenId}"][data-contract="${window.TraitLABConfig.CONTRACTS.ERC721}"]`;
                 const tokenCard = document.querySelector(selector);
                 
                 if (tokenCard) {
@@ -1150,7 +1150,7 @@ class TraitLABDataManager {
             return { floppys: [], hasMore: false };
         }
         
-        const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+        const contractAddress = window.TraitLABConfig.CONTRACTS.ERC1155;
         const batchSize = this.paginationState.traits.batchSize;
         const pageKey = this.paginationState.traits.pageKey;
         
@@ -1258,7 +1258,7 @@ class TraitLABDataManager {
             return [];
         }
         
-        const contractAddress = "0x90546848474fb3c9fda3fdad887969bb244e7e58";
+        const contractAddress = window.TraitLABConfig.CONTRACTS.ERC1155;
         const batchSize = this.paginationState.traits.batchSize;
         const pageKey = this.paginationState.traits.pageKey;
         
