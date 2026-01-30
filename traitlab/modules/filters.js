@@ -1,7 +1,9 @@
 /**
  * TRAITLAB - Módulo de Filtros
  * Maneja el filtrado de tokens por tipo (floppy, serum, traits, etc.)
- * Updated: 2026-01-29 - Pack 10019 agregado con ACTION_PACKS_CONTRACT
+ * Updated: 2026-01-29 - Refactorizado para usar pack-config.js (FASE 3)
+ *
+ * Usa window.PackConfig como single source of truth para configuración de packs
  */
 
 class TokenFilters {
@@ -39,82 +41,31 @@ class TokenFilters {
     }
 
     /**
-     * Filtrar tokens floppy - SOLO POR ID como en index.html
+     * Filtrar tokens floppy usando pack-config.js (single source of truth)
      */
     filterFloppyTokens(tokens) {
-        console.log('🔍 Filtrando floppy tokens por ID...');
-        
+        console.log('🔍 Filtrando floppy tokens usando PackConfig...');
+
         const floppyTokens = tokens.filter(token => {
             const tokenId = parseInt(token.tokenId);
-            
-            // Solo usar rangos específicos de index.html: 10000-10019, 15000-15015, y pack 1123
-            const isFloppyById = (tokenId >= 10000 && tokenId <= 10019) ||
-                                 (tokenId >= 15000 && tokenId <= 15015) ||
-                                 tokenId === 1123;
-            
-            if (isFloppyById) {
-                console.log(`💾 Floppy encontrado por ID: ${tokenId}`);
-                
-                // Asignar nombre específico según index.html
-                if (tokenId === 10003) {
-                    token.displayName = 'GLITCH Floppy';
-                    token.targetContract = window.TraitLABConfig.NEW_FLOPPY_PACK_CONTRACT;
-                } else if (tokenId === 10004) {
-                    token.displayName = 'GF Floppy';
-                    token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
-                } else if (tokenId === 10005) {
-                    token.displayName = 'Golden Floppy';
-                    token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
-                } else if (tokenId === 10007) {
-                    token.displayName = 'NEONpack';
-                    token.targetContract = window.TraitLABConfig.ACTION_PACK_10007_CONTRACT;
-                } else if (tokenId === 10008) {
-                    token.displayName = 'OPTICALpack';
-                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
-                } else if (tokenId === 10009) {
-                    token.displayName = 'PUNKSfloppy';
-                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
-                } else if (tokenId === 10010) {
-                    token.displayName = 'ComradesUSB';
-                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
-                } else if (tokenId === 10011) {
-                    token.displayName = 'PACK10011';
-                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
-                } else if (tokenId === 10012) {
-                    token.displayName = 'PACK10012';
-                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
-                } else if (tokenId === 10013) {
-                    token.displayName = 'PACK10013';
-                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
-                } else if (tokenId === 10014) {
-                    token.displayName = 'PACK10014';
-                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
-                } else if (tokenId === 10015) {
-                    token.displayName = 'XMAS \'25 Floppy';
-                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
-                } else if (tokenId === 10016) {
-                    token.displayName = 'PACK10016';
-                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
-                } else if (tokenId === 10018) {
-                    token.displayName = 'PACK10018';
-                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
-                } else if (tokenId === 10019) {
-                    token.displayName = 'PACK10019';
-                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
-                } else if (tokenId === 1123) {
-                    token.displayName = 'CensorPACK';
-                    token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
-                } else if (tokenId === 15010) {
-                    token.displayName = 'Back to Work';
-                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
+
+            // Usar PackConfig para verificar si es floppy
+            if (window.PackConfig.isFloppyToken(tokenId)) {
+                console.log(`💾 Floppy encontrado: ${tokenId}`);
+
+                // Obtener configuración del pack desde single source of truth
+                const config = window.PackConfig.getPackConfig(tokenId);
+                if (config) {
+                    token.displayName = config.name;
+                    token.targetContract = window.TraitLABConfig[config.contract + '_CONTRACT'];
                 } else {
-                    // Otros floppys usan PACK_TOKEN_MINTER_CONTRACT
+                    // Fallback para packs sin configuración explícita
                     token.targetContract = window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT;
                 }
-                
+
                 return true;
             }
-            
+
             return false;
         });
 
@@ -181,25 +132,17 @@ class TokenFilters {
     }
 
     /**
-     * Verificar si un token es floppy - SOLO POR ID
+     * Verificar si un token es floppy usando PackConfig
      */
     isFloppyToken(token) {
-        const tokenId = parseInt(token.tokenId);
-
-        // Solo usar rangos específicos de index.html: 10000-10019, 15000-15015, y pack 1123
-        return (tokenId >= 10000 && tokenId <= 10019) ||
-               (tokenId >= 15000 && tokenId <= 15015) ||
-               tokenId === 1123;
+        return window.PackConfig.isFloppyToken(token.tokenId);
     }
 
     /**
-     * Verificar si un token es serum - SOLO POR ID
+     * Verificar si un token es serum usando PackConfig
      */
     isSerumToken(token) {
-        const tokenId = parseInt(token.tokenId);
-        
-        // Solo usar rango específico de index.html: 262144-262147
-        return tokenId >= 262144 && tokenId <= 262147;
+        return window.PackConfig.isSerumToken(token.tokenId);
     }
 
     /**
