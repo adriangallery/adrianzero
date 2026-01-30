@@ -177,7 +177,8 @@ class FloppyManager {
      */
     isFloppyToken(tokenId) {
         return (tokenId >= 10000 && tokenId <= 10019) ||
-               (tokenId >= 15000 && tokenId <= 15015);
+               (tokenId >= 15000 && tokenId <= 15015) ||
+               tokenId === 1123;
     }
 
     /**
