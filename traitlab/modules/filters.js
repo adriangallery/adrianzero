@@ -73,10 +73,10 @@ class TokenFilters {
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
                 } else if (tokenId === 10009) {
                     token.displayName = 'PUNKSfloppy';
-                    token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
                 } else if (tokenId === 10010) {
                     token.displayName = 'ComradesUSB';
-                    token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
                 } else if (tokenId === 10011) {
                     token.displayName = 'PACK10011';
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
@@ -91,7 +91,7 @@ class TokenFilters {
                     token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
                 } else if (tokenId === 10015) {
                     token.displayName = 'XMAS \'25 Floppy';
-                    token.targetContract = window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT;
+                    token.targetContract = window.TraitLABConfig.OPENPACK_V4_CONTRACT;
                 } else if (tokenId === 10016) {
                     token.displayName = 'PACK10016';
                     token.targetContract = window.TraitLABConfig.ACTION_PACKS_CONTRACT;
