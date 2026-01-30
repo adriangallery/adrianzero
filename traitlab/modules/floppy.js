@@ -171,13 +171,10 @@ class FloppyManager {
     }
 
     /**
-     * Check if token is a floppy token
-     * Rangos: 10000-10019 (packs/floppys), 15000-15015 (floppys especiales)
+     * Check if token is a floppy usando PackConfig
      */
     isFloppyToken(tokenId) {
-        return (tokenId >= 10000 && tokenId <= 10019) ||
-               (tokenId >= 15000 && tokenId <= 15015) ||
-               tokenId === 1123;
+        return window.PackConfig.isFloppyToken(tokenId);
     }
 
     /**
@@ -221,149 +218,60 @@ class FloppyManager {
     }
 
     /**
-     * Determine which contract to use for a specific floppy
-     * Updated to use OpenPackV4 for specified packs
+     * Determine which contract to use for a specific floppy usando PackConfig
      */
     getContractForFloppy(tokenId) {
-        // OpenPackV4 handles: 10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 10018, 15010
-        if (tokenId === 10000 || tokenId === 10001 || tokenId === 10002 || 
-            tokenId === 10003 || tokenId === 10004 || tokenId === 10005 || 
-            tokenId === 10009 || tokenId === 10010 || tokenId === 10013 || 
-            tokenId === 10014 || tokenId === 10015 || tokenId === 10018 || tokenId === 15010) {
+        // Obtener configuración desde PackConfig (single source of truth)
+        const config = window.PackConfig.getPackConfig(tokenId);
+
+        if (!config) {
+            // Fallback para packs sin configuración explícita
             return {
-                address: window.TraitLABConfig.OPENPACK_V4_CONTRACT,
+                address: window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT,
                 type: 'pack',
-                name: 'OpenPackV4',
-                function: 'openPacks'
-            };
-        } else if (tokenId === 10007) {
-            // Action Pack 10007 - ActionPack
-            return {
-                address: window.TraitLABConfig.ACTION_PACK_10007_CONTRACT,
-                type: 'pack',
-                name: 'Action Pack 10007'
-            };
-        } else if (tokenId >= 15008 && tokenId <= 15015 && tokenId !== 15010) {
-            // Action Packs 15008-15015 (except 15010 which uses OpenPackV4)
-            return {
-                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-                type: 'pack',
-                name: 'Action Pack'
-            };
-        } else if (tokenId === 10008) {
-            // OPTICALpack - ActionPack contract
-            return {
-                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-                type: 'pack',
-                name: 'OPTICALpack'
-            };
-        } else if (tokenId === 10011) {
-            // PACK10011 - ActionPack contract (same as 10008)
-            return {
-                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-                type: 'pack',
-                name: 'PACK10011'
-            };
-        } else if (tokenId === 10012) {
-            // PACK10012 - ActionPack contract (same as 10008)
-            return {
-                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-                type: 'pack',
-                name: 'PACK10012'
-            };
-        } else if (tokenId === 10016) {
-            // PACK10016 - ActionPack contract
-            return {
-                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-                type: 'pack',
-                name: 'PACK10016'
-            };
-        } else if (tokenId === 10019) {
-            // PACK10019 - ActionPack contract
-            return {
-                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-                type: 'pack',
-                name: 'PACK10019'
-            };
-        } else if (tokenId === 1123) {
-            // CensorPACK - ActionPack contract
-            return {
-                address: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-                type: 'pack',
-                name: 'CensorPACK'
-            };
-        } else if (tokenId === 10009) {
-            // PUNKSfloppy - now uses OpenPackV4 contract
-            return {
-                address: window.TraitLABConfig.OPENPACK_V4_CONTRACT,
-                type: 'pack',
-                name: 'OpenPackV4',
-                function: 'openPacks'
-            };
-        } else if (tokenId === 10006) {
-            // Golden Floppy - ADRIAN_FLOPPY_DISCS_CONTRACT
-            return {
-                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
-                type: 'floppy',
-                name: 'Floppy'
-            };
-        } else {
-            // Default fallback
-            return {
-                address: window.TraitLABConfig.ADRIAN_FLOPPY_DISCS_CONTRACT,
-                type: 'floppy',
-                name: 'Floppy'
+                name: 'PackTokenMinter'
             };
         }
+
+        // Construir respuesta desde configuración
+        return {
+            address: window.TraitLABConfig[config.contract + '_CONTRACT'],
+            type: 'pack',
+            name: config.contract,
+            function: config.method === 'openPacks' ? 'openPacks' : null
+        };
     }
 
     /**
-     * Wrapper para decidir qué contrato usar al abrir un pack
-     * Updated to handle OpenPackV4
+     * Wrapper para decidir qué método usar al abrir un pack usando PackConfig
      */
     async openSelectedPack() {
         if (!this.selectedFloppy) {
             throw new Error('Please select a pack first.');
         }
-        
-        console.log('openSelectedPack: selectedFloppy.tokenId =', this.selectedFloppy.tokenId);
+
         const tokenId = parseInt(this.selectedFloppy.tokenId);
-        console.log('openSelectedPack: tokenId (parsed) =', tokenId);
-        
-        // Check if this pack uses OpenPackV4
+        console.log('openSelectedPack: tokenId =', tokenId);
+
+        // Obtener info del contrato desde getContractForFloppy (que usa PackConfig)
         const contractInfo = this.getContractForFloppy(tokenId);
+        const config = window.PackConfig.getPackConfig(tokenId);
+
+        // Routing basado en el tipo de contrato
         if (contractInfo.function === 'openPacks') {
-            console.log('Redirecting to openPackV4() for token', tokenId);
+            console.log('→ openPackV4() for token', tokenId);
             return await this.openPackV4();
-        } else if (tokenId === 10007) {
-            console.log('Redirecting to openActionPack10007() for token', this.selectedFloppy.tokenId);
+        } else if (config && config.contract === 'ACTION_PACK_10007') {
+            console.log('→ openActionPack10007() for token', tokenId);
             return await this.openActionPack10007();
-        } else if (tokenId === 10008) {
-            console.log('Redirecting to openActionPack() for OPTICALpack', tokenId);
+        } else if (config && (config.contract === 'ACTION_PACKS' || config.contract === 'ACTION_PACK_10007')) {
+            console.log('→ openActionPack() for token', tokenId);
             return await this.openActionPack();
-        } else if (tokenId === 10011) {
-            console.log('Redirecting to openActionPack() for PACK10011', tokenId);
-            return await this.openActionPack();
-        } else if (tokenId === 10012) {
-            console.log('Redirecting to openActionPack() for PACK10012', tokenId);
-            return await this.openActionPack();
-        } else if (tokenId === 10016) {
-            console.log('Redirecting to openActionPack() for PACK10016', tokenId);
-            return await this.openActionPack();
-        } else if (tokenId === 10019) {
-            console.log('Redirecting to openActionPack() for PACK10019', tokenId);
-            return await this.openActionPack();
-        } else if (tokenId === 1123) {
-            console.log('Redirecting to openActionPack() for PACK1123', tokenId);
-            return await this.openActionPack();
-        } else if (tokenId >= 15008 && tokenId <= 15015 && tokenId !== 15010) {
-            console.log('Redirecting to openActionPack() for token', tokenId);
-            return await this.openActionPack();
-        } else if (tokenId === 10006) {
-            console.log('Redirecting to openFloppy() for floppy token', tokenId);
+        } else if (contractInfo.type === 'floppy') {
+            console.log('→ openFloppy() for token', tokenId);
             return await this.openFloppy();
         } else {
-            console.log('Redirecting to openPack() for token', tokenId);
+            console.log('→ openPack() for token', tokenId);
             return await this.openPack();
         }
     }
