@@ -396,6 +396,15 @@ body {
     border: 1px solid #333;
     position: relative;
     padding: 15px;
+
+    /* 🔧 FIX: Altura mínima fija para evitar saltos durante scroll */
+    min-height: 380px;
+
+    /* 🔧 FIX: Aspect ratio para mantener proporciones consistentes */
+    aspect-ratio: 1 / 1.15;
+
+    /* 🔧 FIX: Contain para optimizar rendering */
+    contain: layout style paint;
 }
 
 .token-card:hover {
@@ -477,6 +486,13 @@ body {
     margin-bottom: 10px;
     background: #2a2a2a;
     position: relative;
+
+    /* 🔧 FIX: Aspect ratio para reservar espacio antes de cargar */
+    aspect-ratio: 1 / 1;
+
+    /* 🔧 FIX: Transición suave cuando carga la imagen */
+    opacity: 1;
+    transition: opacity 0.3s ease;
 }
 
 .token-title {
@@ -526,6 +542,16 @@ body {
     .tokens-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 15px;
+    }
+
+    /* 🔧 FIX: Ajustar altura mínima de cards en móviles */
+    .token-card {
+        min-height: 320px;
+        aspect-ratio: 1 / 1.2;
+    }
+
+    .placeholder-image {
+        min-height: 150px;
     }
 }
 
@@ -1649,6 +1675,24 @@ body {
     animation: loading-shimmer 1.5s infinite;
 }
 
+/* 🔧 FIX: Skeleton para imágenes mientras cargan */
+.token-image[data-loading="true"] {
+    background: linear-gradient(45deg, #2a2a2a, #3a3a3a);
+    position: relative;
+    overflow: hidden;
+}
+
+.token-image[data-loading="true"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.15), transparent);
+    animation: loading-shimmer 1.5s infinite;
+}
+
 @keyframes loading-shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
@@ -1784,7 +1828,9 @@ body {
 
 .placeholder-image {
     width: 100%;
-    height: 180px;
+    /* 🔧 FIX: Usar aspect-ratio en lugar de altura fija */
+    aspect-ratio: 1 / 1;
+    min-height: 180px;
     background: linear-gradient(45deg, #2a2a2a, #3a3a3a);
     border: 2px solid #00ff00;
     display: flex;
@@ -1792,6 +1838,7 @@ body {
     justify-content: center;
     position: relative;
     overflow: hidden;
+    border-radius: 10px;
 }
 
 .placeholder-image::before {
