@@ -151,20 +151,17 @@ class ZeroManager {
     }
 
     /**
-     * Check if token ID is a floppy token
-     * Rangos: 10000-10019 (packs/floppys), 15000-15015 (floppys especiales)
+     * Check if token ID is a floppy usando PackConfig
      */
     isFloppyToken(tokenId) {
-        return (tokenId >= 10000 && tokenId <= 10019) ||
-               (tokenId >= 15000 && tokenId <= 15015) ||
-               tokenId === 1123;
+        return window.PackConfig.isFloppyToken(tokenId);
     }
 
     /**
-     * Check if token ID is a serum token
+     * Check if token ID is a serum usando PackConfig
      */
     isSerumToken(tokenId) {
-        return tokenId >= 262144 && tokenId <= 262147;
+        return window.PackConfig.isSerumToken(tokenId);
     }
 
     /**
