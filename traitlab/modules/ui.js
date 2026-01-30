@@ -73,7 +73,9 @@ class UIManager {
             // 🐛 FIX: Prevenir loop infinito de gap detection
             isFillingGaps: false, // Flag para prevenir cleanup durante gap filling
             lastGapFillTime: 0, // Timestamp del último gap fill
-            gapFillThrottleMs: 500 // Mínimo tiempo entre gap fills (throttling)
+            gapFillThrottleMs: 500, // Mínimo tiempo entre gap fills (throttling)
+            // 🔧 FIX: Prevenir cleanup durante scroll activo
+            isScrolling: false // Flag para desactivar cleanup mientras hay scroll
         };
         
         // Bind methods
@@ -514,6 +516,12 @@ class UIManager {
 
         const state = this.virtualDOMState;
 
+        // 🔧 FIX: NO ejecutar cleanup durante scroll activo (prevenir saltos visuales)
+        if (state.isScrolling) {
+            console.log('🛑 Cleanup cancelado: scroll activo');
+            return;
+        }
+
         // 🐛 FIX: NO ejecutar cleanup mientras se están llenando gaps
         if (state.isFillingGaps) {
             console.log('🛑 Cleanup cancelado: llenando gaps');
@@ -791,8 +799,8 @@ class UIManager {
 
         // Setup viewport observer to clean up elements outside viewport
         state.viewportObserver = new IntersectionObserver((entries) => {
-            // Clean up periodically when scrolling
-            if (state.enabled) {
+            // 🔧 FIX: Solo limpiar si NO hay scroll activo (prevenir saltos visuales)
+            if (state.enabled && !state.isScrolling) {
                 requestAnimationFrame(() => {
                     this.removeVirtualElementsOutsideViewport();
                 });
@@ -812,7 +820,11 @@ class UIManager {
 
         // 🎯 BIDIRECTIONAL: Setup scroll listener for gap detection
         let scrollTimeout;
+        let cleanupTimeout;
         state.scrollHandler = () => {
+            // 🔧 FIX: Activar flag de scroll activo
+            state.isScrolling = true;
+
             // Detectar dirección de scroll
             const currentScrollY = window.scrollY;
             if (currentScrollY < state.lastScrollY) {
@@ -829,6 +841,16 @@ class UIManager {
                     this.renderVisibleGaps();
                 }
             }, 150);
+
+            // 🔧 FIX: Cleanup solo después de 1.5s sin scroll (prevenir saltos visuales)
+            clearTimeout(cleanupTimeout);
+            cleanupTimeout = setTimeout(() => {
+                state.isScrolling = false;
+                // Limpiar elementos fuera del viewport solo cuando el scroll se detiene
+                if (state.enabled && !state.isFillingGaps) {
+                    this.removeVirtualElementsOutsideViewport();
+                }
+            }, 1500);
         };
 
         window.addEventListener('scroll', state.scrollHandler, { passive: true });
