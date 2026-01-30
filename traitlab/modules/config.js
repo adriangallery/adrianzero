@@ -60,7 +60,25 @@ class TraitLABConfig {
             "function namePrice() view returns (uint256)",
             "function getCoreContract() view returns (address)"
         ];
-        
+
+        // ABIs de contratos de packs (FASE 5: Single source of truth)
+        this.CONTRACT_ABIS = {
+            OPENPACK_V4: [
+                'function openPacks(uint256 packId, uint32 quantity) external'
+            ],
+            PACK_TOKEN_MINTER: [
+                'function openPack(uint256 packId) external'
+            ],
+            ACTION_PACKS: [
+                'function openPack(uint256 packId) external',
+                'function canOpenPack(address user, uint256 packId) view returns (bool canOpen, string reason)',
+                'function packConfigs(uint256 packId) view returns (uint256 id, bool active)'
+            ],
+            FLOPPY_DISCS: [
+                'function openPack(uint256 packId) external'
+            ]
+        };
+
         console.log('⚙️ TraitLABConfig: Configuración inicializada');
     }
 

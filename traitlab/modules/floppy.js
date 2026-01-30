@@ -386,14 +386,9 @@ class FloppyManager {
     async executeOpenPackV4Transaction(ethers, quantity = 1) {
         const packId = this.selectedFloppy.tokenId;
 
-        // OpenPackV4 ABI - función openPacks
-        const openPackV4ABI = [
-            'function openPacks(uint256 packId, uint32 quantity) external'
-        ];
-
         return await window.ContractUtils.executeContractTransaction({
             contractAddress: window.TraitLABConfig.OPENPACK_V4_CONTRACT,
-            abi: openPackV4ABI,
+            abi: window.TraitLABConfig.CONTRACT_ABIS.OPENPACK_V4,
             methodName: 'openPacks',
             methodParams: [packId, quantity],
             onSuccess: (receipt) => {
@@ -462,14 +457,9 @@ class FloppyManager {
     async executeOpenPackTransaction(ethers) {
         const packId = this.selectedFloppy.tokenId;
 
-        // PackTokenMinter ABI - solo la función openPack
-        const packMinterABI = [
-            'function openPack(uint256 packId) external'
-        ];
-
         return await window.ContractUtils.executeContractTransaction({
             contractAddress: window.TraitLABConfig.PACK_TOKEN_MINTER_CONTRACT,
-            abi: packMinterABI,
+            abi: window.TraitLABConfig.CONTRACT_ABIS.PACK_TOKEN_MINTER,
             methodName: 'openPack',
             methodParams: [packId],
             onSuccess: (receipt) => {
@@ -536,16 +526,9 @@ class FloppyManager {
     async executeOpenActionPackTransaction(ethers) {
         const packId = this.selectedFloppy.tokenId;
 
-        // ActionPacks ABI completo
-        const actionPacksABI = [
-            'function openPack(uint256 packId) external',
-            'function canOpenPack(address user, uint256 packId) view returns (bool canOpen, string reason)',
-            'function packConfigs(uint256 packId) view returns (uint256 id, bool active)'
-        ];
-
         return await window.ContractUtils.executeContractTransaction({
             contractAddress: window.TraitLABConfig.ACTION_PACKS_CONTRACT,
-            abi: actionPacksABI,
+            abi: window.TraitLABConfig.CONTRACT_ABIS.ACTION_PACKS,
             methodName: 'openPack',
             methodParams: [packId],
             validateBefore: (contract, signer) => {
@@ -615,16 +598,9 @@ class FloppyManager {
     async executeOpenActionPack10007Transaction(ethers) {
         const packId = this.selectedFloppy.tokenId;
 
-        // ActionPacks ABI para token 10007
-        const actionPacksABI = [
-            'function openPack(uint256 packId) external',
-            'function canOpenPack(address user, uint256 packId) view returns (bool canOpen, string reason)',
-            'function packConfigs(uint256 packId) view returns (uint256 id, bool active)'
-        ];
-
         return await window.ContractUtils.executeContractTransaction({
             contractAddress: window.TraitLABConfig.ACTION_PACK_10007_CONTRACT,
-            abi: actionPacksABI,
+            abi: window.TraitLABConfig.CONTRACT_ABIS.ACTION_PACKS,
             methodName: 'openPack',
             methodParams: [packId],
             validateBefore: (contract, signer) => {
@@ -717,13 +693,10 @@ class FloppyManager {
         }
 
         const packId = this.selectedFloppy.tokenId;
-        const contractABI = [
-            'function openPack(uint256 packId) external'
-        ];
 
         return await window.ContractUtils.executeContractTransaction({
             contractAddress: contractInfo.address,
-            abi: contractABI,
+            abi: window.TraitLABConfig.CONTRACT_ABIS.FLOPPY_DISCS,
             methodName: 'openPack',
             methodParams: [packId],
             onSuccess: (receipt) => {
