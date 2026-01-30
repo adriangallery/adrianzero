@@ -16,7 +16,6 @@ class FloppyManager {
         this.openPack = this.openPack.bind(this);
         this.openActionPack = this.openActionPack.bind(this);
         this.openActionPack10007 = this.openActionPack10007.bind(this);
-        this.openPack10003 = this.openPack10003.bind(this);
         this.setSelectedFloppy = this.setSelectedFloppy.bind(this);
         this.getSelectedFloppy = this.getSelectedFloppy.bind(this);
         this.clearSelection = this.clearSelection.bind(this);
