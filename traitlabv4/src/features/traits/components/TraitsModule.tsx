@@ -1,0 +1,205 @@
+/**
+ * TraitsModule Component
+ * Main module for selecting and applying traits to NFTs
+ */
+
+import { useState, useMemo } from 'react';
+import { useAccount } from 'wagmi';
+import { TraitCategories } from '@/components/traits/TraitCategories';
+import { TraitGrid } from '@/components/traits/TraitGrid';
+import { TraitPreview } from '@/components/traits/TraitPreview';
+import { useTraitsByCategory } from '../hooks/useTraits';
+import { useApplyTraits } from '../hooks/useApplyTraits';
+import { useTraitsStore } from '../store/traitsStore';
+import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
+import type { TraitCategory } from '@/types/nft.types';
+
+const ALL_CATEGORIES: TraitCategory[] = [
+  'BACKGROUND',
+  'EAR',
+  'EYES',
+  'MOUTH',
+  'NECK',
+  'NOSE',
+  'SPECIAL',
+  'HAIR',
+  'CLOTHING',
+];
+
+export function TraitsModule() {
+  const { isConnected } = useAccount();
+  const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Load traits
+  const { data: traitsByCategory, allTraits, isLoading, error } = useTraitsByCategory();
+
+  // Stores
+  const {
+    selectTrait,
+    deselectTrait,
+    getSelectedTraitsArray,
+    getSelectedTraitIds,
+    isTraitSelected,
+    clearSelection,
+    targetTokenId,
+  } = useTraitsStore();
+
+  const { selectedToken } = useAdrianZeroStore();
+
+  // Mutations
+  const applyTraits = useApplyTraits();
+
+  // Get traits for active category
+  const displayTraits = useMemo(() => {
+    if (activeCategory === 'ALL') {
+      return allTraits;
+    }
+    return traitsByCategory[activeCategory] || [];
+  }, [activeCategory, allTraits, traitsByCategory]);
+
+  // Selected traits
+  const selectedTraits = getSelectedTraitsArray();
+  const selectedTraitIds = getSelectedTraitIds();
+
+  // Handlers
+  const handleTraitSelect = (trait: any) => {
+    if (isTraitSelected(trait)) {
+      deselectTrait(trait.category);
+    } else {
+      selectTrait(trait);
+    }
+  };
+
+  const handleApplyTraits = async () => {
+    const tokenId = targetTokenId || selectedToken?.tokenId;
+
+    if (!tokenId || selectedTraits.length === 0) {
+      return;
+    }
+
+    try {
+      await applyTraits.mutateAsync({
+        tokenId,
+        traitIds: selectedTraitIds,
+      });
+
+      // Clear selection on success
+      clearSelection();
+      setShowPreview(false);
+    } catch (error) {
+      console.error('Failed to apply traits:', error);
+    }
+  };
+
+  const handleShowPreview = () => {
+    if (selectedTraits.length === 0) {
+      return;
+    }
+
+    if (!targetTokenId && !selectedToken?.tokenId) {
+      alert('Please select an AdrianZERO NFT first');
+      return;
+    }
+
+    setShowPreview(true);
+  };
+
+  if (!isConnected) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="text-6xl mb-4">🔌</div>
+        <h2 className="text-xl font-semibold text-foreground">
+          Wallet Not Connected
+        </h2>
+        <p className="text-muted-foreground mt-2">
+          Please connect your wallet to view your traits
+        </p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="shimmer w-16 h-16 rounded-full mb-4" />
+        <p className="text-muted-foreground">Loading your traits...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="text-6xl mb-4">⚠️</div>
+        <h2 className="text-xl font-semibold text-foreground">
+          Error Loading Traits
+        </h2>
+        <p className="text-muted-foreground mt-2">
+          {error instanceof Error ? error.message : 'Failed to load traits'}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Traits</h1>
+          <p className="text-muted-foreground mt-1">
+            {allTraits.length} {allTraits.length === 1 ? 'trait' : 'traits'} available
+          </p>
+        </div>
+
+        {/* Selected Traits Counter */}
+        {selectedTraits.length > 0 && (
+          <div className="flex items-center gap-3">
+            <div className="px-3 py-1 bg-primary/10 rounded-lg">
+              <p className="text-sm font-medium text-primary">
+                {selectedTraits.length} selected
+              </p>
+            </div>
+            <button
+              onClick={handleShowPreview}
+              className="touch-target px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+            >
+              Preview & Apply
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Category Tabs */}
+      <TraitCategories
+        categories={ALL_CATEGORIES}
+        traitsByCategory={traitsByCategory}
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+      />
+
+      {/* Traits Grid */}
+      <TraitGrid
+        traits={displayTraits}
+        selectedTraitIds={selectedTraitIds}
+        onTraitSelect={handleTraitSelect}
+        emptyMessage={
+          activeCategory === 'ALL'
+            ? 'No traits found in your wallet'
+            : `No ${activeCategory.toLowerCase()} traits found`
+        }
+      />
+
+      {/* Preview Modal */}
+      <TraitPreview
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        tokenId={targetTokenId || selectedToken?.tokenId || ''}
+        traits={selectedTraits}
+        onConfirm={handleApplyTraits}
+        isApplying={applyTraits.isPending}
+      />
+    </div>
+  );
+}

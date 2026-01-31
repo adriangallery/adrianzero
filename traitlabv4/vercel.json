@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "vite",
+  "ignoreCommand": "git rev-parse -q HEAD^ 2>/dev/null || exit 1; git diff --name-only HEAD^ HEAD | grep -q '^traitlabv4/' && exit 1 || exit 0"
+}

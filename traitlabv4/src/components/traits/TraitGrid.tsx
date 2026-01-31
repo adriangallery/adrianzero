@@ -1,0 +1,94 @@
+/**
+ * TraitGrid Component
+ * Responsive grid for displaying traits with virtualization on mobile
+ */
+
+import { useMemo } from 'react';
+import { Virtuoso } from 'react-virtuoso';
+import { TraitCard } from './TraitCard';
+import type { Trait } from '@/types/nft.types';
+import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
+
+interface TraitGridProps {
+  traits: Trait[];
+  selectedTraitIds: string[];
+  onTraitSelect?: (trait: Trait) => void;
+  emptyMessage?: string;
+}
+
+export function TraitGrid({
+  traits,
+  selectedTraitIds,
+  onTraitSelect,
+  emptyMessage = 'No traits found',
+}: TraitGridProps) {
+  const isMobile = shouldOptimizeForTouch();
+
+  // Group traits into rows for virtualization
+  const rows = useMemo(() => {
+    const itemsPerRow = isMobile ? 2 : 4;
+    const result: Trait[][] = [];
+
+    for (let i = 0; i < traits.length; i += itemsPerRow) {
+      result.push(traits.slice(i, i + itemsPerRow));
+    }
+
+    return result;
+  }, [traits, isMobile]);
+
+  if (traits.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="text-6xl mb-4">🎨</div>
+        <p className="text-lg font-medium text-foreground">{emptyMessage}</p>
+        <p className="text-sm text-muted-foreground mt-2">
+          Try selecting a different category
+        </p>
+      </div>
+    );
+  }
+
+  // Use virtualization on mobile for better performance
+  if (isMobile && traits.length > 20) {
+    return (
+      <Virtuoso
+        style={{ height: 'calc(100vh - 300px)' }}
+        totalCount={rows.length}
+        itemContent={(index) => {
+          const row = rows[index];
+          return (
+            <div className="grid grid-cols-2 gap-4 mb-4 px-4">
+              {row.map((trait) => (
+                <TraitCard
+                  key={trait.tokenId}
+                  trait={trait}
+                  isSelected={selectedTraitIds.includes(trait.tokenId)}
+                  onClick={() => onTraitSelect?.(trait)}
+                />
+              ))}
+            </div>
+          );
+        }}
+      />
+    );
+  }
+
+  // Regular grid for desktop or small collections
+  return (
+    <div
+      className={`
+        grid gap-4
+        grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6
+      `}
+    >
+      {traits.map((trait) => (
+        <TraitCard
+          key={trait.tokenId}
+          trait={trait}
+          isSelected={selectedTraitIds.includes(trait.tokenId)}
+          onClick={() => onTraitSelect?.(trait)}
+        />
+      ))}
+    </div>
+  );
+}

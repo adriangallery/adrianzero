@@ -1,0 +1,225 @@
+/**
+ * SerumModule Component
+ * Apply serums to AdrianZERO NFTs
+ */
+
+import { useState } from 'react';
+import { useAccount } from 'wagmi';
+import { motion } from 'framer-motion';
+import { useSerums } from '../hooks/useSerums';
+import { useApplySerum } from '../hooks/useApplySerum';
+import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
+import type { Serum } from '@/types/nft.types';
+import type { AdrianZeroToken } from '@/types/nft.types';
+
+export function SerumModule() {
+  const { isConnected } = useAccount();
+  const [selectedNFT, setSelectedNFT] = useState<AdrianZeroToken | null>(null);
+  const [selectedSerum, setSelectedSerum] = useState<Serum | null>(null);
+
+  // Load data
+  const { data: serums = [], isLoading: serumsLoading } = useSerums();
+  const { data: nfts = [], isLoading: nftsLoading } = useAdrianZeroTokens();
+
+  // Mutations
+  const applySerum = useApplySerum();
+
+  const isLoading = serumsLoading || nftsLoading;
+
+  // Handlers
+  const handleApplySerum = async () => {
+    if (!selectedNFT || !selectedSerum) return;
+
+    try {
+      await applySerum.mutateAsync({
+        tokenId: selectedNFT.tokenId,
+        serumId: selectedSerum.tokenId,
+      });
+
+      setSelectedNFT(null);
+      setSelectedSerum(null);
+    } catch (error) {
+      console.error('Failed to apply serum:', error);
+    }
+  };
+
+  if (!isConnected) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="text-6xl mb-4">🔌</div>
+        <h2 className="text-xl font-semibold text-foreground">
+          Wallet Not Connected
+        </h2>
+        <p className="text-muted-foreground mt-2">
+          Please connect your wallet to use serums
+        </p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="shimmer w-16 h-16 rounded-full mb-4" />
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Serum</h1>
+        <p className="text-muted-foreground mt-1">
+          Apply serums to your AdrianZERO NFTs
+        </p>
+      </div>
+
+      {/* No Serums */}
+      {serums.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="text-6xl mb-4">🧪</div>
+          <p className="text-lg font-medium text-foreground">No serums found</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            You don't have any serums in your wallet
+          </p>
+        </div>
+      )}
+
+      {/* Serums Available */}
+      {serums.length > 0 && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Select NFT */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-foreground">
+              1. Select NFT
+            </h2>
+            {nfts.length === 0 ? (
+              <p className="text-muted-foreground">No NFTs found</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {nfts.slice(0, 10).map((nft) => (
+                  <SelectableCard
+                    key={nft.tokenId}
+                    isSelected={selectedNFT?.tokenId === nft.tokenId}
+                    onClick={() => setSelectedNFT(nft)}
+                    imageUrl={nft.image?.thumbnailUrl}
+                    label={nft.name || `#${nft.tokenId}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Select Serum */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-foreground">
+              2. Select Serum
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {serums.map((serum) => (
+                <SelectableCard
+                  key={serum.tokenId}
+                  isSelected={selectedSerum?.tokenId === serum.tokenId}
+                  onClick={() => setSelectedSerum(serum)}
+                  imageUrl={serum.image?.thumbnailUrl}
+                  label={serum.name}
+                  badge={serum.balance > 1 ? `x${serum.balance}` : undefined}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apply Button */}
+      {selectedNFT && selectedSerum && (
+        <div className="flex justify-center pt-6">
+          <button
+            onClick={handleApplySerum}
+            disabled={applySerum.isPending}
+            className="touch-target px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {applySerum.isPending ? 'Applying...' : 'Apply Serum'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Selectable Card Component
+function SelectableCard({
+  isSelected,
+  onClick,
+  imageUrl,
+  label,
+  badge,
+}: {
+  isSelected: boolean;
+  onClick: () => void;
+  imageUrl?: string;
+  label: string;
+  badge?: string;
+}) {
+  return (
+    <motion.div
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className={`
+        relative rounded-lg overflow-hidden cursor-pointer transition-all
+        ${
+          isSelected
+            ? 'ring-2 ring-primary shadow-lg'
+            : 'hover:shadow-md hover:ring-1 hover:ring-border'
+        }
+        bg-card
+      `}
+    >
+      <div className="aspect-square relative bg-muted">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={label}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-4xl">
+            🧪
+          </div>
+        )}
+
+        {badge && (
+          <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 rounded-md text-xs font-medium text-white">
+            {badge}
+          </div>
+        )}
+
+        {isSelected && (
+          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="p-2">
+        <p className="text-sm font-medium truncate text-foreground">{label}</p>
+      </div>
+    </motion.div>
+  );
+}
