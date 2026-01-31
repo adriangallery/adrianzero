@@ -5,7 +5,6 @@
 
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { WagmiProviderWrapper } from './providers/WagmiProvider';
-import { QueryProvider } from './providers/QueryProvider';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { routes } from '@/routes/routes';
@@ -22,9 +21,7 @@ export function App() {
   return (
     <ErrorBoundary>
       <WagmiProviderWrapper>
-        <QueryProvider>
-          <RouterProvider router={router} />
-        </QueryProvider>
+        <RouterProvider router={router} />
       </WagmiProviderWrapper>
     </ErrorBoundary>
   );
