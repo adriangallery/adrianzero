@@ -28,6 +28,15 @@ export default defineConfig({
     minify: 'esbuild', // Use esbuild for faster builds
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'ethers', 'wagmi'],
+    include: [
+      'react',
+      'react-dom',
+      'ethers',
+      'wagmi',
+      '@rainbow-me/rainbowkit',
+      '@wagmi/connectors',
+      '@metamask/sdk',
+      '@walletconnect/ethereum-provider',
+    ],
   },
 })
