@@ -32,7 +32,23 @@ export function useTraits() {
 
       // Fetch traits.json metadata
       const traitsJsonResponse = await fetch('/data/traits.json');
-      const traitsMetadata: Record<string, TraitMetadata> = await traitsJsonResponse.json();
+      const traitsJson = await traitsJsonResponse.json();
+
+      // Convert array to object indexed by tokenId
+      const traitsMetadata: Record<string, TraitMetadata> = {};
+      if (traitsJson.traits && Array.isArray(traitsJson.traits)) {
+        traitsJson.traits.forEach((trait: any) => {
+          traitsMetadata[trait.tokenId.toString()] = {
+            tokenId: trait.tokenId.toString(),
+            name: trait.name,
+            category: trait.category,
+            fileName: trait.fileName,
+            maxSupply: trait.maxSupply,
+            rarity: trait.rarity,
+          };
+        });
+      }
+
       console.log('[useTraits] Loaded traits metadata, count:', Object.keys(traitsMetadata).length);
 
       // Fetch user's ERC1155 tokens from Alchemy
