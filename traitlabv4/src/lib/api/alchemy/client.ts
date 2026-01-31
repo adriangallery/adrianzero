@@ -135,18 +135,36 @@ class AlchemyClient {
   }
 
   /**
-   * Get ERC1155 tokens for owner
+   * Get ERC1155 tokens for owner (with pagination to get ALL tokens)
    */
   async getERC1155Tokens(
     owner: string,
     contractAddresses?: string[]
   ): Promise<AlchemyNFTsResponse> {
-    return this.getNFTs({
-      owner,
-      contractAddresses,
-      tokenType: 'ERC1155',
-      withMetadata: true,
-    });
+    let allNfts: AlchemyNFT[] = [];
+    let pageKey: string | undefined = undefined;
+    let totalCount = 0;
+
+    // Fetch all pages
+    do {
+      const response = await this.getNFTs({
+        owner,
+        contractAddresses,
+        tokenType: 'ERC1155',
+        withMetadata: true,
+        pageKey,
+        pageSize: 100, // Max per page
+      });
+
+      allNfts = allNfts.concat(response.ownedNfts);
+      pageKey = response.pageKey;
+      totalCount = response.totalCount;
+    } while (pageKey);
+
+    return {
+      ownedNfts: allNfts,
+      totalCount,
+    };
   }
 
   /**

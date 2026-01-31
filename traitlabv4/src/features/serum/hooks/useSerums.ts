@@ -13,7 +13,7 @@ import type { Serum } from '@/types/nft.types';
 const SERUM_IDS = ['262144', '262145', '262146', '262147'];
 
 export function useSerums() {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
 
   return useQuery({
     queryKey: ['serums', address],
@@ -48,7 +48,7 @@ export function useSerums() {
 
       return serums;
     },
-    enabled: isConnected && !!address,
+    enabled: !!address,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   });

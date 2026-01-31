@@ -10,7 +10,7 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
 export function useAdrianZeroTokens() {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
 
   return useQuery({
     queryKey: ['adrianzero-tokens', address],
@@ -35,7 +35,7 @@ export function useAdrianZeroTokens() {
 
       return tokens;
     },
-    enabled: isConnected && !!address,
+    enabled: !!address,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   });

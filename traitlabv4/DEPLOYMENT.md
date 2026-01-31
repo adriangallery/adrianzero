@@ -9,54 +9,44 @@
 
 ## Pasos que debes hacer tú (punto a punto)
 
-### A. Subir el código a GitHub
+### A. Código en GitHub
 
-1. **Si traitlabv4 es una carpeta dentro de otro repo** (como parece por tu `git status`):
-   - Opción 1: Añadir solo la carpeta al repo actual:
-     ```bash
-     cd /ruta/al/repo/padre
-     git add traitlabv4/
-     git status   # Comprueba que NO aparezca .env
-     git commit -m "Add traitlabv4 app"
-     git push origin main
-     ```
-   - Opción 2: Crear un repo nuevo solo para traitlabv4:
-     - En GitHub: New repository → nombre `traitlabv4` (o el que quieras).
-     - En tu máquina, desde la carpeta del repo padre:
-       ```bash
-       cd traitlabv4
-       git init
-       git remote add origin https://github.com/TU_USUARIO/traitlabv4.git
-       git add .
-       git status   # Comprueba que .env NO esté en la lista
-       git commit -m "Initial commit traitlabv4"
-       git branch -M main
-       git push -u origin main
-       ```
+traitlabv4 está en el repo **adriangallery/adrianzero** como subcarpeta. Los pushes a `main` ya incluyen traitlabv4. Antes de cualquier push, comprueba que `git status` no muestre `.env`.
 
-2. **Comprobar siempre antes de push**: `git status` no debe mostrar `.env`. Si aparece, no hagas `git add .env` y confirma que `.gitignore` contiene `.env`.
+### B. Configurar el deploy en Vercel (lo que tienes que hacer tú)
 
-### B. Configurar el deploy en Vercel
+1. Entra en [vercel.com](https://vercel.com) e inicia sesión con GitHub.
 
-1. Entra en [vercel.com](https://vercel.com) e inicia sesión (con GitHub si quieres deploy automático al hacer push).
+2. **Add New Project** → **Import Git Repository** → elige **adriangallery/adrianzero**.
 
-2. **Add New Project** → **Import Git Repository** y elige el repo donde está traitlabv4.
-
-3. **Configuración del proyecto**:
-   - **Root Directory**: Si el repo es solo traitlabv4, déjalo vacío. Si el repo es el padre y traitlabv4 es una subcarpeta, pon `traitlabv4`.
-   - **Framework Preset**: Vite (Vercel lo detecta).
-   - **Build Command**: `npm run build` (o vacío si usas `vercel.json`).
-   - **Output Directory**: `dist`.
-   - **Install Command**: `npm install --legacy-peer-deps`.
+3. **Configuración del proyecto** (importante):
+   - **Root Directory**: pon `traitlabv4` (así Vercel solo usa esta carpeta para el build).
+   - **Framework Preset**: Vite (se detecta solo).
+   - Build/Output/Install vienen de `vercel.json`; no hace falta rellenarlos salvo que quieras sobreescribir.
+   - **Ignored Build Step**: ya está en `vercel.json` — Vercel solo hace deploy cuando hay cambios **dentro de traitlabv4**. No hace falta configurar nada más en el dashboard.
 
 4. **Variables de entorno** (Settings → Environment Variables). Añade estas para **Production** (y opcionalmente Preview):
    - `VITE_ALCHEMY_API_KEY` = (tu clave Alchemy).
    - `VITE_WALLETCONNECT_PROJECT_ID` = (tu WalletConnect Project ID).
    - `VITE_VERCEL_API_URL` = `https://adrianlab.vercel.app/api` (o la URL de tu API).
 
-5. **Deploy**: Guarda y lanza el deploy. Vercel hará build y te dará una URL.
+5. **Deploy**: Guarda y lanza el deploy. Vercel hará el build y te dará la URL.
 
-### C. Después del primer deploy
+### C. WalletConnect Cloud: permitir tu dominio (evitar CORS)
+
+Si en producción ves **CORS** con `api.web3modal.org` o **403** con `pulse.walletconnect.org`, y en Dashboard/Traits/Packs/Serums no se muestran datos de la wallet (pero AdrianZero sí), hay que autorizar tu dominio en WalletConnect Cloud:
+
+1. Entra en **[WalletConnect Cloud](https://cloud.walletconnect.com)** (o [dashboard.walletconnect.com](https://dashboard.walletconnect.com)) e inicia sesión.
+2. Abre el **proyecto** cuyo **Project ID** usas en `VITE_WALLETCONNECT_PROJECT_ID`.
+3. En la configuración del proyecto busca **"Allowed Origins"**, **"Domain"** o **"Allowlist"**.
+4. Añade tu dominio de producción, por ejemplo:
+   - `https://adrianzero.vercel.app`
+   - O solo el host: `adrianzero.vercel.app` (según lo que permita el dashboard).
+5. Guarda. Los cambios pueden tardar unos minutos en aplicarse.
+
+Con el dominio autorizado, las peticiones a WalletConnect dejan de bloquearse por CORS y el estado de la wallet (conexión, address) se mantiene en toda la app, así que Dashboard, Traits, Packs y Serums podrán mostrar los datos correctamente.
+
+### D. Después del primer deploy
 
 - Revisa que la app cargue, que la wallet conecte y que no haya errores en la consola del navegador.
 - Si cambias variables en Vercel, haz un **Redeploy** desde el dashboard (Deployments → ⋮ → Redeploy).

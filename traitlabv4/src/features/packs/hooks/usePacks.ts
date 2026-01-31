@@ -29,7 +29,7 @@ const PACK_CONFIGS = {
 };
 
 export function usePacks() {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
 
   return useQuery({
     queryKey: ['packs', address],
@@ -38,7 +38,7 @@ export function usePacks() {
         throw new Error('No wallet connected');
       }
 
-      // Fetch all ERC1155 tokens
+      // Fetch all ERC1155 tokens from ADRIAN_LAB contract
       const response = await alchemyClient.getERC1155Tokens(address, [
         CONTRACT_ADDRESSES.ADRIAN_LAB,
       ]);
@@ -80,7 +80,7 @@ export function usePacks() {
 
       return packs;
     },
-    enabled: isConnected && !!address,
+    enabled: !!address,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   });

@@ -19,7 +19,7 @@ interface TraitMetadata {
 }
 
 export function useTraits() {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
 
   return useQuery({
     queryKey: ['traits', address],
@@ -70,7 +70,7 @@ export function useTraits() {
 
       return traits;
     },
-    enabled: isConnected && !!address,
+    enabled: !!address,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   });
