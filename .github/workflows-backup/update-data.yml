@@ -1,0 +1,33 @@
+name: Update Builder Battle Data
+
+on:
+  push:
+    paths:
+      - 'builderbattle/data.json'
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+    - name: Commit data changes
+      run: |
+        if [ -n "$(git status --porcelain builderbattle/data.json)" ]; then
+          git add builderbattle/data.json
+          git commit -m "Auto-update Builder Battle data - $(date)"
+          git push
+          echo "Data updated successfully"
+        else
+          echo "No data changes to commit"
+        fi

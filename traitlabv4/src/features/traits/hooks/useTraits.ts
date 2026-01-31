@@ -28,14 +28,18 @@ export function useTraits() {
         throw new Error('No wallet connected');
       }
 
+      console.log('[useTraits] Fetching traits for address:', address);
+
       // Fetch traits.json metadata
       const traitsJsonResponse = await fetch('/data/traits.json');
       const traitsMetadata: Record<string, TraitMetadata> = await traitsJsonResponse.json();
+      console.log('[useTraits] Loaded traits metadata, count:', Object.keys(traitsMetadata).length);
 
       // Fetch user's ERC1155 tokens from Alchemy
       const response = await alchemyClient.getERC1155Tokens(address, [
         CONTRACT_ADDRESSES.ADRIAN_LAB,
       ]);
+      console.log('[useTraits] Alchemy returned', response.ownedNfts.length, 'ERC1155 tokens');
 
       // Merge user balances with metadata
       const traits: Trait[] = response.ownedNfts
@@ -67,6 +71,9 @@ export function useTraits() {
           } as Trait;
         })
         .filter((trait): trait is Trait => trait !== null);
+
+      console.log('[useTraits] Processed traits:', traits.length);
+      console.log('[useTraits] Sample traits:', traits.slice(0, 3));
 
       return traits;
     },

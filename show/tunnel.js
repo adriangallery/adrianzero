@@ -30,6 +30,13 @@ class InfiniteTunnel {
         this.raycaster = new THREE.Raycaster(); // For detecting sprite clicks
         this.mouse = new THREE.Vector2(); // Mouse position in normalized coordinates
         this.selectedSprite = null; // Currently selected sprite
+        this.batchIndex = 0; // Current batch index for progressive loading
+        this.batchSize = 100; // Load 100 textures per batch
+        this.isLoadingBatch = false; // Track if a batch is currently loading
+        this.lastProgressLog = 0; // Track last progress log time
+        this.progressiveLoadIndex = 0; // Track progressive loading index
+        this.lastProgressLog = 0; // Track last progress log time
+        this.progressiveLoadIndex = 0; // Track progressive loading index
         
         this.init();
     }
@@ -359,6 +366,54 @@ class InfiniteTunnel {
         console.log(`✅ Created ${this.particleSprites.length} particle sprites (textures loading lazy)`);
     }
     
+    /**
+     * Load a batch of 100 textures progressively
+     */
+    async loadTextureBatch() {
+        if (this.isLoadingBatch || this.batchIndex >= this.assets.length) {
+            return; // Already loading or all textures loaded
+        }
+        
+        this.isLoadingBatch = true;
+        const startIndex = this.batchIndex;
+        const endIndex = Math.min(this.batchIndex + this.batchSize, this.assets.length);
+        
+        console.log(`📦 Loading batch ${Math.floor(this.batchIndex / this.batchSize) + 1}: textures ${startIndex + 1}-${endIndex} of ${this.assets.length}`);
+        
+        // Load all textures in this batch
+        const promises = [];
+        for (let i = startIndex; i < endIndex; i++) {
+            const asset = this.assets[i];
+            if (asset && asset.url && !this.textureCache.has(asset.url) && !this.loadingTextures.has(asset.url)) {
+                promises.push(
+                    this.loadTexture(asset.url).catch(() => {
+                        // Silently fail, will retry if needed
+                    })
+                );
+            }
+        }
+        
+        // Wait for batch to complete
+        await Promise.all(promises);
+        
+        this.batchIndex = endIndex;
+        this.isLoadingBatch = false;
+        
+        const loaded = this.textureCache.size;
+        const total = this.assets.length;
+        console.log(`✅ Batch complete: ${loaded}/${total} textures loaded (${Math.round(loaded / total * 100)}%)`);
+        
+        // Load next batch if there are more textures
+        if (this.batchIndex < this.assets.length) {
+            // Load next batch after a short delay to avoid blocking
+            setTimeout(() => {
+                this.loadTextureBatch();
+            }, 100);
+        } else {
+            console.log(`🎉 All ${total} textures loaded!`);
+        }
+    }
+    
     createPlaceholderTexture() {
         // Create a simple placeholder texture
         const canvas = document.createElement('canvas');
@@ -399,7 +454,7 @@ class InfiniteTunnel {
         
         const cameraZ = this.camera.position.z;
         const preloadDistance = 150; // Preload textures for sprites within this distance
-        const maxConcurrent = 5; // Limit concurrent loads
+        const maxConcurrent = 10; // Increased concurrent loads
         
         // Find sprites that are approaching visibility and need textures
         const spritesToPreload = this.particleSprites
@@ -425,6 +480,43 @@ class InfiniteTunnel {
                 });
             }
         });
+        
+        // Progressive background loading: load textures in batches
+        this.progressiveBackgroundLoad();
+    }
+    
+    /**
+     * Progressive background loading of textures in batches
+     */
+    progressiveBackgroundLoad() {
+        // Only load if we have capacity (not too many concurrent loads)
+        if (this.loadingTextures.size >= 15) {
+            return; // Too many concurrent loads, wait
+        }
+        
+        // Load next batch of textures progressively
+        const batchSize = 5; // Load 5 textures at a time
+        let loaded = 0;
+        
+        while (loaded < batchSize && this.progressiveLoadIndex < this.assets.length) {
+            const asset = this.assets[this.progressiveLoadIndex];
+            
+            // Skip if already cached or loading
+            if (!this.textureCache.has(asset.url) && !this.loadingTextures.has(asset.url)) {
+                // Load in background
+                this.loadTexture(asset.url).catch(() => {
+                    // Silently fail
+                });
+                loaded++;
+            }
+            
+            this.progressiveLoadIndex++;
+            
+            // Reset if we've gone through all assets (cycle through)
+            if (this.progressiveLoadIndex >= this.assets.length) {
+                this.progressiveLoadIndex = 0;
+            }
+        }
     }
 
     createTunnelSegment(z) {

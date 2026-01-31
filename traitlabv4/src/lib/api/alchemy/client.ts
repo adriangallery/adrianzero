@@ -144,9 +144,16 @@ class AlchemyClient {
     let allNfts: AlchemyNFT[] = [];
     let pageKey: string | undefined = undefined;
     let totalCount = 0;
+    let pageCount = 0;
+
+    console.log('[Alchemy] Fetching ERC1155 tokens for:', owner);
+    console.log('[Alchemy] Contract filters:', contractAddresses);
 
     // Fetch all pages
     do {
+      pageCount++;
+      console.log(`[Alchemy] Fetching page ${pageCount}, pageKey:`, pageKey);
+
       const response = await this.getNFTs({
         owner,
         contractAddresses,
@@ -156,10 +163,19 @@ class AlchemyClient {
         pageSize: 100, // Max per page
       });
 
+      console.log(`[Alchemy] Page ${pageCount} returned ${response.ownedNfts.length} tokens`);
       allNfts = allNfts.concat(response.ownedNfts);
       pageKey = response.pageKey;
       totalCount = response.totalCount;
+
+      // Safety: prevent infinite loop
+      if (pageCount > 50) {
+        console.error('[Alchemy] Too many pages, breaking loop');
+        break;
+      }
     } while (pageKey);
+
+    console.log(`[Alchemy] Total fetched: ${allNfts.length} tokens across ${pageCount} pages`);
 
     return {
       ownedNfts: allNfts,
