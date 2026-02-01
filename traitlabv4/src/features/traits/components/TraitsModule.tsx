@@ -1,25 +1,27 @@
 /**
  * TraitsModule Component
  * Main module for selecting and applying traits to NFTs
- * Mobile-optimized with sticky bottom bar
+ * Mobile-optimized with collapsible inline preview
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { Unplug, AlertTriangle, X } from 'lucide-react';
+import { Unplug, AlertTriangle, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
-import { TraitPreview } from '@/components/traits/TraitPreview';
 import { useTraitsByCategory, useTraitCategories } from '../hooks/useTraits';
 import { useApplyTraits } from '../hooks/useApplyTraits';
 import { useTraitsStore } from '../store/traitsStore';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
+import { vercelImageService } from '@/lib/api/vercel/imageService';
 import type { TraitCategory } from '@/types/nft.types';
 
 export function TraitsModule() {
   const { isConnected } = useAccount();
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
-  const [showPreview, setShowPreview] = useState(false);
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
   // Load traits
   const { data: traitsByCategory, allTraits, isLoading, error } = useTraitsByCategory();
@@ -53,6 +55,30 @@ export function TraitsModule() {
   const selectedTraits = getSelectedTraitsArray();
   const selectedTraitIds = getSelectedTraitIds();
 
+  // Target token for preview
+  const previewTokenId = targetTokenId || selectedToken?.tokenId;
+
+  // Auto-expand preview when traits are selected, collapse when none
+  useEffect(() => {
+    if (selectedTraits.length > 0 && previewTokenId) {
+      setIsPreviewExpanded(true);
+      // Generate preview URL
+      setIsPreviewLoading(true);
+      const url = vercelImageService.generateCombinedImageUrl({
+        tokenId: previewTokenId,
+        traitIds: selectedTraitIds,
+      });
+      setPreviewImageUrl(url);
+      // Preload
+      vercelImageService.preloadImage(url).finally(() => {
+        setIsPreviewLoading(false);
+      });
+    } else if (selectedTraits.length === 0) {
+      setIsPreviewExpanded(false);
+      setPreviewImageUrl('');
+    }
+  }, [selectedTraits.length, selectedTraitIds.join(','), previewTokenId]);
+
   // Handlers
   const handleTraitSelect = (trait: any) => {
     if (isTraitSelected(trait)) {
@@ -63,37 +89,27 @@ export function TraitsModule() {
   };
 
   const handleApplyTraits = async () => {
-    const tokenId = targetTokenId || selectedToken?.tokenId;
-
-    if (!tokenId || selectedTraits.length === 0) {
+    if (!previewTokenId || selectedTraits.length === 0) {
       return;
     }
 
     try {
       await applyTraits.mutateAsync({
-        tokenId,
+        tokenId: previewTokenId,
         traitIds: selectedTraitIds,
       });
 
       // Clear selection on success
       clearSelection();
-      setShowPreview(false);
+      setIsPreviewExpanded(false);
     } catch (error) {
       console.error('Failed to apply traits:', error);
     }
   };
 
-  const handleShowPreview = () => {
-    if (selectedTraits.length === 0) {
-      return;
-    }
-
-    if (!targetTokenId && !selectedToken?.tokenId) {
-      alert('Please select an AdrianZERO NFT first');
-      return;
-    }
-
-    setShowPreview(true);
+  const handleTogglePreview = () => {
+    if (selectedTraits.length === 0) return;
+    setIsPreviewExpanded(!isPreviewExpanded);
   };
 
   if (!isConnected) {
@@ -140,27 +156,92 @@ export function TraitsModule() {
         <div>
           <h1 className="text-lg sm:text-xl font-bold text-foreground">Traits</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            {allTraits.length} {allTraits.length === 1 ? 'trait' : 'traits'} available
+            {allTraits.length} available
           </p>
         </div>
 
-        {/* Selected Traits Counter - Desktop only */}
+        {/* Selected Traits Counter - Desktop */}
         {selectedTraits.length > 0 && (
-          <div className="hidden sm:flex items-center gap-3">
-            <div className="px-3 py-1 bg-primary/10 rounded-lg">
-              <p className="text-sm font-medium text-primary">
-                {selectedTraits.length} selected
-              </p>
-            </div>
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {selectedTraits.length} selected
+            </span>
             <button
-              onClick={handleShowPreview}
-              className="touch-target px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+              onClick={clearSelection}
+              className="p-1.5 rounded bg-secondary text-secondary-foreground hover:opacity-80"
+              aria-label="Clear"
             >
-              Preview & Apply
+              <X className="w-3 h-3" />
             </button>
           </div>
         )}
       </div>
+
+      {/* Collapsible Preview Panel */}
+      {selectedTraits.length > 0 && previewTokenId && (
+        <div className="mb-2 border border-border rounded-lg overflow-hidden bg-card">
+          {/* Preview Header - Always visible, clickable to toggle */}
+          <button
+            onClick={handleTogglePreview}
+            className="w-full flex items-center justify-between p-2 hover:bg-muted/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-foreground">
+                Preview #{previewTokenId}
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                ({selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''})
+              </span>
+            </div>
+            {isPreviewExpanded ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+
+          {/* Preview Content - Collapsible */}
+          {isPreviewExpanded && (
+            <div className="p-2 pt-0">
+              {/* Preview Image */}
+              <div className="relative aspect-square max-w-[200px] sm:max-w-[280px] mx-auto bg-muted rounded-lg overflow-hidden mb-2">
+                {isPreviewLoading && (
+                  <div className="absolute inset-0 shimmer" />
+                )}
+                {previewImageUrl && (
+                  <img
+                    src={previewImageUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    onLoad={() => setIsPreviewLoading(false)}
+                  />
+                )}
+              </div>
+
+              {/* Action Buttons - Compact */}
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={() => {
+                    clearSelection();
+                    setIsPreviewExpanded(false);
+                  }}
+                  disabled={applyTraits.isPending}
+                  className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded font-medium hover:opacity-80 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApplyTraits}
+                  disabled={applyTraits.isPending}
+                  className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded font-medium hover:opacity-80 disabled:opacity-50"
+                >
+                  {applyTraits.isPending ? 'Applying...' : 'Apply'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Category Tabs - Sticky on mobile */}
       <div className="sticky top-0 z-10 bg-background -mx-4 px-4 pb-2">
@@ -172,8 +253,8 @@ export function TraitsModule() {
         />
       </div>
 
-      {/* Traits Grid - Fills remaining space, with bottom padding for mobile bar */}
-      <div className="flex-1 overflow-y-auto pb-20 sm:pb-4">
+      {/* Traits Grid - Fills remaining space */}
+      <div className="flex-1 overflow-y-auto pb-4">
         <TraitGrid
           traits={displayTraits}
           selectedTraitIds={selectedTraitIds}
@@ -185,42 +266,6 @@ export function TraitsModule() {
           }
         />
       </div>
-
-      {/* Mobile Sticky Bottom Bar */}
-      {selectedTraits.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 sm:hidden bg-background border-t border-border p-3 z-20">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={clearSelection}
-                className="p-2 rounded-lg bg-secondary text-secondary-foreground"
-                aria-label="Clear selection"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <span className="text-sm font-medium text-foreground">
-                {selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''} selected
-              </span>
-            </div>
-            <button
-              onClick={handleShowPreview}
-              className="touch-target px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
-            >
-              Apply
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Modal */}
-      <TraitPreview
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-        tokenId={targetTokenId || selectedToken?.tokenId || ''}
-        traits={selectedTraits}
-        onConfirm={handleApplyTraits}
-        isApplying={applyTraits.isPending}
-      />
     </div>
   );
 }
