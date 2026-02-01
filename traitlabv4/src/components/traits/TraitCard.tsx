@@ -3,7 +3,6 @@
  * Displays an individual trait with selection state
  */
 
-import { motion } from 'framer-motion';
 import { Palette } from 'lucide-react';
 import type { Trait } from '@/types/nft.types';
 
@@ -36,12 +35,11 @@ export function TraitCard({
   const rarityColor = trait.rarity ? rarityColors[trait.rarity] : 'bg-gray-500';
 
   return (
-    <motion.div
-      whileTap={{ scale: 0.95 }}
+    <div
       onClick={onClick}
       className={`
         relative rounded-lg overflow-hidden cursor-pointer
-        transition-all duration-200 touch-target
+        transition-all duration-200 touch-target active:scale-95
         ${
           isSelected
             ? 'ring-2 ring-primary shadow-lg'
@@ -118,6 +116,6 @@ export function TraitCard({
           {trait.category.toLowerCase().replace('_', ' ')}
         </p>
       </div>
-    </motion.div>
+    </div>
   );
 }
