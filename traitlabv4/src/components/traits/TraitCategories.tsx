@@ -12,20 +12,32 @@ interface TraitCategoriesProps {
   onCategoryChange: (category: TraitCategory | 'ALL') => void;
 }
 
-const categoryLabels: Record<TraitCategory, string> = {
-  BACKGROUND: 'Background',
-  EAR: 'Ears',
-  EYES: 'Eyes',
-  MOUTH: 'Mouth',
-  NECK: 'Neck',
-  NOSE: 'Nose',
-  OUTFIT: 'Outfit',
-  ACCESSORY: 'Accessory',
-  HEAD: 'Head',
-  HANDS: 'Hands',
-  SPECIAL: 'Special',
-  HAIR: 'Hair',
-  CLOTHING: 'Clothing',
+const categoryLabels: Record<string, string> = {
+  '3D': '3D',
+  'ACTION PACKS': 'Action Packs',
+  'ARMOUR': 'Armour',
+  'BACKGROUND': 'Background',
+  'BEARD': 'Beard',
+  'EAR': 'Ears',
+  'EYES': 'Eyes',
+  'FLOPPY DISCS': 'Floppy Discs',
+  'GEAR': 'Gear',
+  'GI': 'GI',
+  'HAIR': 'Hair',
+  'HAT': 'Hat',
+  'HEAD': 'Head',
+  'KIMONO': 'Kimono',
+  'MASK': 'Mask',
+  'MOUTH': 'Mouth',
+  'NECK': 'Neck',
+  'NOSE': 'Nose',
+  'PAGERS': 'Pagers',
+  'RANDOMSHIT': 'Random Stuff',
+  'SKIN': 'Skin',
+  'SKINTRAIT': 'Skin Trait',
+  'SWAG': 'Swag',
+  'TOP': 'Top',
+  'WEAPON': 'Weapon',
 };
 
 export function TraitCategories({

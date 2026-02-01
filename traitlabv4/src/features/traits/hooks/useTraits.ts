@@ -82,7 +82,7 @@ export function useTraits() {
           return {
             tokenId: nft.tokenId,
             name: metadata.name,
-            category: metadata.category,
+            category: metadata.category.toUpperCase(), // Normalize to uppercase
             fileName: metadata.fileName,
             maxSupply: metadata.maxSupply,
             balance,
