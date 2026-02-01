@@ -50,13 +50,17 @@ export function TraitGrid({
   }
 
   // Use virtualization on mobile for better performance
+  // Key forces remount when traits change to avoid stale data
+  const virtuosoKey = traits.map(t => t.tokenId).join('-').slice(0, 100);
+
   if (isMobile && traits.length > 20) {
     return (
       <Virtuoso
+        key={virtuosoKey}
         style={{ height: 'calc(100vh - 300px)' }}
         totalCount={rows.length}
-        itemContent={(index) => {
-          const row = rows[index];
+        data={rows}
+        itemContent={(_index, row) => {
           return (
             <div className="grid grid-cols-2 gap-4 mb-4 px-4">
               {row.map((trait) => (
