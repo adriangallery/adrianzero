@@ -84,8 +84,12 @@ export function TraitGrid({
   }
 
   // Regular grid for desktop or small collections
+  // Use key to force remount when traits change
+  const gridKey = `grid-${traits.length}-${traits[0]?.tokenId || 'empty'}`;
+
   return (
     <div
+      key={gridKey}
       className={`
         grid gap-4
         grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6
