@@ -25,10 +25,12 @@ export function useCraftTrait() {
         throw new Error('Public client not available');
       }
 
+      // For now, assume all recipes are SPECIFIC type
+      // TODO: Detect recipe type and call craftAny for ANY recipes
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
         abi: CRAFTING_ABI,
-        functionName: 'craft',
+        functionName: 'craftSpecific',
         args: [BigInt(recipeId)],
       });
 

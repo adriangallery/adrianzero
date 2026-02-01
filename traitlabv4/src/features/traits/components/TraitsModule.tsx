@@ -137,7 +137,7 @@ export function TraitsModule() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Traits</h1>
+          <h1 className="text-xl font-bold text-foreground">Traits</h1>
           <p className="text-muted-foreground mt-1">
             {allTraits.length} {allTraits.length === 1 ? 'trait' : 'traits'} available
           </p>

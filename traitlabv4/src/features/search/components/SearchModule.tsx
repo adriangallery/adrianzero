@@ -82,7 +82,7 @@ export function SearchModule() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Search</h1>
+        <h1 className="text-xl font-bold text-foreground">Search</h1>
         <p className="text-muted-foreground mt-1">Find your assets with advanced filters</p>
       </div>
 

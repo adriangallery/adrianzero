@@ -57,7 +57,7 @@ export function LamboModule() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Lambo Variants</h1>
+        <h1 className="text-xl font-bold text-foreground">Lambo Variants</h1>
         <p className="text-muted-foreground mt-1">
           Generate Lamborghini variants in different colors
         </p>

@@ -120,8 +120,24 @@ export function DashboardModule() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {analytics.rarestTraits.map((trait) => (
                 <div key={trait.tokenId} className="text-center">
-                  <div className="aspect-square bg-muted rounded-lg mb-2 flex items-center justify-center">
-                    <Palette className="h-12 w-12 text-muted-foreground" />
+                  <div className="aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
+                    {trait.image?.cachedUrl || trait.image?.originalUrl ? (
+                      <img
+                        src={trait.image.cachedUrl || trait.image.originalUrl}
+                        alt={trait.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to originalUrl if cachedUrl fails
+                          if (trait.image?.originalUrl && e.currentTarget.src !== trait.image.originalUrl) {
+                            e.currentTarget.src = trait.image.originalUrl;
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Palette className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
                   </div>
                   <p className="text-xs font-medium text-foreground truncate">{trait.name}</p>
                   <p className="text-xs text-muted-foreground">

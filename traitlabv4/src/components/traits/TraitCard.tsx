@@ -58,6 +58,12 @@ export function TraitCard({
             alt={trait.name}
             loading="lazy"
             className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback to originalUrl if cachedUrl fails
+              if (trait.image?.originalUrl && e.currentTarget.src !== trait.image.originalUrl) {
+                e.currentTarget.src = trait.image.originalUrl;
+              }
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">

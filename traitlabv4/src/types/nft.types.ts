@@ -74,9 +74,10 @@ export interface Serum {
 
 export interface CraftingRecipe {
   recipeId: string;
-  inputTraits: string[]; // Token IDs required
+  inputTraits: string[]; // Token IDs required (empty for ANY type)
   outputTrait: string; // Token ID produced
   type: 'SPECIFIC' | 'ANY';
+  burnTotal?: number; // For ANY recipes - number of any traits to burn
   isActive: boolean;
   isEligible?: boolean; // User has required traits
 }

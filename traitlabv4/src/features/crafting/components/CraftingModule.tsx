@@ -62,7 +62,7 @@ export function CraftingModule() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Crafting</h1>
+        <h1 className="text-xl font-bold text-foreground">Crafting</h1>
         <p className="text-muted-foreground mt-1">
           Combine traits to create new ones
         </p>

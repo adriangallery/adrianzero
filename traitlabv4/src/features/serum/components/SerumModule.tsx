@@ -71,7 +71,7 @@ export function SerumModule() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Serum</h1>
+        <h1 className="text-xl font-bold text-foreground">Serum</h1>
         <p className="text-muted-foreground mt-1">
           Apply serums to your AdrianZERO NFTs
         </p>

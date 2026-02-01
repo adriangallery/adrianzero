@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useRenameToken, useNamePrice } from '../hooks/useRename';
 import { useTokenToggle, useSetToggle, AVAILABLE_TOGGLES } from '../hooks/useToggles';
@@ -15,6 +15,8 @@ export function CustomModule() {
   const { isConnected } = useAccount();
   const [selectedToken, setSelectedToken] = useState<AdrianZeroToken | null>(null);
   const [newName, setNewName] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [pendingToggle, setPendingToggle] = useState<number | null>(null);
 
   const { data: tokens = [] } = useAdrianZeroTokens();
   const { data: namePrice = '0' } = useNamePrice();
@@ -39,18 +41,34 @@ export function CustomModule() {
     }
   };
 
-  const handleToggleChange = async (toggleId: number) => {
+  const handleToggleChange = (toggleId: number) => {
     if (!selectedToken) return;
+    setPendingToggle(toggleId);
+    setShowPreview(true);
+  };
+
+  const handleConfirmToggle = async () => {
+    if (!selectedToken || pendingToggle === null) return;
 
     try {
       await setToggle.mutateAsync({
         tokenId: selectedToken.tokenId,
-        toggleId,
+        toggleId: pendingToggle,
       });
+      setShowPreview(false);
+      setPendingToggle(null);
     } catch (error) {
       console.error('Failed to set toggle:', error);
     }
   };
+
+  const getPreviewUrl = () => {
+    if (!selectedToken || pendingToggle === null) return '';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://adrianlab.vercel.app';
+    return `${baseUrl}/api/render/adrianzero/${selectedToken.tokenId}?toggle=${pendingToggle}`;
+  };
+
+  const pendingToggleInfo = AVAILABLE_TOGGLES.find((t) => t.id === pendingToggle);
 
   if (!isConnected) {
     return (
@@ -64,7 +82,7 @@ export function CustomModule() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Customization</h1>
+        <h1 className="text-xl font-bold text-foreground">Customization</h1>
         <p className="text-muted-foreground mt-1">Rename your NFTs and apply visual effects</p>
       </div>
 
@@ -161,6 +179,55 @@ export function CustomModule() {
           </>
         )}
       </div>
+
+      {/* Preview Modal */}
+      {showPreview && selectedToken && pendingToggleInfo && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowPreview(false)}>
+          <div className="bg-card rounded-lg max-w-lg w-full p-6 relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowPreview(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h2 className="text-xl font-bold text-foreground mb-2">Preview Effect</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              {pendingToggleInfo.name}: {pendingToggleInfo.description}
+            </p>
+
+            <div className="aspect-square bg-muted rounded-lg overflow-hidden mb-4">
+              <img
+                src={getPreviewUrl()}
+                alt={`Preview with ${pendingToggleInfo.name}`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to original image if preview fails
+                  if (selectedToken.image?.cachedUrl) {
+                    e.currentTarget.src = selectedToken.image.cachedUrl;
+                  }
+                }}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPreview(false)}
+                className="flex-1 touch-target px-4 py-2 bg-muted text-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmToggle}
+                disabled={setToggle.isPending}
+                className="flex-1 touch-target px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {setToggle.isPending ? 'Applying...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

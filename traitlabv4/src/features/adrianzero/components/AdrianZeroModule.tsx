@@ -102,7 +102,7 @@ export function AdrianZeroModule() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">AdrianZERO NFTs</h1>
+          <h1 className="text-xl font-bold text-foreground">AdrianZERO NFTs</h1>
           <p className="text-muted-foreground mt-1">
             {tokens.length} {tokens.length === 1 ? 'NFT' : 'NFTs'} in your collection
           </p>

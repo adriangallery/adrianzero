@@ -9,10 +9,18 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { CRAFTING_ABI } from '@/lib/web3/abi';
 import type { CraftingRecipe } from '@/types/nft.types';
 
-interface RecipeData {
-  id: bigint;
-  inputs: bigint[];
-  output: bigint;
+interface SpecificRecipeData {
+  burnIds: bigint[];
+  burnAmounts: bigint[];
+  outId: bigint;
+  outAmount: bigint;
+  active: boolean;
+}
+
+interface AnyRecipeData {
+  burnTotal: bigint;
+  outId: bigint;
+  outAmount: bigint;
   active: boolean;
 }
 
@@ -27,54 +35,83 @@ export function useCraftingRecipes() {
         throw new Error('Public client not available');
       }
 
-      // Get all active recipe IDs
-      const activeRecipeIds = (await publicClient.readContract({
-        address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-        abi: CRAFTING_ABI,
-        functionName: 'getActiveRecipes',
-      })) as bigint[];
+      const recipes: CraftingRecipe[] = [];
 
-      console.log('[useCraftingRecipes] Active recipe IDs:', activeRecipeIds);
+      // Try recipe IDs 0-20 (adjust max as needed)
+      const maxRecipeId = 20;
 
-      // Fetch details for each recipe
-      const recipePromises = activeRecipeIds.map(async (recipeId) => {
-        const recipeData = (await publicClient.readContract({
-          address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-          abi: CRAFTING_ABI,
-          functionName: 'getRecipe',
-          args: [recipeId],
-        })) as RecipeData;
-
-        // Check if user can craft this recipe
-        let isEligible = false;
-        if (address) {
-          const [canCraft] = (await publicClient.readContract({
+      for (let recipeId = 0; recipeId <= maxRecipeId; recipeId++) {
+        try {
+          // Try getSpecificRecipe first
+          const specificRecipe = (await publicClient.readContract({
             address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
             abi: CRAFTING_ABI,
-            functionName: 'canCraft',
-            args: [address, recipeId],
-          })) as [boolean, string];
+            functionName: 'getSpecificRecipe',
+            args: [BigInt(recipeId)],
+          })) as SpecificRecipeData;
 
-          isEligible = canCraft;
+          if (specificRecipe.active) {
+            let isEligible = false;
+            if (address) {
+              const [canCraft] = (await publicClient.readContract({
+                address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
+                abi: CRAFTING_ABI,
+                functionName: 'canCraft',
+                args: [address, BigInt(recipeId)],
+              })) as [boolean, string];
+              isEligible = canCraft;
+            }
+
+            recipes.push({
+              recipeId: recipeId.toString(),
+              inputTraits: specificRecipe.burnIds.map((id: bigint) => id.toString()),
+              outputTrait: specificRecipe.outId.toString(),
+              type: 'SPECIFIC',
+              isActive: true,
+              isEligible,
+            });
+            continue;
+          }
+        } catch (e) {
+          // Try getAnyRecipe
+          try {
+            const anyRecipe = (await publicClient.readContract({
+              address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
+              abi: CRAFTING_ABI,
+              functionName: 'getAnyRecipe',
+              args: [BigInt(recipeId)],
+            })) as AnyRecipeData;
+
+            if (anyRecipe.active) {
+              let isEligible = false;
+              if (address) {
+                const [canCraft] = (await publicClient.readContract({
+                  address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
+                  abi: CRAFTING_ABI,
+                  functionName: 'canCraft',
+                  args: [address, BigInt(recipeId)],
+                })) as [boolean, string];
+                isEligible = canCraft;
+              }
+
+              recipes.push({
+                recipeId: recipeId.toString(),
+                inputTraits: [], // ANY recipe - burn count stored separately
+                outputTrait: anyRecipe.outId.toString(),
+                type: 'ANY',
+                burnTotal: Number(anyRecipe.burnTotal),
+                isActive: true,
+                isEligible,
+              });
+            }
+          } catch (e2) {
+            // Recipe doesn't exist, continue
+          }
         }
-
-        // Transform to CraftingRecipe type
-        const recipe: CraftingRecipe = {
-          recipeId: recipeData.id.toString(),
-          inputTraits: recipeData.inputs.map((id) => id.toString()),
-          outputTrait: recipeData.output.toString(),
-          type: recipeData.inputs.length === 1 ? 'SPECIFIC' : 'ANY',
-          isActive: recipeData.active,
-          isEligible,
-        };
-
-        return recipe;
-      });
-
-      const recipes = await Promise.all(recipePromises);
+      }
 
       console.log('[useCraftingRecipes] Loaded recipes:', recipes.length);
-      return recipes.filter((r) => r.isActive);
+      return recipes;
     },
     enabled: !!publicClient,
     staleTime: 1000 * 60 * 5, // 5 minutes
