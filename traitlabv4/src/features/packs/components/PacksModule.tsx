@@ -34,6 +34,12 @@ export function PacksModule() {
   const handleOpenPack = async () => {
     if (!selectedPack) return;
 
+    // Only FLOPPY_DISC and ACTION_PACK can be opened
+    if (selectedPack.type === 'SPECIAL') {
+      alert('Special packs cannot be opened through this interface');
+      return;
+    }
+
     try {
       await openPack.mutateAsync({
         packId: selectedPack.packId,

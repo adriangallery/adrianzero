@@ -5,7 +5,6 @@
 
 import { useState } from 'react';
 import type { SearchFilters as ISearchFilters } from '@/features/search/types/search.types';
-import { TRAIT_CATEGORIES } from '@/types/nft.types';
 
 interface SearchFiltersProps {
   filters: ISearchFilters;
@@ -60,11 +59,15 @@ export function SearchFilters({ filters, onFiltersChange, onSaveSearch }: Search
 
       {isExpanded && (
         <div className="p-4 border-t border-border space-y-4">
-          {/* Categories */}
+          {/* Categories - Removed static categories, now using dynamic search */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Categories</label>
-            <div className="grid grid-cols-2 gap-2">
-              {TRAIT_CATEGORIES.map((category) => (
+            <label className="block text-sm font-medium text-foreground mb-2">Filters</label>
+            <p className="text-xs text-muted-foreground">
+              Use the search bar and asset type selector above to filter your results
+            </p>
+            {/* Categories removed - now handled by asset type selector in SearchModule */}
+            <div className="hidden">
+              {filters.categories.map((category: string) => (
                 <label
                   key={category}
                   className="flex items-center gap-2 cursor-pointer text-sm text-foreground"

@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 import { usePublicClient, useAccount } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { CRAFTING_ABI } from '@/lib/web3/abi';
-import { useTraits } from '@/features/traits/hooks/useTraits';
 import type { CraftingRecipe } from '@/types/nft.types';
 
 interface RecipeData {
@@ -20,7 +19,6 @@ interface RecipeData {
 export function useCraftingRecipes() {
   const publicClient = usePublicClient();
   const { address } = useAccount();
-  const { data: traits = [] } = useTraits();
 
   return useQuery({
     queryKey: ['crafting-recipes', address],

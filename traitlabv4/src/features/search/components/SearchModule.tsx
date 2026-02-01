@@ -32,14 +32,14 @@ export function SearchModule() {
   const { data: packs = [] } = usePacks();
   const { data: serums = [] } = useSerums();
 
-  // Combine all assets with type tagging
+  // Combine all assets with type tagging - using any to avoid complex type unions
   const allAssets = useMemo(() => {
     return [
       ...nfts.map(nft => ({ ...nft, assetType: 'nft' as const })),
       ...traits.map(trait => ({ ...trait, assetType: 'trait' as const })),
       ...packs.map(pack => ({ ...pack, assetType: 'pack' as const, tokenId: pack.packId })),
       ...serums.map(serum => ({ ...serum, assetType: 'serum' as const })),
-    ];
+    ] as any[];
   }, [nfts, traits, packs, serums]);
 
   // Filter by asset type
@@ -49,7 +49,7 @@ export function SearchModule() {
     return allAssets.filter(asset => asset.assetType === typeMap[assetType]);
   }, [allAssets, assetType]);
 
-  const { filters, setFilters, filteredItems, resultCount } = useSearch(filteredAssets);
+  const { filters, setFilters, filteredItems, resultCount } = useSearch(filteredAssets as any);
   const { savedSearches, saveSearch, deleteSearch, loadSearch } = useSavedSearches();
 
   const handleSaveSearch = () => {
@@ -213,17 +213,17 @@ export function SearchModule() {
           </div>
         ) : (
           <>
-            {(assetType === 'all' || assetType === 'nfts') && (
-              <NFTGrid tokens={filteredItems.filter(item => 'owner' in item || assetType === 'nfts')} />
+            {assetType === 'nfts' && (
+              <NFTGrid tokens={filteredItems as any} />
             )}
-            {(assetType === 'all' || assetType === 'traits') && (
+            {assetType === 'traits' && (
               <TraitGrid
-                traits={filteredItems.filter(item => 'category' in item)}
+                traits={filteredItems as any}
                 selectedTraitIds={[]}
                 onTraitSelect={() => {}}
               />
             )}
-            {(assetType === 'all' || assetType === 'packs' || assetType === 'serums') && assetType !== 'nfts' && assetType !== 'traits' && (
+            {(assetType === 'packs' || assetType === 'serums') && (
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 {filteredItems.map((item: any) => (
                   <div key={item.tokenId || item.packId} className="bg-card rounded-lg p-4 border border-border">
@@ -240,6 +240,22 @@ export function SearchModule() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+            {assetType === 'all' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">NFTs</h3>
+                  <NFTGrid tokens={filteredItems.filter((item: any) => item.assetType === 'nft') as any} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Traits</h3>
+                  <TraitGrid
+                    traits={filteredItems.filter((item: any) => item.assetType === 'trait') as any}
+                    selectedTraitIds={[]}
+                    onTraitSelect={() => {}}
+                  />
+                </div>
               </div>
             )}
           </>
