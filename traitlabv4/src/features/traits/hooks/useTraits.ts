@@ -119,12 +119,6 @@ export function useTraitsByCategory() {
     return acc;
   }, {} as Record<TraitCategory, Trait[]>);
 
-  // Debug logging
-  console.log('[useTraitsByCategory] Categories found:', Object.keys(traitsByCategory));
-  console.log('[useTraitsByCategory] Counts per category:',
-    Object.entries(traitsByCategory).map(([k, v]) => `${k}: ${v.length}`).join(', ')
-  );
-
   return {
     data: traitsByCategory,
     allTraits: traits,

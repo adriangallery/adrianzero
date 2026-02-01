@@ -1,3 +1,10 @@
+/* AdrianZERO Custom Font */
+@font-face {
+  font-family: 'ADRIAN_ZERO_FONT';
+  src: url('/fonts/ADRIAN_ZERO.otf') format('opentype');
+  font-display: swap;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -11,6 +18,11 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* TraitLAB Title Font */
+.font-adrian {
+  font-family: 'ADRIAN_ZERO_FONT', 'VT323', monospace;
 }
 
 a {

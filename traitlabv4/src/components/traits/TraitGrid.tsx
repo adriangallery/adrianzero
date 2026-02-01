@@ -25,11 +25,6 @@ export function TraitGrid({
 }: TraitGridProps) {
   const isMobile = shouldOptimizeForTouch();
 
-  // Debug logging
-  console.log('[TraitGrid] Received traits:', traits.length);
-  console.log('[TraitGrid] isMobile:', isMobile);
-  console.log('[TraitGrid] First 5 traits:', traits.slice(0, 5).map(t => `${t.name} (${t.category})`));
-
   // Group traits into rows for virtualization
   const rows = useMemo(() => {
     const itemsPerRow = isMobile ? 2 : 4;

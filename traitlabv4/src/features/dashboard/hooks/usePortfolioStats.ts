@@ -3,7 +3,7 @@
  * Calculate portfolio statistics
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useTraits } from '@/features/traits/hooks/useTraits';
@@ -19,34 +19,37 @@ export interface PortfolioStats {
 
 export function usePortfolioStats() {
   const { address } = useAccount();
-  const { data: nfts = [] } = useAdrianZeroTokens();
-  const { data: traits = [] } = useTraits();
-  const { data: packs = [] } = usePacks();
+  const { data: nfts = [], isLoading: nftsLoading } = useAdrianZeroTokens();
+  const { data: traits = [], isLoading: traitsLoading } = useTraits();
+  const { data: packs = [], isLoading: packsLoading } = usePacks();
 
-  return useQuery({
-    queryKey: ['portfolio-stats', address],
-    queryFn: async (): Promise<PortfolioStats> => {
-      const totalNFTs = nfts.length;
-      const totalTraits = traits.reduce((sum, trait) => sum + trait.balance, 0);
-      const totalPacks = packs.reduce((sum, pack) => sum + pack.balance, 0);
+  const isLoading = nftsLoading || traitsLoading || packsLoading;
 
-      // Count NFTs with traits applied
-      const traitsAppliedCount = nfts.filter(
-        (nft) => nft.appliedTraits && nft.appliedTraits.length > 0
-      ).length;
+  const data = useMemo((): PortfolioStats => {
+    const totalNFTs = nfts.length;
+    const totalTraits = traits.reduce((sum, trait) => sum + trait.balance, 0);
+    const totalPacks = packs.reduce((sum, pack) => sum + pack.balance, 0);
 
-      // Count unique trait categories
-      const categories = new Set(traits.map((trait) => trait.category));
-      const uniqueCategories = categories.size;
+    // Count NFTs with traits applied
+    const traitsAppliedCount = nfts.filter(
+      (nft) => nft.appliedTraits && nft.appliedTraits.length > 0
+    ).length;
 
-      return {
-        totalNFTs,
-        totalTraits,
-        totalPacks,
-        traitsAppliedCount,
-        uniqueCategories,
-      };
-    },
-    enabled: !!address,
-  });
+    // Count unique trait categories
+    const categories = new Set(traits.map((trait) => trait.category));
+    const uniqueCategories = categories.size;
+
+    return {
+      totalNFTs,
+      totalTraits,
+      totalPacks,
+      traitsAppliedCount,
+      uniqueCategories,
+    };
+  }, [nfts, traits, packs]);
+
+  return {
+    data: address ? data : undefined,
+    isLoading,
+  };
 }

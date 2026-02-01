@@ -42,19 +42,10 @@ export function TraitsModule() {
 
   // Get traits for active category
   const displayTraits = useMemo(() => {
-    console.log('[TraitsModule] Active category:', activeCategory);
-    console.log('[TraitsModule] traitsByCategory keys:', Object.keys(traitsByCategory));
-
     if (activeCategory === 'ALL') {
-      console.log('[TraitsModule] Showing ALL traits:', allTraits.length);
       return allTraits;
     }
-
-    const filtered = traitsByCategory[activeCategory] || [];
-    console.log('[TraitsModule] Filtered traits for', activeCategory, ':', filtered.length);
-    console.log('[TraitsModule] Sample filtered:', filtered.slice(0, 3).map(t => `${t.name} (${t.category})`));
-
-    return filtered;
+    return traitsByCategory[activeCategory] || [];
   }, [activeCategory, allTraits, traitsByCategory]);
 
   // Selected traits
