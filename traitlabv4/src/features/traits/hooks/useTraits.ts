@@ -3,6 +3,7 @@
  * Fetches user's ERC1155 traits and merges with traits.json metadata
  */
 
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { alchemyClient } from '@/lib/api/alchemy/client';
@@ -115,4 +116,22 @@ export function useTraitsByCategory() {
     allTraits: traits,
     ...rest,
   };
+}
+
+/**
+ * Hook to get all unique trait categories from user's traits
+ * Dynamically generates categories based on actual data
+ */
+export function useTraitCategories() {
+  const { data: traits = [] } = useTraits();
+
+  return useMemo(() => {
+    const categories = new Set<TraitCategory>();
+    traits.forEach(trait => {
+      if (trait.category) {
+        categories.add(trait.category);
+      }
+    });
+    return Array.from(categories).sort();
+  }, [traits]);
 }

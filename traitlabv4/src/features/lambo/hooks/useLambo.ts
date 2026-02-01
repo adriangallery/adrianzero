@@ -24,15 +24,45 @@ export const LAMBO_COLORS = [
 export function useLambo() {
   const [selectedColor, setSelectedColor] = useState<string>('blue');
 
+  // Validate color parameter
+  const validateColor = (color: string): string => {
+    const validColors = LAMBO_COLORS.map(c => c.id);
+    return validColors.includes(color.toLowerCase()) ? color : 'blue';
+  };
+
   const generateLamboUrl = (tokenId: string, color: string): string => {
-    return `${VERCEL_API_URL}/render/lambo/${tokenId}?lambo=${color}`;
+    const validatedColor = validateColor(color);
+    return `${VERCEL_API_URL}/render/lambo/${tokenId}?lambo=${validatedColor}`;
+  };
+
+  // Validate that URL returns an image
+  const validateImageUrl = async (url: string): Promise<boolean> => {
+    try {
+      const response = await fetch(url, { method: 'HEAD' });
+      if (!response.ok) return false;
+
+      const contentType = response.headers.get('content-type');
+      return contentType?.startsWith('image/') || false;
+    } catch {
+      return false;
+    }
   };
 
   const downloadImage = async (tokenId: string, color: string) => {
     const url = generateLamboUrl(tokenId, color);
 
+    // Validate URL first
+    const isValid = await validateImageUrl(url);
+    if (!isValid) {
+      throw new Error('Failed to generate lambo image. Please try again.');
+    }
+
     try {
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
+      }
+
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
 
@@ -55,5 +85,7 @@ export function useLambo() {
     setSelectedColor,
     generateLamboUrl,
     downloadImage,
+    validateColor,
+    validateImageUrl,
   };
 }

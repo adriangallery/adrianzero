@@ -82,6 +82,7 @@ export function useOpenPacks() {
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const notifications = useNotifications();
 
   const mutation = useMutation({
     mutationFn: async ({ packId, quantity }: { packId: string; quantity: number }) => {
@@ -106,11 +107,13 @@ export function useOpenPacks() {
     },
     onSuccess: (hash: `0x${string}`) => {
       console.log('Packs opened successfully:', hash);
+      notifications.success('Packs Opened!', `Successfully opened packs. Check your inventory for new traits`);
       queryClient.invalidateQueries({ queryKey: ['packs'] });
       queryClient.invalidateQueries({ queryKey: ['traits'] });
     },
     onError: (error: Error) => {
       console.error('Error opening packs:', error);
+      notifications.error('Failed to Open Packs', 'Please try again');
     },
   });
 

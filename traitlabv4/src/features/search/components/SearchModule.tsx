@@ -1,26 +1,55 @@
 /**
  * SearchModule Component
- * Advanced search for NFTs and traits
+ * Advanced search for all wallet assets (NFTs, Traits, Packs, Serums)
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { Unplug, Search } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
+import { useTraits } from '@/features/traits/hooks/useTraits';
+import { usePacks } from '@/features/packs/hooks/usePacks';
+import { useSerums } from '@/features/serum/hooks/useSerums';
 import { useSearch } from '../hooks/useSearch';
 import { useSavedSearches } from '../hooks/useSavedSearches';
 import { SearchBar } from '@/components/search/SearchBar';
 import { SearchFilters } from '@/components/search/SearchFilters';
 import { SavedSearches } from '@/components/search/SavedSearches';
 import { NFTGrid } from '@/components/nft/NFTGrid';
+import { TraitGrid } from '@/components/traits/TraitGrid';
+
+type AssetType = 'all' | 'nfts' | 'traits' | 'packs' | 'serums';
 
 export function SearchModule() {
   const { isConnected } = useAccount();
-  const { data: nfts = [] } = useAdrianZeroTokens();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [searchName, setSearchName] = useState('');
+  const [assetType, setAssetType] = useState<AssetType>('all');
 
-  const { filters, setFilters, filteredItems, resultCount } = useSearch(nfts);
+  // Load all asset types
+  const { data: nfts = [] } = useAdrianZeroTokens();
+  const { data: traits = [] } = useTraits();
+  const { data: packs = [] } = usePacks();
+  const { data: serums = [] } = useSerums();
+
+  // Combine all assets with type tagging
+  const allAssets = useMemo(() => {
+    return [
+      ...nfts.map(nft => ({ ...nft, assetType: 'nft' as const })),
+      ...traits.map(trait => ({ ...trait, assetType: 'trait' as const })),
+      ...packs.map(pack => ({ ...pack, assetType: 'pack' as const, tokenId: pack.packId })),
+      ...serums.map(serum => ({ ...serum, assetType: 'serum' as const })),
+    ];
+  }, [nfts, traits, packs, serums]);
+
+  // Filter by asset type
+  const filteredAssets = useMemo(() => {
+    if (assetType === 'all') return allAssets;
+    const typeMap = { nfts: 'nft', traits: 'trait', packs: 'pack', serums: 'serum' };
+    return allAssets.filter(asset => asset.assetType === typeMap[assetType]);
+  }, [allAssets, assetType]);
+
+  const { filters, setFilters, filteredItems, resultCount } = useSearch(filteredAssets);
   const { savedSearches, saveSearch, deleteSearch, loadSearch } = useSavedSearches();
 
   const handleSaveSearch = () => {
@@ -54,7 +83,61 @@ export function SearchModule() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Search</h1>
-        <p className="text-muted-foreground mt-1">Find your NFTs with advanced filters</p>
+        <p className="text-muted-foreground mt-1">Find your assets with advanced filters</p>
+      </div>
+
+      {/* Asset Type Selector */}
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        <button
+          onClick={() => setAssetType('all')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            assetType === 'all'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          All Assets ({allAssets.length})
+        </button>
+        <button
+          onClick={() => setAssetType('nfts')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            assetType === 'nfts'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          NFTs ({nfts.length})
+        </button>
+        <button
+          onClick={() => setAssetType('traits')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            assetType === 'traits'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          Traits ({traits.length})
+        </button>
+        <button
+          onClick={() => setAssetType('packs')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            assetType === 'packs'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          Packs ({packs.length})
+        </button>
+        <button
+          onClick={() => setAssetType('serums')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            assetType === 'serums'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          Serums ({serums.length})
+        </button>
       </div>
 
       {/* Search Bar */}
@@ -125,11 +208,41 @@ export function SearchModule() {
             <Search className="h-16 w-16 mb-4 text-muted-foreground" />
             <p className="text-lg font-medium text-foreground">No results found</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Try adjusting your search filters
+              Try adjusting your search filters or selecting a different asset type
             </p>
           </div>
         ) : (
-          <NFTGrid tokens={filteredItems} />
+          <>
+            {(assetType === 'all' || assetType === 'nfts') && (
+              <NFTGrid tokens={filteredItems.filter(item => 'owner' in item || assetType === 'nfts')} />
+            )}
+            {(assetType === 'all' || assetType === 'traits') && (
+              <TraitGrid
+                traits={filteredItems.filter(item => 'category' in item)}
+                selectedTraitIds={[]}
+                onTraitSelect={() => {}}
+              />
+            )}
+            {(assetType === 'all' || assetType === 'packs' || assetType === 'serums') && assetType !== 'nfts' && assetType !== 'traits' && (
+              <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {filteredItems.map((item: any) => (
+                  <div key={item.tokenId || item.packId} className="bg-card rounded-lg p-4 border border-border">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {item.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 capitalize">
+                      {item.assetType}
+                    </p>
+                    {item.balance && (
+                      <p className="text-xs text-muted-foreground">
+                        Balance: {item.balance}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

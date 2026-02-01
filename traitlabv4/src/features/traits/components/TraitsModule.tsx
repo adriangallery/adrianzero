@@ -9,23 +9,11 @@ import { Unplug, AlertTriangle } from 'lucide-react';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
 import { TraitPreview } from '@/components/traits/TraitPreview';
-import { useTraitsByCategory } from '../hooks/useTraits';
+import { useTraitsByCategory, useTraitCategories } from '../hooks/useTraits';
 import { useApplyTraits } from '../hooks/useApplyTraits';
 import { useTraitsStore } from '../store/traitsStore';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import type { TraitCategory } from '@/types/nft.types';
-
-const ALL_CATEGORIES: TraitCategory[] = [
-  'BACKGROUND',
-  'EAR',
-  'EYES',
-  'MOUTH',
-  'NECK',
-  'NOSE',
-  'SPECIAL',
-  'HAIR',
-  'CLOTHING',
-];
 
 export function TraitsModule() {
   const { isConnected } = useAccount();
@@ -34,6 +22,7 @@ export function TraitsModule() {
 
   // Load traits
   const { data: traitsByCategory, allTraits, isLoading, error } = useTraitsByCategory();
+  const categories = useTraitCategories();
 
   // Stores
   const {
@@ -174,7 +163,7 @@ export function TraitsModule() {
 
       {/* Category Tabs */}
       <TraitCategories
-        categories={ALL_CATEGORIES}
+        categories={categories}
         traitsByCategory={traitsByCategory}
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}

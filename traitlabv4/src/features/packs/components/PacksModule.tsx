@@ -17,9 +17,15 @@ export function PacksModule() {
   const { isConnected } = useAccount();
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [filterType, setFilterType] = useState<'ALL' | 'FLOPPY_DISC' | 'ACTION_PACK' | 'SPECIAL'>('ALL');
 
   // Load packs
-  const { data: packs = [], isLoading, error } = usePacks();
+  const { data: allPacks = [], isLoading, error } = usePacks();
+
+  // Filter packs by type
+  const packs = filterType === 'ALL'
+    ? allPacks
+    : allPacks.filter(pack => pack.type === filterType);
 
   // Mutations
   const openPack = useOpenPack();
@@ -89,6 +95,50 @@ export function PacksModule() {
         </p>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        <button
+          onClick={() => setFilterType('ALL')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            filterType === 'ALL'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          All Packs ({allPacks.length})
+        </button>
+        <button
+          onClick={() => setFilterType('FLOPPY_DISC')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            filterType === 'FLOPPY_DISC'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          Floppy Discs ({allPacks.filter(p => p.type === 'FLOPPY_DISC').length})
+        </button>
+        <button
+          onClick={() => setFilterType('ACTION_PACK')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            filterType === 'ACTION_PACK'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          Action Packs ({allPacks.filter(p => p.type === 'ACTION_PACK').length})
+        </button>
+        <button
+          onClick={() => setFilterType('SPECIAL')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            filterType === 'SPECIAL'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          Special ({allPacks.filter(p => p.type === 'SPECIAL').length})
+        </button>
+      </div>
+
       {/* Packs Grid */}
       {packs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -148,7 +198,7 @@ export function PacksModule() {
                       </div>
                     )}
 
-                    <Dialog.Close className="absolute top-4 right-4 p-2 bg-black/70 hover:bg-black/90 rounded-full text-white transition-colors">
+                    <Dialog.Close className="absolute top-4 right-4 p-2 bg-accent/90 hover:bg-accent rounded-full text-white transition-colors">
                       <svg
                         className="w-6 h-6"
                         fill="none"
@@ -250,8 +300,14 @@ function PackCard({ pack, onClick }: { pack: Pack; onClick: () => void }) {
         )}
 
         {pack.balance > 1 && (
-          <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 rounded-md text-xs font-medium text-white">
+          <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded-md text-xs font-medium text-white">
             x{pack.balance}
+          </div>
+        )}
+
+        {pack.special && (
+          <div className="absolute top-2 left-2 px-2 py-1 bg-success rounded-md text-xs font-medium text-white">
+            Special
           </div>
         )}
       </div>

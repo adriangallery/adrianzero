@@ -1,12 +1,14 @@
 /**
  * CustomModule Component
- * Rename NFTs and manage zoom toggles
+ * Rename NFTs and manage visual effect toggles
  */
 
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import { Sparkles } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useRenameToken, useNamePrice } from '../hooks/useRename';
+import { useTokenToggle, useSetToggle, AVAILABLE_TOGGLES } from '../hooks/useToggles';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
 export function CustomModule() {
@@ -18,6 +20,10 @@ export function CustomModule() {
   const { data: namePrice = '0' } = useNamePrice();
   const renameToken = useRenameToken();
 
+  // Toggle hooks
+  const { data: currentToggle = 0 } = useTokenToggle(selectedToken?.tokenId);
+  const setToggle = useSetToggle();
+
   const handleRename = async () => {
     if (!selectedToken || !newName.trim()) return;
 
@@ -28,9 +34,21 @@ export function CustomModule() {
       });
 
       setNewName('');
-      setSelectedToken(null);
     } catch (error) {
       console.error('Failed to rename:', error);
+    }
+  };
+
+  const handleToggleChange = async (toggleId: number) => {
+    if (!selectedToken) return;
+
+    try {
+      await setToggle.mutateAsync({
+        tokenId: selectedToken.tokenId,
+        toggleId,
+      });
+    } catch (error) {
+      console.error('Failed to set toggle:', error);
     }
   };
 
@@ -47,7 +65,7 @@ export function CustomModule() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Customization</h1>
-        <p className="text-muted-foreground mt-1">Rename your NFTs</p>
+        <p className="text-muted-foreground mt-1">Rename your NFTs and apply visual effects</p>
       </div>
 
       <div className="max-w-2xl space-y-4">
@@ -101,6 +119,45 @@ export function CustomModule() {
             >
               {renameToken.isPending ? 'Renaming...' : 'Rename NFT'}
             </button>
+
+            {/* Visual Effects Section */}
+            <div className="mt-8 pt-8 border-t border-border">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold text-foreground">Visual Effects</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Apply special visual effects to your NFT
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {AVAILABLE_TOGGLES.map((toggle) => (
+                  <button
+                    key={toggle.id}
+                    onClick={() => handleToggleChange(toggle.id)}
+                    disabled={setToggle.isPending}
+                    className={`p-4 rounded-lg border-2 transition-all text-left ${
+                      currentToggle === toggle.id
+                        ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
+                        : 'border-border hover:border-primary/50 bg-card'
+                    } disabled:opacity-50`}
+                  >
+                    <div className="font-medium text-foreground text-sm mb-1">
+                      {toggle.name}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {toggle.description}
+                    </div>
+                    {currentToggle === toggle.id && (
+                      <div className="mt-2 flex items-center gap-1 text-xs text-primary">
+                        <Sparkles className="h-3 w-3" />
+                        <span>Active</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           </>
         )}
       </div>

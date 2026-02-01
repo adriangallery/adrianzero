@@ -6,28 +6,20 @@
 import { useAccount } from 'wagmi';
 import { Unplug, AlertTriangle, FlaskConical, Flame, Sparkles } from 'lucide-react';
 import { useCraftTrait } from '../hooks/useCrafting';
-
-// Placeholder recipes - in production, these would be fetched from the contract
-const SAMPLE_RECIPES = [
-  {
-    recipeId: '1',
-    name: 'Rare Background',
-    inputTraits: ['Common Background #1', 'Common Background #2'],
-    outputTrait: 'Rare Background',
-    isActive: true,
-  },
-  {
-    recipeId: '2',
-    name: 'Epic Eyes',
-    inputTraits: ['Rare Eyes #1', 'Rare Eyes #2', 'Rare Eyes #3'],
-    outputTrait: 'Epic Eyes',
-    isActive: true,
-  },
-];
+import { useCraftingRecipes } from '../hooks/useCraftingRecipes';
+import { useTraits } from '@/features/traits/hooks/useTraits';
 
 export function CraftingModule() {
   const { isConnected } = useAccount();
   const craftTrait = useCraftTrait();
+  const { data: recipes = [], isLoading } = useCraftingRecipes();
+  const { data: traits = [] } = useTraits();
+
+  // Helper to get trait name by tokenId
+  const getTraitName = (tokenId: string) => {
+    const trait = traits.find(t => t.tokenId === tokenId);
+    return trait ? trait.name : `Trait #${tokenId}`;
+  };
 
   const handleCraft = async (recipeId: string) => {
     const confirmed = confirm(
@@ -53,6 +45,15 @@ export function CraftingModule() {
         <p className="text-muted-foreground mt-2">
           Please connect your wallet to craft traits
         </p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="shimmer w-16 h-16 rounded-full mb-4" />
+        <p className="text-muted-foreground">Loading recipes...</p>
       </div>
     );
   }
@@ -89,7 +90,7 @@ export function CraftingModule() {
           Available Recipes
         </h2>
 
-        {SAMPLE_RECIPES.length === 0 ? (
+        {recipes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <FlaskConical className="h-16 w-16 mb-4 text-muted-foreground" />
             <p className="text-lg font-medium text-foreground">
@@ -101,14 +102,25 @@ export function CraftingModule() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {SAMPLE_RECIPES.map((recipe) => (
+            {recipes.map((recipe) => (
               <div
                 key={recipe.recipeId}
-                className="p-6 bg-card border border-border rounded-lg"
+                className={`p-6 bg-card border rounded-lg ${
+                  recipe.isEligible
+                    ? 'border-success/50 bg-success/5'
+                    : 'border-border'
+                }`}
               >
-                <h3 className="text-lg font-semibold text-foreground">
-                  {recipe.name}
-                </h3>
+                <div className="flex items-start justify-between">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Recipe #{recipe.recipeId}
+                  </h3>
+                  {recipe.isEligible && (
+                    <span className="px-2 py-1 bg-success/20 text-success text-xs rounded-full font-medium">
+                      Can Craft
+                    </span>
+                  )}
+                </div>
 
                 {/* Input Traits */}
                 <div className="mt-4">
@@ -116,13 +128,13 @@ export function CraftingModule() {
                     Required Traits:
                   </p>
                   <ul className="mt-2 space-y-1">
-                    {recipe.inputTraits.map((trait, index) => (
+                    {recipe.inputTraits.map((traitId, index) => (
                       <li
                         key={index}
                         className="text-sm text-foreground flex items-center gap-2"
                       >
-                        <Flame className="h-4 w-4 text-red-500 flex-shrink-0" />
-                        {trait}
+                        <Flame className="h-4 w-4 text-destructive flex-shrink-0" />
+                        {getTraitName(traitId)}
                       </li>
                     ))}
                   </ul>
@@ -134,18 +146,18 @@ export function CraftingModule() {
                     Creates:
                   </p>
                   <p className="mt-1 text-foreground font-medium flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    {recipe.outputTrait}
+                    <Sparkles className="h-4 w-4 text-success flex-shrink-0" />
+                    {getTraitName(recipe.outputTrait)}
                   </p>
                 </div>
 
                 {/* Craft Button */}
                 <button
                   onClick={() => handleCraft(recipe.recipeId)}
-                  disabled={craftTrait.isPending}
+                  disabled={craftTrait.isPending || !recipe.isEligible}
                   className="mt-6 w-full touch-target px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {craftTrait.isPending ? 'Crafting...' : 'Craft'}
+                  {craftTrait.isPending ? 'Crafting...' : recipe.isEligible ? 'Craft' : 'Missing Ingredients'}
                 </button>
               </div>
             ))}

@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWriteContract, usePublicClient } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { NAME_REGISTRY_ABI } from '@/lib/web3/abi';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export function useNamePrice() {
   const publicClient = usePublicClient();
@@ -32,6 +33,7 @@ export function useRenameToken() {
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const notifications = useNotifications();
 
   const mutation = useMutation({
     mutationFn: async ({ tokenId, newName }: { tokenId: string; newName: string }) => {
@@ -51,8 +53,13 @@ export function useRenameToken() {
       return hash;
     },
     onSuccess: () => {
+      notifications.success('NFT Renamed!', 'Custom name saved successfully');
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });
       queryClient.invalidateQueries({ queryKey: ['custom-names'] });
+    },
+    onError: (error) => {
+      console.error('Error renaming NFT:', error);
+      notifications.error('Rename Failed', 'Could not save custom name. Please try again.');
     },
   });
 

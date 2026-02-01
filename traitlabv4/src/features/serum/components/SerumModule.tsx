@@ -99,8 +99,8 @@ export function SerumModule() {
             {nfts.length === 0 ? (
               <p className="text-muted-foreground">No NFTs found</p>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {nfts.slice(0, 10).map((nft) => (
+              <div className="grid grid-cols-2 gap-3 max-h-[600px] overflow-y-auto">
+                {nfts.map((nft) => (
                   <SelectableCard
                     key={nft.tokenId}
                     isSelected={selectedNFT?.tokenId === nft.tokenId}
@@ -192,7 +192,7 @@ function SelectableCard({
         )}
 
         {badge && (
-          <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 rounded-md text-xs font-medium text-white">
+          <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded-md text-xs font-medium text-white">
             {badge}
           </div>
         )}

@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useWriteContract, usePublicClient } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { CRAFTING_ABI } from '@/lib/web3/abi';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface CraftParams {
   recipeId: string;
@@ -16,6 +17,7 @@ export function useCraftTrait() {
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const notifications = useNotifications();
 
   const mutation = useMutation({
     mutationFn: async ({ recipeId }: CraftParams) => {
@@ -39,11 +41,14 @@ export function useCraftTrait() {
     },
     onSuccess: (hash) => {
       console.log('Trait crafted successfully:', hash);
-      // Invalidate queries to refresh traits
+      notifications.success('Trait Crafted!', 'New trait has been added to your inventory');
+      // Invalidate queries to refresh traits and recipes
       queryClient.invalidateQueries({ queryKey: ['traits'] });
+      queryClient.invalidateQueries({ queryKey: ['crafting-recipes'] });
     },
     onError: (error) => {
       console.error('Error crafting trait:', error);
+      notifications.error('Crafting Failed', 'Could not craft trait. Please check you have the required ingredients.');
     },
   });
 

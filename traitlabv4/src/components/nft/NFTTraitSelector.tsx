@@ -8,7 +8,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Frame, Palette, Check } from 'lucide-react';
 import { TraitCard } from '@/components/traits/TraitCard';
-import { useTraitsByCategory } from '@/features/traits/hooks/useTraits';
+import { useTraitsByCategory, useTraitCategories } from '@/features/traits/hooks/useTraits';
 import { useApplyTraits } from '@/features/traits/hooks/useApplyTraits';
 import { useTraitsStore } from '@/features/traits/store/traitsStore';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
@@ -20,24 +20,13 @@ interface NFTTraitSelectorProps {
   onClose: () => void;
 }
 
-const ALL_CATEGORIES: TraitCategory[] = [
-  'BACKGROUND',
-  'EAR',
-  'EYES',
-  'MOUTH',
-  'NECK',
-  'NOSE',
-  'SPECIAL',
-  'HAIR',
-  'CLOTHING',
-];
-
 export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps) {
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
   const [showComparison, setShowComparison] = useState(false);
 
   // Load traits
   const { data: traitsByCategory, allTraits, isLoading } = useTraitsByCategory();
+  const categories = useTraitCategories();
 
   // Trait selection store
   const {
@@ -171,7 +160,7 @@ export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps
                         {showComparison && selectedTraits.length > 0 ? (
                           <div className="grid grid-cols-2 h-full">
                             <div className="relative">
-                              <div className="absolute top-2 left-2 px-2 py-1 bg-black/70 rounded text-xs text-white">
+                              <div className="absolute top-2 left-2 px-2 py-1 bg-accent/90 rounded text-xs text-white">
                                 Original
                               </div>
                               {currentImageUrl ? (
@@ -183,7 +172,7 @@ export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps
                               )}
                             </div>
                             <div className="relative">
-                              <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 rounded text-xs text-white">
+                              <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded text-xs text-white">
                                 Preview
                               </div>
                               <img src={previewImageUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -252,7 +241,7 @@ export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps
                         >
                           All
                         </button>
-                        {ALL_CATEGORIES.map((category) => (
+                        {categories.map((category) => (
                           <button
                             key={category}
                             onClick={() => setActiveCategory(category)}

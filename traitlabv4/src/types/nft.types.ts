@@ -47,32 +47,21 @@ export interface Trait {
   image?: NFTImage;
 }
 
-export const TRAIT_CATEGORIES = [
-  'BACKGROUND',
-  'EAR',
-  'EYES',
-  'MOUTH',
-  'NECK',
-  'NOSE',
-  'OUTFIT',
-  'ACCESSORY',
-  'HEAD',
-  'HANDS',
-  'SPECIAL',
-  'HAIR',
-  'CLOTHING',
-] as const;
-
-export type TraitCategory = (typeof TRAIT_CATEGORIES)[number];
+// TraitCategory is now a flexible string type to accommodate all categories from traits.json
+// Including: SWAG, HEAD, GEAR, BEARD, TOP, HAT, WEAPON, MASK, SKINTRAIT, RANDOMSHIT,
+// ARMOUR, PAGERS, GI, KIMONO, SKIN, 3D, FLOPPY DISCS, ACTION PACKS, and more
+export type TraitCategory = string;
 
 export interface Pack {
   packId: string;
   name: string;
-  type: 'FLOPPY_DISC' | 'ACTION_PACK';
+  type: 'FLOPPY_DISC' | 'ACTION_PACK' | 'SPECIAL';
   contract: string;
   balance: number;
   metadata?: NFTMetadata;
   image?: NFTImage;
+  rarity?: string;
+  special?: boolean;
 }
 
 export interface Serum {

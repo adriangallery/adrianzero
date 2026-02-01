@@ -34,6 +34,12 @@ export default {
           900: '#171717',
           950: '#0a0a0a',
         },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        success: 'hsl(var(--success))',
+        destructive: 'hsl(var(--destructive))',
       },
       fontFamily: {
         sans: ['"Press Start 2P"', 'monospace'],

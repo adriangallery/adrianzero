@@ -10,9 +10,10 @@ interface StatsCardProps {
   value: number;
   icon: React.ReactNode;
   description?: string;
+  isLoading?: boolean;
 }
 
-export function StatsCard({ title, value, icon, description }: StatsCardProps) {
+export function StatsCard({ title, value, icon, description, isLoading = false }: StatsCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -22,7 +23,11 @@ export function StatsCard({ title, value, icon, description }: StatsCardProps) {
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm text-muted-foreground mb-1">{title}</p>
-          <p className="text-3xl font-bold text-foreground">{value.toLocaleString()}</p>
+          {isLoading ? (
+            <div className="skeleton h-10 w-24" />
+          ) : (
+            <p className="text-3xl font-bold text-foreground">{value.toLocaleString()}</p>
+          )}
           {description && (
             <p className="text-xs text-muted-foreground mt-2">{description}</p>
           )}

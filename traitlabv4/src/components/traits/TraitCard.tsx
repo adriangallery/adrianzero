@@ -67,7 +67,7 @@ export function TraitCard({
 
         {/* Balance Badge */}
         {showBalance && trait.balance > 1 && (
-          <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 rounded-md text-xs font-medium text-white">
+          <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded-md text-xs font-medium text-white">
             x{trait.balance}
           </div>
         )}
