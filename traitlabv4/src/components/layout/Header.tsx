@@ -35,7 +35,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0 max-w-[60%] sm:max-w-none overflow-hidden">
           {/* Notifications */}
           <NotificationBell />
 

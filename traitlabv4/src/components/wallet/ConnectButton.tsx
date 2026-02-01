@@ -62,12 +62,12 @@ export function ConnectButton() {
                 : '';
 
               return (
-                <div className="flex gap-1 sm:gap-2 items-center">
+                <div className="flex gap-1 sm:gap-2 items-center max-w-full min-w-0">
                   {/* Chain button - icon only on mobile */}
                   <button
                     onClick={openChainModal}
                     type="button"
-                    className="touch-target flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+                    className="touch-target flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity flex-shrink-0"
                   >
                     {chain.hasIcon && (
                       <div
@@ -96,9 +96,9 @@ export function ConnectButton() {
                   <button
                     onClick={openAccountModal}
                     type="button"
-                    className="touch-target px-2 sm:px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity text-sm sm:text-base truncate max-w-[140px] sm:max-w-none"
+                    className="touch-target px-2 sm:px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity text-sm sm:text-base truncate max-w-[120px] sm:max-w-[200px] min-w-0 overflow-hidden"
                   >
-                    {account.displayName}
+                    <span className="truncate">{account.displayName}</span>
                     <span className="hidden sm:inline">{formattedBalance}</span>
                   </button>
                 </div>

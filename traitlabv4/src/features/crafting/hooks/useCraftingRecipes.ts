@@ -1,6 +1,7 @@
 /**
  * useCraftingRecipes Hook
  * Fetches crafting recipes from ADRIAN_CRAFTING contract
+ * V4.4: Optimized with multicall to avoid rate limiting
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -24,6 +25,12 @@ interface AnyRecipeData {
   active: boolean;
 }
 
+// Batch size for multicall requests (to avoid overwhelming the RPC)
+const MULTICALL_BATCH_SIZE = 10;
+
+// Max recipe ID to check
+const MAX_RECIPE_ID = 20;
+
 export function useCraftingRecipes() {
   const publicClient = usePublicClient();
   const { address } = useAccount();
@@ -36,78 +43,148 @@ export function useCraftingRecipes() {
       }
 
       const recipes: CraftingRecipe[] = [];
+      const recipeIds = Array.from({ length: MAX_RECIPE_ID + 1 }, (_, i) => i);
 
-      // Try recipe IDs 0-20 (adjust max as needed)
-      const maxRecipeId = 20;
+      // Phase 1: Batch fetch all specific recipes using multicall
+      const specificRecipeCalls = recipeIds.map((id) => ({
+        address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
+        abi: CRAFTING_ABI,
+        functionName: 'getSpecificRecipe' as const,
+        args: [BigInt(id)],
+      }));
 
-      for (let recipeId = 0; recipeId <= maxRecipeId; recipeId++) {
+      // Execute multicall in batches to avoid rate limiting
+      const specificResults: (SpecificRecipeData | null)[] = [];
+      for (let i = 0; i < specificRecipeCalls.length; i += MULTICALL_BATCH_SIZE) {
+        const batch = specificRecipeCalls.slice(i, i + MULTICALL_BATCH_SIZE);
         try {
-          // Try getSpecificRecipe first
-          const specificRecipe = (await publicClient.readContract({
-            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-            abi: CRAFTING_ABI,
-            functionName: 'getSpecificRecipe',
-            args: [BigInt(recipeId)],
-          })) as SpecificRecipeData;
-
-          if (specificRecipe.active) {
-            let isEligible = false;
-            if (address) {
-              const [canCraft] = (await publicClient.readContract({
-                address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-                abi: CRAFTING_ABI,
-                functionName: 'canCraft',
-                args: [address, BigInt(recipeId)],
-              })) as [boolean, string];
-              isEligible = canCraft;
+          const results = await publicClient.multicall({
+            contracts: batch,
+            allowFailure: true,
+          });
+          results.forEach((result) => {
+            if (result.status === 'success') {
+              specificResults.push(result.result as SpecificRecipeData);
+            } else {
+              specificResults.push(null);
             }
-
-            recipes.push({
-              recipeId: recipeId.toString(),
-              inputTraits: specificRecipe.burnIds.map((id: bigint) => id.toString()),
-              outputTrait: specificRecipe.outId.toString(),
-              type: 'SPECIFIC',
-              isActive: true,
-              isEligible,
-            });
-            continue;
-          }
+          });
         } catch (e) {
-          // Try getAnyRecipe
+          console.warn('[useCraftingRecipes] Batch fetch error:', e);
+          // Fill with nulls for this batch
+          batch.forEach(() => specificResults.push(null));
+        }
+      }
+
+      // Collect IDs of failed specific recipes to try as ANY recipes
+      const failedSpecificIds: number[] = [];
+      const activeSpecificRecipes: { id: number; recipe: SpecificRecipeData }[] = [];
+
+      recipeIds.forEach((id, index) => {
+        const recipe = specificResults[index];
+        if (recipe && recipe.active) {
+          activeSpecificRecipes.push({ id, recipe });
+        } else {
+          failedSpecificIds.push(id);
+        }
+      });
+
+      // Phase 2: Batch fetch ANY recipes for IDs that didn't have specific recipes
+      if (failedSpecificIds.length > 0) {
+        const anyRecipeCalls = failedSpecificIds.map((id) => ({
+          address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
+          abi: CRAFTING_ABI,
+          functionName: 'getAnyRecipe' as const,
+          args: [BigInt(id)],
+        }));
+
+        const anyResults: (AnyRecipeData | null)[] = [];
+        for (let i = 0; i < anyRecipeCalls.length; i += MULTICALL_BATCH_SIZE) {
+          const batch = anyRecipeCalls.slice(i, i + MULTICALL_BATCH_SIZE);
           try {
-            const anyRecipe = (await publicClient.readContract({
-              address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-              abi: CRAFTING_ABI,
-              functionName: 'getAnyRecipe',
-              args: [BigInt(recipeId)],
-            })) as AnyRecipeData;
-
-            if (anyRecipe.active) {
-              let isEligible = false;
-              if (address) {
-                const [canCraft] = (await publicClient.readContract({
-                  address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-                  abi: CRAFTING_ABI,
-                  functionName: 'canCraft',
-                  args: [address, BigInt(recipeId)],
-                })) as [boolean, string];
-                isEligible = canCraft;
+            const results = await publicClient.multicall({
+              contracts: batch,
+              allowFailure: true,
+            });
+            results.forEach((result) => {
+              if (result.status === 'success') {
+                anyResults.push(result.result as AnyRecipeData);
+              } else {
+                anyResults.push(null);
               }
-
-              recipes.push({
-                recipeId: recipeId.toString(),
-                inputTraits: [], // ANY recipe - burn count stored separately
-                outputTrait: anyRecipe.outId.toString(),
-                type: 'ANY',
-                burnTotal: Number(anyRecipe.burnTotal),
-                isActive: true,
-                isEligible,
-              });
-            }
-          } catch (e2) {
-            // Recipe doesn't exist, continue
+            });
+          } catch (e) {
+            console.warn('[useCraftingRecipes] ANY batch fetch error:', e);
+            batch.forEach(() => anyResults.push(null));
           }
         }
+
+        // Process ANY recipes
+        failedSpecificIds.forEach((id, index) => {
+          const anyRecipe = anyResults[index];
+          if (anyRecipe && anyRecipe.active) {
+            recipes.push({
+              recipeId: id.toString(),
+              inputTraits: [], // ANY recipe - burn count stored separately
+              outputTrait: anyRecipe.outId.toString(),
+              type: 'ANY',
+              burnTotal: Number(anyRecipe.burnTotal),
+              isActive: true,
+              isEligible: false, // Will be updated in Phase 3
+            });
+          }
+        });
+      }
+
+      // Add specific recipes to the list
+      activeSpecificRecipes.forEach(({ id, recipe }) => {
+        recipes.push({
+          recipeId: id.toString(),
+          inputTraits: recipe.burnIds.map((burnId: bigint) => burnId.toString()),
+          outputTrait: recipe.outId.toString(),
+          type: 'SPECIFIC',
+          isActive: true,
+          isEligible: false, // Will be updated in Phase 3
+        });
+      });
+
+      // Phase 3: Batch check canCraft for all active recipes (if user is connected)
+      if (address && recipes.length > 0) {
+        const canCraftCalls = recipes.map((recipe) => ({
+          address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
+          abi: CRAFTING_ABI,
+          functionName: 'canCraft' as const,
+          args: [address, BigInt(recipe.recipeId)],
+        }));
+
+        const canCraftResults: ([boolean, string] | null)[] = [];
+        for (let i = 0; i < canCraftCalls.length; i += MULTICALL_BATCH_SIZE) {
+          const batch = canCraftCalls.slice(i, i + MULTICALL_BATCH_SIZE);
+          try {
+            const results = await publicClient.multicall({
+              contracts: batch,
+              allowFailure: true,
+            });
+            results.forEach((result) => {
+              if (result.status === 'success') {
+                canCraftResults.push(result.result as [boolean, string]);
+              } else {
+                canCraftResults.push(null);
+              }
+            });
+          } catch (e) {
+            console.warn('[useCraftingRecipes] canCraft batch error:', e);
+            batch.forEach(() => canCraftResults.push(null));
+          }
+        }
+
+        // Update eligibility
+        recipes.forEach((recipe, index) => {
+          const result = canCraftResults[index];
+          if (result) {
+            recipe.isEligible = result[0];
+          }
+        });
       }
 
       console.log('[useCraftingRecipes] Loaded recipes:', recipes.length);
@@ -115,6 +192,7 @@ export function useCraftingRecipes() {
     },
     enabled: !!publicClient,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -140,5 +218,6 @@ export function useCanCraft(recipeId: string) {
       return { canCraft, reason };
     },
     enabled: !!publicClient && !!address && !!recipeId,
+    staleTime: 1000 * 60, // 1 minute
   });
 }

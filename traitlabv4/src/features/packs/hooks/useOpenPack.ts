@@ -1,10 +1,16 @@
 /**
  * useOpenPack Hook
  * Opens packs (Floppy Discs or Action Packs)
+ *
+ * Contract routing based on V3 logic:
+ * - Token 10007 → ACTION_PACK_10007 (openPack)
+ * - Tokens 10000-10005, 10009, 10010, 10013, 10015, 15010 → OPENPACK_V4 (openPacks with quantity=1)
+ * - Tokens 10008, 10011, 10012, 1123, 15008-15015 (except 15010) → ACTION_PACKS (openPack + pre-checks)
+ * - Token 10006 + fallback → ADRIAN_FLOPPY_DISCS (openPack)
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useWriteContract, usePublicClient } from 'wagmi';
+import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import {
   OPENPACK_V4_ABI,
@@ -19,10 +25,21 @@ interface OpenPackParams {
   quantity?: number;
 }
 
+// Token ID categories for contract routing
+const OPENPACK_V4_TOKENS = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10015, 15010];
+const ACTION_PACK_TOKENS = [10008, 10011, 10012, 1123];
+
+const isOpenPackV4Token = (id: number): boolean => OPENPACK_V4_TOKENS.includes(id);
+const isActionPackToken = (id: number): boolean => {
+  const isActionPackRange = id >= 15008 && id <= 15015 && id !== 15010;
+  return ACTION_PACK_TOKENS.includes(id) || isActionPackRange;
+};
+
 export function useOpenPack() {
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const { address } = useAccount();
   const notifications = useNotifications();
 
   const mutation = useMutation({
@@ -31,52 +48,80 @@ export function useOpenPack() {
         throw new Error('Public client not available');
       }
 
+      if (!address) {
+        throw new Error('Wallet not connected');
+      }
+
       // Token ID to contract mapping based on V3 logic
       const getPackContract = (id: number): `0x${string}` => {
-        // Special case: Token 10007
+        // Special case: Token 10007 → ACTION_PACK_10007
         if (id === 10007) {
           return CONTRACT_ADDRESSES.ACTION_PACK_10007;
         }
 
         // OpenPackV4 contract tokens
-        const openPackV4Tokens = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10015, 15010];
-        if (openPackV4Tokens.includes(id)) {
+        if (isOpenPackV4Token(id)) {
           return CONTRACT_ADDRESSES.OPENPACK_V4;
         }
 
         // ACTION_PACKS contract tokens
-        const actionPackTokens = [10008, 10011, 10012, 1123];
-        const isActionPackRange = id >= 15008 && id <= 15015 && id !== 15010;
-        if (actionPackTokens.includes(id) || isActionPackRange) {
+        if (isActionPackToken(id)) {
           return CONTRACT_ADDRESSES.ACTION_PACKS;
         }
 
-        // Fallback to FLOPPY_DISCS
+        // Fallback to FLOPPY_DISCS (token 10006 and others)
         return CONTRACT_ADDRESSES.ADRIAN_FLOPPY_DISCS;
       };
 
       const id = parseInt(packId);
       const contractAddress = getPackContract(id);
 
-      // Determine ABI based on contract address
-      let abi;
-      if (contractAddress === CONTRACT_ADDRESSES.OPENPACK_V4) {
-        abi = OPENPACK_V4_ABI;
-      } else if (contractAddress === CONTRACT_ADDRESSES.ACTION_PACKS || contractAddress === CONTRACT_ADDRESSES.ACTION_PACK_10007) {
-        abi = ACTION_PACKS_ABI;
-      } else {
-        abi = FLOPPY_DISCS_ABI;
-      }
-
       console.log(`[useOpenPack] Opening pack ${packId} using contract ${contractAddress}`);
 
       let hash: `0x${string}`;
-      hash = await writeContractAsync({
-        address: contractAddress,
-        abi,
-        functionName: 'openPack',
-        args: [BigInt(packId)],
-      });
+
+      // Route to correct function based on contract type
+      if (isOpenPackV4Token(id)) {
+        // OPENPACK_V4 only has openPacks(packId, quantity) - use quantity=1 for single pack
+        console.log(`[useOpenPack] Using openPacks() for OPENPACK_V4 token ${id}`);
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: OPENPACK_V4_ABI,
+          functionName: 'openPacks',
+          args: [BigInt(packId), 1],
+        });
+      } else if (isActionPackToken(id) || id === 10007) {
+        // ACTION_PACKS and ACTION_PACK_10007 require pre-checks
+        console.log(`[useOpenPack] Using openPack() with pre-check for ACTION_PACKS token ${id}`);
+
+        // Pre-check: canOpenPack(user, packId)
+        const [canOpen, reason] = await publicClient.readContract({
+          address: contractAddress,
+          abi: ACTION_PACKS_ABI,
+          functionName: 'canOpenPack',
+          args: [address, BigInt(packId)],
+        }) as [boolean, string];
+
+        if (!canOpen) {
+          throw new Error(`Cannot open pack: ${reason || 'Not eligible or pack inactive'}`);
+        }
+
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: ACTION_PACKS_ABI,
+          functionName: 'openPack',
+          args: [BigInt(packId)],
+        });
+      } else {
+        // FLOPPY_DISCS (token 10006 and fallback)
+        console.log(`[useOpenPack] Using openPack() for FLOPPY_DISCS token ${id}`);
+        hash = await writeContractAsync({
+          address: contractAddress,
+          abi: FLOPPY_DISCS_ABI,
+          functionName: 'openPack',
+          args: [BigInt(packId)],
+        });
+      }
 
       console.log('Pack opening transaction sent:', hash);
 
