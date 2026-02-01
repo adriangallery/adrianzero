@@ -111,12 +111,19 @@ export function useTraitsByCategory() {
   const { data: traits = [], ...rest } = useTraits();
 
   const traitsByCategory = traits.reduce((acc, trait) => {
-    if (!acc[trait.category]) {
-      acc[trait.category] = [];
+    const cat = trait.category;
+    if (!acc[cat]) {
+      acc[cat] = [];
     }
-    acc[trait.category].push(trait);
+    acc[cat].push(trait);
     return acc;
   }, {} as Record<TraitCategory, Trait[]>);
+
+  // Debug logging
+  console.log('[useTraitsByCategory] Categories found:', Object.keys(traitsByCategory));
+  console.log('[useTraitsByCategory] Counts per category:',
+    Object.entries(traitsByCategory).map(([k, v]) => `${k}: ${v.length}`).join(', ')
+  );
 
   return {
     data: traitsByCategory,
