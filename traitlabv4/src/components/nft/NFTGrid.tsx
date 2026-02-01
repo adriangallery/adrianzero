@@ -5,6 +5,7 @@
 
 import { useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
+import { Frame } from 'lucide-react';
 import { NFTCard } from './NFTCard';
 import type { AdrianZeroToken } from '@/types/nft.types';
 import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
@@ -39,7 +40,7 @@ export function NFTGrid({
   if (tokens.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🖼️</div>
+        <Frame className="h-16 w-16 mb-4 text-muted-foreground" />
         <p className="text-lg font-medium text-foreground">{emptyMessage}</p>
         <p className="text-sm text-muted-foreground mt-2">
           Connect your wallet to view your NFTs

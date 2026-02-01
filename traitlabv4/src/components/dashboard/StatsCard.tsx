@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 interface StatsCardProps {
   title: string;
   value: number;
-  icon: string;
+  icon: React.ReactNode;
   description?: string;
 }
 

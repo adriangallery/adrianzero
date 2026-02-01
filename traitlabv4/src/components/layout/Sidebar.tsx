@@ -5,23 +5,34 @@
 
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import {
+  BarChart3,
+  Frame,
+  Palette,
+  Package,
+  FlaskConical,
+  Hammer,
+  Edit3,
+  Car,
+  Search
+} from 'lucide-react';
 
 interface NavItem {
   path: string;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 const navItems: NavItem[] = [
-  { path: '/', label: 'Dashboard', icon: '📊' },
-  { path: '/adrianzero', label: 'My NFTs', icon: '🖼️' },
-  { path: '/traits', label: 'Traits', icon: '🎨' },
-  { path: '/packs', label: 'Packs', icon: '📦' },
-  { path: '/serum', label: 'Serum', icon: '🧪' },
-  { path: '/crafting', label: 'Crafting', icon: '⚒️' },
-  { path: '/custom', label: 'Custom', icon: '✏️' },
-  { path: '/lambo', label: 'Lambo', icon: '🏎️' },
-  { path: '/search', label: 'Search', icon: '🔍' },
+  { path: '/', label: 'Dashboard', icon: <BarChart3 className="h-5 w-5" /> },
+  { path: '/adrianzero', label: 'My NFTs', icon: <Frame className="h-5 w-5" /> },
+  { path: '/traits', label: 'Traits', icon: <Palette className="h-5 w-5" /> },
+  { path: '/packs', label: 'Packs', icon: <Package className="h-5 w-5" /> },
+  { path: '/serum', label: 'Serum', icon: <FlaskConical className="h-5 w-5" /> },
+  { path: '/crafting', label: 'Crafting', icon: <Hammer className="h-5 w-5" /> },
+  { path: '/custom', label: 'Custom', icon: <Edit3 className="h-5 w-5" /> },
+  { path: '/lambo', label: 'Lambo', icon: <Car className="h-5 w-5" /> },
+  { path: '/search', label: 'Search', icon: <Search className="h-5 w-5" /> },
 ];
 
 interface SidebarProps {
@@ -54,7 +65,7 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
           initial={{ x: -280 }}
           animate={{ x: isOpen ? 0 : -280 }}
           transition={{ type: 'spring', damping: 20 }}
-          className="fixed top-0 left-0 h-full w-70 bg-card border-r border-border z-50 lg:hidden"
+          className="fixed top-0 left-0 h-full w-70 bg-card/95 backdrop-blur-sm border-r border-border z-50 lg:hidden"
         >
           <div className="p-4">
             <div className="flex items-center justify-between mb-6">
@@ -84,7 +95,7 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
                     }
                   `}
                 >
-                  <span className="text-2xl">{item.icon}</span>
+                  {item.icon}
                   <span className="font-medium">{item.label}</span>
                 </Link>
               ))}
@@ -97,7 +108,7 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
 
   // Desktop Sidebar
   return (
-    <aside className="hidden lg:flex w-64 flex-col bg-card border-r border-border">
+    <aside className="hidden lg:flex w-64 flex-col bg-card/95 backdrop-blur-sm border-r border-border">
       <div className="p-4">
         <h2 className="text-xl font-bold text-foreground mb-6">TraitLAB V4</h2>
 

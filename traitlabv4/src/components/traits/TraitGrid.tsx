@@ -5,6 +5,7 @@
 
 import { useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
+import { Palette } from 'lucide-react';
 import { TraitCard } from './TraitCard';
 import type { Trait } from '@/types/nft.types';
 import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
@@ -39,7 +40,7 @@ export function TraitGrid({
   if (traits.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🎨</div>
+        <Palette className="h-16 w-16 mb-4 text-muted-foreground" />
         <p className="text-lg font-medium text-foreground">{emptyMessage}</p>
         <p className="text-sm text-muted-foreground mt-2">
           Try selecting a different category

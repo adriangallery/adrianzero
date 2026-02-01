@@ -4,6 +4,7 @@
  */
 
 import { motion } from 'framer-motion';
+import { Palette } from 'lucide-react';
 import type { Trait } from '@/types/nft.types';
 
 interface TraitCardProps {
@@ -60,7 +61,7 @@ export function TraitCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            <span className="text-4xl">🎨</span>
+            <Palette className="h-12 w-12" />
           </div>
         )}
 

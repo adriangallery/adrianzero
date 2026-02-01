@@ -8,6 +8,7 @@ import { useAccount } from 'wagmi';
 import { motion } from 'framer-motion';
 import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence } from 'framer-motion';
+import { Unplug, AlertTriangle, Package } from 'lucide-react';
 import { usePacks } from '../hooks/usePacks';
 import { useOpenPack } from '../hooks/useOpenPack';
 import type { Pack } from '@/types/nft.types';
@@ -44,7 +45,7 @@ export function PacksModule() {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🔌</div>
+        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-semibold text-foreground">
           Wallet Not Connected
         </h2>
@@ -67,7 +68,7 @@ export function PacksModule() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">⚠️</div>
+        <AlertTriangle className="h-16 w-16 mb-4 text-yellow-500" />
         <h2 className="text-xl font-semibold text-foreground">
           Error Loading Packs
         </h2>
@@ -91,7 +92,7 @@ export function PacksModule() {
       {/* Packs Grid */}
       {packs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="text-6xl mb-4">📦</div>
+          <Package className="h-16 w-16 mb-4 text-muted-foreground" />
           <p className="text-lg font-medium text-foreground">No packs found</p>
           <p className="text-sm text-muted-foreground mt-2">
             You don't have any Floppy Discs or Action Packs
@@ -142,8 +143,8 @@ export function PacksModule() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-6xl">
-                        📦
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="h-16 w-16 text-muted-foreground" />
                       </div>
                     )}
 
@@ -243,8 +244,8 @@ function PackCard({ pack, onClick }: { pack: Pack; onClick: () => void }) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">
-            📦
+          <div className="w-full h-full flex items-center justify-center">
+            <Package className="h-12 w-12 text-muted-foreground" />
           </div>
         )}
 

@@ -4,18 +4,19 @@
  */
 
 import { motion } from 'framer-motion';
+import { Palette, Package, Hammer, Edit3, FlaskConical } from 'lucide-react';
 import type { ActivityItem } from '@/features/dashboard/hooks/useActivityFeed';
 
 interface ActivityFeedProps {
   activities: ActivityItem[];
 }
 
-const activityIcons: Record<ActivityItem['type'], string> = {
-  TRAIT_APPLIED: '🎨',
-  PACK_OPENED: '📦',
-  TRAIT_CRAFTED: '⚒️',
-  NFT_RENAMED: '✏️',
-  SERUM_APPLIED: '🧪',
+const activityIcons: Record<ActivityItem['type'], React.ReactNode> = {
+  TRAIT_APPLIED: <Palette className="h-5 w-5" />,
+  PACK_OPENED: <Package className="h-5 w-5" />,
+  TRAIT_CRAFTED: <Hammer className="h-5 w-5" />,
+  NFT_RENAMED: <Edit3 className="h-5 w-5" />,
+  SERUM_APPLIED: <FlaskConical className="h-5 w-5" />,
 };
 
 export function ActivityFeed({ activities }: ActivityFeedProps) {
@@ -43,7 +44,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
             transition={{ delay: index * 0.05 }}
             className="flex items-start gap-3 p-3 bg-muted rounded-lg"
           >
-            <div className="text-2xl">{activityIcons[activity.type]}</div>
+            <div className="text-foreground">{activityIcons[activity.type]}</div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
                 {activity.description}

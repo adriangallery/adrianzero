@@ -5,6 +5,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Frame, RefreshCw } from 'lucide-react';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
 interface NFTPreviewProps {
@@ -67,7 +68,7 @@ export function NFTPreview({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      <span className="text-6xl">🖼️</span>
+                      <Frame className="h-16 w-16" />
                     </div>
                   )}
 
@@ -146,9 +147,10 @@ export function NFTPreview({
                       <button
                         onClick={() => onRefreshMetadata(token.tokenId)}
                         disabled={isRefreshing}
-                        className="touch-target px-4 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="touch-target px-4 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
-                        {isRefreshing ? '🔄' : '🔄 Refresh'}
+                        <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh'}
                       </button>
                     )}
                   </div>

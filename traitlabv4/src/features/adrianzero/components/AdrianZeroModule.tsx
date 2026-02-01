@@ -5,11 +5,11 @@
 
 import { useState, useMemo } from 'react';
 import { useAccount } from 'wagmi';
+import { Unplug, AlertTriangle } from 'lucide-react';
 import { NFTGrid } from '@/components/nft/NFTGrid';
-import { NFTPreview } from '@/components/nft/NFTPreview';
+import { NFTTraitSelector } from '@/components/nft/NFTTraitSelector';
 import { useAdrianZeroTokens } from '../hooks/useAdrianZeroTokens';
 import { useCustomNames } from '../hooks/useCustomNames';
-import { useActivateToken, useRefreshMetadata } from '../hooks/useActivateToken';
 import { useAdrianZeroStore } from '../store/adrianZeroStore';
 
 export function AdrianZeroModule() {
@@ -32,11 +32,7 @@ export function AdrianZeroModule() {
   }, [tokens, customNames]);
 
   // Store
-  const { selectedToken, setSelectedToken, sortBy, sortOrder } = useAdrianZeroStore();
-
-  // Mutations
-  const activateToken = useActivateToken();
-  const refreshMetadata = useRefreshMetadata();
+  const { setSelectedToken, sortBy, sortOrder } = useAdrianZeroStore();
 
   // Sort tokens
   const sortedTokens = useMemo(() => {
@@ -64,26 +60,10 @@ export function AdrianZeroModule() {
     setPreviewToken(token);
   };
 
-  const handleActivate = async (tokenId: string) => {
-    try {
-      await activateToken.mutateAsync(tokenId);
-    } catch (error) {
-      console.error('Failed to activate token:', error);
-    }
-  };
-
-  const handleRefresh = async (tokenId: string) => {
-    try {
-      await refreshMetadata.mutateAsync(tokenId);
-    } catch (error) {
-      console.error('Failed to refresh metadata:', error);
-    }
-  };
-
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🔌</div>
+        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-semibold text-foreground">
           Wallet Not Connected
         </h2>
@@ -106,7 +86,7 @@ export function AdrianZeroModule() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">⚠️</div>
+        <AlertTriangle className="h-16 w-16 mb-4 text-yellow-500" />
         <h2 className="text-xl font-semibold text-foreground">
           Error Loading NFTs
         </h2>
@@ -132,21 +112,19 @@ export function AdrianZeroModule() {
       {/* Grid */}
       <NFTGrid
         tokens={sortedTokens}
-        selectedTokenId={selectedToken?.tokenId}
+        selectedTokenId={previewToken?.tokenId}
         onTokenSelect={handleTokenSelect}
         emptyMessage="No AdrianZERO NFTs found in your wallet"
       />
 
-      {/* Preview Modal */}
-      <NFTPreview
-        token={previewToken}
-        isOpen={!!previewToken}
-        onClose={() => setPreviewToken(null)}
-        onActivate={handleActivate}
-        onRefreshMetadata={handleRefresh}
-        isActivating={activateToken.isPending}
-        isRefreshing={refreshMetadata.isPending}
-      />
+      {/* Trait Selector Modal */}
+      {previewToken && (
+        <NFTTraitSelector
+          nft={previewToken}
+          isOpen={!!previewToken}
+          onClose={() => setPreviewToken(null)}
+        />
+      )}
     </div>
   );
 }

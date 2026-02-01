@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import { Unplug, Search } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useSearch } from '../hooks/useSearch';
 import { useSavedSearches } from '../hooks/useSavedSearches';
@@ -42,7 +43,7 @@ export function SearchModule() {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🔌</div>
+        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-semibold text-foreground">Wallet Not Connected</h2>
       </div>
     );
@@ -121,7 +122,7 @@ export function SearchModule() {
 
         {filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="text-6xl mb-4">🔍</div>
+            <Search className="h-16 w-16 mb-4 text-muted-foreground" />
             <p className="text-lg font-medium text-foreground">No results found</p>
             <p className="text-sm text-muted-foreground mt-2">
               Try adjusting your search filters

@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Palette, AlertTriangle } from 'lucide-react';
 import type { Trait } from '@/types/nft.types';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
 
@@ -118,7 +119,7 @@ export function TraitPreview({
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="shimmer w-full h-full" />
                         <div className="absolute text-center">
-                          <div className="text-4xl mb-2">🎨</div>
+                          <Palette className="h-12 w-12 mb-2 mx-auto text-muted-foreground" />
                           <p className="text-muted-foreground">
                             Generating preview...
                           </p>
@@ -128,7 +129,7 @@ export function TraitPreview({
 
                     {hasError && !isLoading && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="text-4xl mb-2">⚠️</div>
+                        <AlertTriangle className="h-12 w-12 mb-2 text-yellow-500" />
                         <p className="text-foreground font-medium">
                           Failed to load preview
                         </p>

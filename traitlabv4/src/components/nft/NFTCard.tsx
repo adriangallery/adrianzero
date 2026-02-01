@@ -4,6 +4,7 @@
  */
 
 import { motion } from 'framer-motion';
+import { Frame } from 'lucide-react';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
 interface NFTCardProps {
@@ -53,7 +54,7 @@ export function NFTCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            <span className="text-4xl">🖼️</span>
+            <Frame className="h-12 w-12" />
           </div>
         )}
 

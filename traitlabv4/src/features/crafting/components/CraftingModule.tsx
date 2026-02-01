@@ -4,6 +4,7 @@
  */
 
 import { useAccount } from 'wagmi';
+import { Unplug, AlertTriangle, FlaskConical, Flame, Sparkles } from 'lucide-react';
 import { useCraftTrait } from '../hooks/useCrafting';
 
 // Placeholder recipes - in production, these would be fetched from the contract
@@ -45,7 +46,7 @@ export function CraftingModule() {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🔌</div>
+        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-semibold text-foreground">
           Wallet Not Connected
         </h2>
@@ -69,7 +70,7 @@ export function CraftingModule() {
       {/* Warning */}
       <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
         <div className="flex items-start gap-3">
-          <div className="text-2xl">⚠️</div>
+          <AlertTriangle className="h-6 w-6 text-yellow-500 flex-shrink-0" />
           <div>
             <h3 className="font-semibold text-yellow-700 dark:text-yellow-400">
               Warning: Irreversible Action
@@ -90,7 +91,7 @@ export function CraftingModule() {
 
         {SAMPLE_RECIPES.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="text-6xl mb-4">⚗️</div>
+            <FlaskConical className="h-16 w-16 mb-4 text-muted-foreground" />
             <p className="text-lg font-medium text-foreground">
               No recipes available
             </p>
@@ -120,7 +121,7 @@ export function CraftingModule() {
                         key={index}
                         className="text-sm text-foreground flex items-center gap-2"
                       >
-                        <span className="text-red-500">🔥</span>
+                        <Flame className="h-4 w-4 text-red-500 flex-shrink-0" />
                         {trait}
                       </li>
                     ))}
@@ -133,7 +134,7 @@ export function CraftingModule() {
                     Creates:
                   </p>
                   <p className="mt-1 text-foreground font-medium flex items-center gap-2">
-                    <span className="text-green-500">✨</span>
+                    <Sparkles className="h-4 w-4 text-green-500 flex-shrink-0" />
                     {recipe.outputTrait}
                   </p>
                 </div>

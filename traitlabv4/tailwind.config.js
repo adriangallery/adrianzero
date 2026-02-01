@@ -4,7 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
+  darkMode: false,
   theme: {
     extend: {
       colors: {
@@ -36,7 +36,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Press Start 2P"', 'monospace'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       spacing: {

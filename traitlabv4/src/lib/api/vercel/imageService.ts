@@ -3,24 +3,21 @@
  * Generates combined NFT + traits preview images
  */
 
-const VERCEL_API_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://adrianlab.vercel.app/api';
-
 interface GenerateImageParams {
   tokenId: string;
   traitIds: string[];
 }
 
 export class VercelImageService {
-  private baseUrl: string;
   private cache: Map<string, string>;
 
-  constructor(baseUrl: string = VERCEL_API_URL) {
-    this.baseUrl = baseUrl;
+  constructor() {
     this.cache = new Map();
   }
 
   /**
    * Generate combined image URL for NFT + traits
+   * Uses v3 pattern: /api/render/custom-external/{tokenId}?trait={id1}&trait={id2}
    */
   generateCombinedImageUrl({ tokenId, traitIds }: GenerateImageParams): string {
     const cacheKey = `${tokenId}-${traitIds.sort().join('-')}`;
@@ -29,16 +26,10 @@ export class VercelImageService {
       return this.cache.get(cacheKey)!;
     }
 
-    // Build URL with query parameters
-    const params = new URLSearchParams({
-      tokenId,
-    });
-
-    traitIds.forEach((traitId) => {
-      params.append('traits', traitId);
-    });
-
-    const url = `${this.baseUrl}/render?${params.toString()}`;
+    // v3 pattern: /api/render/custom-external/{tokenId}?trait={id1}&trait={id2}
+    const baseUrl = 'https://adrianlab.vercel.app/api/render/custom-external';
+    const traitParams = traitIds.map(id => `trait=${id}`).join('&');
+    const url = `${baseUrl}/${tokenId}${traitParams ? '?' + traitParams : ''}`;
 
     this.cache.set(cacheKey, url);
 

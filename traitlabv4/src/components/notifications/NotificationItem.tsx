@@ -4,6 +4,7 @@
  */
 
 import { formatDistanceToNow } from 'date-fns';
+import { CheckCircle2, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { useNotificationStore } from '@/store/notificationStore';
 import type { Notification } from '@/store/notificationStore';
 
@@ -19,10 +20,10 @@ const typeStyles = {
 };
 
 const typeIcons = {
-  success: '✓',
-  error: '✕',
-  warning: '⚠',
-  info: 'ℹ',
+  success: <CheckCircle2 className="h-4 w-4" />,
+  error: <XCircle className="h-4 w-4" />,
+  warning: <AlertTriangle className="h-4 w-4" />,
+  info: <Info className="h-4 w-4" />,
 };
 
 export function NotificationItem({ notification }: NotificationItemProps) {
@@ -39,7 +40,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${typeStyles[notification.type]}`}
         >
-          <span className="text-sm font-bold">{typeIcons[notification.type]}</span>
+          {typeIcons[notification.type]}
         </div>
 
         {/* Content */}
@@ -54,14 +55,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
           onClick={() => removeNotification(notification.id)}
           className="text-muted-foreground hover:text-foreground flex-shrink-0"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="h-4 w-4" />
         </button>
       </div>
     </div>

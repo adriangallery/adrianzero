@@ -83,7 +83,7 @@ export function useTraits() {
             balance,
             rarity: metadata.rarity,
             metadata: nft.raw?.metadata,
-            image: nft.image,
+            image: `https://adrianzero.com/traitlab/${metadata.category.toLowerCase()}/${metadata.fileName}`,
           } as Trait;
         })
         .filter((trait): trait is Trait => trait !== null);

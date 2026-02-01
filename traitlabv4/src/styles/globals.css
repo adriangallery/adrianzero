@@ -2,23 +2,21 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --border: 0 0% 89.8%;
-  }
-
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --border: 0 0% 14.9%;
+    --background: 220 13% 15%;        /* #1f2228 - Dark main background */
+    --foreground: 220 13% 95%;        /* #f0f1f3 - Light text */
+    --card: 220 13% 18%;              /* #262930 - Cards lighter than background */
+    --card-foreground: 220 13% 95%;   /* Text on cards */
+    --muted: 220 13% 25%;             /* #36383f - Disabled elements */
+    --muted-foreground: 220 13% 65%;  /* #9da1aa - Secondary text */
+    --border: 220 13% 25%;            /* #36383f - Subtle borders */
+    --primary: 220 90% 56%;           /* #3b82f6 - Vibrant blue */
+    --primary-foreground: 220 13% 95%; /* Text on primary */
   }
 
   body {
     font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
   }
 }
 

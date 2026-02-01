@@ -4,6 +4,7 @@
  */
 
 import { useAccount } from 'wagmi';
+import { Unplug, Frame, Palette, Package, Sparkles } from 'lucide-react';
 import { usePortfolioStats } from '../hooks/usePortfolioStats';
 import { useRarityAnalytics } from '../hooks/useRarityAnalytics';
 import { useActivityFeed } from '../hooks/useActivityFeed';
@@ -20,7 +21,7 @@ export function DashboardModule() {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🔌</div>
+        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-semibold text-foreground">Wallet Not Connected</h2>
         <p className="text-muted-foreground mt-2">
           Connect your wallet to view your dashboard
@@ -51,25 +52,25 @@ export function DashboardModule() {
         <StatsCard
           title="Total NFTs"
           value={stats?.totalNFTs || 0}
-          icon="🖼️"
+          icon={<Frame className="h-5 w-5" />}
           description="AdrianZERO tokens owned"
         />
         <StatsCard
           title="Total Traits"
           value={stats?.totalTraits || 0}
-          icon="🎨"
+          icon={<Palette className="h-5 w-5" />}
           description="Trait items in inventory"
         />
         <StatsCard
           title="Total Packs"
           value={stats?.totalPacks || 0}
-          icon="📦"
+          icon={<Package className="h-5 w-5" />}
           description="Unopened packs"
         />
         <StatsCard
           title="Customized NFTs"
           value={stats?.traitsAppliedCount || 0}
-          icon="✨"
+          icon={<Sparkles className="h-5 w-5" />}
           description="NFTs with applied traits"
         />
       </div>
@@ -91,8 +92,8 @@ export function DashboardModule() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {analytics.rarestTraits.map((trait) => (
               <div key={trait.tokenId} className="text-center">
-                <div className="aspect-square bg-muted rounded-lg mb-2 flex items-center justify-center text-4xl">
-                  🎨
+                <div className="aspect-square bg-muted rounded-lg mb-2 flex items-center justify-center">
+                  <Palette className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <p className="text-xs font-medium text-foreground truncate">{trait.name}</p>
                 <p className="text-xs text-muted-foreground">

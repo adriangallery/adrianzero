@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { useAccount } from 'wagmi';
+import { Unplug, AlertTriangle } from 'lucide-react';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
 import { TraitPreview } from '@/components/traits/TraitPreview';
@@ -108,7 +109,7 @@ export function TraitsModule() {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🔌</div>
+        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-semibold text-foreground">
           Wallet Not Connected
         </h2>
@@ -131,7 +132,7 @@ export function TraitsModule() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">⚠️</div>
+        <AlertTriangle className="h-16 w-16 mb-4 text-yellow-500" />
         <h2 className="text-xl font-semibold text-foreground">
           Error Loading Traits
         </h2>

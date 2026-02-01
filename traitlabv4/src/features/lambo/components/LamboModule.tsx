@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import { Unplug, Car } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useLambo, LAMBO_COLORS } from '../hooks/useLambo';
 import type { AdrianZeroToken } from '@/types/nft.types';
@@ -33,7 +34,7 @@ export function LamboModule() {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🔌</div>
+        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-semibold text-foreground">Wallet Not Connected</h2>
       </div>
     );
@@ -126,8 +127,8 @@ export function LamboModule() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-6xl">
-                🏎️
+              <div className="w-full h-full flex items-center justify-center">
+                <Car className="h-16 w-16 text-muted-foreground" />
               </div>
             )}
           </div>

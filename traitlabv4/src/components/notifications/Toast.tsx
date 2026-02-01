@@ -5,6 +5,7 @@
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { useNotificationStore } from '@/store/notificationStore';
 import type { Notification } from '@/store/notificationStore';
 
@@ -16,10 +17,10 @@ const typeStyles = {
 };
 
 const typeIcons = {
-  success: '✓',
-  error: '✕',
-  warning: '⚠',
-  info: 'ℹ',
+  success: <CheckCircle2 className="h-4 w-4" />,
+  error: <XCircle className="h-4 w-4" />,
+  warning: <AlertTriangle className="h-4 w-4" />,
+  info: <Info className="h-4 w-4" />,
 };
 
 export function ToastContainer() {
@@ -65,7 +66,7 @@ function ToastItem({
     >
       <div className="flex items-start gap-3">
         <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-sm font-bold">{typeIcons[notification.type]}</span>
+          {typeIcons[notification.type]}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold">{notification.title}</p>
@@ -75,14 +76,7 @@ function ToastItem({
           onClick={onDismiss}
           className="text-white/80 hover:text-white flex-shrink-0"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="h-4 w-4" />
         </button>
       </div>
     </motion.div>
