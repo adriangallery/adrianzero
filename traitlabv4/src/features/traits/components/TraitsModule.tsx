@@ -1,11 +1,12 @@
 /**
  * TraitsModule Component
  * Main module for selecting and applying traits to NFTs
+ * Mobile-optimized with sticky bottom bar
  */
 
 import { useState, useMemo } from 'react';
 import { useAccount } from 'wagmi';
-import { Unplug, AlertTriangle } from 'lucide-react';
+import { Unplug, AlertTriangle, X } from 'lucide-react';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
 import { TraitPreview } from '@/components/traits/TraitPreview';
@@ -133,19 +134,19 @@ export function TraitsModule() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-full">
+      {/* Header - Compact on mobile */}
+      <div className="flex items-center justify-between py-2 sm:py-4">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Traits</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-lg sm:text-xl font-bold text-foreground">Traits</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {allTraits.length} {allTraits.length === 1 ? 'trait' : 'traits'} available
           </p>
         </div>
 
-        {/* Selected Traits Counter */}
+        {/* Selected Traits Counter - Desktop only */}
         {selectedTraits.length > 0 && (
-          <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             <div className="px-3 py-1 bg-primary/10 rounded-lg">
               <p className="text-sm font-medium text-primary">
                 {selectedTraits.length} selected
@@ -161,25 +162,55 @@ export function TraitsModule() {
         )}
       </div>
 
-      {/* Category Tabs */}
-      <TraitCategories
-        categories={categories}
-        traitsByCategory={traitsByCategory}
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-      />
+      {/* Category Tabs - Sticky on mobile */}
+      <div className="sticky top-0 z-10 bg-background -mx-4 px-4 pb-2">
+        <TraitCategories
+          categories={categories}
+          traitsByCategory={traitsByCategory}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
+      </div>
 
-      {/* Traits Grid */}
-      <TraitGrid
-        traits={displayTraits}
-        selectedTraitIds={selectedTraitIds}
-        onTraitSelect={handleTraitSelect}
-        emptyMessage={
-          activeCategory === 'ALL'
-            ? 'No traits found in your wallet'
-            : `No ${activeCategory.toLowerCase()} traits found`
-        }
-      />
+      {/* Traits Grid - Fills remaining space, with bottom padding for mobile bar */}
+      <div className="flex-1 overflow-y-auto pb-20 sm:pb-4">
+        <TraitGrid
+          traits={displayTraits}
+          selectedTraitIds={selectedTraitIds}
+          onTraitSelect={handleTraitSelect}
+          emptyMessage={
+            activeCategory === 'ALL'
+              ? 'No traits found in your wallet'
+              : `No ${activeCategory.toLowerCase()} traits found`
+          }
+        />
+      </div>
+
+      {/* Mobile Sticky Bottom Bar */}
+      {selectedTraits.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 sm:hidden bg-background border-t border-border p-3 z-20">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={clearSelection}
+                className="p-2 rounded-lg bg-secondary text-secondary-foreground"
+                aria-label="Clear selection"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <span className="text-sm font-medium text-foreground">
+                {selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''} selected
+              </span>
+            </div>
+            <button
+              onClick={handleShowPreview}
+              className="touch-target px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Preview Modal */}
       <TraitPreview

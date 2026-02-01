@@ -65,13 +65,13 @@ export function TraitCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            <Palette className="h-12 w-12" />
+            <Palette className="h-8 w-8 sm:h-12 sm:w-12" />
           </div>
         )}
 
         {/* Balance Badge */}
         {showBalance && trait.balance > 1 && (
-          <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded-md text-xs font-medium text-white">
+          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-accent/90 rounded text-[10px] sm:text-xs font-medium text-white">
             x{trait.balance}
           </div>
         )}
@@ -79,7 +79,7 @@ export function TraitCard({
         {/* Rarity Badge */}
         {trait.rarity && (
           <div
-            className={`absolute top-2 left-2 px-2 py-1 ${rarityColor} rounded-md text-xs font-medium text-white`}
+            className={`absolute top-1 left-1 sm:top-2 sm:left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 ${rarityColor} rounded text-[10px] sm:text-xs font-medium text-white`}
           >
             {trait.rarity}
           </div>
@@ -88,9 +88,9 @@ export function TraitCard({
         {/* Selection Indicator */}
         {isSelected && (
           <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary flex items-center justify-center">
               <svg
-                className="w-8 h-8 text-white"
+                className="w-5 h-5 sm:w-8 sm:h-8 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -108,11 +108,11 @@ export function TraitCard({
       </div>
 
       {/* Info */}
-      <div className="p-3">
-        <h3 className="font-medium truncate text-foreground text-sm">
+      <div className="p-2 sm:p-3">
+        <h3 className="font-medium truncate text-foreground text-xs sm:text-sm">
           {trait.name}
         </h3>
-        <p className="text-xs text-muted-foreground mt-1 capitalize">
+        <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 capitalize">
           {trait.category.toLowerCase().replace('_', ' ')}
         </p>
       </div>

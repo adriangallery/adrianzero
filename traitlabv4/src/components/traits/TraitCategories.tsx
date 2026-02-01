@@ -52,13 +52,13 @@ export function TraitCategories({
   );
 
   return (
-    <div className="border-b border-border overflow-x-auto custom-scrollbar">
+    <div className="border-b border-border overflow-x-auto custom-scrollbar -mx-1">
       <div className="flex gap-1 p-1 min-w-max">
         {/* All Category */}
         <button
           onClick={() => onCategoryChange('ALL')}
           className={`
-            touch-target px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap
+            touch-target px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap
             transition-colors
             ${
               activeCategory === 'ALL'
@@ -68,7 +68,7 @@ export function TraitCategories({
           `}
         >
           All
-          <span className="ml-2 text-xs opacity-75">({allCount})</span>
+          <span className="ml-1 sm:ml-2 opacity-75">({allCount})</span>
         </button>
 
         {/* Category Tabs */}
@@ -82,7 +82,7 @@ export function TraitCategories({
               key={category}
               onClick={() => onCategoryChange(category)}
               className={`
-                touch-target px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap
+                touch-target px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap
                 transition-colors
                 ${
                   activeCategory === category
@@ -92,7 +92,7 @@ export function TraitCategories({
               `}
             >
               {categoryLabels[category] || category}
-              <span className="ml-2 text-xs opacity-75">({count})</span>
+              <span className="ml-1 sm:ml-2 opacity-75">({count})</span>
             </button>
           );
         })}

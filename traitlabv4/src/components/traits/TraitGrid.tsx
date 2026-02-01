@@ -57,12 +57,12 @@ export function TraitGrid({
     return (
       <Virtuoso
         key={virtuosoKey}
-        style={{ height: 'calc(100vh - 300px)' }}
+        style={{ height: 'calc(100vh - 220px)' }}
         totalCount={rows.length}
         data={rows}
         itemContent={(_index, row) => {
           return (
-            <div className="grid grid-cols-2 gap-4 mb-4 px-4">
+            <div className="grid grid-cols-2 gap-3 mb-3">
               {row.map((trait) => (
                 <TraitCard
                   key={trait.tokenId}
@@ -85,10 +85,7 @@ export function TraitGrid({
   return (
     <div
       key={gridKey}
-      className={`
-        grid gap-4
-        grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6
-      `}
+      className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
     >
       {traits.map((trait) => (
         <TraitCard
