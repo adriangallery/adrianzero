@@ -236,8 +236,8 @@ export function AdrianZeroModule() {
         )}
       </div>
 
-      {/* Collapsible Selected NFT Panel */}
-      {selectedNFT && (
+      {/* Collapsible Selected NFT Panel - Only show when no traits selected */}
+      {selectedNFT && selectedTraits.length === 0 && (
         <div className="mb-2 border border-border rounded-lg overflow-hidden bg-card">
           {/* NFT Preview Header - Always visible, clickable to toggle */}
           <button
