@@ -213,7 +213,9 @@ export function AdrianZeroModule() {
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4">
         <div>
-          <h1 className="text-lg sm:text-xl font-bold text-foreground">AdrianZERO NFTs</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-foreground">
+            AdrianZERO <span className="text-[#00ff00]">NFTs</span>
+          </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
             {tokens.length} {tokens.length === 1 ? 'NFT' : 'NFTs'} in your collection
           </p>
@@ -314,8 +316,8 @@ export function AdrianZeroModule() {
         <div className="flex-1 flex flex-col border-t border-border pt-4 mt-2">
           {/* Section Header */}
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold text-foreground">
-              Select Traits for #{selectedNFT.tokenId}
+            <h2 className="hidden sm:block text-sm font-semibold text-foreground">
+              Select <span className="text-[#00ff00]">Traits</span> for #{selectedNFT.tokenId}
             </h2>
             {selectedTraits.length > 0 && (
               <div className="flex items-center gap-2">
@@ -341,9 +343,9 @@ export function AdrianZeroModule() {
                 onClick={() => setIsTraitPreviewExpanded(!isTraitPreviewExpanded)}
                 className="w-full flex items-center justify-between p-2 hover:bg-muted/50 transition-colors"
               >
-                <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2">
                   <span className="text-xs font-medium text-foreground">
-                    Preview with traits
+                    <span className="text-[#00ff00]">Preview</span> with traits
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     ({selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''})
