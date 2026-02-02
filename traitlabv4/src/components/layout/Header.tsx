@@ -31,7 +31,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </svg>
           </button>
 
-          <h1 className="text-lg font-bold text-foreground lg:hidden font-adrian">Trait<span className="text-primary">LAB</span></h1>
+          <h1 className="text-lg font-bold text-foreground lg:hidden font-adrian">Trait<span className="text-[#00ff00]">LAB</span></h1>
         </div>
 
         {/* Right: Actions */}
