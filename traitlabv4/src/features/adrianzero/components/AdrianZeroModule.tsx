@@ -299,15 +299,15 @@ export function AdrianZeroModule() {
         </div>
       )}
 
-      {/* NFT Grid */}
-      <div className={selectedNFT ? 'mb-4' : ''}>
+      {/* NFT Grid - Hidden when NFT is selected */}
+      {!selectedNFT && (
         <NFTGrid
           tokens={sortedTokens}
           selectedTokenId={selectedNFT?.tokenId}
           onTokenSelect={handleTokenSelect}
           emptyMessage="No AdrianZERO NFTs found in your wallet"
         />
-      </div>
+      )}
 
       {/* Trait Selection Section - Only visible when NFT is selected */}
       {selectedNFT && (
