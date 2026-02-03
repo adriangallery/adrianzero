@@ -3,17 +3,17 @@
  * Craft traits using recipes with burning mechanism
  */
 
-import { useAccount } from 'wagmi';
-import { Unplug, AlertTriangle, FlaskConical, Flame, Sparkles } from 'lucide-react';
+import { AlertTriangle, FlaskConical, Flame, Sparkles } from 'lucide-react';
 import { useCraftTrait } from '../hooks/useCrafting';
 import { useCraftingRecipes } from '../hooks/useCraftingRecipes';
 import { useTraits } from '@/features/traits/hooks/useTraits';
+import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 
 export function CraftingModule() {
-  const { isConnected } = useAccount();
   const craftTrait = useCraftTrait();
   const { data: recipes = [], isLoading } = useCraftingRecipes();
   const { data: traits = [] } = useTraits();
+  const { requireWallet } = useWalletPrompt();
 
   // Helper to get trait name by tokenId
   const getTraitName = (tokenId: string) => {
@@ -22,6 +22,11 @@ export function CraftingModule() {
   };
 
   const handleCraft = async (recipeId: string) => {
+    // Check if wallet is connected before proceeding
+    if (!requireWallet('craft traits')) {
+      return;
+    }
+
     const confirmed = confirm(
       'Warning: Crafting will burn (destroy) the input traits. This action cannot be undone. Continue?'
     );
@@ -34,20 +39,6 @@ export function CraftingModule() {
       console.error('Failed to craft:', error);
     }
   };
-
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">
-          Wallet Not Connected
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          Please connect your wallet to craft traits
-        </p>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -122,22 +113,37 @@ export function CraftingModule() {
                   )}
                 </div>
 
+                {/* Recipe Type Badge */}
+                <div className="mt-2">
+                  <span className="text-xs px-2 py-1 bg-muted rounded-full">
+                    {recipe.type} Recipe
+                  </span>
+                </div>
+
                 {/* Input Traits */}
                 <div className="mt-4">
                   <p className="text-sm font-medium text-muted-foreground">
                     Required Traits:
                   </p>
-                  <ul className="mt-2 space-y-1">
-                    {recipe.inputTraits.map((traitId, index) => (
-                      <li
-                        key={index}
-                        className="text-sm text-foreground flex items-center gap-2"
-                      >
-                        <Flame className="h-4 w-4 text-destructive flex-shrink-0" />
-                        {getTraitName(traitId)}
-                      </li>
-                    ))}
-                  </ul>
+                  {recipe.type === 'ANY' && recipe.burnTotal ? (
+                    <p className="mt-2 text-sm text-foreground">
+                      Any {recipe.burnTotal} traits (you choose which ones to burn)
+                    </p>
+                  ) : recipe.inputTraits.length > 0 ? (
+                    <ul className="mt-2 space-y-1">
+                      {recipe.inputTraits.map((traitId, index) => (
+                        <li
+                          key={index}
+                          className="text-sm text-foreground flex items-center gap-2"
+                        >
+                          <Flame className="h-4 w-4 text-destructive flex-shrink-0" />
+                          {getTraitName(traitId)}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 text-sm text-muted-foreground">No requirements specified</p>
+                  )}
                 </div>
 
                 {/* Output Trait */}

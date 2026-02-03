@@ -9,18 +9,14 @@ import { useAccount } from 'wagmi';
 import { Unplug, Frame, Palette, Package, FlaskConical } from 'lucide-react';
 import { usePortfolioStats } from '../hooks/usePortfolioStats';
 import { useRarityAnalytics, type RarityBucket } from '../hooks/useRarityAnalytics';
-import { useActivityFeed } from '../hooks/useActivityFeed';
 import { useSerums } from '@/features/serum/hooks/useSerums';
 import { StatsCard } from '@/components/dashboard/StatsCard';
-import { RarityChart } from '@/components/dashboard/RarityChart';
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { getWalletIcon, getWalletName } from '@/config/wallets';
 
 export function DashboardModule() {
   const { isConnected, connector } = useAccount();
   const { data: stats, isLoading: statsLoading } = usePortfolioStats();
   const { data: analytics, isLoading: analyticsLoading } = useRarityAnalytics();
-  const { data: activities = [] } = useActivityFeed();
   const { data: serums = [] } = useSerums();
 
   // Selected rarity bucket for filtering traits display
@@ -100,29 +96,6 @@ export function DashboardModule() {
           description="Available serums"
           isLoading={statsLoading}
         />
-      </div>
-
-      {/* Charts and Activity */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          {analyticsLoading ? (
-            <div className="bg-card rounded-lg p-6 border border-border">
-              <div className="skeleton h-8 w-48 mb-4" />
-              <div className="skeleton h-64 w-full" />
-            </div>
-          ) : (
-            analytics && (
-              <RarityChart
-                buckets={analytics.rarityBuckets}
-                selectedBucket={selectedBucket?.label}
-                onBucketClick={handleBucketClick}
-              />
-            )
-          )}
-        </div>
-        <div>
-          <ActivityFeed activities={activities} />
-        </div>
       </div>
 
       {/* Traits Display - Shows selected rarity bucket or rarest traits */}

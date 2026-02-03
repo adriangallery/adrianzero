@@ -65,6 +65,12 @@ export function NFTPreview({
                       src={imageUrl}
                       alt={displayName}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to originalUrl if cachedUrl (GitHub) fails
+                        if (token.image?.originalUrl && e.currentTarget.src !== token.image.originalUrl) {
+                          e.currentTarget.src = token.image.originalUrl;
+                        }
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">

@@ -51,6 +51,12 @@ export function NFTCard({
             alt={displayName}
             loading="lazy"
             className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback to originalUrl if cachedUrl (GitHub) fails
+              if (token.image?.originalUrl && e.currentTarget.src !== token.image.originalUrl) {
+                e.currentTarget.src = token.image.originalUrl;
+              }
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -60,7 +66,7 @@ export function NFTCard({
 
         {/* Token ID Badge */}
         {showBadge && (
-          <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded-md text-xs font-medium text-white">
+          <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded-md text-xs font-medium" style={{ color: '#00ff00' }}>
             #{token.tokenId}
           </div>
         )}

@@ -4,17 +4,16 @@
  */
 
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
 import { motion } from 'framer-motion';
 import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence } from 'framer-motion';
-import { Unplug, AlertTriangle, Package } from 'lucide-react';
+import { AlertTriangle, Package } from 'lucide-react';
 import { usePacks } from '../hooks/usePacks';
 import { useOpenPack } from '../hooks/useOpenPack';
+import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import type { Pack } from '@/types/nft.types';
 
 export function PacksModule() {
-  const { isConnected } = useAccount();
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [filterType, setFilterType] = useState<'ALL' | 'FLOPPY_DISC' | 'ACTION_PACK' | 'SPECIAL'>('ALL');
@@ -30,9 +29,17 @@ export function PacksModule() {
   // Mutations
   const openPack = useOpenPack();
 
+  // Wallet validation
+  const { requireWallet } = useWalletPrompt();
+
   // Handlers
   const handleOpenPack = async () => {
     if (!selectedPack) return;
+
+    // Check if wallet is connected before proceeding
+    if (!requireWallet('open packs')) {
+      return;
+    }
 
     // Only FLOPPY_DISC and ACTION_PACK can be opened
     if (selectedPack.type === 'SPECIAL') {
@@ -53,20 +60,6 @@ export function PacksModule() {
       console.error('Failed to open pack:', error);
     }
   };
-
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">
-          Wallet Not Connected
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          Please connect your wallet to view your packs
-        </p>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (

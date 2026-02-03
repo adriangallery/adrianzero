@@ -4,15 +4,14 @@
  */
 
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
 import { Sparkles, X } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useRenameToken, useNamePrice } from '../hooks/useRename';
 import { useTokenToggle, useSetToggle, AVAILABLE_TOGGLES } from '../hooks/useToggles';
+import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
 export function CustomModule() {
-  const { isConnected } = useAccount();
   const [selectedToken, setSelectedToken] = useState<AdrianZeroToken | null>(null);
   const [newName, setNewName] = useState('');
   const [showPreview, setShowPreview] = useState(false);
@@ -21,6 +20,7 @@ export function CustomModule() {
   const { data: tokens = [] } = useAdrianZeroTokens();
   const { data: namePrice = '0' } = useNamePrice();
   const renameToken = useRenameToken();
+  const { requireWallet } = useWalletPrompt();
 
   // Toggle hooks
   const { data: currentToggle = 0 } = useTokenToggle(selectedToken?.tokenId);
@@ -28,6 +28,11 @@ export function CustomModule() {
 
   const handleRename = async () => {
     if (!selectedToken || !newName.trim()) return;
+
+    // Check if wallet is connected before proceeding
+    if (!requireWallet('rename your NFT')) {
+      return;
+    }
 
     try {
       await renameToken.mutateAsync({
@@ -50,6 +55,11 @@ export function CustomModule() {
   const handleConfirmToggle = async () => {
     if (!selectedToken || pendingToggle === null) return;
 
+    // Check if wallet is connected before proceeding
+    if (!requireWallet('apply visual effects')) {
+      return;
+    }
+
     try {
       await setToggle.mutateAsync({
         tokenId: selectedToken.tokenId,
@@ -69,15 +79,6 @@ export function CustomModule() {
   };
 
   const pendingToggleInfo = AVAILABLE_TOGGLES.find((t) => t.id === pendingToggle);
-
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🔌</div>
-        <h2 className="text-xl font-semibold text-foreground">Wallet Not Connected</h2>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

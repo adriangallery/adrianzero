@@ -61,8 +61,9 @@ export function usePacks() {
   return useQuery({
     queryKey: ['packs', address],
     queryFn: async () => {
+      // Return empty array when no wallet connected (demo mode)
       if (!address) {
-        throw new Error('No wallet connected');
+        return [];
       }
 
       // Fetch all ERC1155 tokens from ADRIAN_LAB contract
@@ -97,7 +98,7 @@ export function usePacks() {
       console.log('[usePacks] Found packs:', packs.length);
       return packs;
     },
-    enabled: !!address,
+    enabled: true, // Always enabled to show empty array in demo mode
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   });

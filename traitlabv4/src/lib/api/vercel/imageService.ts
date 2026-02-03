@@ -49,6 +49,28 @@ export class VercelImageService {
   }
 
   /**
+   * Generate NFT image URL with toggle effect
+   * @param tokenId - The NFT token ID
+   * @param toggleId - Toggle mode ID (1=Closeup, 2=Shadow, 3=Glow, 4=B&W, 11=Blackout, 12=Banana)
+   * @returns URL for NFT with toggle applied
+   */
+  generateToggleImageUrl(tokenId: string, toggleId: number): string {
+    const baseUrl = 'https://adrianlab.vercel.app/api/render/adrianzero';
+    return `${baseUrl}/${tokenId}?toggle=${toggleId}`;
+  }
+
+  /**
+   * Generate LAMBO variant image URL
+   * @param tokenId - The NFT token ID
+   * @param color - Lambo color (blue, red, yellow, green, etc.)
+   * @returns URL for LAMBO variant
+   */
+  generateLamboImageUrl(tokenId: string, color: string): string {
+    const baseUrl = 'https://adrianlab.vercel.app/api/render/lambo';
+    return `${baseUrl}/${tokenId}?lambo=${color}`;
+  }
+
+  /**
    * Clear cache
    */
   clearCache(): void {

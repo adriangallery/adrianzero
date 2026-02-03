@@ -11,6 +11,7 @@ import { TraitCard } from '@/components/traits/TraitCard';
 import { useTraitsByCategory, useTraitCategories } from '@/features/traits/hooks/useTraits';
 import { useApplyTraits } from '@/features/traits/hooks/useApplyTraits';
 import { useTraitsStore } from '@/features/traits/store/traitsStore';
+import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
 import type { AdrianZeroToken, TraitCategory, Trait } from '@/types/nft.types';
 
@@ -40,6 +41,9 @@ export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps
 
   // Apply traits mutation
   const applyTraits = useApplyTraits();
+
+  // Wallet validation
+  const { requireWallet } = useWalletPrompt();
 
   // Get traits for active category
   const displayTraits = useMemo(() => {
@@ -78,6 +82,11 @@ export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps
 
   const handleApplyTraits = async () => {
     if (selectedTraits.length === 0) return;
+
+    // Check if wallet is connected before proceeding
+    if (!requireWallet('apply traits')) {
+      return;
+    }
 
     try {
       await applyTraits.mutateAsync({
@@ -164,7 +173,16 @@ export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps
                                 Original
                               </div>
                               {currentImageUrl ? (
-                                <img src={currentImageUrl} alt="Original" className="w-full h-full object-cover" />
+                                <img
+                                  src={currentImageUrl}
+                                  alt="Original"
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    if (nft.image?.originalUrl && e.currentTarget.src !== nft.image.originalUrl) {
+                                      e.currentTarget.src = nft.image.originalUrl;
+                                    }
+                                  }}
+                                />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
                                   <Frame className="h-12 w-12 text-muted-foreground" />
@@ -175,13 +193,31 @@ export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps
                               <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded text-xs text-white">
                                 Preview
                               </div>
-                              <img src={previewImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                              <img
+                                src={previewImageUrl}
+                                alt="Preview"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  if (nft.image?.originalUrl && e.currentTarget.src !== nft.image.originalUrl) {
+                                    e.currentTarget.src = nft.image.originalUrl;
+                                  }
+                                }}
+                              />
                             </div>
                           </div>
                         ) : (
                           <>
                             {previewImageUrl ? (
-                              <img src={previewImageUrl} alt={displayName} className="w-full h-full object-cover" />
+                              <img
+                                src={previewImageUrl}
+                                alt={displayName}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  if (nft.image?.originalUrl && e.currentTarget.src !== nft.image.originalUrl) {
+                                    e.currentTarget.src = nft.image.originalUrl;
+                                  }
+                                }}
+                              />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <Frame className="h-12 w-12 text-muted-foreground" />
