@@ -4,16 +4,15 @@
  */
 
 import { useAccount } from 'wagmi';
-import { toast } from 'sonner';
+import { useNotifications } from './useNotifications';
 
 export function useWalletPrompt() {
   const { isConnected } = useAccount();
+  const notifications = useNotifications();
 
   const requireWallet = (action: string = 'use blockchain features') => {
     if (!isConnected) {
-      toast.error('Wallet Required', {
-        description: `Connect your wallet to ${action}`,
-      });
+      notifications.error('Wallet Required', `Connect your wallet to ${action}`);
       return false;
     }
     return true;

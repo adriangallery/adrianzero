@@ -4,11 +4,9 @@
  * V4.3: Clickable rarity buckets + Serums card
  */
 
-import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Unplug, Frame, Palette, Package, FlaskConical } from 'lucide-react';
 import { usePortfolioStats } from '../hooks/usePortfolioStats';
-import { useRarityAnalytics, type RarityBucket } from '../hooks/useRarityAnalytics';
 import { useSerums } from '@/features/serum/hooks/useSerums';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { getWalletIcon, getWalletName } from '@/config/wallets';
@@ -16,27 +14,13 @@ import { getWalletIcon, getWalletName } from '@/config/wallets';
 export function DashboardModule() {
   const { isConnected, connector } = useAccount();
   const { data: stats, isLoading: statsLoading } = usePortfolioStats();
-  const { data: analytics, isLoading: analyticsLoading } = useRarityAnalytics();
   const { data: serums = [] } = useSerums();
-
-  // Selected rarity bucket for filtering traits display
-  const [selectedBucket, setSelectedBucket] = useState<RarityBucket | null>(null);
 
   const walletIcon = getWalletIcon(connector?.name);
   const walletName = getWalletName(connector?.name);
 
   // Calculate total serum count
   const totalSerums = serums.reduce((sum, serum) => sum + serum.balance, 0);
-
-  // Get traits to display - either from selected bucket or rarest traits
-  const displayTraits = selectedBucket?.traits || analytics?.rarestTraits || [];
-  const traitsTitle = selectedBucket
-    ? `${selectedBucket.label} Traits (${selectedBucket.count})`
-    : 'Your Rarest Traits';
-
-  const handleBucketClick = (bucket: RarityBucket | null) => {
-    setSelectedBucket(bucket);
-  };
 
   if (!isConnected) {
     return (
@@ -98,71 +82,6 @@ export function DashboardModule() {
         />
       </div>
 
-      {/* Traits Display - Shows selected rarity bucket or rarest traits */}
-      {analyticsLoading ? (
-        <div className="bg-card rounded-lg p-6 border border-border">
-          <div className="skeleton h-6 w-48 mb-4" />
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="text-center">
-                <div className="aspect-square skeleton rounded-lg mb-2" />
-                <div className="skeleton h-4 w-full mb-1" />
-                <div className="skeleton h-3 w-20 mx-auto" />
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        displayTraits.length > 0 && (
-          <div className="bg-card rounded-lg p-6 border border-border">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-foreground">{traitsTitle}</h3>
-              {selectedBucket && (
-                <button
-                  onClick={() => setSelectedBucket(null)}
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                >
-                  Show rarest instead
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {displayTraits.slice(0, selectedBucket ? 10 : 5).map((trait) => (
-                <div key={trait.tokenId} className="text-center">
-                  <div className="aspect-square bg-muted rounded-lg mb-2 overflow-hidden">
-                    {trait.image?.cachedUrl || trait.image?.originalUrl ? (
-                      <img
-                        src={trait.image.cachedUrl || trait.image.originalUrl}
-                        alt={trait.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          // Fallback to originalUrl if cachedUrl fails
-                          if (trait.image?.originalUrl && e.currentTarget.src !== trait.image.originalUrl) {
-                            e.currentTarget.src = trait.image.originalUrl;
-                          }
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Palette className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs font-medium text-foreground truncate">{trait.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Supply: {trait.maxSupply || 'N/A'}
-                  </p>
-                </div>
-              ))}
-            </div>
-            {selectedBucket && selectedBucket.traits.length > 10 && (
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                Showing 10 of {selectedBucket.traits.length} traits
-              </p>
-            )}
-          </div>
-        )
-      )}
     </div>
   );
 }
