@@ -6,7 +6,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { Unplug, AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check } from 'lucide-react';
+import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check } from 'lucide-react';
 import { NFTGrid } from '@/components/nft/NFTGrid';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
@@ -170,20 +170,6 @@ export function AdrianZeroModule() {
 
   const nftImageUrl = selectedNFT?.image?.cachedUrl || selectedNFT?.image?.originalUrl || selectedNFT?.metadata?.image;
   const displayName = selectedNFT?.name || selectedNFT?.metadata?.name || (selectedNFT ? `AdrianZERO #${selectedNFT.tokenId}` : '');
-
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">
-          Wallet Not Connected
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          Please connect your wallet to view your AdrianZERO NFTs
-        </p>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
