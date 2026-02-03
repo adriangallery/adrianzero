@@ -7,7 +7,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { alchemyClient } from '@/lib/api/alchemy/client';
-import { githubImageService } from '@/lib/api/github/imageService';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
@@ -18,11 +17,11 @@ const MOCK_TOKEN: AdrianZeroToken = {
   metadata: {
     name: 'AdrianZERO #146',
     description: 'AdrianZERO Collection',
-    image: 'https://github.com/adriangallery/AdrianLAB/blob/main/public/rendered-toggles/146_latest.png?raw=true',
+    image: 'https://res.cloudinary.com/alchemyapi/image/upload/mainnet/0e8c6bc2c0e6ecf93a8e79e5a2c8c0f4.png',
   },
   image: {
-    cachedUrl: 'https://github.com/adriangallery/AdrianLAB/blob/main/public/rendered-toggles/146_latest.png?raw=true',
-    originalUrl: 'https://github.com/adriangallery/AdrianLAB/blob/main/public/rendered-toggles/146_latest.png?raw=true',
+    cachedUrl: 'https://res.cloudinary.com/alchemyapi/image/upload/mainnet/0e8c6bc2c0e6ecf93a8e79e5a2c8c0f4.png',
+    originalUrl: 'https://res.cloudinary.com/alchemyapi/image/upload/mainnet/0e8c6bc2c0e6ecf93a8e79e5a2c8c0f4.png',
   },
   tokenUri: '',
 };
@@ -43,27 +42,15 @@ export function useAdrianZeroTokens() {
       ]);
 
       // Transform Alchemy response to our AdrianZeroToken type
-      // Use GitHub as primary image source with Alchemy as fallback
-      const tokens: AdrianZeroToken[] = response.ownedNfts.map((nft) => {
-        const alchemyImageUrl = nft.image?.cachedUrl || nft.image?.originalUrl;
-        const githubUrls = githubImageService.getAdrianZeroImageUrls(
-          nft.tokenId,
-          alchemyImageUrl
-        );
-
-        return {
-          tokenId: nft.tokenId,
-          owner: address,
-          name: nft.name,
-          metadata: nft.raw?.metadata,
-          image: {
-            cachedUrl: githubUrls.primaryUrl,
-            originalUrl: githubUrls.fallbackUrl,
-            thumbnailUrl: nft.image?.thumbnailUrl,
-          },
-          tokenUri: nft.tokenUri,
-        };
-      });
+      // Use Alchemy images (GitHub integration pending - needs hash resolution)
+      const tokens: AdrianZeroToken[] = response.ownedNfts.map((nft) => ({
+        tokenId: nft.tokenId,
+        owner: address,
+        name: nft.name,
+        metadata: nft.raw?.metadata,
+        image: nft.image,
+        tokenUri: nft.tokenUri,
+      }));
 
       return tokens;
     },
