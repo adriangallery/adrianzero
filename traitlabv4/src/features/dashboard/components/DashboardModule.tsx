@@ -5,18 +5,20 @@
  */
 
 import { useAccount } from 'wagmi';
-import { Unplug, Frame, Palette, Package, FlaskConical } from 'lucide-react';
+import { Frame, Palette, Package, FlaskConical, Sparkles, ArrowRight } from 'lucide-react';
 import { usePortfolioStats } from '../hooks/usePortfolioStats';
 import { useRarityAnalytics } from '../hooks/useRarityAnalytics';
 import { useSerums } from '@/features/serum/hooks/useSerums';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { getWalletIcon, getWalletName } from '@/config/wallets';
+import { useNavigate } from 'react-router-dom';
 
 export function DashboardModule() {
   const { isConnected, connector } = useAccount();
   const { data: stats, isLoading: statsLoading } = usePortfolioStats();
   const { data: analytics, isLoading: analyticsLoading } = useRarityAnalytics();
   const { data: serums = [] } = useSerums();
+  const navigate = useNavigate();
 
   const walletIcon = getWalletIcon(connector?.name);
   const walletName = getWalletName(connector?.name);
@@ -29,12 +31,76 @@ export function DashboardModule() {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">Wallet Not Connected</h2>
-        <p className="text-muted-foreground mt-2">
-          Connect your wallet to view your dashboard
-        </p>
+      <div className="flex flex-col items-center justify-center py-8 px-4 max-w-4xl mx-auto">
+        {/* Welcome Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <Sparkles className="h-8 w-8 text-[#00ff00]" />
+            <h1 className="text-3xl font-bold text-foreground">
+              Welcome to <span className="text-[#00ff00]">TraitLAB</span>
+            </h1>
+          </div>
+          <p className="text-lg text-muted-foreground max-w-2xl">
+            Explore the platform in demo mode or connect your wallet to manage your AdrianZERO NFTs and traits
+          </p>
+        </div>
+
+        {/* Demo Cards */}
+        <div className="grid md:grid-cols-2 gap-4 w-full mb-8">
+          {/* NFTs Card */}
+          <button
+            onClick={() => navigate('/adrianzero')}
+            className="group bg-card border border-border rounded-lg p-6 text-left hover:border-[#00ff00] transition-all hover:shadow-lg hover:shadow-[#00ff00]/10"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-[#00ff00]/10 rounded-lg">
+                <Frame className="h-6 w-6 text-[#00ff00]" />
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-[#00ff00] transition-colors" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              Explore Demo NFT
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              View AdrianZERO #146 and see how the trait application system works
+            </p>
+            <div className="flex items-center gap-2 text-xs text-[#00ff00]">
+              <span className="font-medium">Try Demo</span>
+              <ArrowRight className="h-3 w-3" />
+            </div>
+          </button>
+
+          {/* Traits Card */}
+          <button
+            onClick={() => navigate('/traits')}
+            className="group bg-card border border-border rounded-lg p-6 text-left hover:border-[#00ff00] transition-all hover:shadow-lg hover:shadow-[#00ff00]/10"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-[#00ff00]/10 rounded-lg">
+                <Palette className="h-6 w-6 text-[#00ff00]" />
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-[#00ff00] transition-colors" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              Browse Mock Traits
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Explore 7 sample traits and preview how they look on NFTs
+            </p>
+            <div className="flex items-center gap-2 text-xs text-[#00ff00]">
+              <span className="font-medium">View Traits</span>
+              <ArrowRight className="h-3 w-3" />
+            </div>
+          </button>
+        </div>
+
+        {/* Info Banner */}
+        <div className="bg-muted/50 border border-border rounded-lg p-4 w-full">
+          <p className="text-sm text-center text-muted-foreground">
+            <span className="font-medium text-foreground">Demo Mode:</span> You're viewing sample data.
+            <span className="text-[#00ff00] font-medium ml-1">Connect your wallet</span> from the top-right menu to access your real NFTs and traits.
+          </p>
+        </div>
       </div>
     );
   }

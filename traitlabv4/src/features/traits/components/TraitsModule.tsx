@@ -5,7 +5,8 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { AlertTriangle, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { AlertTriangle, X, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
 import { useTraitsByCategory, useTraitCategories } from '../hooks/useTraits';
@@ -16,6 +17,7 @@ import { vercelImageService } from '@/lib/api/vercel/imageService';
 import type { TraitCategory } from '@/types/nft.types';
 
 export function TraitsModule() {
+  const { isConnected } = useAccount();
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
@@ -135,6 +137,16 @@ export function TraitsModule() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Demo Mode Banner */}
+      {!isConnected && (
+        <div className="mb-4 bg-[#00ff00]/10 border border-[#00ff00]/20 rounded-lg p-3 flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-[#00ff00] flex-shrink-0" />
+          <p className="text-xs sm:text-sm text-foreground">
+            <span className="font-medium text-[#00ff00]">Demo Mode:</span> Viewing 7 sample traits. Connect your wallet to see your collection.
+          </p>
+        </div>
+      )}
+
       {/* Header - Compact on mobile */}
       <div className="flex items-center justify-between py-2 sm:py-4">
         <div>

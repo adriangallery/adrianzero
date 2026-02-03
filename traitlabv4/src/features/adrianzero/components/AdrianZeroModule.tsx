@@ -5,7 +5,8 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check, Sparkles } from 'lucide-react';
 import { NFTGrid } from '@/components/nft/NFTGrid';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
@@ -19,6 +20,7 @@ import { vercelImageService } from '@/lib/api/vercel/imageService';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
 export function AdrianZeroModule() {
+  const { isConnected } = useAccount();
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
   const [isNFTPreviewExpanded, setIsNFTPreviewExpanded] = useState(false);
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
@@ -194,6 +196,16 @@ export function AdrianZeroModule() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Demo Mode Banner */}
+      {!isConnected && (
+        <div className="mb-4 bg-[#00ff00]/10 border border-[#00ff00]/20 rounded-lg p-3 flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-[#00ff00] flex-shrink-0" />
+          <p className="text-xs sm:text-sm text-foreground">
+            <span className="font-medium text-[#00ff00]">Demo Mode:</span> Viewing sample NFT #146. Connect your wallet to see your collection.
+          </p>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between py-2 sm:py-4">
         <div>
