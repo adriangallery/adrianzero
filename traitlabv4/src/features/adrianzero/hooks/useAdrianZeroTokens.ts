@@ -17,11 +17,11 @@ const MOCK_TOKEN: AdrianZeroToken = {
   metadata: {
     name: 'AdrianZERO #146',
     description: 'AdrianZERO Collection',
-    image: 'https://res.cloudinary.com/alchemyapi/image/upload/mainnet/0e8c6bc2c0e6ecf93a8e79e5a2c8c0f4.png',
+    image: 'https://adrianlab.vercel.app/api/render/146',
   },
   image: {
-    cachedUrl: 'https://res.cloudinary.com/alchemyapi/image/upload/mainnet/0e8c6bc2c0e6ecf93a8e79e5a2c8c0f4.png',
-    originalUrl: 'https://res.cloudinary.com/alchemyapi/image/upload/mainnet/0e8c6bc2c0e6ecf93a8e79e5a2c8c0f4.png',
+    cachedUrl: 'https://adrianlab.vercel.app/api/render/146',
+    originalUrl: 'https://adrianlab.vercel.app/api/render/146',
   },
   tokenUri: '',
 };
@@ -42,15 +42,24 @@ export function useAdrianZeroTokens() {
       ]);
 
       // Transform Alchemy response to our AdrianZeroToken type
-      // Use Alchemy images (GitHub integration pending - needs hash resolution)
-      const tokens: AdrianZeroToken[] = response.ownedNfts.map((nft) => ({
-        tokenId: nft.tokenId,
-        owner: address,
-        name: nft.name,
-        metadata: nft.raw?.metadata,
-        image: nft.image,
-        tokenUri: nft.tokenUri,
-      }));
+      // Use Vercel API for images: https://adrianlab.vercel.app/api/render/{tokenId}
+      const tokens: AdrianZeroToken[] = response.ownedNfts.map((nft) => {
+        const vercelImageUrl = `https://adrianlab.vercel.app/api/render/${nft.tokenId}`;
+        const alchemyFallback = nft.image?.cachedUrl || nft.image?.originalUrl;
+
+        return {
+          tokenId: nft.tokenId,
+          owner: address,
+          name: nft.name,
+          metadata: nft.raw?.metadata,
+          image: {
+            cachedUrl: vercelImageUrl,
+            originalUrl: alchemyFallback,
+            thumbnailUrl: nft.image?.thumbnailUrl,
+          },
+          tokenUri: nft.tokenUri,
+        };
+      });
 
       return tokens;
     },
