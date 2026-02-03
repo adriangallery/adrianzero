@@ -5,7 +5,6 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { useAccount } from 'wagmi';
 import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check } from 'lucide-react';
 import { NFTGrid } from '@/components/nft/NFTGrid';
 import { TraitCategories } from '@/components/traits/TraitCategories';
@@ -20,7 +19,6 @@ import { vercelImageService } from '@/lib/api/vercel/imageService';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
 export function AdrianZeroModule() {
-  const { isConnected } = useAccount();
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
   const [isNFTPreviewExpanded, setIsNFTPreviewExpanded] = useState(false);
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
