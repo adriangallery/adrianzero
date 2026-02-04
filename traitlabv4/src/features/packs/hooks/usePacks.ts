@@ -9,29 +9,29 @@ import { alchemyClient } from '@/lib/api/alchemy/client';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import type { Pack } from '@/types/nft.types';
 
-// Comprehensive pack configurations with all token IDs and names
+// Pack metadata aligned with traitlabold (pack-config.js) as source of truth
 const PACK_METADATA: Record<string, { name: string; type: 'FLOPPY_DISC' | 'ACTION_PACK' | 'SPECIAL'; contract: string; special?: boolean }> = {
-  // Floppy Discs (10000-10019)
-  '10000': { name: 'GLITCH Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10001': { name: 'ZeroHour Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10002': { name: 'NEON Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10003': { name: 'WAR Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10004': { name: 'MUTANT Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10005': { name: 'CYPHER Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10006': { name: 'OUTRUN Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10007': { name: 'Golden Floppy', type: 'FLOPPY_DISC', contract: 'ACTION_PACK_10007', special: true },
-  '10008': { name: 'OG Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10009': { name: 'ZEROHOUR Floppy #9', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10010': { name: 'ZEROHOUR Floppy #10', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10011': { name: 'ZEROHOUR Floppy #11', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10012': { name: 'ZEROHOUR Floppy #12', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10013': { name: 'ZEROHOUR Floppy #13', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10014': { name: 'ZEROHOUR Floppy #14', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10015': { name: 'ZEROHOUR Floppy #15', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10016': { name: 'ZEROHOUR Floppy #16', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10017': { name: 'ZEROHOUR Floppy #17', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10018': { name: 'ZEROHOUR Floppy #18', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
-  '10019': { name: 'ZEROHOUR Floppy #19', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  // Floppy Discs (10000-10019) - names and contracts from traitlabold
+  '10000': { name: 'Floppy 10000', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10001': { name: 'Floppy 10001', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10002': { name: 'Floppy 10002', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10003': { name: 'GLITCH Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10004': { name: 'GF Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10005': { name: 'Golden Floppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10006': { name: 'Floppy 10006', type: 'FLOPPY_DISC', contract: 'ADRIAN_FLOPPY_DISCS' },
+  '10007': { name: 'NEONpack', type: 'FLOPPY_DISC', contract: 'ACTION_PACK_10007', special: true },
+  '10008': { name: 'OPTICALpack', type: 'FLOPPY_DISC', contract: 'ACTION_PACKS' },
+  '10009': { name: 'PUNKSfloppy', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10010': { name: 'ComradesUSB', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10011': { name: 'PACK10011', type: 'FLOPPY_DISC', contract: 'ACTION_PACKS' },
+  '10012': { name: 'PACK10012', type: 'FLOPPY_DISC', contract: 'ACTION_PACKS' },
+  '10013': { name: 'PACK10013', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10014': { name: 'PACK10014', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10015': { name: "XMAS '25 Floppy", type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10016': { name: 'PACK10016', type: 'FLOPPY_DISC', contract: 'ACTION_PACKS' },
+  '10017': { name: 'PACK10017', type: 'FLOPPY_DISC', contract: 'ADRIAN_FLOPPY_DISCS' },
+  '10018': { name: 'PACK10018', type: 'FLOPPY_DISC', contract: 'OPENPACK_V4' },
+  '10019': { name: 'PACK10019', type: 'FLOPPY_DISC', contract: 'ACTION_PACKS' },
 
   // Action Packs (15000-15015)
   '15000': { name: 'ActionPACK #1', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
@@ -44,7 +44,7 @@ const PACK_METADATA: Record<string, { name: string; type: 'FLOPPY_DISC' | 'ACTIO
   '15007': { name: 'ActionPACK #8', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
   '15008': { name: 'ActionPACK #9', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
   '15009': { name: 'ActionPACK #10', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
-  '15010': { name: 'ActionPACK #11', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
+  '15010': { name: 'Back to Work', type: 'ACTION_PACK', contract: 'OPENPACK_V4' },
   '15011': { name: 'ActionPACK #12', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
   '15012': { name: 'ActionPACK #13', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
   '15013': { name: 'ActionPACK #14', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
@@ -52,7 +52,7 @@ const PACK_METADATA: Record<string, { name: string; type: 'FLOPPY_DISC' | 'ACTIO
   '15015': { name: 'ActionPACK #16', type: 'ACTION_PACK', contract: 'ACTION_PACK' },
 
   // Special Packs
-  '1123': { name: 'CensorPACK', type: 'SPECIAL', contract: 'OPENPACK_V4', special: true },
+  '1123': { name: 'CensorPACK', type: 'SPECIAL', contract: 'ACTION_PACKS', special: true },
 };
 
 export function usePacks() {

@@ -1,12 +1,11 @@
 /**
  * useOpenPack Hook
  * Opens packs (Floppy Discs or Action Packs)
- *
- * Contract routing based on V3 logic:
+ * Contract routing aligned with traitlabold (pack-config.js):
  * - Token 10007 → ACTION_PACK_10007 (openPack)
- * - Tokens 10000-10005, 10009, 10010, 10013, 10015, 15010 → OPENPACK_V4 (openPacks with quantity=1)
- * - Tokens 10008, 10011, 10012, 1123, 15008-15015 (except 15010) → ACTION_PACKS (openPack + pre-checks)
- * - Token 10006 + fallback → ADRIAN_FLOPPY_DISCS (openPack)
+ * - Tokens 10000-10005, 10009, 10010, 10013-10015, 10018, 15010 → OPENPACK_V4 (openPacks)
+ * - Tokens 10008, 10011, 10012, 10016, 10019, 1123, 15008-15015 (except 15010) → ACTION_PACKS (openPack + pre-checks)
+ * - Token 10006 (+ 10017 unconfigured in traitlabold) → ADRIAN_FLOPPY_DISCS (openPack)
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -25,9 +24,9 @@ interface OpenPackParams {
   quantity?: number;
 }
 
-// Token ID categories for contract routing
-const OPENPACK_V4_TOKENS = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10015, 15010];
-const ACTION_PACK_TOKENS = [10008, 10011, 10012, 1123];
+// Token ID categories for contract routing (aligned with traitlabold pack-config.js)
+const OPENPACK_V4_TOKENS = [10000, 10001, 10002, 10003, 10004, 10005, 10009, 10010, 10013, 10014, 10015, 10018, 15010];
+const ACTION_PACK_TOKENS = [10008, 10011, 10012, 10016, 10019, 1123];
 
 const isOpenPackV4Token = (id: number): boolean => OPENPACK_V4_TOKENS.includes(id);
 const isActionPackToken = (id: number): boolean => {
