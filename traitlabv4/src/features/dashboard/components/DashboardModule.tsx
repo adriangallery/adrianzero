@@ -85,7 +85,7 @@ export function DashboardModule() {
               Browse Mock Traits
             </h3>
             <p className="text-sm text-muted-foreground mb-3">
-              Explore 11 sample traits and preview how they look on NFTs
+              Explore 12 sample traits and preview how they look on NFTs
             </p>
             <div className="flex items-center gap-2 text-xs text-[#00ff00]">
               <span className="font-medium">View Traits</span>
