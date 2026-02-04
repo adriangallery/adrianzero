@@ -142,7 +142,7 @@ export function TraitsModule() {
         <div className="mb-4 bg-[#00ff00]/10 border border-[#00ff00]/20 rounded-lg p-3 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-[#00ff00] flex-shrink-0" />
           <p className="text-xs sm:text-sm text-foreground">
-            <span className="font-medium text-[#00ff00]">Demo Mode:</span> Viewing 7 sample traits. Connect your wallet to see your collection.
+            <span className="font-medium text-[#00ff00]">Demo Mode:</span> Viewing 11 sample traits. Connect your wallet to see your collection.
           </p>
         </div>
       )}

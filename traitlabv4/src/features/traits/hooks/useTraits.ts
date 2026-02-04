@@ -21,7 +21,7 @@ interface TraitMetadata {
 }
 
 // Mock trait IDs for demo when wallet not connected
-const MOCK_TRAIT_IDS = ['444', '700', '83', '7', '1007', '754', '852'];
+const MOCK_TRAIT_IDS = ['444', '700', '83', '7', '1007', '754', '852', '33', '420', '456', '460'];
 
 export function useTraits() {
   const { address } = useAccount();
