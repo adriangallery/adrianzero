@@ -5,7 +5,7 @@
  */
 
 import { useAccount } from 'wagmi';
-import { Frame, Palette, Package, FlaskConical, Sparkles, ArrowRight } from 'lucide-react';
+import { Frame, Palette, Package, FlaskConical, Sparkles, ArrowRight, Rocket } from 'lucide-react';
 import { usePortfolioStats } from '../hooks/usePortfolioStats';
 import { useRarityAnalytics } from '../hooks/useRarityAnalytics';
 import { useSerums } from '@/features/serum/hooks/useSerums';
@@ -46,7 +46,7 @@ export function DashboardModule() {
         </div>
 
         {/* Demo Cards */}
-        <div className="grid md:grid-cols-2 gap-4 w-full mb-8">
+        <div className="grid md:grid-cols-3 gap-4 w-full mb-8">
           {/* NFTs Card */}
           <button
             onClick={() => navigate('/adrianzero')}
@@ -92,6 +92,29 @@ export function DashboardModule() {
               <ArrowRight className="h-3 w-3" />
             </div>
           </button>
+
+          {/* Get Your ZERO Card */}
+          <button
+            onClick={() => navigate('/onboarding')}
+            className="group bg-card border border-border rounded-lg p-6 text-left hover:border-[#00ff00] transition-all hover:shadow-lg hover:shadow-[#00ff00]/10"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 bg-[#00ff00]/10 rounded-lg">
+                <Rocket className="h-6 w-6 text-[#00ff00]" />
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-[#00ff00] transition-colors" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              Get Your ZERO
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Mint your first AdrianZERO NFT for free or get the premium version
+            </p>
+            <div className="flex items-center gap-2 text-xs text-[#00ff00]">
+              <span className="font-medium">Start Now</span>
+              <ArrowRight className="h-3 w-3" />
+            </div>
+          </button>
         </div>
 
         {/* Info Banner */}
@@ -120,6 +143,24 @@ export function DashboardModule() {
           </div>
         )}
       </div>
+
+      {/* Onboarding Banner - Show if user has 0 NFTs */}
+      {!statsLoading && stats?.totalNFTs === 0 && (
+        <div className="bg-[#00ff00]/10 border border-[#00ff00]/30 rounded-lg p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-foreground">Get Your First ZERO!</h3>
+              <p className="text-sm text-muted-foreground">You don't have any AdrianZERO NFTs yet</p>
+            </div>
+            <button
+              onClick={() => navigate('/onboarding')}
+              className="flex-shrink-0 px-4 py-2 bg-[#00ff00] hover:bg-[#00ff00]/90 text-black font-medium rounded-lg transition-colors"
+            >
+              Get Your ZERO →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

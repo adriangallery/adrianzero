@@ -27,6 +27,9 @@ export const CONTRACT_ADDRESSES = {
 
   // Tokens
   ADRIAN_TOKEN: '0x7E99075Ce287F1cF8cBCAaa6A1C7894e404fD7Ea', // ERC20
+
+  // Kit Sale
+  KIT_SALE: '0x20700BE61f2b94E08B16ebD82eE0BA46189B7305',
 } as const;
 
 export const RPC_URLS = [

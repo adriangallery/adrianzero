@@ -16,6 +16,7 @@ import {
   Car,
   Search
 } from 'lucide-react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 interface NavItem {
   path: string;
@@ -43,6 +44,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: SidebarProps) {
   const location = useLocation();
+  const { prefix, accent } = usePageTitle();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -69,7 +71,7 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
         >
           <div className="p-4">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-foreground font-adrian">Trait<span className="text-[#00ff00]">LAB</span></h2>
+              <h2 className="text-xl font-bold text-foreground font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h2>
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-muted rounded-lg"
@@ -110,7 +112,7 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
   return (
     <aside className="hidden lg:flex w-64 flex-col bg-card/95 backdrop-blur-sm border-r border-border">
       <div className="p-4">
-        <h2 className="text-xl font-bold text-foreground mb-6 font-adrian">Trait<span className="text-[#00ff00]">LAB</span></h2>
+        <h2 className="text-xl font-bold text-foreground mb-6 font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h2>
 
         <nav className="space-y-1">
           {navItems.map((item) => (

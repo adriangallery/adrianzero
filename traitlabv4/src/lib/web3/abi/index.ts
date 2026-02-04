@@ -12,3 +12,4 @@ export {
   ACTION_PACKS_ABI,
   FLOPPY_DISCS_ABI,
 } from './packs.abi';
+export { KIT_SALE_ABI } from './kitSale.abi';

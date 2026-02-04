@@ -5,12 +5,14 @@
 
 import { ConnectButton } from '../wallet/ConnectButton';
 import { NotificationBell } from '../notifications/NotificationBell';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const { prefix, accent } = usePageTitle();
 
   return (
     <header className="sticky top-0 z-30 bg-card border-b border-border">
@@ -31,7 +33,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </svg>
           </button>
 
-          <h1 className="text-lg font-bold text-foreground lg:hidden font-adrian">Trait<span className="text-[#00ff00]">LAB</span></h1>
+          <h1 className="text-lg font-bold text-foreground lg:hidden font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h1>
         </div>
 
         {/* Right: Actions */}

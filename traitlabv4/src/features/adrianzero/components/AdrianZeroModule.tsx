@@ -6,7 +6,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check, Sparkles, Rocket, ArrowRight } from 'lucide-react';
 import { NFTGrid } from '@/components/nft/NFTGrid';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
@@ -21,6 +22,7 @@ import type { TraitCategory, Trait } from '@/types/nft.types';
 
 export function AdrianZeroModule() {
   const { isConnected } = useAccount();
+  const navigate = useNavigate();
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
   const [isNFTPreviewExpanded, setIsNFTPreviewExpanded] = useState(false);
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
@@ -299,12 +301,39 @@ export function AdrianZeroModule() {
 
       {/* NFT Grid - Hidden when NFT is selected */}
       {!selectedNFT && (
-        <NFTGrid
-          tokens={sortedTokens}
-          selectedTokenId={selectedNFT?.tokenId}
-          onTokenSelect={handleTokenSelect}
-          emptyMessage="No AdrianZERO NFTs found in your wallet"
-        />
+        <>
+          <NFTGrid
+            tokens={sortedTokens}
+            selectedTokenId={selectedNFT?.tokenId}
+            onTokenSelect={handleTokenSelect}
+            emptyMessage="No AdrianZERO NFTs found in your wallet"
+          />
+
+          {/* Get Your ZERO Card - Show when connected but no NFTs */}
+          {isConnected && tokens.length === 0 && !isLoading && (
+            <button
+              onClick={() => navigate('/onboarding')}
+              className="group w-full bg-card border border-border rounded-lg p-6 text-left hover:border-[#00ff00] transition-all hover:shadow-lg hover:shadow-[#00ff00]/10 mt-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-[#00ff00]/10 rounded-lg">
+                    <Rocket className="h-6 w-6 text-[#00ff00]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Get Your First <span className="text-[#00ff00]">ZERO</span>
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Mint your first AdrianZERO NFT for free or get the premium version
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-[#00ff00] transition-colors flex-shrink-0" />
+              </div>
+            </button>
+          )}
+        </>
       )}
 
       {/* Trait Selection Section - Only visible when NFT is selected */}

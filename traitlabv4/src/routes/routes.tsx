@@ -61,6 +61,12 @@ const SearchModule = lazy(() =>
   }))
 );
 
+const OnboardingModule = lazy(() =>
+  import('@/features/onboarding/components/OnboardingModule').then((m) => ({
+    default: m.OnboardingModule,
+  }))
+);
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -97,5 +103,13 @@ export const routes: RouteObject[] = [
   {
     path: '/search',
     element: <SearchModule />,
+  },
+  {
+    path: '/onboarding',
+    element: <OnboardingModule />,
+  },
+  {
+    path: '/mint',
+    element: <OnboardingModule />,
   },
 ];
