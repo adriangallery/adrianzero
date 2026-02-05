@@ -9,6 +9,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { KitComparisonGrid } from './KitComparisonGrid';
 import { MintSuccessModal } from './MintSuccessModal';
+import { AdvancedMintsSection } from './AdvancedMintsSection';
 import {
   useBothKitsInfo,
   FREE_KIT_ID,
@@ -173,6 +174,11 @@ export function OnboardingModule() {
           canBuyPaidMessage={canBuyPaidMessage}
           onConnectWallet={openConnectModal}
         />
+      )}
+
+      {/* Advanced Mints Section (only for AdrianZERO holders) */}
+      {isConnected && isCorrectNetwork && (
+        <AdvancedMintsSection />
       )}
 
       {/* Success Modal */}

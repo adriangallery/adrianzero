@@ -67,6 +67,12 @@ const OnboardingModule = lazy(() =>
   }))
 );
 
+const ShopModule = lazy(() =>
+  import('@/features/shop/components/ShopModule').then((m) => ({
+    default: m.ShopModule,
+  }))
+);
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -111,5 +117,9 @@ export const routes: RouteObject[] = [
   {
     path: '/mint',
     element: <OnboardingModule />,
+  },
+  {
+    path: '/shop',
+    element: <ShopModule />,
   },
 ];

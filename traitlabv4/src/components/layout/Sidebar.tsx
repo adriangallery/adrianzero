@@ -14,14 +14,19 @@ import {
   Hammer,
   Edit3,
   Car,
-  Search
+  Search,
+  Rocket,
+  ShoppingBag,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useAccount } from 'wagmi';
+import { useHasAdrianZero } from '@/features/onboarding/hooks/useHasAdrianZero';
 
 interface NavItem {
   path: string;
   label: string;
   icon: React.ReactNode;
+  requiresAdrianZero?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -30,10 +35,12 @@ const navItems: NavItem[] = [
   { path: '/traits', label: 'Traits', icon: <Palette className="h-5 w-5" /> },
   { path: '/packs', label: 'Packs', icon: <Package className="h-5 w-5" /> },
   { path: '/serum', label: 'Serum', icon: <FlaskConical className="h-5 w-5" /> },
-  { path: '/crafting', label: 'Crafting', icon: <Hammer className="h-5 w-5" /> },
-  { path: '/custom', label: 'Custom', icon: <Edit3 className="h-5 w-5" /> },
-  { path: '/lambo', label: 'Lambo', icon: <Car className="h-5 w-5" /> },
-  { path: '/search', label: 'Search', icon: <Search className="h-5 w-5" /> },
+  { path: '/crafting', label: 'Crafting', icon: <Hammer className="h-5 w-5" />, requiresAdrianZero: true },
+  { path: '/custom', label: 'Custom', icon: <Edit3 className="h-5 w-5" />, requiresAdrianZero: true },
+  { path: '/lambo', label: 'Lambo', icon: <Car className="h-5 w-5" />, requiresAdrianZero: true },
+  { path: '/search', label: 'Search', icon: <Search className="h-5 w-5" />, requiresAdrianZero: true },
+  { path: '/onboarding', label: 'Mint', icon: <Rocket className="h-5 w-5" /> },
+  { path: '/shop', label: 'Shop', icon: <ShoppingBag className="h-5 w-5" /> },
 ];
 
 interface SidebarProps {
@@ -45,6 +52,13 @@ interface SidebarProps {
 export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: SidebarProps) {
   const location = useLocation();
   const { prefix, accent } = usePageTitle();
+  const { isConnected } = useAccount();
+  const { hasAdrianZero } = useHasAdrianZero();
+
+  // Hide restricted items if wallet disconnected or no AdrianZERO
+  const visibleItems = navItems.filter(
+    (item) => !item.requiresAdrianZero || (isConnected && hasAdrianZero)
+  );
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -83,7 +97,7 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
             </div>
 
             <nav className="space-y-1">
-              {navItems.map((item) => (
+              {visibleItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -115,7 +129,7 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
         <h2 className="text-xl font-bold text-foreground mb-6 font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h2>
 
         <nav className="space-y-1">
-          {navItems.map((item) => (
+          {visibleItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}

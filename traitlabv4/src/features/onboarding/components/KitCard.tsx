@@ -41,14 +41,14 @@ const PAID_KIT_FEATURES = [
 ];
 
 const FREE_KIT_CONTENTS = [
-  { image: '/subzero/images/subzero.png', label: '1 SubZERO NFT' },
-  { image: '/subzero/images/bluecheck.png', label: '1 Blue-Check Trait' },
-  { image: '/subzero/images/adriancoin.gif', label: '100 $ADRIAN' },
+  { image: 'https://adrianzero.com/subzero/images/subzero.png', label: '1 SubZERO NFT' },
+  { image: 'https://adrianzero.com/subzero/images/bluecheck.png', label: '1 Blue-Check Trait' },
+  { image: 'https://adrianzero.com/subzero/images/adriancoin.gif', label: '100 $ADRIAN' },
 ];
 
 const PAID_KIT_CONTENTS = [
-  { image: '/zeronaked.png', label: '1 AdrianZERO NFT' },
-  { image: 'https://adrianlab-kt4ehqbtn-adrianlab.vercel.app/labimages/10002.gif', label: '1 STARTER Floppy' },
+  { image: 'https://adrianzero.com/zeronaked.png', label: '1 AdrianZERO NFT' },
+  { image: 'https://adrianzero.com/traitlab/assets/traits/10002.gif', label: '1 STARTER Floppy' },
 ];
 
 export function KitCard({
@@ -96,7 +96,7 @@ export function KitCard({
     : [
         ...contents,
         {
-          image: '/components/images/ADRIAN_Coin_Back.gif',
+          image: 'https://adrianzero.com/components/images/ADRIAN_Coin_Back.gif',
           label: `${adrianAmount.toLocaleString()} $ADRIAN`,
         },
       ];
@@ -139,11 +139,11 @@ export function KitCard({
     >
       {/* Header: Badge + Title + Subtitle */}
       <div className="p-6 pb-0">
-        {/* Badge */}
+        {/* Badge - responsive positioning */}
         <div
-          className={`absolute right-4 top-4 rounded-full ${badgeBg} px-4 py-1 text-xs font-bold text-white`}
+          className={`absolute right-2 top-2 sm:right-4 sm:top-4 rounded-full ${badgeBg} px-2 py-0.5 sm:px-4 sm:py-1 text-[10px] sm:text-xs font-bold text-white`}
         >
-          {isFree ? '100% FREE' : 'PREMIUM'}
+          {isFree ? 'FREE' : 'PREMIUM'}
         </div>
 
         {/* Title */}

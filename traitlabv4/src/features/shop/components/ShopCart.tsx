@@ -1,0 +1,349 @@
+/**
+ * ShopCart Component
+ * Shopping cart sidebar/panel
+ */
+
+import { useState, useEffect } from 'react';
+import { ShoppingCart, Trash2, Loader2, Check, AlertCircle, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useShopStore, type CartItem } from '../store/shopStore';
+import { useAdrianBalance } from '../hooks/useAdrianBalance';
+import { useAdrianApproval } from '../hooks/useAdrianApproval';
+import { useShopPurchase } from '../hooks/useShopPurchase';
+import { ApproveModal } from './ApproveModal';
+import { BLOCK_EXPLORER_URL } from '@/config/contracts';
+
+// Helper to format price
+function formatPrice(price: bigint): string {
+  const formatted = Number(price) / 1e18;
+  if (formatted >= 1000000) {
+    return `${(formatted / 1000000).toFixed(1)}M`;
+  }
+  if (formatted >= 1000) {
+    return `${(formatted / 1000).toFixed(1)}K`;
+  }
+  return formatted.toLocaleString();
+}
+
+export function ShopCart() {
+  const { cart, removeFromCart, clearCart, getCartTotal, getCartItemCount } = useShopStore();
+  const { balance, formatted: balanceFormatted } = useAdrianBalance();
+  const {
+    needsApproval,
+    approve,
+    isApproving,
+    isConfirming: isApprovalConfirming,
+    isConfirmed: isApprovalConfirmed,
+    approveError,
+    txHash: approveTxHash,
+    refetchAllowance,
+  } = useAdrianApproval();
+  const {
+    batchPurchase,
+    isPending: isPurchasing,
+    isConfirming: isPurchaseConfirming,
+    isConfirmed: isPurchaseConfirmed,
+    error: purchaseError,
+    txHash: purchaseTxHash,
+    reset: resetPurchase,
+  } = useShopPurchase();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+
+  const cartTotal = getCartTotal();
+  const cartCount = getCartItemCount();
+  const totalFormatted = formatPrice(cartTotal);
+
+  const hasInsufficientBalance = balance ? cartTotal > balance : false;
+  const requiresApproval = needsApproval(cartTotal);
+
+  // Refetch allowance after approval confirmed
+  useEffect(() => {
+    if (isApprovalConfirmed) {
+      refetchAllowance();
+      setShowApproveModal(false);
+    }
+  }, [isApprovalConfirmed, refetchAllowance]);
+
+  // Clear cart after successful purchase
+  useEffect(() => {
+    if (isPurchaseConfirmed) {
+      clearCart();
+    }
+  }, [isPurchaseConfirmed, clearCart]);
+
+  const handleCheckout = () => {
+    if (requiresApproval) {
+      setShowApproveModal(true);
+      return;
+    }
+    batchPurchase(cart);
+  };
+
+  const handleApprove = () => {
+    approve(cartTotal);
+  };
+
+  const isProcessing = isPurchasing || isPurchaseConfirming;
+
+  return (
+    <>
+      {/* Cart Button (Mobile FAB) */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 z-40 lg:hidden flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-primary-foreground shadow-lg"
+      >
+        <ShoppingCart className="h-5 w-5" />
+        {cartCount > 0 && (
+          <span className="font-bold">{cartCount}</span>
+        )}
+      </button>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block w-80 border-l border-border bg-card/50 p-4 overflow-y-auto">
+        <CartContent
+          cart={cart}
+          cartCount={cartCount}
+          totalFormatted={totalFormatted}
+          balanceFormatted={balanceFormatted}
+          hasInsufficientBalance={hasInsufficientBalance}
+          requiresApproval={requiresApproval}
+          isProcessing={isProcessing}
+          isPurchaseConfirmed={isPurchaseConfirmed}
+          purchaseError={purchaseError}
+          purchaseTxHash={purchaseTxHash}
+          onRemove={removeFromCart}
+          onClear={clearCart}
+          onCheckout={handleCheckout}
+          onReset={resetPurchase}
+        />
+      </div>
+
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 20 }}
+              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-card border-l border-border z-50 p-4 overflow-y-auto lg:hidden"
+            >
+              <button
+                onClick={() => setIsOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-muted"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <CartContent
+                cart={cart}
+                cartCount={cartCount}
+                totalFormatted={totalFormatted}
+                balanceFormatted={balanceFormatted}
+                hasInsufficientBalance={hasInsufficientBalance}
+                requiresApproval={requiresApproval}
+                isProcessing={isProcessing}
+                isPurchaseConfirmed={isPurchaseConfirmed}
+                purchaseError={purchaseError}
+                purchaseTxHash={purchaseTxHash}
+                onRemove={removeFromCart}
+                onClear={clearCart}
+                onCheckout={handleCheckout}
+                onReset={resetPurchase}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Approve Modal */}
+      <ApproveModal
+        isOpen={showApproveModal}
+        onClose={() => setShowApproveModal(false)}
+        onApprove={handleApprove}
+        isApproving={isApproving}
+        isConfirming={isApprovalConfirming}
+        isConfirmed={isApprovalConfirmed}
+        error={approveError}
+        txHash={approveTxHash}
+        amount={totalFormatted}
+      />
+    </>
+  );
+}
+
+// Cart content component (shared between desktop and mobile)
+interface CartContentProps {
+  cart: CartItem[];
+  cartCount: number;
+  totalFormatted: string;
+  balanceFormatted: number;
+  hasInsufficientBalance: boolean;
+  requiresApproval: boolean;
+  isProcessing: boolean;
+  isPurchaseConfirmed: boolean;
+  purchaseError: Error | null;
+  purchaseTxHash?: string;
+  onRemove: (assetId: number) => void;
+  onClear: () => void;
+  onCheckout: () => void;
+  onReset: () => void;
+}
+
+function CartContent({
+  cart,
+  cartCount,
+  totalFormatted,
+  balanceFormatted,
+  hasInsufficientBalance,
+  requiresApproval,
+  isProcessing,
+  isPurchaseConfirmed,
+  purchaseError,
+  purchaseTxHash,
+  onRemove,
+  onClear,
+  onCheckout,
+  onReset,
+}: CartContentProps) {
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+          <ShoppingCart className="h-5 w-5" />
+          Cart ({cartCount})
+        </h2>
+        {cart.length > 0 && (
+          <button
+            onClick={onClear}
+            className="text-sm text-muted-foreground hover:text-destructive transition-colors"
+          >
+            Clear all
+          </button>
+        )}
+      </div>
+
+      {/* Balance */}
+      <div className="p-3 rounded-lg bg-muted mb-4">
+        <p className="text-sm text-muted-foreground">Your Balance</p>
+        <p className="text-lg font-bold text-foreground">
+          {balanceFormatted.toLocaleString()} $ADRIAN
+        </p>
+      </div>
+
+      {/* Cart Items */}
+      <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+        {cart.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">
+            Your cart is empty
+          </p>
+        ) : (
+          cart.map((item) => (
+            <div
+              key={item.assetId}
+              className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
+            >
+              <img
+                src={item.imageUrl}
+                alt={item.name}
+                className="w-12 h-12 rounded-lg object-contain"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-foreground truncate">
+                  {item.name}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {item.useFree ? 'FREE' : `${formatPrice(item.price)} $ADRIAN`}
+                  {item.quantity > 1 && ` x${item.quantity}`}
+                </p>
+              </div>
+              <button
+                onClick={() => onRemove(item.assetId)}
+                className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Footer */}
+      {cart.length > 0 && (
+        <div className="border-t border-border pt-4 space-y-4">
+          {/* Total */}
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Total</span>
+            <span className="text-xl font-bold text-accent">
+              {totalFormatted} $ADRIAN
+            </span>
+          </div>
+
+          {/* Errors */}
+          {hasInsufficientBalance && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              Insufficient $ADRIAN balance
+            </div>
+          )}
+
+          {purchaseError && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              {purchaseError.message || 'Purchase failed'}
+            </div>
+          )}
+
+          {/* Success */}
+          {isPurchaseConfirmed && (
+            <div className="flex flex-col gap-2 p-3 rounded-lg bg-success/10">
+              <div className="flex items-center gap-2 text-success">
+                <Check className="h-4 w-4" />
+                Purchase successful!
+              </div>
+              {purchaseTxHash && (
+                <a
+                  href={`${BLOCK_EXPLORER_URL}/tx/${purchaseTxHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  View transaction
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Checkout Button */}
+          <button
+            onClick={isPurchaseConfirmed ? onReset : onCheckout}
+            disabled={isProcessing || hasInsufficientBalance}
+            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isProcessing && <Loader2 className="h-5 w-5 animate-spin" />}
+            {isPurchaseConfirmed
+              ? 'Continue Shopping'
+              : isProcessing
+              ? 'Processing...'
+              : requiresApproval
+              ? 'Approve & Buy'
+              : 'Buy Now'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
