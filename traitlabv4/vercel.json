@@ -4,7 +4,6 @@
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "vite",
   "rewrites": [
-    { "source": "/traitlab", "destination": "/" },
-    { "source": "/traitlab/:path*", "destination": "/:path*" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

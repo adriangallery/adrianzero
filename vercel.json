@@ -1,11 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "cd traitlabv4 && npm run build",
-  "outputDirectory": "traitlabv4/dist",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true
 }
