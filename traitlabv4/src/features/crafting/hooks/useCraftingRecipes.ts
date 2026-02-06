@@ -10,26 +10,27 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { CRAFTING_ABI } from '@/lib/web3/abi';
 import type { CraftingRecipe } from '@/types/nft.types';
 
-interface SpecificRecipeData {
-  burnIds: bigint[];
-  burnAmounts: bigint[];
-  outId: bigint;
-  outAmount: bigint;
-  active: boolean;
-}
+// Match the contract's return format exactly
+// interface SpecificRecipeData {
+//   active: boolean;
+//   burnIds: bigint[];
+//   burnAmounts: bigint[];
+//   outId: bigint;
+//   outAmount: bigint;
+// }
 
-interface AnyRecipeData {
-  burnTotal: bigint;
-  outId: bigint;
-  outAmount: bigint;
-  active: boolean;
-}
+// interface AnyRecipeData {
+//   active: boolean;
+//   burnTotal: bigint;
+//   outId: bigint;
+//   outAmount: bigint;
+// }
 
 // Batch size for multicall requests (to avoid overwhelming the RPC)
-const MULTICALL_BATCH_SIZE = 10;
+// const MULTICALL_BATCH_SIZE = 5;
 
-// Max recipe ID to check
-const MAX_RECIPE_ID = 20;
+// Recipe IDs to check (based on traitlabold logic)
+const RECIPE_IDS = [1, 2, 3, 4, 5];
 
 export function useCraftingRecipes() {
   const publicClient = usePublicClient();
@@ -43,151 +44,99 @@ export function useCraftingRecipes() {
       }
 
       const recipes: CraftingRecipe[] = [];
-      const recipeIds = Array.from({ length: MAX_RECIPE_ID + 1 }, (_, i) => i);
 
-      // Phase 1: Batch fetch all specific recipes using multicall
-      const specificRecipeCalls = recipeIds.map((id) => ({
-        address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
-        abi: CRAFTING_ABI,
-        functionName: 'getSpecificRecipe' as const,
-        args: [BigInt(id)],
-      }));
+      console.log('[useCraftingRecipes] Testing recipe IDs:', RECIPE_IDS);
 
-      // Execute multicall in batches to avoid rate limiting
-      const specificResults: (SpecificRecipeData | null)[] = [];
-      for (let i = 0; i < specificRecipeCalls.length; i += MULTICALL_BATCH_SIZE) {
-        const batch = specificRecipeCalls.slice(i, i + MULTICALL_BATCH_SIZE);
+      // For each recipe ID, try BOTH specific and any recipes
+      // (Same ID can have both types active)
+      for (const recipeId of RECIPE_IDS) {
+        // Try specific recipe
         try {
-          const results = await publicClient.multicall({
-            contracts: batch,
-            allowFailure: true,
-          });
-          results.forEach((result) => {
-            if (result.status === 'success') {
-              specificResults.push(result.result as SpecificRecipeData);
-            } else {
-              specificResults.push(null);
-            }
-          });
-        } catch (e) {
-          console.warn('[useCraftingRecipes] Batch fetch error:', e);
-          // Fill with nulls for this batch
-          batch.forEach(() => specificResults.push(null));
-        }
-      }
+          const specificResult = await publicClient.readContract({
+            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
+            abi: CRAFTING_ABI,
+            functionName: 'getSpecificRecipe',
+            args: [BigInt(recipeId)],
+          }) as readonly [boolean, readonly bigint[], readonly bigint[], bigint, bigint];
 
-      // Collect IDs of failed specific recipes to try as ANY recipes
-      const failedSpecificIds: number[] = [];
-      const activeSpecificRecipes: { id: number; recipe: SpecificRecipeData }[] = [];
+          console.log(`[useCraftingRecipes] Specific recipe ${recipeId}:`, specificResult);
 
-      recipeIds.forEach((id, index) => {
-        const recipe = specificResults[index];
-        if (recipe && recipe.active) {
-          activeSpecificRecipes.push({ id, recipe });
-        } else {
-          failedSpecificIds.push(id);
-        }
-      });
+          // Parse array return: [active, burnIds, burnAmounts, outId, outAmount]
+          const [isActive, burnIds, _burnAmounts, outId, _outAmount] = specificResult;
 
-      // Phase 2: Batch fetch ANY recipes for IDs that didn't have specific recipes
-      if (failedSpecificIds.length > 0) {
-        const anyRecipeCalls = failedSpecificIds.map((id) => ({
-          address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
-          abi: CRAFTING_ABI,
-          functionName: 'getAnyRecipe' as const,
-          args: [BigInt(id)],
-        }));
-
-        const anyResults: (AnyRecipeData | null)[] = [];
-        for (let i = 0; i < anyRecipeCalls.length; i += MULTICALL_BATCH_SIZE) {
-          const batch = anyRecipeCalls.slice(i, i + MULTICALL_BATCH_SIZE);
-          try {
-            const results = await publicClient.multicall({
-              contracts: batch,
-              allowFailure: true,
-            });
-            results.forEach((result) => {
-              if (result.status === 'success') {
-                anyResults.push(result.result as AnyRecipeData);
-              } else {
-                anyResults.push(null);
-              }
-            });
-          } catch (e) {
-            console.warn('[useCraftingRecipes] ANY batch fetch error:', e);
-            batch.forEach(() => anyResults.push(null));
-          }
-        }
-
-        // Process ANY recipes
-        failedSpecificIds.forEach((id, index) => {
-          const anyRecipe = anyResults[index];
-          if (anyRecipe && anyRecipe.active) {
+          if (isActive) {
             recipes.push({
-              recipeId: id.toString(),
-              inputTraits: [], // ANY recipe - burn count stored separately
-              outputTrait: anyRecipe.outId.toString(),
-              type: 'ANY',
-              burnTotal: Number(anyRecipe.burnTotal),
+              recipeId: recipeId.toString(),
+              inputTraits: burnIds.map((id: bigint) => id.toString()),
+              outputTrait: outId.toString(),
+              type: 'SPECIFIC',
               isActive: true,
-              isEligible: false, // Will be updated in Phase 3
+              isEligible: false,
             });
+            console.log(`[useCraftingRecipes] ✅ Specific recipe ${recipeId} added`);
+          } else {
+            console.log(`[useCraftingRecipes] ❌ Specific recipe ${recipeId} inactive`);
           }
-        });
-      }
-
-      // Add specific recipes to the list
-      activeSpecificRecipes.forEach(({ id, recipe }) => {
-        recipes.push({
-          recipeId: id.toString(),
-          inputTraits: recipe.burnIds.map((burnId: bigint) => burnId.toString()),
-          outputTrait: recipe.outId.toString(),
-          type: 'SPECIFIC',
-          isActive: true,
-          isEligible: false, // Will be updated in Phase 3
-        });
-      });
-
-      // Phase 3: Batch check canCraft for all active recipes (if user is connected)
-      if (address && recipes.length > 0) {
-        const canCraftCalls = recipes.map((recipe) => ({
-          address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
-          abi: CRAFTING_ABI,
-          functionName: 'canCraft' as const,
-          args: [address, BigInt(recipe.recipeId)],
-        }));
-
-        const canCraftResults: ([boolean, string] | null)[] = [];
-        for (let i = 0; i < canCraftCalls.length; i += MULTICALL_BATCH_SIZE) {
-          const batch = canCraftCalls.slice(i, i + MULTICALL_BATCH_SIZE);
-          try {
-            const results = await publicClient.multicall({
-              contracts: batch,
-              allowFailure: true,
-            });
-            results.forEach((result) => {
-              if (result.status === 'success') {
-                canCraftResults.push(result.result as [boolean, string]);
-              } else {
-                canCraftResults.push(null);
-              }
-            });
-          } catch (e) {
-            console.warn('[useCraftingRecipes] canCraft batch error:', e);
-            batch.forEach(() => canCraftResults.push(null));
-          }
+        } catch (error: any) {
+          console.log(`[useCraftingRecipes] Specific recipe ${recipeId} error:`, error.message);
         }
 
-        // Update eligibility
-        recipes.forEach((recipe, index) => {
-          const result = canCraftResults[index];
-          if (result) {
-            recipe.isEligible = result[0];
+        // Try any recipe (same ID)
+        try {
+          const anyResult = await publicClient.readContract({
+            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
+            abi: CRAFTING_ABI,
+            functionName: 'getAnyRecipe',
+            args: [BigInt(recipeId)],
+          }) as readonly [boolean, bigint, bigint, bigint];
+
+          console.log(`[useCraftingRecipes] Any recipe ${recipeId}:`, anyResult);
+
+          // Parse array return: [active, burnTotal, outId, outAmount]
+          const [isActive, burnTotal, outId, _outAmount] = anyResult;
+
+          if (isActive) {
+            recipes.push({
+              recipeId: recipeId.toString(),
+              inputTraits: [],
+              outputTrait: outId.toString(),
+              type: 'ANY',
+              burnTotal: Number(burnTotal),
+              isActive: true,
+              isEligible: false,
+            });
+            console.log(`[useCraftingRecipes] ✅ Any recipe ${recipeId} added`);
+          } else {
+            console.log(`[useCraftingRecipes] ❌ Any recipe ${recipeId} inactive`);
           }
-        });
+        } catch (error: any) {
+          console.log(`[useCraftingRecipes] Any recipe ${recipeId} error:`, error.message);
+        }
+
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // Check canCraft for each recipe if user is connected
+      if (address && recipes.length > 0) {
+        for (const recipe of recipes) {
+          try {
+            const canCraftResult = await publicClient.readContract({
+              address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
+              abi: CRAFTING_ABI,
+              functionName: 'canCraft',
+              args: [address, BigInt(recipe.recipeId)],
+            }) as [boolean, string];
+
+            recipe.isEligible = canCraftResult[0];
+          } catch (error: any) {
+            console.warn(`[useCraftingRecipes] canCraft error for recipe ${recipe.recipeId}:`, error.message);
+          }
+        }
       }
 
       console.log('[useCraftingRecipes] Loaded recipes:', recipes.length);
+      console.log('[useCraftingRecipes] Recipes:', recipes);
       return recipes;
     },
     enabled: !!publicClient,

@@ -4,7 +4,7 @@
  * Only shown to users who already own an AdrianZERO NFT
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Loader2, Plus, Minus, Coins } from 'lucide-react';
 import { useAdrianBalance } from '@/features/shop/hooks/useAdrianBalance';
 
@@ -59,6 +59,7 @@ export function AdvancedMintCard({
 }: AdvancedMintCardProps) {
   const [quantity, setQuantity] = useState(1);
   const { balance, formatted: balanceFormatted } = useAdrianBalance();
+  const hasAutoMintedRef = useRef(false);
 
   const borderColor = type === 'samurai' ? 'border-pink-500' : 'border-cyan-500';
   const accentColor = type === 'samurai' ? 'text-pink-500' : 'text-cyan-500';
@@ -72,20 +73,33 @@ export function AdvancedMintCard({
   const isSoldOut = minted >= maxSupply;
   const isDisabled = isLoading || !active || isSoldOut || hasInsufficientBalance || isMinting || isApproving;
 
-  // Refetch allowance when approval is confirmed
+  // Auto-mint after approval is confirmed (only once)
   useEffect(() => {
-    if (isApprovalConfirmed) {
+    if (isApprovalConfirmed && !hasAutoMintedRef.current) {
+      hasAutoMintedRef.current = true;
       refetchAllowance();
+      // Automatically trigger mint after approval
+      setTimeout(() => {
+        onMint(quantity);
+      }, 500); // Small delay to ensure allowance is updated
     }
-  }, [isApprovalConfirmed, refetchAllowance]);
+  }, [isApprovalConfirmed]);
 
   // Reset confirmed state after showing success
   useEffect(() => {
     if (isConfirmed) {
+      hasAutoMintedRef.current = false; // Reset for next mint
       const timer = setTimeout(() => onReset(), 3000);
       return () => clearTimeout(timer);
     }
   }, [isConfirmed, onReset]);
+
+  // Reset auto-mint flag when user changes quantity or starts new approval
+  useEffect(() => {
+    if (isApproving) {
+      hasAutoMintedRef.current = false;
+    }
+  }, [isApproving]);
 
   const handleMint = () => {
     if (needsApproval) {

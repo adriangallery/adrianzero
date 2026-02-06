@@ -99,16 +99,19 @@ export function SerumModule() {
             {nfts.length === 0 ? (
               <p className="text-muted-foreground">No NFTs found</p>
             ) : (
-              <div className="grid grid-cols-2 gap-3 max-h-[600px] overflow-y-auto">
-                {nfts.map((nft) => (
-                  <SelectableCard
-                    key={nft.tokenId}
-                    isSelected={selectedNFT?.tokenId === nft.tokenId}
-                    onClick={() => setSelectedNFT(nft)}
-                    imageUrl={nft.image?.thumbnailUrl}
-                    label={nft.name || `#${nft.tokenId}`}
-                  />
-                ))}
+              <div className="grid grid-cols-2 gap-3 max-h-[600px] overflow-y-auto p-1">
+                {nfts.map((nft) => {
+                  const imageUrl = nft.image?.cachedUrl || nft.image?.thumbnailUrl || nft.image?.originalUrl || nft.metadata?.image;
+                  return (
+                    <SelectableCard
+                      key={nft.tokenId}
+                      isSelected={selectedNFT?.tokenId === nft.tokenId}
+                      onClick={() => setSelectedNFT(nft)}
+                      imageUrl={imageUrl}
+                      label={nft.name || `#${nft.tokenId}`}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
@@ -118,17 +121,20 @@ export function SerumModule() {
             <h2 className="text-xl font-semibold text-foreground">
               2. Select Serum
             </h2>
-            <div className="grid grid-cols-2 gap-3">
-              {serums.map((serum) => (
-                <SelectableCard
-                  key={serum.tokenId}
-                  isSelected={selectedSerum?.tokenId === serum.tokenId}
-                  onClick={() => setSelectedSerum(serum)}
-                  imageUrl={serum.image?.thumbnailUrl}
-                  label={serum.name}
-                  badge={serum.balance > 1 ? `x${serum.balance}` : undefined}
-                />
-              ))}
+            <div className="grid grid-cols-2 gap-3 p-1">
+              {serums.map((serum) => {
+                const imageUrl = serum.image?.cachedUrl || serum.image?.thumbnailUrl || serum.image?.originalUrl || serum.metadata?.image;
+                return (
+                  <SelectableCard
+                    key={serum.tokenId}
+                    isSelected={selectedSerum?.tokenId === serum.tokenId}
+                    onClick={() => setSelectedSerum(serum)}
+                    imageUrl={imageUrl}
+                    label={serum.name}
+                    badge={serum.balance > 1 ? `x${serum.balance}` : undefined}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

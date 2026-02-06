@@ -57,8 +57,7 @@ export function LamboModule() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-foreground">Lambo Variants</h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-muted-foreground">
           Generate Lamborghini variants in different colors
         </p>
       </div>
@@ -69,26 +68,108 @@ export function LamboModule() {
           <label className="block text-sm font-medium text-foreground">
             Select NFT
           </label>
-          <select
-            value={selectedToken?.tokenId || ''}
-            onChange={(e) => {
-              const token = tokens.find((t) => t.tokenId === e.target.value);
-              setSelectedToken(token || null);
-            }}
-            className="w-full px-3 py-2 bg-muted rounded-lg text-foreground"
-          >
-            <option value="">-- Select an NFT --</option>
-            {tokens.map((token) => (
-              <option key={token.tokenId} value={token.tokenId}>
-                {token.name || `AdrianZERO #${token.tokenId}`}
-              </option>
-            ))}
-          </select>
 
-          {/* Color Selection */}
+          {/* NFT Grid - Compact version */}
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            {tokens.map((token) => {
+              const imageUrl = token.image?.cachedUrl || token.image?.thumbnailUrl || token.image?.originalUrl || token.metadata?.image;
+              const isSelected = selectedToken?.tokenId === token.tokenId;
+
+              return (
+                <button
+                  key={token.tokenId}
+                  onClick={() => {
+                    if (isSelected) {
+                      setSelectedToken(null);
+                    } else {
+                      setSelectedToken(token);
+                      setImageLoading(true);
+                    }
+                  }}
+                  className={`
+                    relative aspect-square rounded-lg overflow-hidden transition-all
+                    ${isSelected
+                      ? 'ring-2 ring-primary shadow-lg scale-105'
+                      : 'hover:ring-1 hover:ring-border hover:shadow-md'
+                    }
+                    bg-muted
+                  `}
+                >
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={token.name || `#${token.tokenId}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Car className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                  )}
+
+                  {/* Token ID Badge */}
+                  <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-accent/90 rounded text-[10px] font-medium" style={{ color: '#00ff00' }}>
+                    #{token.tokenId}
+                  </div>
+
+                  {/* Selection Indicator */}
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Preview + Color Selection */}
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-foreground">Preview</label>
+          <div className="aspect-video bg-muted rounded-lg overflow-hidden relative">
+            {selectedToken ? (
+              <>
+                {imageLoading && (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="shimmer w-16 h-16 rounded-full" />
+                  </div>
+                )}
+                {imageError ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                    <Car className="h-16 w-16 text-destructive mb-2" />
+                    <p className="text-sm text-destructive">{imageError}</p>
+                  </div>
+                ) : (
+                  <img
+                    src={generateLamboUrl(selectedToken.tokenId, selectedColor)}
+                    alt="Lambo Preview"
+                    className="w-full h-full object-contain"
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
+                  />
+                )}
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Car className="h-16 w-16 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+          {imageError && (
+            <p className="text-xs text-destructive">
+              Tip: Try selecting a different color or NFT
+            </p>
+          )}
+
+          {/* Color Selection - Now below preview */}
           {selectedToken && (
             <>
-              <label className="block text-sm font-medium text-foreground">
+              <label className="block text-sm font-medium text-foreground mt-6">
                 Select Color
               </label>
               <div className="grid grid-cols-3 gap-3">
@@ -127,45 +208,6 @@ export function LamboModule() {
                 {isDownloading ? 'Downloading...' : 'Download Image'}
               </button>
             </>
-          )}
-        </div>
-
-        {/* Preview */}
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-foreground">Preview</label>
-          <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
-            {selectedToken ? (
-              <>
-                {imageLoading && (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="shimmer w-16 h-16 rounded-full" />
-                  </div>
-                )}
-                {imageError ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
-                    <Car className="h-16 w-16 text-destructive mb-2" />
-                    <p className="text-sm text-destructive">{imageError}</p>
-                  </div>
-                ) : (
-                  <img
-                    src={generateLamboUrl(selectedToken.tokenId, selectedColor)}
-                    alt="Lambo Preview"
-                    className="w-full h-full object-cover"
-                    onLoad={handleImageLoad}
-                    onError={handleImageError}
-                  />
-                )}
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Car className="h-16 w-16 text-muted-foreground" />
-              </div>
-            )}
-          </div>
-          {imageError && (
-            <p className="text-xs text-destructive">
-              Tip: Try selecting a different color or NFT
-            </p>
           )}
         </div>
       </div>

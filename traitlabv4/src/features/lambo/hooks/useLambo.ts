@@ -32,7 +32,9 @@ export function useLambo() {
 
   const generateLamboUrl = (tokenId: string, color: string): string => {
     const validatedColor = validateColor(color);
-    return `${VERCEL_API_URL}/render/lambo/${tokenId}?lambo=${validatedColor}`;
+    // Capitalize first letter for Lambo_Variant format
+    const capitalizedColor = validatedColor.charAt(0).toUpperCase() + validatedColor.slice(1);
+    return `${VERCEL_API_URL}/render/lambo/${tokenId}?lambo=Lambo_Variant_${capitalizedColor}`;
   };
 
   // Validate that URL returns an image

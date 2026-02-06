@@ -19,7 +19,7 @@ interface ShopTabsProps {
 
 const tabs: { id: ShopTab; label: string; icon: React.ReactNode }[] = [
   { id: 'traits', label: 'Traits', icon: <Palette className="h-4 w-4" /> },
-  { id: 'floppies', label: 'Floppies', icon: <Disc className="h-4 w-4" /> },
+  { id: 'floppies', label: 'Packs', icon: <Disc className="h-4 w-4" /> },
   { id: 'serums', label: 'Serums', icon: <FlaskConical className="h-4 w-4" /> },
 ];
 

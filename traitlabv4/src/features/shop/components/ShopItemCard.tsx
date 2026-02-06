@@ -5,7 +5,7 @@
 
 import { Plus, Minus, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { type ShopItem, getFallbackImageUrl } from '../hooks/useShopItems';
+import { type ShopItem } from '../hooks/useShopItems';
 import { useShopStore } from '../store/shopStore';
 
 interface ShopItemCardProps {
@@ -79,10 +79,15 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      onClick={() => {
+        if (quantityInCart === 0 && canAddToCart && !isOutOfStock) {
+          handleAdd();
+        }
+      }}
       className={`
         relative rounded-xl border border-border bg-card overflow-hidden
         transition-all hover:border-primary/50 hover:shadow-lg
-        ${isOutOfStock && !canAddToCart ? 'opacity-60' : ''}
+        ${isOutOfStock && !canAddToCart ? 'opacity-60' : 'cursor-pointer'}
       `}
     >
       {/* Image */}
@@ -92,12 +97,6 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
           alt={item.name}
           className="w-full h-full object-contain"
           loading="lazy"
-          onError={(e) => {
-            const fallback = getFallbackImageUrl(item.assetId);
-            if (e.currentTarget.src !== fallback) {
-              e.currentTarget.src = fallback;
-            }
-          }}
         />
 
         {/* Free badge */}
@@ -124,24 +123,24 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
       </div>
 
       {/* Info */}
-      <div className="p-2 space-y-1">
-        {/* Name */}
-        <p className="text-xs font-medium text-foreground truncate">
+      <div className="p-3 space-y-2">
+        {/* Name - Allow 2 lines */}
+        <p className="text-[11px] font-medium text-foreground line-clamp-2 leading-tight min-h-[2.2em]">
           {item.name}
         </p>
 
-        {/* Price + availability */}
-        <div className="flex items-center justify-between gap-1">
-          <span className="text-xs font-bold text-accent truncate">
-            {priceFormatted} $ADRIAN
-          </span>
-          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-            {item.quantityAvailable} left
-          </span>
+        {/* Price */}
+        <div className="text-[11px] font-bold text-accent">
+          {priceFormatted} $ADRIAN
+        </div>
+
+        {/* Availability */}
+        <div className="text-[10px] text-muted-foreground">
+          {item.quantityAvailable} left
         </div>
 
         {/* Actions */}
-        <div className="flex gap-1">
+        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
           {quantityInCart > 0 ? (
             <>
               <button

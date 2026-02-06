@@ -57,12 +57,15 @@ const GITHUB_IMAGE_BASE = 'https://raw.githubusercontent.com/adriangallery/Adria
 
 // Fallback image URL based on asset type (exported for onError fallback in components)
 export function getFallbackImageUrl(assetId: number): string {
+  // Floppies and packs (10000-20000) use GitHub labimages
   if (assetId >= 10000 && assetId <= 20000) {
-    return `https://adrianzero.com/traitlab/assets/traits/${assetId}.gif`;
+    return `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${assetId}.gif`;
   }
+  // Serums
   if (assetId >= 262144 && assetId <= 262147) {
     return `https://adrianzero.com/components/images/${assetId}.gif`;
   }
+  // Default traits
   return `https://adrianzero.com/components/images/${assetId}.png`;
 }
 
@@ -77,16 +80,6 @@ function getGitHubImageUrl(assetId: number): string | null {
 // Default image URL - GitHub for traits, fallback for others
 function getDefaultImageUrl(assetId: number): string {
   return getGitHubImageUrl(assetId) ?? getFallbackImageUrl(assetId);
-}
-
-// Check if an asset uses local/known images (should not be overridden by metadata)
-function isLocalItem(assetId: number): boolean {
-  return (
-    (assetId >= 262144 && assetId <= 262147) ||
-    (assetId >= 10000 && assetId <= 20000) ||
-    assetId === 150 ||
-    assetId === 559
-  );
 }
 
 const METADATA_BASE_URL = 'https://adrianlab.vercel.app/api/metadata/floppy';
@@ -213,11 +206,7 @@ export function useShopItems() {
             if (meta.description) {
               item.description = meta.description;
             }
-            // Only override image for non-local items
-            if (meta.image && !isLocalItem(item.assetId)) {
-              item.imageUrl = meta.image;
-              hasUpdates = true;
-            }
+            // Keep GitHub images only - do not override with metadata image
             if (meta.attributes) {
               item.attributes = meta.attributes;
             }

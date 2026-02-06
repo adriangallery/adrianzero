@@ -48,7 +48,7 @@ const FREE_KIT_CONTENTS = [
 
 const PAID_KIT_CONTENTS = [
   { image: 'https://adrianzero.com/zeronaked.png', label: '1 AdrianZERO NFT' },
-  { image: 'https://adrianzero.com/traitlab/assets/traits/10002.gif', label: '1 STARTER Floppy' },
+  { image: 'https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/10002.gif', label: '1 STARTER Floppy' },
 ];
 
 export function KitCard({
@@ -137,23 +137,24 @@ export function KitCard({
     <div
       className={`relative flex flex-col h-full overflow-hidden rounded-2xl border-2 ${borderColor} bg-background/80 transition-all hover:shadow-lg`}
     >
-      {/* Header: Badge + Title + Subtitle */}
+      {/* Header: Title + Badge + Subtitle */}
       <div className="p-6 pb-0">
-        {/* Badge - responsive positioning */}
-        <div
-          className={`absolute right-2 top-2 sm:right-4 sm:top-4 rounded-full ${badgeBg} px-2 py-0.5 sm:px-4 sm:py-1 text-[10px] sm:text-xs font-bold text-white`}
-        >
-          {isFree ? 'FREE' : 'PREMIUM'}
-        </div>
-
         {/* Title */}
-        <h2 className={`mb-2 text-center text-3xl font-bold ${titleColor}`}>
+        <h2 className={`mb-3 text-center text-3xl font-bold ${titleColor}`}>
           {isFree ? (
             <>Sub<span className="text-[#00ff00]">ZERO</span></>
           ) : (
             <>Adrian<span className="text-[#00ff00]">ZERO</span></>
           )}
         </h2>
+
+        {/* Badge - centered below title, not floating */}
+        <div className="flex justify-center mb-4">
+          <span className={`inline-block rounded-full ${badgeBg} px-3 py-1 text-xs font-bold text-white`}>
+            {isFree ? 'FREE' : 'PREMIUM'}
+          </span>
+        </div>
+
         <p className="mb-6 text-center text-sm text-muted-foreground italic">
           {isFree ? 'Free & Quirky' : 'Full Experience'}
         </p>

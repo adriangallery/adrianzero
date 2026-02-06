@@ -15,6 +15,7 @@ const PAGE_TITLES: Record<string, PageTitle> = {
   '/onboarding': { prefix: 'Adrian', accent: 'ZERO' },
   '/mint': { prefix: 'Adrian', accent: 'ZERO' },
   '/shop': { prefix: 'Trait', accent: 'SHOP' },
+  '/lambo': { prefix: 'Adrian', accent: 'LAMBO' },
 };
 
 const DEFAULT_TITLE: PageTitle = { prefix: 'Trait', accent: 'LAB' };

@@ -49,14 +49,43 @@ export class VercelImageService {
   }
 
   /**
-   * Generate NFT image URL with toggle effect
+   * Generate NFT image URL with toggle effect(s)
    * @param tokenId - The NFT token ID
-   * @param toggleId - Toggle mode ID (1=Closeup, 2=Shadow, 3=Glow, 4=B&W, 11=Blackout, 12=Banana)
-   * @returns URL for NFT with toggle applied
+   * @param toggleIds - Toggle mode ID(s) (1=Closeup, 2=Shadow, 3=Glow, 4=B&W, 11=Blackout, 12=Banana)
+   * @returns URL for NFT with toggle(s) applied
    */
-  generateToggleImageUrl(tokenId: string, toggleId: number): string {
-    const baseUrl = 'https://adrianlab.vercel.app/api/render/adrianzero';
-    return `${baseUrl}/${tokenId}?toggle=${toggleId}`;
+  generateToggleImageUrl(tokenId: string, toggleIds: number | number[]): string {
+    const baseUrl = 'https://adrianlab.vercel.app/api/render';
+
+    // Map toggle IDs to URL parameter names
+    const toggleMap: Record<number, string> = {
+      1: 'closeup',   // Closeup/Zoom
+      2: 'shadow',    // Shadow Mode
+      3: 'glow',      // Glow Mode
+      4: 'bn',        // Black & White
+      11: 'blackout', // Blackout
+      12: 'banana',   // Banana Mode
+    };
+
+    // Convert to array if single value
+    const ids = Array.isArray(toggleIds) ? toggleIds : [toggleIds];
+
+    // Filter out 0 (None)
+    const activeIds = ids.filter(id => id !== 0);
+
+    if (activeIds.length === 0) {
+      // No toggle - just the base image
+      return `${baseUrl}/${tokenId}.png`;
+    }
+
+    // Build URL with multiple toggle parameters
+    const params = activeIds
+      .map(id => toggleMap[id])
+      .filter((param): param is string => param !== undefined)
+      .map(param => `${param}=true`)
+      .join('&');
+
+    return `${baseUrl}/${tokenId}.png${params ? '?' + params : ''}`;
   }
 
   /**

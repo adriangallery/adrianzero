@@ -1,49 +1,53 @@
 export const CRAFTING_ABI = [
-  // Get specific recipe (burn exact trait IDs)
+  // Get specific recipe (returns multiple values, not a tuple)
   {
     inputs: [{ internalType: 'uint256', name: 'recipeId', type: 'uint256' }],
     name: 'getSpecificRecipe',
     outputs: [
-      {
-        components: [
-          { internalType: 'uint256[]', name: 'burnIds', type: 'uint256[]' },
-          { internalType: 'uint256[]', name: 'burnAmounts', type: 'uint256[]' },
-          { internalType: 'uint256', name: 'outId', type: 'uint256' },
-          { internalType: 'uint256', name: 'outAmount', type: 'uint256' },
-          { internalType: 'bool', name: 'active', type: 'bool' },
-        ],
-        internalType: 'struct SpecificRecipe',
-        name: '',
-        type: 'tuple',
-      },
+      { internalType: 'bool', name: 'active', type: 'bool' },
+      { internalType: 'uint256[]', name: 'burnIds', type: 'uint256[]' },
+      { internalType: 'uint256[]', name: 'burnAmounts', type: 'uint256[]' },
+      { internalType: 'uint256', name: 'outId', type: 'uint256' },
+      { internalType: 'uint256', name: 'outAmount', type: 'uint256' },
     ],
     stateMutability: 'view',
     type: 'function',
   },
-  // Get any recipe (burn any N traits)
+  // Get any recipe (returns multiple values, not a tuple)
   {
     inputs: [{ internalType: 'uint256', name: 'recipeId', type: 'uint256' }],
     name: 'getAnyRecipe',
     outputs: [
-      {
-        components: [
-          { internalType: 'uint256', name: 'burnTotal', type: 'uint256' },
-          { internalType: 'uint256', name: 'outId', type: 'uint256' },
-          { internalType: 'uint256', name: 'outAmount', type: 'uint256' },
-          { internalType: 'bool', name: 'active', type: 'bool' },
-        ],
-        internalType: 'struct AnyRecipe',
-        name: '',
-        type: 'tuple',
-      },
+      { internalType: 'bool', name: 'active', type: 'bool' },
+      { internalType: 'uint256', name: 'burnTotal', type: 'uint256' },
+      { internalType: 'uint256', name: 'outId', type: 'uint256' },
+      { internalType: 'uint256', name: 'outAmount', type: 'uint256' },
     ],
     stateMutability: 'view',
     type: 'function',
   },
-  // Craft functions
+  // Craft functions (try multiple variants as in traitlabold)
+  {
+    inputs: [{ internalType: 'uint256', name: 'recipeId', type: 'uint256' }],
+    name: 'useSpecificRecipe',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
   {
     inputs: [{ internalType: 'uint256', name: 'recipeId', type: 'uint256' }],
     name: 'craftSpecific',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: 'recipeId', type: 'uint256' },
+      { internalType: 'uint256[]', name: 'burnIds', type: 'uint256[]' },
+      { internalType: 'uint256[]', name: 'burnAmounts', type: 'uint256[]' },
+    ],
+    name: 'useAnyRecipe',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',

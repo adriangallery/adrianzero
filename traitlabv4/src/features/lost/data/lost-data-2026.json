@@ -1,0 +1,220 @@
+{
+  "startDate": "2026-01-01",
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "date": "2026-01-04",
+      "title": "Sunday Recap — 4 January",
+      "events": [
+        {
+          "emoji": "🎆",
+          "title": "2026 IS HERE mfers",
+          "description": "New year, same chaos, more tools.",
+          "status": "completed",
+          "category": "announcement"
+        },
+        {
+          "emoji": "🤖",
+          "title": "AdrianBOT Level Up",
+          "description": "OpenSea floor offers now use Engine historical data; buys relist on OpenSea at +10%; bot can auto-buy its own listing if it makes sense to loop back into the Engine.",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "⛓️‍💥",
+          "title": "Alchemy Rate Limits Hell",
+          "description": "Spent Sunday + Monday fighting Alchemy rate limits so ecosystem tooling stops randomly dying.",
+          "status": "in-progress",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🖤🔦",
+          "title": "DarkLIGHT Floppy Launch",
+          "description": "Dropped 99 DarkLIGHT floppy discs — Tiger cooked, you mint, the LAB eats.",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "supply": 99
+          }
+        },
+        {
+          "emoji": "🏷️",
+          "title": "WAGMI Role",
+          "description": "New opt-out WAGMI role is live; tags you when an $ADRIAN buy happens.",
+          "status": "completed",
+          "category": "social"
+        },
+        {
+          "emoji": "🎞️",
+          "title": "GIFS / Animated Pipeline FINALLY",
+          "description": "Built a builder that can generate any type of animated ZERO; animated traits, toggles, and future mechanics now possible.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🕺",
+          "title": "Next ZERO Toggle (WIP)",
+          "description": "Next toggle will be animated — expect bouncing mfers soon.",
+          "status": "in-progress",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎁",
+          "title": "HNY Airdropper",
+          "description": "New Year's Eve drop: that cool Tiger gif hides the first 3 animated traits in the AdrianZERO collection; TraitLAB and renderer now support animated traits.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🔁",
+          "title": "AdrianSWAP Safu Updates",
+          "description": "Working on anti-sandwich protection; added chart + realtime prices because charts look cool and help.",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🧰",
+          "title": "SafuLAB / Whale Bug Fixes",
+          "description": "Hunting TraitLAB whale bugs and patching the worst edge cases; progress ongoing.",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🧠📦",
+          "title": "FloorENGINE Stats",
+          "description": "90 Punks already moved through the machine; holding 32 and sold 58 for profit.",
+          "status": "completed",
+          "category": "marketplace",
+          "stats": {
+            "punksMoved": 90,
+            "holding": 32,
+            "soldForProfit": 58
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 2,
+      "date": "2026-01-11",
+      "title": "Sunday Recap — 11.01",
+      "events": [
+        {
+          "emoji": "🤖",
+          "title": "AdrianBOT Fix Hell (but worth it)",
+          "description": "Fixed offers logic + a bunch of edge cases. New tools: SWEEP Engine automation. Alchemy webhooks for instant data (no more laggy polling).",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🧠",
+          "title": "Alchemy Cost War",
+          "description": "Spent almost all my spare time killing AdrianBOT bugs + lowering Alchemy rates… Requests were insane and it was costing way too much money to maintain 💀 Now it finally feels under control so I can build new shit again.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🛏️",
+          "title": "AdrianBedroom Builder",
+          "description": "That feature has been sitting there for almost a year… Now it's time to actually use it. Items soon 👀",
+          "status": "in-progress",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎮",
+          "title": "Interactive SVG Minigame Tests",
+          "description": "Been testing interactive SVG mini-games… Expect new cursed stuff soon.",
+          "status": "in-progress",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎞️",
+          "title": "GIF Render Fixes",
+          "description": "More fixes on animated/GIF rendering so it behaves properly across the stack.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "⚙️",
+          "title": "Bot Optimisations",
+          "description": "More optimisations to lower Alchemy rate usage across bots. Less spam, more efficient.",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🧬",
+          "title": "AdrianZERO Mint is back",
+          "description": "AdrianZERO is available to mint again with $ADRIAN 🟦",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🕵️",
+          "title": "Lost dApp (Year Edition)",
+          "description": "\"What did I miss?\" but for the whole year vibe. For returning mfers that are lost 😂",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "💩",
+          "title": "ShitDrop #6 — Smoking Cigarettes",
+          "description": "24h drop: animated cigarette trait for your ZERO 🚬",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🤯",
+          "title": "Side Quest: Trading Bots",
+          "description": "Outside the project I've been playing with trading bots… Crazy autonomous shit… NFI what I'm doing LOL. WAGMI!!!!!",
+          "status": "in-progress",
+          "category": "other"
+        }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "date": "2026-01-18",
+      "title": "Sunday Recap — 18.01",
+      "events": [
+        {
+          "emoji": "🤖",
+          "title": "BOB Saga",
+          "description": "Spent almost all my spare time with BOB… getting nowhere 💀 But still on it — giving him one more week. Also yeah: hit limits everywhere… CURSOR+, ClaudePLUS, ClaudeCODE… dev life 🤡⚡",
+          "status": "in-progress",
+          "category": "bot"
+        },
+        {
+          "emoji": "🎂",
+          "title": "1st Year $ADRIAN Prep",
+          "description": "Next week we become 1 year old mfers!!! Don't rug me 🤣 I literally built this so I don't get rugged again… and yet I still need humans to play with my shit LOL",
+          "status": "in-progress",
+          "category": "announcement"
+        },
+        {
+          "emoji": "⚡",
+          "title": "Render Cache Upgrades (Hash System)",
+          "description": "Big infra W: every token + traits combo now generates a unique hash + backup. So if you pick a combo you already rendered before → it doesn't re-render, it just serves it. Result: faster TraitLAB, less wasted compute, and we're more ready if year 2 goes boom 🧪🟦",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🖼️",
+          "title": "Showcase WIP",
+          "description": "Working on a gallery view to browse ZEROS. Maybe I'll share the link later 👀",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🧠",
+          "title": "FloorENGINE Milestone",
+          "description": "100th AdrianPunk bought by the Engine 🔥 In these slow days that's a feat… but also: why tf almost no one using it?? Go buy some OG Punks mfers!!",
+          "status": "completed",
+          "category": "marketplace",
+          "stats": {
+            "punksBought": 100
+          }
+        }
+      ]
+    }
+  ]
+}
+

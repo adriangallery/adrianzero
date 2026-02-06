@@ -17,6 +17,9 @@ import {
   Search,
   Rocket,
   ShoppingBag,
+  Calendar,
+  HelpCircle,
+  Grid,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useAccount } from 'wagmi';
@@ -31,6 +34,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: '/', label: 'Dashboard', icon: <BarChart3 className="h-5 w-5" /> },
+  { path: '/onboarding', label: 'Mint', icon: <Rocket className="h-5 w-5" /> },
   { path: '/adrianzero', label: 'My NFTs', icon: <Frame className="h-5 w-5" /> },
   { path: '/traits', label: 'Traits', icon: <Palette className="h-5 w-5" /> },
   { path: '/packs', label: 'Packs', icon: <Package className="h-5 w-5" /> },
@@ -39,8 +43,10 @@ const navItems: NavItem[] = [
   { path: '/custom', label: 'Custom', icon: <Edit3 className="h-5 w-5" />, requiresAdrianZero: true },
   { path: '/lambo', label: 'Lambo', icon: <Car className="h-5 w-5" />, requiresAdrianZero: true },
   { path: '/search', label: 'Search', icon: <Search className="h-5 w-5" />, requiresAdrianZero: true },
-  { path: '/onboarding', label: 'Mint', icon: <Rocket className="h-5 w-5" /> },
+  { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> },
   { path: '/shop', label: 'Shop', icon: <ShoppingBag className="h-5 w-5" /> },
+  { path: '/lost', label: 'Timeline', icon: <Calendar className="h-5 w-5" /> },
+  { path: '/whatisit', label: 'About', icon: <HelpCircle className="h-5 w-5" /> },
 ];
 
 interface SidebarProps {

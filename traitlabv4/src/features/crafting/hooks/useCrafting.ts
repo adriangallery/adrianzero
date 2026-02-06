@@ -11,6 +11,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 
 interface CraftParams {
   recipeId: string;
+  burnIds?: string[]; // For ANY recipes
 }
 
 export function useCraftTrait() {
@@ -20,19 +21,56 @@ export function useCraftTrait() {
   const notifications = useNotifications();
 
   const mutation = useMutation({
-    mutationFn: async ({ recipeId }: CraftParams) => {
+    mutationFn: async ({ recipeId, burnIds }: CraftParams) => {
       if (!publicClient) {
         throw new Error('Public client not available');
       }
 
-      // For now, assume all recipes are SPECIFIC type
-      // TODO: Detect recipe type and call craftAny for ANY recipes
-      const hash = await writeContractAsync({
-        address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-        abi: CRAFTING_ABI,
-        functionName: 'craftSpecific',
-        args: [BigInt(recipeId)],
-      });
+      let hash: `0x${string}`;
+
+      if (burnIds && burnIds.length > 0) {
+        // ANY recipe - try multiple function variants
+        const burnIdsBigInt = burnIds.map(id => BigInt(id));
+        const burnAmounts = burnIds.map(() => BigInt(1)); // Burn 1 of each
+
+        // Try useAnyRecipe first (as per traitlabold)
+        try {
+          hash = await writeContractAsync({
+            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
+            abi: CRAFTING_ABI,
+            functionName: 'useAnyRecipe',
+            args: [BigInt(recipeId), burnIdsBigInt, burnAmounts],
+          });
+        } catch (error) {
+          console.log('useAnyRecipe failed, trying craftAny:', error);
+          // Fallback to craftAny
+          hash = await writeContractAsync({
+            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
+            abi: CRAFTING_ABI,
+            functionName: 'craftAny',
+            args: [BigInt(recipeId), burnIdsBigInt, burnAmounts],
+          });
+        }
+      } else {
+        // SPECIFIC recipe - try multiple function variants
+        try {
+          hash = await writeContractAsync({
+            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
+            abi: CRAFTING_ABI,
+            functionName: 'useSpecificRecipe',
+            args: [BigInt(recipeId)],
+          });
+        } catch (error) {
+          console.log('useSpecificRecipe failed, trying craftSpecific:', error);
+          // Fallback to craftSpecific
+          hash = await writeContractAsync({
+            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
+            abi: CRAFTING_ABI,
+            functionName: 'craftSpecific',
+            args: [BigInt(recipeId)],
+          });
+        }
+      }
 
       console.log('Craft transaction sent:', hash);
 

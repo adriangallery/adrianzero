@@ -57,7 +57,7 @@ export function AdvancedMintsSection() {
       </div>
 
       {/* Cards Grid */}
-      <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* SamuraiZERO */}
         <AdvancedMintCard
           type="samurai"

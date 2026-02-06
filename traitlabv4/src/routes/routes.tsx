@@ -73,6 +73,24 @@ const ShopModule = lazy(() =>
   }))
 );
 
+const LostModule = lazy(() =>
+  import('@/features/lost/components/LostModule').then((m) => ({
+    default: m.LostModule,
+  }))
+);
+
+const WhatIsItModule = lazy(() =>
+  import('@/features/whatisit/components/WhatIsItModule').then((m) => ({
+    default: m.WhatIsItModule,
+  }))
+);
+
+const GalleryModule = lazy(() =>
+  import('@/features/gallery/components/GalleryModule').then((m) => ({
+    default: m.GalleryModule,
+  }))
+);
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -121,5 +139,17 @@ export const routes: RouteObject[] = [
   {
     path: '/shop',
     element: <ShopModule />,
+  },
+  {
+    path: '/lost',
+    element: <LostModule />,
+  },
+  {
+    path: '/whatisit',
+    element: <WhatIsItModule />,
+  },
+  {
+    path: '/gallery',
+    element: <GalleryModule />,
   },
 ];
