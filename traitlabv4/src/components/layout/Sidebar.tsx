@@ -20,6 +20,7 @@ import {
   Calendar,
   HelpCircle,
   Grid,
+  Zap,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useAccount } from 'wagmi';
@@ -44,6 +45,7 @@ const navItems: NavItem[] = [
   { path: '/lambo', label: 'Lambo', icon: <Car className="h-5 w-5" />, requiresAdrianZero: true },
   { path: '/search', label: 'Search', icon: <Search className="h-5 w-5" />, requiresAdrianZero: true },
   { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> },
+  { path: '/shitdrop', label: 'ShitDROP', icon: <Zap className="h-5 w-5" /> },
   { path: '/shop', label: 'Shop', icon: <ShoppingBag className="h-5 w-5" /> },
   { path: '/lost', label: 'Timeline', icon: <Calendar className="h-5 w-5" /> },
   { path: '/whatisit', label: 'About', icon: <HelpCircle className="h-5 w-5" /> },

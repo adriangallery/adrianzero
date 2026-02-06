@@ -91,6 +91,12 @@ const GalleryModule = lazy(() =>
   }))
 );
 
+const ShitdropModule = lazy(() =>
+  import('@/features/shitdrop/components/ShitdropModule').then((m) => ({
+    default: m.ShitdropModule,
+  }))
+);
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -151,5 +157,9 @@ export const routes: RouteObject[] = [
   {
     path: '/gallery',
     element: <GalleryModule />,
+  },
+  {
+    path: '/shitdrop',
+    element: <ShitdropModule />,
   },
 ];

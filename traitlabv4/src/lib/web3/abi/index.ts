@@ -16,3 +16,4 @@ export { KIT_SALE_ABI } from './kitSale.abi';
 export { ADRIAN_SHOP_ABI } from './adrianShop.abi';
 export { SAMURAI_BATCH_ABI } from './samuraiBatch.abi';
 export { ADRIAN_ZERO_MINT_ABI } from './adrianZeroMint.abi';
+export { FREE_MINTER_ABI } from './freeminter.abi';
