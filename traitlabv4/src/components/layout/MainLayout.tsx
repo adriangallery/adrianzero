@@ -4,7 +4,7 @@
  */
 
 import { useState, Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Container } from './Container';
@@ -12,6 +12,28 @@ import { ToastContainer } from '../notifications/Toast';
 
 export function MainLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const location = useLocation();
+  const isZeroLanding = location.pathname.startsWith('/zero');
+
+  if (isZeroLanding) {
+    return (
+      <div className="h-screen overflow-hidden bg-background">
+        <Suspense
+          fallback={
+            <div className="flex h-full items-center justify-center">
+              <div className="shimmer h-16 w-16 rounded-full" />
+            </div>
+          }
+        >
+          <div className="h-full overflow-y-auto">
+            <Outlet />
+          </div>
+        </Suspense>
+
+        <ToastContainer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background">
