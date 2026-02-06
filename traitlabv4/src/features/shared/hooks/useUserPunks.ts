@@ -5,12 +5,11 @@
  * Includes progress tracking for better UX with large wallets
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useAccount, useReadContract, usePublicClient } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { PUNKS_ABI, MULTICALL3_ABI } from '@/lib/web3/abi';
-import { detectDeviceCapabilities, getBatchSize } from '@/lib/web3/utils/deviceCapabilities';
 import { encodeFunctionData, decodeFunctionResult } from 'viem';
 
 export interface UseUserPunksReturn {
@@ -30,10 +29,6 @@ export interface UseUserPunksReturn {
 export function useUserPunks(): UseUserPunksReturn {
   const { address } = useAccount();
   const publicClient = usePublicClient();
-
-  // Device capabilities for optimal batch sizing
-  const capabilities = useMemo(() => detectDeviceCapabilities(), []);
-  const optimalBatchSize = getBatchSize(capabilities, false);
 
   // Progress tracking state
   const [progress, setProgress] = useState(0);
@@ -90,12 +85,12 @@ export function useUserPunks(): UseUserPunksReturn {
         setProgress(25);
 
         // Execute single multicall (ONE RPC request for all token IDs)
-        const results = await publicClient.readContract({
+        const results = (await publicClient.readContract({
           address: CONTRACT_ADDRESSES.MULTICALL3 as `0x${string}`,
           abi: MULTICALL3_ABI,
           functionName: 'aggregate3',
           args: [calls],
-        });
+        })) as Array<{ success: boolean; returnData: `0x${string}` }>;
 
         setProgress(75);
 
