@@ -104,6 +104,12 @@ const OGClaimModule = lazy(() =>
   }))
 );
 
+const ZeroModule = lazy(() =>
+  import('@/features/zero/components/ZeroModule').then((m) => ({
+    default: m.ZeroModule,
+  }))
+);
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -176,5 +182,9 @@ export const routes: RouteObject[] = [
   {
     path: '/ogclaim',
     element: <OGClaimModule />,
+  },
+  {
+    path: '/zero',
+    element: <ZeroModule />,
   },
 ];

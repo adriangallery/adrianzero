@@ -23,6 +23,7 @@ import {
   Droplets,
   Gift,
   Award,
+  Zap,
 } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useAccount } from 'wagmi';
@@ -40,6 +41,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: '/', label: 'Dashboard', icon: <BarChart3 className="h-5 w-5" /> },
+  { path: '/zero', label: 'ZERO', icon: <Zap className="h-5 w-5" /> },
   { path: '/onboarding', label: 'Mint', icon: <Rocket className="h-5 w-5" /> },
   { path: '/adrianzero', label: 'My NFTs', icon: <Frame className="h-5 w-5" /> },
   { path: '/traits', label: 'Traits', icon: <Palette className="h-5 w-5" />, requiresConnection: true },

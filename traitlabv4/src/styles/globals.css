@@ -127,4 +127,26 @@
   .gallery-grid::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 255, 0, 0.5);
   }
+
+  /* ZERO Module Animations */
+  .animate-gradient {
+    background-size: 200% auto;
+    animation: gradient-shift 3s linear infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-gradient,
+    .fade-in,
+    .shimmer,
+    .skeleton {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
 }
