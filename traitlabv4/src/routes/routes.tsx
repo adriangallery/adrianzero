@@ -5,14 +5,9 @@
 
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import { RootRoute } from './RootRoute';
 
 // Lazy load all modules
-const DashboardModule = lazy(() =>
-  import('@/features/dashboard/components/DashboardModule').then((m) => ({
-    default: m.DashboardModule,
-  }))
-);
-
 const AdrianZeroModule = lazy(() =>
   import('@/features/adrianzero/components/AdrianZeroModule').then((m) => ({
     default: m.AdrianZeroModule,
@@ -97,10 +92,22 @@ const ShitdropModule = lazy(() =>
   }))
 );
 
+const RewardsModule = lazy(() =>
+  import('@/features/rewards/components/RewardsModule').then((m) => ({
+    default: m.RewardsModule,
+  }))
+);
+
+const OGClaimModule = lazy(() =>
+  import('@/features/ogclaim/components/OGClaimModule').then((m) => ({
+    default: m.OGClaimModule,
+  }))
+);
+
 export const routes: RouteObject[] = [
   {
     path: '/',
-    element: <DashboardModule />,
+    element: <RootRoute />,
   },
   {
     path: '/adrianzero',
@@ -161,5 +168,13 @@ export const routes: RouteObject[] = [
   {
     path: '/shitdrop',
     element: <ShitdropModule />,
+  },
+  {
+    path: '/rewards',
+    element: <RewardsModule />,
+  },
+  {
+    path: '/ogclaim',
+    element: <OGClaimModule />,
   },
 ];

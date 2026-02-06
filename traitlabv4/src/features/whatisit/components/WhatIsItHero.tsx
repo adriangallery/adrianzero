@@ -26,7 +26,7 @@ export function WhatIsItHero() {
 
       {/* Subtitle */}
       <p className="mb-4 text-xl text-muted-foreground">
-        A living, evolving NFT ecosystem built on Ethereum
+        A living, evolving NFT ecosystem built on Base
       </p>
 
       {/* Days Counter */}

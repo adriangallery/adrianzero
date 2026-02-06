@@ -96,6 +96,15 @@ export function AdrianZeroModule() {
   const selectedTraits = getSelectedTraitsArray();
   const selectedTraitIds = getSelectedTraitIds();
 
+  // Auto-select first NFT in demo mode
+  useEffect(() => {
+    if (!isConnected && sortedTokens.length > 0 && !selectedNFT) {
+      const firstToken = sortedTokens[0];
+      setSelectedNFT(firstToken);
+      setSelectedToken(firstToken);
+    }
+  }, [isConnected, sortedTokens, selectedNFT, setSelectedToken]);
+
   // Auto-expand NFT preview when selected
   useEffect(() => {
     if (selectedNFT) {
@@ -149,6 +158,12 @@ export function AdrianZeroModule() {
 
   const handleApplyTraits = async () => {
     if (!selectedNFT || selectedTraits.length === 0) return;
+
+    // If not connected, redirect to mint/onboarding
+    if (!isConnected) {
+      navigate('/onboarding');
+      return;
+    }
 
     try {
       await applyTraits.mutateAsync({
@@ -212,11 +227,17 @@ export function AdrianZeroModule() {
       <div className="flex items-center justify-between py-2 sm:py-4">
         <div>
           <h1 className="text-lg sm:text-xl font-bold text-foreground">
-            AdrianZERO <span className="text-[#00ff00]">NFTs</span>
+            {!isConnected ? (
+              <>Build your <span className="text-[#00ff00]">ZERO</span></>
+            ) : (
+              <>AdrianZERO <span className="text-[#00ff00]">NFTs</span></>
+            )}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            {tokens.length} {tokens.length === 1 ? 'NFT' : 'NFTs'} in your collection
-          </p>
+          {isConnected && (
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {tokens.length} {tokens.length === 1 ? 'NFT' : 'NFTs'} in your collection
+            </p>
+          )}
         </div>
 
         {/* Selected NFT indicator - Desktop */}
