@@ -3,6 +3,7 @@
  */
 
 import { Section } from '../Section';
+import { IMAGES } from '@/config/images';
 
 export function AdrianSection() {
   return (
@@ -12,7 +13,7 @@ export function AdrianSection() {
         <div className="space-y-6">
           <div className="flex justify-center">
             <img
-              src="https://adrianzero.com/components/images/ADRIAN_Coin.gif"
+              src={IMAGES.ADRIAN_COIN}
               alt="$ADRIAN Token"
               className="h-48 w-48"
               style={{ imageRendering: 'pixelated' }}

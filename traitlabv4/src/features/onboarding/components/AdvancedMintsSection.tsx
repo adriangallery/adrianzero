@@ -17,6 +17,7 @@ import {
   useAdrianMintApproval,
   useAdrianMint,
 } from '../hooks/useAdrianMint';
+import { getGitHubImageUrl, IMAGE_PATHS } from '@/config/images';
 
 export function AdvancedMintsSection() {
   const { hasAdrianZero, isLoading: isCheckingOwnership } = useHasAdrianZero();
@@ -63,7 +64,7 @@ export function AdvancedMintsSection() {
           type="samurai"
           title="SamuraiZERO"
           subtitle="Warrior of the Collection"
-          imageUrl="https://adrianzero.com/components/images/595.png"
+          imageUrl={getGitHubImageUrl(IMAGE_PATHS.getComponentImage(595, 'png'))}
           price={samuraiBatch?.price}
           minted={samuraiBatch ? Number(samuraiBatch.minted) : 0}
           maxSupply={samuraiBatch ? Number(samuraiBatch.maxSupply) : 0}

@@ -7,6 +7,7 @@ import { Check, X, Eye, Sparkles, Disc, Coins, Loader2 } from 'lucide-react';
 import { QuantitySelector } from './QuantitySelector';
 import type { KitInfo } from '../hooks/useKitInfo';
 import { formatUsdPrice } from '../hooks/useEthPrice';
+import { IMAGES } from '@/config/images';
 
 interface KitCardProps {
   type: 'free' | 'paid';
@@ -41,13 +42,13 @@ const PAID_KIT_FEATURES = [
 ];
 
 const FREE_KIT_CONTENTS = [
-  { image: 'https://adrianzero.com/subzero/images/subzero.png', label: '1 SubZERO NFT' },
-  { image: 'https://adrianzero.com/subzero/images/bluecheck.png', label: '1 Blue-Check Trait' },
-  { image: 'https://adrianzero.com/subzero/images/adriancoin.gif', label: '100 $ADRIAN' },
+  { image: IMAGES.SUBZERO, label: '1 SubZERO NFT' },
+  { image: IMAGES.BLUE_CHECK, label: '1 Blue-Check Trait' },
+  { image: IMAGES.ADRIAN_COIN_SUBZERO, label: '100 $ADRIAN' },
 ];
 
 const PAID_KIT_CONTENTS = [
-  { image: 'https://adrianzero.com/zeronaked.png', label: '1 AdrianZERO NFT' },
+  { image: IMAGES.ZERO_NAKED, label: '1 AdrianZERO NFT' },
   { image: 'https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/10002.gif', label: '1 STARTER Floppy' },
 ];
 
@@ -96,7 +97,7 @@ export function KitCard({
     : [
         ...contents,
         {
-          image: 'https://adrianzero.com/components/images/ADRIAN_Coin_Back.gif',
+          image: IMAGES.ADRIAN_COIN_BACK,
           label: `${adrianAmount.toLocaleString()} $ADRIAN`,
         },
       ];

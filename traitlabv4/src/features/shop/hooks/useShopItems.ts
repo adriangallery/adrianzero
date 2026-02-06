@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useReadContract } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ADRIAN_SHOP_ABI } from '@/lib/web3/abi';
+import { getGitHubImageUrl as getBaseGitHubImageUrl, IMAGE_PATHS } from '@/config/images';
 
 export interface ShopItemMetadata {
   name?: string;
@@ -63,10 +64,10 @@ export function getFallbackImageUrl(assetId: number): string {
   }
   // Serums
   if (assetId >= 262144 && assetId <= 262147) {
-    return `https://adrianzero.com/components/images/${assetId}.gif`;
+    return getBaseGitHubImageUrl(IMAGE_PATHS.getComponentImage(assetId, 'gif'));
   }
   // Default traits
-  return `https://adrianzero.com/components/images/${assetId}.png`;
+  return getBaseGitHubImageUrl(IMAGE_PATHS.getComponentImage(assetId, 'png'));
 }
 
 // Get primary GitHub image URL (for traits only, not floppies/serums)

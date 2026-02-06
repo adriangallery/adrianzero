@@ -4,6 +4,7 @@
  */
 
 import { DaysBuilding } from './DaysBuilding';
+import { IMAGES } from '@/config/images';
 
 export function WhatIsItHero() {
   return (
@@ -11,7 +12,7 @@ export function WhatIsItHero() {
       {/* Banner Image */}
       <div className="mb-8 -mx-4">
         <img
-          src="https://adrianzero.com/components/images/ADRIAN_ZERO_Banner.gif"
+          src={IMAGES.BANNER}
           alt="ADRIAN ZERO Banner"
           className="w-full rounded-lg"
         />
