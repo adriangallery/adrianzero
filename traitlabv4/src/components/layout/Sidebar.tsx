@@ -106,10 +106,11 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
           initial={{ x: -280 }}
           animate={{ x: isOpen ? 0 : -280 }}
           transition={{ type: 'spring', damping: 20 }}
-          className="fixed top-0 left-0 h-full w-70 bg-card/95 backdrop-blur-sm border-r border-border z-50 lg:hidden"
+          className="fixed top-0 left-0 h-full w-70 bg-card/95 backdrop-blur-sm border-r border-border z-50 lg:hidden flex flex-col"
         >
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-6">
+          {/* Header - Fixed */}
+          <div className="flex-shrink-0 p-4 border-b border-border">
+            <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-foreground font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h2>
               <button
                 onClick={onClose}
@@ -120,7 +121,10 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
                 </svg>
               </button>
             </div>
+          </div>
 
+          {/* Navigation - Scrollable */}
+          <div className="flex-1 overflow-y-auto p-4">
             <nav className="space-y-1">
               {visibleItems.map((item) => (
                 <Link
@@ -149,10 +153,14 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
 
   // Desktop Sidebar
   return (
-    <aside className="hidden lg:flex w-64 flex-col bg-card/95 backdrop-blur-sm border-r border-border">
-      <div className="p-4">
-        <h2 className="text-xl font-bold text-foreground mb-6 font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h2>
+    <aside className="hidden lg:flex w-64 flex-col bg-card/95 backdrop-blur-sm border-r border-border h-screen">
+      {/* Header - Fixed */}
+      <div className="flex-shrink-0 p-4 border-b border-border">
+        <h2 className="text-xl font-bold text-foreground font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h2>
+      </div>
 
+      {/* Navigation - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-4">
         <nav className="space-y-1">
           {visibleItems.map((item) => (
             <Link
