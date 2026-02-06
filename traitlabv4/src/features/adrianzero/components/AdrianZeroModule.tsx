@@ -24,7 +24,6 @@ export function AdrianZeroModule() {
   const { isConnected } = useAccount();
   const navigate = useNavigate();
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
-  const [isNFTPreviewExpanded, setIsNFTPreviewExpanded] = useState(false);
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
   const [isTraitPreviewExpanded, setIsTraitPreviewExpanded] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
@@ -105,18 +104,17 @@ export function AdrianZeroModule() {
     }
   }, [isConnected, sortedTokens, selectedNFT, setSelectedToken]);
 
-  // Auto-expand NFT preview when selected
+  // Auto-expand preview when NFT is selected (unified preview)
   useEffect(() => {
     if (selectedNFT) {
-      setIsNFTPreviewExpanded(true);
+      setIsTraitPreviewExpanded(true);
     }
   }, [selectedNFT]);
 
-  // Auto-expand trait preview when traits are selected
+  // Generate composed image when traits are selected
   useEffect(() => {
     if (selectedTraits.length > 0 && selectedNFT) {
-      setIsTraitPreviewExpanded(true);
-      // Generate preview URL
+      // Generate preview URL for composed image
       setIsPreviewLoading(true);
       const url = vercelImageService.generateCombinedImageUrl({
         tokenId: selectedNFT.tokenId,
@@ -127,9 +125,10 @@ export function AdrianZeroModule() {
       vercelImageService.preloadImage(url).finally(() => {
         setIsPreviewLoading(false);
       });
-    } else if (selectedTraits.length === 0) {
-      setIsTraitPreviewExpanded(false);
+    } else {
+      // Clear composed image when no traits selected
       setPreviewImageUrl('');
+      setIsPreviewLoading(false);
     }
   }, [selectedTraits.length, selectedTraitIds.join(','), selectedNFT?.tokenId]);
 
@@ -140,7 +139,7 @@ export function AdrianZeroModule() {
       setSelectedNFT(null);
       setSelectedToken(null);
       clearSelection();
-      setIsNFTPreviewExpanded(false);
+      setIsTraitPreviewExpanded(false);
     } else {
       setSelectedToken(token);
       setSelectedNFT(token);
@@ -182,7 +181,7 @@ export function AdrianZeroModule() {
     setSelectedNFT(null);
     setSelectedToken(null);
     clearSelection();
-    setIsNFTPreviewExpanded(false);
+    setIsTraitPreviewExpanded(false);
   };
 
   const nftImageUrl = selectedNFT?.image?.cachedUrl || selectedNFT?.image?.originalUrl || selectedNFT?.metadata?.image;
@@ -257,68 +256,6 @@ export function AdrianZeroModule() {
         )}
       </div>
 
-      {/* Collapsible Selected NFT Panel - Only show when no traits selected */}
-      {selectedNFT && selectedTraits.length === 0 && (
-        <div className="mb-2 border border-border rounded-lg overflow-hidden bg-card">
-          {/* NFT Preview Header - Always visible, clickable to toggle */}
-          <button
-            onClick={() => setIsNFTPreviewExpanded(!isNFTPreviewExpanded)}
-            className="w-full flex items-center justify-between p-2 hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded bg-muted overflow-hidden flex-shrink-0">
-                {nftImageUrl ? (
-                  <img src={nftImageUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Frame className="w-4 h-4 m-2 text-muted-foreground" />
-                )}
-              </div>
-              <span className="text-xs font-medium text-foreground truncate">
-                {displayName}
-              </span>
-              <span className="text-[10px] text-muted-foreground">
-                #{selectedNFT.tokenId}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleClearNFTSelection();
-                }}
-                className="p-1 rounded hover:bg-muted sm:hidden"
-                aria-label="Deselect NFT"
-              >
-                <X className="w-3 h-3 text-muted-foreground" />
-              </button>
-              {isNFTPreviewExpanded ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
-            </div>
-          </button>
-
-          {/* NFT Preview Content - Collapsible */}
-          {isNFTPreviewExpanded && (
-            <div className="p-2 pt-0">
-              <div className="relative aspect-square max-w-[160px] sm:max-w-[200px] mx-auto bg-muted rounded-lg overflow-hidden">
-                {nftImageUrl ? (
-                  <img
-                    src={nftImageUrl}
-                    alt={displayName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Frame className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* NFT Grid - Hidden when NFT is selected */}
       {!selectedNFT && (
@@ -381,8 +318,8 @@ export function AdrianZeroModule() {
             )}
           </div>
 
-          {/* Collapsible Trait Preview Panel */}
-          {selectedTraits.length > 0 && (
+          {/* Unified Preview Panel - Shows with or without traits */}
+          {selectedNFT && (
             <div className="mb-2 border border-border rounded-lg overflow-hidden bg-card">
               {/* Preview Header */}
               <button
@@ -391,11 +328,21 @@ export function AdrianZeroModule() {
               >
                 <div className="hidden sm:flex items-center gap-2">
                   <span className="text-xs font-medium text-foreground">
-                    <span className="text-[#00ff00]">Preview</span> with traits
+                    {selectedTraits.length > 0 ? (
+                      <>
+                        <span className="text-[#00ff00]">Preview</span> with traits
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-[#00ff00]">Preview</span>
+                      </>
+                    )}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    ({selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''})
-                  </span>
+                  {selectedTraits.length > 0 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      ({selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''})
+                    </span>
+                  )}
                 </div>
                 {isTraitPreviewExpanded ? (
                   <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -407,69 +354,84 @@ export function AdrianZeroModule() {
               {/* Preview Content - Collapsible */}
               {isTraitPreviewExpanded && (
                 <div className="p-2 pt-0">
-                  {/* Preview Image */}
+                  {/* Preview Image - Larger size (200px mobile / 280px desktop) */}
                   <div className="relative aspect-square max-w-[200px] sm:max-w-[280px] mx-auto bg-muted rounded-lg overflow-hidden mb-2">
                     {isPreviewLoading && (
                       <div className="absolute inset-0 shimmer" />
                     )}
-                    {previewImageUrl && (
+                    {/* Show composed image if traits selected, otherwise original NFT image */}
+                    {selectedTraits.length > 0 && previewImageUrl ? (
                       <img
                         src={previewImageUrl}
-                        alt="Preview"
+                        alt="Preview with traits"
                         className="w-full h-full object-cover"
                         onLoad={() => setIsPreviewLoading(false)}
                       />
+                    ) : nftImageUrl ? (
+                      <img
+                        src={nftImageUrl}
+                        alt={displayName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Frame className="h-12 w-12 text-muted-foreground" />
+                      </div>
                     )}
                   </div>
 
-                  {/* Selected Traits Pills */}
-                  <div className="flex flex-wrap gap-1 justify-center mb-2">
-                    {selectedTraits.map((trait) => (
-                      <div
-                        key={trait.tokenId}
-                        className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px]"
-                      >
-                        <span className="truncate max-w-[80px]">{trait.name}</span>
-                        <button
-                          onClick={() => deselectTrait(trait.category)}
-                          className="hover:text-primary-foreground"
+                  {/* Selected Traits Pills - Only show when traits are selected */}
+                  {selectedTraits.length > 0 && (
+                    <div className="flex flex-wrap gap-1 justify-center mb-2">
+                      {selectedTraits.map((trait) => (
+                        <div
+                          key={trait.tokenId}
+                          className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px]"
                         >
-                          <X className="h-2.5 w-2.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                          <span className="truncate max-w-[80px]">{trait.name}</span>
+                          <button
+                            onClick={() => deselectTrait(trait.category)}
+                            className="hover:text-primary-foreground"
+                          >
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={() => {
-                        clearSelection();
-                        setIsTraitPreviewExpanded(false);
-                      }}
-                      disabled={applyTraits.isPending}
-                      className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded font-medium hover:opacity-80 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleApplyTraits}
-                      disabled={applyTraits.isPending}
-                      className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded font-medium hover:opacity-80 disabled:opacity-50 flex items-center gap-1"
-                    >
-                      {applyTraits.isPending ? (
-                        <>
-                          <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Applying...
-                        </>
-                      ) : (
-                        <>
-                          <Check className="h-3 w-3" />
-                          Apply
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  {/* Action Buttons - Only show when traits are selected */}
+                  {selectedTraits.length > 0 && (
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => {
+                          clearSelection();
+                          setIsTraitPreviewExpanded(false);
+                        }}
+                        disabled={applyTraits.isPending}
+                        className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded font-medium hover:opacity-80 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleApplyTraits}
+                        disabled={applyTraits.isPending}
+                        className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded font-medium hover:opacity-80 disabled:opacity-50 flex items-center gap-1"
+                      >
+                        {applyTraits.isPending ? (
+                          <>
+                            <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Applying...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-3 w-3" />
+                            Apply
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

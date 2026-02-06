@@ -42,13 +42,36 @@ export const CONTRACT_ADDRESSES = {
   ADRIAN_PUNKS: '0x79BE8AcdD339C7b92918fcC3fd3875b5Aaad7566', // ERC721
   REWARDS_CONTRACT: '0x5b8c47176432f0b587ca31c4ccc61d0513814be1',
   OGCLAIM_CONTRACT: '0x31D66caBC1D6E65a4947D19ed22FB63ee2C8D84b',
+
+  // Utility Contracts
+  MULTICALL3: '0xcA11bde05977b3631167028862bE2a173976CA11', // Multicall3 on Base
 } as const;
 
-export const RPC_URLS = [
-  'https://mainnet.base.org',
-  'https://base.llamarpc.com',
-  'https://base-rpc.publicnode.com',
-] as const;
+// Build RPC URLs with API keys from environment variables
+const buildRpcUrls = () => {
+  const urls: string[] = [];
+
+  // Priority 1: Alchemy (best rate limits on free tier - 300M compute units/month)
+  const alchemyKey = import.meta.env.VITE_ALCHEMY_API_KEY;
+  if (alchemyKey && alchemyKey !== 'your_alchemy_api_key_here') {
+    urls.push(`https://base-mainnet.g.alchemy.com/v2/${alchemyKey}`);
+  }
+
+  // Priority 2: Infura (good rate limits)
+  const infuraKey = import.meta.env.VITE_INFURA_API_KEY || 'cc0c8013b1e044dcba79d4f7ec3b2ba1';
+  urls.push(`https://base-mainnet.infura.io/v3/${infuraKey}`);
+
+  // Priority 3+: Public endpoints (fallbacks, strict rate limits)
+  urls.push(
+    'https://mainnet.base.org',
+    'https://base.llamarpc.com',
+    'https://base-rpc.publicnode.com'
+  );
+
+  return urls;
+};
+
+export const RPC_URLS = buildRpcUrls();
 
 export const ALCHEMY_BASE_URL = 'https://base-mainnet.g.alchemy.com/nft/v3';
 
@@ -63,8 +86,8 @@ export const NETWORK_CONFIG = {
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: [RPC_URLS[0]] },
-    public: { http: [RPC_URLS[0]] },
+    default: { http: RPC_URLS }, // Use all RPCs with priority fallback
+    public: { http: RPC_URLS },
   },
   blockExplorers: {
     default: { name: 'BaseScan', url: BLOCK_EXPLORER_URL },

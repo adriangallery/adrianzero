@@ -20,3 +20,4 @@ export { FREE_MINTER_ABI } from './freeminter.abi';
 export { PUNKS_ABI } from './punks.abi';
 export { REWARDS_ABI } from './rewards.abi';
 export { OGCLAIM_ABI } from './ogclaim.abi';
+export { MULTICALL3_ABI } from './multicall3.abi';
