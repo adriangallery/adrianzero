@@ -6,6 +6,7 @@
 import { ConnectButton } from '../wallet/ConnectButton';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -13,6 +14,13 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { prefix, accent } = usePageTitle();
+  const notifications = useNotifications();
+
+  // TEMPORARY: Test notification button (remove after testing)
+  const handleTestNotification = () => {
+    notifications.success('Test Success', 'This is a test notification!');
+    notifications.info('Test Info', 'This is an info notification', false); // persistent
+  };
 
   return (
     <header className="sticky top-0 z-30 bg-card border-b border-border">
@@ -38,6 +46,14 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2 min-w-0 max-w-[60%] sm:max-w-none overflow-hidden">
+          {/* TEMPORARY: Test button */}
+          <button
+            onClick={handleTestNotification}
+            className="hidden sm:block px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90"
+          >
+            Test 🔔
+          </button>
+
           {/* Notifications */}
           <NotificationBell />
 

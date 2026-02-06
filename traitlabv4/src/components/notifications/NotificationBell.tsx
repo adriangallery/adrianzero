@@ -34,6 +34,8 @@ export function NotificationBell() {
   }, [isOpen]);
 
   const handleToggle = () => {
+    console.log('[NotificationBell] Toggle clicked, current state:', isOpen);
+    console.log('[NotificationBell] Notifications count:', notifications.length);
     setIsOpen(!isOpen);
     if (!isOpen && unreadCount > 0) {
       markAllAsRead();
@@ -45,7 +47,9 @@ export function NotificationBell() {
       {/* Bell Icon */}
       <button
         onClick={handleToggle}
-        className="relative p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
+        className="relative p-2 text-foreground hover:bg-muted rounded-lg transition-colors border border-border hover:border-primary"
+        aria-label="Notifications"
+        title="Notifications"
       >
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
