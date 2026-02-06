@@ -71,14 +71,14 @@ export function useApplyTraits() {
     },
     onSuccess: (hash) => {
       console.log('Traits applied successfully:', hash);
-      notifications.success('Traits Applied!', 'Your NFT has been customized successfully');
+      notifications.success('Traits Applied!', 'Your NFT has been customized successfully', false);
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });
       queryClient.invalidateQueries({ queryKey: ['traits'] });
     },
     onError: (error) => {
       console.error('Error applying traits:', error);
-      notifications.error('Failed to Apply Traits', 'Please try again');
+      notifications.error('Failed to Apply Traits', 'Please try again', false);
     },
   });
 

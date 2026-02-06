@@ -63,7 +63,8 @@ export function useBuyKit() {
       const kitName = kitId === 3 ? 'SubZERO' : 'AdrianZERO';
       notifications.success(
         'Mint Successful!',
-        `You minted ${quantity} ${kitName} kit${quantity > 1 ? 's' : ''}`
+        `You minted ${quantity} ${kitName} kit${quantity > 1 ? 's' : ''}`,
+        false
       );
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['adrianzero'] });
@@ -81,7 +82,7 @@ export function useBuyKit() {
         message = 'Insufficient ETH balance';
       }
 
-      notifications.error('Mint Failed', message);
+      notifications.error('Mint Failed', message, false);
     },
   });
 }

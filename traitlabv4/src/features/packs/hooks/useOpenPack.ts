@@ -131,14 +131,14 @@ export function useOpenPack() {
     },
     onSuccess: (hash: `0x${string}`) => {
       console.log('Pack opened successfully:', hash);
-      notifications.success('Pack Opened!', 'Check your inventory for new traits');
+      notifications.success('Pack Opened!', 'Check your inventory for new traits', false);
       // Invalidate queries to refresh pack balances and traits
       queryClient.invalidateQueries({ queryKey: ['packs'] });
       queryClient.invalidateQueries({ queryKey: ['traits'] });
     },
     onError: (error: Error) => {
       console.error('Error opening pack:', error);
-      notifications.error('Failed to Open Pack', 'Please try again');
+      notifications.error('Failed to Open Pack', 'Please try again', false);
     },
   });
 
@@ -175,13 +175,13 @@ export function useOpenPacks() {
     },
     onSuccess: (hash: `0x${string}`) => {
       console.log('Packs opened successfully:', hash);
-      notifications.success('Packs Opened!', `Successfully opened packs. Check your inventory for new traits`);
+      notifications.success('Packs Opened!', `Successfully opened packs. Check your inventory for new traits`, false);
       queryClient.invalidateQueries({ queryKey: ['packs'] });
       queryClient.invalidateQueries({ queryKey: ['traits'] });
     },
     onError: (error: Error) => {
       console.error('Error opening packs:', error);
-      notifications.error('Failed to Open Packs', 'Please try again');
+      notifications.error('Failed to Open Packs', 'Please try again', false);
     },
   });
 

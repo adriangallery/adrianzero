@@ -42,14 +42,14 @@ export function useApplySerum() {
     },
     onSuccess: (hash) => {
       console.log('Serum applied successfully:', hash);
-      notifications.success('Serum Applied!', 'Your NFT has been enhanced with the serum');
+      notifications.success('Serum Applied!', 'Your NFT has been enhanced with the serum', false);
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });
       queryClient.invalidateQueries({ queryKey: ['serums'] });
     },
     onError: (error) => {
       console.error('Error applying serum:', error);
-      notifications.error('Failed to Apply Serum', 'Please try again');
+      notifications.error('Failed to Apply Serum', 'Please try again', false);
     },
   });
 

@@ -81,14 +81,14 @@ export function useCraftTrait() {
     },
     onSuccess: (hash) => {
       console.log('Trait crafted successfully:', hash);
-      notifications.success('Trait Crafted!', 'New trait has been added to your inventory');
+      notifications.success('Trait Crafted!', 'New trait has been added to your inventory', false);
       // Invalidate queries to refresh traits and recipes
       queryClient.invalidateQueries({ queryKey: ['traits'] });
       queryClient.invalidateQueries({ queryKey: ['crafting-recipes'] });
     },
     onError: (error) => {
       console.error('Error crafting trait:', error);
-      notifications.error('Crafting Failed', 'Could not craft trait. Please check you have the required ingredients.');
+      notifications.error('Crafting Failed', 'Could not craft trait. Please check you have the required ingredients.', false);
     },
   });
 

@@ -53,13 +53,13 @@ export function useRenameToken() {
       return hash;
     },
     onSuccess: () => {
-      notifications.success('NFT Renamed!', 'Custom name saved successfully');
+      notifications.success('NFT Renamed!', 'Custom name saved successfully', false);
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });
       queryClient.invalidateQueries({ queryKey: ['custom-names'] });
     },
     onError: (error) => {
       console.error('Error renaming NFT:', error);
-      notifications.error('Rename Failed', 'Could not save custom name. Please try again.');
+      notifications.error('Rename Failed', 'Could not save custom name. Please try again.', false);
     },
   });
 
