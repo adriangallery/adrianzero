@@ -14,6 +14,7 @@ interface NFTGridProps {
   tokens: AdrianZeroToken[];
   selectedTokenId?: string | null;
   onTokenSelect?: (token: AdrianZeroToken) => void;
+  onEndReached?: () => void;
   emptyMessage?: string;
 }
 
@@ -21,6 +22,7 @@ export function NFTGrid({
   tokens,
   selectedTokenId,
   onTokenSelect,
+  onEndReached,
   emptyMessage = 'No NFTs found',
 }: NFTGridProps) {
   const isMobile = shouldOptimizeForTouch();
@@ -55,6 +57,7 @@ export function NFTGrid({
       <Virtuoso
         style={{ height: 'calc(100vh - 200px)' }}
         totalCount={rows.length}
+        endReached={() => onEndReached?.()}
         itemContent={(index) => {
           const row = rows[index];
           return (

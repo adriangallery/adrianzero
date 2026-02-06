@@ -3,7 +3,7 @@
  * Advanced search for all wallet assets (NFTs, Traits, Packs, Serums)
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { Unplug, Search } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
@@ -17,6 +17,8 @@ import { SearchFilters } from '@/components/search/SearchFilters';
 import { SavedSearches } from '@/components/search/SavedSearches';
 import { NFTGrid } from '@/components/nft/NFTGrid';
 import { TraitGrid } from '@/components/traits/TraitGrid';
+import { ProgressiveLoadIndicator } from '@/components/common/ProgressiveLoadIndicator';
+import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
 
 type AssetType = 'all' | 'nfts' | 'traits' | 'packs' | 'serums';
 
@@ -25,10 +27,25 @@ export function SearchModule() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [searchName, setSearchName] = useState('');
   const [assetType, setAssetType] = useState<AssetType>('all');
+  const isTouchDevice = shouldOptimizeForTouch();
 
   // Load all asset types
-  const { data: nfts = [] } = useAdrianZeroTokens();
-  const { data: traits = [] } = useTraits();
+  const {
+    data: nfts = [],
+    fetchNextPage: fetchNextNFTPage,
+    hasNextPage: hasNextNFTPage,
+    isFetchingNextPage: isFetchingNextNFTPage,
+    loadedCount: loadedNFTCount,
+    totalCount: totalNFTCount,
+  } = useAdrianZeroTokens();
+  const {
+    data: traits = [],
+    fetchNextPage: fetchNextTraitPage,
+    hasNextPage: hasNextTraitPage,
+    isFetchingNextPage: isFetchingNextTraitPage,
+    loadedCount: loadedTraitCount,
+    totalCount: totalTraitCount,
+  } = useTraits();
   const { data: packs = [] } = usePacks();
   const { data: serums = [] } = useSerums();
 
@@ -51,6 +68,26 @@ export function SearchModule() {
 
   const { filters, setFilters, filteredItems, resultCount } = useSearch(filteredAssets as any);
   const { savedSearches, saveSearch, deleteSearch, loadSearch } = useSavedSearches();
+
+  useEffect(() => {
+    if (assetType !== 'nfts' || !filters.text) return;
+    if (!hasNextNFTPage || isFetchingNextNFTPage) return;
+
+    const minimumMatchCount = isTouchDevice ? 20 : 40;
+    if (filteredItems.length < minimumMatchCount) {
+      fetchNextNFTPage();
+    }
+  }, [assetType, filters.text, hasNextNFTPage, isFetchingNextNFTPage, filteredItems.length, isTouchDevice, fetchNextNFTPage]);
+
+  useEffect(() => {
+    if (assetType !== 'traits' || !filters.text) return;
+    if (!hasNextTraitPage || isFetchingNextTraitPage) return;
+
+    const minimumMatchCount = isTouchDevice ? 30 : 60;
+    if (filteredItems.length < minimumMatchCount) {
+      fetchNextTraitPage();
+    }
+  }, [assetType, filters.text, hasNextTraitPage, isFetchingNextTraitPage, filteredItems.length, isTouchDevice, fetchNextTraitPage]);
 
   const handleSaveSearch = () => {
     if (searchName.trim()) {
@@ -214,14 +251,48 @@ export function SearchModule() {
         ) : (
           <>
             {assetType === 'nfts' && (
-              <NFTGrid tokens={filteredItems as any} />
+              <>
+                <NFTGrid
+                  tokens={filteredItems as any}
+                  onEndReached={() => {
+                    if (!filters.text && hasNextNFTPage && !isFetchingNextNFTPage) {
+                      fetchNextNFTPage();
+                    }
+                  }}
+                />
+                {!filters.text && totalNFTCount > 0 && (
+                  <div className="mt-4">
+                    <ProgressiveLoadIndicator
+                      loadedCount={loadedNFTCount}
+                      totalCount={totalNFTCount}
+                      isLoading={isFetchingNextNFTPage}
+                    />
+                  </div>
+                )}
+              </>
             )}
             {assetType === 'traits' && (
-              <TraitGrid
-                traits={filteredItems as any}
-                selectedTraitIds={[]}
-                onTraitSelect={() => {}}
-              />
+              <>
+                <TraitGrid
+                  traits={filteredItems as any}
+                  selectedTraitIds={[]}
+                  onTraitSelect={() => {}}
+                  onEndReached={() => {
+                    if (!filters.text && hasNextTraitPage && !isFetchingNextTraitPage) {
+                      fetchNextTraitPage();
+                    }
+                  }}
+                />
+                {!filters.text && totalTraitCount > 0 && (
+                  <div className="mt-4">
+                    <ProgressiveLoadIndicator
+                      loadedCount={loadedTraitCount}
+                      totalCount={totalTraitCount}
+                      isLoading={isFetchingNextTraitPage}
+                    />
+                  </div>
+                )}
+              </>
             )}
             {(assetType === 'packs' || assetType === 'serums') && (
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">

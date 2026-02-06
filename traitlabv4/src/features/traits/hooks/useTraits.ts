@@ -5,7 +5,7 @@
  */
 
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { alchemyClient } from '@/lib/api/alchemy/client';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
@@ -25,17 +25,12 @@ const MOCK_TRAIT_IDS = ['444', '700', '83', '7', '1007', '754', '852', '33', '42
 
 export function useTraits() {
   const { address } = useAccount();
-
-  return useQuery({
-    queryKey: ['traits', address],
+  const metadataQuery = useQuery({
+    queryKey: ['traits-metadata'],
     queryFn: async () => {
-      console.log('[useTraits] Fetching traits for address:', address || 'DEMO MODE');
-
-      // Fetch traits.json metadata
       const traitsJsonResponse = await fetch('/data/traits.json');
       const traitsJson = await traitsJsonResponse.json();
 
-      // Convert array to object indexed by tokenId
       const traitsMetadata: Record<string, TraitMetadata> = {};
       if (traitsJson.traits && Array.isArray(traitsJson.traits)) {
         traitsJson.traits.forEach((trait: any) => {
@@ -50,69 +45,41 @@ export function useTraits() {
         });
       }
 
-      console.log('[useTraits] Loaded traits metadata, count:', Object.keys(traitsMetadata).length);
+      return traitsMetadata;
+    },
+    staleTime: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
+  });
 
-      // Return mock data when no wallet is connected
-      if (!address) {
-        const mockTraits: Trait[] = MOCK_TRAIT_IDS
-          .map((tokenId) => {
-            const metadata = traitsMetadata[tokenId];
-            if (!metadata) return null;
-
-            const githubSvgUrl = `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${tokenId}.svg`;
-            const fallbackUrl = `https://adrianzero.com/traitlab/${metadata.category.toLowerCase()}/${metadata.fileName}`;
-
-            return {
-              tokenId,
-              name: metadata.name,
-              category: metadata.category.toUpperCase(),
-              fileName: metadata.fileName,
-              maxSupply: metadata.maxSupply,
-              balance: 1, // Mock balance
-              rarity: metadata.rarity,
-              image: {
-                cachedUrl: githubSvgUrl,
-                originalUrl: fallbackUrl,
-              },
-            } as Trait;
-          })
-          .filter((trait): trait is Trait => trait !== null);
-
-        console.log('[useTraits] DEMO MODE - Returning mock traits:', mockTraits.length);
-        return mockTraits;
-      }
-
-      // Fetch user's ERC1155 tokens from Alchemy
-      const response = await alchemyClient.getERC1155Tokens(address, [
+  const traitsInfiniteQuery = useInfiniteQuery({
+    queryKey: ['traits', address],
+    initialPageParam: undefined as string | undefined,
+    enabled: !!address && !!metadataQuery.data,
+    queryFn: async ({ pageParam }) => {
+      const response = await alchemyClient.getERC1155TokensPage(address as string, [
         CONTRACT_ADDRESSES.ADRIAN_LAB,
-      ]);
-      console.log('[useTraits] Alchemy returned', response.ownedNfts.length, 'ERC1155 tokens');
+      ], pageParam);
 
-      // Merge user balances with metadata
       const traits: Trait[] = response.ownedNfts
         .map((nft) => {
-          const metadata = traitsMetadata[nft.tokenId];
+          const metadata = metadataQuery.data?.[nft.tokenId];
 
           if (!metadata) {
-            // Skip if no metadata found
             return null;
           }
 
           const balance = parseInt(nft.balance || '0');
-
-          // Only include traits with balance > 0
           if (balance === 0) {
             return null;
           }
 
-          // Use GitHub-hosted SVG with fallback to adrianzero.com
           const githubSvgUrl = `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${nft.tokenId}.svg`;
           const fallbackUrl = `https://adrianzero.com/traitlab/${metadata.category.toLowerCase()}/${metadata.fileName}`;
 
           return {
             tokenId: nft.tokenId,
             name: metadata.name,
-            category: metadata.category.toUpperCase(), // Normalize to uppercase
+            category: metadata.category.toUpperCase(),
             fileName: metadata.fileName,
             maxSupply: metadata.maxSupply,
             balance,
@@ -126,15 +93,83 @@ export function useTraits() {
         })
         .filter((trait): trait is Trait => trait !== null);
 
-      console.log('[useTraits] Processed traits:', traits.length);
-      console.log('[useTraits] Sample traits:', traits.slice(0, 3));
-
-      return traits;
+      return {
+        traits,
+        nextPageKey: response.pageKey,
+        totalCount: response.totalCount,
+      };
     },
-    enabled: true, // Always enabled to show mock data
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    getNextPageParam: (lastPage) => lastPage.nextPageKey,
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
+
+  const mockTraits = useMemo(() => {
+    if (address || !metadataQuery.data) {
+      return [] as Trait[];
+    }
+
+    return MOCK_TRAIT_IDS
+      .map((tokenId) => {
+        const metadata = metadataQuery.data[tokenId];
+        if (!metadata) return null;
+
+        const githubSvgUrl = `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${tokenId}.svg`;
+        const fallbackUrl = `https://adrianzero.com/traitlab/${metadata.category.toLowerCase()}/${metadata.fileName}`;
+
+        return {
+          tokenId,
+          name: metadata.name,
+          category: metadata.category.toUpperCase(),
+          fileName: metadata.fileName,
+          maxSupply: metadata.maxSupply,
+          balance: 1,
+          rarity: metadata.rarity,
+          image: {
+            cachedUrl: githubSvgUrl,
+            originalUrl: fallbackUrl,
+          },
+        } as Trait;
+      })
+      .filter((trait): trait is Trait => trait !== null);
+  }, [address, metadataQuery.data]);
+
+  const mergedWalletTraits = new Map<string, Trait>();
+  (traitsInfiniteQuery.data?.pages || []).forEach((page) => {
+    page.traits.forEach((trait) => {
+      mergedWalletTraits.set(trait.tokenId, trait);
+    });
+  });
+  const walletTraits = Array.from(mergedWalletTraits.values());
+
+  const data = address ? walletTraits : mockTraits;
+  const isLoading = metadataQuery.isLoading || (Boolean(address) && traitsInfiniteQuery.isLoading);
+  const isFetchingNextPage = traitsInfiniteQuery.isFetchingNextPage;
+  const fetchNextPage = traitsInfiniteQuery.fetchNextPage;
+  const hasNextPage = Boolean(address) && Boolean(traitsInfiniteQuery.hasNextPage);
+  const totalCount = useMemo(() => {
+    if (!address) {
+      return mockTraits.length;
+    }
+    const pages = traitsInfiniteQuery.data?.pages || [];
+    if (pages.length === 0) {
+      return 0;
+    }
+    const lastTotal = pages[pages.length - 1]?.totalCount || 0;
+    return Math.max(lastTotal, walletTraits.length);
+  }, [address, mockTraits.length, traitsInfiniteQuery.data?.pages, walletTraits.length]);
+
+  return {
+    data,
+    isLoading,
+    error: metadataQuery.error || traitsInfiniteQuery.error,
+    refetch: traitsInfiniteQuery.refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedCount: data.length,
+    totalCount,
+  };
 }
 
 export function useTraitsByCategory() {

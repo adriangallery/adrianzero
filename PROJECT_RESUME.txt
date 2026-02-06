@@ -1,0 +1,53 @@
+AdrianZERO Project Resume
+
+This repository is a multi-project Web3 workspace focused on the AdrianZERO ecosystem.
+It combines NFT tools, game experiences, and community apps, mostly deployed as static web apps
+or modern frontend projects connected to blockchain services on Base/Ethereum.
+
+Core Purpose
+- Build interactive NFT and gaming experiences for the AdrianZERO community.
+- Provide tools to mint, customize, and manage assets (traits, packs, designs, rewards).
+- Support wallet-based flows (MetaMask/Web3) with onchain and offchain integrations.
+
+Main Projects Included
+1) TraitLAB V4 (traitlabv4/)
+   - Main NFT management dApp for AdrianZERO on Base.
+   - Features: ERC721/ERC1155 inventory, traits, pack opening, crafting, serum, customization.
+   - Stack: React 18, TypeScript, Vite, Tailwind CSS v4, Wagmi/RainbowKit, TanStack Query, Zustand.
+
+2) AdrianAdventure (adventure/)
+   - Point-and-click retro game engine with PixiJS and modular architecture.
+   - Includes scene system, script engine, inventory manager, filters, and blockchain gating.
+
+3) Builder Battle (builderbattle/ and bb/)
+   - Voting and lottery app for community competitions.
+   - Wallet signatures, participant management, winner showcase, static deployment patterns.
+   - `bb/` variant integrates Supabase for persistence.
+
+4) Shooter Onchain Integration (shooter/onchain/)
+   - Shooter game reward pipeline with smart contract + signing backend + admin panel.
+   - Includes score submission, reward claiming, anti-replay nonce flow, and config controls.
+
+5) TraitCreator (traitcreator/)
+   - Pixel-art T-shirt creator that can save and mint NFT-linked designs.
+   - Includes SVG export endpoint and token-based minting flow.
+
+Repository Characteristics
+- Multi-app monorepo-style layout (many independent subprojects with their own READMEs).
+- Mix of static HTML/JS apps and framework apps (React/Vite, Next.js).
+- Smart contract integrations and wallet-based authentication/signing.
+- Supporting assets, docs, scripts, and deployment workflows under `.github/workflows/`.
+
+Deployment & Hosting Pattern
+- Several apps are designed for static hosting (GitHub Pages/Vercel).
+- Root `index.html` currently embeds the production TraitLAB URL via iframe.
+- Some modules include backend/API components where signing or persistence is required.
+
+Typical Tech Used Across the Repo
+- Frontend: HTML, CSS, JavaScript, TypeScript, React, Next.js, Vite, Tailwind.
+- Web3: Ethers.js, Wagmi, RainbowKit, MetaMask, Base/Ethereum smart contracts.
+- Data/Backend: Supabase, lightweight Node backends for signing and API endpoints.
+
+Status Snapshot
+- Active ecosystem with multiple production-oriented experiments and tools.
+- Strong focus on mobile-friendly UX, retro visual identity, and community utility.

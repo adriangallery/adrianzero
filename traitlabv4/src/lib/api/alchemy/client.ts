@@ -35,6 +35,10 @@ interface AlchemyNFTsResponse {
   totalCount: number;
 }
 
+interface AlchemyNFTPageResponse extends AlchemyNFTsResponse {
+  hasMore: boolean;
+}
+
 interface GetNFTsOptions {
   owner: string;
   contractAddresses?: string[];
@@ -49,6 +53,31 @@ class AlchemyClient {
 
   constructor(apiKey: string) {
     this.baseUrl = `${ALCHEMY_BASE_URL}/${apiKey}`;
+  }
+
+  private getAdaptivePageSize(pageSize?: number): number {
+    if (pageSize) {
+      return pageSize;
+    }
+
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      return 50;
+    }
+
+    return 100;
+  }
+
+  private dedupeNFTs(nfts: AlchemyNFT[]): AlchemyNFT[] {
+    const seen = new Set<string>();
+
+    return nfts.filter((nft) => {
+      const key = `${nft.contract.address.toLowerCase()}:${nft.tokenId}`;
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
   }
 
   /**
@@ -126,12 +155,60 @@ class AlchemyClient {
     owner: string,
     contractAddresses?: string[]
   ): Promise<AlchemyNFTsResponse> {
-    return this.getNFTs({
+    const allNfts: AlchemyNFT[] = [];
+    const seenPageKeys = new Set<string>();
+    let pageKey: string | undefined;
+    let totalCount = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const page = await this.getERC721TokensPage(owner, contractAddresses, pageKey);
+      allNfts.push(...page.ownedNfts);
+      totalCount = page.totalCount;
+
+      if (!page.pageKey) {
+        hasMore = false;
+        break;
+      }
+
+      if (seenPageKeys.has(page.pageKey)) {
+        console.warn('[Alchemy] Detected ERC721 pageKey loop, stopping pagination');
+        hasMore = false;
+        break;
+      }
+
+      seenPageKeys.add(page.pageKey);
+      pageKey = page.pageKey;
+    }
+
+    return {
+      ownedNfts: this.dedupeNFTs(allNfts),
+      totalCount,
+    };
+  }
+
+  /**
+   * Get a single ERC721 page for owner
+   */
+  async getERC721TokensPage(
+    owner: string,
+    contractAddresses?: string[],
+    pageKey?: string,
+    pageSize?: number
+  ): Promise<AlchemyNFTPageResponse> {
+    const response = await this.getNFTs({
       owner,
       contractAddresses,
       tokenType: 'ERC721',
       withMetadata: true,
+      pageKey,
+      pageSize: this.getAdaptivePageSize(pageSize),
     });
+
+    return {
+      ...response,
+      hasMore: Boolean(response.pageKey),
+    };
   }
 
   /**
@@ -142,7 +219,8 @@ class AlchemyClient {
     contractAddresses?: string[]
   ): Promise<AlchemyNFTsResponse> {
     let allNfts: AlchemyNFT[] = [];
-    let pageKey: string | undefined = undefined;
+    const seenPageKeys = new Set<string>();
+    let pageKey: string | undefined;
     let totalCount = 0;
     let pageCount = 0;
 
@@ -154,19 +232,20 @@ class AlchemyClient {
       pageCount++;
       console.log(`[Alchemy] Fetching page ${pageCount}, pageKey:`, pageKey);
 
-      const response = await this.getNFTs({
-        owner,
-        contractAddresses,
-        tokenType: 'ERC1155',
-        withMetadata: true,
-        pageKey,
-        pageSize: 100, // Max per page
-      });
+      const response = await this.getERC1155TokensPage(owner, contractAddresses, pageKey);
 
       console.log(`[Alchemy] Page ${pageCount} returned ${response.ownedNfts.length} tokens`);
       allNfts = allNfts.concat(response.ownedNfts);
       pageKey = response.pageKey;
       totalCount = response.totalCount;
+
+      if (pageKey) {
+        if (seenPageKeys.has(pageKey)) {
+          console.warn('[Alchemy] Detected ERC1155 pageKey loop, stopping pagination');
+          break;
+        }
+        seenPageKeys.add(pageKey);
+      }
 
       // Safety: prevent infinite loop
       if (pageCount > 50) {
@@ -178,8 +257,32 @@ class AlchemyClient {
     console.log(`[Alchemy] Total fetched: ${allNfts.length} tokens across ${pageCount} pages`);
 
     return {
-      ownedNfts: allNfts,
+      ownedNfts: this.dedupeNFTs(allNfts),
       totalCount,
+    };
+  }
+
+  /**
+   * Get a single ERC1155 page for owner
+   */
+  async getERC1155TokensPage(
+    owner: string,
+    contractAddresses?: string[],
+    pageKey?: string,
+    pageSize?: number
+  ): Promise<AlchemyNFTPageResponse> {
+    const response = await this.getNFTs({
+      owner,
+      contractAddresses,
+      tokenType: 'ERC1155',
+      withMetadata: true,
+      pageKey,
+      pageSize: this.getAdaptivePageSize(pageSize),
+    });
+
+    return {
+      ...response,
+      hasMore: Boolean(response.pageKey),
     };
   }
 
@@ -205,4 +308,4 @@ class AlchemyClient {
 export const alchemyClient = new AlchemyClient(API_KEY || '');
 
 // Export types
-export type { AlchemyNFT, AlchemyNFTsResponse, GetNFTsOptions };
+export type { AlchemyNFT, AlchemyNFTsResponse, AlchemyNFTPageResponse, GetNFTsOptions };

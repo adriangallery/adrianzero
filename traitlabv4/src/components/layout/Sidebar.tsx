@@ -5,60 +5,8 @@
 
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  BarChart3,
-  Frame,
-  Palette,
-  Package,
-  FlaskConical,
-  Hammer,
-  Edit3,
-  Car,
-  Search,
-  Rocket,
-  ShoppingBag,
-  Calendar,
-  HelpCircle,
-  Grid,
-  Droplets,
-  Gift,
-  Award,
-  Zap,
-} from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useAccount } from 'wagmi';
-import { useHasAdrianZero } from '@/features/onboarding/hooks/useHasAdrianZero';
-import { useHasAdrianPunks } from '@/features/shared/hooks/useHasAdrianPunks';
-
-interface NavItem {
-  path: string;
-  label: string;
-  icon: React.ReactNode;
-  requiresAdrianZero?: boolean;
-  requiresAdrianPunks?: boolean;
-  requiresConnection?: boolean;
-}
-
-const navItems: NavItem[] = [
-  { path: '/', label: 'Dashboard', icon: <BarChart3 className="h-5 w-5" /> },
-  { path: '/zero', label: 'ZERO', icon: <Zap className="h-5 w-5" /> },
-  { path: '/onboarding', label: 'Mint', icon: <Rocket className="h-5 w-5" /> },
-  { path: '/adrianzero', label: 'My NFTs', icon: <Frame className="h-5 w-5" /> },
-  { path: '/traits', label: 'Traits', icon: <Palette className="h-5 w-5" />, requiresConnection: true },
-  { path: '/packs', label: 'Packs', icon: <Package className="h-5 w-5" />, requiresConnection: true },
-  { path: '/serum', label: 'Serum', icon: <FlaskConical className="h-5 w-5" /> },
-  { path: '/crafting', label: 'Crafting', icon: <Hammer className="h-5 w-5" />, requiresAdrianZero: true },
-  { path: '/custom', label: 'Custom', icon: <Edit3 className="h-5 w-5" />, requiresAdrianZero: true },
-  { path: '/lambo', label: 'Lambo', icon: <Car className="h-5 w-5" />, requiresAdrianZero: true },
-  { path: '/search', label: 'Search', icon: <Search className="h-5 w-5" />, requiresAdrianZero: true },
-  { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> },
-  { path: '/shitdrop', label: 'ShitDROP', icon: <Droplets className="h-5 w-5" /> },
-  { path: '/rewards', label: 'Rewards', icon: <Gift className="h-5 w-5" />, requiresAdrianPunks: true },
-  { path: '/ogclaim', label: 'OG Claim', icon: <Award className="h-5 w-5" />, requiresAdrianPunks: true },
-  { path: '/shop', label: 'Shop', icon: <ShoppingBag className="h-5 w-5" /> },
-  { path: '/lost', label: 'Timeline', icon: <Calendar className="h-5 w-5" /> },
-  { path: '/whatisit', label: 'About', icon: <HelpCircle className="h-5 w-5" /> },
-];
+import { useVisibleNavItems } from './useVisibleNavItems';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -69,23 +17,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: SidebarProps) {
   const location = useLocation();
   const { prefix, accent } = usePageTitle();
-  const { isConnected } = useAccount();
-  const { hasAdrianZero } = useHasAdrianZero();
-  const { hasPunks } = useHasAdrianPunks();
-
-  // Hide restricted items if wallet disconnected or no required NFTs
-  const visibleItems = navItems.filter((item) => {
-    if (item.requiresConnection && !isConnected) {
-      return false;
-    }
-    if (item.requiresAdrianZero && (!isConnected || !hasAdrianZero)) {
-      return false;
-    }
-    if (item.requiresAdrianPunks && (!isConnected || !hasPunks)) {
-      return false;
-    }
-    return true;
-  });
+  const visibleItems = useVisibleNavItems();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';

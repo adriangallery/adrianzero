@@ -10,6 +10,9 @@ import { useCustomNames } from '@/features/adrianzero/hooks/useCustomNames';
 import { useRenameToken, useNamePrice } from '../hooks/useRename';
 import { useTokenToggle, useSetToggle, useSetBananaToggle, useTogglePrice, AVAILABLE_TOGGLES, TOGGLE_MODES } from '../hooks/useToggles';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
+import { NFTGrid } from '@/components/nft/NFTGrid';
+import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
+import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
 import type { AdrianZeroToken } from '@/types/nft.types';
 import { formatEther } from 'viem';
 
@@ -19,8 +22,14 @@ export function CustomModule() {
   const [showPreview, setShowPreview] = useState(false);
   const [selectedToggles, setSelectedToggles] = useState<Set<number>>(new Set());
   const [previewUrl, setPreviewUrl] = useState('');
+  const isTouchDevice = shouldOptimizeForTouch();
 
-  const { data: tokens = [] } = useAdrianZeroTokens();
+  const {
+    data: tokens = [],
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useAdrianZeroTokens();
   const { data: namePrice = '0' } = useNamePrice();
   const renameToken = useRenameToken();
   const { requireWallet } = useWalletPrompt();
@@ -47,6 +56,15 @@ export function CustomModule() {
 
   // Combined loading state for toggles
   const isTogglesLoading = setToggle.isPending || setBananaToggle.isPending;
+
+  useAutoInfiniteLoading({
+    enabled: true,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedCount: tokensWithNames.length,
+    minimumItems: isTouchDevice ? 80 : 180,
+    fetchNextPage,
+  });
 
   const handleRename = async () => {
     if (!selectedToken || !newName.trim()) return;
@@ -201,64 +219,23 @@ export function CustomModule() {
             Select NFT
           </label>
 
-          {/* NFT Grid - Compact version (same as Lambo) */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-            {tokensWithNames.map((token) => {
-              const imageUrl = token.image?.cachedUrl || token.image?.thumbnailUrl || token.image?.originalUrl || token.metadata?.image;
-              const isSelected = selectedToken?.tokenId === token.tokenId;
-
-              return (
-                <button
-                  key={token.tokenId}
-                  onClick={() => {
-                    if (isSelected) {
-                      setSelectedToken(null);
-                      setNewName('');
-                    } else {
-                      setSelectedToken(token);
-                      setNewName('');
-                    }
-                  }}
-                  className={`
-                    relative aspect-square rounded-lg overflow-hidden transition-all
-                    ${isSelected
-                      ? 'ring-2 ring-primary shadow-lg scale-105'
-                      : 'hover:ring-1 hover:ring-border hover:shadow-md'
-                    }
-                    bg-muted
-                  `}
-                >
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={token.name || `#${token.tokenId}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Frame className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                  )}
-
-                  {/* Token ID Badge */}
-                  <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-accent/90 rounded text-[10px] font-medium" style={{ color: '#00ff00' }}>
-                    #{token.tokenId}
-                  </div>
-
-                  {/* Selection Indicator */}
-                  {isSelected && (
-                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          <NFTGrid
+            tokens={tokensWithNames}
+            selectedTokenId={selectedToken?.tokenId}
+            onTokenSelect={(token) => {
+              if (selectedToken?.tokenId === token.tokenId) {
+                setSelectedToken(null);
+              } else {
+                setSelectedToken(token);
+              }
+              setNewName('');
+            }}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+          />
         </div>
 
         {/* Right Column: Preview + Controls */}

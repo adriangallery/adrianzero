@@ -4,7 +4,7 @@
  * Shows mock data when wallet is not connected
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { alchemyClient } from '@/lib/api/alchemy/client';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
@@ -29,17 +29,21 @@ const MOCK_TOKEN: AdrianZeroToken = {
 export function useAdrianZeroTokens() {
   const { address } = useAccount();
 
-  return useQuery({
+  const query = useInfiniteQuery({
     queryKey: ['adrianzero-tokens', address],
-    queryFn: async () => {
-      // Return mock data when no wallet is connected
+    initialPageParam: undefined as string | undefined,
+    queryFn: async ({ pageParam }) => {
       if (!address) {
-        return [MOCK_TOKEN];
+        return {
+          tokens: [MOCK_TOKEN],
+          nextPageKey: undefined,
+          totalCount: 1,
+        };
       }
 
-      const response = await alchemyClient.getERC721Tokens(address, [
+      const response = await alchemyClient.getERC721TokensPage(address, [
         CONTRACT_ADDRESSES.ADRIAN_ZERO,
-      ]);
+      ], pageParam);
 
       // Transform Alchemy response to our AdrianZeroToken type
       // Use Vercel API for images: https://adrianlab.vercel.app/api/render/{tokenId}
@@ -61,10 +65,39 @@ export function useAdrianZeroTokens() {
         };
       });
 
-      return tokens;
+      return {
+        tokens,
+        nextPageKey: response.pageKey,
+        totalCount: response.totalCount,
+      };
     },
+    getNextPageParam: (lastPage) => lastPage.nextPageKey,
     enabled: true, // Always enabled to show mock data
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   });
+
+  const pages = query.data?.pages || [];
+  const seen = new Set<string>();
+  const flattenedTokens: AdrianZeroToken[] = [];
+
+  pages.forEach((page) => {
+    page.tokens.forEach((token) => {
+      const key = token.tokenId;
+      if (seen.has(key)) return;
+      seen.add(key);
+      flattenedTokens.push(token);
+    });
+  });
+
+  const totalCount = pages.length === 0
+    ? (address ? 0 : 1)
+    : Math.max(pages[pages.length - 1]?.totalCount || 0, flattenedTokens.length);
+
+  return {
+    ...query,
+    data: flattenedTokens,
+    loadedCount: flattenedTokens.length,
+    totalCount,
+  };
 }

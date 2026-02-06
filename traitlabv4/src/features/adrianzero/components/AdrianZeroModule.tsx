@@ -9,6 +9,7 @@ import { useAccount } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check, Sparkles, Rocket, ArrowRight } from 'lucide-react';
 import { NFTGrid } from '@/components/nft/NFTGrid';
+import { ProgressiveLoadIndicator } from '@/components/common/ProgressiveLoadIndicator';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
 import { useAdrianZeroTokens } from '../hooks/useAdrianZeroTokens';
@@ -18,6 +19,8 @@ import { useTraitsByCategory, useTraitCategories } from '@/features/traits/hooks
 import { useApplyTraits } from '@/features/traits/hooks/useApplyTraits';
 import { useTraitsStore } from '@/features/traits/store/traitsStore';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
+import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
+import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
 export function AdrianZeroModule() {
@@ -28,9 +31,19 @@ export function AdrianZeroModule() {
   const [isTraitPreviewExpanded, setIsTraitPreviewExpanded] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const isTouchDevice = shouldOptimizeForTouch();
 
   // Load tokens
-  const { data: tokens = [], isLoading, error } = useAdrianZeroTokens();
+  const {
+    data: tokens = [],
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedCount,
+    totalCount,
+  } = useAdrianZeroTokens();
 
   // Load custom names
   const tokenIds = tokens.map((t) => t.tokenId);
@@ -48,7 +61,16 @@ export function AdrianZeroModule() {
   const { setSelectedToken, sortBy, sortOrder } = useAdrianZeroStore();
 
   // Load traits
-  const { data: traitsByCategory, allTraits, isLoading: traitsLoading } = useTraitsByCategory();
+  const {
+    data: traitsByCategory,
+    allTraits,
+    isLoading: traitsLoading,
+    fetchNextPage: fetchNextTraitsPage,
+    hasNextPage: hasNextTraitsPage,
+    isFetchingNextPage: isFetchingNextTraitsPage,
+    loadedCount: loadedTraitsCount,
+    totalCount: totalTraitsCount,
+  } = useTraitsByCategory();
   const categories = useTraitCategories();
 
   // Trait selection store
@@ -184,6 +206,24 @@ export function AdrianZeroModule() {
     setIsTraitPreviewExpanded(false);
   };
 
+  useAutoInfiniteLoading({
+    enabled: isConnected,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedCount,
+    minimumItems: isTouchDevice ? 120 : 240,
+    fetchNextPage,
+  });
+
+  useAutoInfiniteLoading({
+    enabled: isConnected,
+    hasNextPage: hasNextTraitsPage,
+    isFetchingNextPage: isFetchingNextTraitsPage,
+    loadedCount: loadedTraitsCount,
+    minimumItems: isTouchDevice ? 160 : 320,
+    fetchNextPage: fetchNextTraitsPage,
+  });
+
   const nftImageUrl = selectedNFT?.image?.cachedUrl || selectedNFT?.image?.originalUrl || selectedNFT?.metadata?.image;
   const displayName = selectedNFT?.name || selectedNFT?.metadata?.name || (selectedNFT ? `AdrianZERO #${selectedNFT.tokenId}` : '');
 
@@ -264,8 +304,23 @@ export function AdrianZeroModule() {
             tokens={sortedTokens}
             selectedTokenId={selectedNFT?.tokenId}
             onTokenSelect={handleTokenSelect}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
             emptyMessage="No AdrianZERO NFTs found in your wallet"
           />
+
+          {isConnected && totalCount > 0 && (
+            <div className="mt-4">
+              <ProgressiveLoadIndicator
+                loadedCount={loadedCount}
+                totalCount={totalCount}
+                isLoading={isFetchingNextPage}
+              />
+            </div>
+          )}
 
           {/* Get Your ZERO Card - Show when connected but no NFTs */}
           {isConnected && tokens.length === 0 && !isLoading && (
@@ -458,12 +513,27 @@ export function AdrianZeroModule() {
                 traits={displayTraits}
                 selectedTraitIds={selectedTraitIds}
                 onTraitSelect={handleTraitSelect}
+                onEndReached={() => {
+                  if (hasNextTraitsPage && !isFetchingNextTraitsPage) {
+                    fetchNextTraitsPage();
+                  }
+                }}
                 emptyMessage={
                   activeCategory === 'ALL'
                     ? 'No traits found in your wallet'
                     : `No ${activeCategory.toLowerCase()} traits found`
                 }
               />
+            )}
+
+            {isConnected && totalTraitsCount > 0 && (
+              <div className="mt-4">
+                <ProgressiveLoadIndicator
+                  loadedCount={loadedTraitsCount}
+                  totalCount={totalTraitsCount}
+                  isLoading={isFetchingNextTraitsPage}
+                />
+              </div>
             )}
           </div>
         </div>

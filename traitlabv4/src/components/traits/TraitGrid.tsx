@@ -14,6 +14,7 @@ interface TraitGridProps {
   traits: Trait[];
   selectedTraitIds: string[];
   onTraitSelect?: (trait: Trait) => void;
+  onEndReached?: () => void;
   emptyMessage?: string;
 }
 
@@ -21,6 +22,7 @@ export function TraitGrid({
   traits,
   selectedTraitIds,
   onTraitSelect,
+  onEndReached,
   emptyMessage = 'No traits found',
 }: TraitGridProps) {
   const isMobile = shouldOptimizeForTouch();
@@ -60,6 +62,7 @@ export function TraitGrid({
         style={{ height: 'calc(100vh - 220px)' }}
         totalCount={rows.length}
         data={rows}
+        endReached={() => onEndReached?.()}
         itemContent={(_index, row) => {
           return (
             <div className="grid grid-cols-2 gap-3 mb-3">

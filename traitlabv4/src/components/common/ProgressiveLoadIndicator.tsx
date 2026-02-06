@@ -26,6 +26,7 @@ export function ProgressiveLoadIndicator({
 }: ProgressiveLoadIndicatorProps) {
   const progress = totalCount > 0 ? Math.round((loadedCount / totalCount) * 100) : 100;
   const hasMore = loadedCount < totalCount;
+  const hasActions = Boolean(onLoadMore || onLoadAll);
 
   if (!hasMore && !isLoading) {
     return null; // Nothing to show if all loaded
@@ -49,7 +50,7 @@ export function ProgressiveLoadIndicator({
       )}
 
       {/* Action Buttons */}
-      {hasMore && (
+      {hasMore && hasActions && (
         <div className="flex items-center justify-center gap-3">
           {onLoadMore && (
             <button
@@ -71,6 +72,12 @@ export function ProgressiveLoadIndicator({
               Load All ({totalCount - loadedCount} remaining)
             </button>
           )}
+        </div>
+      )}
+
+      {hasMore && !hasActions && !isLoading && (
+        <div className="text-center text-sm text-muted-foreground">
+          Loading automatically as you browse
         </div>
       )}
 

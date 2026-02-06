@@ -10,6 +10,9 @@ import { Unplug, FlaskConical } from 'lucide-react';
 import { useSerums } from '../hooks/useSerums';
 import { useApplySerum } from '../hooks/useApplySerum';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
+import { NFTGrid } from '@/components/nft/NFTGrid';
+import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
+import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
 import type { Serum } from '@/types/nft.types';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
@@ -17,13 +20,29 @@ export function SerumModule() {
   const { isConnected } = useAccount();
   const [selectedNFT, setSelectedNFT] = useState<AdrianZeroToken | null>(null);
   const [selectedSerum, setSelectedSerum] = useState<Serum | null>(null);
+  const isTouchDevice = shouldOptimizeForTouch();
 
   // Load data
   const { data: serums = [], isLoading: serumsLoading } = useSerums();
-  const { data: nfts = [], isLoading: nftsLoading } = useAdrianZeroTokens();
+  const {
+    data: nfts = [],
+    isLoading: nftsLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useAdrianZeroTokens();
 
   // Mutations
   const applySerum = useApplySerum();
+
+  useAutoInfiniteLoading({
+    enabled: isConnected,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedCount: nfts.length,
+    minimumItems: isTouchDevice ? 80 : 180,
+    fetchNextPage,
+  });
 
   const isLoading = serumsLoading || nftsLoading;
 
@@ -99,20 +118,17 @@ export function SerumModule() {
             {nfts.length === 0 ? (
               <p className="text-muted-foreground">No NFTs found</p>
             ) : (
-              <div className="grid grid-cols-2 gap-3 max-h-[600px] overflow-y-auto p-1">
-                {nfts.map((nft) => {
-                  const imageUrl = nft.image?.cachedUrl || nft.image?.thumbnailUrl || nft.image?.originalUrl || nft.metadata?.image;
-                  return (
-                    <SelectableCard
-                      key={nft.tokenId}
-                      isSelected={selectedNFT?.tokenId === nft.tokenId}
-                      onClick={() => setSelectedNFT(nft)}
-                      imageUrl={imageUrl}
-                      label={nft.name || `#${nft.tokenId}`}
-                    />
-                  );
-                })}
-              </div>
+              <NFTGrid
+                tokens={nfts}
+                selectedTokenId={selectedNFT?.tokenId}
+                onTokenSelect={(token) => setSelectedNFT(token)}
+                onEndReached={() => {
+                  if (hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                  }
+                }}
+                emptyMessage="No NFTs found"
+              />
             )}
           </div>
 

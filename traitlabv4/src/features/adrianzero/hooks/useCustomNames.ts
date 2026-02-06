@@ -8,6 +8,8 @@ import { usePublicClient } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { NAME_REGISTRY_ABI } from '@/lib/web3/abi';
 
+const customNamesCache = new Map<string, string | null>();
+
 export function useCustomNames(tokenIds: string[]) {
   const publicClient = usePublicClient();
 
@@ -18,7 +20,9 @@ export function useCustomNames(tokenIds: string[]) {
         return {};
       }
 
-      const namePromises = tokenIds.map(async (tokenId) => {
+      const missingTokenIds = tokenIds.filter((tokenId) => !customNamesCache.has(tokenId));
+
+      const namePromises = missingTokenIds.map(async (tokenId) => {
         try {
           const name = await publicClient.readContract({
             address: CONTRACT_ADDRESSES.ADRIAN_NAME_REGISTRY,
@@ -41,11 +45,14 @@ export function useCustomNames(tokenIds: string[]) {
       });
 
       const results = await Promise.all(namePromises);
-
-      // Convert to object map
-      const nameMap: Record<string, string | null> = {};
       results.forEach((result) => {
-        nameMap[result.tokenId] = result.name;
+        customNamesCache.set(result.tokenId, result.name);
+      });
+
+      // Convert requested tokenIds to object map from cache
+      const nameMap: Record<string, string | null> = {};
+      tokenIds.forEach((tokenId) => {
+        nameMap[tokenId] = customNamesCache.get(tokenId) ?? null;
       });
 
       return nameMap;

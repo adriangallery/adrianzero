@@ -7,6 +7,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { AlertTriangle, X, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
+import { ProgressiveLoadIndicator } from '@/components/common/ProgressiveLoadIndicator';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
 import { useTraitsByCategory, useTraitCategories } from '../hooks/useTraits';
@@ -14,6 +15,8 @@ import { useApplyTraits } from '../hooks/useApplyTraits';
 import { useTraitsStore } from '../store/traitsStore';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
+import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
+import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
 import type { TraitCategory } from '@/types/nft.types';
 
 export function TraitsModule() {
@@ -22,9 +25,20 @@ export function TraitsModule() {
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const isTouchDevice = shouldOptimizeForTouch();
 
   // Load traits
-  const { data: traitsByCategory, allTraits, isLoading, error } = useTraitsByCategory();
+  const {
+    data: traitsByCategory,
+    allTraits,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedCount,
+    totalCount,
+  } = useTraitsByCategory();
   const categories = useTraitCategories();
 
   // Stores
@@ -111,6 +125,15 @@ export function TraitsModule() {
     if (selectedTraits.length === 0) return;
     setIsPreviewExpanded(!isPreviewExpanded);
   };
+
+  useAutoInfiniteLoading({
+    enabled: isConnected,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedCount,
+    minimumItems: isTouchDevice ? 160 : 320,
+    fetchNextPage,
+  });
 
   if (isLoading) {
     return (
@@ -255,12 +278,27 @@ export function TraitsModule() {
           traits={displayTraits}
           selectedTraitIds={selectedTraitIds}
           onTraitSelect={handleTraitSelect}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
           emptyMessage={
             activeCategory === 'ALL'
               ? 'No traits found in your wallet'
               : `No ${activeCategory.toLowerCase()} traits found`
           }
         />
+
+        {isConnected && totalCount > 0 && (
+          <div className="mt-4">
+            <ProgressiveLoadIndicator
+              loadedCount={loadedCount}
+              totalCount={totalCount}
+              isLoading={isFetchingNextPage}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

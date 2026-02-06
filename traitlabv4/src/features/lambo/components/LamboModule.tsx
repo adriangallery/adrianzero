@@ -7,6 +7,9 @@ import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Unplug, Car } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
+import { NFTGrid } from '@/components/nft/NFTGrid';
+import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
+import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
 import { useLambo, LAMBO_COLORS } from '../hooks/useLambo';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
@@ -16,9 +19,24 @@ export function LamboModule() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+  const isTouchDevice = shouldOptimizeForTouch();
 
-  const { data: tokens = [] } = useAdrianZeroTokens();
+  const {
+    data: tokens = [],
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useAdrianZeroTokens();
   const { selectedColor, setSelectedColor, generateLamboUrl, downloadImage } = useLambo();
+
+  useAutoInfiniteLoading({
+    enabled: isConnected,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedCount: tokens.length,
+    minimumItems: isTouchDevice ? 80 : 180,
+    fetchNextPage,
+  });
 
   const handleDownload = async () => {
     if (!selectedToken) return;
@@ -69,63 +87,23 @@ export function LamboModule() {
             Select NFT
           </label>
 
-          {/* NFT Grid - Compact version */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-            {tokens.map((token) => {
-              const imageUrl = token.image?.cachedUrl || token.image?.thumbnailUrl || token.image?.originalUrl || token.metadata?.image;
-              const isSelected = selectedToken?.tokenId === token.tokenId;
-
-              return (
-                <button
-                  key={token.tokenId}
-                  onClick={() => {
-                    if (isSelected) {
-                      setSelectedToken(null);
-                    } else {
-                      setSelectedToken(token);
-                      setImageLoading(true);
-                    }
-                  }}
-                  className={`
-                    relative aspect-square rounded-lg overflow-hidden transition-all
-                    ${isSelected
-                      ? 'ring-2 ring-primary shadow-lg scale-105'
-                      : 'hover:ring-1 hover:ring-border hover:shadow-md'
-                    }
-                    bg-muted
-                  `}
-                >
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={token.name || `#${token.tokenId}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Car className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                  )}
-
-                  {/* Token ID Badge */}
-                  <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-accent/90 rounded text-[10px] font-medium" style={{ color: '#00ff00' }}>
-                    #{token.tokenId}
-                  </div>
-
-                  {/* Selection Indicator */}
-                  {isSelected && (
-                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+          <NFTGrid
+            tokens={tokens}
+            selectedTokenId={selectedToken?.tokenId}
+            onTokenSelect={(token) => {
+              if (selectedToken?.tokenId === token.tokenId) {
+                setSelectedToken(null);
+              } else {
+                setSelectedToken(token);
+                setImageLoading(true);
+              }
+            }}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+          />
         </div>
 
         {/* Preview + Color Selection */}

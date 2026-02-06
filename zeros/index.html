@@ -26,15 +26,20 @@
         /* Banner Section */
         .banner-section {
             width: 100%;
+            min-height: 88vh;
             position: relative;
             z-index: 1;
+            overflow: hidden;
+            border-bottom: 2px solid rgba(0, 255, 0, 0.35);
+            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.55);
         }
 
         .banner-image {
             width: 100%;
-            height: auto;
+            height: 88vh;
             display: block;
             object-fit: cover;
+            object-position: center;
         }
 
         /* Mobile banner overlay to prevent menu overlap */
@@ -661,6 +666,14 @@
             .banner-mobile-overlay {
                 display: block;
             }
+
+            .banner-section {
+                min-height: 62vh;
+            }
+
+            .banner-image {
+                height: 62vh;
+            }
         }
 
         /* Responsive */
@@ -847,6 +860,15 @@
         <span>⚠️ Please switch to Base Network</span>
         <button onclick="switchToBase()">Switch Network</button>
     </div>
+
+    <section class="banner-section" aria-label="ZERO Header Banner">
+        <img
+            class="banner-image"
+            src="../Firefly_Flux_recreate_this_logo_in_green_gel_on_a_black_background._347228.jpg"
+            alt="AdrianZERO header visual"
+        >
+        <div class="banner-mobile-overlay"></div>
+    </section>
 
     <!-- Steps Section -->
     <section class="steps-section" id="get-started">
@@ -1561,4 +1583,3 @@
     </script>
 </body>
 </html>
-
