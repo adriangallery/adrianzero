@@ -34,26 +34,6 @@ export function MainLayout() {
     };
   }, []);
 
-  if (isZeroLanding) {
-    return (
-      <div className="h-screen overflow-hidden bg-background">
-        <Suspense
-          fallback={
-            <div className="flex h-full items-center justify-center">
-              <div className="shimmer h-16 w-16 rounded-full" />
-            </div>
-          }
-        >
-          <div className="h-full overflow-y-auto">
-            <Outlet />
-          </div>
-        </Suspense>
-
-        <ToastContainer />
-      </div>
-    );
-  }
-
   if (isDesktop) {
     return (
       <div className="h-screen overflow-hidden bg-background">
@@ -66,11 +46,17 @@ export function MainLayout() {
             </div>
           }
         >
-          <div className="h-full overflow-y-auto pt-20">
-            <div className="container mx-auto max-w-7xl px-4 py-6">
+          {isZeroLanding ? (
+            <div className="h-full overflow-y-auto">
               <Outlet />
             </div>
-          </div>
+          ) : (
+            <div className="h-full overflow-y-auto pt-20">
+              <div className="container mx-auto max-w-7xl px-4 py-6">
+                <Outlet />
+              </div>
+            </div>
+          )}
         </Suspense>
 
         <ToastContainer />
@@ -91,17 +77,31 @@ export function MainLayout() {
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
-        <Container>
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center py-16">
-                <div className="shimmer w-16 h-16 rounded-full mb-4" />
-              </div>
-            }
-          >
-            <Outlet />
-          </Suspense>
-        </Container>
+        {isZeroLanding ? (
+          <div className="flex-1 overflow-y-auto">
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center py-16">
+                  <div className="shimmer w-16 h-16 rounded-full mb-4" />
+                </div>
+              }
+            >
+              <Outlet />
+            </Suspense>
+          </div>
+        ) : (
+          <Container>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center py-16">
+                  <div className="shimmer w-16 h-16 rounded-full mb-4" />
+                </div>
+              }
+            >
+              <Outlet />
+            </Suspense>
+          </Container>
+        )}
       </div>
 
       {/* Toast Notifications */}

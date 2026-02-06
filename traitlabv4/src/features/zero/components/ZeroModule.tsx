@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ConnectButton as RainbowConnectButton } from '@rainbow-me/rainbowkit';
-import { ArrowRight, Menu, ShieldCheck, Sparkles, Wallet, X, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { getGitHubImageUrl } from '@/config/images';
 import {
   SHOWCASE_GITHUB_PATH,
@@ -27,121 +26,51 @@ const traitEvolutionFrames = [
   '/zero310-4.png',
 ];
 
-const zeroNavLinks = [
-  { to: '/zero', label: 'ZERO Home' },
-  { to: '/mint', label: 'Mint' },
-  { to: '/adrianzero', label: 'My NFTs' },
-  { to: '/traits', label: 'Traits' },
-  { to: '/gallery', label: 'Gallery' },
-  { to: '/whatisit', label: 'About' },
-];
-
-function FloatingWalletButton() {
-  return (
-    <RainbowConnectButton.Custom>
-      {({
-        account,
-        chain,
-        openAccountModal,
-        openChainModal,
-        openConnectModal,
-        authenticationStatus,
-        mounted,
-      }) => {
-        const ready = mounted && authenticationStatus !== 'loading';
-        const connected =
-          ready &&
-          account &&
-          chain &&
-          (!authenticationStatus || authenticationStatus === 'authenticated');
-
-        return (
-          <div
-            {...(!ready && {
-              'aria-hidden': true,
-              style: {
-                opacity: 0,
-                pointerEvents: 'none',
-                userSelect: 'none',
-              },
-            })}
-          >
-            {!connected ? (
-              <button
-                onClick={openConnectModal}
-                type="button"
-                className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-[#0d1b35]/85 px-4 text-sm font-bold uppercase tracking-[0.12em] text-[#dcf7ff] shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur"
-              >
-                <Wallet className="h-4 w-4" />
-                Connect
-              </button>
-            ) : chain.unsupported ? (
-              <button
-                onClick={openChainModal}
-                type="button"
-                className="inline-flex h-12 items-center rounded-xl border border-red-300/60 bg-red-500/20 px-4 text-sm font-bold uppercase tracking-[0.12em] text-red-100"
-              >
-                Wrong Network
-              </button>
-            ) : (
-              <button
-                onClick={openAccountModal}
-                type="button"
-                className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-[#0d1b35]/85 px-4 text-sm font-bold uppercase tracking-[0.1em] text-[#dcf7ff] shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur"
-              >
-                {chain.hasIcon && chain.iconUrl ? (
-                  <img
-                    src={chain.iconUrl}
-                    alt={chain.name ?? 'Network'}
-                    className="h-5 w-5 rounded-full"
-                  />
-                ) : (
-                  <Wallet className="h-4 w-4" />
-                )}
-                <span className="max-w-[120px] truncate sm:max-w-[170px]">{account.displayName}</span>
-              </button>
-            )}
-          </div>
-        );
-      }}
-    </RainbowConnectButton.Custom>
-  );
-}
+const LIME = '#00ff00';
 
 export const ZeroModule: React.FC = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [activeFrame, setActiveFrame] = useState(0);
   const [useFallbackFrame, setUseFallbackFrame] = useState(false);
-  const [isFrameAutoPlaying, setIsFrameAutoPlaying] = useState(true);
   const [showcaseNfts, setShowcaseNfts] = useState<ShowcaseNFT[]>(SHOWCASE_NFTS);
+  const heroRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    let raf = 0;
+
+    const onScroll = () => {
+      if (raf) cancelAnimationFrame(raf);
+
+      raf = requestAnimationFrame(() => {
+        // Hero frame-based scroll
+        if (heroRef.current) {
+          const rect = heroRef.current.getBoundingClientRect();
+          const viewport = window.innerHeight;
+          const start = viewport * 0.86;
+          const end = -rect.height * 0.35;
+          const denominator = start - end || 1;
+          const progress = Math.min(1, Math.max(0, (start - rect.top) / denominator));
+          const nextFrame = Math.min(
+            traitEvolutionFrames.length - 1,
+            Math.floor(progress * traitEvolutionFrames.length)
+          );
+
+          setActiveFrame((prev) => (prev === nextFrame ? prev : nextFrame));
+        }
+      });
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
-      document.body.style.overflow = '';
+      window.removeEventListener('scroll', onScroll);
+      if (raf) cancelAnimationFrame(raf);
     };
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!isFrameAutoPlaying) return;
-    if (activeFrame >= traitEvolutionFrames.length - 1) {
-      setIsFrameAutoPlaying(false);
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      setActiveFrame((prev) => Math.min(prev + 1, traitEvolutionFrames.length - 1));
-    }, 1300);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [activeFrame, isFrameAutoPlaying]);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -158,7 +87,6 @@ export const ZeroModule: React.FC = () => {
 
         const files: GitHubFile[] = await response.json();
         const pngFiles = files.filter((file) => file.type === 'file' && file.name.endsWith('.png'));
-
         if (pngFiles.length === 0) return;
 
         const shuffled = [...pngFiles];
@@ -176,16 +104,13 @@ export const ZeroModule: React.FC = () => {
           };
         });
 
-        if (selected.length > 0) {
-          setShowcaseNfts(selected);
-        }
+        if (selected.length > 0) setShowcaseNfts(selected);
       } catch {
-        // Keep fallback list when GitHub API is unavailable
+        // keep fallback list
       }
     };
 
     void loadGitHubShowcase();
-
     return () => controller.abort();
   }, []);
 
@@ -197,60 +122,41 @@ export const ZeroModule: React.FC = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#06080d] text-white">
-      <div className="fixed left-4 right-4 top-4 z-[60] flex items-center justify-between sm:left-6 sm:right-6 lg:left-8 lg:right-8">
-        <button
-          onClick={() => setMenuOpen((prev) => !prev)}
-          className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-[#0d1b35]/85 px-4 text-sm font-bold uppercase tracking-[0.12em] text-[#dcf7ff] shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur transition-colors hover:bg-[#14264a]"
-          aria-label="Toggle navigation menu"
-        >
-          {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          Menu
-        </button>
+      <style>
+        {`
+          @keyframes zero-marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .zero-marquee-track {
+            width: max-content;
+            display: flex;
+          }
+        `}
+      </style>
 
-        <FloatingWalletButton />
-      </div>
+      <section className="relative z-[5] h-screen">
+        <div className="h-full overflow-hidden">
+          <video
+            src="/zero-firefly.mp4"
+            className="h-full w-full object-cover"
+            autoPlay
+            muted
+            playsInline
+          />
+          <div className="pointer-events-none absolute inset-0 bg-black/40" />
+          <div className="absolute bottom-8 left-4 right-4 sm:bottom-10 sm:left-6 sm:right-6 lg:left-8 lg:right-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: LIME }}>Pure Visual Energy</p>
+            <h2 className="mt-2 text-4xl font-black leading-[0.92] sm:text-5xl md:text-6xl lg:text-7xl">
+              FIRE MEETS
+              <br />
+              BLOCKCHAIN
+            </h2>
+          </div>
+        </div>
+      </section>
 
-      <AnimatePresence>
-        {menuOpen && (
-          <>
-            <motion.button
-              type="button"
-              className="fixed inset-0 z-50 bg-black/55"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-              aria-label="Close navigation menu"
-            />
-
-            <motion.nav
-              initial={{ opacity: 0, y: -20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -16, scale: 0.98 }}
-              transition={{ duration: 0.22 }}
-              className="fixed left-4 right-4 top-20 z-[70] overflow-hidden rounded-2xl border border-white/20 bg-[#0a1124]/95 p-3 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur sm:left-6 sm:right-auto sm:w-[340px]"
-            >
-              <div className="mb-2 px-2 pt-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#95b8ff]">
-                Navigation
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                {zeroNavLinks.map((link) => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold uppercase tracking-[0.1em] text-[#def4ff] transition-colors hover:bg-white/10"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </motion.nav>
-          </>
-        )}
-      </AnimatePresence>
-
-      <div className="pointer-events-none absolute inset-0">
+      <div className="pointer-events-none absolute inset-0 z-[1]">
         <div className="absolute -left-28 top-16 h-72 w-72 rounded-full bg-[#00d2ff]/25 blur-3xl" />
         <div className="absolute right-[-140px] top-48 h-[24rem] w-[24rem] rounded-full bg-[#ff8a3d]/20 blur-3xl" />
         <div className="absolute bottom-[-140px] left-1/3 h-[30rem] w-[30rem] rounded-full bg-[#22c55e]/20 blur-3xl" />
@@ -264,7 +170,10 @@ export const ZeroModule: React.FC = () => {
         />
       </div>
 
-      <section className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 pb-20 pt-32 sm:px-6 lg:px-8">
+      <section
+        ref={heroRef}
+        className="relative z-[5] mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 pb-12 pt-24 sm:px-6 lg:px-8"
+      >
         <div className="grid w-full items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <motion.div
@@ -285,10 +194,10 @@ export const ZeroModule: React.FC = () => {
             >
               ZERO IS
               <br />
-              <span className="bg-gradient-to-r from-[#00d2ff] via-[#55f7b7] to-[#ffb258] bg-clip-text text-transparent">
-                PURE VISUAL ENERGY
-              </span>
-            </motion.h1>
+                <span className="bg-gradient-to-r from-[#00d2ff] via-[#55f7b7] to-[#ffb258] bg-clip-text text-transparent">
+                  PURE VISUAL ENERGY
+                </span>
+              </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 26 }}
@@ -307,37 +216,19 @@ export const ZeroModule: React.FC = () => {
             >
               <Link
                 to="/mint"
-                className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#00d2ff] via-[#55f7b7] to-[#ffb258] px-6 py-3 text-sm font-extrabold uppercase tracking-[0.14em] text-[#03101d] transition-transform hover:scale-[1.03]"
+                className="group inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-extrabold uppercase tracking-[0.14em] text-[#041106] transition-transform hover:scale-[1.03]"
+                style={{ background: LIME }}
               >
                 Mint Your ZERO
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/gallery"
-                className="inline-flex items-center rounded-xl border border-white/30 bg-white/5 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-white backdrop-blur transition-colors hover:bg-white/10"
+                className="inline-flex items-center rounded-xl border bg-white/5 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-white backdrop-blur transition-colors hover:bg-white/10"
+                style={{ borderColor: 'rgba(0,255,0,0.45)' }}
               >
                 Explore Gallery
               </Link>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.45 }}
-              className="mt-10 grid max-w-2xl grid-cols-1 gap-3 text-sm text-[#d8e2ff]/85 sm:grid-cols-3"
-            >
-              <div className="rounded-lg border border-white/15 bg-white/5 p-3">
-                <p className="text-xs uppercase tracking-[0.12em] text-[#9dc8ff]">Identity</p>
-                <p className="mt-1 font-semibold">Distinct collectible expression</p>
-              </div>
-              <div className="rounded-lg border border-white/15 bg-white/5 p-3">
-                <p className="text-xs uppercase tracking-[0.12em] text-[#9dc8ff]">Utility</p>
-                <p className="mt-1 font-semibold">Connected to TraitLAB ecosystem</p>
-              </div>
-              <div className="rounded-lg border border-white/15 bg-white/5 p-3">
-                <p className="text-xs uppercase tracking-[0.12em] text-[#9dc8ff]">Culture</p>
-                <p className="mt-1 font-semibold">Built for community participation</p>
-              </div>
             </motion.div>
           </div>
 
@@ -345,7 +236,7 @@ export const ZeroModule: React.FC = () => {
             initial={{ opacity: 0, scale: 0.88, rotate: -6 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 80, damping: 14, delay: 0.2 }}
-            className="relative mx-auto w-full max-w-[430px]"
+            className="relative mx-auto w-full max-w-[520px]"
           >
             <div className="absolute -inset-5 rounded-[2rem] bg-gradient-to-br from-[#00d2ff]/45 via-[#55f7b7]/35 to-[#ff8a3d]/40 blur-2xl" />
             <div className="relative overflow-hidden rounded-[2rem] border border-white/30 bg-[#0a1020]/85 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm">
@@ -363,17 +254,9 @@ export const ZeroModule: React.FC = () => {
 
                 <div className="absolute inset-x-3 bottom-3 flex gap-1 rounded-lg bg-black/35 p-2 backdrop-blur">
                   {traitEvolutionFrames.map((_, idx) => (
-                    <button
+                    <div
                       key={`frame-step-${idx}`}
-                      type="button"
-                      aria-label={`Go to transformation ${idx + 1}`}
-                      onClick={() => {
-                        setActiveFrame(idx);
-                        setIsFrameAutoPlaying(false);
-                      }}
-                      className={`h-1.5 flex-1 rounded-full transition-colors ${
-                        idx <= activeFrame ? 'bg-[#7ef7c7]' : 'bg-white/25 hover:bg-white/45'
-                      }`}
+                    className={`h-1.5 flex-1 rounded-full ${idx <= activeFrame ? 'bg-[#00ff00]' : 'bg-white/25'}`}
                     />
                   ))}
                 </div>
@@ -383,7 +266,7 @@ export const ZeroModule: React.FC = () => {
         </div>
       </section>
 
-      <section className="relative py-20">
+      <section className="relative z-[5] py-12">
         <div className="mx-auto mb-10 max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-black uppercase tracking-[0.08em] sm:text-4xl md:text-5xl">
             Living Visual Gallery
@@ -395,48 +278,48 @@ export const ZeroModule: React.FC = () => {
 
         <div className="space-y-4 overflow-hidden">
           {marqueeRows.map((row, rowIndex) => {
-            const direction = rowIndex % 2 === 0 ? ['0%', '-50%'] : ['-50%', '0%'];
+            const duration = 34 - rowIndex * 4;
+            const track = [...row, ...row];
 
             return (
-              <motion.div
-                key={`row-${rowIndex}`}
-                className="flex gap-4"
-                animate={{ x: direction }}
-                transition={{
-                  duration: 34 - rowIndex * 4,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
-              >
-                {[...row, ...row].map((nft, index) => (
-                  <div
-                    key={`${nft.tokenId}-${index}`}
-                    className="group relative w-[140px] shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-[#0e1730]/80 p-2 sm:w-[170px] md:w-[190px]"
-                  >
-                    <img
-                      src={nft.imageUrl}
-                      alt={`ZERO #${nft.tokenId}`}
-                      loading="lazy"
-                      className="aspect-square w-full rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-[#c8d8ff] sm:text-xs">
-                      <span>ZERO</span>
-                      <span>#{nft.tokenId}</span>
+              <div key={`row-${rowIndex}`} className="overflow-hidden">
+                <div
+                  className="zero-marquee-track gap-4"
+                  style={{
+                    animation: `zero-marquee ${duration}s linear infinite`,
+                    animationDirection: rowIndex % 2 === 0 ? 'normal' : 'reverse',
+                  }}
+                >
+                  {track.map((nft, index) => (
+                    <div
+                      key={`${nft.tokenId}-${index}`}
+                      className="group relative w-[140px] shrink-0 overflow-hidden rounded-2xl border border-white/20 bg-[#0e1730]/80 p-2 sm:w-[170px] md:w-[190px]"
+                    >
+                      <img
+                        src={nft.imageUrl}
+                        alt={`ZERO #${nft.tokenId}`}
+                        loading="lazy"
+                        className="aspect-square w-full rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-[#c8d8ff] sm:text-xs">
+                        <span style={{ color: LIME }}>ZERO</span>
+                        <span>#{nft.tokenId}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </motion.div>
+                  ))}
+                </div>
+              </div>
             );
           })}
         </div>
       </section>
 
-      <section className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <section className="relative z-[5] mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-10 flex items-center justify-between gap-6">
           <h2 className="text-3xl font-black uppercase tracking-[0.08em] sm:text-4xl md:text-5xl">
             More Than A PFP
           </h2>
-          <span className="hidden rounded-full border border-white/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#c6fff2] md:inline-block">
+          <span className="hidden rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#c6fff2] md:inline-block" style={{ borderColor: 'rgba(0,255,0,0.45)', color: LIME }}>
             Ecosystem Utility
           </span>
         </div>
@@ -459,7 +342,7 @@ export const ZeroModule: React.FC = () => {
         </div>
       </section>
 
-      <section className="relative mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+      <section className="relative z-[5] mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {STATS_DATA.map((stat, index) => (
             <motion.div
@@ -470,7 +353,7 @@ export const ZeroModule: React.FC = () => {
               transition={{ duration: 0.35, delay: index * 0.07 }}
               className="rounded-xl border border-white/20 bg-[#0d1a33]/65 p-4 text-center"
             >
-              <p className="text-2xl font-black text-[#7ef7c7] sm:text-3xl">{stat.value}</p>
+              <p className="text-2xl font-black text-[#00ff00] sm:text-3xl">{stat.value}</p>
               <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[#bdd0ff] sm:text-sm">
                 {stat.label}
               </p>
@@ -479,10 +362,10 @@ export const ZeroModule: React.FC = () => {
         </div>
       </section>
 
-      <section className="relative border-t border-white/10 bg-gradient-to-r from-[#071227] via-[#0f1633] to-[#1f1a2f]">
+      <section className="relative z-[5] border-t border-white/10 bg-gradient-to-r from-[#071227] via-[#0f1633] to-[#1f1a2f]">
         <div className="mx-auto flex max-w-7xl flex-col items-start gap-7 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <div className="max-w-2xl">
-            <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#bfffe5]">
+            <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: LIME, borderColor: 'rgba(0,255,0,0.45)' }}>
               <ShieldCheck className="h-4 w-4" />
               Built For The Next Era
             </p>
@@ -497,14 +380,15 @@ export const ZeroModule: React.FC = () => {
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link
               to="/mint"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#7ef7c7] px-6 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#03101d]"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#00ff00] px-6 py-3 text-sm font-extrabold uppercase tracking-[0.12em] text-[#041106]"
             >
               <Zap className="h-4 w-4" />
               Start Minting
             </Link>
             <Link
               to="/traits"
-              className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white"
+              className="inline-flex items-center justify-center rounded-xl border px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white"
+              style={{ borderColor: 'rgba(0,255,0,0.45)' }}
             >
               Open TraitLAB
             </Link>
