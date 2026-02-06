@@ -12,9 +12,15 @@ interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
   variant?: 'desktop' | 'mobile';
+  forceVisibleOnDesktop?: boolean;
 }
 
-export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: SidebarProps) {
+export function Sidebar({
+  isOpen = true,
+  onClose,
+  variant = 'desktop',
+  forceVisibleOnDesktop = false,
+}: SidebarProps) {
   const location = useLocation();
   const { prefix, accent } = usePageTitle();
   const visibleItems = useVisibleNavItems();
@@ -25,12 +31,14 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
   };
 
   if (variant === 'mobile') {
+    const responsiveVisibilityClass = forceVisibleOnDesktop ? '' : ' lg:hidden';
+
     return (
       <>
         {/* Overlay */}
         {isOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            className={`fixed inset-0 bg-black/50 z-40${responsiveVisibilityClass}`}
             onClick={onClose}
           />
         )}
@@ -40,7 +48,7 @@ export function Sidebar({ isOpen = true, onClose, variant = 'desktop' }: Sidebar
           initial={{ x: -280 }}
           animate={{ x: isOpen ? 0 : -280 }}
           transition={{ type: 'spring', damping: 20 }}
-          className="fixed top-0 left-0 h-full w-70 bg-card/95 backdrop-blur-sm border-r border-border z-50 lg:hidden flex flex-col"
+          className={`fixed top-0 left-0 h-full w-70 bg-card/95 backdrop-blur-sm border-r border-border z-50 flex flex-col${responsiveVisibilityClass}`}
         >
           {/* Header - Fixed */}
           <div className="flex-shrink-0 p-4 border-b border-border">
