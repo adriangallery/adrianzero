@@ -34,8 +34,6 @@ export function NotificationBell() {
   }, [isOpen]);
 
   const handleToggle = () => {
-    console.log('[NotificationBell] Toggle clicked, current state:', isOpen);
-    console.log('[NotificationBell] Notifications count:', notifications.length);
     setIsOpen(!isOpen);
     if (!isOpen && unreadCount > 0) {
       markAllAsRead();
