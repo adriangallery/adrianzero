@@ -39,22 +39,17 @@ export function useCountdown(
     return () => clearInterval(interval);
   }, []);
 
-  // Mint has ended
+  // Debug: Log timestamps for troubleshooting
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Countdown] now:', now, 'startTime:', startTime, 'endTime:', endTime, 'isActive:', isActive);
+  }
+
+  // Mint has ended - prioritize this check
   if (endTime > 0 && now >= endTime) {
     return {
       timeRemaining: 'Mint closed',
       isExpired: true,
       label: 'Closed',
-    };
-  }
-
-  // Mint is active and has an end time
-  if (isActive && endTime > 0 && now < endTime) {
-    const remaining = endTime - now;
-    return {
-      timeRemaining: formatDuration(remaining),
-      isExpired: false,
-      label: 'Ends in',
     };
   }
 
@@ -68,7 +63,17 @@ export function useCountdown(
     };
   }
 
-  // Default/fallback
+  // Mint is active and has an end time
+  if (isActive && endTime > 0 && now < endTime) {
+    const remaining = endTime - now;
+    return {
+      timeRemaining: formatDuration(remaining),
+      isExpired: false,
+      label: 'Ends in',
+    };
+  }
+
+  // Mint is active but no end time set
   if (isActive) {
     return {
       timeRemaining: 'No end time',
@@ -77,9 +82,10 @@ export function useCountdown(
     };
   }
 
+  // Inactive/closed
   return {
     timeRemaining: '--',
-    isExpired: false,
-    label: 'Active',
+    isExpired: true,
+    label: 'Closed',
   };
 }

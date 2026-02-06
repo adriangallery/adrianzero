@@ -18,9 +18,19 @@ export function CurrentDrop() {
     mintSuccess,
   } = useShitdrop();
 
-  // Convert BigInt to number for countdown (seconds)
-  const startTime = config ? Number(config.startTime) : 0;
-  const endTime = config ? Number(config.endTime) : 0;
+  // Normalize timestamps: convert BigInt and handle milliseconds vs seconds
+  const normalizeTimestamp = (value: bigint | undefined): number => {
+    if (!value) return 0;
+    let n = Number(value);
+    // If looks like milliseconds (> 1e12), convert to seconds
+    if (n > 1e12) {
+      return Math.floor(n / 1000);
+    }
+    return n;
+  };
+
+  const startTime = config ? normalizeTimestamp(config.startTime) : 0;
+  const endTime = config ? normalizeTimestamp(config.endTime) : 0;
   const maxPerWallet = config ? Number(config.maxPerWallet) : 1;
 
   const countdown = useCountdown(startTime, endTime, isActive);
