@@ -1,5 +1,7 @@
 import { ConnectButton as RainbowConnectButton } from '@rainbow-me/rainbowkit';
 
+const ADRIANZERO_PROFILE_FALLBACK = 'https://adrianlab.vercel.app/api/render/146.png';
+
 export function ConnectButton() {
   return (
     <RainbowConnectButton.Custom>
@@ -60,6 +62,7 @@ export function ConnectButton() {
               const formattedBalance = balance && !balance.toLowerCase().includes('nan')
                 ? ` (${balance})`
                 : '';
+              const profileImage = account.ensAvatar || ADRIANZERO_PROFILE_FALLBACK;
 
               return (
                 <div className="flex gap-1 sm:gap-2 items-center max-w-full min-w-0">
@@ -96,8 +99,13 @@ export function ConnectButton() {
                   <button
                     onClick={openAccountModal}
                     type="button"
-                    className="touch-target px-2 sm:px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity text-sm sm:text-base truncate max-w-[120px] sm:max-w-[200px] min-w-0 overflow-hidden"
+                    className="touch-target inline-flex items-center gap-2 px-2 sm:px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity text-sm sm:text-base truncate max-w-[120px] sm:max-w-[220px] min-w-0 overflow-hidden"
                   >
+                    <img
+                      src={profileImage}
+                      alt={account.ensName ? `${account.ensName} avatar` : 'Wallet profile avatar'}
+                      className="h-5 w-5 rounded-full object-cover flex-shrink-0"
+                    />
                     <span className="truncate">{account.displayName}</span>
                     <span className="hidden sm:inline">{formattedBalance}</span>
                   </button>

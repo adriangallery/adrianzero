@@ -331,7 +331,7 @@ export const ZeroModule: React.FC = () => {
         <div className="h-full overflow-hidden">
           <video
             src="/zero-firefly.mp4"
-            className="h-full w-full object-contain sm:object-cover"
+            className="h-full w-full object-cover object-center scale-[1.14] sm:scale-100"
             autoPlay
             muted
             playsInline
