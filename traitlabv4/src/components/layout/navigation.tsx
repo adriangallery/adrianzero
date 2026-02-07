@@ -31,9 +31,9 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { path: '/dashboard', label: 'Dashboard', icon: <BarChart3 className="h-5 w-5" /> },
+  { path: '/adrianzero', label: 'My NFTs', icon: <Frame className="h-5 w-5" /> },
   { path: '/zero', label: 'ZERO', icon: <Zap className="h-5 w-5" /> },
   { path: '/onboarding', label: 'Mint', icon: <Rocket className="h-5 w-5" /> },
-  { path: '/adrianzero', label: 'My NFTs', icon: <Frame className="h-5 w-5" /> },
   { path: '/traits', label: 'Traits', icon: <Palette className="h-5 w-5" />, requiresConnection: true },
   { path: '/packs', label: 'Packs', icon: <Package className="h-5 w-5" />, requiresConnection: true },
   { path: '/serum', label: 'Serum', icon: <FlaskConical className="h-5 w-5" /> },
@@ -41,7 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/custom', label: 'Custom', icon: <Edit3 className="h-5 w-5" />, requiresAdrianZero: true },
   { path: '/lambo', label: 'Lambo', icon: <Car className="h-5 w-5" />, requiresAdrianZero: true },
   { path: '/search', label: 'Search', icon: <Search className="h-5 w-5" />, requiresAdrianZero: true },
-  { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> },
+  // { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> }, // Hidden
   { path: '/shitdrop', label: 'ShitDROP', icon: <Droplets className="h-5 w-5" /> },
   { path: '/rewards', label: 'Rewards', icon: <Gift className="h-5 w-5" />, requiresAdrianPunks: true },
   { path: '/ogclaim', label: 'OG Claim', icon: <Award className="h-5 w-5" />, requiresAdrianPunks: true },
