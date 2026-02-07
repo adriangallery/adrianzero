@@ -5,6 +5,27 @@
 
 export const CHAIN_ID = 8453; // Base Mainnet
 
+const PLACEHOLDER_ALCHEMY_KEY = 'your_alchemy_api_key_here';
+
+const isValidAlchemyKey = (apiKey?: string): apiKey is string => {
+  return Boolean(apiKey && apiKey.trim() && apiKey !== PLACEHOLDER_ALCHEMY_KEY);
+};
+
+const getAlchemyKeys = (): string[] => {
+  const listKeys = (import.meta.env.VITE_ALCHEMY_API_KEYS || '')
+    .split(',')
+    .map((key: string) => key.trim())
+    .filter((key: string) => key.length > 0);
+
+  const rawKeys = [
+    import.meta.env.VITE_ALCHEMY_API_KEY,
+    import.meta.env.VITE_ALCHEMY_API_KEY_FALLBACK,
+    ...listKeys,
+  ];
+
+  return Array.from(new Set(rawKeys.filter(isValidAlchemyKey)));
+};
+
 export const CONTRACT_ADDRESSES = {
   // Core Contracts
   ADRIAN_ZERO: '0x6e369bf0e4e0c106192d606fb6d85836d684da75', // ERC721
@@ -53,10 +74,10 @@ const buildRpcUrls = () => {
   const urls: string[] = [];
 
   // Priority 1: Alchemy (best rate limits on free tier - 300M compute units/month)
-  const alchemyKey = import.meta.env.VITE_ALCHEMY_API_KEY;
-  if (alchemyKey && alchemyKey !== 'your_alchemy_api_key_here') {
+  const alchemyKeys = getAlchemyKeys();
+  alchemyKeys.forEach((alchemyKey) => {
     urls.push(`https://base-mainnet.g.alchemy.com/v2/${alchemyKey}`);
-  }
+  });
 
   // Priority 2: Infura (good rate limits)
   const infuraKey = import.meta.env.VITE_INFURA_API_KEY || 'cc0c8013b1e044dcba79d4f7ec3b2ba1';

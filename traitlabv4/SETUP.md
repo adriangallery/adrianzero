@@ -23,6 +23,7 @@
    - Go to your project settings
    - Environment Variables section
    - Add: `VITE_ALCHEMY_API_KEY` = `your_api_key_here`
+   - Optional fallback: `VITE_ALCHEMY_API_KEY_FALLBACK` = `your_backup_key_here`
 
 #### 2. Infura API Key (Optional - Fallback)
 
@@ -40,6 +41,7 @@ Already configured with default key. Can be replaced with your own:
 2. Edit `.env` and add your API keys:
    ```env
    VITE_ALCHEMY_API_KEY=your_actual_alchemy_key
+   VITE_ALCHEMY_API_KEY_FALLBACK=your_backup_alchemy_key
    ```
 
 3. Start the dev server:
@@ -56,6 +58,7 @@ Already configured with default key. Can be replaced with your own:
 | Variable | Value | Environment |
 |----------|-------|-------------|
 | `VITE_ALCHEMY_API_KEY` | Your Alchemy API key | Production, Preview, Development |
+| `VITE_ALCHEMY_API_KEY_FALLBACK` | Backup Alchemy key (optional) | Production, Preview, Development |
 
 4. Redeploy your application
 
@@ -86,6 +89,7 @@ The app will try RPCs in this order:
 
 **"Too Many Requests" errors:**
 - Make sure `VITE_ALCHEMY_API_KEY` is set in Vercel
+- Add `VITE_ALCHEMY_API_KEY_FALLBACK` as backup key
 - Verify the API key is valid
 - Check you haven't exceeded your monthly quota
 

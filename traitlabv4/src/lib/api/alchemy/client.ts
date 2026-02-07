@@ -5,7 +5,26 @@
 
 import { ALCHEMY_BASE_URL } from '@/config/contracts';
 
-const API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
+const PLACEHOLDER_ALCHEMY_KEY = 'your_alchemy_api_key_here';
+
+const isValidApiKey = (apiKey?: string): apiKey is string => {
+  return Boolean(apiKey && apiKey.trim() && apiKey !== PLACEHOLDER_ALCHEMY_KEY);
+};
+
+const getAlchemyApiKeys = (): string[] => {
+  const listKeys = (import.meta.env.VITE_ALCHEMY_API_KEYS || '')
+    .split(',')
+    .map((key: string) => key.trim())
+    .filter((key: string) => key.length > 0);
+
+  const rawKeys = [
+    import.meta.env.VITE_ALCHEMY_API_KEY,
+    import.meta.env.VITE_ALCHEMY_API_KEY_FALLBACK,
+    ...listKeys,
+  ];
+
+  return Array.from(new Set(rawKeys.filter(isValidApiKey)));
+};
 
 interface AlchemyNFT {
   contract: {
@@ -49,10 +68,86 @@ interface GetNFTsOptions {
 }
 
 class AlchemyClient {
-  private baseUrl: string;
+  private baseUrls: string[];
+  private activeBaseIndex = 0;
 
-  constructor(apiKey: string) {
-    this.baseUrl = `${ALCHEMY_BASE_URL}/${apiKey}`;
+  constructor(apiKeys: string[]) {
+    this.baseUrls = apiKeys.map((apiKey) => `${ALCHEMY_BASE_URL}/${apiKey}`);
+
+    if (this.baseUrls.length === 0) {
+      console.error(
+        '[Alchemy] No API keys configured. Set VITE_ALCHEMY_API_KEY (and optional VITE_ALCHEMY_API_KEY_FALLBACK).'
+      );
+    }
+  }
+
+  private shouldFallbackApiKey(status: number, responseBody: string): boolean {
+    if (status === 429) {
+      return true;
+    }
+
+    if (status === 403) {
+      return /rate\s*limit|quota|compute\s*units|daily\s*limit/i.test(responseBody);
+    }
+
+    return false;
+  }
+
+  private async requestWithApiKeyFallback<T>(
+    endpoint: string,
+    params: URLSearchParams
+  ): Promise<T> {
+    if (this.baseUrls.length === 0) {
+      throw new Error('Alchemy API key is not configured');
+    }
+
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < this.baseUrls.length; attempt++) {
+      const index = (this.activeBaseIndex + attempt) % this.baseUrls.length;
+      const baseUrl = this.baseUrls[index];
+      const url = `${baseUrl}/${endpoint}?${params.toString()}`;
+
+      try {
+        const response = await fetch(url);
+
+        if (response.ok) {
+          if (index !== this.activeBaseIndex) {
+            console.warn(
+              `[Alchemy] Switched to fallback API key ${index + 1}/${this.baseUrls.length}`
+            );
+            this.activeBaseIndex = index;
+          }
+
+          return (await response.json()) as T;
+        }
+
+        const responseBody = await response.text();
+
+        if (
+          this.shouldFallbackApiKey(response.status, responseBody) &&
+          attempt < this.baseUrls.length - 1
+        ) {
+          console.warn(
+            `[Alchemy] API key ${index + 1}/${this.baseUrls.length} hit limit (${response.status}), trying fallback key`
+          );
+          continue;
+        }
+
+        throw new Error(`Alchemy API error (${response.status}): ${response.statusText}`);
+      } catch (error) {
+        lastError = error;
+
+        if (attempt < this.baseUrls.length - 1) {
+          console.warn(
+            `[Alchemy] Request failed with API key ${index + 1}/${this.baseUrls.length}, trying fallback key`
+          );
+          continue;
+        }
+      }
+    }
+
+    throw lastError || new Error('Alchemy request failed');
   }
 
   private getAdaptivePageSize(pageSize?: number): number {
@@ -107,16 +202,11 @@ class AlchemyClient {
       params.append('tokenType', options.tokenType);
     }
 
-    const url = `${this.baseUrl}/getNFTsForOwner?${params.toString()}`;
-
     try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Alchemy API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await this.requestWithApiKeyFallback<AlchemyNFTsResponse>(
+        'getNFTsForOwner',
+        params
+      );
       return data;
     } catch (error) {
       console.error('Error fetching NFTs from Alchemy:', error);
@@ -131,16 +221,17 @@ class AlchemyClient {
     contractAddress: string,
     tokenId: string
   ): Promise<AlchemyNFT> {
-    const url = `${this.baseUrl}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}&refreshCache=false`;
+    const params = new URLSearchParams({
+      contractAddress,
+      tokenId,
+      refreshCache: 'false',
+    });
 
     try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Alchemy API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await this.requestWithApiKeyFallback<AlchemyNFT>(
+        'getNFTMetadata',
+        params
+      );
       return data;
     } catch (error) {
       console.error('Error fetching NFT metadata from Alchemy:', error);
@@ -293,10 +384,14 @@ class AlchemyClient {
     contractAddress: string,
     tokenId: string
   ): Promise<void> {
-    const url = `${this.baseUrl}/getNFTMetadata?contractAddress=${contractAddress}&tokenId=${tokenId}&refreshCache=true`;
+    const params = new URLSearchParams({
+      contractAddress,
+      tokenId,
+      refreshCache: 'true',
+    });
 
     try {
-      await fetch(url);
+      await this.requestWithApiKeyFallback<AlchemyNFT>('getNFTMetadata', params);
     } catch (error) {
       console.error('Error refreshing NFT metadata:', error);
       throw error;
@@ -305,7 +400,7 @@ class AlchemyClient {
 }
 
 // Export singleton instance
-export const alchemyClient = new AlchemyClient(API_KEY || '');
+export const alchemyClient = new AlchemyClient(getAlchemyApiKeys());
 
 // Export types
 export type { AlchemyNFT, AlchemyNFTsResponse, AlchemyNFTPageResponse, GetNFTsOptions };
