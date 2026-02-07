@@ -1,49 +1,37 @@
 /**
  * useAdrianMint Hook
- * Handles minting AdrianZERO NFTs with $ADRIAN tokens (not ETH)
+ * Handles minting AdrianZERO NFTs with $ADRIAN tokens using BatchDeployer
+ * NOTE: Now uses the same BatchDeployer contract as SamuraiZERO
  */
 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
-import { ADRIAN_ZERO_MINT_ABI, ERC20_ABI } from '@/lib/web3/abi';
+import { SAMURAI_BATCH_ABI, ERC20_ABI } from '@/lib/web3/abi';
+
+const ADRIAN_BATCH_ID = 2;
 
 export interface AdrianMintBatchInfo {
-  batchId: bigint;
-  name: string;
+  id: bigint;
   price: bigint;
-  minted: bigint;
   maxSupply: bigint;
+  minted: bigint;
   active: boolean;
+  name: string;
+  tag: string;
   startTime: bigint;
   endTime: bigint;
-  useMerkleWhitelist: boolean;
+  maxPerWallet: bigint;
 }
 
 export function useAdrianMintBatchInfo() {
   const { data, isLoading, error, refetch } = useReadContract({
-    address: CONTRACT_ADDRESSES.ADRIAN_ZERO_MINT_WITH_ADRIAN as `0x${string}`,
-    abi: ADRIAN_ZERO_MINT_ABI,
-    functionName: 'getCurrentBatchInfo',
+    address: CONTRACT_ADDRESSES.SAMURAI_BATCH_DEPLOYER as `0x${string}`,
+    abi: SAMURAI_BATCH_ABI,
+    functionName: 'getBatchInfo',
+    args: [BigInt(ADRIAN_BATCH_ID)],
   });
 
-  // Parse tuple response
-  let batchInfo: AdrianMintBatchInfo | undefined;
-  if (data) {
-    const [batchId, name, price, minted, maxSupply, active, startTime, endTime, useMerkleWhitelist] = data as [
-      bigint, string, bigint, bigint, bigint, boolean, bigint, bigint, boolean
-    ];
-    batchInfo = {
-      batchId,
-      name,
-      price,
-      minted,
-      maxSupply,
-      active,
-      startTime,
-      endTime,
-      useMerkleWhitelist,
-    };
-  }
+  const batchInfo = data as AdrianMintBatchInfo | undefined;
 
   return {
     batchInfo,
@@ -61,7 +49,7 @@ export function useAdrianMintApproval() {
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: address
-      ? [address, CONTRACT_ADDRESSES.ADRIAN_ZERO_MINT_WITH_ADRIAN as `0x${string}`]
+      ? [address, CONTRACT_ADDRESSES.SAMURAI_BATCH_DEPLOYER as `0x${string}`]
       : undefined,
     query: {
       enabled: !!address,
@@ -82,7 +70,7 @@ export function useAdrianMintApproval() {
       address: CONTRACT_ADDRESSES.ADRIAN_TOKEN as `0x${string}`,
       abi: ERC20_ABI,
       functionName: 'approve',
-      args: [CONTRACT_ADDRESSES.ADRIAN_ZERO_MINT_WITH_ADRIAN as `0x${string}`, amount],
+      args: [CONTRACT_ADDRESSES.SAMURAI_BATCH_DEPLOYER as `0x${string}`, amount],
     });
   };
 
@@ -110,10 +98,10 @@ export function useAdrianMint() {
 
   const mint = (quantity: number) => {
     writeContract({
-      address: CONTRACT_ADDRESSES.ADRIAN_ZERO_MINT_WITH_ADRIAN as `0x${string}`,
-      abi: ADRIAN_ZERO_MINT_ABI,
-      functionName: 'mintMultiplePublic',
-      args: [BigInt(quantity)],
+      address: CONTRACT_ADDRESSES.SAMURAI_BATCH_DEPLOYER as `0x${string}`,
+      abi: SAMURAI_BATCH_ABI,
+      functionName: 'mint',
+      args: [BigInt(ADRIAN_BATCH_ID), BigInt(quantity)],
     });
   };
 

@@ -34,8 +34,9 @@ export const CONTRACT_ADDRESSES = {
   // Shop
   ADRIAN_SHOP: '0x4B265927b1521995Ce416BBa3BEd98231d2E946b',
 
-  // Additional Mints
+  // Batch Deployer (used by both SamuraiZERO and AdrianZERO mints)
   SAMURAI_BATCH_DEPLOYER: '0xA988F323023F12812c0BaD74d6C55CE07325d218',
+  // Legacy contract (no longer used - both mints now use SAMURAI_BATCH_DEPLOYER)
   ADRIAN_ZERO_MINT_WITH_ADRIAN: '0xF278a1060900005aD5b9077602b09A513541f5d2',
 
   // AdrianPunks Ecosystem

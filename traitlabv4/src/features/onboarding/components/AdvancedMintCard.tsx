@@ -89,10 +89,11 @@ export function AdvancedMintCard({
   useEffect(() => {
     if (isConfirmed) {
       hasAutoMintedRef.current = false; // Reset for next mint
+      refetchAllowance();
       const timer = setTimeout(() => onReset(), 3000);
       return () => clearTimeout(timer);
     }
-  }, [isConfirmed, onReset]);
+  }, [isConfirmed, onReset, refetchAllowance]);
 
   // Reset auto-mint flag when user changes quantity or starts new approval
   useEffect(() => {
