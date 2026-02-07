@@ -10,8 +10,12 @@ import { Sidebar } from './Sidebar';
 import { Container } from './Container';
 import { ToastContainer } from '../notifications/Toast';
 import { ZeroStyleChrome } from './ZeroStyleChrome';
+import { useWalletDataSync } from '@/hooks/useWalletDataSync';
 
 export function MainLayout() {
+  // Sync wallet connection and auto-load all NFT data
+  useWalletDataSync();
+
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === 'undefined') return false;

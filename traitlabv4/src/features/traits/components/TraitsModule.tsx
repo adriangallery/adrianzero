@@ -7,7 +7,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { AlertTriangle, X, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
-import { ProgressiveLoadIndicator } from '@/components/common/ProgressiveLoadIndicator';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
 import { useTraitsByCategory, useTraitCategories } from '../hooks/useTraits';
@@ -15,8 +14,9 @@ import { useApplyTraits } from '../hooks/useApplyTraits';
 import { useTraitsStore } from '../store/traitsStore';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
-import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
-import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
+import { useWalletDataStore } from '@/stores/walletDataStore';
+import { usePagination } from '@/hooks/usePagination';
+import { Pagination } from '@/components/common/Pagination';
 import type { TraitCategory } from '@/types/nft.types';
 
 export function TraitsModule() {
@@ -25,7 +25,6 @@ export function TraitsModule() {
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-  const isTouchDevice = shouldOptimizeForTouch();
 
   // Load traits
   const {
@@ -33,13 +32,12 @@ export function TraitsModule() {
     allTraits,
     isLoading,
     error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    loadedCount,
-    totalCount,
   } = useTraitsByCategory();
   const categories = useTraitCategories();
+
+  // Get store loading progress
+  const traitsProgress = useWalletDataStore(state => state.traitsProgress);
+  const isLoadingTraits = useWalletDataStore(state => state.isLoadingTraits);
 
   // Stores
   const {
@@ -64,6 +62,14 @@ export function TraitsModule() {
     }
     return traitsByCategory[activeCategory] || [];
   }, [activeCategory, allTraits, traitsByCategory]);
+
+  // Paginate traits (100 per page)
+  const traitsPagination = usePagination(displayTraits, { itemsPerPage: 100 });
+
+  // Reset pagination to page 1 when category changes
+  useEffect(() => {
+    traitsPagination.firstPage();
+  }, [activeCategory]);
 
   // Selected traits
   const selectedTraits = getSelectedTraitsArray();
@@ -126,20 +132,21 @@ export function TraitsModule() {
     setIsPreviewExpanded(!isPreviewExpanded);
   };
 
-  useAutoInfiniteLoading({
-    enabled: isConnected,
-    hasNextPage,
-    isFetchingNextPage,
-    loadedCount,
-    minimumItems: isTouchDevice ? 160 : 320,
-    fetchNextPage,
-  });
-
-  if (isLoading) {
+  if (isLoading || (isConnected && isLoadingTraits)) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="shimmer w-16 h-16 rounded-full mb-4" />
-        <p className="text-muted-foreground">Loading your traits...</p>
+        <p className="text-muted-foreground">
+          Loading your traits... {isLoadingTraits ? `${traitsProgress}%` : ''}
+        </p>
+        {isLoadingTraits && (
+          <div className="w-64 h-2 bg-muted rounded-full mt-4 overflow-hidden">
+            <div
+              className="h-full bg-[#00ff00] transition-all duration-300"
+              style={{ width: `${traitsProgress}%` }}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -275,14 +282,9 @@ export function TraitsModule() {
       {/* Traits Grid - Fills remaining space */}
       <div className="flex-1 overflow-y-auto pb-4">
         <TraitGrid
-          traits={displayTraits}
+          traits={traitsPagination.currentItems}
           selectedTraitIds={selectedTraitIds}
           onTraitSelect={handleTraitSelect}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
           emptyMessage={
             activeCategory === 'ALL'
               ? 'No traits found in your wallet'
@@ -290,12 +292,15 @@ export function TraitsModule() {
           }
         />
 
-        {isConnected && totalCount > 0 && (
+        {/* Pagination controls */}
+        {isConnected && traitsPagination.totalPages > 1 && (
           <div className="mt-4">
-            <ProgressiveLoadIndicator
-              loadedCount={loadedCount}
-              totalCount={totalCount}
-              isLoading={isFetchingNextPage}
+            <Pagination
+              currentPage={traitsPagination.currentPage}
+              totalPages={traitsPagination.totalPages}
+              itemsPerPage={traitsPagination.itemsPerPage}
+              totalItems={traitsPagination.totalItems}
+              onPageChange={traitsPagination.goToPage}
             />
           </div>
         )}

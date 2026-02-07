@@ -9,7 +9,6 @@ import { useAccount } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check, Sparkles, Rocket, ArrowRight } from 'lucide-react';
 import { NFTGrid } from '@/components/nft/NFTGrid';
-import { ProgressiveLoadIndicator } from '@/components/common/ProgressiveLoadIndicator';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
 import { useAdrianZeroTokens } from '../hooks/useAdrianZeroTokens';
@@ -19,8 +18,9 @@ import { useTraitsByCategory, useTraitCategories } from '@/features/traits/hooks
 import { useApplyTraits } from '@/features/traits/hooks/useApplyTraits';
 import { useTraitsStore } from '@/features/traits/store/traitsStore';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
-import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
-import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
+import { useWalletDataStore } from '@/stores/walletDataStore';
+import { usePagination } from '@/hooks/usePagination';
+import { Pagination } from '@/components/common/Pagination';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
 export function AdrianZeroModule() {
@@ -31,18 +31,12 @@ export function AdrianZeroModule() {
   const [isTraitPreviewExpanded, setIsTraitPreviewExpanded] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-  const isTouchDevice = shouldOptimizeForTouch();
 
   // Load tokens
   const {
     data: tokens = [],
     isLoading,
     error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    loadedCount,
-    totalCount,
   } = useAdrianZeroTokens();
 
   // Load custom names
@@ -64,12 +58,6 @@ export function AdrianZeroModule() {
   const {
     data: traitsByCategory,
     allTraits,
-    isLoading: traitsLoading,
-    fetchNextPage: fetchNextTraitsPage,
-    hasNextPage: hasNextTraitsPage,
-    isFetchingNextPage: isFetchingNextTraitsPage,
-    loadedCount: loadedTraitsCount,
-    totalCount: totalTraitsCount,
   } = useTraitsByCategory();
   const categories = useTraitCategories();
 
@@ -206,23 +194,22 @@ export function AdrianZeroModule() {
     setIsTraitPreviewExpanded(false);
   };
 
-  useAutoInfiniteLoading({
-    enabled: isConnected,
-    hasNextPage,
-    isFetchingNextPage,
-    loadedCount,
-    minimumItems: isTouchDevice ? 120 : 240,
-    fetchNextPage,
-  });
+  // Get store loading progress
+  const zerosProgress = useWalletDataStore(state => state.zerosProgress);
+  const traitsProgress = useWalletDataStore(state => state.traitsProgress);
+  const isLoadingZeros = useWalletDataStore(state => state.isLoadingZeros);
+  const isLoadingTraits = useWalletDataStore(state => state.isLoadingTraits);
 
-  useAutoInfiniteLoading({
-    enabled: isConnected,
-    hasNextPage: hasNextTraitsPage,
-    isFetchingNextPage: isFetchingNextTraitsPage,
-    loadedCount: loadedTraitsCount,
-    minimumItems: isTouchDevice ? 160 : 320,
-    fetchNextPage: fetchNextTraitsPage,
-  });
+  // Paginate zeros (100 per page)
+  const zerosPagination = usePagination(sortedTokens, { itemsPerPage: 100 });
+
+  // Paginate traits by category (100 per page)
+  const traitsPagination = usePagination(displayTraits, { itemsPerPage: 100 });
+
+  // Reset pagination to page 1 when category changes
+  useEffect(() => {
+    traitsPagination.firstPage();
+  }, [activeCategory]);
 
   const nftImageUrl = selectedNFT?.image?.cachedUrl || selectedNFT?.image?.originalUrl || selectedNFT?.metadata?.image;
   const displayName = selectedNFT?.name || selectedNFT?.metadata?.name || (selectedNFT ? `AdrianZERO #${selectedNFT.tokenId}` : '');
@@ -300,26 +287,45 @@ export function AdrianZeroModule() {
       {/* NFT Grid - Hidden when NFT is selected */}
       {!selectedNFT && (
         <>
-          <NFTGrid
-            tokens={sortedTokens}
-            selectedTokenId={selectedNFT?.tokenId}
-            onTokenSelect={handleTokenSelect}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
-            emptyMessage="No AdrianZERO NFTs found in your wallet"
-          />
-
-          {isConnected && totalCount > 0 && (
-            <div className="mt-4">
-              <ProgressiveLoadIndicator
-                loadedCount={loadedCount}
-                totalCount={totalCount}
-                isLoading={isFetchingNextPage}
-              />
+          {/* Show loading progress while store is loading */}
+          {isLoadingZeros && isConnected && (
+            <div className="text-center py-8">
+              <div className="shimmer w-16 h-16 rounded-full mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                Loading AdrianZERO NFTs... {zerosProgress}%
+              </p>
+              <div className="w-64 h-2 bg-muted rounded-full mx-auto mt-2 overflow-hidden">
+                <div
+                  className="h-full bg-[#00ff00] transition-all duration-300"
+                  style={{ width: `${zerosProgress}%` }}
+                />
+              </div>
             </div>
+          )}
+
+          {/* Show paginated grid once loaded */}
+          {!isLoadingZeros && (
+            <>
+              <NFTGrid
+                tokens={zerosPagination.currentItems}
+                selectedTokenId={selectedNFT?.tokenId}
+                onTokenSelect={handleTokenSelect}
+                emptyMessage="No AdrianZERO NFTs found in your wallet"
+              />
+
+              {/* Pagination controls */}
+              {isConnected && zerosPagination.totalPages > 1 && (
+                <div className="mt-6">
+                  <Pagination
+                    currentPage={zerosPagination.currentPage}
+                    totalPages={zerosPagination.totalPages}
+                    itemsPerPage={zerosPagination.itemsPerPage}
+                    totalItems={zerosPagination.totalItems}
+                    onPageChange={zerosPagination.goToPage}
+                  />
+                </div>
+              )}
+            </>
           )}
 
           {/* Get Your ZERO Card - Show when connected but no NFTs */}
@@ -504,36 +510,46 @@ export function AdrianZeroModule() {
 
           {/* Traits Grid */}
           <div className="flex-1 overflow-y-auto pb-4">
-            {traitsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="shimmer w-12 h-12 rounded-full" />
+            {/* Show loading progress while store is loading */}
+            {isLoadingTraits && isConnected ? (
+              <div className="text-center py-8">
+                <div className="shimmer w-12 h-12 rounded-full mx-auto mb-4" />
+                <p className="text-muted-foreground text-sm">
+                  Loading traits... {traitsProgress}%
+                </p>
+                <div className="w-48 h-1.5 bg-muted rounded-full mx-auto mt-2 overflow-hidden">
+                  <div
+                    className="h-full bg-[#00ff00] transition-all duration-300"
+                    style={{ width: `${traitsProgress}%` }}
+                  />
+                </div>
               </div>
             ) : (
-              <TraitGrid
-                traits={displayTraits}
-                selectedTraitIds={selectedTraitIds}
-                onTraitSelect={handleTraitSelect}
-                onEndReached={() => {
-                  if (hasNextTraitsPage && !isFetchingNextTraitsPage) {
-                    fetchNextTraitsPage();
+              <>
+                <TraitGrid
+                  traits={traitsPagination.currentItems}
+                  selectedTraitIds={selectedTraitIds}
+                  onTraitSelect={handleTraitSelect}
+                  emptyMessage={
+                    activeCategory === 'ALL'
+                      ? 'No traits found in your wallet'
+                      : `No ${activeCategory.toLowerCase()} traits found`
                   }
-                }}
-                emptyMessage={
-                  activeCategory === 'ALL'
-                    ? 'No traits found in your wallet'
-                    : `No ${activeCategory.toLowerCase()} traits found`
-                }
-              />
-            )}
-
-            {isConnected && totalTraitsCount > 0 && (
-              <div className="mt-4">
-                <ProgressiveLoadIndicator
-                  loadedCount={loadedTraitsCount}
-                  totalCount={totalTraitsCount}
-                  isLoading={isFetchingNextTraitsPage}
                 />
-              </div>
+
+                {/* Pagination controls */}
+                {isConnected && traitsPagination.totalPages > 1 && (
+                  <div className="mt-4">
+                    <Pagination
+                      currentPage={traitsPagination.currentPage}
+                      totalPages={traitsPagination.totalPages}
+                      itemsPerPage={traitsPagination.itemsPerPage}
+                      totalItems={traitsPagination.totalItems}
+                      onPageChange={traitsPagination.goToPage}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

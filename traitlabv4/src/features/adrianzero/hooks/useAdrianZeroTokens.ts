@@ -2,12 +2,13 @@
  * useAdrianZeroTokens Hook
  * Fetches AdrianZERO ERC721 tokens for the connected wallet
  * Shows mock data when wallet is not connected
+ *
+ * OPTIMIZED: Uses centralized walletDataStore to load ALL zeros once
+ * No more infinite query pagination - data is loaded upfront and stored
  */
 
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { alchemyClient } from '@/lib/api/alchemy/client';
-import { CONTRACT_ADDRESSES } from '@/config/contracts';
+import { useWalletDataStore, selectAdrianZeros } from '@/stores/walletDataStore';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
 const MOCK_TOKEN: AdrianZeroToken = {
@@ -29,75 +30,23 @@ const MOCK_TOKEN: AdrianZeroToken = {
 export function useAdrianZeroTokens() {
   const { address } = useAccount();
 
-  const query = useInfiniteQuery({
-    queryKey: ['adrianzero-tokens', address],
-    initialPageParam: undefined as string | undefined,
-    queryFn: async ({ pageParam }) => {
-      if (!address) {
-        return {
-          tokens: [MOCK_TOKEN],
-          nextPageKey: undefined,
-          totalCount: 1,
-        };
-      }
+  // Get data from centralized store (loads ALL zeros once on wallet connect)
+  const zeros = useWalletDataStore(selectAdrianZeros);
+  const isLoadingZeros = useWalletDataStore(state => state.isLoadingZeros);
+  const zerosError = useWalletDataStore(state => state.zerosError);
 
-      const response = await alchemyClient.getERC721TokensPage(address, [
-        CONTRACT_ADDRESSES.ADRIAN_ZERO,
-      ], pageParam);
-
-      // Transform Alchemy response to our AdrianZeroToken type
-      // Use Vercel API for images: https://adrianlab.vercel.app/api/render/{tokenId}
-      const tokens: AdrianZeroToken[] = response.ownedNfts.map((nft) => {
-        const vercelImageUrl = `https://adrianlab.vercel.app/api/render/${nft.tokenId}`;
-        const alchemyFallback = nft.image?.cachedUrl || nft.image?.originalUrl;
-
-        return {
-          tokenId: nft.tokenId,
-          owner: address,
-          name: nft.name,
-          metadata: nft.raw?.metadata,
-          image: {
-            cachedUrl: vercelImageUrl,
-            originalUrl: alchemyFallback,
-            thumbnailUrl: nft.image?.thumbnailUrl,
-          },
-          tokenUri: nft.tokenUri,
-        };
-      });
-
-      return {
-        tokens,
-        nextPageKey: response.pageKey,
-        totalCount: response.totalCount,
-      };
-    },
-    getNextPageParam: (lastPage) => lastPage.nextPageKey,
-    enabled: true, // Always enabled to show mock data
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
-  });
-
-  const pages = query.data?.pages || [];
-  const seen = new Set<string>();
-  const flattenedTokens: AdrianZeroToken[] = [];
-
-  pages.forEach((page) => {
-    page.tokens.forEach((token) => {
-      const key = token.tokenId;
-      if (seen.has(key)) return;
-      seen.add(key);
-      flattenedTokens.push(token);
-    });
-  });
-
-  const totalCount = pages.length === 0
-    ? (address ? 0 : 1)
-    : Math.max(pages[pages.length - 1]?.totalCount || 0, flattenedTokens.length);
+  const data = address ? zeros : [MOCK_TOKEN];
+  const isLoading = Boolean(address) && isLoadingZeros;
 
   return {
-    ...query,
-    data: flattenedTokens,
-    loadedCount: flattenedTokens.length,
-    totalCount,
+    data,
+    isLoading,
+    error: zerosError,
+    refetch: () => {}, // No-op: data loaded once, no refetch needed
+    fetchNextPage: () => Promise.resolve(), // No-op for API compatibility
+    hasNextPage: false, // All data loaded
+    isFetchingNextPage: false, // All data loaded
+    loadedCount: data.length,
+    totalCount: data.length, // We have everything
   };
 }
