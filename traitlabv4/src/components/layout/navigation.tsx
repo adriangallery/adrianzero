@@ -9,7 +9,6 @@ import {
   FlaskConical,
   Frame,
   Gift,
-  Grid,
   Hammer,
   HelpCircle,
   Package,
