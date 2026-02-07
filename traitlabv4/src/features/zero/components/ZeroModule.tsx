@@ -331,14 +331,14 @@ export const ZeroModule: React.FC = () => {
         <div className="h-full overflow-hidden">
           <video
             src="/zero-firefly.mp4"
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain sm:object-cover"
             autoPlay
             muted
             playsInline
           />
           <div className="pointer-events-none absolute inset-0 bg-black/40" />
           <div className="absolute bottom-8 left-4 right-4 sm:bottom-10 sm:left-6 sm:right-6 lg:left-8 lg:right-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: LIME }}>Pure Visual Energy</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: LIME }}>BE REAL | BE $ADRIAN</p>
             <h2 className="mt-2 text-4xl font-black leading-[0.92] sm:text-5xl md:text-6xl lg:text-7xl">
               FIRE MEETS
               <br />

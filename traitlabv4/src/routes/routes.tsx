@@ -110,6 +110,12 @@ const ZeroModule = lazy(() =>
   }))
 );
 
+const DashboardModule = lazy(() =>
+  import('@/features/dashboard/components/DashboardModule').then((m) => ({
+    default: m.DashboardModule,
+  }))
+);
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -186,5 +192,9 @@ export const routes: RouteObject[] = [
   {
     path: '/zero',
     element: <ZeroModule />,
+  },
+  {
+    path: '/dashboard',
+    element: <DashboardModule />,
   },
 ];

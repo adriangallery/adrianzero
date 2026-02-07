@@ -30,7 +30,7 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { path: '/', label: 'Dashboard', icon: <BarChart3 className="h-5 w-5" /> },
+  { path: '/dashboard', label: 'Dashboard', icon: <BarChart3 className="h-5 w-5" /> },
   { path: '/zero', label: 'ZERO', icon: <Zap className="h-5 w-5" /> },
   { path: '/onboarding', label: 'Mint', icon: <Rocket className="h-5 w-5" /> },
   { path: '/adrianzero', label: 'My NFTs', icon: <Frame className="h-5 w-5" /> },
