@@ -156,7 +156,7 @@ export function CurrentDrop() {
                     disabled={!canMint || isMinting}
                     className={`w-full rounded-lg px-6 py-4 text-lg font-bold transition-all ${
                       canMint && !isMinting
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg'
+                        ? 'bg-lime-500 text-black hover:bg-lime-400 hover:shadow-lg hover:shadow-lime-500/25'
                         : 'bg-muted text-muted-foreground cursor-not-allowed'
                     }`}
                   >
