@@ -1,7 +1,15 @@
 {
   "version": 1,
-  "updatedAt": "2026-01-28T00:00:00Z",
+  "updatedAt": "2026-02-22T00:00:00Z",
   "drops": [
+    {
+      "id": 1174,
+      "title": "ZeroPunch",
+      "short": "That abandoned baby monkey broke X, pumped $PUNCH 80,000% and even got Justin Sun throwing bags. Now he throws hands on your ZERO. Animated trait, full degen energy 🐒👊",
+      "image": "https://raw.githubusercontent.com/adriangallery/adrianzero/main/shitdrop/images/1174.gif",
+      "opensea": "https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/1174",
+      "date": "2026-02-22"
+    },
     {
       "id": 10019,
       "title": "CLAWbot",
