@@ -57,9 +57,14 @@ export function TraitCard({
             loading="lazy"
             className="w-full h-full object-cover"
             onError={(e) => {
-              // Fallback to originalUrl if cachedUrl fails
-              if (trait.image?.originalUrl && e.currentTarget.src !== trait.image.originalUrl) {
-                e.currentTarget.src = trait.image.originalUrl;
+              const fallbacks = [
+                trait.image?.thumbnailUrl,
+                trait.image?.originalUrl,
+                trait.metadata?.image,
+              ].filter(Boolean) as string[];
+              const next = fallbacks.find((url) => url !== e.currentTarget.src);
+              if (next) {
+                e.currentTarget.src = next;
               }
             }}
           />

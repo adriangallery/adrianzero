@@ -232,6 +232,7 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
               image: {
                 cachedUrl: githubSvgUrl,
                 originalUrl: fallbackUrl,
+                thumbnailUrl: nft.image?.cachedUrl || nft.image?.thumbnailUrl || nft.image?.originalUrl,
               },
             } as Trait;
           })
