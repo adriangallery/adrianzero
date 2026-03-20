@@ -29,7 +29,7 @@ export function useBuyKit() {
 
       const totalCost = pricePerKit * BigInt(quantity);
 
-      console.log(`[useBuyKit] Buying ${quantity} kit(s) of type ${kitId} for ${totalCost} wei`);
+      if (import.meta.env.DEV) console.log(`[useBuyKit] Buying ${quantity} kit(s) of type ${kitId} for ${totalCost} wei`);
 
       let hash: `0x${string}`;
 
@@ -51,11 +51,11 @@ export function useBuyKit() {
         });
       }
 
-      console.log('[useBuyKit] Transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('[useBuyKit] Transaction sent:', hash);
 
       // Wait for confirmation
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      console.log('[useBuyKit] Transaction confirmed:', receipt);
+      if (import.meta.env.DEV) console.log('[useBuyKit] Transaction confirmed:', receipt);
 
       return { hash, kitId, quantity };
     },

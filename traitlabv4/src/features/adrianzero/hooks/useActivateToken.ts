@@ -24,7 +24,7 @@ export function useActivateToken() {
       return hash;
     },
     onSuccess: (hash) => {
-      console.log('Token activation transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('Token activation transaction sent:', hash);
       // Invalidate and refetch after success
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });
     },
@@ -52,7 +52,7 @@ export function useRefreshMetadata() {
       return hash;
     },
     onSuccess: (hash) => {
-      console.log('Metadata refresh transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('Metadata refresh transaction sent:', hash);
       // Invalidate and refetch after success
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });
     },

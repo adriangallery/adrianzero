@@ -1,37 +1,33 @@
 /**
  * useSerums Hook
- * Fetches user's serums (token IDs 262144-262147)
+ * Derives user's serums (token IDs 262144-262147) from walletDataStore
+ * (no extra Alchemy API call — data loaded once by walletDataStore.loadAllTraits)
  */
 
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { alchemyClient } from '@/lib/api/alchemy/client';
-import { CONTRACT_ADDRESSES } from '@/config/contracts';
+import { useWalletDataStore } from '@/stores/walletDataStore';
 import type { Serum } from '@/types/nft.types';
 
 // Serum token IDs
-const SERUM_IDS = ['262144', '262145', '262146', '262147'];
+const SERUM_IDS = new Set(['262144', '262145', '262146', '262147']);
 
 export function useSerums() {
   const { address } = useAccount();
+  const rawERC1155Tokens = useWalletDataStore(state => state.rawERC1155Tokens);
+  const isLoadingTraits = useWalletDataStore(state => state.isLoadingTraits);
 
   return useQuery({
     queryKey: ['serums', address],
-    queryFn: async () => {
+    queryFn: () => {
       if (!address) {
         throw new Error('No wallet connected');
       }
 
-      // Fetch all ERC1155 tokens
-      const response = await alchemyClient.getERC1155Tokens(address, [
-        CONTRACT_ADDRESSES.ADRIAN_LAB,
-      ]);
-
       const serums: Serum[] = [];
 
-      // Filter for serum token IDs
-      response.ownedNfts.forEach((nft) => {
-        if (SERUM_IDS.includes(nft.tokenId)) {
+      rawERC1155Tokens.forEach((nft) => {
+        if (SERUM_IDS.has(nft.tokenId)) {
           const balance = parseInt(nft.balance || '0');
 
           if (balance > 0) {
@@ -39,7 +35,7 @@ export function useSerums() {
               tokenId: nft.tokenId,
               name: nft.name || `Serum #${nft.tokenId}`,
               balance,
-              metadata: nft.raw?.metadata,
+              metadata: nft.metadata,
               image: nft.image,
             });
           }
@@ -48,8 +44,8 @@ export function useSerums() {
 
       return serums;
     },
-    enabled: !!address,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !!address && !isLoadingTraits,
+    staleTime: Infinity, // Data derived from Zustand store — no Alchemy refetch needed
     refetchOnWindowFocus: false,
   });
 }

@@ -1,6 +1,7 @@
 /**
  * useCustomNames Hook
  * Fetches custom names for AdrianZERO tokens from NameRegistry
+ * V4.5: Batched with multicall to eliminate N sequential RPC calls
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -22,32 +23,31 @@ export function useCustomNames(tokenIds: string[]) {
 
       const missingTokenIds = tokenIds.filter((tokenId) => !customNamesCache.has(tokenId));
 
-      const namePromises = missingTokenIds.map(async (tokenId) => {
-        try {
-          const name = await publicClient.readContract({
-            address: CONTRACT_ADDRESSES.ADRIAN_NAME_REGISTRY,
-            abi: NAME_REGISTRY_ABI,
-            functionName: 'getTokenName',
-            args: [BigInt(tokenId)],
-          });
+      if (missingTokenIds.length > 0) {
+        const contractAddress = CONTRACT_ADDRESSES.ADRIAN_NAME_REGISTRY as `0x${string}`;
 
-          return {
-            tokenId,
-            name: name as string,
-          };
-        } catch (error) {
-          console.error(`Error fetching name for token ${tokenId}:`, error);
-          return {
-            tokenId,
-            name: null,
-          };
-        }
-      });
+        // Batch all name lookups into a single multicall
+        const nameCalls = missingTokenIds.map((tokenId) => ({
+          address: contractAddress,
+          abi: NAME_REGISTRY_ABI,
+          functionName: 'getTokenName' as const,
+          args: [BigInt(tokenId)],
+        }));
 
-      const results = await Promise.all(namePromises);
-      results.forEach((result) => {
-        customNamesCache.set(result.tokenId, result.name);
-      });
+        const results = await publicClient.multicall({
+          contracts: nameCalls,
+          allowFailure: true,
+        });
+
+        results.forEach((result, index) => {
+          const tokenId = missingTokenIds[index];
+          if (result.status === 'success') {
+            customNamesCache.set(tokenId, result.result as string);
+          } else {
+            customNamesCache.set(tokenId, null);
+          }
+        });
+      }
 
       // Convert requested tokenIds to object map from cache
       const nameMap: Record<string, string | null> = {};

@@ -37,7 +37,7 @@ export function useApplyTraits() {
 
       // Step 2: Request approval if needed
       if (!isApproved) {
-        console.log('Requesting ERC1155 approval...');
+        if (import.meta.env.DEV) console.log('Requesting ERC1155 approval...');
         const approvalHash = await writeContractAsync({
           address: CONTRACT_ADDRESSES.ADRIAN_LAB,
           abi: ADRIAN_LAB_ABI,
@@ -45,11 +45,11 @@ export function useApplyTraits() {
           args: [CONTRACT_ADDRESSES.TRAITS_EXTENSIONS, true],
         });
 
-        console.log('Approval transaction sent:', approvalHash);
+        if (import.meta.env.DEV) console.log('Approval transaction sent:', approvalHash);
 
         // Wait for approval confirmation
         await publicClient.waitForTransactionReceipt({ hash: approvalHash });
-        console.log('Approval confirmed');
+        if (import.meta.env.DEV) console.log('Approval confirmed');
       }
 
       // Step 3: Apply traits
@@ -62,7 +62,7 @@ export function useApplyTraits() {
         args: [BigInt(tokenId), traitIdsBigInt],
       });
 
-      console.log('Apply traits transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('Apply traits transaction sent:', hash);
 
       // Wait for confirmation
       await publicClient.waitForTransactionReceipt({ hash });
@@ -70,7 +70,7 @@ export function useApplyTraits() {
       return hash;
     },
     onSuccess: (hash) => {
-      console.log('Traits applied successfully:', hash);
+      if (import.meta.env.DEV) console.log('Traits applied successfully:', hash);
       notifications.success('Traits Applied!', 'Your NFT has been customized successfully', false);
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });

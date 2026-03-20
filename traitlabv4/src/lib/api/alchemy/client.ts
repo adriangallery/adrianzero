@@ -3,28 +3,7 @@
  * Handles NFT data fetching with rate limiting and retry logic
  */
 
-import { ALCHEMY_BASE_URL } from '@/config/contracts';
-
-const PLACEHOLDER_ALCHEMY_KEY = 'your_alchemy_api_key_here';
-
-const isValidApiKey = (apiKey?: string): apiKey is string => {
-  return Boolean(apiKey && apiKey.trim() && apiKey !== PLACEHOLDER_ALCHEMY_KEY);
-};
-
-const getAlchemyApiKeys = (): string[] => {
-  const listKeys = (import.meta.env.VITE_ALCHEMY_API_KEYS || '')
-    .split(',')
-    .map((key: string) => key.trim())
-    .filter((key: string) => key.length > 0);
-
-  const rawKeys = [
-    import.meta.env.VITE_ALCHEMY_API_KEY,
-    import.meta.env.VITE_ALCHEMY_API_KEY_FALLBACK,
-    ...listKeys,
-  ];
-
-  return Array.from(new Set(rawKeys.filter(isValidApiKey)));
-};
+import { getAlchemyApiKeys, ALCHEMY_NFT_BASE_URL } from '@/config/alchemy';
 
 interface AlchemyNFT {
   contract: {
@@ -72,9 +51,9 @@ class AlchemyClient {
   private activeBaseIndex = 0;
 
   constructor(apiKeys: string[]) {
-    this.baseUrls = apiKeys.map((apiKey) => `${ALCHEMY_BASE_URL}/${apiKey}`);
+    this.baseUrls = apiKeys.map((apiKey) => `${ALCHEMY_NFT_BASE_URL}/${apiKey}`);
 
-    if (this.baseUrls.length === 0) {
+    if (this.baseUrls.length === 0 && import.meta.env.DEV) {
       console.error(
         '[Alchemy] No API keys configured. Set VITE_ALCHEMY_API_KEY (and optional VITE_ALCHEMY_API_KEY_FALLBACK).'
       );
@@ -113,7 +92,7 @@ class AlchemyClient {
 
         if (response.ok) {
           if (index !== this.activeBaseIndex) {
-            console.warn(
+            if (import.meta.env.DEV) console.warn(
               `[Alchemy] Switched to fallback API key ${index + 1}/${this.baseUrls.length}`
             );
             this.activeBaseIndex = index;
@@ -128,7 +107,7 @@ class AlchemyClient {
           this.shouldFallbackApiKey(response.status, responseBody) &&
           attempt < this.baseUrls.length - 1
         ) {
-          console.warn(
+          if (import.meta.env.DEV) console.warn(
             `[Alchemy] API key ${index + 1}/${this.baseUrls.length} hit limit (${response.status}), trying fallback key`
           );
           continue;
@@ -139,7 +118,7 @@ class AlchemyClient {
         lastError = error;
 
         if (attempt < this.baseUrls.length - 1) {
-          console.warn(
+          if (import.meta.env.DEV) console.warn(
             `[Alchemy] Request failed with API key ${index + 1}/${this.baseUrls.length}, trying fallback key`
           );
           continue;
@@ -202,41 +181,10 @@ class AlchemyClient {
       params.append('tokenType', options.tokenType);
     }
 
-    try {
-      const data = await this.requestWithApiKeyFallback<AlchemyNFTsResponse>(
-        'getNFTsForOwner',
-        params
-      );
-      return data;
-    } catch (error) {
-      console.error('Error fetching NFTs from Alchemy:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get metadata for a specific NFT
-   */
-  async getNFTMetadata(
-    contractAddress: string,
-    tokenId: string
-  ): Promise<AlchemyNFT> {
-    const params = new URLSearchParams({
-      contractAddress,
-      tokenId,
-      refreshCache: 'false',
-    });
-
-    try {
-      const data = await this.requestWithApiKeyFallback<AlchemyNFT>(
-        'getNFTMetadata',
-        params
-      );
-      return data;
-    } catch (error) {
-      console.error('Error fetching NFT metadata from Alchemy:', error);
-      throw error;
-    }
+    return this.requestWithApiKeyFallback<AlchemyNFTsResponse>(
+      'getNFTsForOwner',
+      params
+    );
   }
 
   /**
@@ -263,7 +211,6 @@ class AlchemyClient {
       }
 
       if (seenPageKeys.has(page.pageKey)) {
-        console.warn('[Alchemy] Detected ERC721 pageKey loop, stopping pagination');
         hasMore = false;
         break;
       }
@@ -315,24 +262,17 @@ class AlchemyClient {
     let totalCount = 0;
     let pageCount = 0;
 
-    console.log('[Alchemy] Fetching ERC1155 tokens for:', owner);
-    console.log('[Alchemy] Contract filters:', contractAddresses);
-
     // Fetch all pages
     do {
       pageCount++;
-      console.log(`[Alchemy] Fetching page ${pageCount}, pageKey:`, pageKey);
 
       const response = await this.getERC1155TokensPage(owner, contractAddresses, pageKey);
-
-      console.log(`[Alchemy] Page ${pageCount} returned ${response.ownedNfts.length} tokens`);
       allNfts = allNfts.concat(response.ownedNfts);
       pageKey = response.pageKey;
       totalCount = response.totalCount;
 
       if (pageKey) {
         if (seenPageKeys.has(pageKey)) {
-          console.warn('[Alchemy] Detected ERC1155 pageKey loop, stopping pagination');
           break;
         }
         seenPageKeys.add(pageKey);
@@ -340,12 +280,9 @@ class AlchemyClient {
 
       // Safety: prevent infinite loop
       if (pageCount > 50) {
-        console.error('[Alchemy] Too many pages, breaking loop');
         break;
       }
     } while (pageKey);
-
-    console.log(`[Alchemy] Total fetched: ${allNfts.length} tokens across ${pageCount} pages`);
 
     return {
       ownedNfts: this.dedupeNFTs(allNfts),
@@ -377,26 +314,6 @@ class AlchemyClient {
     };
   }
 
-  /**
-   * Refresh metadata for a token (triggers re-fetch from contract)
-   */
-  async refreshMetadata(
-    contractAddress: string,
-    tokenId: string
-  ): Promise<void> {
-    const params = new URLSearchParams({
-      contractAddress,
-      tokenId,
-      refreshCache: 'true',
-    });
-
-    try {
-      await this.requestWithApiKeyFallback<AlchemyNFT>('getNFTMetadata', params);
-    } catch (error) {
-      console.error('Error refreshing NFT metadata:', error);
-      throw error;
-    }
-  }
 }
 
 // Export singleton instance

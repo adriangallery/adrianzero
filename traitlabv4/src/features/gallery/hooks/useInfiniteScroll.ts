@@ -6,8 +6,10 @@ interface UseInfiniteScrollOptions {
   threshold?: number;
 }
 
+const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
 const DEFAULT_OPTIONS: UseInfiniteScrollOptions = {
-  rootMargin: '1500px 6000px', // Aggressive preload: 1500px vertical, 6000px horizontal
+  rootMargin: isMobile ? '800px 0px' : '1500px 3000px',
   threshold: 0.01,
 };
 

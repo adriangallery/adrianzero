@@ -42,7 +42,7 @@ export function useCraftTrait() {
             args: [BigInt(recipeId), burnIdsBigInt, burnAmounts],
           });
         } catch (error) {
-          console.log('useAnyRecipe failed, trying craftAny:', error);
+          if (import.meta.env.DEV) console.log('useAnyRecipe failed, trying craftAny:', error);
           // Fallback to craftAny
           hash = await writeContractAsync({
             address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
@@ -61,7 +61,7 @@ export function useCraftTrait() {
             args: [BigInt(recipeId)],
           });
         } catch (error) {
-          console.log('useSpecificRecipe failed, trying craftSpecific:', error);
+          if (import.meta.env.DEV) console.log('useSpecificRecipe failed, trying craftSpecific:', error);
           // Fallback to craftSpecific
           hash = await writeContractAsync({
             address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
@@ -72,7 +72,7 @@ export function useCraftTrait() {
         }
       }
 
-      console.log('Craft transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('Craft transaction sent:', hash);
 
       // Wait for confirmation
       await publicClient.waitForTransactionReceipt({ hash });
@@ -80,7 +80,7 @@ export function useCraftTrait() {
       return hash;
     },
     onSuccess: (hash) => {
-      console.log('Trait crafted successfully:', hash);
+      if (import.meta.env.DEV) console.log('Trait crafted successfully:', hash);
       notifications.success('Trait Crafted!', 'New trait has been added to your inventory', false);
       // Invalidate queries to refresh traits and recipes
       queryClient.invalidateQueries({ queryKey: ['traits'] });

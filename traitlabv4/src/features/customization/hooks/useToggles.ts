@@ -130,7 +130,7 @@ export function useSetToggle() {
         args: [BigInt(tokenId), BigInt(toggleId)],
       });
 
-      console.log('Set toggle transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('Set toggle transaction sent:', hash);
 
       // Wait for confirmation
       await publicClient.waitForTransactionReceipt({ hash });
@@ -138,7 +138,7 @@ export function useSetToggle() {
       return hash;
     },
     onSuccess: (hash, variables) => {
-      console.log('Toggle set successfully:', hash);
+      if (import.meta.env.DEV) console.log('Toggle set successfully:', hash);
       const toggleName = AVAILABLE_TOGGLES.find(t => t.id === variables.toggleId)?.name || 'effect';
       notifications.success(
         'Visual Effect Applied!',
@@ -192,7 +192,7 @@ export function useSetBananaToggle() {
         args: [BigInt(TOGGLE_MODES.BANANA)],
       })) as bigint;
 
-      console.log('🍌 Banana toggle price:', formatEther(togglePrice), 'ADRIAN');
+      if (import.meta.env.DEV) console.log('🍌 Banana toggle price:', formatEther(togglePrice), 'ADRIAN');
 
       // If price is 0, activate directly without payment
       if (togglePrice === 0n) {
@@ -215,12 +215,12 @@ export function useSetBananaToggle() {
         args: [address, CONTRACT_ADDRESSES.ZOOM_TOGGLE as `0x${string}`],
       })) as bigint;
 
-      console.log('Current ADRIAN allowance:', formatEther(currentAllowance));
-      console.log('Required amount:', formatEther(togglePrice));
+      if (import.meta.env.DEV) console.log('Current ADRIAN allowance:', formatEther(currentAllowance));
+      if (import.meta.env.DEV) console.log('Required amount:', formatEther(togglePrice));
 
       // If insufficient allowance, approve tokens
       if (currentAllowance < togglePrice) {
-        console.log('💳 Approving ADRIAN tokens for toggle contract...');
+        if (import.meta.env.DEV) console.log('💳 Approving ADRIAN tokens for toggle contract...');
 
         // Approve a larger amount to avoid multiple approvals (10k ADRIAN)
         const approveAmount = parseEther('10000');
@@ -231,20 +231,20 @@ export function useSetBananaToggle() {
           args: [CONTRACT_ADDRESSES.ZOOM_TOGGLE as `0x${string}`, approveAmount],
         });
 
-        console.log('⏳ Waiting for approval transaction...');
+        if (import.meta.env.DEV) console.log('⏳ Waiting for approval transaction...');
         await publicClient.waitForTransactionReceipt({ hash: approveHash });
-        console.log('✅ ADRIAN tokens approved');
+        if (import.meta.env.DEV) console.log('✅ ADRIAN tokens approved');
 
         notifications.success(
           'Tokens Approved',
           'ADRIAN tokens approved. Now activating Banana mode...'
         );
       } else {
-        console.log('✅ Sufficient allowance already exists');
+        if (import.meta.env.DEV) console.log('✅ Sufficient allowance already exists');
       }
 
       // Execute setToggle to activate banana (this will charge the ADRIAN tokens)
-      console.log('💾 Activating BANANA toggle (ID=13) for token', tokenId);
+      if (import.meta.env.DEV) console.log('💾 Activating BANANA toggle (ID=13) for token', tokenId);
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESSES.ZOOM_TOGGLE,
         abi: ZOOM_TOGGLE_ABI,
@@ -252,13 +252,13 @@ export function useSetBananaToggle() {
         args: [BigInt(tokenId), BigInt(TOGGLE_MODES.BANANA)],
       });
 
-      console.log('⏳ Waiting for transaction confirmation...');
+      if (import.meta.env.DEV) console.log('⏳ Waiting for transaction confirmation...');
       await publicClient.waitForTransactionReceipt({ hash });
 
       return hash;
     },
     onSuccess: (hash, variables) => {
-      console.log('Banana toggle success:', hash);
+      if (import.meta.env.DEV) console.log('Banana toggle success:', hash);
       if (variables.isRemoving) {
         notifications.success(
           'Banana Mode Removed',

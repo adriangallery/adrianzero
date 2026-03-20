@@ -1,12 +1,12 @@
 /**
  * usePacks Hook
- * Fetches user's Floppy Discs and Action Packs
+ * Derives user's Floppy Discs and Action Packs from walletDataStore
+ * (no extra Alchemy API call — data loaded once by walletDataStore.loadAllTraits)
  */
 
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { alchemyClient } from '@/lib/api/alchemy/client';
-import { CONTRACT_ADDRESSES } from '@/config/contracts';
+import { useWalletDataStore } from '@/stores/walletDataStore';
 import type { Pack } from '@/types/nft.types';
 
 // Pack metadata aligned with traitlabold (pack-config.js) as source of truth
@@ -57,29 +57,20 @@ const PACK_METADATA: Record<string, { name: string; type: 'FLOPPY_DISC' | 'ACTIO
 
 export function usePacks() {
   const { address } = useAccount();
+  const rawERC1155Tokens = useWalletDataStore(state => state.rawERC1155Tokens);
+  const isLoadingTraits = useWalletDataStore(state => state.isLoadingTraits);
 
   return useQuery({
     queryKey: ['packs', address],
-    queryFn: async () => {
-      // Return empty array when no wallet connected (demo mode)
-      if (!address) {
-        return [];
-      }
-
-      // Fetch all ERC1155 tokens from ADRIAN_LAB contract
-      const response = await alchemyClient.getERC1155Tokens(address, [
-        CONTRACT_ADDRESSES.ADRIAN_LAB,
-      ]);
+    queryFn: () => {
+      if (!address) return [];
 
       const packs: Pack[] = [];
 
-      // Process each NFT
-      response.ownedNfts.forEach((nft) => {
+      rawERC1155Tokens.forEach((nft) => {
         const balance = parseInt(nft.balance || '0');
-
         if (balance === 0) return;
 
-        // Check if token ID is in our pack metadata
         const packConfig = PACK_METADATA[nft.tokenId];
         if (packConfig) {
           packs.push({
@@ -88,18 +79,18 @@ export function usePacks() {
             type: packConfig.type,
             contract: packConfig.contract,
             balance,
-            metadata: nft.raw?.metadata,
+            metadata: nft.metadata,
             image: nft.image,
             special: packConfig.special,
           });
         }
       });
 
-      console.log('[usePacks] Found packs:', packs.length);
       return packs;
     },
-    enabled: true, // Always enabled to show empty array in demo mode
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    // Enabled: always in demo mode (no address), or after store finishes loading
+    enabled: !address || !isLoadingTraits,
+    staleTime: Infinity, // Data derived from Zustand store — no Alchemy refetch needed
     refetchOnWindowFocus: false,
   });
 }

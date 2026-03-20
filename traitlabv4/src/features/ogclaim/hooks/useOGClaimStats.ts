@@ -1,6 +1,6 @@
 /**
  * useOGClaimStats Hook
- * Loads global OG claim statistics
+ * Loads global OG claim statistics (on-demand, no polling)
  */
 
 import { useReadContract } from 'wagmi';
@@ -11,12 +11,13 @@ import type { OGClaimStats } from '../types/ogclaim.types';
 const TOTAL_SUPPLY = 1000;
 
 export function useOGClaimStats() {
-  const { data: claimedCount, isLoading } = useReadContract({
+  const { data: claimedCount, isLoading, refetch } = useReadContract({
     address: CONTRACT_ADDRESSES.OGCLAIM_CONTRACT as `0x${string}`,
     abi: OGCLAIM_ABI,
     functionName: 'getClaimedCount',
     query: {
-      refetchInterval: 30000, // Refetch every 30 seconds
+      refetchInterval: false, // No polling — fetch on mount + manual refresh
+      staleTime: 300_000, // 5 min stale time (slow-changing data)
     },
   });
 
@@ -32,5 +33,6 @@ export function useOGClaimStats() {
   return {
     stats,
     isLoading,
+    refetch,
   };
 }

@@ -106,7 +106,7 @@ export function useUserPunks(): UseUserPunksReturn {
               });
               tokenIds.push(Number(decoded));
             } catch (err) {
-              console.warn('Failed to decode token ID:', err);
+              if (import.meta.env.DEV) console.warn('Failed to decode token ID:', err);
             }
           }
         }

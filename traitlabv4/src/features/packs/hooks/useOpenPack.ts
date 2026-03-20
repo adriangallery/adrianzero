@@ -75,14 +75,14 @@ export function useOpenPack() {
       const id = parseInt(packId);
       const contractAddress = getPackContract(id);
 
-      console.log(`[useOpenPack] Opening pack ${packId} using contract ${contractAddress}`);
+      if (import.meta.env.DEV) console.log(`[useOpenPack] Opening pack ${packId} using contract ${contractAddress}`);
 
       let hash: `0x${string}`;
 
       // Route to correct function based on contract type
       if (isOpenPackV4Token(id)) {
         // OPENPACK_V4 only has openPacks(packId, quantity) - use quantity=1 for single pack
-        console.log(`[useOpenPack] Using openPacks() for OPENPACK_V4 token ${id}`);
+        if (import.meta.env.DEV) console.log(`[useOpenPack] Using openPacks() for OPENPACK_V4 token ${id}`);
         hash = await writeContractAsync({
           address: contractAddress,
           abi: OPENPACK_V4_ABI,
@@ -91,7 +91,7 @@ export function useOpenPack() {
         });
       } else if (isActionPackToken(id) || id === 10007) {
         // ACTION_PACKS and ACTION_PACK_10007 require pre-checks
-        console.log(`[useOpenPack] Using openPack() with pre-check for ACTION_PACKS token ${id}`);
+        if (import.meta.env.DEV) console.log(`[useOpenPack] Using openPack() with pre-check for ACTION_PACKS token ${id}`);
 
         // Pre-check: canOpenPack(user, packId)
         const [canOpen, reason] = await publicClient.readContract({
@@ -113,7 +113,7 @@ export function useOpenPack() {
         });
       } else {
         // FLOPPY_DISCS (token 10006 and fallback)
-        console.log(`[useOpenPack] Using openPack() for FLOPPY_DISCS token ${id}`);
+        if (import.meta.env.DEV) console.log(`[useOpenPack] Using openPack() for FLOPPY_DISCS token ${id}`);
         hash = await writeContractAsync({
           address: contractAddress,
           abi: FLOPPY_DISCS_ABI,
@@ -122,7 +122,7 @@ export function useOpenPack() {
         });
       }
 
-      console.log('Pack opening transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('Pack opening transaction sent:', hash);
 
       // Wait for confirmation
       await publicClient.waitForTransactionReceipt({ hash });
@@ -130,7 +130,7 @@ export function useOpenPack() {
       return hash;
     },
     onSuccess: (hash: `0x${string}`) => {
-      console.log('Pack opened successfully:', hash);
+      if (import.meta.env.DEV) console.log('Pack opened successfully:', hash);
       notifications.success('Pack Opened!', 'Check your inventory for new traits', false);
       // Invalidate queries to refresh pack balances and traits
       queryClient.invalidateQueries({ queryKey: ['packs'] });
@@ -166,7 +166,7 @@ export function useOpenPacks() {
         args: [BigInt(packId), quantity],
       });
 
-      console.log('Batch pack opening transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('Batch pack opening transaction sent:', hash);
 
       // Wait for confirmation
       await publicClient.waitForTransactionReceipt({ hash });
@@ -174,7 +174,7 @@ export function useOpenPacks() {
       return hash;
     },
     onSuccess: (hash: `0x${string}`) => {
-      console.log('Packs opened successfully:', hash);
+      if (import.meta.env.DEV) console.log('Packs opened successfully:', hash);
       notifications.success('Packs Opened!', `Successfully opened packs. Check your inventory for new traits`, false);
       queryClient.invalidateQueries({ queryKey: ['packs'] });
       queryClient.invalidateQueries({ queryKey: ['traits'] });

@@ -18,10 +18,24 @@ interface TraitMetadata {
   rarity?: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
+/** Raw ERC1155 token from Alchemy — stored so usePacks/useSerums can derive without extra API calls */
+export interface RawERC1155Token {
+  tokenId: string;
+  balance: string;
+  name?: string;
+  image?: {
+    cachedUrl?: string;
+    thumbnailUrl?: string;
+    originalUrl?: string;
+  };
+  metadata?: any;
+}
+
 interface WalletDataState {
   // Data
   adrianZeros: AdrianZeroToken[];
   traits: Trait[];
+  rawERC1155Tokens: RawERC1155Token[];
   traitsMetadata: Record<string, TraitMetadata> | null;
 
   // Loading states
@@ -53,6 +67,7 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
   // Initial state
   adrianZeros: [],
   traits: [],
+  rawERC1155Tokens: [],
   traitsMetadata: null,
   isLoadingZeros: false,
   isLoadingTraits: false,
@@ -161,7 +176,6 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
         }
       } while (pageKey);
 
-      console.log(`✅ Loaded ${allTokens.length} AdrianZERO tokens`);
       set({
         adrianZeros: allTokens,
         isLoadingZeros: false,
@@ -187,7 +201,9 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
 
     try {
       const allTraits: Trait[] = [];
+      const allRawTokens: RawERC1155Token[] = [];
       const seenIds = new Set<string>();
+      const seenRawIds = new Set<string>();
       let pageKey: string | undefined = undefined;
       let totalEstimate = 0;
 
@@ -196,6 +212,20 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
         const response = await alchemyClient.getERC1155TokensPage(address, [
           CONTRACT_ADDRESSES.ADRIAN_LAB,
         ], pageKey);
+
+        // Accumulate raw tokens for packs/serums derivation
+        response.ownedNfts.forEach((nft) => {
+          if (!seenRawIds.has(nft.tokenId)) {
+            seenRawIds.add(nft.tokenId);
+            allRawTokens.push({
+              tokenId: nft.tokenId,
+              balance: nft.balance || '0',
+              name: nft.name,
+              image: nft.image,
+              metadata: nft.raw?.metadata,
+            });
+          }
+        });
 
         // Transform to our type
         const traits: Trait[] = response.ownedNfts
@@ -254,9 +284,9 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
         }
       } while (pageKey);
 
-      console.log(`✅ Loaded ${allTraits.length} traits`);
       set({
         traits: allTraits,
+        rawERC1155Tokens: allRawTokens,
         isLoadingTraits: false,
         traitsProgress: 100,
       });
@@ -273,6 +303,7 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
     set({
       adrianZeros: [],
       traits: [],
+      rawERC1155Tokens: [],
       zerosProgress: 0,
       traitsProgress: 0,
       zerosError: null,
@@ -284,6 +315,7 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
     set({
       adrianZeros: [],
       traits: [],
+      rawERC1155Tokens: [],
       traitsMetadata: null,
       isLoadingZeros: false,
       isLoadingTraits: false,
@@ -310,5 +342,6 @@ export const selectTraitsByCategory = (state: WalletDataState) => {
     return acc;
   }, {} as Record<TraitCategory, Trait[]>);
 };
+export const selectRawERC1155Tokens = (state: WalletDataState) => state.rawERC1155Tokens;
 export const selectIsLoading = (state: WalletDataState) =>
   state.isLoadingZeros || state.isLoadingTraits || state.isLoadingMetadata;

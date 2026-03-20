@@ -33,7 +33,7 @@ export function useApplySerum() {
         args: [BigInt(tokenId), BigInt(serumId)],
       });
 
-      console.log('Apply serum transaction sent:', hash);
+      if (import.meta.env.DEV) console.log('Apply serum transaction sent:', hash);
 
       // Wait for confirmation
       await publicClient.waitForTransactionReceipt({ hash });
@@ -41,7 +41,7 @@ export function useApplySerum() {
       return hash;
     },
     onSuccess: (hash) => {
-      console.log('Serum applied successfully:', hash);
+      if (import.meta.env.DEV) console.log('Serum applied successfully:', hash);
       notifications.success('Serum Applied!', 'Your NFT has been enhanced with the serum', false);
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });
