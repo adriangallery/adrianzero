@@ -109,8 +109,8 @@ export function TraitCategories({
   );
 
   return (
-    <div className="border-b border-border pb-2">
-      <div className="flex flex-wrap gap-1.5">
+    <div className="pb-1">
+      <div className="flex gap-1.5 flex-nowrap overflow-x-auto no-scrollbar">
         {/* All Category */}
         {renderButton('ALL', 'All', allCount, activeCategory === 'ALL', () =>
           onCategoryChange('ALL')
