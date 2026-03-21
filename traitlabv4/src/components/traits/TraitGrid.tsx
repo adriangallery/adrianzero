@@ -29,7 +29,7 @@ export function TraitGrid({
 
   // Group traits into rows for virtualization
   const rows = useMemo(() => {
-    const itemsPerRow = isMobile ? 2 : 4;
+    const itemsPerRow = isMobile ? 3 : 4;
     const result: Trait[][] = [];
 
     for (let i = 0; i < traits.length; i += itemsPerRow) {
@@ -65,7 +65,7 @@ export function TraitGrid({
         endReached={() => onEndReached?.()}
         itemContent={(_index, row) => {
           return (
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="grid grid-cols-3 gap-2 mb-2 px-1">
               {row.map((trait) => (
                 <TraitCard
                   key={trait.tokenId}
@@ -85,10 +85,11 @@ export function TraitGrid({
   // Use key to force remount when traits change
   const gridKey = `grid-${traits.length}-${traits[0]?.tokenId || 'empty'}`;
 
+  // p-1 -m-1 prevents ring-2/shadow clipping on edge cards
   return (
     <div
       key={gridKey}
-      className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+      className="grid gap-2 sm:gap-3 grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 p-1 -m-1"
     >
       {traits.map((trait) => (
         <TraitCard

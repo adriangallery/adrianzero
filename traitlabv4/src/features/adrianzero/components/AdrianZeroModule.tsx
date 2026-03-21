@@ -371,41 +371,182 @@ export function AdrianZeroModule() {
 
   // ─── Trait Editor Mode (NFT selected) — Split Layout ──────
 
+  // Mobile: compact sticky header + full-height scrollable trait grid
+  // Desktop: side-by-side split layout
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-full -mx-4 -mt-6">
+        {/* ─── Sticky top section ─── */}
+        <div className="sticky top-0 z-20 bg-background px-3 pt-2 pb-1 border-b border-border">
+          {/* Row 1: Back + NFT thumbnail + name + nav + close */}
+          <div className="flex items-center gap-2 mb-1.5">
+            <button onClick={handleClearNFTSelection} className="p-1 -ml-1">
+              <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+            </button>
+
+            {/* NFT thumbnail */}
+            <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0 relative">
+              {/* Show composed or original */}
+              {selectedTraits.length > 0 && previewImageUrl ? (
+                <img src={previewImageUrl} alt="" className="w-full h-full object-cover" />
+              ) : nftImageUrl ? (
+                <img src={nftImageUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Frame className="w-5 h-5 text-muted-foreground absolute inset-0 m-auto" />
+              )}
+              {isPreviewLoading && <div className="absolute inset-0 shimmer" />}
+            </div>
+
+            {/* NFT switcher */}
+            <button onClick={handlePrevNFT} disabled={selectedIndex <= 0} className="p-0.5 disabled:opacity-20">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="text-[11px] font-medium text-foreground flex-1 text-center truncate">
+              #{selectedNFT.tokenId}
+            </span>
+            <button onClick={handleNextNFT} disabled={selectedIndex >= sortedTokens.length - 1} className="p-0.5 disabled:opacity-20">
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+
+            {/* Before/after + close */}
+            {selectedTraits.length > 0 && previewImageUrl && (
+              <button
+                onTouchStart={() => setShowBeforeAfter(true)}
+                onTouchEnd={() => setShowBeforeAfter(false)}
+                className="p-1 rounded bg-muted"
+              >
+                <ArrowLeftRight className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            )}
+            <button onClick={handleClearNFTSelection} className="p-1">
+              <X className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Row 2 (conditional): Selected traits pills + Apply */}
+          {selectedTraits.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-1.5 overflow-x-auto no-scrollbar">
+              <div className="flex gap-1 flex-shrink-0">
+                {selectedTraits.map((trait) => (
+                  <div
+                    key={trait.tokenId}
+                    className="flex items-center gap-0.5 px-1.5 py-0.5 bg-[#00ff00]/10 text-[#00ff00] border border-[#00ff00]/20 rounded text-[9px] flex-shrink-0"
+                  >
+                    <span className="truncate max-w-[60px]">{trait.name}</span>
+                    <button onClick={() => deselectTrait(trait.category)}>
+                      <X className="h-2 w-2" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-1.5 flex-shrink-0 ml-auto">
+                <button
+                  onClick={() => clearSelection()}
+                  className="px-2 py-1 text-[10px] bg-secondary text-secondary-foreground rounded font-medium"
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={handleApplyTraits}
+                  disabled={applyTraits.isPending}
+                  className="px-2.5 py-1 text-[10px] bg-[#00ff00] text-black rounded font-bold disabled:opacity-50 flex items-center gap-1"
+                >
+                  {applyTraits.isPending ? (
+                    <div className="h-2.5 w-2.5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  ) : (
+                    <Check className="h-2.5 w-2.5" />
+                  )}
+                  Apply
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Row 3: Category tabs — horizontal scroll, single line */}
+          <div className="overflow-x-auto no-scrollbar -mx-1">
+            <TraitCategories
+              categories={categories}
+              traitsByCategory={traitsByCategory}
+              activeCategory={activeCategory}
+              onCategoryChange={setActiveCategory}
+            />
+          </div>
+        </div>
+
+        {/* ─── Scrollable trait grid ─── */}
+        <div className="flex-1 overflow-y-auto px-2 pt-2 pb-4">
+          {isLoadingTraits && isConnected ? (
+            <div className="text-center py-8">
+              <div className="shimmer w-10 h-10 rounded-full mx-auto mb-3" />
+              <p className="text-muted-foreground text-xs">Loading traits... {traitsProgress}%</p>
+              <div className="w-40 h-1 bg-muted rounded-full mx-auto mt-2 overflow-hidden">
+                <div className="h-full bg-[#00ff00] transition-all duration-300" style={{ width: `${traitsProgress}%` }} />
+              </div>
+            </div>
+          ) : (
+            <>
+              <TraitGrid
+                traits={traitsPagination.currentItems}
+                selectedTraitIds={selectedTraitIds}
+                onTraitSelect={handleTraitSelect}
+                emptyMessage={
+                  activeCategory === 'ALL'
+                    ? 'No traits found in your wallet'
+                    : `No ${activeCategory.toLowerCase()} traits found`
+                }
+              />
+              {isConnected && traitsPagination.totalPages > 1 && (
+                <div className="mt-3">
+                  <Pagination
+                    currentPage={traitsPagination.currentPage}
+                    totalPages={traitsPagination.totalPages}
+                    itemsPerPage={traitsPagination.itemsPerPage}
+                    totalItems={traitsPagination.totalItems}
+                    onPageChange={traitsPagination.goToPage}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Before/After fullscreen overlay */}
+        {showBeforeAfter && nftImageUrl && (
+          <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-8"
+            onTouchEnd={() => setShowBeforeAfter(false)}
+          >
+            <img src={nftImageUrl} alt="Original" className="max-w-full max-h-full object-contain rounded-xl" />
+            <p className="absolute bottom-8 text-xs text-white/60">Original — release to go back</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─── Desktop: side-by-side split layout ──────────────────
+
   return (
     <div className="flex flex-col h-full">
-      {/* Top Bar: back button + NFT switcher */}
+      {/* Top Bar */}
       <div className="flex items-center justify-between gap-2 py-2 border-b border-border mb-3">
         <button
           onClick={handleClearNFTSelection}
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Back to collection</span>
-          <span className="sm:hidden">Back</span>
+          Back to collection
         </button>
 
-        {/* NFT Switcher */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={handlePrevNFT}
-            disabled={selectedIndex <= 0}
-            className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 transition-colors"
-          >
+          <button onClick={handlePrevNFT} disabled={selectedIndex <= 0} className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30">
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <span className="text-xs font-medium text-foreground min-w-[80px] text-center">
-            {displayName}
-          </span>
-          <button
-            onClick={handleNextNFT}
-            disabled={selectedIndex >= sortedTokens.length - 1}
-            className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 transition-colors"
-          >
+          <span className="text-xs font-medium text-foreground min-w-[80px] text-center">{displayName}</span>
+          <button onClick={handleNextNFT} disabled={selectedIndex >= sortedTokens.length - 1} className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30">
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Selected traits count */}
         {selectedTraits.length > 0 && (
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-[#00ff00]">{selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''}</span>
@@ -416,44 +557,27 @@ export function AdrianZeroModule() {
         )}
       </div>
 
-      {/* Split Layout: Preview (left/top) | Traits (right/bottom) */}
-      <div className={`flex-1 flex ${isMobile ? 'flex-col' : 'flex-row gap-4'} overflow-hidden`}>
-
-        {/* ─── Left Panel: Preview ─── */}
-        <div className={`${isMobile ? 'pb-3' : 'w-[320px] flex-shrink-0'} flex flex-col`}>
-          {/* Preview Image */}
-          <div className={`relative bg-muted rounded-xl overflow-hidden mx-auto ${isMobile ? 'w-full max-w-[280px]' : 'w-full'} aspect-square`}>
-            {isPreviewLoading && (
-              <div className="absolute inset-0 shimmer z-10" />
-            )}
-
-            {/* Before/After: show original when toggled */}
+      {/* Split: Preview | Traits */}
+      <div className="flex-1 flex flex-row gap-4 overflow-y-auto">
+        {/* Left: Preview — sticky so it stays while traits scroll */}
+        <div className="w-[320px] flex-shrink-0 sticky top-0 self-start flex flex-col">
+          <div className="relative bg-muted rounded-xl overflow-hidden w-full aspect-square">
+            {isPreviewLoading && <div className="absolute inset-0 shimmer z-10" />}
             {showBeforeAfter && nftImageUrl ? (
               <img src={nftImageUrl} alt={`${displayName} (original)`} className="w-full h-full object-cover" />
             ) : selectedTraits.length > 0 && previewImageUrl ? (
-              <img
-                src={previewImageUrl}
-                alt="Preview with traits"
-                className="w-full h-full object-cover"
-                onLoad={() => setIsPreviewLoading(false)}
-              />
+              <img src={previewImageUrl} alt="Preview with traits" className="w-full h-full object-cover" onLoad={() => setIsPreviewLoading(false)} />
             ) : nftImageUrl ? (
               <img src={nftImageUrl} alt={displayName} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Frame className="h-12 w-12 text-muted-foreground" />
-              </div>
+              <div className="w-full h-full flex items-center justify-center"><Frame className="h-12 w-12 text-muted-foreground" /></div>
             )}
-
-            {/* Before/After Toggle */}
             {selectedTraits.length > 0 && previewImageUrl && (
               <button
                 onMouseDown={() => setShowBeforeAfter(true)}
                 onMouseUp={() => setShowBeforeAfter(false)}
                 onMouseLeave={() => setShowBeforeAfter(false)}
-                onTouchStart={() => setShowBeforeAfter(true)}
-                onTouchEnd={() => setShowBeforeAfter(false)}
-                className="absolute bottom-2 left-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-[10px] font-medium text-white flex items-center gap-1.5 hover:bg-black/80 transition-colors"
+                className="absolute bottom-2 left-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-[10px] font-medium text-white flex items-center gap-1.5 hover:bg-black/80"
               >
                 <ArrowLeftRight className="h-3 w-3" />
                 {showBeforeAfter ? 'Original' : 'Hold to compare'}
@@ -461,68 +585,33 @@ export function AdrianZeroModule() {
             )}
           </div>
 
-          {/* Selected Traits Pills */}
           {selectedTraits.length > 0 && (
-            <div className="flex flex-wrap gap-1 justify-center mt-2">
-              {selectedTraits.map((trait) => (
-                <div
-                  key={trait.tokenId}
-                  className="flex items-center gap-1 px-2 py-0.5 bg-[#00ff00]/10 text-[#00ff00] border border-[#00ff00]/20 rounded text-[10px]"
-                >
-                  <span className="truncate max-w-[80px]">{trait.name}</span>
-                  <button onClick={() => deselectTrait(trait.category)} className="hover:text-white">
-                    <X className="h-2.5 w-2.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Apply Button */}
-          {selectedTraits.length > 0 && (
-            <div className="flex gap-2 justify-center mt-3">
-              <button
-                onClick={() => { clearSelection(); }}
-                disabled={applyTraits.isPending}
-                className="px-4 py-2 text-xs bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-80 disabled:opacity-50"
-              >
-                Clear
-              </button>
-              <button
-                onClick={handleApplyTraits}
-                disabled={applyTraits.isPending}
-                className="px-4 py-2 text-xs bg-[#00ff00] text-black rounded-lg font-bold hover:bg-[#00ff00]/90 disabled:opacity-50 flex items-center gap-1.5"
-              >
-                {applyTraits.isPending ? (
-                  <>
-                    <div className="h-3 w-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                    Applying...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-3 w-3" />
-                    Apply {selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''}
-                  </>
-                )}
-              </button>
-            </div>
+            <>
+              <div className="flex flex-wrap gap-1 justify-center mt-2">
+                {selectedTraits.map((trait) => (
+                  <div key={trait.tokenId} className="flex items-center gap-1 px-2 py-0.5 bg-[#00ff00]/10 text-[#00ff00] border border-[#00ff00]/20 rounded text-[10px]">
+                    <span className="truncate max-w-[80px]">{trait.name}</span>
+                    <button onClick={() => deselectTrait(trait.category)}><X className="h-2.5 w-2.5" /></button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 justify-center mt-3">
+                <button onClick={() => clearSelection()} disabled={applyTraits.isPending} className="px-4 py-2 text-xs bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-80 disabled:opacity-50">Clear</button>
+                <button onClick={handleApplyTraits} disabled={applyTraits.isPending} className="px-4 py-2 text-xs bg-[#00ff00] text-black rounded-lg font-bold hover:bg-[#00ff00]/90 disabled:opacity-50 flex items-center gap-1.5">
+                  {applyTraits.isPending ? (<><div className="h-3 w-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />Applying...</>) : (<><Check className="h-3 w-3" />Apply {selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''}</>)}
+                </button>
+              </div>
+            </>
           )}
         </div>
 
-        {/* ─── Right Panel: Trait Browser ─── */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          {/* Category Tabs */}
+        {/* Right: Trait Browser */}
+        <div className="flex-1 flex flex-col min-h-0">
           <div className="flex-shrink-0 mb-2">
-            <TraitCategories
-              categories={categories}
-              traitsByCategory={traitsByCategory}
-              activeCategory={activeCategory}
-              onCategoryChange={setActiveCategory}
-            />
+            <TraitCategories categories={categories} traitsByCategory={traitsByCategory} activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
           </div>
-
-          {/* Traits Grid (scrollable) */}
-          <div className="flex-1 overflow-y-auto pb-4">
+          {/* p-1 padding prevents ring-2 clipping on edge trait cards */}
+          <div className="flex-1 overflow-y-auto pb-4 p-1 -m-1">
             {isLoadingTraits && isConnected ? (
               <div className="text-center py-8">
                 <div className="shimmer w-12 h-12 rounded-full mx-auto mb-4" />
@@ -533,25 +622,12 @@ export function AdrianZeroModule() {
               </div>
             ) : (
               <>
-                <TraitGrid
-                  traits={traitsPagination.currentItems}
-                  selectedTraitIds={selectedTraitIds}
-                  onTraitSelect={handleTraitSelect}
-                  emptyMessage={
-                    activeCategory === 'ALL'
-                      ? 'No traits found in your wallet'
-                      : `No ${activeCategory.toLowerCase()} traits found`
-                  }
-                />
+                <TraitGrid traits={traitsPagination.currentItems} selectedTraitIds={selectedTraitIds} onTraitSelect={handleTraitSelect}
+                  emptyMessage={activeCategory === 'ALL' ? 'No traits found in your wallet' : `No ${activeCategory.toLowerCase()} traits found`} />
                 {isConnected && traitsPagination.totalPages > 1 && (
                   <div className="mt-4">
-                    <Pagination
-                      currentPage={traitsPagination.currentPage}
-                      totalPages={traitsPagination.totalPages}
-                      itemsPerPage={traitsPagination.itemsPerPage}
-                      totalItems={traitsPagination.totalItems}
-                      onPageChange={traitsPagination.goToPage}
-                    />
+                    <Pagination currentPage={traitsPagination.currentPage} totalPages={traitsPagination.totalPages}
+                      itemsPerPage={traitsPagination.itemsPerPage} totalItems={traitsPagination.totalItems} onPageChange={traitsPagination.goToPage} />
                   </div>
                 )}
               </>

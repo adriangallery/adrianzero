@@ -112,12 +112,12 @@ export function TraitCard({
         )}
       </div>
 
-      {/* Info */}
-      <div className="p-2 sm:p-3">
-        <h3 className="font-medium truncate text-foreground text-xs sm:text-sm">
+      {/* Info — compact on small screens */}
+      <div className="p-1.5 sm:p-2">
+        <h3 className="font-medium truncate text-foreground text-[10px] sm:text-xs">
           {trait.name}
         </h3>
-        <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 capitalize">
+        <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 capitalize hidden sm:block">
           {trait.category.toLowerCase().replace('_', ' ')}
         </p>
       </div>
