@@ -1,8 +1,11 @@
 /**
  * TraitCategories Component
- * Horizontal scrollable category tabs with trait counts
+ * Category tabs with "More" overflow for 15+ categories
+ * V4.6: Show top 6 visible + "More" dropdown for the rest
  */
 
+import { useState, useMemo } from 'react';
+import { ChevronDown } from 'lucide-react';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
 interface TraitCategoriesProps {
@@ -40,62 +43,149 @@ const categoryLabels: Record<string, string> = {
   'WEAPON': 'Weapon',
 };
 
+const MAX_VISIBLE_TABS = 6;
+
 export function TraitCategories({
   categories,
   traitsByCategory,
   activeCategory,
   onCategoryChange,
 }: TraitCategoriesProps) {
+  const [showMore, setShowMore] = useState(false);
+
   const allCount = Object.values(traitsByCategory).reduce(
     (sum, traits) => sum + traits.length,
     0
   );
 
+  // Sort categories: ones with traits first, sorted by count descending
+  const activeCategories = useMemo(() => {
+    return categories
+      .filter((cat) => (traitsByCategory[cat]?.length || 0) > 0)
+      .sort((a, b) => (traitsByCategory[b]?.length || 0) - (traitsByCategory[a]?.length || 0));
+  }, [categories, traitsByCategory]);
+
+  // If active category is in overflow, promote it to visible
+  const visibleCategories = useMemo(() => {
+    const visible = activeCategories.slice(0, MAX_VISIBLE_TABS);
+    const overflow = activeCategories.slice(MAX_VISIBLE_TABS);
+
+    // If active category is in overflow, swap it into visible
+    if (activeCategory !== 'ALL' && overflow.includes(activeCategory as TraitCategory)) {
+      const activeIdx = overflow.indexOf(activeCategory as TraitCategory);
+      overflow.splice(activeIdx, 1);
+      visible.pop();
+      visible.push(activeCategory as TraitCategory);
+    }
+
+    return { visible, overflow };
+  }, [activeCategories, activeCategory]);
+
+  const isOverflowActive = activeCategory !== 'ALL' && visibleCategories.overflow.includes(activeCategory as TraitCategory);
+
+  const renderButton = (
+    key: string,
+    label: string,
+    count: number,
+    isActive: boolean,
+    onClick: () => void
+  ) => (
+    <button
+      key={key}
+      onClick={onClick}
+      className={`
+        touch-target px-3 py-1.5 rounded-lg font-medium text-xs whitespace-nowrap
+        transition-colors
+        ${
+          isActive
+            ? 'bg-[#00ff00] text-black'
+            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+        }
+      `}
+    >
+      {label}
+      <span className="ml-1 opacity-70">({count})</span>
+    </button>
+  );
+
   return (
-    <div className="border-b border-border overflow-x-auto custom-scrollbar -mx-1">
-      <div className="flex gap-1 p-1 min-w-max">
+    <div className="border-b border-border pb-2">
+      <div className="flex flex-wrap gap-1.5">
         {/* All Category */}
-        <button
-          onClick={() => onCategoryChange('ALL')}
-          className={`
-            touch-target px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap
-            transition-colors
-            ${
-              activeCategory === 'ALL'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-            }
-          `}
-        >
-          All
-          <span className="ml-1 sm:ml-2 opacity-75">({allCount})</span>
-        </button>
+        {renderButton('ALL', 'All', allCount, activeCategory === 'ALL', () =>
+          onCategoryChange('ALL')
+        )}
 
-        {/* Category Tabs */}
-        {categories.map((category) => {
+        {/* Visible Categories */}
+        {visibleCategories.visible.map((category) => {
           const count = traitsByCategory[category]?.length || 0;
+          return renderButton(
+            category,
+            categoryLabels[category] || category,
+            count,
+            activeCategory === category,
+            () => onCategoryChange(category)
+          );
+        })}
 
-          if (count === 0) return null;
-
-          return (
+        {/* More Button */}
+        {visibleCategories.overflow.length > 0 && (
+          <div className="relative">
             <button
-              key={category}
-              onClick={() => onCategoryChange(category)}
+              onClick={() => setShowMore(!showMore)}
               className={`
-                touch-target px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap
-                transition-colors
+                touch-target px-3 py-1.5 rounded-lg font-medium text-xs whitespace-nowrap
+                transition-colors flex items-center gap-1
                 ${
-                  activeCategory === category
-                    ? 'bg-primary text-primary-foreground'
+                  isOverflowActive
+                    ? 'bg-[#00ff00] text-black'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }
               `}
             >
-              {categoryLabels[category] || category}
-              <span className="ml-1 sm:ml-2 opacity-75">({count})</span>
+              More
+              <ChevronDown className={`w-3 h-3 transition-transform ${showMore ? 'rotate-180' : ''}`} />
             </button>
-          );
-        })}
+
+            {/* Dropdown */}
+            {showMore && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMore(false)}
+                />
+                <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-lg shadow-xl p-2 min-w-[180px] max-h-[300px] overflow-y-auto">
+                  {visibleCategories.overflow.map((category) => {
+                    const count = traitsByCategory[category]?.length || 0;
+                    const isActive = activeCategory === category;
+                    return (
+                      <button
+                        key={category}
+                        onClick={() => {
+                          onCategoryChange(category);
+                          setShowMore(false);
+                        }}
+                        className={`
+                          w-full text-left px-3 py-2 rounded-md text-xs font-medium
+                          transition-colors flex items-center justify-between
+                          ${
+                            isActive
+                              ? 'bg-[#00ff00]/20 text-[#00ff00]'
+                              : 'text-foreground hover:bg-muted'
+                          }
+                        `}
+                      >
+                        <span>{categoryLabels[category] || category}</span>
+                        <span className="text-muted-foreground ml-2">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

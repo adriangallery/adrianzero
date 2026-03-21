@@ -1,6 +1,7 @@
 /**
  * NFTGrid Component
  * Responsive grid for displaying NFTs with virtualization on mobile
+ * V4.6: 3-col compact mobile grid, dim non-selected cards, search support
  */
 
 import { useMemo } from 'react';
@@ -26,10 +27,13 @@ export function NFTGrid({
   emptyMessage = 'No NFTs found',
 }: NFTGridProps) {
   const isMobile = shouldOptimizeForTouch();
+  const hasSelection = !!selectedTokenId;
+
+  // 3 cols on mobile for denser grid (compact mode), 4+ on desktop
+  const itemsPerRow = isMobile ? 3 : 4;
 
   // Group tokens into rows for virtualization
   const rows = useMemo(() => {
-    const itemsPerRow = isMobile ? 2 : 4;
     const result: AdrianZeroToken[][] = [];
 
     for (let i = 0; i < tokens.length; i += itemsPerRow) {
@@ -37,7 +41,7 @@ export function NFTGrid({
     }
 
     return result;
-  }, [tokens, isMobile]);
+  }, [tokens, itemsPerRow]);
 
   if (tokens.length === 0) {
     return (
@@ -61,13 +65,15 @@ export function NFTGrid({
         itemContent={(index) => {
           const row = rows[index];
           return (
-            <div className="grid grid-cols-2 gap-4 mb-4 px-4">
+            <div className="grid grid-cols-3 gap-2 mb-2 px-1">
               {row.map((token) => (
                 <NFTCard
                   key={token.tokenId}
                   token={token}
                   isSelected={token.tokenId === selectedTokenId}
+                  hasSelection={hasSelection}
                   onClick={() => onTokenSelect?.(token)}
+                  compact={isMobile}
                 />
               ))}
             </div>
@@ -80,17 +86,20 @@ export function NFTGrid({
   // Regular grid for desktop or small collections
   return (
     <div
-      className={`
-        grid gap-4
-        grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6
-      `}
+      className={`grid gap-2 sm:gap-3 ${
+        isMobile
+          ? 'grid-cols-3'
+          : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
+      }`}
     >
       {tokens.map((token) => (
         <NFTCard
           key={token.tokenId}
           token={token}
           isSelected={token.tokenId === selectedTokenId}
+          hasSelection={hasSelection}
           onClick={() => onTokenSelect?.(token)}
+          compact={isMobile}
         />
       ))}
     </div>

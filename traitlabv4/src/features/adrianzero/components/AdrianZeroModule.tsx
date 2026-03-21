@@ -1,13 +1,16 @@
 /**
  * AdrianZeroModule Component
  * Main module for viewing and managing AdrianZERO NFTs
- * V4.3: Unified inline layout with collapsible preview (like TraitsModule)
+ * V4.6: Split layout with permanent preview, search, before/after, NFT switcher
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useAccount } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, ChevronUp, ChevronDown, X, Frame, Check, Sparkles, Rocket, ArrowRight } from 'lucide-react';
+import {
+  AlertTriangle, X, Frame, Check, Sparkles, Rocket, ArrowRight,
+  Search, ChevronLeft, ChevronRight, ArrowLeftRight,
+} from 'lucide-react';
 import { NFTGrid } from '@/components/nft/NFTGrid';
 import { TraitCategories } from '@/components/traits/TraitCategories';
 import { TraitGrid } from '@/components/traits/TraitGrid';
@@ -21,23 +24,23 @@ import { vercelImageService } from '@/lib/api/vercel/imageService';
 import { useWalletDataStore } from '@/stores/walletDataStore';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from '@/components/common/Pagination';
+import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
 export function AdrianZeroModule() {
   const { isConnected } = useAccount();
   const navigate = useNavigate();
+  const isMobile = shouldOptimizeForTouch();
+
   const [selectedNFT, setSelectedNFT] = useState<any>(null);
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
-  const [isTraitPreviewExpanded, setIsTraitPreviewExpanded] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [showBeforeAfter, setShowBeforeAfter] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Load tokens
-  const {
-    data: tokens = [],
-    isLoading,
-    error,
-  } = useAdrianZeroTokens();
+  const { data: tokens = [], isLoading, error } = useAdrianZeroTokens();
 
   // Load custom names
   const tokenIds = tokens.map((t) => t.tokenId);
@@ -55,20 +58,13 @@ export function AdrianZeroModule() {
   const { setSelectedToken, sortBy, sortOrder } = useAdrianZeroStore();
 
   // Load traits
-  const {
-    data: traitsByCategory,
-    allTraits,
-  } = useTraitsByCategory();
+  const { data: traitsByCategory, allTraits } = useTraitsByCategory();
   const categories = useTraitCategories();
 
   // Trait selection store
   const {
-    selectTrait,
-    deselectTrait,
-    getSelectedTraitsArray,
-    getSelectedTraitIds,
-    isTraitSelected,
-    clearSelection,
+    selectTrait, deselectTrait, getSelectedTraitsArray, getSelectedTraitIds,
+    isTraitSelected, clearSelection,
   } = useTraitsStore();
 
   // Apply traits mutation
@@ -77,7 +73,6 @@ export function AdrianZeroModule() {
   // Sort tokens
   const sortedTokens = useMemo(() => {
     const sorted = [...tokensWithNames];
-
     sorted.sort((a, b) => {
       if (sortBy === 'tokenId') {
         const comparison = parseInt(a.tokenId) - parseInt(b.tokenId);
@@ -85,25 +80,37 @@ export function AdrianZeroModule() {
       } else if (sortBy === 'name') {
         const nameA = a.name || `#${a.tokenId}`;
         const nameB = b.name || `#${b.tokenId}`;
-        const comparison = nameA.localeCompare(nameB);
-        return sortOrder === 'asc' ? comparison : -comparison;
+        return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
       }
       return 0;
     });
-
     return sorted;
   }, [tokensWithNames, sortBy, sortOrder]);
 
+  // Filter tokens by search query
+  const filteredTokens = useMemo(() => {
+    if (!searchQuery.trim()) return sortedTokens;
+    const q = searchQuery.toLowerCase().replace('#', '');
+    return sortedTokens.filter((t) => {
+      const name = (t.name || '').toLowerCase();
+      return t.tokenId.includes(q) || name.includes(q);
+    });
+  }, [sortedTokens, searchQuery]);
+
   // Get traits for active category
   const displayTraits = useMemo(() => {
-    if (activeCategory === 'ALL') {
-      return allTraits;
-    }
+    if (activeCategory === 'ALL') return allTraits;
     return traitsByCategory[activeCategory] || [];
   }, [activeCategory, allTraits, traitsByCategory]);
 
   const selectedTraits = getSelectedTraitsArray();
   const selectedTraitIds = getSelectedTraitIds();
+
+  // Index of selected NFT in sorted list (for prev/next navigation)
+  const selectedIndex = useMemo(() => {
+    if (!selectedNFT) return -1;
+    return sortedTokens.findIndex((t) => t.tokenId === selectedNFT.tokenId);
+  }, [selectedNFT, sortedTokens]);
 
   // Auto-select first NFT in demo mode
   useEffect(() => {
@@ -114,105 +121,102 @@ export function AdrianZeroModule() {
     }
   }, [isConnected, sortedTokens, selectedNFT, setSelectedToken]);
 
-  // Auto-expand preview when NFT is selected (unified preview)
-  useEffect(() => {
-    if (selectedNFT) {
-      setIsTraitPreviewExpanded(true);
-    }
-  }, [selectedNFT]);
-
   // Generate composed image when traits are selected
   useEffect(() => {
     if (selectedTraits.length > 0 && selectedNFT) {
-      // Generate preview URL for composed image
       setIsPreviewLoading(true);
       const url = vercelImageService.generateCombinedImageUrl({
         tokenId: selectedNFT.tokenId,
         traitIds: selectedTraitIds,
       });
       setPreviewImageUrl(url);
-      // Preload
-      vercelImageService.preloadImage(url).finally(() => {
-        setIsPreviewLoading(false);
-      });
+      vercelImageService.preloadImage(url).finally(() => setIsPreviewLoading(false));
     } else {
-      // Clear composed image when no traits selected
       setPreviewImageUrl('');
       setIsPreviewLoading(false);
     }
   }, [selectedTraits.length, selectedTraitIds.join(','), selectedNFT?.tokenId]);
 
   // Handlers
-  const handleTokenSelect = (token: any) => {
+  const handleTokenSelect = useCallback((token: any) => {
     if (selectedNFT?.tokenId === token.tokenId) {
-      // Deselect if same token clicked
       setSelectedNFT(null);
       setSelectedToken(null);
       clearSelection();
-      setIsTraitPreviewExpanded(false);
     } else {
       setSelectedToken(token);
       setSelectedNFT(token);
-      clearSelection(); // Clear previous trait selections when switching NFT
+      clearSelection();
     }
-  };
+    setShowBeforeAfter(false);
+  }, [selectedNFT, setSelectedToken, clearSelection]);
 
-  const handleTraitSelect = (trait: Trait) => {
+  const handleTraitSelect = useCallback((trait: Trait) => {
     if (isTraitSelected(trait)) {
       deselectTrait(trait.category);
     } else {
       selectTrait(trait);
     }
-  };
+    setShowBeforeAfter(false);
+  }, [isTraitSelected, deselectTrait, selectTrait]);
 
   const handleApplyTraits = async () => {
     if (!selectedNFT || selectedTraits.length === 0) return;
-
-    // If not connected, redirect to mint/onboarding
-    if (!isConnected) {
-      navigate('/onboarding');
-      return;
-    }
-
+    if (!isConnected) { navigate('/onboarding'); return; }
     try {
       await applyTraits.mutateAsync({
         tokenId: selectedNFT.tokenId,
         traitIds: selectedTraitIds,
       });
-
       clearSelection();
-      setIsTraitPreviewExpanded(false);
-    } catch (error) {
-      console.error('Failed to apply traits:', error);
+    } catch (err) {
+      console.error('Failed to apply traits:', err);
     }
   };
 
-  const handleClearNFTSelection = () => {
+  const handleClearNFTSelection = useCallback(() => {
     setSelectedNFT(null);
     setSelectedToken(null);
     clearSelection();
-    setIsTraitPreviewExpanded(false);
-  };
+    setSearchQuery('');
+  }, [setSelectedToken, clearSelection]);
 
-  // Get store loading progress
-  const zerosProgress = useWalletDataStore(state => state.zerosProgress);
-  const traitsProgress = useWalletDataStore(state => state.traitsProgress);
-  const isLoadingZeros = useWalletDataStore(state => state.isLoadingZeros);
-  const isLoadingTraits = useWalletDataStore(state => state.isLoadingTraits);
+  const handlePrevNFT = useCallback(() => {
+    if (selectedIndex > 0) {
+      const prev = sortedTokens[selectedIndex - 1];
+      setSelectedToken(prev);
+      setSelectedNFT(prev);
+      clearSelection();
+      setShowBeforeAfter(false);
+    }
+  }, [selectedIndex, sortedTokens, setSelectedToken, clearSelection]);
 
-  // Paginate zeros (100 per page)
-  const zerosPagination = usePagination(sortedTokens, { itemsPerPage: 100 });
+  const handleNextNFT = useCallback(() => {
+    if (selectedIndex < sortedTokens.length - 1) {
+      const next = sortedTokens[selectedIndex + 1];
+      setSelectedToken(next);
+      setSelectedNFT(next);
+      clearSelection();
+      setShowBeforeAfter(false);
+    }
+  }, [selectedIndex, sortedTokens, setSelectedToken, clearSelection]);
 
-  // Paginate traits by category (100 per page)
+  // Loading progress
+  const zerosProgress = useWalletDataStore((s) => s.zerosProgress);
+  const traitsProgress = useWalletDataStore((s) => s.traitsProgress);
+  const isLoadingZeros = useWalletDataStore((s) => s.isLoadingZeros);
+  const isLoadingTraits = useWalletDataStore((s) => s.isLoadingTraits);
+
+  // Pagination
+  const zerosPagination = usePagination(filteredTokens, { itemsPerPage: 100 });
   const traitsPagination = usePagination(displayTraits, { itemsPerPage: 100 });
 
-  // Reset pagination to page 1 when category changes
-  useEffect(() => {
-    traitsPagination.firstPage();
-  }, [activeCategory]);
+  useEffect(() => { traitsPagination.firstPage(); }, [activeCategory]);
 
   const nftImageUrl = selectedNFT?.image?.cachedUrl || selectedNFT?.image?.originalUrl || selectedNFT?.metadata?.image;
   const displayName = selectedNFT?.name || selectedNFT?.metadata?.name || (selectedNFT ? `AdrianZERO #${selectedNFT.tokenId}` : '');
+
+  // ─── Loading / Error states ────────────────────────────────
 
   if (isLoading) {
     return (
@@ -227,9 +231,7 @@ export function AdrianZeroModule() {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <AlertTriangle className="h-16 w-16 mb-4 text-yellow-500" />
-        <h2 className="text-xl font-semibold text-foreground">
-          Error Loading NFTs
-        </h2>
+        <h2 className="text-xl font-semibold text-foreground">Error Loading NFTs</h2>
         <p className="text-muted-foreground mt-2">
           {error instanceof Error ? error.message : 'Failed to load NFTs'}
         </p>
@@ -237,269 +239,280 @@ export function AdrianZeroModule() {
     );
   }
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Demo Mode Banner */}
-      {!isConnected && (
-        <div className="mb-4 bg-[#00ff00]/10 border border-[#00ff00]/20 rounded-lg p-3 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-[#00ff00] flex-shrink-0" />
-          <p className="text-xs sm:text-sm text-foreground">
-            <span className="font-medium text-[#00ff00]">Demo Mode:</span> Viewing sample NFT #146. Connect your wallet to see your collection.
-          </p>
-        </div>
-      )}
+  // ─── Empty state (hero CTA) ────────────────────────────────
 
-      {/* Header */}
-      <div className="flex items-center justify-between py-2 sm:py-4">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-foreground">
-            {!isConnected ? (
-              <>Build your <span className="text-[#00ff00]">ZERO</span></>
-            ) : (
-              <>AdrianZERO <span className="text-[#00ff00]">NFTs</span></>
-            )}
-          </h1>
-          {isConnected && (
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {tokens.length} {tokens.length === 1 ? 'NFT' : 'NFTs'} in your collection
+  if (isConnected && tokens.length === 0 && !isLoading && !isLoadingZeros) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="relative w-32 h-32 mb-6">
+          <div className="absolute inset-0 bg-[#00ff00]/20 rounded-full animate-pulse" />
+          <div className="absolute inset-2 bg-[#00ff00]/10 rounded-full flex items-center justify-center">
+            <Rocket className="h-12 w-12 text-[#00ff00]" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">
+          Get Your First <span className="text-[#00ff00]">ZERO</span>
+        </h2>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          Mint your AdrianZERO NFT and start customizing it with 900+ traits, visual effects, and more.
+        </p>
+        <button
+          onClick={() => navigate('/onboarding')}
+          className="group inline-flex items-center gap-2 px-6 py-3 bg-[#00ff00] text-black font-bold rounded-xl hover:bg-[#00ff00]/90 transition-all"
+        >
+          Start Minting
+          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+        </button>
+      </div>
+    );
+  }
+
+  // ─── NFT Grid Mode (no NFT selected) ──────────────────────
+
+  if (!selectedNFT) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Demo Mode Banner */}
+        {!isConnected && (
+          <div className="mb-3 bg-[#00ff00]/10 border border-[#00ff00]/20 rounded-lg p-3 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-[#00ff00] flex-shrink-0" />
+            <p className="text-xs sm:text-sm text-foreground">
+              <span className="font-medium text-[#00ff00]">Demo Mode:</span> Viewing sample NFT #146. Connect your wallet to see your collection.
             </p>
+          </div>
+        )}
+
+        {/* Header with search */}
+        <div className="flex items-center justify-between gap-3 py-2 sm:py-3">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground">
+              {!isConnected ? (
+                <>Build your <span className="text-[#00ff00]">ZERO</span></>
+              ) : (
+                <>My <span className="text-[#00ff00]">NFTs</span></>
+              )}
+            </h1>
+            {isConnected && (
+              <p className="text-xs text-muted-foreground">
+                {tokens.length} NFT{tokens.length !== 1 ? 's' : ''} — tap to customize
+              </p>
+            )}
+          </div>
+
+          {/* Search */}
+          {isConnected && tokens.length > 6 && (
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search #id or name..."
+                className="pl-8 pr-3 py-1.5 bg-muted rounded-lg text-xs text-foreground w-36 sm:w-48 focus:outline-none focus:ring-1 focus:ring-[#00ff00]/50"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                >
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </button>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Selected NFT indicator - Desktop */}
-        {selectedNFT && (
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              #{selectedNFT.tokenId} selected
-            </span>
-            <button
-              onClick={handleClearNFTSelection}
-              className="p-1.5 rounded bg-secondary text-secondary-foreground hover:opacity-80"
-              aria-label="Clear selection"
-            >
-              <X className="w-3 h-3" />
+        {/* Loading progress */}
+        {isLoadingZeros && isConnected && (
+          <div className="text-center py-8">
+            <div className="shimmer w-16 h-16 rounded-full mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading AdrianZERO NFTs... {zerosProgress}%</p>
+            <div className="w-64 h-2 bg-muted rounded-full mx-auto mt-2 overflow-hidden">
+              <div className="h-full bg-[#00ff00] transition-all duration-300" style={{ width: `${zerosProgress}%` }} />
+            </div>
+          </div>
+        )}
+
+        {/* NFT Grid */}
+        {!isLoadingZeros && (
+          <>
+            {searchQuery && filteredTokens.length === 0 ? (
+              <div className="text-center py-12">
+                <Search className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  No NFTs matching "<span className="text-foreground">{searchQuery}</span>"
+                </p>
+              </div>
+            ) : (
+              <NFTGrid
+                tokens={zerosPagination.currentItems}
+                selectedTokenId={null}
+                onTokenSelect={handleTokenSelect}
+                emptyMessage="No AdrianZERO NFTs found in your wallet"
+              />
+            )}
+
+            {isConnected && zerosPagination.totalPages > 1 && (
+              <div className="mt-4">
+                <Pagination
+                  currentPage={zerosPagination.currentPage}
+                  totalPages={zerosPagination.totalPages}
+                  itemsPerPage={zerosPagination.itemsPerPage}
+                  totalItems={zerosPagination.totalItems}
+                  onPageChange={zerosPagination.goToPage}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // ─── Trait Editor Mode (NFT selected) — Split Layout ──────
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Top Bar: back button + NFT switcher */}
+      <div className="flex items-center justify-between gap-2 py-2 border-b border-border mb-3">
+        <button
+          onClick={handleClearNFTSelection}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Back to collection</span>
+          <span className="sm:hidden">Back</span>
+        </button>
+
+        {/* NFT Switcher */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handlePrevNFT}
+            disabled={selectedIndex <= 0}
+            className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 transition-colors"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="text-xs font-medium text-foreground min-w-[80px] text-center">
+            {displayName}
+          </span>
+          <button
+            onClick={handleNextNFT}
+            disabled={selectedIndex >= sortedTokens.length - 1}
+            className="p-1.5 rounded-md hover:bg-muted disabled:opacity-30 transition-colors"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Selected traits count */}
+        {selectedTraits.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-[#00ff00]">{selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''}</span>
+            <button onClick={clearSelection} className="p-1 rounded hover:bg-muted">
+              <X className="w-3 h-3 text-muted-foreground" />
             </button>
           </div>
         )}
       </div>
 
+      {/* Split Layout: Preview (left/top) | Traits (right/bottom) */}
+      <div className={`flex-1 flex ${isMobile ? 'flex-col' : 'flex-row gap-4'} overflow-hidden`}>
 
-      {/* NFT Grid - Hidden when NFT is selected */}
-      {!selectedNFT && (
-        <>
-          {/* Show loading progress while store is loading */}
-          {isLoadingZeros && isConnected && (
-            <div className="text-center py-8">
-              <div className="shimmer w-16 h-16 rounded-full mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                Loading AdrianZERO NFTs... {zerosProgress}%
-              </p>
-              <div className="w-64 h-2 bg-muted rounded-full mx-auto mt-2 overflow-hidden">
-                <div
-                  className="h-full bg-[#00ff00] transition-all duration-300"
-                  style={{ width: `${zerosProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
+        {/* ─── Left Panel: Preview ─── */}
+        <div className={`${isMobile ? 'pb-3' : 'w-[320px] flex-shrink-0'} flex flex-col`}>
+          {/* Preview Image */}
+          <div className={`relative bg-muted rounded-xl overflow-hidden mx-auto ${isMobile ? 'w-full max-w-[280px]' : 'w-full'} aspect-square`}>
+            {isPreviewLoading && (
+              <div className="absolute inset-0 shimmer z-10" />
+            )}
 
-          {/* Show paginated grid once loaded */}
-          {!isLoadingZeros && (
-            <>
-              <NFTGrid
-                tokens={zerosPagination.currentItems}
-                selectedTokenId={selectedNFT?.tokenId}
-                onTokenSelect={handleTokenSelect}
-                emptyMessage="No AdrianZERO NFTs found in your wallet"
+            {/* Before/After: show original when toggled */}
+            {showBeforeAfter && nftImageUrl ? (
+              <img src={nftImageUrl} alt={`${displayName} (original)`} className="w-full h-full object-cover" />
+            ) : selectedTraits.length > 0 && previewImageUrl ? (
+              <img
+                src={previewImageUrl}
+                alt="Preview with traits"
+                className="w-full h-full object-cover"
+                onLoad={() => setIsPreviewLoading(false)}
               />
-
-              {/* Pagination controls */}
-              {isConnected && zerosPagination.totalPages > 1 && (
-                <div className="mt-6">
-                  <Pagination
-                    currentPage={zerosPagination.currentPage}
-                    totalPages={zerosPagination.totalPages}
-                    itemsPerPage={zerosPagination.itemsPerPage}
-                    totalItems={zerosPagination.totalItems}
-                    onPageChange={zerosPagination.goToPage}
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Get Your ZERO Card - Show when connected but no NFTs */}
-          {isConnected && tokens.length === 0 && !isLoading && (
-            <button
-              onClick={() => navigate('/onboarding')}
-              className="group w-full bg-card border border-border rounded-lg p-6 text-left hover:border-[#00ff00] transition-all hover:shadow-lg hover:shadow-[#00ff00]/10 mt-4"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-[#00ff00]/10 rounded-lg">
-                    <Rocket className="h-6 w-6 text-[#00ff00]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Get Your First <span className="text-[#00ff00]">ZERO</span>
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Mint your first AdrianZERO NFT for free or get the premium version
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-[#00ff00] transition-colors flex-shrink-0" />
+            ) : nftImageUrl ? (
+              <img src={nftImageUrl} alt={displayName} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Frame className="h-12 w-12 text-muted-foreground" />
               </div>
-            </button>
-          )}
-        </>
-      )}
+            )}
 
-      {/* Trait Selection Section - Only visible when NFT is selected */}
-      {selectedNFT && (
-        <div className="flex-1 flex flex-col border-t border-border pt-4 mt-2">
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="hidden sm:block text-sm font-semibold text-foreground">
-              Select <span className="text-[#00ff00]">Traits</span> for #{selectedNFT.tokenId}
-            </h2>
-            {selectedTraits.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  {selectedTraits.length} selected
-                </span>
-                <button
-                  onClick={clearSelection}
-                  className="p-1 rounded bg-secondary text-secondary-foreground hover:opacity-80"
-                  aria-label="Clear traits"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
+            {/* Before/After Toggle */}
+            {selectedTraits.length > 0 && previewImageUrl && (
+              <button
+                onMouseDown={() => setShowBeforeAfter(true)}
+                onMouseUp={() => setShowBeforeAfter(false)}
+                onMouseLeave={() => setShowBeforeAfter(false)}
+                onTouchStart={() => setShowBeforeAfter(true)}
+                onTouchEnd={() => setShowBeforeAfter(false)}
+                className="absolute bottom-2 left-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-[10px] font-medium text-white flex items-center gap-1.5 hover:bg-black/80 transition-colors"
+              >
+                <ArrowLeftRight className="h-3 w-3" />
+                {showBeforeAfter ? 'Original' : 'Hold to compare'}
+              </button>
             )}
           </div>
 
-          {/* Unified Preview Panel - Shows with or without traits */}
-          {selectedNFT && (
-            <div className="mb-2 border border-border rounded-lg overflow-hidden bg-card">
-              {/* Preview Header */}
-              <button
-                onClick={() => setIsTraitPreviewExpanded(!isTraitPreviewExpanded)}
-                className="w-full flex items-center justify-between p-2 hover:bg-muted/50 transition-colors"
-              >
-                <div className="hidden sm:flex items-center gap-2">
-                  <span className="text-xs font-medium text-foreground">
-                    {selectedTraits.length > 0 ? (
-                      <>
-                        <span className="text-[#00ff00]">Preview</span> with traits
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-[#00ff00]">Preview</span>
-                      </>
-                    )}
-                  </span>
-                  {selectedTraits.length > 0 && (
-                    <span className="text-[10px] text-muted-foreground">
-                      ({selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''})
-                    </span>
-                  )}
+          {/* Selected Traits Pills */}
+          {selectedTraits.length > 0 && (
+            <div className="flex flex-wrap gap-1 justify-center mt-2">
+              {selectedTraits.map((trait) => (
+                <div
+                  key={trait.tokenId}
+                  className="flex items-center gap-1 px-2 py-0.5 bg-[#00ff00]/10 text-[#00ff00] border border-[#00ff00]/20 rounded text-[10px]"
+                >
+                  <span className="truncate max-w-[80px]">{trait.name}</span>
+                  <button onClick={() => deselectTrait(trait.category)} className="hover:text-white">
+                    <X className="h-2.5 w-2.5" />
+                  </button>
                 </div>
-                {isTraitPreviewExpanded ? (
-                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                )}
-              </button>
-
-              {/* Preview Content - Collapsible */}
-              {isTraitPreviewExpanded && (
-                <div className="p-2 pt-0">
-                  {/* Preview Image - Larger size (200px mobile / 280px desktop) */}
-                  <div className="relative aspect-square max-w-[200px] sm:max-w-[280px] mx-auto bg-muted rounded-lg overflow-hidden mb-2">
-                    {isPreviewLoading && (
-                      <div className="absolute inset-0 shimmer" />
-                    )}
-                    {/* Show composed image if traits selected, otherwise original NFT image */}
-                    {selectedTraits.length > 0 && previewImageUrl ? (
-                      <img
-                        src={previewImageUrl}
-                        alt="Preview with traits"
-                        className="w-full h-full object-cover"
-                        onLoad={() => setIsPreviewLoading(false)}
-                      />
-                    ) : nftImageUrl ? (
-                      <img
-                        src={nftImageUrl}
-                        alt={displayName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Frame className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Selected Traits Pills - Only show when traits are selected */}
-                  {selectedTraits.length > 0 && (
-                    <div className="flex flex-wrap gap-1 justify-center mb-2">
-                      {selectedTraits.map((trait) => (
-                        <div
-                          key={trait.tokenId}
-                          className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px]"
-                        >
-                          <span className="truncate max-w-[80px]">{trait.name}</span>
-                          <button
-                            onClick={() => deselectTrait(trait.category)}
-                            className="hover:text-primary-foreground"
-                          >
-                            <X className="h-2.5 w-2.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Action Buttons - Only show when traits are selected */}
-                  {selectedTraits.length > 0 && (
-                    <div className="flex gap-2 justify-center">
-                      <button
-                        onClick={() => {
-                          clearSelection();
-                          setIsTraitPreviewExpanded(false);
-                        }}
-                        disabled={applyTraits.isPending}
-                        className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded font-medium hover:opacity-80 disabled:opacity-50"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleApplyTraits}
-                        disabled={applyTraits.isPending}
-                        className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded font-medium hover:opacity-80 disabled:opacity-50 flex items-center gap-1"
-                      >
-                        {applyTraits.isPending ? (
-                          <>
-                            <div className="h-3 w-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Applying...
-                          </>
-                        ) : (
-                          <>
-                            <Check className="h-3 w-3" />
-                            Apply
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+              ))}
             </div>
           )}
 
+          {/* Apply Button */}
+          {selectedTraits.length > 0 && (
+            <div className="flex gap-2 justify-center mt-3">
+              <button
+                onClick={() => { clearSelection(); }}
+                disabled={applyTraits.isPending}
+                className="px-4 py-2 text-xs bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-80 disabled:opacity-50"
+              >
+                Clear
+              </button>
+              <button
+                onClick={handleApplyTraits}
+                disabled={applyTraits.isPending}
+                className="px-4 py-2 text-xs bg-[#00ff00] text-black rounded-lg font-bold hover:bg-[#00ff00]/90 disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {applyTraits.isPending ? (
+                  <>
+                    <div className="h-3 w-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    Applying...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-3 w-3" />
+                    Apply {selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''}
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ─── Right Panel: Trait Browser ─── */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Category Tabs */}
-          <div className="sticky top-0 z-10 bg-background -mx-4 px-4 pb-2">
+          <div className="flex-shrink-0 mb-2">
             <TraitCategories
               categories={categories}
               traitsByCategory={traitsByCategory}
@@ -508,20 +521,14 @@ export function AdrianZeroModule() {
             />
           </div>
 
-          {/* Traits Grid */}
+          {/* Traits Grid (scrollable) */}
           <div className="flex-1 overflow-y-auto pb-4">
-            {/* Show loading progress while store is loading */}
             {isLoadingTraits && isConnected ? (
               <div className="text-center py-8">
                 <div className="shimmer w-12 h-12 rounded-full mx-auto mb-4" />
-                <p className="text-muted-foreground text-sm">
-                  Loading traits... {traitsProgress}%
-                </p>
+                <p className="text-muted-foreground text-sm">Loading traits... {traitsProgress}%</p>
                 <div className="w-48 h-1.5 bg-muted rounded-full mx-auto mt-2 overflow-hidden">
-                  <div
-                    className="h-full bg-[#00ff00] transition-all duration-300"
-                    style={{ width: `${traitsProgress}%` }}
-                  />
+                  <div className="h-full bg-[#00ff00] transition-all duration-300" style={{ width: `${traitsProgress}%` }} />
                 </div>
               </div>
             ) : (
@@ -536,8 +543,6 @@ export function AdrianZeroModule() {
                       : `No ${activeCategory.toLowerCase()} traits found`
                   }
                 />
-
-                {/* Pagination controls */}
                 {isConnected && traitsPagination.totalPages > 1 && (
                   <div className="mt-4">
                     <Pagination
@@ -553,7 +558,7 @@ export function AdrianZeroModule() {
             )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
