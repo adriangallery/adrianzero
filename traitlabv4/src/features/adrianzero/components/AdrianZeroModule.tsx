@@ -572,8 +572,8 @@ export function AdrianZeroModule() {
           )}
         </div>
 
-        {/* Right: Trait Browser — this panel scrolls independently */}
-        <div className="flex-1 flex flex-col min-h-0">
+        {/* Right: Trait Browser — min-w-0 prevents flex child from overflowing */}
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
           <div className="flex-shrink-0 mb-2">
             <TraitCategories categories={categories} traitsByCategory={traitsByCategory} activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
           </div>
