@@ -528,8 +528,9 @@ export function AdrianZeroModule() {
         )}
       </div>
 
-      {/* Split: Left panel (fixed) | Right panel (scrollable) */}
-      <div className="flex-1 flex flex-row gap-4 min-h-0">
+      {/* Split: Left panel (fixed) | Right panel (scrollable)
+           Explicit max-height so overflow-y-auto actually works */}
+      <div className="flex flex-row gap-4" style={{ height: 'calc(100vh - 140px)' }}>
         {/* Left: Preview — no scroll, stays in place */}
         <div className="w-[320px] flex-shrink-0 flex flex-col">
           <div className="relative bg-muted rounded-xl overflow-hidden w-full aspect-square">
@@ -576,8 +577,7 @@ export function AdrianZeroModule() {
           <div className="flex-shrink-0 mb-2">
             <TraitCategories categories={categories} traitsByCategory={traitsByCategory} activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
           </div>
-          {/* p-1 padding prevents ring-2 clipping on edge trait cards */}
-          <div className="flex-1 overflow-y-auto pb-4 p-1 -m-1">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden pb-4 px-1">
             {isLoadingTraits && isConnected ? (
               <div className="text-center py-8">
                 <div className="shimmer w-12 h-12 rounded-full mx-auto mb-4" />
