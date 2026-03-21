@@ -384,8 +384,8 @@ export function AdrianZeroModule() {
               <ChevronLeft className="h-4 w-4 text-muted-foreground" />
             </button>
 
-            {/* NFT preview — decent size, not tiny */}
-            <div className="w-[100px] h-[100px] rounded-lg overflow-hidden bg-muted flex-shrink-0 relative">
+            {/* NFT preview — full size like before */}
+            <div className="w-[140px] h-[140px] rounded-lg overflow-hidden bg-muted flex-shrink-0 relative">
               {selectedTraits.length > 0 && previewImageUrl ? (
                 <img src={previewImageUrl} alt="" className="w-full h-full object-cover" />
               ) : nftImageUrl ? (
