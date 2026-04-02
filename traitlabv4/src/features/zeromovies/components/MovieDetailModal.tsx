@@ -7,7 +7,6 @@ import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount } from 'wagmi';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
-import { formatEther } from 'viem';
 
 interface MovieDetailModalProps {
   movie: Movie | null;

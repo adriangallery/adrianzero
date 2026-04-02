@@ -3,8 +3,6 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZERO_MOVIES_FACET_ABI } from '@/lib/web3/abi';
 import type { Movie } from '../types';
 
-const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
-
 export function useMoviesCatalog() {
   const { data, isLoading, error, refetch } = useReadContract({
     address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
