@@ -25,22 +25,21 @@ export function MovieCard({ movie, posterUrl, onClick }: MovieCardProps) {
     >
       {/* Poster Image */}
       <div className="relative aspect-square w-full overflow-hidden bg-zinc-900">
-        {isRented ? (
-          /* Empty shelf slot — the VHS is gone */
-          <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-950 p-2">
-            <div className="mb-2 h-[60%] w-[70%] rounded border border-dashed border-zinc-700 bg-zinc-900/50" />
-            <span className="rounded bg-red-900/60 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-400">
+        <img
+          src={posterUrl}
+          alt={movie.name}
+          className={`h-full w-full object-contain ${isRented ? 'opacity-20 saturate-0' : ''}`}
+          style={{ imageRendering: 'pixelated' }}
+          loading="lazy"
+        />
+
+        {/* Rented overlay */}
+        {isRented && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="rounded bg-red-900/70 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-400">
               Rented
             </span>
           </div>
-        ) : (
-          <img
-            src={posterUrl}
-            alt={movie.name}
-            className="h-full w-full object-contain"
-            style={{ imageRendering: 'pixelated' }}
-            loading="lazy"
-          />
         )}
 
         {/* Yours Badge */}
