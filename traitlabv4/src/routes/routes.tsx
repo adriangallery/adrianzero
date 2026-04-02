@@ -116,6 +116,12 @@ const DashboardModule = lazy(() =>
   }))
 );
 
+const ZEROmoviesModule = lazy(() =>
+  import('@/features/zeromovies/components/ZEROmoviesModule').then((m) => ({
+    default: m.ZEROmoviesModule,
+  }))
+);
+
 export const routes: RouteObject[] = [
   {
     path: '/',
@@ -196,5 +202,9 @@ export const routes: RouteObject[] = [
   {
     path: '/dashboard',
     element: <DashboardModule />,
+  },
+  {
+    path: '/zeromovies',
+    element: <ZEROmoviesModule />,
   },
 ];
