@@ -17,6 +17,7 @@ interface ApproveModalProps {
   error: Error | null;
   txHash?: string;
   amount: string;
+  tokenSymbol?: string;
 }
 
 export function ApproveModal({
@@ -29,6 +30,7 @@ export function ApproveModal({
   error,
   txHash,
   amount,
+  tokenSymbol = '$ADRIAN',
 }: ApproveModalProps) {
   const isProcessing = isApproving || isConfirming;
 
@@ -53,18 +55,18 @@ export function ApproveModal({
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6 rounded-2xl bg-card border border-border shadow-xl z-50"
           >
             <h2 className="text-xl font-bold text-foreground mb-4">
-              Approve $ADRIAN Spending
+              Approve {tokenSymbol} Spending
             </h2>
 
             <p className="text-muted-foreground mb-6">
               To purchase items, you need to approve the shop contract to spend
-              your $ADRIAN tokens.
+              your {tokenSymbol} tokens.
             </p>
 
             {/* Amount */}
             <div className="p-4 rounded-lg bg-muted mb-6">
               <p className="text-sm text-muted-foreground mb-1">Amount to approve</p>
-              <p className="text-2xl font-bold text-accent">{amount} $ADRIAN</p>
+              <p className="text-2xl font-bold text-accent">{amount} {tokenSymbol}</p>
             </div>
 
             {/* Status */}

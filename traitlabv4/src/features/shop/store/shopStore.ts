@@ -1,14 +1,17 @@
 /**
  * Shop Store
- * Cart state management with Zustand
+ * Cart state management with Zustand — supports dual-token payment ($ZERO / $ADRIAN)
  */
 
 import { create } from 'zustand';
 
+export type PaymentToken = 'ZERO' | 'ADRIAN';
+
 export interface CartItem {
   assetId: number;
   quantity: number;
-  price: bigint;
+  priceZero: bigint;
+  priceAdrian: bigint;
   useFree: boolean;
   name: string;
   imageUrl: string;
@@ -16,6 +19,8 @@ export interface CartItem {
 
 interface ShopState {
   cart: CartItem[];
+  paymentToken: PaymentToken;
+  setPaymentToken: (token: PaymentToken) => void;
   addToCart: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
   removeFromCart: (assetId: number) => void;
   updateQuantity: (assetId: number, quantity: number) => void;
@@ -26,6 +31,9 @@ interface ShopState {
 
 export const useShopStore = create<ShopState>((set, get) => ({
   cart: [],
+  paymentToken: 'ZERO',
+
+  setPaymentToken: (token) => set({ paymentToken: token }),
 
   addToCart: (item) => {
     set((state) => {
@@ -63,10 +71,11 @@ export const useShopStore = create<ShopState>((set, get) => ({
   clearCart: () => set({ cart: [] }),
 
   getCartTotal: () => {
-    const { cart } = get();
+    const { cart, paymentToken } = get();
     return cart.reduce((total, item) => {
       if (item.useFree) return total;
-      return total + item.price * BigInt(item.quantity);
+      const price = paymentToken === 'ZERO' ? item.priceZero : item.priceAdrian;
+      return total + price * BigInt(item.quantity);
     }, BigInt(0));
   },
 

@@ -1,6 +1,6 @@
 /**
  * ShopItemCard Component
- * Individual item card in the shop
+ * Individual item card in the shop — shows dual pricing ($ZERO / $ADRIAN)
  */
 
 import { Plus, Minus, Gift } from 'lucide-react';
@@ -21,22 +21,31 @@ function formatPrice(price: bigint): string {
   if (formatted >= 1000) {
     return `${(formatted / 1000).toFixed(1)}K`;
   }
+  if (formatted < 1 && formatted > 0) {
+    return formatted.toFixed(2);
+  }
   return formatted.toLocaleString();
 }
 
 export function ShopItemCard({ item }: ShopItemCardProps) {
-  const { cart, addToCart, removeFromCart, updateQuantity } = useShopStore();
+  const { cart, addToCart, removeFromCart, updateQuantity, paymentToken } = useShopStore();
 
   const cartItem = cart.find((i) => i.assetId === item.assetId);
   const quantityInCart = cartItem?.quantity ?? 0;
 
   const hasFreeAvailable = item.freeRemaining > 0;
-  const priceFormatted = formatPrice(item.price);
+  const activePrice = paymentToken === 'ZERO' ? item.priceZero : item.priceAdrian;
+  const priceFormatted = formatPrice(activePrice);
+  const tokenSymbol = paymentToken === 'ZERO' ? '$ZERO' : '$ADRIAN';
+
+  // Check if this item accepts the selected payment token
+  const tokenAccepted = activePrice > BigInt(0);
 
   const handleAdd = () => {
     addToCart({
       assetId: item.assetId,
-      price: item.price,
+      priceZero: item.priceZero,
+      priceAdrian: item.priceAdrian,
       useFree: false,
       name: item.name,
       imageUrl: item.imageUrl,
@@ -46,7 +55,8 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
   const handleAddFree = () => {
     addToCart({
       assetId: item.assetId,
-      price: item.price,
+      priceZero: item.priceZero,
+      priceAdrian: item.priceAdrian,
       useFree: true,
       name: item.name,
       imageUrl: item.imageUrl,
@@ -61,33 +71,23 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
     }
   };
 
-  const isOutOfStock = item.quantityAvailable <= 0;
-  const isQuantityError = item.purchaseError === 'Insufficient quantity' ||
-    item.purchaseError === 'TraitsCore supply exceeded';
-  const isSoldOut = (isOutOfStock && item.sold > 0) || isQuantityError;
-
-  // "Insufficient balance" from contract means no approval yet, not actually out of funds.
-  // Allow adding to cart — approval happens at checkout.
-  const isApprovalError =
-    item.purchaseError === 'Insufficient balance' ||
-    item.purchaseError === 'Insufficient allowance';
-  const canAddToCart = item.canPurchase || isApprovalError;
-  // Don't show raw error text — we show SOLD OUT overlay instead for quantity errors
-  const showError = !canAddToCart && !isQuantityError && !isApprovalError && !!item.purchaseError;
+  const remaining = item.quantityAvailable - item.sold;
+  const isSoldOut = remaining <= 0;
+  const canAddToCart = !isSoldOut && tokenAccepted;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => {
-        if (quantityInCart === 0 && canAddToCart && !isOutOfStock) {
+        if (quantityInCart === 0 && canAddToCart) {
           handleAdd();
         }
       }}
       className={`
         relative rounded-xl border border-border bg-card overflow-hidden
         transition-all hover:border-primary/50 hover:shadow-lg
-        ${isOutOfStock && !canAddToCart ? 'opacity-60' : 'cursor-pointer'}
+        ${!canAddToCart ? 'opacity-60' : 'cursor-pointer'}
       `}
     >
       {/* Image */}
@@ -124,19 +124,36 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
 
       {/* Info */}
       <div className="p-3 space-y-2">
-        {/* Name - Allow 2 lines */}
+        {/* Name */}
         <p className="text-[11px] font-medium text-foreground line-clamp-2 leading-tight min-h-[2.2em]">
           {item.name}
         </p>
 
-        {/* Price */}
-        <div className="text-[11px] font-bold text-accent">
-          {priceFormatted} $ADRIAN
+        {/* Price — show active token price, secondary in smaller text */}
+        <div>
+          {tokenAccepted ? (
+            <div className="text-[11px] font-bold text-accent">
+              {priceFormatted} {tokenSymbol}
+            </div>
+          ) : (
+            <div className="text-[10px] text-muted-foreground italic">
+              Not available with {tokenSymbol}
+            </div>
+          )}
+          {/* Show the other price if both exist */}
+          {item.priceZero > BigInt(0) && item.priceAdrian > BigInt(0) && (
+            <div className="text-[9px] text-muted-foreground">
+              {paymentToken === 'ZERO'
+                ? `or ${formatPrice(item.priceAdrian)} $ADRIAN`
+                : `or ${formatPrice(item.priceZero)} $ZERO`
+              }
+            </div>
+          )}
         </div>
 
         {/* Availability */}
         <div className="text-[10px] text-muted-foreground">
-          {item.quantityAvailable} left
+          {remaining} left
         </div>
 
         {/* Actions */}
@@ -154,7 +171,7 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
               </span>
               <button
                 onClick={handleAdd}
-                disabled={isOutOfStock}
+                disabled={isSoldOut}
                 className="flex-1 flex items-center justify-center py-1.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground transition-colors disabled:opacity-50"
               >
                 <Plus className="h-3 w-3" />
@@ -184,13 +201,6 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
             </>
           )}
         </div>
-
-        {/* Error message — only for truly blocking errors */}
-        {showError && (
-          <p className="text-[10px] text-destructive text-center truncate">
-            {item.purchaseError}
-          </p>
-        )}
       </div>
     </motion.div>
   );

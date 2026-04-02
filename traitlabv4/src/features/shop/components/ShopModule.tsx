@@ -1,13 +1,13 @@
 /**
  * ShopModule Component
- * Main shop page with tabs, grid, and cart
+ * Main shop page with tabs, grid, and cart — dual-token support
  */
 
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { Unplug, RefreshCw } from 'lucide-react';
 import { useShopItems } from '../hooks/useShopItems';
-import { useAdrianBalance } from '../hooks/useAdrianBalance';
+import { useTokenBalance } from '../hooks/useTokenBalance';
 import { ShopTabs, type ShopTab } from './ShopTabs';
 import { ShopItemGrid } from './ShopItemGrid';
 import { ShopCart } from './ShopCart';
@@ -17,7 +17,7 @@ export function ShopModule() {
   const [activeTab, setActiveTab] = useState<ShopTab>('traits');
 
   const { items, traits, floppies, serums, isLoading, error, refetch } = useShopItems();
-  const { formatted: balanceFormatted } = useAdrianBalance();
+  const { zeroFormatted, adrianFormatted } = useTokenBalance();
 
   // Get items for current tab
   const getCurrentItems = () => {
@@ -69,16 +69,19 @@ export function ShopModule() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Shop</h1>
             <p className="text-muted-foreground mt-1">
-              Purchase traits, floppies, and serums with $ADRIAN
+              Purchase traits, floppies, and serums with $ZERO or $ADRIAN
             </p>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Balance */}
+            {/* Balances */}
             <div className="hidden sm:block text-right">
-              <p className="text-sm text-muted-foreground">Your Balance</p>
-              <p className="font-bold text-accent">
-                {balanceFormatted.toLocaleString()} $ADRIAN
+              <p className="text-sm text-muted-foreground">Your Balances</p>
+              <p className="font-bold text-accent text-sm">
+                {zeroFormatted.toLocaleString()} $ZERO
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {adrianFormatted.toLocaleString()} $ADRIAN
               </p>
             </div>
 

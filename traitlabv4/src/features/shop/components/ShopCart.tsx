@@ -1,14 +1,14 @@
 /**
  * ShopCart Component
- * Shopping cart sidebar/panel
+ * Shopping cart sidebar/panel with dual-token support ($ZERO / $ADRIAN)
  */
 
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Trash2, Loader2, Check, AlertCircle, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useShopStore, type CartItem } from '../store/shopStore';
-import { useAdrianBalance } from '../hooks/useAdrianBalance';
-import { useAdrianApproval } from '../hooks/useAdrianApproval';
+import { useShopStore, type CartItem, type PaymentToken } from '../store/shopStore';
+import { useTokenBalance } from '../hooks/useTokenBalance';
+import { useTokenApproval } from '../hooks/useTokenApproval';
 import { useShopPurchase } from '../hooks/useShopPurchase';
 import { ApproveModal } from './ApproveModal';
 import { BLOCK_EXPLORER_URL } from '@/config/contracts';
@@ -22,12 +22,15 @@ function formatPrice(price: bigint): string {
   if (formatted >= 1000) {
     return `${(formatted / 1000).toFixed(1)}K`;
   }
+  if (formatted < 1 && formatted > 0) {
+    return formatted.toFixed(2);
+  }
   return formatted.toLocaleString();
 }
 
 export function ShopCart() {
-  const { cart, removeFromCart, clearCart, getCartTotal, getCartItemCount } = useShopStore();
-  const { balance, formatted: balanceFormatted } = useAdrianBalance();
+  const { cart, removeFromCart, clearCart, getCartTotal, getCartItemCount, paymentToken, setPaymentToken } = useShopStore();
+  const { zeroBalance, adrianBalance, zeroFormatted, adrianFormatted } = useTokenBalance();
   const {
     needsApproval,
     approve,
@@ -37,7 +40,8 @@ export function ShopCart() {
     approveError,
     txHash: approveTxHash,
     refetchAllowance,
-  } = useAdrianApproval();
+    tokenSymbol,
+  } = useTokenApproval(paymentToken);
   const {
     batchPurchase,
     isPending: isPurchasing,
@@ -55,8 +59,10 @@ export function ShopCart() {
   const cartCount = getCartItemCount();
   const totalFormatted = formatPrice(cartTotal);
 
-  const hasInsufficientBalance = balance ? cartTotal > balance : false;
-  const requiresApproval = needsApproval(cartTotal);
+  const activeBalance = paymentToken === 'ZERO' ? zeroBalance : adrianBalance;
+  const activeBalanceFormatted = paymentToken === 'ZERO' ? zeroFormatted : adrianFormatted;
+  const hasInsufficientBalance = activeBalance ? cartTotal > activeBalance : false;
+  const requiresApproval = cartTotal > BigInt(0) && needsApproval(cartTotal);
 
   // Refetch allowance after approval confirmed
   useEffect(() => {
@@ -78,7 +84,7 @@ export function ShopCart() {
       setShowApproveModal(true);
       return;
     }
-    batchPurchase(cart);
+    batchPurchase(cart, paymentToken);
   };
 
   const handleApprove = () => {
@@ -106,13 +112,15 @@ export function ShopCart() {
           cart={cart}
           cartCount={cartCount}
           totalFormatted={totalFormatted}
-          balanceFormatted={balanceFormatted}
+          activeBalanceFormatted={activeBalanceFormatted}
           hasInsufficientBalance={hasInsufficientBalance}
           requiresApproval={requiresApproval}
           isProcessing={isProcessing}
           isPurchaseConfirmed={isPurchaseConfirmed}
           purchaseError={purchaseError}
           purchaseTxHash={purchaseTxHash}
+          paymentToken={paymentToken}
+          onPaymentTokenChange={setPaymentToken}
           onRemove={removeFromCart}
           onClear={clearCart}
           onCheckout={handleCheckout}
@@ -150,13 +158,15 @@ export function ShopCart() {
                 cart={cart}
                 cartCount={cartCount}
                 totalFormatted={totalFormatted}
-                balanceFormatted={balanceFormatted}
+                activeBalanceFormatted={activeBalanceFormatted}
                 hasInsufficientBalance={hasInsufficientBalance}
                 requiresApproval={requiresApproval}
                 isProcessing={isProcessing}
                 isPurchaseConfirmed={isPurchaseConfirmed}
                 purchaseError={purchaseError}
                 purchaseTxHash={purchaseTxHash}
+                paymentToken={paymentToken}
+                onPaymentTokenChange={setPaymentToken}
                 onRemove={removeFromCart}
                 onClear={clearCart}
                 onCheckout={handleCheckout}
@@ -178,8 +188,43 @@ export function ShopCart() {
         error={approveError}
         txHash={approveTxHash}
         amount={totalFormatted}
+        tokenSymbol={tokenSymbol}
       />
     </>
+  );
+}
+
+// Token selector toggle
+function TokenSelector({
+  value,
+  onChange,
+}: {
+  value: PaymentToken;
+  onChange: (token: PaymentToken) => void;
+}) {
+  return (
+    <div className="flex rounded-lg bg-muted p-1 gap-1">
+      <button
+        onClick={() => onChange('ZERO')}
+        className={`flex-1 py-1.5 px-3 rounded-md text-xs font-medium transition-colors ${
+          value === 'ZERO'
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        $ZERO
+      </button>
+      <button
+        onClick={() => onChange('ADRIAN')}
+        className={`flex-1 py-1.5 px-3 rounded-md text-xs font-medium transition-colors ${
+          value === 'ADRIAN'
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        $ADRIAN
+      </button>
+    </div>
   );
 }
 
@@ -188,13 +233,15 @@ interface CartContentProps {
   cart: CartItem[];
   cartCount: number;
   totalFormatted: string;
-  balanceFormatted: number;
+  activeBalanceFormatted: number;
   hasInsufficientBalance: boolean;
   requiresApproval: boolean;
   isProcessing: boolean;
   isPurchaseConfirmed: boolean;
   purchaseError: Error | null;
   purchaseTxHash?: string;
+  paymentToken: PaymentToken;
+  onPaymentTokenChange: (token: PaymentToken) => void;
   onRemove: (assetId: number) => void;
   onClear: () => void;
   onCheckout: () => void;
@@ -205,18 +252,22 @@ function CartContent({
   cart,
   cartCount,
   totalFormatted,
-  balanceFormatted,
+  activeBalanceFormatted,
   hasInsufficientBalance,
   requiresApproval,
   isProcessing,
   isPurchaseConfirmed,
   purchaseError,
   purchaseTxHash,
+  paymentToken,
+  onPaymentTokenChange,
   onRemove,
   onClear,
   onCheckout,
   onReset,
 }: CartContentProps) {
+  const tokenSymbol = paymentToken === 'ZERO' ? '$ZERO' : '$ADRIAN';
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -235,11 +286,17 @@ function CartContent({
         )}
       </div>
 
+      {/* Token Selector */}
+      <div className="mb-3">
+        <p className="text-xs text-muted-foreground mb-1">Pay with</p>
+        <TokenSelector value={paymentToken} onChange={onPaymentTokenChange} />
+      </div>
+
       {/* Balance */}
       <div className="p-3 rounded-lg bg-muted mb-4">
         <p className="text-sm text-muted-foreground">Your Balance</p>
         <p className="text-lg font-bold text-foreground">
-          {balanceFormatted.toLocaleString()} $ADRIAN
+          {activeBalanceFormatted.toLocaleString()} {tokenSymbol}
         </p>
       </div>
 
@@ -250,33 +307,36 @@ function CartContent({
             Your cart is empty
           </p>
         ) : (
-          cart.map((item) => (
-            <div
-              key={item.assetId}
-              className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
-            >
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="w-12 h-12 rounded-lg object-contain"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">
-                  {item.name}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {item.useFree ? 'FREE' : `${formatPrice(item.price)} $ADRIAN`}
-                  {item.quantity > 1 && ` x${item.quantity}`}
-                </p>
-              </div>
-              <button
-                onClick={() => onRemove(item.assetId)}
-                className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+          cart.map((item) => {
+            const price = paymentToken === 'ZERO' ? item.priceZero : item.priceAdrian;
+            return (
+              <div
+                key={item.assetId}
+                className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
               >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))
+                <img
+                  src={item.imageUrl}
+                  alt={item.name}
+                  className="w-12 h-12 rounded-lg object-contain"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground truncate">
+                    {item.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {item.useFree ? 'FREE' : `${formatPrice(price)} ${tokenSymbol}`}
+                    {item.quantity > 1 && ` x${item.quantity}`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => onRemove(item.assetId)}
+                  className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            );
+          })
         )}
       </div>
 
@@ -287,7 +347,7 @@ function CartContent({
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Total</span>
             <span className="text-xl font-bold text-accent">
-              {totalFormatted} $ADRIAN
+              {totalFormatted} {tokenSymbol}
             </span>
           </div>
 
@@ -295,7 +355,7 @@ function CartContent({
           {hasInsufficientBalance && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              Insufficient $ADRIAN balance
+              Insufficient {tokenSymbol} balance
             </div>
           )}
 
@@ -339,7 +399,7 @@ function CartContent({
               : isProcessing
               ? 'Processing...'
               : requiresApproval
-              ? 'Approve & Buy'
+              ? `Approve & Buy`
               : 'Buy Now'}
           </button>
         </div>

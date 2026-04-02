@@ -1,12 +1,12 @@
 /**
  * useShopItems Hook
- * Fetches active shop items from the contract and enriches with metadata
+ * Fetches active shop items from the Diamond ShopFacet and enriches with metadata
  */
 
 import { useEffect, useState } from 'react';
-import { useReadContract } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
-import { ADRIAN_SHOP_ABI } from '@/lib/web3/abi';
+import { SHOP_FACET_ABI } from '@/lib/web3/abi';
 import { getGitHubImageUrl as getBaseGitHubImageUrl, IMAGE_PATHS } from '@/config/images';
 
 export interface ShopItemMetadata {
@@ -18,20 +18,22 @@ export interface ShopItemMetadata {
 
 export interface ShopItem {
   assetId: number;
-  price: bigint;
+  priceZero: bigint;
+  priceAdrian: bigint;
   quantityAvailable: number;
   sold: number;
   startTime: number;
   endTime: number;
   active: boolean;
   maxPerWallet: number;
-  canPurchase: boolean;
-  purchaseError: string;
   hasAllowlist: boolean;
   freePerWallet: number;
   freeUsedByUser: number;
   freeRemaining: number;
   isAllowlisted: boolean;
+  userPurchases: number;
+  effectiveBurnBps: number;
+  revenueRecipient: string;
   category: 'trait' | 'floppy' | 'serum';
   name: string;
   description: string;
@@ -107,11 +109,13 @@ async function fetchMetadata(assetId: number): Promise<ShopItemMetadata | null> 
 }
 
 export function useShopItems() {
+  const { address } = useAccount();
+
   const { data, isLoading, error, refetch } = useReadContract({
-    address: CONTRACT_ADDRESSES.ADRIAN_SHOP as `0x${string}`,
-    abi: ADRIAN_SHOP_ABI,
+    address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+    abi: SHOP_FACET_ABI,
     functionName: 'getActiveItems',
-    args: [BigInt(0), BigInt(100)],
+    args: [BigInt(0), BigInt(100), (address ?? '0x0000000000000000000000000000000000000000') as `0x${string}`],
   });
 
   const [items, setItems] = useState<ShopItem[]>([]);
@@ -130,39 +134,43 @@ export function useShopItems() {
     for (const raw of rawItems) {
       const item = raw as {
         assetId: bigint;
-        price: bigint;
+        priceZero: bigint;
+        priceAdrian: bigint;
         quantityAvailable: bigint;
         sold: bigint;
         startTime: bigint;
         endTime: bigint;
         active: boolean;
         maxPerWallet: bigint;
-        canPurchase: boolean;
-        purchaseError: string;
         hasAllowlist: boolean;
         freePerWallet: bigint;
         freeUsedByUser: bigint;
         freeRemaining: bigint;
         isAllowlisted: boolean;
+        userPurchases: bigint;
+        effectiveBurnBps: bigint;
+        revenueRecipient: string;
       };
 
       const assetId = Number(item.assetId);
       processed.push({
         assetId,
-        price: item.price,
+        priceZero: item.priceZero,
+        priceAdrian: item.priceAdrian,
         quantityAvailable: Number(item.quantityAvailable),
         sold: Number(item.sold),
         startTime: Number(item.startTime),
         endTime: Number(item.endTime),
         active: item.active,
         maxPerWallet: Number(item.maxPerWallet),
-        canPurchase: item.canPurchase,
-        purchaseError: item.purchaseError,
         hasAllowlist: item.hasAllowlist,
         freePerWallet: Number(item.freePerWallet),
         freeUsedByUser: Number(item.freeUsedByUser),
         freeRemaining: Number(item.freeRemaining),
         isAllowlisted: item.isAllowlisted,
+        userPurchases: Number(item.userPurchases),
+        effectiveBurnBps: Number(item.effectiveBurnBps),
+        revenueRecipient: item.revenueRecipient,
         category: categorizeItem(assetId),
         name: `Trait #${assetId}`,
         description: '',
