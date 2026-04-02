@@ -54,11 +54,12 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
           </Dialog.Close>
 
           {/* Poster */}
-          <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-zinc-900">
+          <div className="relative aspect-square w-full overflow-hidden rounded-t-xl bg-zinc-900">
             <img
               src={posterUrl}
               alt={movie.name}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
+              style={{ imageRendering: 'pixelated' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
           </div>
