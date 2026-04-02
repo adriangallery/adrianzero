@@ -6,6 +6,7 @@
 import { Plus, Minus, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { type ShopItem } from '../hooks/useShopItems';
+import { getFallbackImageUrl } from '../hooks/useShopItems';
 import { useShopStore } from '../store/shopStore';
 
 interface ShopItemCardProps {
@@ -97,6 +98,12 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
           alt={item.name}
           className="w-full h-full object-contain"
           loading="lazy"
+          onError={(e) => {
+            const fallback = getFallbackImageUrl(item.assetId);
+            if (e.currentTarget.src !== fallback) {
+              e.currentTarget.src = fallback;
+            }
+          }}
         />
 
         {/* Free badge */}

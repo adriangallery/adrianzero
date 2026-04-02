@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Trash2, Loader2, Check, AlertCircle, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useShopStore, type CartItem, type PaymentToken } from '../store/shopStore';
+import { getFallbackImageUrl } from '../hooks/useShopItems';
 import { useTokenBalance } from '../hooks/useTokenBalance';
 import { useTokenApproval } from '../hooks/useTokenApproval';
 import { useShopPurchase } from '../hooks/useShopPurchase';
@@ -137,14 +138,14 @@ export function ShopCart() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+              className="fixed inset-0 bg-black/80 z-[60] lg:hidden"
             />
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-card border-l border-border z-50 p-4 overflow-y-auto lg:hidden"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-card border-l border-border z-[70] p-4 overflow-y-auto lg:hidden"
             >
               <button
                 onClick={() => setIsOpen(false)}
@@ -318,6 +319,12 @@ function CartContent({
                   src={item.imageUrl}
                   alt={item.name}
                   className="w-12 h-12 rounded-lg object-contain"
+                  onError={(e) => {
+                    const fallback = getFallbackImageUrl(item.assetId);
+                    if (e.currentTarget.src !== fallback) {
+                      e.currentTarget.src = fallback;
+                    }
+                  }}
                 />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground truncate">
@@ -340,9 +347,9 @@ function CartContent({
         )}
       </div>
 
-      {/* Footer */}
+      {/* Footer — sticky on mobile for easy tapping */}
       {cart.length > 0 && (
-        <div className="border-t border-border pt-4 space-y-4">
+        <div className="border-t border-border pt-4 space-y-4 sticky bottom-0 bg-card pb-4 -mx-4 px-4">
           {/* Total */}
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Total</span>
