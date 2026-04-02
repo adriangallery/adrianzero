@@ -88,8 +88,11 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
 
             {/* Status */}
             {movie.minted ? (
-              <div className="rounded-lg border border-red-600/30 bg-red-900/20 p-3 text-center">
-                <p className="text-sm font-bold text-red-400">SOLD OUT</p>
+              <div className="rounded-lg border border-zinc-700/50 bg-zinc-900/50 p-3 text-center">
+                <p className="text-xs font-bold text-red-400">RENTED</p>
+                <p className="mt-1 text-[10px] text-zinc-500">
+                  This copy has been rented by someone else
+                </p>
               </div>
             ) : (
               <>

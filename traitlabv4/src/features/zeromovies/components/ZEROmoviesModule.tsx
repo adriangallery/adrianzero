@@ -135,8 +135,8 @@ export function ZEROmoviesModule() {
             <CarouselRow title="Comedy & Animation" movies={comedy} onSelect={selectMovie} />
             <CarouselRow title="Action & Drama" movies={action} onSelect={selectMovie} />
 
-            {/* Sold Out */}
-            <CarouselRow title="Sold Out" movies={soldOut} onSelect={selectMovie} />
+            {/* Rented */}
+            <CarouselRow title="Rented" movies={soldOut} onSelect={selectMovie} />
           </>
         )}
       </div>
