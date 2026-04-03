@@ -96,14 +96,14 @@ export function ShopCart() {
 
   return (
     <>
-      {/* Cart Button (Mobile FAB) */}
+      {/* Cart Button (Mobile FAB) — large, high contrast */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 lg:hidden flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-primary-foreground shadow-lg"
+        className="fixed bottom-6 right-6 z-40 lg:hidden flex items-center gap-2 px-5 py-4 rounded-2xl bg-primary text-primary-foreground shadow-[0_4px_20px_rgba(0,0,0,0.5)] border-2 border-primary-foreground/20 text-base font-bold"
       >
-        <ShoppingCart className="h-5 w-5" />
+        <ShoppingCart className="h-6 w-6" />
         {cartCount > 0 && (
-          <span className="font-bold">{cartCount}</span>
+          <span className="bg-white text-black rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">{cartCount}</span>
         )}
       </button>
 
@@ -145,7 +145,7 @@ export function ShopCart() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-card border-l border-border z-[70] p-4 overflow-y-auto lg:hidden"
+              className="fixed inset-0 bg-background z-[70] p-4 overflow-y-auto lg:hidden"
             >
               <button
                 onClick={() => setIsOpen(false)}
@@ -349,7 +349,7 @@ function CartContent({
 
       {/* Footer — sticky on mobile for easy tapping */}
       {cart.length > 0 && (
-        <div className="border-t border-border pt-4 space-y-4 sticky bottom-0 bg-card pb-4 -mx-4 px-4">
+        <div className="border-t border-border pt-4 space-y-4 sticky bottom-0 bg-background pb-4 -mx-4 px-4">
           {/* Total */}
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Total</span>
