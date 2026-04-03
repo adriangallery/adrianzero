@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Loader2, HelpCircle } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint } from '../hooks/useMovieMint';
 import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
@@ -58,9 +58,9 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
           <div className="relative aspect-square w-full overflow-hidden rounded-t-xl bg-zinc-900">
             {isMystery ? (
               <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-950">
-                <HelpCircle className="mb-3 h-16 w-16 text-red-600/60" />
-                <span className="text-lg font-bold text-red-600">Mystery Movie</span>
-                <span className="mt-1 text-[10px] text-zinc-500">Identity revealed after minting</span>
+                <span className="text-8xl font-black italic text-red-600">X</span>
+                <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-zinc-500">Restricted Section</span>
+                <span className="mt-1 text-[9px] text-zinc-600">Identity revealed after minting</span>
               </div>
             ) : (
               <img
