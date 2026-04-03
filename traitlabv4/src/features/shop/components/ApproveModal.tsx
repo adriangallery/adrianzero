@@ -44,7 +44,7 @@ export function ApproveModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={!isProcessing ? onClose : undefined}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80]"
           />
 
           {/* Modal */}
@@ -52,7 +52,7 @@ export function ApproveModal({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6 rounded-2xl bg-card border border-border shadow-xl z-50"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-6 rounded-2xl bg-card border border-border shadow-xl z-[80]"
           >
             <h2 className="text-xl font-bold text-foreground mb-4">
               Approve {tokenSymbol} Spending
