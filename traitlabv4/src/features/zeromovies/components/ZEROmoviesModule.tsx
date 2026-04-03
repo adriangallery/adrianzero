@@ -8,7 +8,7 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { MintSuccessModal } from './MintSuccessModal';
 import type { Movie } from '../types';
 
-const MYSTERY_IDS = new Set([2, 5, 11, 12, 13, 18, 26]);
+const MYSTERY_IDS = new Set([2, 5, 11, 12, 13, 18, 21, 26]);
 
 function getPosterUrl(movieId: number): string {
   return `/images/zeromovies/${movieId}.png`;
