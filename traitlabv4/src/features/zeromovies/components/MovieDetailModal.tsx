@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, HelpCircle } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint } from '../hooks/useMovieMint';
 import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
@@ -14,9 +14,10 @@ interface MovieDetailModalProps {
   open: boolean;
   onClose: () => void;
   onMintSuccess: () => void;
+  isMystery?: boolean;
 }
 
-export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSuccess }: MovieDetailModalProps) {
+export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSuccess, isMystery = false }: MovieDetailModalProps) {
   const { isConnected } = useAccount();
   const { requireWallet } = useWalletPrompt();
   const { balance, balanceRaw } = useZeroBalance();
@@ -53,22 +54,36 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             <X className="h-4 w-4" />
           </Dialog.Close>
 
-          {/* Poster */}
+          {/* Poster / Mystery */}
           <div className="relative aspect-square w-full overflow-hidden rounded-t-xl bg-zinc-900">
-            <img
-              src={posterUrl}
-              alt={movie.name}
-              className="h-full w-full object-contain"
-              style={{ imageRendering: 'pixelated' }}
-            />
+            {isMystery ? (
+              <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-950">
+                <HelpCircle className="mb-3 h-16 w-16 text-red-600/60" />
+                <span className="text-lg font-bold text-red-600">Mystery Movie</span>
+                <span className="mt-1 text-[10px] text-zinc-500">Identity revealed after minting</span>
+              </div>
+            ) : (
+              <img
+                src={posterUrl}
+                alt={movie.name}
+                className="h-full w-full object-contain"
+                style={{ imageRendering: 'pixelated' }}
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
           </div>
 
           {/* Content */}
           <div className="space-y-4 p-6">
             <Dialog.Title className="text-lg font-bold text-white">
-              {movie.name}
+              {isMystery ? 'Mystery Movie' : movie.name}
             </Dialog.Title>
+
+            {isMystery && !movie.minted && (
+              <p className="text-[11px] leading-relaxed text-zinc-400">
+                This is a surprise movie. Mint it to reveal which character you get!
+              </p>
+            )}
 
             {/* Price + Balance */}
             <div className="flex items-center justify-between rounded-lg bg-zinc-900 p-3">
@@ -121,6 +136,8 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     'Connect Wallet'
                   ) : !hasEnoughBalance ? (
                     `Need ${(priceFormatted - balance).toLocaleString(undefined, { maximumFractionDigits: 0 })} more $ZERO`
+                  ) : isMystery ? (
+                    'MINT MYSTERY'
                   ) : (
                     'MINT'
                   )}
