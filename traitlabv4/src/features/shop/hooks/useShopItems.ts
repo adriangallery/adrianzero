@@ -75,33 +75,33 @@ function getDefaultImageUrl(assetId: number): string {
 
 // Known item names from AdrianLAB metadata (traits.json, floppy.json, serums.json)
 const ITEM_NAMES: Record<number, string> = {
-  // Traits
+  // Traits (from traits.json)
   1: 'Dark Mode',
-  150: 'OG Trait #150',
-  559: 'OG Trait #559',
-  736: 'Legendary #736',
+  150: 'Eye-Patch-Right',
+  559: 'Space-T-Shirt',
+  736: 'X-Ray',
   1044: 'MCD-Shake-S',
   1045: 'MCD-Shake-M',
   1046: 'MCD-Shake-L',
-  // Floppies
-  10000: 'Genesis Floppy',
+  // Floppies (from floppy.json)
+  10000: 'OG Floppy',
   10003: 'GLITCH Floppy',
-  10004: 'Rare Floppy',
-  10005: 'Premium Floppy',
-  10007: 'Pack Floppy',
-  10008: 'Special Floppy',
+  10004: 'GF Floppy',
+  10005: 'GOLDEN Floppy',
+  10007: 'NEON PACK',
+  10008: 'OPTICAL PACK',
   10009: 'PUNKS Floppy',
   10010: 'Comrades USB',
   10011: 'BORED Adrian',
   10012: 'MUTANT Adrian',
-  10013: 'Event Floppy',
+  10013: 'Hello-WEN 25',
   10014: 'Blacklight Floppy',
-  10015: 'Limited Floppy',
-  // Serums / Packs
+  10015: 'X-Mas-Floppy',
+  // Serums (from serums.json)
   262144: 'AdrianGF',
-  262145: 'Serum Pack Alpha',
-  262146: 'Serum Pack Beta',
-  262147: 'Serum Pack Gamma',
+  262145: 'GOLD Serum',
+  262146: 'GOLD Serum',
+  262147: 'GOLD Serum',
 };
 
 function getItemName(assetId: number): string {
