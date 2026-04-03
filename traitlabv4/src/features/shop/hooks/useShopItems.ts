@@ -9,13 +9,6 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { SHOP_FACET_ABI } from '@/lib/web3/abi';
 import { getGitHubImageUrl as getBaseGitHubImageUrl, IMAGE_PATHS } from '@/config/images';
 
-export interface ShopItemMetadata {
-  name?: string;
-  description?: string;
-  image?: string;
-  attributes?: Array<{ trait_type: string; value: string }>;
-}
-
 export interface ShopItem {
   assetId: number;
   priceZero: bigint;
@@ -85,27 +78,26 @@ function getDefaultImageUrl(assetId: number): string {
   return getGitHubImageUrl(assetId) ?? getFallbackImageUrl(assetId);
 }
 
-const METADATA_BASE_URL = 'https://adrianlab.vercel.app/api/metadata/floppy';
+// Known item names from AdrianLAB metadata (traits.json, floppy.json, serums.json)
+const ITEM_NAMES: Record<number, string> = {
+  // Traits
+  1: 'Dark Mode',
+  1044: 'MCD-Shake-S',
+  1045: 'MCD-Shake-M',
+  1046: 'MCD-Shake-L',
+  // Floppies
+  10003: 'GLITCH Floppy',
+  10009: 'PUNKS Floppy',
+  10010: 'Comrades USB',
+  10011: 'BORED Adrian',
+  10012: 'MUTANT Adrian',
+  10014: 'Blacklight Floppy',
+  // Packs
+  262144: 'AdrianGF',
+};
 
-// Simple in-memory cache for metadata
-const metadataCache = new Map<number, ShopItemMetadata>();
-
-async function fetchMetadata(assetId: number): Promise<ShopItemMetadata | null> {
-  if (metadataCache.has(assetId)) {
-    return metadataCache.get(assetId)!;
-  }
-
-  try {
-    const response = await fetch(`${METADATA_BASE_URL}/${assetId}.json`, {
-      mode: 'cors',
-    });
-    if (!response.ok) return null;
-    const metadata = await response.json();
-    metadataCache.set(assetId, metadata);
-    return metadata;
-  } catch {
-    return null;
-  }
+function getItemName(assetId: number): string {
+  return ITEM_NAMES[assetId] ?? `Trait #${assetId}`;
 }
 
 export function useShopItems() {
@@ -119,7 +111,6 @@ export function useShopItems() {
   });
 
   const [items, setItems] = useState<ShopItem[]>([]);
-  const [metadataLoaded, setMetadataLoaded] = useState(false);
 
   // Process raw contract data into ShopItem array
   useEffect(() => {
@@ -172,7 +163,7 @@ export function useShopItems() {
         effectiveBurnBps: Number(item.effectiveBurnBps),
         revenueRecipient: item.revenueRecipient,
         category: categorizeItem(assetId),
-        name: `Trait #${assetId}`,
+        name: getItemName(assetId),
         description: '',
         imageUrl: getDefaultImageUrl(assetId),
         attributes: [],
@@ -180,63 +171,7 @@ export function useShopItems() {
     }
 
     setItems(processed);
-    setMetadataLoaded(false);
   }, [data]);
-
-  // Load metadata in background to enrich items with names/descriptions
-  useEffect(() => {
-    if (items.length === 0 || metadataLoaded) return;
-
-    let cancelled = false;
-
-    async function loadMetadata() {
-      const updated = [...items];
-      let hasUpdates = false;
-
-      // Load metadata in batches of 5 to avoid hammering the API
-      for (let i = 0; i < updated.length; i += 5) {
-        if (cancelled) return;
-
-        const batch = updated.slice(i, i + 5);
-        const results = await Promise.allSettled(
-          batch.map((item) => fetchMetadata(item.assetId))
-        );
-
-        for (let j = 0; j < results.length; j++) {
-          const result = results[j];
-          if (result.status === 'fulfilled' && result.value) {
-            const meta = result.value;
-            const item = updated[i + j];
-
-            if (meta.name) {
-              item.name = meta.name;
-              hasUpdates = true;
-            }
-            if (meta.description) {
-              item.description = meta.description;
-            }
-            // Keep GitHub images only - do not override with metadata image
-            if (meta.attributes) {
-              item.attributes = meta.attributes;
-            }
-          }
-        }
-      }
-
-      if (!cancelled && hasUpdates) {
-        setItems([...updated]);
-      }
-      if (!cancelled) {
-        setMetadataLoaded(true);
-      }
-    }
-
-    loadMetadata();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [items, metadataLoaded]);
 
   // Group by category
   const traits = items.filter((i) => i.category === 'trait');
