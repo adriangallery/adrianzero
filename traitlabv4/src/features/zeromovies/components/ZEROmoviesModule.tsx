@@ -79,6 +79,44 @@ function CoverflowSlider({
     touchDelta.current = 0;
   };
 
+  // Wheel / trackpad scroll
+  const wheelTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wheelAccum = useRef(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      // Use deltaX for trackpad horizontal swipe, deltaY for mouse wheel
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (Math.abs(delta) < 2) return;
+
+      e.preventDefault();
+      wheelAccum.current += delta;
+
+      if (wheelTimeout.current) clearTimeout(wheelTimeout.current);
+      wheelTimeout.current = setTimeout(() => {
+        if (wheelAccum.current > 30) goTo(activeIndex + 1);
+        else if (wheelAccum.current < -30) goTo(activeIndex - 1);
+        wheelAccum.current = 0;
+      }, 80);
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [activeIndex, goTo]);
+
+  // Keyboard arrows
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') goTo(activeIndex - 1);
+      if (e.key === 'ArrowRight') goTo(activeIndex + 1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeIndex, goTo]);
+
   if (movies.length === 0) return null;
 
   // Responsive sizes
