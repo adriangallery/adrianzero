@@ -73,7 +73,7 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
   };
 
   const remaining = item.quantityAvailable - item.sold;
-  const isSoldOut = remaining <= 0;
+  const isSoldOut = item.isSoldOut || remaining <= 0;
   const canAddToCart = !isSoldOut && tokenAccepted;
 
   return (
@@ -114,10 +114,12 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
           </div>
         )}
 
-        {/* Sold out badge */}
+        {/* Sold out banner */}
         {isSoldOut && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">SOLD OUT</span>
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="w-full bg-red-600 py-2 text-center rotate-0">
+              <span className="text-white font-black text-sm tracking-widest uppercase">SOLD OUT</span>
+            </div>
           </div>
         )}
 
@@ -160,7 +162,7 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
 
         {/* Availability */}
         <div className="text-[10px] text-muted-foreground">
-          {remaining} left
+          {isSoldOut ? 'Sold out' : `${remaining} left`}
         </div>
 
         {/* Actions */}
