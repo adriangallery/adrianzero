@@ -15,12 +15,12 @@ export function MovieCard({ movie, posterUrl, onClick }: MovieCardProps) {
   return (
     <button
       onClick={onClick}
-      className={`group relative flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px] flex flex-col overflow-hidden rounded transition-all duration-300 text-left
+      className={`group relative flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px] flex flex-col rounded transition-all duration-300 text-left
         ${isRented
           ? 'cursor-pointer hover:opacity-90'
           : 'cursor-pointer hover:scale-110 hover:z-10 hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]'
         }
-        ${isYours ? 'ring-2 ring-yellow-400 scale-105' : ''}
+        ${isYours ? 'border-2 border-yellow-400' : ''}
       `}
     >
       {/* Poster Image */}
