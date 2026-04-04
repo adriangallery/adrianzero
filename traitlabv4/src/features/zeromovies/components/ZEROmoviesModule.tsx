@@ -307,7 +307,7 @@ export function ZEROmoviesModule() {
         <div className="mx-auto max-w-6xl text-center">
           <Film className="mx-auto mb-2 h-7 w-7 text-red-600 sm:mb-3 sm:h-10 sm:w-10" />
           <h1 className="mb-1 text-xl font-bold tracking-wider text-red-600 sm:text-3xl">
-            AdrianZERO Movie
+            ZEROmovies
           </h1>
           <p className="mb-2 text-[10px] tracking-[0.3em] text-zinc-500 sm:mb-4 sm:text-xs">
             PART ONE
