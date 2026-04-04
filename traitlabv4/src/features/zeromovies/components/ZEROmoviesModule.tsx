@@ -280,7 +280,7 @@ function CoverflowSlider({
 // ─── Main Module ───
 
 export function ZEROmoviesModule() {
-  const { movies, soldOut, isLoading, refetch } = useMoviesCatalog();
+  const { movies, isLoading, refetch } = useMoviesCatalog();
   const { balance } = useZeroBalance();
   const { priceFormatted, paused, totalMinted, movieCount } = useMoviesConfig();
   const { statusMap, refetch: refetchStatus } = useAllRentalStatus();
