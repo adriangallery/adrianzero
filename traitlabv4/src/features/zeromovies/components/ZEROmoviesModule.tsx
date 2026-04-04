@@ -236,14 +236,20 @@ function CoverflowSlider({
                   )}
                 </div>
 
-                {/* Name — center card only */}
+                {/* Name + stats — center card only */}
                 {isCenter && (
                   <div className="bg-zinc-950/90 px-2 py-2 text-center">
                     <p className="truncate text-[10px] font-bold text-white sm:text-xs">
                       {mystery ? '???' : movie.name}
                     </p>
                     {!isCurrentlyRented && !isPerm && (
-                      <p className="mt-0.5 text-[8px] text-red-400">Tap to rent</p>
+                      <p className="mt-0.5 text-[8px] text-red-400">Tap to rent or buy</p>
+                    )}
+                    {rental && Number(rental.rentCount) > 0 && !mystery && (
+                      <p className="mt-0.5 text-[7px] text-zinc-600">
+                        {Number(rental.rentCount)}x rented
+                        {isPerm && ' · Owned'}
+                      </p>
                     )}
                   </div>
                 )}

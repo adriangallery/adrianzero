@@ -59,11 +59,11 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     : 0;
 
   useEffect(() => {
-    if (isConfirmed && movie) { showSuccess(movie.tokenId || 0); onMintSuccess(); reset(); }
+    if (isConfirmed && movie) { showSuccess(movie.tokenId || 0, 'rent'); onMintSuccess(); reset(); }
   }, [isConfirmed]);
 
   useEffect(() => {
-    if (isBuyConfirmed && movie) { showSuccess(movie.tokenId || 0); onMintSuccess(); resetBuy(); }
+    if (isBuyConfirmed && movie) { showSuccess(movie.tokenId || 0, 'buy'); onMintSuccess(); resetBuy(); }
   }, [isBuyConfirmed]);
 
   useEffect(() => {
