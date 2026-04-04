@@ -5,55 +5,67 @@ interface MovieCardProps {
   movie: Movie;
   posterUrl: string;
   onClick: () => void;
+  isCurrentlyRented?: boolean;
+  isPermanent?: boolean;
+  renterAddr?: string;
 }
 
-export function MovieCard({ movie, posterUrl, onClick }: MovieCardProps) {
+export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPermanent, renterAddr }: MovieCardProps) {
   const { address } = useAccount();
-  const isYours = movie.minted && movie.mintedBy?.toLowerCase() === address?.toLowerCase();
-  const isRented = movie.minted && !isYours;
+
+  const ZERO = '0x0000000000000000000000000000000000000000';
+  const isYoursRental = isCurrentlyRented && !isPermanent && renterAddr?.toLowerCase() === address?.toLowerCase();
+  const isYoursPermanent = isPermanent && (
+    renterAddr?.toLowerCase() === address?.toLowerCase() ||
+    movie.mintedBy?.toLowerCase() === address?.toLowerCase()
+  );
+  const isYours = isYoursRental || isYoursPermanent;
+  const isOthers = (isCurrentlyRented || isPermanent) && !isYours;
 
   return (
     <button
       onClick={onClick}
       className={`group relative flex flex-col rounded transition-all duration-300 text-left
-        ${isRented
+        ${isOthers
           ? 'cursor-pointer hover:opacity-90'
-          : 'cursor-pointer hover:scale-110 hover:z-10 hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]'
+          : 'cursor-pointer hover:scale-105 hover:z-10'
         }
-        ${isYours ? 'border-2 border-yellow-400' : ''}
+        ${isYoursPermanent ? 'border-2 border-yellow-400' : ''}
+        ${isYoursRental ? 'border-2 border-sky-400' : ''}
       `}
     >
-      {/* Poster Image */}
-      <div className="relative aspect-square w-full overflow-hidden bg-zinc-900">
+      <div className="relative aspect-square w-full overflow-hidden rounded-t bg-zinc-900">
         <img
           src={posterUrl}
           alt={movie.name}
-          className={`h-full w-full object-contain ${isRented ? 'opacity-20 saturate-0' : ''}`}
+          className={`h-full w-full object-contain ${isOthers ? 'opacity-20 saturate-0' : ''}`}
           style={{ imageRendering: 'pixelated' }}
           loading="lazy"
         />
 
-        {/* Rented overlay */}
-        {isRented && (
+        {/* Badge */}
+        {isYoursPermanent && (
+          <div className="absolute top-1 right-1 rounded bg-yellow-400 px-1.5 py-0.5 text-[7px] font-bold text-black">
+            OWNED
+          </div>
+        )}
+        {isYoursRental && (
+          <div className="absolute top-1 right-1 rounded bg-sky-400 px-1.5 py-0.5 text-[7px] font-bold text-black">
+            RENTING
+          </div>
+        )}
+        {isOthers && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="rounded bg-red-900/70 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-400">
+            <span className="rounded bg-red-900/70 px-2 py-0.5 text-[8px] font-bold uppercase text-red-400">
               Rented
             </span>
           </div>
         )}
-
-        {/* Yours Badge */}
-        {isYours && (
-          <div className="absolute top-1 right-1 rounded bg-yellow-400 px-1.5 py-0.5 text-[7px] font-bold text-black">
-            YOURS
-          </div>
-        )}
       </div>
 
-      {/* Movie Name */}
       <div className="px-1 py-1.5">
         <p className={`truncate text-[9px] font-bold transition-colors ${
-          isRented ? 'text-zinc-600' : 'text-zinc-300 group-hover:text-white'
+          isOthers ? 'text-zinc-600' : 'text-zinc-300 group-hover:text-white'
         }`}>
           {movie.name}
         </p>

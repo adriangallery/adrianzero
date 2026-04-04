@@ -365,9 +365,20 @@ export function ZEROmoviesModule() {
               Off the Shelf ({rentedMovies.length})
             </h2>
             <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
-              {rentedMovies.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} posterUrl={getPosterUrl(movie.id)} onClick={() => selectMovie(movie.id)} />
-              ))}
+              {rentedMovies.map((movie) => {
+                const r = statusMap.get(movie.id);
+                return (
+                  <MovieCard
+                    key={movie.id}
+                    movie={movie}
+                    posterUrl={getPosterUrl(movie.id)}
+                    onClick={() => selectMovie(movie.id)}
+                    isCurrentlyRented={r?.renter != null && r.renter !== '0x0000000000000000000000000000000000000000'}
+                    isPermanent={r?.permanent}
+                    renterAddr={r?.renter}
+                  />
+                );
+              })}
             </div>
           </div>
         );
