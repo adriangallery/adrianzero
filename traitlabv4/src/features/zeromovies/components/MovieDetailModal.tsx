@@ -67,6 +67,14 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     if (isKeepConfirmed) { onMintSuccess(); resetKeep(); }
   }, [isKeepConfirmed]);
 
+  // After approval confirmed, auto-trigger return
+  useEffect(() => {
+    if (isApproveConfirmed && movie) {
+      refetchApproval();
+      returnMovie(movie.id);
+    }
+  }, [isApproveConfirmed]);
+
   if (!movie) return null;
 
   const handleRent = () => { if (!requireWallet('rent a ZEROmovie')) return; mint(movie.id); };
@@ -78,14 +86,6 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     }
     returnMovie(movie.id);
   };
-
-  // After approval confirmed, auto-trigger return
-  useEffect(() => {
-    if (isApproveConfirmed) {
-      refetchApproval();
-      returnMovie(movie!.id);
-    }
-  }, [isApproveConfirmed]);
   const handleKeep = () => { if (!requireWallet('keep forever')) return; keepForever(movie.id); };
 
   const isLoading = isPending || isConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming || isApprovePending || isApproveConfirming;
