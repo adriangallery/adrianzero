@@ -125,7 +125,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
               {isMystery ? 'Mystery Movie' : movie.name}
             </Dialog.Title>
 
-            {/* Rental status badge */}
+            {/* Status + Stats */}
             {isYours && !isPermanent && (
               <div className="flex items-center gap-2 text-[10px] text-zinc-400">
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -136,11 +136,30 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             {isYours && isPermanent && (
               <div className="flex items-center gap-2 text-[10px] text-yellow-400">
                 <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                Yours forever
+                Yours forever · Earning rewards
               </div>
             )}
-            {rentCountNum > 1 && (
-              <p className="text-[9px] text-zinc-600">Rented {rentCountNum} times total</p>
+
+            {/* Movie stats bar */}
+            {rentalStatus && (
+              <div className="flex items-center justify-around rounded-lg bg-zinc-900/50 px-3 py-2">
+                <div className="text-center">
+                  <p className="text-sm font-bold text-white">{rentCountNum}</p>
+                  <p className="text-[8px] text-zinc-500">Times Rented</p>
+                </div>
+                <div className="h-6 w-px bg-zinc-800" />
+                <div className="text-center">
+                  <p className="text-sm font-bold text-white">{isPermanent ? 'Yes' : 'No'}</p>
+                  <p className="text-[8px] text-zinc-500">Owned</p>
+                </div>
+                <div className="h-6 w-px bg-zinc-800" />
+                <div className="text-center">
+                  <p className={`text-sm font-bold ${isPermanent ? 'text-yellow-400' : 'text-zinc-600'}`}>
+                    {isPermanent ? 'Active' : '—'}
+                  </p>
+                  <p className="text-[8px] text-zinc-500">Rewards</p>
+                </div>
+              </div>
             )}
 
             {/* Rent vs Buy options */}
