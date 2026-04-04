@@ -25,9 +25,11 @@ function isMystery(movieId: number, minted: boolean): boolean {
 function CoverflowSlider({
   movies,
   onSelect,
+  rentalStatusMap,
 }: {
   movies: Movie[];
   onSelect: (id: number) => void;
+  rentalStatusMap: Map<number, { renter: string; deposit: bigint; rentedAt: number; permanent: boolean; rentCount: number }>;
 }) {
   const [activeIndex, setActiveIndex] = useState(Math.floor(movies.length / 2));
   const [containerWidth, setContainerWidth] = useState(0);
@@ -165,6 +167,9 @@ function CoverflowSlider({
           if (absOffset > VISIBLE_SIDE) return null;
 
           const isCenter = offset === 0;
+          const rental = rentalStatusMap.get(movie.id);
+          const isCurrentlyRented = rental?.renter != null && rental.renter !== '0x0000000000000000000000000000000000000000';
+          const isPerm = rental?.permanent === true;
           const mystery = isMystery(movie.id, movie.minted);
 
           const translateX = offset * gap;
@@ -207,15 +212,22 @@ function CoverflowSlider({
                       src={getPosterUrl(movie.id)}
                       alt={movie.name}
                       className={`h-full w-full object-contain ${
-                        movie.minted ? 'opacity-20 saturate-0' : ''
+                        isCurrentlyRented || isPerm ? 'opacity-20 saturate-0' : ''
                       }`}
                       style={{ imageRendering: 'pixelated' }}
                       draggable={false}
                     />
                   )}
 
-                  {/* Rented badge */}
-                  {movie.minted && !mystery && (
+                  {/* Rented / Permanent badge */}
+                  {isPerm && !mystery && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="rounded bg-yellow-900/70 px-2 py-0.5 text-[7px] font-bold uppercase text-yellow-400">
+                        Kept Forever
+                      </span>
+                    </div>
+                  )}
+                  {isCurrentlyRented && !isPerm && !mystery && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="rounded bg-red-900/70 px-2 py-0.5 text-[7px] font-bold uppercase text-red-400">
                         Rented
@@ -230,7 +242,7 @@ function CoverflowSlider({
                     <p className="truncate text-[10px] font-bold text-white sm:text-xs">
                       {mystery ? '???' : movie.name}
                     </p>
-                    {!movie.minted && (
+                    {!isCurrentlyRented && !isPerm && (
                       <p className="mt-0.5 text-[8px] text-red-400">Tap to rent</p>
                     )}
                   </div>
@@ -330,25 +342,32 @@ export function ZEROmoviesModule() {
         ) : movies.length === 0 ? (
           <div className="py-20 text-center text-sm text-zinc-600">No movies available yet.</div>
         ) : (
-          <CoverflowSlider movies={movies} onSelect={selectMovie} />
+          <CoverflowSlider movies={movies} onSelect={selectMovie} rentalStatusMap={statusMap} />
         )}
       </div>
 
-      {/* Rented section */}
-      {soldOut.length > 0 && (
-        <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
-          <h2 className="mb-3 text-[10px] font-bold uppercase tracking-wider text-zinc-600 sm:text-xs">
-            Rented ({soldOut.length})
-          </h2>
-          <div className="flex gap-2 overflow-x-auto pb-2 sm:gap-3" style={{ scrollbarWidth: 'none' }}>
-            {soldOut.map((movie) => (
-              <div key={movie.id} className="w-[70px] flex-shrink-0 sm:w-[100px]">
-                <MovieCard movie={movie} posterUrl={getPosterUrl(movie.id)} onClick={() => selectMovie(movie.id)} />
-              </div>
-            ))}
+      {/* Rented/Permanent section */}
+      {(() => {
+        const rentedMovies = movies.filter((m) => {
+          const r = statusMap.get(m.id);
+          return (r?.renter && r.renter !== '0x0000000000000000000000000000000000000000') || r?.permanent;
+        });
+        if (rentedMovies.length === 0) return null;
+        return (
+          <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
+            <h2 className="mb-3 text-[10px] font-bold uppercase tracking-wider text-zinc-600 sm:text-xs">
+              Rented ({rentedMovies.length})
+            </h2>
+            <div className="flex gap-2 overflow-x-auto pb-2 sm:gap-3" style={{ scrollbarWidth: 'none' }}>
+              {rentedMovies.map((movie) => (
+                <div key={movie.id} className="w-[70px] flex-shrink-0 sm:w-[100px]">
+                  <MovieCard movie={movie} posterUrl={getPosterUrl(movie.id)} onClick={() => selectMovie(movie.id)} />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <MovieDetailModal
         movie={selectedMovie}

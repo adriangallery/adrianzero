@@ -67,11 +67,10 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     if (isKeepConfirmed) { onMintSuccess(); resetKeep(); }
   }, [isKeepConfirmed]);
 
-  // After approval confirmed, auto-trigger return
+  // After approval confirmed, refresh approval state so button updates
   useEffect(() => {
-    if (isApproveConfirmed && movie) {
+    if (isApproveConfirmed) {
       refetchApproval();
-      returnMovie(movie.id);
     }
   }, [isApproveConfirmed]);
 
@@ -181,26 +180,39 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
 
             {/* YOURS: Return + Keep Forever */}
             {isYours && !isPermanent && (
-              <div className="flex gap-2">
-                <button onClick={handleReturn} disabled={isLoading}
-                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 py-2.5 text-[11px] font-bold text-zinc-300 hover:bg-zinc-800 transition-colors disabled:opacity-50">
-                  {isApprovePending || isApproveConfirming
-                    ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Approving...</span>
-                    : isReturnPending || isReturnConfirming
-                    ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Returning...</span>
-                    : !nftApproved
-                    ? `Approve & Return · Get ${depositFormatted.toLocaleString()} $ZERO`
-                    : `Return · Get ${depositFormatted.toLocaleString()} $ZERO`}
-                </button>
-
-                {canKeepMovie && (
-                  <button onClick={handleKeep} disabled={isLoading}
-                    className="flex-1 rounded-lg bg-yellow-600 py-2.5 text-[11px] font-bold text-black hover:bg-yellow-500 transition-colors disabled:opacity-50">
-                    {isKeepPending || isKeepConfirming
-                      ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /></span>
-                      : 'Keep Forever'}
+              <div className="space-y-2">
+                {/* Step 1: Approve (if needed) */}
+                {!nftApproved && (
+                  <button onClick={() => approveNft()} disabled={isLoading}
+                    className="w-full rounded-lg border border-zinc-600 bg-zinc-800 py-2.5 text-[11px] font-bold text-zinc-200 hover:bg-zinc-700 transition-colors disabled:opacity-50">
+                    {isApprovePending || isApproveConfirming
+                      ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Step 1: Approving...</span>
+                      : 'Step 1: Approve NFT Transfer'}
                   </button>
                 )}
+
+                {/* Step 2: Return (only after approval) */}
+                <div className="flex gap-2">
+                  <button onClick={handleReturn} disabled={isLoading || !nftApproved}
+                    className={`flex-1 rounded-lg border py-2.5 text-[11px] font-bold transition-colors disabled:opacity-50 ${
+                      nftApproved
+                        ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800'
+                        : 'border-zinc-800 bg-zinc-950 text-zinc-600 cursor-not-allowed'
+                    }`}>
+                    {isReturnPending || isReturnConfirming
+                      ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Returning...</span>
+                      : `${nftApproved ? '' : 'Step 2: '}Return · Get ${depositFormatted.toLocaleString()} $ZERO`}
+                  </button>
+
+                  {canKeepMovie && (
+                    <button onClick={handleKeep} disabled={isLoading}
+                      className="flex-1 rounded-lg bg-yellow-600 py-2.5 text-[11px] font-bold text-black hover:bg-yellow-500 transition-colors disabled:opacity-50">
+                      {isKeepPending || isKeepConfirming
+                        ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /></span>
+                        : 'Keep Forever'}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
