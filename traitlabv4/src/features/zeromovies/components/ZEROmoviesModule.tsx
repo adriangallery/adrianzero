@@ -331,7 +331,7 @@ export function ZEROmoviesModule() {
           )}
 
           <div className="flex flex-wrap justify-center gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:gap-4 sm:text-[10px]">
-            <span>Minted: <span className="text-white">{movies.filter(m => m.minted).length}/{movieCount}</span></span>
+            <span>Taken: <span className="text-white">{Array.from(statusMap.values()).filter(r => (r.renter && r.renter !== '0x0000000000000000000000000000000000000000') || r.permanent).length}/{movieCount}</span></span>
             <span>Price: <span className="text-red-400">{priceFormatted.toLocaleString()} $ZERO</span></span>
             <span>Balance: <span className="text-green-400">{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO</span></span>
             {paused && <span className="animate-pulse text-yellow-400">COMING SOON</span>}
