@@ -167,10 +167,17 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 </div>
                 <div className="h-6 w-px bg-zinc-800" />
                 <div className="text-center">
-                  <p className="text-sm font-bold text-yellow-400">
-                    {(displayRentCount * priceFormatted * 0.1).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                  </p>
-                  <p className="text-[8px] text-zinc-500">$ZERO earned</p>
+                  {isPermanent ? (
+                    <>
+                      <p className="text-sm font-bold text-yellow-400">Earning</p>
+                      <p className="text-[8px] text-zinc-500">Rewards</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-zinc-600">—</p>
+                      <p className="text-[8px] text-zinc-500">No rewards</p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
