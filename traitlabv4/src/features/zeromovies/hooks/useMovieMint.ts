@@ -1,6 +1,11 @@
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useWriteContract, useWaitForTransactionReceipt, useReadContract, useAccount } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZERO_MOVIES_FACET_ABI } from '@/lib/web3/abi';
+
+const NFT_APPROVE_ABI = [
+  { type: 'function', name: 'setApprovalForAll', inputs: [{ name: 'operator', type: 'address' }, { name: 'approved', type: 'bool' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'isApprovedForAll', inputs: [{ name: 'owner', type: 'address' }, { name: 'operator', type: 'address' }], outputs: [{ name: '', type: 'bool' }], stateMutability: 'view' },
+] as const;
 
 export function useMovieMint() {
   const { writeContract, data: hash, isPending, error: writeError, reset } = useWriteContract();
@@ -16,6 +21,32 @@ export function useMovieMint() {
   };
 
   return { mint, isPending, isConfirming, isConfirmed, error: writeError, txHash: hash, receipt, reset };
+}
+
+export function useNftApproval() {
+  const { address } = useAccount();
+
+  const { data: isApproved, refetch } = useReadContract({
+    address: CONTRACT_ADDRESSES.ADRIAN_ZERO as `0x${string}`,
+    abi: NFT_APPROVE_ABI,
+    functionName: 'isApprovedForAll',
+    args: address ? [address, CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`] : undefined,
+    query: { enabled: !!address },
+  });
+
+  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+  const approve = () => {
+    writeContract({
+      address: CONTRACT_ADDRESSES.ADRIAN_ZERO as `0x${string}`,
+      abi: NFT_APPROVE_ABI,
+      functionName: 'setApprovalForAll',
+      args: [CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`, true],
+    });
+  };
+
+  return { isApproved: isApproved as boolean, approve, isPending, isConfirming, isConfirmed, refetch };
 }
 
 export function useMovieReturn() {

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
-import { useMovieMint, useMovieReturn, useMovieKeep } from '../hooks/useMovieMint';
+import { useMovieMint, useMovieReturn, useMovieKeep, useNftApproval } from '../hooks/useMovieMint';
 import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
@@ -28,6 +28,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { price, priceFormatted } = useMoviesConfig();
   const { mint, isPending, isConfirming, isConfirmed, error, reset } = useMovieMint();
   const { returnMovie, isPending: isReturnPending, isConfirming: isReturnConfirming, isConfirmed: isReturnConfirmed, reset: resetReturn } = useMovieReturn();
+  const { isApproved: nftApproved, approve: approveNft, isPending: isApprovePending, isConfirming: isApproveConfirming, isConfirmed: isApproveConfirmed, refetch: refetchApproval } = useNftApproval();
   const { keepForever, isPending: isKeepPending, isConfirming: isKeepConfirming, isConfirmed: isKeepConfirmed, reset: resetKeep } = useMovieKeep();
   const { showSuccess } = useMoviesStore();
 
@@ -68,10 +69,25 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   if (!movie) return null;
 
   const handleRent = () => { if (!requireWallet('rent a ZEROmovie')) return; mint(movie.id); };
-  const handleReturn = () => { if (!requireWallet('return')) return; returnMovie(movie.id); };
+  const handleReturn = () => {
+    if (!requireWallet('return')) return;
+    if (!nftApproved) {
+      approveNft();
+      return;
+    }
+    returnMovie(movie.id);
+  };
+
+  // After approval confirmed, auto-trigger return
+  useEffect(() => {
+    if (isApproveConfirmed) {
+      refetchApproval();
+      returnMovie(movie!.id);
+    }
+  }, [isApproveConfirmed]);
   const handleKeep = () => { if (!requireWallet('keep forever')) return; keepForever(movie.id); };
 
-  const isLoading = isPending || isConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming;
+  const isLoading = isPending || isConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming || isApprovePending || isApproveConfirming;
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
@@ -167,8 +183,12 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
               <div className="flex gap-2">
                 <button onClick={handleReturn} disabled={isLoading}
                   className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 py-2.5 text-[11px] font-bold text-zinc-300 hover:bg-zinc-800 transition-colors disabled:opacity-50">
-                  {isReturnPending || isReturnConfirming
+                  {isApprovePending || isApproveConfirming
+                    ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Approving...</span>
+                    : isReturnPending || isReturnConfirming
                     ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Returning...</span>
+                    : !nftApproved
+                    ? `Approve & Return · Get ${depositFormatted.toLocaleString()} $ZERO`
                     : `Return · Get ${depositFormatted.toLocaleString()} $ZERO`}
                 </button>
 
