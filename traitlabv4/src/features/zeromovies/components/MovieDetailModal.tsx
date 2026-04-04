@@ -4,7 +4,6 @@ import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useNftApproval } from '../hooks/useMovieMint';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
-import { usePendingRewards } from '../hooks/useRentalStatus';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
@@ -44,7 +43,6 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     query: { enabled: !!movie && !!rentalStatus?.renter },
   });
 
-  const { pending: userPendingRewards } = usePendingRewards();
   const hasEnoughForRent = balanceRaw >= price;
   const hasEnoughForBuy = balanceRaw >= buyPrice;
 
