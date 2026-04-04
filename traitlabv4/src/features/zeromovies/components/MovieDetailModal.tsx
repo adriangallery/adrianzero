@@ -46,12 +46,13 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const isRentedByOther = rentalStatus?.renter && rentalStatus.renter !== '0x0000000000000000000000000000000000000000' && !isYours;
   const isAvailable = !rentalStatus?.renter || rentalStatus.renter === '0x0000000000000000000000000000000000000000';
   const isPermanent = rentalStatus?.permanent;
-  const canKeep = canKeepData as boolean;
+  const canKeepMovie = canKeepData === true;
   const depositFormatted = rentalStatus?.deposit ? Number(formatEther(rentalStatus.deposit)) : 0;
+  const rentCountNum = rentalStatus?.rentCount ?? 0;
 
   // Days since rental
   const daysSinceRent = rentalStatus?.rentedAt
-    ? Math.floor((Date.now() / 1000 - rentalStatus.rentedAt) / 86400)
+    ? Math.floor((Date.now() / 1000 - Number(rentalStatus.rentedAt)) / 86400)
     : 0;
 
   useEffect(() => {
@@ -131,8 +132,8 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 Yours forever
               </div>
             )}
-            {rentalStatus && rentalStatus.rentCount > 1 && (
-              <p className="text-[9px] text-zinc-600">Rented {rentalStatus.rentCount} times total</p>
+            {rentCountNum > 1 && (
+              <p className="text-[9px] text-zinc-600">Rented {rentCountNum} times total</p>
             )}
 
             {/* Price info */}
@@ -192,7 +193,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     : `Return · Get ${depositFormatted.toLocaleString()} $ZERO`}
                 </button>
 
-                {canKeep && (
+                {canKeepMovie && (
                   <button onClick={handleKeep} disabled={isLoading}
                     className="flex-1 rounded-lg bg-yellow-600 py-2.5 text-[11px] font-bold text-black hover:bg-yellow-500 transition-colors disabled:opacity-50">
                     {isKeepPending || isKeepConfirming
