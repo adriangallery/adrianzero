@@ -24,7 +24,7 @@ function truncateAddress(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
-export function NFTCard({ tokenId, name, imageUrl, type, owner, onClick }: NFTCardProps) {
+export function NFTCard({ name, imageUrl, type, owner, onClick }: NFTCardProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
