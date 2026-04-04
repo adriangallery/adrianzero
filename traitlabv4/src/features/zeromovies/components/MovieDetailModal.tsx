@@ -78,7 +78,11 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   }, [isBuyConfirmed]);
 
   useEffect(() => {
-    if (isReturnConfirmed) { onMintSuccess(); resetReturn(); onClose(); }
+    if (isReturnConfirmed && movie) {
+      showSuccess(movie.tokenId || 0, 'return', depositFormatted);
+      onMintSuccess();
+      resetReturn();
+    }
   }, [isReturnConfirmed]);
 
   useEffect(() => {

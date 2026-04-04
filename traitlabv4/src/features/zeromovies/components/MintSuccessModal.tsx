@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { Film, X } from 'lucide-react';
+import { Film, Undo2, X } from 'lucide-react';
 import { useMoviesStore } from '../store/moviesStore';
 
 interface MintSuccessModalProps {
@@ -7,9 +7,10 @@ interface MintSuccessModalProps {
 }
 
 export function MintSuccessModal({ movieName }: MintSuccessModalProps) {
-  const { isSuccessOpen, lastMintedTokenId, lastAction, closeSuccess } = useMoviesStore();
+  const { isSuccessOpen, lastMintedTokenId, lastAction, returnedDeposit, closeSuccess } = useMoviesStore();
 
   const isBuy = lastAction === 'buy';
+  const isReturn = lastAction === 'return';
 
   return (
     <Dialog.Root open={isSuccessOpen} onOpenChange={(v) => !v && closeSuccess()}>
@@ -20,40 +21,54 @@ export function MintSuccessModal({ movieName }: MintSuccessModalProps) {
             <X className="h-4 w-4" />
           </Dialog.Close>
 
-          <Film className={`mx-auto mb-4 h-12 w-12 ${isBuy ? 'text-yellow-400' : 'text-red-500'}`} />
+          {isReturn ? (
+            <Undo2 className="mx-auto mb-4 h-12 w-12 text-green-400" />
+          ) : (
+            <Film className={`mx-auto mb-4 h-12 w-12 ${isBuy ? 'text-yellow-400' : 'text-red-500'}`} />
+          )}
 
           <Dialog.Title className="mb-2 text-lg font-bold text-white">
-            {isBuy ? 'Movie Purchased!' : 'Movie Rented!'}
+            {isReturn ? 'Movie Returned!' : isBuy ? 'Movie Purchased!' : 'Movie Rented!'}
           </Dialog.Title>
 
           <p className="mb-2 text-sm text-zinc-400">
-            {isBuy ? (
+            {isReturn ? (
+              <>You returned <span className="font-bold text-green-400">{movieName}</span></>
+            ) : isBuy ? (
               <>You bought <span className="font-bold text-yellow-400">{movieName}</span> forever</>
             ) : (
               <>You rented <span className="font-bold text-red-400">{movieName}</span></>
             )}
           </p>
 
-          {lastMintedTokenId ? (
-            <p className="mb-4 text-[10px] text-zinc-500">
-              AdrianZERO #{lastMintedTokenId}
+          {isReturn ? (
+            <p className="mb-4 text-sm font-bold text-green-400">
+              +{returnedDeposit.toLocaleString()} $ZERO refunded
             </p>
+          ) : lastMintedTokenId ? (
+            <p className="mb-2 text-[10px] text-zinc-500">AdrianZERO #{lastMintedTokenId}</p>
           ) : null}
 
-          {isBuy ? (
-            <p className="mb-4 text-[10px] text-yellow-600">
-              You now earn rewards from every future rental and purchase
-            </p>
-          ) : (
+          {!isReturn && (
             <p className="mb-4 text-[10px] text-zinc-600">
-              Return anytime for a 50% refund, or keep it for 30 days
+              {isBuy
+                ? 'You now earn rewards from every future rental and purchase'
+                : 'Return anytime for a 50% refund, or keep it for 30 days'}
+            </p>
+          )}
+
+          {isReturn && (
+            <p className="mb-4 text-[10px] text-zinc-600">
+              The movie is back on the shelf. Someone else can rent it now.
             </p>
           )}
 
           <button
             onClick={closeSuccess}
             className={`w-full rounded-lg py-2.5 text-sm font-bold transition-colors ${
-              isBuy ? 'bg-yellow-600 text-black hover:bg-yellow-500' : 'bg-red-600 text-white hover:bg-red-500'
+              isReturn ? 'bg-green-600 text-white hover:bg-green-500'
+                : isBuy ? 'bg-yellow-600 text-black hover:bg-yellow-500'
+                : 'bg-red-600 text-white hover:bg-red-500'
             }`}
           >
             CLOSE
