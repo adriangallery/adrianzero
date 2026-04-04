@@ -288,7 +288,7 @@ function CoverflowSlider({
 export function ZEROmoviesModule() {
   const { movies, isLoading, refetch } = useMoviesCatalog();
   const { balance } = useZeroBalance();
-  const { priceFormatted, paused, totalMinted, movieCount } = useMoviesConfig();
+  const { priceFormatted, paused, movieCount } = useMoviesConfig();
   const { statusMap, refetch: refetchStatus } = useAllRentalStatus();
   const { pending: pendingRewards } = usePendingRewards();
   const { claim, isPending: isClaimPending } = useClaimMovieRewards();
@@ -331,7 +331,7 @@ export function ZEROmoviesModule() {
           )}
 
           <div className="flex flex-wrap justify-center gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:gap-4 sm:text-[10px]">
-            <span>Minted: <span className="text-white">{totalMinted}/{movieCount}</span></span>
+            <span>Minted: <span className="text-white">{movies.filter(m => m.minted).length}/{movieCount}</span></span>
             <span>Price: <span className="text-red-400">{priceFormatted.toLocaleString()} $ZERO</span></span>
             <span>Balance: <span className="text-green-400">{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO</span></span>
             {paused && <span className="animate-pulse text-yellow-400">COMING SOON</span>}
