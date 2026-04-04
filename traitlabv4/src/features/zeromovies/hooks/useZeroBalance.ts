@@ -54,3 +54,14 @@ export function useMoviesConfig() {
     movieCount: Number(movieCount),
   };
 }
+
+export function useBuyPrice() {
+  const { data } = useReadContract({
+    address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+    abi: ZERO_MOVIES_FACET_ABI,
+    functionName: 'getBuyPrice',
+  });
+
+  const price = (data as bigint) ?? 0n;
+  return { buyPrice: price, buyPriceFormatted: price ? Number(formatEther(price)) : 0 };
+}

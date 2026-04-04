@@ -1,6 +1,7 @@
 export const ZERO_MOVIES_FACET_ABI = [
   // User functions
   { type: 'function', name: 'rentMovie', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'buyMovie', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'returnMovie', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'keepMovieForever', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'claimMovieRewards', inputs: [], outputs: [], stateMutability: 'nonpayable' },
@@ -53,6 +54,11 @@ export const ZERO_MOVIES_FACET_ABI = [
   ], stateMutability: 'view' },
   { type: 'function', name: 'getUserMovieMintCount', inputs: [{ name: 'user', type: 'address' }], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
   { type: 'function', name: 'zeroMoviesTotalMinted', inputs: [], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
+  { type: 'function', name: 'getBuyPrice', inputs: [], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
+  { type: 'function', name: 'getMovieStats', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [
+    { name: 'lifetimeRentals', type: 'uint256' }, { name: 'isPermanent', type: 'bool' },
+    { name: 'currentOwner', type: 'address' }, { name: 'depositHeld', type: 'uint256' },
+  ], stateMutability: 'view' },
 
   // Events
   { type: 'event', name: 'MovieRented', inputs: [

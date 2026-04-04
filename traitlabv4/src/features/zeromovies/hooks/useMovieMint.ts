@@ -23,6 +23,22 @@ export function useMovieMint() {
   return { mint, isPending, isConfirming, isConfirmed, error: writeError, txHash: hash, receipt, reset };
 }
 
+export function useMovieBuy() {
+  const { writeContract, data: hash, isPending, error: writeError, reset } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed, data: receipt } = useWaitForTransactionReceipt({ hash });
+
+  const buy = (movieId: number) => {
+    writeContract({
+      address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+      abi: ZERO_MOVIES_FACET_ABI,
+      functionName: 'buyMovie',
+      args: [BigInt(movieId)],
+    });
+  };
+
+  return { buy, isPending, isConfirming, isConfirmed, error: writeError, txHash: hash, receipt, reset };
+}
+
 export function useNftApproval() {
   const { address } = useAccount();
 

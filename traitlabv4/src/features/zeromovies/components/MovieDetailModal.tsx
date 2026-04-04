@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
-import { useMovieMint, useMovieReturn, useMovieKeep, useNftApproval } from '../hooks/useMovieMint';
-import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
+import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useNftApproval } from '../hooks/useMovieMint';
+import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
@@ -26,7 +26,9 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { requireWallet } = useWalletPrompt();
   const { balance, balanceRaw } = useZeroBalance();
   const { price, priceFormatted } = useMoviesConfig();
+  const { buyPrice, buyPriceFormatted } = useBuyPrice();
   const { mint, isPending, isConfirming, isConfirmed, error, reset } = useMovieMint();
+  const { buy, isPending: isBuyPending, isConfirming: isBuyConfirming, isConfirmed: isBuyConfirmed, error: buyError, reset: resetBuy } = useMovieBuy();
   const { returnMovie, isPending: isReturnPending, isConfirming: isReturnConfirming, isConfirmed: isReturnConfirmed, reset: resetReturn } = useMovieReturn();
   const { isApproved: nftApproved, approve: approveNft, isPending: isApprovePending, isConfirming: isApproveConfirming, isConfirmed: isApproveConfirmed, refetch: refetchApproval } = useNftApproval();
   const { keepForever, isPending: isKeepPending, isConfirming: isKeepConfirming, isConfirmed: isKeepConfirmed, reset: resetKeep } = useMovieKeep();
@@ -41,7 +43,8 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     query: { enabled: !!movie && !!rentalStatus?.renter },
   });
 
-  const hasEnoughBalance = balanceRaw >= price;
+  const hasEnoughForRent = balanceRaw >= price;
+  const hasEnoughForBuy = balanceRaw >= buyPrice;
   const isYours = rentalStatus?.renter?.toLowerCase() === address?.toLowerCase();
   const isRentedByOther = rentalStatus?.renter && rentalStatus.renter !== '0x0000000000000000000000000000000000000000' && !isYours;
   const isAvailable = !rentalStatus?.renter || rentalStatus.renter === '0x0000000000000000000000000000000000000000';
@@ -58,6 +61,10 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   useEffect(() => {
     if (isConfirmed && movie) { showSuccess(movie.tokenId || 0); onMintSuccess(); reset(); }
   }, [isConfirmed]);
+
+  useEffect(() => {
+    if (isBuyConfirmed && movie) { showSuccess(movie.tokenId || 0); onMintSuccess(); resetBuy(); }
+  }, [isBuyConfirmed]);
 
   useEffect(() => {
     if (isReturnConfirmed) { onMintSuccess(); resetReturn(); onClose(); }
@@ -77,6 +84,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   if (!movie) return null;
 
   const handleRent = () => { if (!requireWallet('rent a ZEROmovie')) return; mint(movie.id); };
+  const handleBuy = () => { if (!requireWallet('buy a ZEROmovie')) return; buy(movie.id); };
   const handleReturn = () => {
     if (!requireWallet('return')) return;
     if (!nftApproved) {
@@ -87,7 +95,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   };
   const handleKeep = () => { if (!requireWallet('keep forever')) return; keepForever(movie.id); };
 
-  const isLoading = isPending || isConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming || isApprovePending || isApproveConfirming;
+  const isLoading = isPending || isConfirming || isBuyPending || isBuyConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming || isApprovePending || isApproveConfirming;
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
@@ -135,38 +143,58 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
               <p className="text-[9px] text-zinc-600">Rented {rentCountNum} times total</p>
             )}
 
-            {/* Price info */}
+            {/* Rent vs Buy options */}
             {isAvailable && !isPermanent && (
               <>
-                <div className="flex items-center justify-between rounded-lg bg-zinc-900 p-3">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-zinc-500">Rent Price</p>
-                    <p className="text-sm font-bold text-red-500">{priceFormatted.toLocaleString()} $ZERO</p>
-                    <p className="text-[8px] text-zinc-600">30% burned · 50% refundable</p>
+                {/* Balance */}
+                <div className="rounded-lg bg-zinc-900 px-3 py-2 text-center">
+                  <span className="text-[10px] text-zinc-500">Your Balance: </span>
+                  <span className={`text-sm font-bold ${hasEnoughForRent ? 'text-green-400' : 'text-red-400'}`}>
+                    {balance.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO
+                  </span>
+                </div>
+
+                {/* Two options side by side */}
+                <div className="grid grid-cols-2 gap-2">
+                  {/* RENT option */}
+                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
+                    <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Rent</p>
+                    <p className="text-lg font-bold text-white">{priceFormatted.toLocaleString()}</p>
+                    <p className="text-[8px] text-zinc-500">$ZERO · 50% refundable</p>
+                    <p className="mt-1 text-[7px] text-zinc-600">Return anytime · No rewards</p>
+                    <button onClick={handleRent} disabled={isLoading || !hasEnoughForRent || !isConnected}
+                      className={`mt-2 w-full rounded py-2 text-[10px] font-bold transition-all ${
+                        isLoading ? 'bg-zinc-700 text-zinc-400'
+                        : !hasEnoughForRent || !isConnected ? 'bg-zinc-800 text-zinc-600'
+                        : 'bg-red-600 text-white hover:bg-red-500'
+                      }`}>
+                      {isPending || isConfirming
+                        ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /></span>
+                        : 'RENT'}
+                    </button>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] uppercase tracking-wider text-zinc-500">Balance</p>
-                    <p className={`text-sm font-bold ${hasEnoughBalance ? 'text-green-400' : 'text-red-400'}`}>
-                      {balance.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO
-                    </p>
+
+                  {/* BUY option */}
+                  <div className="rounded-lg border border-yellow-600/30 bg-yellow-900/10 p-3">
+                    <p className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Buy Forever</p>
+                    <p className="text-lg font-bold text-white">{buyPriceFormatted.toLocaleString()}</p>
+                    <p className="text-[8px] text-zinc-500">$ZERO · 80% burned</p>
+                    <p className="mt-1 text-[7px] text-yellow-600">Yours forever · Earns rewards</p>
+                    <button onClick={handleBuy} disabled={isLoading || !hasEnoughForBuy || !isConnected}
+                      className={`mt-2 w-full rounded py-2 text-[10px] font-bold transition-all ${
+                        isLoading ? 'bg-zinc-700 text-zinc-400'
+                        : !hasEnoughForBuy || !isConnected ? 'bg-zinc-800 text-zinc-600'
+                        : 'bg-yellow-600 text-black hover:bg-yellow-500'
+                      }`}>
+                      {isBuyPending || isBuyConfirming
+                        ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /></span>
+                        : 'BUY'}
+                    </button>
                   </div>
                 </div>
 
-                <button onClick={handleRent} disabled={isLoading || !hasEnoughBalance || !isConnected}
-                  className={`w-full rounded-lg py-3 text-sm font-bold transition-all ${
-                    isLoading ? 'cursor-wait bg-zinc-700 text-zinc-400'
-                    : !hasEnoughBalance || !isConnected ? 'cursor-not-allowed bg-zinc-800 text-zinc-500'
-                    : 'bg-red-600 text-white hover:bg-red-500 active:scale-[0.98]'
-                  }`}>
-                  {isPending ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Confirm in wallet...</span>
-                    : isConfirming ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Renting...</span>
-                    : !isConnected ? 'Connect Wallet'
-                    : !hasEnoughBalance ? `Need ${(priceFormatted - balance).toLocaleString(undefined, { maximumFractionDigits: 0 })} more $ZERO`
-                    : isMystery ? 'RENT MYSTERY' : 'RENT'}
-                </button>
-
-                {error && <p className="text-center text-xs text-red-400">{(error as Error).message?.slice(0, 100)}</p>}
-                <p className="text-center text-[10px] text-zinc-600">No approval needed · Return anytime for 50% refund</p>
+                {(error || buyError) && <p className="text-center text-xs text-red-400">{((error || buyError) as Error).message?.slice(0, 100)}</p>}
+                <p className="text-center text-[10px] text-zinc-600">No approval needed · Single transaction</p>
               </>
             )}
 
