@@ -13,7 +13,6 @@ interface MovieCardProps {
 export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPermanent, renterAddr }: MovieCardProps) {
   const { address } = useAccount();
 
-  const ZERO = '0x0000000000000000000000000000000000000000';
   const isYoursRental = isCurrentlyRented && !isPermanent && renterAddr?.toLowerCase() === address?.toLowerCase();
   const isYoursPermanent = isPermanent && (
     renterAddr?.toLowerCase() === address?.toLowerCase() ||
