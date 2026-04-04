@@ -269,7 +269,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 >
                   {isUpgradePending || isUpgradeConfirming
                     ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Upgrading...</span>
-                    : `Buy Forever · ${buyPriceFormatted.toLocaleString()} $ZERO (deposit refunded)`}
+                    : `Buy Forever · ${buyPriceFormatted.toLocaleString()} $ZERO`}
                 </button>
 
                 <div className="relative py-1"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800"/></div><div className="relative flex justify-center"><span className="bg-zinc-950 px-2 text-[8px] text-zinc-600">or</span></div></div>
