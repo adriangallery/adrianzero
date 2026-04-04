@@ -153,12 +153,12 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
               </div>
             )}
 
-            {/* Movie stats bar */}
+            {/* Movie stats bar — visible to everyone */}
             {rentalStatus && (
               <div className="flex items-center justify-around rounded-lg bg-zinc-900/50 px-3 py-2">
                 <div className="text-center">
                   <p className="text-sm font-bold text-white">{displayRentCount}</p>
-                  <p className="text-[8px] text-zinc-500">Times Rented</p>
+                  <p className="text-[8px] text-zinc-500">Rented</p>
                 </div>
                 <div className="h-6 w-px bg-zinc-800" />
                 <div className="text-center">
@@ -169,10 +169,10 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 </div>
                 <div className="h-6 w-px bg-zinc-800" />
                 <div className="text-center">
-                  <p className={`text-sm font-bold ${isYours && isPermanent ? 'text-yellow-400' : 'text-zinc-600'}`}>
-                    {isYours && isPermanent ? `${userPendingRewards.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
+                  <p className="text-sm font-bold text-yellow-400">
+                    {(displayRentCount * priceFormatted * 0.1).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </p>
-                  <p className="text-[8px] text-zinc-500">{isYours && isPermanent ? '$ZERO earned' : 'Rewards'}</p>
+                  <p className="text-[8px] text-zinc-500">$ZERO earned</p>
                 </div>
               </div>
             )}
