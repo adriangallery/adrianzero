@@ -66,4 +66,12 @@ export const ADRIAN_ZERO_ABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
+  // Token counter (total minted)
+  {
+    inputs: [],
+    name: 'tokenCounter',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
 ] as const;

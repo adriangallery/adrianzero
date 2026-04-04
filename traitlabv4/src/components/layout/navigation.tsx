@@ -10,6 +10,7 @@ import {
   FlaskConical,
   Frame,
   Gift,
+  Grid,
   Hammer,
   HelpCircle,
   Package,
@@ -42,7 +43,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/custom', label: 'Custom', icon: <Edit3 className="h-5 w-5" />, requiresAdrianZero: true },
   { path: '/lambo', label: 'Lambo', icon: <Car className="h-5 w-5" />, requiresAdrianZero: true },
   { path: '/search', label: 'Search', icon: <Search className="h-5 w-5" />, requiresAdrianZero: true },
-  // { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> }, // Hidden
+  { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> },
   { path: '/shitdrop', label: 'ShitDROP', icon: <Droplets className="h-5 w-5" /> },
   { path: '/rewards', label: 'Rewards', icon: <Gift className="h-5 w-5" />, requiresAdrianPunks: true },
   { path: '/ogclaim', label: 'OG Claim', icon: <Award className="h-5 w-5" />, requiresAdrianPunks: true },

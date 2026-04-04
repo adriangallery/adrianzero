@@ -1,40 +1,43 @@
+export type NFTType = 'Gen0' | 'SamuraiZERO' | 'SubZERO' | 'ZEROmovies' | 'GenZERO' | 'Unknown';
+
 export interface GalleryNFT {
-  tokenId: string;
-  fileName: string;
+  tokenId: number;
+  owner: string;
+  name: string;
   imageUrl: string;
+  type: NFTType;
 }
 
 export interface NFTMetadata {
-  tokenId: string;
-  traitHash?: string;
-  attributes?: Array<{
+  name: string;
+  description?: string;
+  image: string;
+  attributes: Array<{
     trait_type: string;
     value: string;
   }>;
-  name?: string;
-  description?: string;
 }
 
 export interface GalleryState {
-  // Modal state
-  selectedNFT: GalleryNFT | null;
+  // Modal
+  selectedTokenId: number | null;
   isModalOpen: boolean;
-  currentIndex: number;
-  allNFTs: GalleryNFT[];
 
   // Actions
-  openModal: (nft: GalleryNFT, index: number, allNFTs: GalleryNFT[]) => void;
+  openModal: (tokenId: number) => void;
   closeModal: () => void;
   goToNext: () => void;
   goToPrevious: () => void;
 
-  // Auto-scroll state
-  isAutoScrollPlaying: boolean;
-  scrollVelocity: number;
-  toggleAutoScroll: () => void;
-  setScrollVelocity: (v: number) => void;
+  // All loaded token IDs (for modal navigation)
+  tokenIds: number[];
+  setTokenIds: (ids: number[]) => void;
+
+  // Type filter
+  activeFilter: NFTType | 'All';
+  setActiveFilter: (filter: NFTType | 'All') => void;
 
   // Metadata cache
-  metadataCache: Map<string, NFTMetadata>;
-  setMetadata: (tokenId: string, metadata: NFTMetadata) => void;
+  metadataCache: Map<number, NFTMetadata>;
+  setMetadata: (tokenId: number, metadata: NFTMetadata) => void;
 }

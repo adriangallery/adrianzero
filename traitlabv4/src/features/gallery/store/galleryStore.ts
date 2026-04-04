@@ -1,80 +1,45 @@
 import { create } from 'zustand';
-import type { GalleryState } from '../types/gallery.types';
+import type { GalleryState, NFTMetadata, NFTType } from '../types/gallery.types';
 
 export const useGalleryStore = create<GalleryState>((set, get) => ({
-  // Modal state
-  selectedNFT: null,
+  selectedTokenId: null,
   isModalOpen: false,
-  currentIndex: 0,
-  allNFTs: [],
+  tokenIds: [],
+  activeFilter: 'All',
+  metadataCache: new Map(),
 
-  // Modal actions
-  openModal: (nft, index, allNFTs) => {
-    set({
-      selectedNFT: nft,
-      isModalOpen: true,
-      currentIndex: index,
-      allNFTs,
-    });
+  openModal: (tokenId: number) => {
+    set({ selectedTokenId: tokenId, isModalOpen: true });
   },
 
   closeModal: () => {
-    set({
-      isModalOpen: false,
-      selectedNFT: null,
-    });
+    set({ isModalOpen: false, selectedTokenId: null });
   },
 
   goToNext: () => {
-    const { currentIndex, allNFTs } = get();
-    if (allNFTs.length === 0) return;
-
-    const nextIndex = (currentIndex + 1) % allNFTs.length;
-    set({
-      currentIndex: nextIndex,
-      selectedNFT: allNFTs[nextIndex],
-    });
+    const { selectedTokenId, tokenIds } = get();
+    if (!selectedTokenId || tokenIds.length === 0) return;
+    const idx = tokenIds.indexOf(selectedTokenId);
+    const nextIdx = (idx + 1) % tokenIds.length;
+    set({ selectedTokenId: tokenIds[nextIdx] });
   },
 
   goToPrevious: () => {
-    const { currentIndex, allNFTs } = get();
-    if (allNFTs.length === 0) return;
-
-    const prevIndex = currentIndex === 0 ? allNFTs.length - 1 : currentIndex - 1;
-    set({
-      currentIndex: prevIndex,
-      selectedNFT: allNFTs[prevIndex],
-    });
+    const { selectedTokenId, tokenIds } = get();
+    if (!selectedTokenId || tokenIds.length === 0) return;
+    const idx = tokenIds.indexOf(selectedTokenId);
+    const prevIdx = idx <= 0 ? tokenIds.length - 1 : idx - 1;
+    set({ selectedTokenId: tokenIds[prevIdx] });
   },
 
-  // Auto-scroll state
-  isAutoScrollPlaying: false,
-  scrollVelocity: 1,
+  setTokenIds: (ids: number[]) => set({ tokenIds: ids }),
 
-  toggleAutoScroll: () => {
-    set((state) => ({
-      isAutoScrollPlaying: !state.isAutoScrollPlaying,
-    }));
-  },
+  setActiveFilter: (filter: NFTType | 'All') => set({ activeFilter: filter }),
 
-  setScrollVelocity: (v) => {
-    set({ scrollVelocity: v });
-  },
-
-  // Metadata cache
-  metadataCache: new Map(),
-
-  setMetadata: (tokenId, metadata) => {
+  setMetadata: (tokenId: number, metadata: NFTMetadata) => {
     set((state) => {
       const newCache = new Map(state.metadataCache);
       newCache.set(tokenId, metadata);
-
-      // Clear cache if it exceeds 100 entries
-      if (newCache.size > 100) {
-        const firstKey = newCache.keys().next().value;
-        if (firstKey) newCache.delete(firstKey);
-      }
-
       return { metadataCache: newCache };
     });
   },
