@@ -4,6 +4,7 @@ import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useNftApproval } from '../hooks/useMovieMint';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
+import { usePendingRewards } from '../hooks/useRentalStatus';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
@@ -43,15 +44,27 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     query: { enabled: !!movie && !!rentalStatus?.renter },
   });
 
+  const { pending: userPendingRewards } = usePendingRewards();
   const hasEnoughForRent = balanceRaw >= price;
   const hasEnoughForBuy = balanceRaw >= buyPrice;
-  const isYours = rentalStatus?.renter?.toLowerCase() === address?.toLowerCase();
-  const isRentedByOther = rentalStatus?.renter && rentalStatus.renter !== '0x0000000000000000000000000000000000000000' && !isYours;
-  const isAvailable = !rentalStatus?.renter || rentalStatus.renter === '0x0000000000000000000000000000000000000000';
-  const isPermanent = rentalStatus?.permanent;
+
+  const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
+  const renterAddr = rentalStatus?.renter ?? ZERO_ADDR;
+  const hasActiveRenter = renterAddr !== ZERO_ADDR;
+  const isPermanent = rentalStatus?.permanent === true;
+
+  // "Yours" = you're the active renter OR you're the V1 minter of a permanent movie
+  const isYoursViaRent = hasActiveRenter && renterAddr.toLowerCase() === address?.toLowerCase();
+  const isYoursViaMint = isPermanent && movie?.mintedBy?.toLowerCase() === address?.toLowerCase();
+  const isYours = isYoursViaRent || isYoursViaMint;
+
+  const isRentedByOther = hasActiveRenter && !isYoursViaRent;
+  const isAvailable = !hasActiveRenter && !isPermanent;
   const canKeepMovie = canKeepData === true;
   const depositFormatted = rentalStatus?.deposit ? Number(formatEther(rentalStatus.deposit)) : 0;
   const rentCountNum = rentalStatus?.rentCount ?? 0;
+  // V1 mints that are permanent count as at least 1
+  const displayRentCount = isPermanent && rentCountNum === 0 ? 1 : rentCountNum;
 
   // Days since rental
   const daysSinceRent = rentalStatus?.rentedAt
@@ -144,20 +157,22 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             {rentalStatus && (
               <div className="flex items-center justify-around rounded-lg bg-zinc-900/50 px-3 py-2">
                 <div className="text-center">
-                  <p className="text-sm font-bold text-white">{rentCountNum}</p>
+                  <p className="text-sm font-bold text-white">{displayRentCount}</p>
                   <p className="text-[8px] text-zinc-500">Times Rented</p>
                 </div>
                 <div className="h-6 w-px bg-zinc-800" />
                 <div className="text-center">
-                  <p className="text-sm font-bold text-white">{isPermanent ? 'Yes' : 'No'}</p>
-                  <p className="text-[8px] text-zinc-500">Owned</p>
+                  <p className={`text-sm font-bold ${isYours ? 'text-yellow-400' : isPermanent ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                    {isYours ? 'Yours' : isPermanent ? 'Taken' : 'Available'}
+                  </p>
+                  <p className="text-[8px] text-zinc-500">Status</p>
                 </div>
                 <div className="h-6 w-px bg-zinc-800" />
                 <div className="text-center">
-                  <p className={`text-sm font-bold ${isPermanent ? 'text-yellow-400' : 'text-zinc-600'}`}>
-                    {isPermanent ? 'Active' : '—'}
+                  <p className={`text-sm font-bold ${isYours && isPermanent ? 'text-yellow-400' : 'text-zinc-600'}`}>
+                    {isYours && isPermanent ? `${userPendingRewards.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
                   </p>
-                  <p className="text-[8px] text-zinc-500">Rewards</p>
+                  <p className="text-[8px] text-zinc-500">{isYours && isPermanent ? '$ZERO earned' : 'Rewards'}</p>
                 </div>
               </div>
             )}
