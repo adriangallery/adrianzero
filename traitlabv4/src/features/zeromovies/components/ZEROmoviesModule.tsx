@@ -2,6 +2,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Film, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
 import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
+import { useAllRentalStatus, usePendingRewards } from '../hooks/useRentalStatus';
+import { useClaimMovieRewards } from '../hooks/useMovieMint';
 import { useMoviesStore } from '../store/moviesStore';
 import { MovieCard } from './MovieCard';
 import { MovieDetailModal } from './MovieDetailModal';
@@ -229,7 +231,7 @@ function CoverflowSlider({
                       {mystery ? '???' : movie.name}
                     </p>
                     {!movie.minted && (
-                      <p className="mt-0.5 text-[8px] text-red-400">Tap to mint</p>
+                      <p className="mt-0.5 text-[8px] text-red-400">Tap to rent</p>
                     )}
                   </div>
                 )}
@@ -269,10 +271,16 @@ export function ZEROmoviesModule() {
   const { movies, soldOut, isLoading, refetch } = useMoviesCatalog();
   const { balance } = useZeroBalance();
   const { priceFormatted, paused, totalMinted, movieCount } = useMoviesConfig();
+  const { statusMap, refetch: refetchStatus } = useAllRentalStatus();
+  const { pending: pendingRewards } = usePendingRewards();
+  const { claim, isPending: isClaimPending } = useClaimMovieRewards();
   const { selectedMovieId, isDetailOpen, selectMovie, closeDetail } = useMoviesStore();
 
   const selectedMovie = movies.find((m) => m.id === selectedMovieId) || null;
   const selectedMystery = selectedMovie ? isMystery(selectedMovie.id, selectedMovie.minted) : false;
+  const selectedRentalStatus = selectedMovie ? statusMap.get(selectedMovie.id) || null : null;
+
+  const handleRefresh = () => { refetch(); refetchStatus(); };
 
   return (
     <div className="min-h-screen bg-black">
@@ -287,11 +295,22 @@ export function ZEROmoviesModule() {
             PART ONE
           </p>
           <p className="mx-auto mb-3 max-w-sm text-[10px] leading-relaxed text-zinc-400 sm:mb-6 sm:max-w-md sm:text-[11px]">
-            Choose your movie. Mint with $ZERO.<br />
+            Choose your movie. Rent with $ZERO. Return anytime.<br />
             Each movie is a unique 1/1 AdrianZERO NFT.
             <br />
             <span className="text-zinc-600">A four-piece trilogy.</span>
           </p>
+
+          {/* Rewards claim */}
+          {pendingRewards > 0 && (
+            <button
+              onClick={() => claim()}
+              disabled={isClaimPending}
+              className="mx-auto mb-3 flex items-center gap-2 rounded-full border border-green-600/30 bg-green-900/20 px-4 py-1.5 text-[10px] font-bold text-green-400 hover:bg-green-900/40 transition-colors"
+            >
+              {isClaimPending ? 'Claiming...' : `Claim ${pendingRewards.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO rewards`}
+            </button>
+          )}
 
           <div className="flex flex-wrap justify-center gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:gap-4 sm:text-[10px]">
             <span>Minted: <span className="text-white">{totalMinted}/{movieCount}</span></span>
@@ -336,8 +355,9 @@ export function ZEROmoviesModule() {
         posterUrl={selectedMovie && !selectedMystery ? getPosterUrl(selectedMovie.id) : ''}
         open={isDetailOpen}
         onClose={closeDetail}
-        onMintSuccess={refetch}
+        onMintSuccess={handleRefresh}
         isMystery={selectedMystery}
+        rentalStatus={selectedRentalStatus}
       />
       <MintSuccessModal movieName={selectedMovie?.name || ''} />
 
