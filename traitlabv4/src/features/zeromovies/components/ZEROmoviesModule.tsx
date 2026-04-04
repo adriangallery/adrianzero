@@ -361,14 +361,12 @@ export function ZEROmoviesModule() {
         if (rentedMovies.length === 0) return null;
         return (
           <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
-            <h2 className="mb-3 text-[10px] font-bold uppercase tracking-wider text-zinc-600 sm:text-xs">
-              Rented ({rentedMovies.length})
+            <h2 className="mb-4 text-[10px] font-bold uppercase tracking-wider text-zinc-600 sm:text-xs">
+              Off the Shelf ({rentedMovies.length})
             </h2>
-            <div className="flex gap-2 overflow-x-auto pb-2 sm:gap-3" style={{ scrollbarWidth: 'none' }}>
+            <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
               {rentedMovies.map((movie) => (
-                <div key={movie.id} className="w-[70px] flex-shrink-0 sm:w-[100px]">
-                  <MovieCard movie={movie} posterUrl={getPosterUrl(movie.id)} onClick={() => selectMovie(movie.id)} />
-                </div>
+                <MovieCard key={movie.id} movie={movie} posterUrl={getPosterUrl(movie.id)} onClick={() => selectMovie(movie.id)} />
               ))}
             </div>
           </div>

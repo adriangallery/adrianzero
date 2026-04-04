@@ -2,6 +2,7 @@ export const ZERO_MOVIES_FACET_ABI = [
   // User functions
   { type: 'function', name: 'rentMovie', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'buyMovie', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'upgradeRentalToBuy', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'returnMovie', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'keepMovieForever', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'claimMovieRewards', inputs: [], outputs: [], stateMutability: 'nonpayable' },

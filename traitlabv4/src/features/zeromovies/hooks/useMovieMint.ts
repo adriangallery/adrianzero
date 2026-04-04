@@ -39,6 +39,22 @@ export function useMovieBuy() {
   return { buy, isPending, isConfirming, isConfirmed, error: writeError, txHash: hash, receipt, reset };
 }
 
+export function useUpgradeRental() {
+  const { writeContract, data: hash, isPending, error: writeError, reset } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+  const upgrade = (movieId: number) => {
+    writeContract({
+      address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+      abi: ZERO_MOVIES_FACET_ABI,
+      functionName: 'upgradeRentalToBuy',
+      args: [BigInt(movieId)],
+    });
+  };
+
+  return { upgrade, isPending, isConfirming, isConfirmed, error: writeError, reset };
+}
+
 export function useNftApproval() {
   const { address } = useAccount();
 

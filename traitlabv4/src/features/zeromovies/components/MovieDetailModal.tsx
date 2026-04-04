@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
-import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useNftApproval } from '../hooks/useMovieMint';
+import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useUpgradeRental, useNftApproval } from '../hooks/useMovieMint';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
@@ -32,6 +32,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { returnMovie, isPending: isReturnPending, isConfirming: isReturnConfirming, isConfirmed: isReturnConfirmed, reset: resetReturn } = useMovieReturn();
   const { isApproved: nftApproved, approve: approveNft, isPending: isApprovePending, isConfirming: isApproveConfirming, isConfirmed: isApproveConfirmed, refetch: refetchApproval } = useNftApproval();
   const { keepForever, isPending: isKeepPending, isConfirming: isKeepConfirming, isConfirmed: isKeepConfirmed, reset: resetKeep } = useMovieKeep();
+  const { upgrade, isPending: isUpgradePending, isConfirming: isUpgradeConfirming, isConfirmed: isUpgradeConfirmed, reset: resetUpgrade } = useUpgradeRental();
   const { showSuccess } = useMoviesStore();
 
   // Check canKeep on-chain
@@ -89,6 +90,10 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     if (isKeepConfirmed) { onMintSuccess(); resetKeep(); }
   }, [isKeepConfirmed]);
 
+  useEffect(() => {
+    if (isUpgradeConfirmed && movie) { showSuccess(movie.tokenId || 0, 'buy'); onMintSuccess(); resetUpgrade(); }
+  }, [isUpgradeConfirmed]);
+
   // After approval confirmed, refresh approval state so button updates
   useEffect(() => {
     if (isApproveConfirmed) {
@@ -110,7 +115,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   };
   const handleKeep = () => { if (!requireWallet('keep forever')) return; keepForever(movie.id); };
 
-  const isLoading = isPending || isConfirming || isBuyPending || isBuyConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming || isApprovePending || isApproveConfirming;
+  const isLoading = isPending || isConfirming || isBuyPending || isBuyConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming || isUpgradePending || isUpgradeConfirming || isApprovePending || isApproveConfirming;
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
@@ -252,6 +257,23 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             {/* YOURS: Return + Keep Forever */}
             {isYours && !isPermanent && (
               <div className="space-y-2">
+                {/* Upgrade to Buy */}
+                <button
+                  onClick={() => { if (!requireWallet('upgrade')) return; upgrade(movie.id); }}
+                  disabled={isLoading || !hasEnoughForBuy}
+                  className={`w-full rounded-lg py-2.5 text-[11px] font-bold transition-all ${
+                    isLoading ? 'bg-zinc-700 text-zinc-400'
+                    : !hasEnoughForBuy ? 'bg-zinc-800 text-zinc-600'
+                    : 'bg-yellow-600 text-black hover:bg-yellow-500'
+                  }`}
+                >
+                  {isUpgradePending || isUpgradeConfirming
+                    ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Upgrading...</span>
+                    : `Buy Forever · ${buyPriceFormatted.toLocaleString()} $ZERO (deposit refunded)`}
+                </button>
+
+                <div className="relative py-1"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800"/></div><div className="relative flex justify-center"><span className="bg-zinc-950 px-2 text-[8px] text-zinc-600">or</span></div></div>
+
                 {/* Step 1: Approve (if needed) */}
                 {!nftApproved && (
                   <button onClick={() => approveNft()} disabled={isLoading}
