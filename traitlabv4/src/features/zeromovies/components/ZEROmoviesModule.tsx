@@ -301,84 +301,66 @@ export function ZEROmoviesModule() {
 
   const handleRefresh = () => { refetch(); refetchStatus(); };
 
+  const takenCount = Array.from(statusMap.values()).filter(r => (r.renter && r.renter !== '0x0000000000000000000000000000000000000000') || r.permanent).length;
+
   return (
     <div className="min-h-screen bg-black">
-      {/* Header — compact */}
-      <div className="relative overflow-hidden border-b border-red-900/30 bg-gradient-to-b from-red-950/40 via-red-950/10 to-black px-4 py-4 sm:px-6 sm:py-6">
-        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Film className="h-6 w-6 text-red-600 sm:h-8 sm:w-8" />
-            <div>
-              <h1 className="text-lg font-bold tracking-wider text-red-600 sm:text-2xl">ZEROmovies</h1>
-              <p className="text-[8px] tracking-[0.3em] text-zinc-600 sm:text-[10px]">PART ONE · A four-piece trilogy</p>
-            </div>
-          </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:text-[10px]">
-            <span>Taken: <span className="text-white">{Array.from(statusMap.values()).filter(r => (r.renter && r.renter !== '0x0000000000000000000000000000000000000000') || r.permanent).length}/{movieCount}</span></span>
+      {/* 1. MOVIE GRID — first thing users see */}
+      <div className="mx-auto max-w-6xl px-4 pt-6 pb-8 sm:px-6">
+        {/* Stats bar */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:text-[10px]">
+            <span>Taken: <span className="text-white">{takenCount}/{movieCount}</span></span>
             <span>Rent: <span className="text-red-400">{priceFormatted.toLocaleString()}</span></span>
             <span>Bal: <span className="text-green-400">{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span></span>
-            {pendingRewards > 0 && (
-              <button
-                onClick={() => claim()}
-                disabled={isClaimPending}
-                className="rounded-full border border-green-600/30 bg-green-900/20 px-3 py-1 text-[9px] font-bold text-green-400 hover:bg-green-900/40 transition-colors"
-              >
-                {isClaimPending ? '...' : `Claim ${pendingRewards.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
-              </button>
-            )}
             {paused && <span className="animate-pulse text-yellow-400">SOON</span>}
           </div>
+          {pendingRewards > 0 && (
+            <button
+              onClick={() => claim()}
+              disabled={isClaimPending}
+              className="rounded-full border border-green-600/30 bg-green-900/20 px-3 py-1 text-[9px] font-bold text-green-400 hover:bg-green-900/40 transition-colors"
+            >
+              {isClaimPending ? '...' : `Claim ${pendingRewards.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO`}
+            </button>
+          )}
         </div>
-      </div>
 
-      {/* 3D Coverflow */}
-      <div className="mx-auto max-w-6xl">
+        {/* Grid */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
           </div>
-        ) : movies.length === 0 ? (
-          <div className="py-20 text-center text-sm text-zinc-600">No movies available yet.</div>
         ) : (
-          <CoverflowSlider movies={movies} onSelect={selectMovie} rentalStatusMap={statusMap} />
+          <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
+            {movies.map((movie) => {
+              const r = statusMap.get(movie.id);
+              return (
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  posterUrl={getPosterUrl(movie.id)}
+                  onClick={() => selectMovie(movie.id)}
+                  isCurrentlyRented={r?.renter != null && r.renter !== '0x0000000000000000000000000000000000000000'}
+                  isPermanent={r?.permanent}
+                  renterAddr={r?.renter}
+                />
+              );
+            })}
+          </div>
         )}
       </div>
 
-      {/* Marketplace */}
+      {/* 2. MARKETPLACE */}
       <MarketplaceSection />
 
-      {/* Off the Shelf — bottom */}
-      {(() => {
-        const rentedMovies = movies.filter((m) => {
-          const r = statusMap.get(m.id);
-          return (r?.renter && r.renter !== '0x0000000000000000000000000000000000000000') || r?.permanent;
-        });
-        if (rentedMovies.length === 0) return null;
-        return (
-          <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
-            <h2 className="mb-4 text-[10px] font-bold uppercase tracking-wider text-zinc-600 sm:text-xs">
-              Off the Shelf ({rentedMovies.length})
-            </h2>
-            <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
-              {rentedMovies.map((movie) => {
-                const r = statusMap.get(movie.id);
-                return (
-                  <MovieCard
-                    key={movie.id}
-                    movie={movie}
-                    posterUrl={getPosterUrl(movie.id)}
-                    onClick={() => selectMovie(movie.id)}
-                    isCurrentlyRented={r?.renter != null && r.renter !== '0x0000000000000000000000000000000000000000'}
-                    isPermanent={r?.permanent}
-                    renterAddr={r?.renter}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        );
-      })()}
+      {/* 3. COVERFLOW — bottom, browse experience */}
+      <div className="mx-auto max-w-6xl border-t border-zinc-900 pt-4">
+        {movies.length > 0 && (
+          <CoverflowSlider movies={movies} onSelect={selectMovie} rentalStatusMap={statusMap} />
+        )}
+      </div>
 
       <MovieDetailModal
         movie={selectedMovie}
