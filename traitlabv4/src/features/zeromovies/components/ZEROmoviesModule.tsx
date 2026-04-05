@@ -303,39 +303,31 @@ export function ZEROmoviesModule() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="relative overflow-hidden border-b border-red-900/30 bg-gradient-to-b from-red-950/40 via-red-950/10 to-black px-4 py-6 sm:px-6 sm:py-10">
-        <div className="mx-auto max-w-6xl text-center">
-          <Film className="mx-auto mb-2 h-7 w-7 text-red-600 sm:mb-3 sm:h-10 sm:w-10" />
-          <h1 className="mb-1 text-xl font-bold tracking-wider text-red-600 sm:text-3xl">
-            ZEROmovies
-          </h1>
-          <p className="mb-2 text-[10px] tracking-[0.3em] text-zinc-500 sm:mb-4 sm:text-xs">
-            PART ONE
-          </p>
-          <p className="mx-auto mb-3 max-w-sm text-[10px] leading-relaxed text-zinc-400 sm:mb-6 sm:max-w-md sm:text-[11px]">
-            Choose your movie. Rent with $ZERO. Return anytime.<br />
-            Each movie is a unique 1/1 AdrianZERO NFT.
-            <br />
-            <span className="text-zinc-600">A four-piece trilogy.</span>
-          </p>
+      {/* Header — compact */}
+      <div className="relative overflow-hidden border-b border-red-900/30 bg-gradient-to-b from-red-950/40 via-red-950/10 to-black px-4 py-4 sm:px-6 sm:py-6">
+        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Film className="h-6 w-6 text-red-600 sm:h-8 sm:w-8" />
+            <div>
+              <h1 className="text-lg font-bold tracking-wider text-red-600 sm:text-2xl">ZEROmovies</h1>
+              <p className="text-[8px] tracking-[0.3em] text-zinc-600 sm:text-[10px]">PART ONE · A four-piece trilogy</p>
+            </div>
+          </div>
 
-          {/* Rewards claim */}
-          {pendingRewards > 0 && (
-            <button
-              onClick={() => claim()}
-              disabled={isClaimPending}
-              className="mx-auto mb-3 flex items-center gap-2 rounded-full border border-green-600/30 bg-green-900/20 px-4 py-1.5 text-[10px] font-bold text-green-400 hover:bg-green-900/40 transition-colors"
-            >
-              {isClaimPending ? 'Claiming...' : `Claim ${pendingRewards.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO rewards`}
-            </button>
-          )}
-
-          <div className="flex flex-wrap justify-center gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:gap-4 sm:text-[10px]">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:text-[10px]">
             <span>Taken: <span className="text-white">{Array.from(statusMap.values()).filter(r => (r.renter && r.renter !== '0x0000000000000000000000000000000000000000') || r.permanent).length}/{movieCount}</span></span>
-            <span>Price: <span className="text-red-400">{priceFormatted.toLocaleString()} $ZERO</span></span>
-            <span>Balance: <span className="text-green-400">{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO</span></span>
-            {paused && <span className="animate-pulse text-yellow-400">COMING SOON</span>}
+            <span>Rent: <span className="text-red-400">{priceFormatted.toLocaleString()}</span></span>
+            <span>Bal: <span className="text-green-400">{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span></span>
+            {pendingRewards > 0 && (
+              <button
+                onClick={() => claim()}
+                disabled={isClaimPending}
+                className="rounded-full border border-green-600/30 bg-green-900/20 px-3 py-1 text-[9px] font-bold text-green-400 hover:bg-green-900/40 transition-colors"
+              >
+                {isClaimPending ? '...' : `Claim ${pendingRewards.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+              </button>
+            )}
+            {paused && <span className="animate-pulse text-yellow-400">SOON</span>}
           </div>
         </div>
       </div>
@@ -353,7 +345,10 @@ export function ZEROmoviesModule() {
         )}
       </div>
 
-      {/* Rented/Permanent section */}
+      {/* Marketplace */}
+      <MarketplaceSection />
+
+      {/* Off the Shelf — bottom */}
       {(() => {
         const rentedMovies = movies.filter((m) => {
           const r = statusMap.get(m.id);
@@ -384,9 +379,6 @@ export function ZEROmoviesModule() {
           </div>
         );
       })()}
-
-      {/* Marketplace */}
-      <MarketplaceSection />
 
       <MovieDetailModal
         movie={selectedMovie}
