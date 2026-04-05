@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useUpgradeRental, useNftApproval } from '../hooks/useMovieMint';
+import { useListMovie, useDelistMovie } from '../hooks/useMarketplace';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
@@ -45,6 +46,8 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { isApproved: nftApproved, approve: approveNft, isPending: isApprovePending, isConfirming: isApproveConfirming, isConfirmed: isApproveConfirmed, refetch: refetchApproval } = useNftApproval();
   const { keepForever, isPending: isKeepPending, isConfirming: isKeepConfirming, isConfirmed: isKeepConfirmed, reset: resetKeep } = useMovieKeep();
   const { upgrade, isPending: isUpgradePending, isConfirming: isUpgradeConfirming, isConfirmed: isUpgradeConfirmed, reset: resetUpgrade } = useUpgradeRental();
+  const { list, isPending: isListPending, isConfirming: isListConfirming, isConfirmed: isListConfirmed } = useListMovie();
+  const { delist, isPending: isDelistPending, isConfirming: isDelistConfirming } = useDelistMovie();
   const { showSuccess } = useMoviesStore();
 
   // Check canKeep on-chain
@@ -55,6 +58,19 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     args: movie ? [BigInt(movie.id)] : undefined,
     query: { enabled: !!movie && !!rentalStatus?.renter },
   });
+
+  // Current listing price
+  const { data: listingPriceData } = useReadContract({
+    address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+    abi: ZERO_MOVIES_FACET_ABI,
+    functionName: 'getListingPrice',
+    args: movie ? [BigInt(movie.id)] : undefined,
+    query: { enabled: !!movie },
+  });
+  const currentListingPrice = listingPriceData ? Number(formatEther(listingPriceData as bigint)) : 0;
+  const isListed = currentListingPrice > 0;
+
+  const [listPrice, setListPrice] = useState('');
 
   const hasEnoughForRent = balanceRaw >= price;
   const hasEnoughForBuy = balanceRaw >= dynamicBuyPrice;
@@ -318,6 +334,45 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     </button>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* YOURS PERMANENT: List for Sale */}
+            {isYours && isPermanent && (
+              <div className="space-y-2">
+                {isListed ? (
+                  <div className="rounded-lg border border-green-800/30 bg-green-900/10 p-3">
+                    <p className="text-[10px] text-green-400 mb-2">Listed for <span className="font-bold">{currentListingPrice.toLocaleString()} $ZERO</span></p>
+                    <button
+                      onClick={() => delist(movie.id)}
+                      disabled={isDelistPending || isDelistConfirming}
+                      className="w-full rounded py-2 text-[10px] font-bold border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-colors"
+                    >
+                      {isDelistPending || isDelistConfirming ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : 'Remove Listing'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
+                    <p className="text-[10px] text-zinc-400 mb-2">List for sale on the marketplace</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={listPrice}
+                        onChange={(e) => setListPrice(e.target.value)}
+                        placeholder="Price in $ZERO"
+                        className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => { if (Number(listPrice) > 0) list(movie.id, Number(listPrice)); }}
+                        disabled={isListPending || isListConfirming || !listPrice || Number(listPrice) <= 0}
+                        className="rounded bg-yellow-600 px-4 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                      >
+                        {isListPending || isListConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'LIST'}
+                      </button>
+                    </div>
+                    <p className="mt-1 text-[8px] text-zinc-700">5% fee on sale (burned). Buyer must approve NFT transfer.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
