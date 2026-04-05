@@ -4,19 +4,15 @@
  * NFTs | Traits | Packs | Serums | Customize | Craft
  */
 
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { TabBar, type Tab } from './TabBar';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
+import { AdrianZeroModule } from '@/features/adrianzero/components/AdrianZeroModule';
 import { Frame, Palette, Package, FlaskConical, Edit3, Hammer } from 'lucide-react';
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton';
 
-// Lazy load tab content
-const NFTsTab = lazy(() =>
-  import('@/features/adrianzero/components/AdrianZeroModule').then((m) => ({
-    default: m.AdrianZeroModule,
-  }))
-);
+// Lazy load all tabs except NFTs (needs onTokenSelected prop)
 const TraitsTab = lazy(() =>
   import('@/features/traits/components/TraitsModule').then((m) => ({
     default: m.TraitsModule,
@@ -52,29 +48,23 @@ const TABS: Tab[] = [
   { id: 'craft', label: 'Craft', icon: <Hammer className="h-4 w-4" /> },
 ];
 
-const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<{ embedded?: boolean }>>> = {
-  nfts: NFTsTab,
-  traits: TraitsTab,
-  packs: PacksTab,
-  serums: SerumsTab,
-  customize: CustomizeTab,
-  craft: CraftTab,
-};
-
 export function MyNFTsModule() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'nfts';
   const selectedToken = useAdrianZeroStore((s) => s.selectedToken);
 
-  const handleTabChange = (tabId: string) => {
+  const handleTabChange = useCallback((tabId: string) => {
     if (tabId === 'nfts') {
       setSearchParams({});
     } else {
       setSearchParams({ tab: tabId });
     }
-  };
+  }, [setSearchParams]);
 
-  const ActiveComponent = TAB_COMPONENTS[activeTab] || TAB_COMPONENTS.nfts;
+  // When user taps an NFT in the grid, auto-switch to Traits tab
+  const handleTokenSelected = useCallback(() => {
+    handleTabChange('traits');
+  }, [handleTabChange]);
 
   return (
     <div className="flex flex-col h-full">
@@ -103,7 +93,14 @@ export function MyNFTsModule() {
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto">
         <Suspense fallback={<LoadingSkeleton />}>
-          <ActiveComponent embedded />
+          {activeTab === 'nfts' && (
+            <AdrianZeroModule embedded onTokenSelected={handleTokenSelected} />
+          )}
+          {activeTab === 'traits' && <TraitsTab embedded />}
+          {activeTab === 'packs' && <PacksTab embedded />}
+          {activeTab === 'serums' && <SerumsTab embedded />}
+          {activeTab === 'customize' && <CustomizeTab embedded />}
+          {activeTab === 'craft' && <CraftTab embedded />}
         </Suspense>
       </div>
     </div>

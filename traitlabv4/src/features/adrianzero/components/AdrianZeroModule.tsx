@@ -27,7 +27,7 @@ import { Pagination } from '@/components/common/Pagination';
 import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
-export function AdrianZeroModule({ embedded }: { embedded?: boolean } = {}) {
+export function AdrianZeroModule({ embedded, onTokenSelected }: { embedded?: boolean; onTokenSelected?: () => void } = {}) {
   const { isConnected } = useAccount();
   const navigate = useNavigate();
   const isMobile = shouldOptimizeForTouch();
@@ -140,13 +140,14 @@ export function AdrianZeroModule({ embedded }: { embedded?: boolean } = {}) {
   // Handlers
   const handleTokenSelect = useCallback((token: any) => {
     if (embedded) {
-      // In embedded mode (My NFTs hub), just toggle selection in store — no trait editor
+      // In embedded mode (My NFTs hub), select and navigate to Traits tab
       if (selectedNFT?.tokenId === token.tokenId) {
         setSelectedNFT(null);
         setSelectedToken(null);
       } else {
         setSelectedToken(token);
         setSelectedNFT(token);
+        onTokenSelected?.();
       }
       return;
     }
