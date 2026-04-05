@@ -8,6 +8,7 @@ import { useMoviesStore } from '../store/moviesStore';
 import { MovieCard } from './MovieCard';
 import { MovieDetailModal } from './MovieDetailModal';
 import { MintSuccessModal } from './MintSuccessModal';
+import { MarketplaceSection } from './MarketplaceSection';
 import type { Movie } from '../types';
 
 const MYSTERY_IDS = new Set([2, 5, 11, 12, 13, 18, 21, 26]);
@@ -383,6 +384,9 @@ export function ZEROmoviesModule() {
           </div>
         );
       })()}
+
+      {/* Marketplace */}
+      <MarketplaceSection />
 
       <MovieDetailModal
         movie={selectedMovie}

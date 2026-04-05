@@ -26,7 +26,19 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { requireWallet } = useWalletPrompt();
   const { balance, balanceRaw } = useZeroBalance();
   const { price, priceFormatted } = useMoviesConfig();
-  const { buyPrice, buyPriceFormatted } = useBuyPrice();
+  const { buyPrice: baseBuyPrice, buyPriceFormatted: baseBuyPriceFormatted } = useBuyPrice();
+
+  // Dynamic buy price (includes late fees for rented movies)
+  const { data: dynamicBuyPriceData } = useReadContract({
+    address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+    abi: ZERO_MOVIES_FACET_ABI,
+    functionName: 'getBuyPriceForMovie',
+    args: movie ? [BigInt(movie.id)] : undefined,
+    query: { enabled: !!movie && !!rentalStatus?.renter },
+  });
+  const dynamicBuyPrice = (dynamicBuyPriceData as bigint) ?? baseBuyPrice;
+  const dynamicBuyPriceFormatted = dynamicBuyPrice ? Number(formatEther(dynamicBuyPrice)) : baseBuyPriceFormatted;
+  const hasLateFee = dynamicBuyPrice > baseBuyPrice;
   const { mint, isPending, isConfirming, isConfirmed, error, reset } = useMovieMint();
   const { buy, isPending: isBuyPending, isConfirming: isBuyConfirming, isConfirmed: isBuyConfirmed, error: buyError, reset: resetBuy } = useMovieBuy();
   const { returnMovie, isPending: isReturnPending, isConfirming: isReturnConfirming, isConfirmed: isReturnConfirmed, reset: resetReturn } = useMovieReturn();
@@ -45,7 +57,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   });
 
   const hasEnoughForRent = balanceRaw >= price;
-  const hasEnoughForBuy = balanceRaw >= buyPrice;
+  const hasEnoughForBuy = balanceRaw >= dynamicBuyPrice;
 
   const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
   const renterAddr = rentalStatus?.renter ?? ZERO_ADDR;
@@ -225,7 +237,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                   {/* BUY option */}
                   <div className="rounded-lg border border-yellow-600/30 bg-yellow-900/10 p-3">
                     <p className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Buy Forever</p>
-                    <p className="text-lg font-bold text-white">{buyPriceFormatted.toLocaleString()}</p>
+                    <p className="text-lg font-bold text-white">{baseBuyPriceFormatted.toLocaleString()}</p>
                     <p className="text-[8px] text-zinc-500">$ZERO · 80% burned</p>
                     <p className="mt-1 text-[7px] text-yellow-600">Yours forever · Earns rewards</p>
                     <button onClick={handleBuy} disabled={isLoading || !hasEnoughForBuy || !isConnected}
@@ -269,7 +281,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 >
                   {isUpgradePending || isUpgradeConfirming
                     ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Upgrading...</span>
-                    : `Buy Forever · ${buyPriceFormatted.toLocaleString()} $ZERO`}
+                    : `Buy Forever · ${dynamicBuyPriceFormatted.toLocaleString()} $ZERO${hasLateFee ? ' (incl. late fee)' : ''}`}
                 </button>
 
                 <div className="relative py-1"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800"/></div><div className="relative flex justify-center"><span className="bg-zinc-950 px-2 text-[8px] text-zinc-600">or</span></div></div>
