@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useUpgradeRental, useNftApproval } from '../hooks/useMovieMint';
-import { useListMovie, useDelistMovie } from '../hooks/useMarketplace';
+import { useListMovie, useDelistMovie, useAcceptOffer, useAcceptCollectionOffer } from '../hooks/useMarketplace';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
@@ -20,6 +20,11 @@ interface MovieDetailModalProps {
   onMintSuccess: () => void;
   isMystery?: boolean;
   rentalStatus?: { renter: string; deposit: bigint; rentedAt: number; permanent: boolean; rentCount: number } | null;
+}
+
+function short(addr: string): string {
+  if (!addr || addr.length < 10) return addr || '?';
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
 export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSuccess, isMystery = false, rentalStatus }: MovieDetailModalProps) {
@@ -48,6 +53,19 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { upgrade, isPending: isUpgradePending, isConfirming: isUpgradeConfirming, isConfirmed: isUpgradeConfirmed, reset: resetUpgrade } = useUpgradeRental();
   const { list, isPending: isListPending, isConfirming: isListConfirming } = useListMovie();
   const { delist, isPending: isDelistPending, isConfirming: isDelistConfirming } = useDelistMovie();
+  const { accept: acceptOffer, isPending: isAcceptPending, isConfirming: isAcceptConfirming } = useAcceptOffer();
+
+  // Best offer on this movie
+  const { data: offerData } = useReadContract({
+    address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+    abi: ZERO_MOVIES_FACET_ABI,
+    functionName: 'getOffer',
+    args: movie ? [BigInt(movie.id)] : undefined,
+    query: { enabled: !!movie },
+  });
+  const bestOfferBidder = offerData ? (offerData as [string, bigint, bigint])[0] : '';
+  const bestOfferAmount = offerData ? Number(formatEther((offerData as [string, bigint, bigint])[1])) : 0;
+  const hasOffer = bestOfferBidder && bestOfferBidder !== '0x0000000000000000000000000000000000000000' && bestOfferAmount > 0;
   const { showSuccess } = useMoviesStore();
 
   // Check canKeep on-chain
@@ -371,6 +389,27 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                       </button>
                     </div>
                     <p className="mt-1 text-[8px] text-zinc-700">5% fee on sale (burned). Buyer must approve NFT transfer.</p>
+                  </div>
+                )}
+
+                {/* Accept best offer */}
+                {hasOffer && (
+                  <div className="rounded-lg border border-yellow-800/30 bg-yellow-900/10 p-3">
+                    <p className="text-[10px] text-zinc-400 mb-1">Best offer</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-bold text-yellow-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
+                        <span className="ml-2 text-[9px] text-zinc-500">from {short(bestOfferBidder)}</span>
+                      </div>
+                      <button
+                        onClick={() => acceptOffer(movie.id)}
+                        disabled={isAcceptPending || isAcceptConfirming}
+                        className="rounded bg-yellow-600 px-3 py-1.5 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:opacity-50 transition-colors"
+                      >
+                        {isAcceptPending || isAcceptConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'ACCEPT'}
+                      </button>
+                    </div>
+                    <p className="mt-1 text-[8px] text-zinc-700">5% fee: 3% burned + 2% to holders</p>
                   </div>
                 )}
               </div>
