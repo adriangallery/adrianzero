@@ -2,6 +2,7 @@ import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
 import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
 import { useAllRentalStatus, usePendingRewards } from '../hooks/useRentalStatus';
 import { useClaimMovieRewards } from '../hooks/useMovieMint';
+import { useAllListings } from '../hooks/useMarketplace';
 import { useMoviesStore } from '../store/moviesStore';
 import { MovieCard } from './MovieCard';
 import { MovieDetailModal } from './MovieDetailModal';
@@ -23,6 +24,8 @@ export function ZEROmoviesModule() {
   const { balance } = useZeroBalance();
   const { priceFormatted, paused, movieCount } = useMoviesConfig();
   const { statusMap, refetch: refetchStatus } = useAllRentalStatus();
+  const { listings } = useAllListings();
+  const listingMap = new Map(listings.map(l => [l.movieId, l.priceFormatted]));
   const { pending: pendingRewards } = usePendingRewards();
   const { claim, isPending: isClaimPending } = useClaimMovieRewards();
   const { selectedMovieId, isDetailOpen, selectMovie, closeDetail } = useMoviesStore();
@@ -82,6 +85,7 @@ export function ZEROmoviesModule() {
                   isCurrentlyRented={r?.renter != null && r.renter !== '0x0000000000000000000000000000000000000000'}
                   isPermanent={r?.permanent}
                   renterAddr={r?.renter}
+                  listingPrice={listingMap.get(movie.id)}
                 />
               );
             })}

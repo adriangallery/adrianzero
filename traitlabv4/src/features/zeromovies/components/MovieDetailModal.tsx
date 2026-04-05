@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useUpgradeRental, useNftApproval } from '../hooks/useMovieMint';
-import { useListMovie, useDelistMovie, useAcceptOffer, useMakeOffer } from '../hooks/useMarketplace';
+import { useListMovie, useDelistMovie, useAcceptOffer, useAcceptOfferAsRenter, useMakeOffer } from '../hooks/useMarketplace';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
@@ -55,6 +55,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { delist, isPending: isDelistPending, isConfirming: isDelistConfirming } = useDelistMovie();
   const { offer: makeIndOffer, isPending: isIndOfferPending, isConfirming: isIndOfferConfirming } = useMakeOffer();
   const { accept: acceptOffer, isPending: isAcceptPending, isConfirming: isAcceptConfirming } = useAcceptOffer();
+  const { accept: acceptAsRenter, isPending: isRenterAcceptPending, isConfirming: isRenterAcceptConfirming } = useAcceptOfferAsRenter();
 
   // Best offer on this movie
   const { data: offerData } = useReadContract({
@@ -390,6 +391,37 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     </button>
                   )}
                 </div>
+
+                {/* Accept offer as renter (flip to bidder) */}
+                {hasOffer && isBidderSomeoneElse && (
+                  <div className="rounded-lg border border-green-800/30 bg-green-900/10 p-3">
+                    <p className="text-[10px] text-zinc-400 mb-1">Offer on this movie</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="text-sm font-bold text-green-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
+                        <span className="ml-2 text-[9px] text-zinc-500">from {short(bestOfferBidder)}</span>
+                      </div>
+                    </div>
+                    <p className="text-[8px] text-zinc-500 mb-2">
+                      Accept → auto-buys ({dynamicBuyPriceFormatted.toLocaleString()} $ZERO) + you get {Math.max(0, bestOfferAmount - dynamicBuyPriceFormatted).toLocaleString()} profit
+                    </p>
+                    <button
+                      onClick={() => acceptAsRenter(movie.id)}
+                      disabled={isRenterAcceptPending || isRenterAcceptConfirming || bestOfferAmount < dynamicBuyPriceFormatted}
+                      className={`w-full rounded py-2 text-[10px] font-bold transition-colors ${
+                        bestOfferAmount >= dynamicBuyPriceFormatted
+                          ? 'bg-green-600 text-white hover:bg-green-500'
+                          : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                      }`}
+                    >
+                      {isRenterAcceptPending || isRenterAcceptConfirming
+                        ? <Loader2 className="h-3 w-3 animate-spin mx-auto" />
+                        : bestOfferAmount >= dynamicBuyPriceFormatted
+                          ? `Accept & Sell (+${Math.max(0, bestOfferAmount - dynamicBuyPriceFormatted).toLocaleString()} profit)`
+                          : `Offer too low (need ${dynamicBuyPriceFormatted.toLocaleString()}+)`}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

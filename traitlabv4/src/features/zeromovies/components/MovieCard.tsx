@@ -8,9 +8,10 @@ interface MovieCardProps {
   isCurrentlyRented?: boolean;
   isPermanent?: boolean;
   renterAddr?: string;
+  listingPrice?: number;
 }
 
-export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPermanent, renterAddr }: MovieCardProps) {
+export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPermanent, renterAddr, listingPrice }: MovieCardProps) {
   const { address } = useAccount();
 
   const isYoursRental = isCurrentlyRented && !isPermanent && renterAddr?.toLowerCase() === address?.toLowerCase();
@@ -20,6 +21,7 @@ export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPerm
   );
   const isYours = isYoursRental || isYoursPermanent;
   const isOthers = (isCurrentlyRented || isPermanent) && !isYours;
+  const isOnSale = (listingPrice ?? 0) > 0 && !isYours;
 
   return (
     <button
@@ -37,7 +39,7 @@ export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPerm
         <img
           src={posterUrl}
           alt={movie.name}
-          className={`h-full w-full object-contain ${isOthers ? 'opacity-20 saturate-0' : ''}`}
+          className={`h-full w-full object-contain ${isOthers && !isOnSale ? 'opacity-20 saturate-0' : ''}`}
           style={{ imageRendering: 'pixelated' }}
           loading="lazy"
         />
@@ -53,7 +55,12 @@ export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPerm
             RENTING
           </div>
         )}
-        {isOthers && (
+        {isOnSale && (
+          <div className="absolute bottom-1 left-1 rounded bg-green-600 px-1.5 py-0.5 text-[7px] font-bold text-white">
+            ON SALE
+          </div>
+        )}
+        {isOthers && !isOnSale && (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="rounded bg-red-900/70 px-2 py-0.5 text-[8px] font-bold uppercase text-red-400">
               Rented

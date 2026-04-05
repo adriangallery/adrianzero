@@ -145,6 +145,19 @@ export function useAcceptOffer() {
   return { accept, ...rest };
 }
 
+export function useAcceptOfferAsRenter() {
+  const { writeContract, ...rest } = useWriteAction();
+  const accept = (movieId: number) => {
+    writeContract({
+      address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+      abi: ZERO_MOVIES_FACET_ABI,
+      functionName: 'acceptOfferAsRenter',
+      args: [BigInt(movieId)],
+    });
+  };
+  return { accept, ...rest };
+}
+
 export function useAcceptCollectionOffer() {
   const { writeContract, ...rest } = useWriteAction();
   const accept = (movieId: number, offerIndex: number) => {

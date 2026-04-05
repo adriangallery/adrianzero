@@ -69,6 +69,7 @@ export const ZERO_MOVIES_FACET_ABI = [
   { type: 'function', name: 'makeCollectionOffer', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'cancelCollectionOffer', inputs: [{ name: 'index', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'acceptCollectionOffer', inputs: [{ name: 'movieId', type: 'uint256' }, { name: 'offerIndex', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'acceptOfferAsRenter', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
   { type: 'function', name: 'getAllListings', inputs: [], outputs: [{ name: 'movieIds', type: 'uint256[]' }, { name: 'prices', type: 'uint256[]' }], stateMutability: 'view' },
   { type: 'function', name: 'getOffer', inputs: [{ name: 'movieId', type: 'uint256' }], outputs: [{ name: 'bidder', type: 'address' }, { name: 'amount', type: 'uint256' }, { name: 'timestamp', type: 'uint256' }], stateMutability: 'view' },
   { type: 'function', name: 'getCollectionOffers', inputs: [], outputs: [{ name: 'bidders', type: 'address[]' }, { name: 'amounts', type: 'uint256[]' }], stateMutability: 'view' },
