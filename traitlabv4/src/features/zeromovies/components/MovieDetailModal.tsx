@@ -176,7 +176,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-zinc-800 bg-zinc-950 p-0 shadow-2xl focus:outline-none">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-lg max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950 p-0 shadow-2xl focus:outline-none">
           <Dialog.Close className="absolute right-3 top-3 z-10 rounded-full bg-black/60 p-1.5 text-white hover:bg-red-600 transition-colors">
             <X className="h-4 w-4" />
           </Dialog.Close>
