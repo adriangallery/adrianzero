@@ -307,8 +307,13 @@ export function ZEROmoviesModule() {
     <div className="min-h-screen bg-black">
 
       {/* 1. MOVIE GRID — first thing users see */}
-      <div className="mx-auto max-w-6xl px-4 pt-6 pb-8 sm:px-6">
-        {/* Stats bar */}
+      <div className="mx-auto max-w-6xl px-4 pt-20 pb-8 sm:px-6 sm:pt-24">
+        {/* Title + stats */}
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-bold tracking-wider text-red-600 sm:text-3xl">ZEROmovies</h1>
+          <p className="text-[9px] tracking-[0.3em] text-zinc-600 sm:text-[10px]">PART ONE · A four-piece trilogy</p>
+        </div>
+
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:text-[10px]">
             <span>Taken: <span className="text-white">{takenCount}/{movieCount}</span></span>
