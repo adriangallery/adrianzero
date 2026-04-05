@@ -14,10 +14,12 @@ interface MovieCardProps {
 export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPermanent, renterAddr, listingPrice }: MovieCardProps) {
   const { address } = useAccount();
 
-  const isYoursRental = isCurrentlyRented && !isPermanent && renterAddr?.toLowerCase() === address?.toLowerCase();
+  const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
+  const hasRenter = renterAddr && renterAddr !== ZERO_ADDR;
+  const isYoursRental = isCurrentlyRented && !isPermanent && hasRenter && renterAddr?.toLowerCase() === address?.toLowerCase();
   const isYoursPermanent = isPermanent && (
-    renterAddr?.toLowerCase() === address?.toLowerCase() ||
-    movie.mintedBy?.toLowerCase() === address?.toLowerCase()
+    (hasRenter && renterAddr?.toLowerCase() === address?.toLowerCase()) ||
+    (!hasRenter && movie.mintedBy?.toLowerCase() === address?.toLowerCase())
   );
   const isYours = isYoursRental || isYoursPermanent;
   const isOthers = (isCurrentlyRented || isPermanent) && !isYours;

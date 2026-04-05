@@ -107,10 +107,10 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const hasActiveRenter = renterAddr !== ZERO_ADDR;
   const isPermanent = rentalStatus?.permanent === true;
 
-  // "Yours" = you're the active renter OR you're the V1 minter of a permanent movie
-  const isYoursViaRent = hasActiveRenter && renterAddr.toLowerCase() === address?.toLowerCase();
-  const isYoursViaMint = isPermanent && movie?.mintedBy?.toLowerCase() === address?.toLowerCase();
-  const isYours = isYoursViaRent || isYoursViaMint;
+  // "Yours" = currentRenter matches you, OR for V1 permanent mints (renter=0x0) check mintedBy
+  const isYoursViaRenter = hasActiveRenter && renterAddr.toLowerCase() === address?.toLowerCase();
+  const isYoursV1 = isPermanent && !hasActiveRenter && movie?.mintedBy?.toLowerCase() === address?.toLowerCase();
+  const isYours = isYoursViaRenter || isYoursV1;
 
   const isRentedByOther = hasActiveRenter && !isYoursViaRent;
   const isAvailable = !hasActiveRenter && !isPermanent;
