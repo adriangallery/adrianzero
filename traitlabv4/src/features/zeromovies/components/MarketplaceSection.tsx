@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ShoppingBag, Loader2, X } from 'lucide-react';
 import {
   useAllListings, useCollectionOffers, useBuyListing,
-  useMakeCollectionOffer, useMakeOffer, useAcceptCollectionOffer,
+  useMakeCollectionOffer, useMakeOffer,
 } from '../hooks/useMarketplace';
 import { useZeroBalance } from '../hooks/useZeroBalance';
 import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
