@@ -445,15 +445,6 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             {/* YOURS PERMANENT: List for Sale + Accept Offers */}
             {isYours && isPermanent && (
               <div className="space-y-2">
-                {/* Approval needed for listing/accepting */}
-                {!nftApproved && (
-                  <button onClick={() => approveNft()} disabled={isApprovePending || isApproveConfirming}
-                    className="w-full rounded-lg border border-zinc-600 bg-zinc-800 py-2 text-[10px] font-bold text-zinc-200 hover:bg-zinc-700 transition-colors disabled:opacity-50">
-                    {isApprovePending || isApproveConfirming
-                      ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Approving...</span>
-                      : 'Approve NFT for Marketplace'}
-                  </button>
-                )}
                 {isListed ? (
                   <div className="rounded-lg border border-green-800/30 bg-green-900/10 p-3">
                     <p className="text-[10px] text-green-400 mb-2">Listed for <span className="font-bold">{currentListingPrice.toLocaleString()} $ZERO</span></p>
@@ -477,11 +468,11 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                         className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
                       />
                       <button
-                        onClick={() => { if (Number(listPrice) > 0) list(movie.id, Number(listPrice)); }}
-                        disabled={isListPending || isListConfirming || !listPrice || Number(listPrice) <= 0 || !nftApproved}
+                        onClick={() => { if (!nftApproved) { approveNft(); } else if (Number(listPrice) > 0) { list(movie.id, Number(listPrice)); } }}
+                        disabled={isListPending || isListConfirming || isApprovePending || isApproveConfirming || (!nftApproved ? false : !listPrice || Number(listPrice) <= 0)}
                         className="rounded bg-yellow-600 px-4 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
                       >
-                        {isListPending || isListConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'LIST'}
+                        {isApprovePending || isApproveConfirming ? 'APPROVING...' : isListPending || isListConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : !nftApproved ? 'APPROVE' : 'LIST'}
                       </button>
                     </div>
                     <p className="mt-1 text-[8px] text-zinc-700">5% fee on sale (burned). Buyer must approve NFT transfer.</p>
@@ -498,14 +489,18 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                         <span className="ml-2 text-[9px] text-zinc-500">from {short(bestOfferBidder)}</span>
                       </div>
                       <button
-                        onClick={() => acceptOffer(movie.id)}
-                        disabled={isAcceptPending || isAcceptConfirming}
+                        onClick={() => { if (!nftApproved) { approveNft(); } else { acceptOffer(movie.id); } }}
+                        disabled={isAcceptPending || isAcceptConfirming || isApprovePending || isApproveConfirming}
                         className="rounded bg-yellow-600 px-3 py-1.5 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:opacity-50 transition-colors"
                       >
-                        {isAcceptPending || isAcceptConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'ACCEPT'}
+                        {isApprovePending || isApproveConfirming
+                          ? <Loader2 className="h-3 w-3 animate-spin" />
+                          : isAcceptPending || isAcceptConfirming
+                          ? <Loader2 className="h-3 w-3 animate-spin" />
+                          : !nftApproved ? 'APPROVE & ACCEPT' : 'ACCEPT'}
                       </button>
                     </div>
-                    <p className="mt-1 text-[8px] text-zinc-700">5% fee: 3% burned + 2% to holders</p>
+                    <p className="mt-1 text-[8px] text-zinc-700">{!nftApproved ? 'Requires NFT approval first · ' : ''}5% fee: 3% burned + 2% to holders</p>
                   </div>
                 )}
                 {/* Your own offer */}
@@ -522,11 +517,11 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                         <div key={i} className="flex items-center justify-between text-[10px]">
                           <span className="text-zinc-500">{short(co.bidder)} · <span className="text-yellow-400">{co.amountFormatted.toLocaleString()} $ZERO</span></span>
                           <button
-                            onClick={() => acceptColOffer(movie.id, i)}
-                            disabled={isAcceptColPending || isAcceptColConfirming}
+                            onClick={() => { if (!nftApproved) { approveNft(); } else { acceptColOffer(movie.id, i); } }}
+                            disabled={isAcceptColPending || isAcceptColConfirming || isApprovePending || isApproveConfirming}
                             className="rounded bg-yellow-600 px-2 py-0.5 text-[8px] font-bold text-black hover:bg-yellow-500 disabled:opacity-50"
                           >
-                            ACCEPT
+                            {isApprovePending || isApproveConfirming ? '...' : !nftApproved ? 'APPROVE' : 'ACCEPT'}
                           </button>
                         </div>
                       ))}
