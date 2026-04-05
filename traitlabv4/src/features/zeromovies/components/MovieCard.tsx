@@ -24,7 +24,7 @@ export function MovieCard({ movie, posterUrl, onClick, isCurrentlyRented, isPerm
   return (
     <button
       onClick={onClick}
-      className={`group relative flex flex-col rounded transition-all duration-300 text-left
+      className={`group relative flex min-w-0 flex-col overflow-hidden rounded transition-all duration-300 text-left
         ${isOthers
           ? 'cursor-pointer hover:opacity-90'
           : 'cursor-pointer hover:scale-105 hover:z-10'
