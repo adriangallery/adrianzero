@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ConnectButton as RainbowConnectButton } from '@rainbow-me/rainbowkit';
-import { Menu, Wallet, X } from 'lucide-react';
+import { DollarSign, Menu, Wallet, X } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 
 const ADRIANZERO_PROFILE_FALLBACK = 'https://adrianlab.vercel.app/api/render/146.png';
@@ -122,7 +122,14 @@ export function ZeroStyleChrome() {
           Menu
         </motion.button>
 
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto flex items-center gap-2">
+          <Link
+            to="/buy"
+            className="inline-flex h-12 items-center gap-1.5 rounded-xl border border-[#00ff00]/40 bg-[#00ff00]/15 px-4 text-sm font-bold uppercase tracking-[0.1em] text-[#00ff00] shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur transition-colors hover:bg-[#00ff00]/25"
+          >
+            <DollarSign className="h-4 w-4" />
+            Buy $ZERO
+          </Link>
           <FloatingWalletButton />
         </div>
       </div>

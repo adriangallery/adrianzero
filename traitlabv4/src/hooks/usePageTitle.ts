@@ -12,33 +12,26 @@ interface PageTitle {
 }
 
 const PAGE_TITLES: Record<string, PageTitle> = {
-  '/onboarding': { prefix: 'Adrian', accent: 'ZERO' },
+  '/zero': { prefix: 'Trait', accent: 'LAB' },
   '/mint': { prefix: 'Adrian', accent: 'ZERO' },
+  '/mynfts': { prefix: 'My', accent: 'NFTs' },
   '/shop': { prefix: 'Trait', accent: 'SHOP' },
-  '/lambo': { prefix: 'Adrian', accent: 'LAMBO' },
+  '/buy': { prefix: 'Buy', accent: '$ZERO' },
+  '/zeromovies': { prefix: 'ZERO', accent: 'movies' },
+  '/gallery': { prefix: 'Gallery', accent: '' },
+  '/punks': { prefix: 'Adrian', accent: 'Punks' },
   '/shitdrop': { prefix: 'Shit', accent: 'DROP' },
+  '/timeline': { prefix: 'Time', accent: 'line' },
+  '/about': { prefix: 'About', accent: '' },
 };
 
 const DEFAULT_TITLE: PageTitle = { prefix: 'Trait', accent: 'LAB' };
 
 export function usePageTitle(): PageTitle {
   const location = useLocation();
-  const { isConnected } = useAccount();
 
-  // Dynamic title for root route based on wallet connection
   if (location.pathname === '/') {
-    if (isConnected) {
-      // Dashboard with wallet connected → AdrianZERO
-      return { prefix: 'Adrian', accent: 'ZERO' };
-    } else {
-      // Should redirect to /adrianzero, but show TraitLAB as fallback
-      return DEFAULT_TITLE;
-    }
-  }
-
-  // AdrianZero route → always show AdrianZERO
-  if (location.pathname === '/adrianzero') {
-    return { prefix: 'Adrian', accent: 'ZERO' };
+    return DEFAULT_TITLE;
   }
 
   return PAGE_TITLES[location.pathname] || DEFAULT_TITLE;

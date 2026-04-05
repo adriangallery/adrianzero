@@ -11,7 +11,7 @@ import { useUserPunks } from '@/features/shared/hooks/useUserPunks';
 import { useHasAdrianPunks } from '@/features/shared/hooks/useHasAdrianPunks';
 import { CampaignGrid } from './CampaignGrid';
 
-export function RewardsModule() {
+export function RewardsModule({ embedded }: { embedded?: boolean } = {}) {
   const { isConnected } = useAccount();
   const { hasPunks, count: punkCount, isLoading: punksLoading } = useHasAdrianPunks();
   const { punkIds, isLoading: idsLoading } = useUserPunks();
@@ -21,7 +21,7 @@ export function RewardsModule() {
 
   const isLoading = punksLoading || idsLoading || campaignsLoading || statusLoading;
 
-  if (!isConnected) {
+  if (!isConnected && !embedded) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <Unplug className="h-16 w-16 text-muted-foreground mb-4" />

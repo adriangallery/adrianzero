@@ -19,7 +19,7 @@ import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from '@/components/common/Pagination';
 import type { TraitCategory } from '@/types/nft.types';
 
-export function TraitsModule() {
+export function TraitsModule({ embedded }: { embedded?: boolean } = {}) {
   const { isConnected } = useAccount();
   const [activeCategory, setActiveCategory] = useState<TraitCategory | 'ALL'>('ALL');
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
@@ -168,7 +168,7 @@ export function TraitsModule() {
   return (
     <div className="flex flex-col h-full">
       {/* Demo Mode Banner */}
-      {!isConnected && (
+      {!embedded && !isConnected && (
         <div className="mb-4 bg-[#00ff00]/10 border border-[#00ff00]/20 rounded-lg p-3 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-[#00ff00] flex-shrink-0" />
           <p className="text-xs sm:text-sm text-foreground">
@@ -178,30 +178,32 @@ export function TraitsModule() {
       )}
 
       {/* Header - Compact on mobile */}
-      <div className="flex items-center justify-between py-2 sm:py-4">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-foreground">Traits</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            {allTraits.length} available
-          </p>
-        </div>
-
-        {/* Selected Traits Counter - Desktop */}
-        {selectedTraits.length > 0 && (
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              {selectedTraits.length} selected
-            </span>
-            <button
-              onClick={clearSelection}
-              className="p-1.5 rounded bg-secondary text-secondary-foreground hover:opacity-80"
-              aria-label="Clear"
-            >
-              <X className="w-3 h-3" />
-            </button>
+      {!embedded && (
+        <div className="flex items-center justify-between py-2 sm:py-4">
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground">Traits</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {allTraits.length} available
+            </p>
           </div>
-        )}
-      </div>
+
+          {/* Selected Traits Counter - Desktop */}
+          {selectedTraits.length > 0 && (
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {selectedTraits.length} selected
+              </span>
+              <button
+                onClick={clearSelection}
+                className="p-1.5 rounded bg-secondary text-secondary-foreground hover:opacity-80"
+                aria-label="Clear"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Collapsible Preview Panel */}
       {selectedTraits.length > 0 && previewTokenId && (

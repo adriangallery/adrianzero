@@ -78,6 +78,8 @@ export function Sidebar({
                     ${
                       isActive(item.path)
                         ? 'bg-primary text-primary-foreground'
+                        : item.highlight
+                        ? 'bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30'
                         : 'text-foreground hover:bg-muted'
                     }
                   `}
@@ -113,6 +115,8 @@ export function Sidebar({
                 ${
                   isActive(item.path)
                     ? 'bg-primary text-primary-foreground'
+                    : item.highlight
+                    ? 'bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30'
                     : 'text-foreground hover:bg-muted'
                 }
               `}

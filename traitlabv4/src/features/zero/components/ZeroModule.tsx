@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAccount } from 'wagmi';
 import { motion } from 'framer-motion';
-import { ArrowRight, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, DollarSign, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { DashboardPanel } from '@/features/dashboard/components/DashboardPanel';
 import { getGitHubImageUrl } from '@/config/images';
 import {
   SHOWCASE_GITHUB_PATH,
@@ -30,6 +32,7 @@ const traitEvolutionFrames = [
 const LIME = '#00ff00';
 
 export const ZeroModule: React.FC = () => {
+  const { isConnected } = useAccount();
   const [activeFrame, setActiveFrame] = useState(0);
   const [useFallbackFrame, setUseFallbackFrame] = useState(false);
   const [showcaseNfts, setShowcaseNfts] = useState<ShowcaseNFT[]>(SHOWCASE_NFTS);
@@ -196,9 +199,17 @@ export const ZeroModule: React.FC = () => {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
+                to="/buy"
+                className="group inline-flex items-center gap-2 rounded-xl border px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#00ff00] backdrop-blur transition-colors hover:bg-[#00ff00]/10"
+                style={{ borderColor: 'rgba(0,255,0,0.45)' }}
+              >
+                <DollarSign className="h-4 w-4" />
+                Buy $ZERO
+              </Link>
+              <Link
                 to="/gallery"
                 className="inline-flex items-center rounded-xl border bg-white/5 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-white backdrop-blur transition-colors hover:bg-white/10"
-                style={{ borderColor: 'rgba(0,255,0,0.45)' }}
+                style={{ borderColor: 'rgba(255,255,255,0.2)' }}
               >
                 Explore Gallery
               </Link>
@@ -287,6 +298,13 @@ export const ZeroModule: React.FC = () => {
         </div>
       </section>
 
+      {/* Dashboard Panel — visible when wallet connected */}
+      {isConnected && (
+        <section className="relative z-[5]">
+          <DashboardPanel />
+        </section>
+      )}
+
       <TraitLabPreviewSection />
 
       <section className="relative z-[5] mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -361,7 +379,7 @@ export const ZeroModule: React.FC = () => {
               Start Minting
             </Link>
             <Link
-              to="/traits"
+              to="/mynfts"
               className="inline-flex items-center justify-center rounded-xl border px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white"
               style={{ borderColor: 'rgba(0,255,0,0.45)' }}
             >

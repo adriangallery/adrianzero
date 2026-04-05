@@ -23,7 +23,7 @@ const ctaButtons = [
   },
   {
     label: 'Explore Timeline',
-    url: '/lost',
+    url: '/timeline',
     primary: false,
   },
 ];

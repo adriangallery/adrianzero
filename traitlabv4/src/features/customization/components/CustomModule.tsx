@@ -6,6 +6,7 @@
 import { useState, useMemo } from 'react';
 import { Sparkles, X, Frame } from 'lucide-react';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
+import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { useCustomNames } from '@/features/adrianzero/hooks/useCustomNames';
 import { useRenameToken, useNamePrice } from '../hooks/useRename';
 import { useTokenToggle, useSetToggle, useSetBananaToggle, useTogglePrice, AVAILABLE_TOGGLES, TOGGLE_MODES } from '../hooks/useToggles';
@@ -16,8 +17,11 @@ import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
 import type { AdrianZeroToken } from '@/types/nft.types';
 import { formatEther } from 'viem';
 
-export function CustomModule() {
-  const [selectedToken, setSelectedToken] = useState<AdrianZeroToken | null>(null);
+export function CustomModule({ embedded }: { embedded?: boolean } = {}) {
+  const storeToken = useAdrianZeroStore((s) => s.selectedToken);
+  const [localSelectedToken, setLocalSelectedToken] = useState<AdrianZeroToken | null>(null);
+  const selectedToken = embedded ? (storeToken as AdrianZeroToken | null) : localSelectedToken;
+  const setSelectedToken = embedded ? () => {} : setLocalSelectedToken;
   const [newName, setNewName] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [selectedToggles, setSelectedToggles] = useState<Set<number>>(new Set());
@@ -207,36 +211,40 @@ export function CustomModule() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-foreground">Customization</h1>
-        <p className="text-muted-foreground mt-1">Rename your NFTs and apply visual effects</p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Left Column: NFT Grid Selection */}
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-foreground">
-            Select NFT
-          </label>
-
-          <NFTGrid
-            tokens={tokensWithNames}
-            selectedTokenId={selectedToken?.tokenId}
-            onTokenSelect={(token) => {
-              if (selectedToken?.tokenId === token.tokenId) {
-                setSelectedToken(null);
-              } else {
-                setSelectedToken(token);
-              }
-              setNewName('');
-            }}
-            onEndReached={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-              }
-            }}
-          />
+      {!embedded && (
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Customization</h1>
+          <p className="text-muted-foreground mt-1">Rename your NFTs and apply visual effects</p>
         </div>
+      )}
+
+      <div className={embedded ? '' : 'grid gap-6 md:grid-cols-2'}>
+        {/* Left Column: NFT Grid Selection (hidden when embedded) */}
+        {!embedded && (
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-foreground">
+              Select NFT
+            </label>
+
+            <NFTGrid
+              tokens={tokensWithNames}
+              selectedTokenId={selectedToken?.tokenId}
+              onTokenSelect={(token) => {
+                if (selectedToken?.tokenId === token.tokenId) {
+                  setLocalSelectedToken(null);
+                } else {
+                  setLocalSelectedToken(token);
+                }
+                setNewName('');
+              }}
+              onEndReached={() => {
+                if (hasNextPage && !isFetchingNextPage) {
+                  fetchNextPage();
+                }
+              }}
+            />
+          </div>
+        )}
 
         {/* Right Column: Preview + Controls */}
         <div className="space-y-4">

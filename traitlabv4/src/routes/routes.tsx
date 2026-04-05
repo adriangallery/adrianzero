@@ -1,58 +1,19 @@
 /**
  * Application Routes
  * Lazy-loaded routes for code splitting
+ * Reorganized: 19 pages → 11 pages + redirects for backward compatibility
  */
 
 import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import { RootRoute } from './RootRoute';
 
-// Lazy load all modules
-const AdrianZeroModule = lazy(() =>
-  import('@/features/adrianzero/components/AdrianZeroModule').then((m) => ({
-    default: m.AdrianZeroModule,
-  }))
-);
+// ─── Primary Modules (11 pages) ───────────────────────────────────────────────
 
-const TraitsModule = lazy(() =>
-  import('@/features/traits/components/TraitsModule').then((m) => ({
-    default: m.TraitsModule,
-  }))
-);
-
-const PacksModule = lazy(() =>
-  import('@/features/packs/components/PacksModule').then((m) => ({
-    default: m.PacksModule,
-  }))
-);
-
-const SerumModule = lazy(() =>
-  import('@/features/serum/components/SerumModule').then((m) => ({
-    default: m.SerumModule,
-  }))
-);
-
-const CraftingModule = lazy(() =>
-  import('@/features/crafting/components/CraftingModule').then((m) => ({
-    default: m.CraftingModule,
-  }))
-);
-
-const CustomModule = lazy(() =>
-  import('@/features/customization/components/CustomModule').then((m) => ({
-    default: m.CustomModule,
-  }))
-);
-
-const LamboModule = lazy(() =>
-  import('@/features/lambo/components/LamboModule').then((m) => ({
-    default: m.LamboModule,
-  }))
-);
-
-const SearchModule = lazy(() =>
-  import('@/features/search/components/SearchModule').then((m) => ({
-    default: m.SearchModule,
+const ZeroModule = lazy(() =>
+  import('@/features/zero/components/ZeroModule').then((m) => ({
+    default: m.ZeroModule,
   }))
 );
 
@@ -62,9 +23,45 @@ const OnboardingModule = lazy(() =>
   }))
 );
 
+const MyNFTsModule = lazy(() =>
+  import('@/features/mynfts/components/MyNFTsModule').then((m) => ({
+    default: m.MyNFTsModule,
+  }))
+);
+
 const ShopModule = lazy(() =>
   import('@/features/shop/components/ShopModule').then((m) => ({
     default: m.ShopModule,
+  }))
+);
+
+const BuyModule = lazy(() =>
+  import('@/features/buy/components/BuyModule').then((m) => ({
+    default: m.BuyModule,
+  }))
+);
+
+const ZEROmoviesModule = lazy(() =>
+  import('@/features/zeromovies/components/ZEROmoviesModule').then((m) => ({
+    default: m.ZEROmoviesModule,
+  }))
+);
+
+const GalleryModule = lazy(() =>
+  import('@/features/gallery/components/GalleryModule').then((m) => ({
+    default: m.GalleryModule,
+  }))
+);
+
+const PunksModule = lazy(() =>
+  import('@/features/punks/components/PunksModule').then((m) => ({
+    default: m.PunksModule,
+  }))
+);
+
+const ShitdropModule = lazy(() =>
+  import('@/features/shitdrop/components/ShitdropModule').then((m) => ({
+    default: m.ShitdropModule,
   }))
 );
 
@@ -80,131 +77,38 @@ const WhatIsItModule = lazy(() =>
   }))
 );
 
-const GalleryModule = lazy(() =>
-  import('@/features/gallery/components/GalleryModule').then((m) => ({
-    default: m.GalleryModule,
-  }))
-);
-
-const ShitdropModule = lazy(() =>
-  import('@/features/shitdrop/components/ShitdropModule').then((m) => ({
-    default: m.ShitdropModule,
-  }))
-);
-
-const RewardsModule = lazy(() =>
-  import('@/features/rewards/components/RewardsModule').then((m) => ({
-    default: m.RewardsModule,
-  }))
-);
-
-const OGClaimModule = lazy(() =>
-  import('@/features/ogclaim/components/OGClaimModule').then((m) => ({
-    default: m.OGClaimModule,
-  }))
-);
-
-const ZeroModule = lazy(() =>
-  import('@/features/zero/components/ZeroModule').then((m) => ({
-    default: m.ZeroModule,
-  }))
-);
-
-const DashboardModule = lazy(() =>
-  import('@/features/dashboard/components/DashboardModule').then((m) => ({
-    default: m.DashboardModule,
-  }))
-);
-
-const ZEROmoviesModule = lazy(() =>
-  import('@/features/zeromovies/components/ZEROmoviesModule').then((m) => ({
-    default: m.ZEROmoviesModule,
-  }))
-);
+// ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
-  {
-    path: '/',
-    element: <RootRoute />,
-  },
-  {
-    path: '/adrianzero',
-    element: <AdrianZeroModule />,
-  },
-  {
-    path: '/traits',
-    element: <TraitsModule />,
-  },
-  {
-    path: '/packs',
-    element: <PacksModule />,
-  },
-  {
-    path: '/serum',
-    element: <SerumModule />,
-  },
-  {
-    path: '/crafting',
-    element: <CraftingModule />,
-  },
-  {
-    path: '/custom',
-    element: <CustomModule />,
-  },
-  {
-    path: '/lambo',
-    element: <LamboModule />,
-  },
-  {
-    path: '/search',
-    element: <SearchModule />,
-  },
-  {
-    path: '/onboarding',
-    element: <OnboardingModule />,
-  },
-  {
-    path: '/mint',
-    element: <OnboardingModule />,
-  },
-  {
-    path: '/shop',
-    element: <ShopModule />,
-  },
-  {
-    path: '/lost',
-    element: <LostModule />,
-  },
-  {
-    path: '/whatisit',
-    element: <WhatIsItModule />,
-  },
-  {
-    path: '/gallery',
-    element: <GalleryModule />,
-  },
-  {
-    path: '/shitdrop',
-    element: <ShitdropModule />,
-  },
-  {
-    path: '/rewards',
-    element: <RewardsModule />,
-  },
-  {
-    path: '/ogclaim',
-    element: <OGClaimModule />,
-  },
-  {
-    path: '/zero',
-    element: <ZeroModule />,
-  },
-  {
-    path: '/dashboard',
-    element: <DashboardModule />,
-  },
-  {
-    path: '/zeromovies',
-    element: <ZEROmoviesModule />,
-  },
+  // Root redirect
+  { path: '/', element: <RootRoute /> },
+
+  // ─── 11 Primary Pages ────────────────────────────────────────────────────
+  { path: '/zero', element: <ZeroModule /> },
+  { path: '/mint', element: <OnboardingModule /> },
+  { path: '/mynfts', element: <MyNFTsModule /> },
+  { path: '/shop', element: <ShopModule /> },
+  { path: '/buy', element: <BuyModule /> },
+  { path: '/zeromovies', element: <ZEROmoviesModule /> },
+  { path: '/gallery', element: <GalleryModule /> },
+  { path: '/punks', element: <PunksModule /> },
+  { path: '/shitdrop', element: <ShitdropModule /> },
+  { path: '/timeline', element: <LostModule /> },
+  { path: '/about', element: <WhatIsItModule /> },
+
+  // ─── Redirects (backward compatibility) ──────────────────────────────────
+  { path: '/dashboard', element: <Navigate to="/zero" replace /> },
+  { path: '/adrianzero', element: <Navigate to="/mynfts" replace /> },
+  { path: '/traits', element: <Navigate to="/mynfts?tab=traits" replace /> },
+  { path: '/packs', element: <Navigate to="/mynfts?tab=packs" replace /> },
+  { path: '/serum', element: <Navigate to="/mynfts?tab=serums" replace /> },
+  { path: '/custom', element: <Navigate to="/mynfts?tab=customize" replace /> },
+  { path: '/lambo', element: <Navigate to="/mynfts?tab=customize" replace /> },
+  { path: '/crafting', element: <Navigate to="/mynfts?tab=craft" replace /> },
+  { path: '/search', element: <Navigate to="/mynfts" replace /> },
+  { path: '/rewards', element: <Navigate to="/punks" replace /> },
+  { path: '/ogclaim', element: <Navigate to="/punks?tab=ogclaim" replace /> },
+  { path: '/onboarding', element: <Navigate to="/mint" replace /> },
+  { path: '/lost', element: <Navigate to="/timeline" replace /> },
+  { path: '/whatisit', element: <Navigate to="/about" replace /> },
 ];

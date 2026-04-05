@@ -13,7 +13,7 @@ import { useOpenPack } from '../hooks/useOpenPack';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import type { Pack } from '@/types/nft.types';
 
-export function PacksModule() {
+export function PacksModule({ embedded }: { embedded?: boolean } = {}) {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [filterType, setFilterType] = useState<'ALL' | 'FLOPPY_DISC' | 'ACTION_PACK' | 'SPECIAL'>('ALL');
@@ -87,12 +87,14 @@ export function PacksModule() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-foreground">Packs</h1>
-        <p className="text-muted-foreground mt-1">
-          {packs.length} {packs.length === 1 ? 'pack' : 'packs'} available
-        </p>
-      </div>
+      {!embedded && (
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Packs</h1>
+          <p className="text-muted-foreground mt-1">
+            {packs.length} {packs.length === 1 ? 'pack' : 'packs'} available
+          </p>
+        </div>
+      )}
 
       {/* Filter Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">

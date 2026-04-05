@@ -11,7 +11,7 @@ import { useTraits } from '@/features/traits/hooks/useTraits';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import type { CraftingRecipe, Trait } from '@/types/nft.types';
 
-export function CraftingModule() {
+export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
   const craftTrait = useCraftTrait();
   const { data: recipes = [], isLoading: recipesLoading } = useCraftingRecipes();
   const { data: traits = [], isLoading: traitsLoading } = useTraits();
@@ -113,12 +113,14 @@ export function CraftingModule() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-foreground">Crafting</h1>
-        <p className="text-muted-foreground mt-1">
-          Select a recipe, choose traits to burn, and craft new items
-        </p>
-      </div>
+      {!embedded && (
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Crafting</h1>
+          <p className="text-muted-foreground mt-1">
+            Select a recipe, choose traits to burn, and craft new items
+          </p>
+        </div>
+      )}
 
       {/* Warning */}
       <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">

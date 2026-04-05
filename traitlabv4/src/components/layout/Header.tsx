@@ -1,8 +1,10 @@
 /**
  * Header Component
- * Top navigation bar with wallet connect and notifications
+ * Top navigation bar with wallet connect, Buy $ZERO button, and notifications
  */
 
+import { Link } from 'react-router-dom';
+import { DollarSign } from 'lucide-react';
 import { ConnectButton } from '../wallet/ConnectButton';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -37,7 +39,16 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 min-w-0 max-w-[60%] sm:max-w-none">
+        <div className="flex items-center gap-2 min-w-0 max-w-[70%] sm:max-w-none">
+          {/* Buy $ZERO */}
+          <Link
+            to="/buy"
+            className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#00ff00] text-black text-sm font-bold hover:bg-[#00dd00] transition-colors"
+          >
+            <DollarSign className="h-4 w-4" />
+            <span>Buy $ZERO</span>
+          </Link>
+
           {/* Notifications */}
           <NotificationBell />
 

@@ -27,7 +27,7 @@ import { Pagination } from '@/components/common/Pagination';
 import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
-export function AdrianZeroModule() {
+export function AdrianZeroModule({ embedded }: { embedded?: boolean } = {}) {
   const { isConnected } = useAccount();
   const navigate = useNavigate();
   const isMobile = shouldOptimizeForTouch();
@@ -139,6 +139,17 @@ export function AdrianZeroModule() {
 
   // Handlers
   const handleTokenSelect = useCallback((token: any) => {
+    if (embedded) {
+      // In embedded mode (My NFTs hub), just toggle selection in store — no trait editor
+      if (selectedNFT?.tokenId === token.tokenId) {
+        setSelectedNFT(null);
+        setSelectedToken(null);
+      } else {
+        setSelectedToken(token);
+        setSelectedNFT(token);
+      }
+      return;
+    }
     if (selectedNFT?.tokenId === token.tokenId) {
       setSelectedNFT(null);
       setSelectedToken(null);
@@ -149,7 +160,7 @@ export function AdrianZeroModule() {
       clearSelection();
     }
     setShowBeforeAfter(false);
-  }, [selectedNFT, setSelectedToken, clearSelection]);
+  }, [selectedNFT, setSelectedToken, clearSelection, embedded]);
 
   const handleTraitSelect = useCallback((trait: Trait) => {
     if (isTraitSelected(trait)) {
@@ -162,7 +173,7 @@ export function AdrianZeroModule() {
 
   const handleApplyTraits = async () => {
     if (!selectedNFT || selectedTraits.length === 0) return;
-    if (!isConnected) { navigate('/onboarding'); return; }
+    if (!isConnected) { navigate('/mint'); return; }
     try {
       await applyTraits.mutateAsync({
         tokenId: selectedNFT.tokenId,
@@ -257,7 +268,7 @@ export function AdrianZeroModule() {
           Mint your AdrianZERO NFT and start customizing it with 900+ traits, visual effects, and more.
         </p>
         <button
-          onClick={() => navigate('/onboarding')}
+          onClick={() => navigate('/mint')}
           className="group inline-flex items-center gap-2 px-6 py-3 bg-[#00ff00] text-black font-bold rounded-xl hover:bg-[#00ff00]/90 transition-all"
         >
           Start Minting
@@ -267,9 +278,9 @@ export function AdrianZeroModule() {
     );
   }
 
-  // ─── NFT Grid Mode (no NFT selected) ──────────────────────
+  // ─── NFT Grid Mode (no NFT selected, or embedded in hub) ──────────────────────
 
-  if (!selectedNFT) {
+  if (!selectedNFT || embedded) {
     return (
       <div className="flex flex-col h-full">
         {/* Demo Mode Banner */}
@@ -284,20 +295,27 @@ export function AdrianZeroModule() {
 
         {/* Header with search */}
         <div className="flex items-center justify-between gap-3 py-2 sm:py-3">
-          <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-foreground">
-              {!isConnected ? (
-                <>Build your <span className="text-[#00ff00]">ZERO</span></>
-              ) : (
-                <>My <span className="text-[#00ff00]">NFTs</span></>
+          {!embedded && (
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">
+                {!isConnected ? (
+                  <>Build your <span className="text-[#00ff00]">ZERO</span></>
+                ) : (
+                  <>My <span className="text-[#00ff00]">NFTs</span></>
+                )}
+              </h1>
+              {isConnected && (
+                <p className="text-xs text-muted-foreground">
+                  {tokens.length} NFT{tokens.length !== 1 ? 's' : ''} — tap to customize
+                </p>
               )}
-            </h1>
-            {isConnected && (
-              <p className="text-xs text-muted-foreground">
-                {tokens.length} NFT{tokens.length !== 1 ? 's' : ''} — tap to customize
-              </p>
-            )}
-          </div>
+            </div>
+          )}
+          {embedded && (
+            <p className="text-xs text-muted-foreground">
+              {tokens.length} NFT{tokens.length !== 1 ? 's' : ''} — tap to select
+            </p>
+          )}
 
           {/* Search */}
           {isConnected && tokens.length > 6 && (
@@ -346,7 +364,7 @@ export function AdrianZeroModule() {
             ) : (
               <NFTGrid
                 tokens={zerosPagination.currentItems}
-                selectedTokenId={null}
+                selectedTokenId={embedded ? selectedNFT?.tokenId ?? null : null}
                 onTokenSelect={handleTokenSelect}
                 emptyMessage="No AdrianZERO NFTs found in your wallet"
               />

@@ -49,7 +49,7 @@ export function DashboardModule() {
         <div className="grid md:grid-cols-3 gap-4 w-full mb-8">
           {/* NFTs Card */}
           <button
-            onClick={() => navigate('/adrianzero')}
+            onClick={() => navigate('/mynfts')}
             className="group bg-card border border-border rounded-lg p-6 text-left hover:border-[#00ff00] transition-all hover:shadow-lg hover:shadow-[#00ff00]/10"
           >
             <div className="flex items-start justify-between mb-4">
@@ -72,7 +72,7 @@ export function DashboardModule() {
 
           {/* Traits Card */}
           <button
-            onClick={() => navigate('/traits')}
+            onClick={() => navigate('/mynfts?tab=traits')}
             className="group bg-card border border-border rounded-lg p-6 text-left hover:border-[#00ff00] transition-all hover:shadow-lg hover:shadow-[#00ff00]/10"
           >
             <div className="flex items-start justify-between mb-4">
@@ -95,7 +95,7 @@ export function DashboardModule() {
 
           {/* Get Your ZERO Card */}
           <button
-            onClick={() => navigate('/onboarding')}
+            onClick={() => navigate('/mint')}
             className="group bg-card border border-border rounded-lg p-6 text-left hover:border-[#00ff00] transition-all hover:shadow-lg hover:shadow-[#00ff00]/10"
           >
             <div className="flex items-start justify-between mb-4">
@@ -153,7 +153,7 @@ export function DashboardModule() {
               <p className="text-sm text-muted-foreground">You don't have any AdrianZERO NFTs yet</p>
             </div>
             <button
-              onClick={() => navigate('/onboarding')}
+              onClick={() => navigate('/mint')}
               className="flex-shrink-0 px-4 py-2 bg-[#00ff00] hover:bg-[#00ff00]/90 text-black font-medium rounded-lg transition-colors"
             >
               Get Your ZERO →

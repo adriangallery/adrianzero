@@ -16,7 +16,7 @@ import { StatsSection } from './StatsSection';
 import { EligibilityChecker } from './EligibilityChecker';
 import { PunksGrid } from './PunksGrid';
 
-export function OGClaimModule() {
+export function OGClaimModule({ embedded }: { embedded?: boolean } = {}) {
   const { isConnected } = useAccount();
   const { hasPunks, count: punkCount, isLoading: punksLoading } = useHasAdrianPunks();
   const { punkIds, isLoading: idsLoading } = useUserPunks();
@@ -56,7 +56,7 @@ export function OGClaimModule() {
     );
   };
 
-  if (!isConnected) {
+  if (!isConnected && !embedded) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <Unplug className="h-16 w-16 text-muted-foreground mb-4" />

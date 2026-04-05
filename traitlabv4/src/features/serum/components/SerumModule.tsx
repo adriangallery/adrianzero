@@ -10,15 +10,19 @@ import { Unplug, FlaskConical } from 'lucide-react';
 import { useSerums } from '../hooks/useSerums';
 import { useApplySerum } from '../hooks/useApplySerum';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
+import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { NFTGrid } from '@/components/nft/NFTGrid';
 import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
 import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
 import type { Serum } from '@/types/nft.types';
 import type { AdrianZeroToken } from '@/types/nft.types';
 
-export function SerumModule() {
+export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
   const { isConnected } = useAccount();
-  const [selectedNFT, setSelectedNFT] = useState<AdrianZeroToken | null>(null);
+  const storeToken = useAdrianZeroStore((s) => s.selectedToken);
+  const [localSelectedNFT, setLocalSelectedNFT] = useState<AdrianZeroToken | null>(null);
+  const selectedNFT = embedded ? (storeToken as AdrianZeroToken | null) : localSelectedNFT;
+  const setSelectedNFT = embedded ? () => {} : setLocalSelectedNFT;
   const [selectedSerum, setSelectedSerum] = useState<Serum | null>(null);
   const isTouchDevice = shouldOptimizeForTouch();
 
@@ -63,7 +67,7 @@ export function SerumModule() {
     }
   };
 
-  if (!isConnected) {
+  if (!isConnected && !embedded) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
@@ -89,12 +93,14 @@ export function SerumModule() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-foreground">Serum</h1>
-        <p className="text-muted-foreground mt-1">
-          Apply serums to your AdrianZERO NFTs
-        </p>
-      </div>
+      {!embedded && (
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Serum</h1>
+          <p className="text-muted-foreground mt-1">
+            Apply serums to your AdrianZERO NFTs
+          </p>
+        </div>
+      )}
 
       {/* No Serums */}
       {serums.length === 0 && (
@@ -111,26 +117,45 @@ export function SerumModule() {
       {serums.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2">
           {/* Select NFT */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-foreground">
-              1. Select NFT
-            </h2>
-            {nfts.length === 0 ? (
-              <p className="text-muted-foreground">No NFTs found</p>
-            ) : (
-              <NFTGrid
-                tokens={nfts}
-                selectedTokenId={selectedNFT?.tokenId}
-                onTokenSelect={(token) => setSelectedNFT(token)}
-                onEndReached={() => {
-                  if (hasNextPage && !isFetchingNextPage) {
-                    fetchNextPage();
-                  }
-                }}
-                emptyMessage="No NFTs found"
-              />
-            )}
-          </div>
+          {embedded ? (
+            <div className="space-y-4">
+              {selectedNFT ? (
+                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                  <img
+                    src={`https://adrianlab.vercel.app/api/adrian-zero/render/${selectedNFT.tokenId}`}
+                    alt={`ZERO #${selectedNFT.tokenId}`}
+                    className="h-10 w-10 rounded border border-border"
+                  />
+                  <span className="text-sm font-medium">ZERO #{selectedNFT.tokenId}</span>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground p-3 bg-muted/50 rounded-lg">
+                  Select an NFT in the NFTs tab first
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">
+                1. Select NFT
+              </h2>
+              {nfts.length === 0 ? (
+                <p className="text-muted-foreground">No NFTs found</p>
+              ) : (
+                <NFTGrid
+                  tokens={nfts}
+                  selectedTokenId={selectedNFT?.tokenId}
+                  onTokenSelect={(token) => setLocalSelectedNFT(token)}
+                  onEndReached={() => {
+                    if (hasNextPage && !isFetchingNextPage) {
+                      fetchNextPage();
+                    }
+                  }}
+                  emptyMessage="No NFTs found"
+                />
+              )}
+            </div>
+          )}
 
           {/* Select Serum */}
           <div className="space-y-4">
