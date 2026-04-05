@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { ShoppingBag, Tag, Loader2 } from 'lucide-react';
+import { ShoppingBag, Loader2 } from 'lucide-react';
 import { useAllListings, useCollectionOffers, useBuyListing, useMakeCollectionOffer } from '../hooks/useMarketplace';
 import { useZeroBalance } from '../hooks/useZeroBalance';
 import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
-import { formatEther } from 'viem';
 
 function short(addr: string): string {
   if (!addr || addr.length < 10) return addr || '?';
@@ -11,8 +10,8 @@ function short(addr: string): string {
 }
 
 export function MarketplaceSection() {
-  const { listings, refetch: refetchListings } = useAllListings();
-  const { offers, refetch: refetchOffers } = useCollectionOffers();
+  const { listings } = useAllListings();
+  const { offers } = useCollectionOffers();
   const { movies } = useMoviesCatalog();
   const { balance } = useZeroBalance();
   const { buy, isPending: isBuying, isConfirming: isBuyConfirming } = useBuyListing();
