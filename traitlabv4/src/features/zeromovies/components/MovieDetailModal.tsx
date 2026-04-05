@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useUpgradeRental, useNftApproval } from '../hooks/useMovieMint';
-import { useListMovie, useDelistMovie, useAcceptOffer, useAcceptOfferAsRenter, useMakeOffer } from '../hooks/useMarketplace';
+import { useListMovie, useDelistMovie, useAcceptOffer, useAcceptOfferAsRenter, useMakeOffer, useBuyListing, useCollectionOffers, useAcceptCollectionOffer } from '../hooks/useMarketplace';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
@@ -54,6 +54,9 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { list, isPending: isListPending, isConfirming: isListConfirming } = useListMovie();
   const { delist, isPending: isDelistPending, isConfirming: isDelistConfirming } = useDelistMovie();
   const { offer: makeIndOffer, isPending: isIndOfferPending, isConfirming: isIndOfferConfirming } = useMakeOffer();
+  const { buy: buyListing, isPending: isBuyListingPending, isConfirming: isBuyListingConfirming } = useBuyListing();
+  const { offers: collectionOffers } = useCollectionOffers();
+  const { accept: acceptColOffer, isPending: isAcceptColPending, isConfirming: isAcceptColConfirming } = useAcceptCollectionOffer();
   const { accept: acceptOffer, isPending: isAcceptPending, isConfirming: isAcceptConfirming } = useAcceptOffer();
   const { accept: acceptAsRenter, isPending: isRenterAcceptPending, isConfirming: isRenterAcceptConfirming } = useAcceptOfferAsRenter();
 
@@ -309,8 +312,20 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             {/* Someone else owns permanently — make offer */}
             {!isYours && isPermanent && (
               <div className="space-y-2">
+                {/* Buy listing if on sale */}
+                {isListed && (
+                  <button
+                    onClick={() => buyListing(movie.id)}
+                    disabled={isBuyListingPending || isBuyListingConfirming || balance < currentListingPrice}
+                    className="w-full rounded-lg bg-red-600 py-3 text-sm font-bold text-white hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                  >
+                    {isBuyListingPending || isBuyListingConfirming
+                      ? <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                      : `BUY · ${currentListingPrice.toLocaleString()} $ZERO`}
+                  </button>
+                )}
+
                 <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
-                  <p className="text-[10px] text-zinc-400 mb-1">Owned by someone else</p>
                   {hasOffer && (
                     <p className="text-[9px] text-zinc-500 mb-2">
                       Current offer: <span className="text-yellow-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
@@ -485,6 +500,27 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 {/* Your own offer */}
                 {isMyOffer && (
                   <p className="text-[9px] text-zinc-500">Your offer: {bestOfferAmount.toLocaleString()} $ZERO</p>
+                )}
+
+                {/* Collection offers you can accept */}
+                {collectionOffers.length > 0 && (
+                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
+                    <p className="text-[10px] text-zinc-400 mb-2">Collection offers</p>
+                    <div className="space-y-1">
+                      {collectionOffers.map((co, i) => (
+                        <div key={i} className="flex items-center justify-between text-[10px]">
+                          <span className="text-zinc-500">{short(co.bidder)} · <span className="text-yellow-400">{co.amountFormatted.toLocaleString()} $ZERO</span></span>
+                          <button
+                            onClick={() => acceptColOffer(movie.id, i)}
+                            disabled={isAcceptColPending || isAcceptColConfirming}
+                            className="rounded bg-yellow-600 px-2 py-0.5 text-[8px] font-bold text-black hover:bg-yellow-500 disabled:opacity-50"
+                          >
+                            ACCEPT
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
