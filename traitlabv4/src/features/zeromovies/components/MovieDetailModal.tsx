@@ -176,26 +176,28 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-lg max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950 p-0 shadow-2xl focus:outline-none">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-3xl max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950 p-0 shadow-2xl focus:outline-none">
           <Dialog.Close className="absolute right-3 top-3 z-10 rounded-full bg-black/60 p-1.5 text-white hover:bg-red-600 transition-colors">
             <X className="h-4 w-4" />
           </Dialog.Close>
 
-          {/* Poster / Mystery */}
-          <div className="relative aspect-square w-full overflow-hidden rounded-t-xl bg-zinc-900">
-            {isMystery ? (
-              <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-950">
-                <span className="text-8xl font-black italic text-red-600">X</span>
-                <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-zinc-500">Restricted Section</span>
-                <span className="mt-1 text-[9px] text-zinc-600">Identity revealed after renting</span>
+          <div className="flex flex-col sm:flex-row">
+            {/* Poster / Mystery — left side on desktop */}
+            <div className="relative w-full sm:w-[280px] sm:min-w-[280px] overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none bg-zinc-900">
+              <div className="aspect-square sm:aspect-auto sm:h-full">
+                {isMystery ? (
+                  <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-950">
+                    <span className="text-6xl font-black italic text-red-600 sm:text-8xl">X</span>
+                    <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-zinc-500">Restricted</span>
+                  </div>
+                ) : (
+                  <img src={posterUrl} alt={movie.name} className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
+                )}
               </div>
-            ) : (
-              <img src={posterUrl} alt={movie.name} className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
-          </div>
+            </div>
 
-          <div className="space-y-3 p-5">
+            {/* Content — right side on desktop */}
+            <div className="flex-1 space-y-3 p-5 sm:overflow-y-auto sm:max-h-[80vh]">
             <Dialog.Title className="text-lg font-bold text-white">
               {isMystery ? 'Mystery Movie' : movie.name}
             </Dialog.Title>
@@ -534,6 +536,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
               </div>
             )}
           </div>
+          </div>{/* close flex wrapper */}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
