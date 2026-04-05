@@ -72,9 +72,9 @@ export function MyNFTsModule() {
       {selectedToken && activeTab !== 'nfts' && (
         <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 border-b border-border text-sm">
           <img
-            src={`https://adrianlab.vercel.app/api/adrian-zero/render/${selectedToken.tokenId}`}
+            src={selectedToken.image?.cachedUrl || selectedToken.image?.originalUrl || selectedToken.metadata?.image || ''}
             alt={`ZERO #${selectedToken.tokenId}`}
-            className="h-8 w-8 rounded border border-border"
+            className="h-8 w-8 rounded border border-border object-cover"
           />
           <span className="text-muted-foreground">Working on:</span>
           <span className="font-bold text-[#00ff00]">ZERO #{selectedToken.tokenId}</span>

@@ -122,7 +122,7 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
               {selectedNFT ? (
                 <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
                   <img
-                    src={`https://adrianlab.vercel.app/api/adrian-zero/render/${selectedNFT.tokenId}`}
+                    src={selectedNFT.image?.cachedUrl || selectedNFT.image?.originalUrl || selectedNFT.metadata?.image || ''}
                     alt={`ZERO #${selectedNFT.tokenId}`}
                     className="h-10 w-10 rounded border border-border"
                   />
