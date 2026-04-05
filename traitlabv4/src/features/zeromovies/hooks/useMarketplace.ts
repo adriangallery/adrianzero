@@ -119,6 +119,19 @@ export function useMakeOffer() {
   return { offer, ...rest };
 }
 
+export function useCancelOffer() {
+  const { writeContract, ...rest } = useWriteAction();
+  const cancel = (movieId: number) => {
+    writeContract({
+      address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+      abi: ZERO_MOVIES_FACET_ABI,
+      functionName: 'cancelOffer',
+      args: [BigInt(movieId)],
+    });
+  };
+  return { cancel, ...rest };
+}
+
 export function useMakeCollectionOffer() {
   const { writeContract, ...rest } = useWriteAction();
   const offer = (amountZero: number) => {

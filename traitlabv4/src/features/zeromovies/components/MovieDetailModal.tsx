@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useUpgradeRental, useNftApproval } from '../hooks/useMovieMint';
-import { useListMovie, useDelistMovie, useAcceptOffer, useAcceptOfferAsRenter, useMakeOffer, useBuyListing, useCollectionOffers, useAcceptCollectionOffer } from '../hooks/useMarketplace';
+import { useListMovie, useDelistMovie, useAcceptOffer, useAcceptOfferAsRenter, useMakeOffer, useCancelOffer, useBuyListing, useCollectionOffers, useAcceptCollectionOffer } from '../hooks/useMarketplace';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
@@ -53,7 +53,8 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { upgrade, isPending: isUpgradePending, isConfirming: isUpgradeConfirming, isConfirmed: isUpgradeConfirmed, reset: resetUpgrade } = useUpgradeRental();
   const { list, isPending: isListPending, isConfirming: isListConfirming } = useListMovie();
   const { delist, isPending: isDelistPending, isConfirming: isDelistConfirming } = useDelistMovie();
-  const { offer: makeIndOffer, isPending: isIndOfferPending, isConfirming: isIndOfferConfirming } = useMakeOffer();
+  const { offer: makeIndOffer, isPending: isIndOfferPending, isConfirming: isIndOfferConfirming, isConfirmed: isIndOfferConfirmed } = useMakeOffer();
+  const { cancel: cancelOffer, isPending: isCancelOfferPending, isConfirming: isCancelOfferConfirming, isConfirmed: isCancelOfferConfirmed } = useCancelOffer();
   const { buy: buyListing, isPending: isBuyListingPending, isConfirming: isBuyListingConfirming } = useBuyListing();
   const { offers: collectionOffers } = useCollectionOffers();
   const { accept: acceptColOffer, isPending: isAcceptColPending, isConfirming: isAcceptColConfirming } = useAcceptCollectionOffer();
@@ -61,7 +62,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { accept: acceptAsRenter, isPending: isRenterAcceptPending, isConfirming: isRenterAcceptConfirming } = useAcceptOfferAsRenter();
 
   // Best offer on this movie
-  const { data: offerData } = useReadContract({
+  const { data: offerData, refetch: refetchOffer } = useReadContract({
     address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
     abi: ZERO_MOVIES_FACET_ABI,
     functionName: 'getOffer',
@@ -156,6 +157,13 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     }
   }, [isApproveConfirmed]);
 
+  // After making or canceling an offer, refresh offer data
+  useEffect(() => {
+    if (isIndOfferConfirmed || isCancelOfferConfirmed) {
+      refetchOffer();
+    }
+  }, [isIndOfferConfirmed, isCancelOfferConfirmed]);
+
   if (!movie) return null;
 
   const handleRent = () => { if (!requireWallet('rent a ZEROmovie')) return; mint(movie.id); };
@@ -170,7 +178,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   };
   const handleKeep = () => { if (!requireWallet('keep forever')) return; keepForever(movie.id); };
 
-  const isLoading = isPending || isConfirming || isBuyPending || isBuyConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming || isUpgradePending || isUpgradeConfirming || isApprovePending || isApproveConfirming;
+  const isLoading = isPending || isConfirming || isBuyPending || isBuyConfirming || isReturnPending || isReturnConfirming || isKeepPending || isKeepConfirming || isUpgradePending || isUpgradeConfirming || isApprovePending || isApproveConfirming || isCancelOfferPending || isCancelOfferConfirming;
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
@@ -334,24 +342,39 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                       {isMyOffer && ' (yours)'}
                     </p>
                   )}
-                  <p className="text-[10px] text-zinc-400 mb-2">Make an offer</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={offerInput}
-                      onChange={(e) => setOfferInput(e.target.value)}
-                      placeholder="$ZERO amount"
-                      className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
-                    />
-                    <button
-                      onClick={() => { if (Number(offerInput) > 0) { makeIndOffer(movie.id, Number(offerInput)); setOfferInput(''); } }}
-                      disabled={isIndOfferPending || isIndOfferConfirming || !offerInput || Number(offerInput) <= 0}
-                      className="rounded bg-yellow-600 px-3 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
-                    >
-                      {isIndOfferPending || isIndOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
-                    </button>
-                  </div>
-                  <p className="mt-1 text-[8px] text-zinc-700">$ZERO locked. Must outbid current offer. Owner decides.</p>
+                  {isMyOffer ? (
+                    <>
+                      <button
+                        onClick={() => cancelOffer(movie.id)}
+                        disabled={isCancelOfferPending || isCancelOfferConfirming}
+                        className="w-full rounded bg-zinc-800 py-2 text-[10px] font-bold text-red-400 hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                      >
+                        {isCancelOfferPending || isCancelOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : 'WITHDRAW OFFER'}
+                      </button>
+                      <p className="mt-1 text-[8px] text-zinc-700">Cancel your offer and unlock your $ZERO.</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[10px] text-zinc-400 mb-2">Make an offer</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={offerInput}
+                          onChange={(e) => setOfferInput(e.target.value)}
+                          placeholder="$ZERO amount"
+                          className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
+                        />
+                        <button
+                          onClick={() => { if (Number(offerInput) > 0) { makeIndOffer(movie.id, Number(offerInput)); setOfferInput(''); } }}
+                          disabled={isIndOfferPending || isIndOfferConfirming || !offerInput || Number(offerInput) <= 0}
+                          className="rounded bg-yellow-600 px-3 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                        >
+                          {isIndOfferPending || isIndOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
+                        </button>
+                      </div>
+                      <p className="mt-1 text-[8px] text-zinc-700">$ZERO locked. Must outbid current offer. Owner decides.</p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
