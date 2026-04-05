@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ShoppingBag, Loader2, X } from 'lucide-react';
 import {
   useAllListings, useCollectionOffers, useBuyListing,
-  useMakeCollectionOffer, useMakeOffer,
+  useMakeCollectionOffer,
 } from '../hooks/useMarketplace';
 import { useZeroBalance } from '../hooks/useZeroBalance';
 import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
@@ -29,10 +29,6 @@ export function MarketplaceSection() {
   const { isLoading: isCancelColConfirming } = useWaitForTransactionReceipt({ hash: cancelColHash });
 
   const [colOfferAmount, setColOfferAmount] = useState('');
-  const [individualOfferMovie, setIndividualOfferMovie] = useState('');
-  const [individualOfferAmount, setIndividualOfferAmount] = useState('');
-  const { offer: makeIndOffer, isPending: isIndOffering, isConfirming: isIndOfferConfirming } = useMakeOffer();
-
   const getMovieName = (id: number) => movies.find(m => m.id === id)?.name || `Movie #${id}`;
 
   const handleCollectionOffer = () => {
@@ -40,15 +36,6 @@ export function MarketplaceSection() {
     if (amt <= 0) return;
     makeColOffer(amt);
     setColOfferAmount('');
-  };
-
-  const handleIndividualOffer = () => {
-    const movieId = Number(individualOfferMovie);
-    const amt = Number(individualOfferAmount);
-    if (movieId <= 0 || amt <= 0) return;
-    makeIndOffer(movieId, amt);
-    setIndividualOfferMovie('');
-    setIndividualOfferAmount('');
   };
 
   const handleCancelColOffer = (index: number) => {
@@ -101,38 +88,6 @@ export function MarketplaceSection() {
         ) : (
           <p className="text-[10px] text-zinc-700">No movies listed for sale yet.</p>
         )}
-      </div>
-
-      {/* Make Individual Offer */}
-      <div className="mb-6">
-        <h3 className="mb-2 text-[9px] font-bold uppercase tracking-wider text-zinc-500">Make Offer on a Movie</h3>
-        <div className="flex gap-2">
-          <select
-            value={individualOfferMovie}
-            onChange={(e) => setIndividualOfferMovie(e.target.value)}
-            className="w-[140px] rounded border border-zinc-800 bg-zinc-950 px-2 py-2 text-[10px] text-white focus:border-red-600 focus:outline-none"
-          >
-            <option value="">Select movie</option>
-            {movies.map((m) => (
-              <option key={m.id} value={m.id}>{m.name}</option>
-            ))}
-          </select>
-          <input
-            type="number"
-            value={individualOfferAmount}
-            onChange={(e) => setIndividualOfferAmount(e.target.value)}
-            placeholder="$ZERO"
-            className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-red-600 focus:outline-none"
-          />
-          <button
-            onClick={handleIndividualOffer}
-            disabled={isIndOffering || isIndOfferConfirming || !individualOfferMovie || !individualOfferAmount}
-            className="rounded bg-zinc-800 px-4 py-2 text-[10px] font-bold text-zinc-300 hover:bg-zinc-700 disabled:text-zinc-600 transition-colors"
-          >
-            {isIndOffering || isIndOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
-          </button>
-        </div>
-        <p className="mt-1 text-[8px] text-zinc-700">$ZERO locked. Owner can accept. Only highest offer per movie stored.</p>
       </div>
 
       {/* Collection Offers */}

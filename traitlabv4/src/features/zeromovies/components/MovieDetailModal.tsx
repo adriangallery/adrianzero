@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useUpgradeRental, useNftApproval } from '../hooks/useMovieMint';
-import { useListMovie, useDelistMovie, useAcceptOffer } from '../hooks/useMarketplace';
+import { useListMovie, useDelistMovie, useAcceptOffer, useMakeOffer } from '../hooks/useMarketplace';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
@@ -53,6 +53,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { upgrade, isPending: isUpgradePending, isConfirming: isUpgradeConfirming, isConfirmed: isUpgradeConfirmed, reset: resetUpgrade } = useUpgradeRental();
   const { list, isPending: isListPending, isConfirming: isListConfirming } = useListMovie();
   const { delist, isPending: isDelistPending, isConfirming: isDelistConfirming } = useDelistMovie();
+  const { offer: makeIndOffer, isPending: isIndOfferPending, isConfirming: isIndOfferConfirming } = useMakeOffer();
   const { accept: acceptOffer, isPending: isAcceptPending, isConfirming: isAcceptConfirming } = useAcceptOffer();
 
   // Best offer on this movie
@@ -66,6 +67,10 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const bestOfferBidder = offerData ? (offerData as [string, bigint, bigint])[0] : '';
   const bestOfferAmount = offerData ? Number(formatEther((offerData as [string, bigint, bigint])[1])) : 0;
   const hasOffer = bestOfferBidder && bestOfferBidder !== '0x0000000000000000000000000000000000000000' && bestOfferAmount > 0;
+  const isBidderSomeoneElse = hasOffer && bestOfferBidder.toLowerCase() !== address?.toLowerCase();
+  const isMyOffer = hasOffer && bestOfferBidder.toLowerCase() === address?.toLowerCase();
+
+  const [offerInput, setOfferInput] = useState('');
   const { showSuccess } = useMoviesStore();
 
   // Check canKeep on-chain
@@ -293,10 +298,43 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             )}
 
             {/* Currently rented by someone else */}
-            {isRentedByOther && (
+            {isRentedByOther && !isPermanent && (
               <div className="rounded-lg border border-zinc-700/50 bg-zinc-900/50 p-3 text-center">
                 <p className="text-xs font-bold text-amber-400">Currently Rented</p>
                 <p className="mt-1 text-[10px] text-zinc-500">Check back later — it may be returned</p>
+              </div>
+            )}
+
+            {/* Someone else owns permanently — make offer */}
+            {!isYours && isPermanent && (
+              <div className="space-y-2">
+                <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
+                  <p className="text-[10px] text-zinc-400 mb-1">Owned by someone else</p>
+                  {hasOffer && (
+                    <p className="text-[9px] text-zinc-500 mb-2">
+                      Current offer: <span className="text-yellow-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
+                      {isMyOffer && ' (yours)'}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-zinc-400 mb-2">Make an offer</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={offerInput}
+                      onChange={(e) => setOfferInput(e.target.value)}
+                      placeholder="$ZERO amount"
+                      className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
+                    />
+                    <button
+                      onClick={() => { if (Number(offerInput) > 0) { makeIndOffer(movie.id, Number(offerInput)); setOfferInput(''); } }}
+                      disabled={isIndOfferPending || isIndOfferConfirming || !offerInput || Number(offerInput) <= 0}
+                      className="rounded bg-yellow-600 px-3 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                    >
+                      {isIndOfferPending || isIndOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
+                    </button>
+                  </div>
+                  <p className="mt-1 text-[8px] text-zinc-700">$ZERO locked. Must outbid current offer. Owner decides.</p>
+                </div>
               </div>
             )}
 
@@ -392,8 +430,8 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                   </div>
                 )}
 
-                {/* Accept best offer */}
-                {hasOffer && (
+                {/* Accept best offer (only if bidder is someone else) */}
+                {hasOffer && isBidderSomeoneElse && (
                   <div className="rounded-lg border border-yellow-800/30 bg-yellow-900/10 p-3">
                     <p className="text-[10px] text-zinc-400 mb-1">Best offer</p>
                     <div className="flex items-center justify-between">
@@ -411,6 +449,10 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     </div>
                     <p className="mt-1 text-[8px] text-zinc-700">5% fee: 3% burned + 2% to holders</p>
                   </div>
+                )}
+                {/* Your own offer */}
+                {isMyOffer && (
+                  <p className="text-[9px] text-zinc-500">Your offer: {bestOfferAmount.toLocaleString()} $ZERO</p>
                 )}
               </div>
             )}
