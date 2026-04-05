@@ -21,7 +21,8 @@ export function CustomModule({ embedded }: { embedded?: boolean } = {}) {
   const storeToken = useAdrianZeroStore((s) => s.selectedToken);
   const [localSelectedToken, setLocalSelectedToken] = useState<AdrianZeroToken | null>(null);
   const selectedToken = embedded ? (storeToken as AdrianZeroToken | null) : localSelectedToken;
-  const setSelectedToken = embedded ? () => {} : setLocalSelectedToken;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _setSelectedToken = embedded ? () => {} : setLocalSelectedToken;
   const [newName, setNewName] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [selectedToggles, setSelectedToggles] = useState<Set<number>>(new Set());

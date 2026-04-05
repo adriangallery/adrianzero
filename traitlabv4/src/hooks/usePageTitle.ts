@@ -4,7 +4,6 @@
  */
 
 import { useLocation } from 'react-router-dom';
-import { useAccount } from 'wagmi';
 
 interface PageTitle {
   prefix: string;

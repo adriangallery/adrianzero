@@ -35,7 +35,7 @@ export function BuyModule() {
   const [direction, setDirection] = useState<'buy' | 'sell'>('buy');
   const [quote, setQuote] = useState<string | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Balances
   const { data: ethBalance } = useBalance({ address });
