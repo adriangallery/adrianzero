@@ -112,7 +112,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const isYoursV1 = isPermanent && !hasActiveRenter && movie?.mintedBy?.toLowerCase() === address?.toLowerCase();
   const isYours = isYoursViaRenter || isYoursV1;
 
-  const isRentedByOther = hasActiveRenter && !isYoursViaRent;
+  const isRentedByOther = hasActiveRenter && !isYoursViaRenter;
   const isAvailable = !hasActiveRenter && !isPermanent;
   const canKeepMovie = canKeepData === true;
   const depositFormatted = rentalStatus?.deposit ? Number(formatEther(rentalStatus.deposit)) : 0;
@@ -440,9 +440,18 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
               </div>
             )}
 
-            {/* YOURS PERMANENT: List for Sale */}
+            {/* YOURS PERMANENT: List for Sale + Accept Offers */}
             {isYours && isPermanent && (
               <div className="space-y-2">
+                {/* Approval needed for listing/accepting */}
+                {!nftApproved && (
+                  <button onClick={() => approveNft()} disabled={isApprovePending || isApproveConfirming}
+                    className="w-full rounded-lg border border-zinc-600 bg-zinc-800 py-2 text-[10px] font-bold text-zinc-200 hover:bg-zinc-700 transition-colors disabled:opacity-50">
+                    {isApprovePending || isApproveConfirming
+                      ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Approving...</span>
+                      : 'Approve NFT for Marketplace'}
+                  </button>
+                )}
                 {isListed ? (
                   <div className="rounded-lg border border-green-800/30 bg-green-900/10 p-3">
                     <p className="text-[10px] text-green-400 mb-2">Listed for <span className="font-bold">{currentListingPrice.toLocaleString()} $ZERO</span></p>
@@ -467,7 +476,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                       />
                       <button
                         onClick={() => { if (Number(listPrice) > 0) list(movie.id, Number(listPrice)); }}
-                        disabled={isListPending || isListConfirming || !listPrice || Number(listPrice) <= 0}
+                        disabled={isListPending || isListConfirming || !listPrice || Number(listPrice) <= 0 || !nftApproved}
                         className="rounded bg-yellow-600 px-4 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
                       >
                         {isListPending || isListConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'LIST'}
