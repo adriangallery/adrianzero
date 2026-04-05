@@ -46,7 +46,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   const { isApproved: nftApproved, approve: approveNft, isPending: isApprovePending, isConfirming: isApproveConfirming, isConfirmed: isApproveConfirmed, refetch: refetchApproval } = useNftApproval();
   const { keepForever, isPending: isKeepPending, isConfirming: isKeepConfirming, isConfirmed: isKeepConfirmed, reset: resetKeep } = useMovieKeep();
   const { upgrade, isPending: isUpgradePending, isConfirming: isUpgradeConfirming, isConfirmed: isUpgradeConfirmed, reset: resetUpgrade } = useUpgradeRental();
-  const { list, isPending: isListPending, isConfirming: isListConfirming, isConfirmed: isListConfirmed } = useListMovie();
+  const { list, isPending: isListPending, isConfirming: isListConfirming } = useListMovie();
   const { delist, isPending: isDelistPending, isConfirming: isDelistConfirming } = useDelistMovie();
   const { showSuccess } = useMoviesStore();
 

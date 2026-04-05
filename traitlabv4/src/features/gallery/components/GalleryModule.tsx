@@ -32,13 +32,17 @@ export function GalleryModule() {
   // Fetch metadata for currently loaded tokens
   useTokenMetadata(allTokenIds);
 
-  // Filter by type
+  // Filter by type (try-catch to prevent crash on malformed metadata)
   const filteredTokenIds = useMemo(() => {
     if (activeFilter === 'All') return allTokenIds;
     return allTokenIds.filter((id) => {
       const meta = metadataCache.get(id);
       if (!meta) return false;
-      return deriveNFTType(meta) === activeFilter;
+      try {
+        return deriveNFTType(meta) === activeFilter;
+      } catch {
+        return false;
+      }
     });
   }, [allTokenIds, activeFilter, metadataCache]);
 
@@ -83,8 +87,12 @@ export function GalleryModule() {
     for (const id of allTokenIds) {
       const meta = metadataCache.get(id);
       if (meta) {
-        const t = deriveNFTType(meta);
-        counts[t] = (counts[t] || 0) + 1;
+        try {
+          const t = deriveNFTType(meta);
+          counts[t] = (counts[t] || 0) + 1;
+        } catch {
+          // skip malformed metadata
+        }
       }
     }
     return counts;
@@ -105,12 +113,14 @@ export function GalleryModule() {
 
   // --- Error state ---
   if (error) {
+    // Extract a short message — viem errors dump full RPC request body
+    const shortMessage = error.message?.split('\n')[0]?.slice(0, 120) || 'Failed to load collection';
     return (
       <div className="flex h-screen w-full items-center justify-center bg-black">
         <div className="max-w-md text-center">
           <div className="text-5xl mb-4">!!!</div>
           <div className="text-lg font-semibold text-white">Failed to Load</div>
-          <div className="mt-2 text-xs text-zinc-500">{error.message}</div>
+          <div className="mt-2 text-xs text-zinc-500">{shortMessage}</div>
           <button
             onClick={() => window.location.reload()}
             className="mt-4 rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700"
