@@ -31,7 +31,7 @@ export function NFTCard({ name, imageUrl, type, owner, onClick }: NFTCardProps) 
   return (
     <button
       onClick={onClick}
-      className="group relative flex flex-col rounded bg-zinc-900/80 transition-all duration-200 text-left hover:scale-105 hover:z-10 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]"
+      className="group relative flex flex-col rounded bg-zinc-900/80 transition-all duration-200 text-left overflow-hidden min-w-0 hover:scale-105 hover:z-10 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]"
     >
       {/* Image */}
       <div className="relative aspect-square w-full overflow-hidden rounded-t bg-black">
@@ -61,7 +61,7 @@ export function NFTCard({ name, imageUrl, type, owner, onClick }: NFTCardProps) 
       </div>
 
       {/* Info */}
-      <div className="px-1.5 py-1.5 space-y-0.5">
+      <div className="px-1.5 py-1.5 space-y-0.5 min-w-0 overflow-hidden">
         <p className="truncate text-[9px] font-bold text-zinc-300 group-hover:text-white transition-colors">
           {name}
         </p>
