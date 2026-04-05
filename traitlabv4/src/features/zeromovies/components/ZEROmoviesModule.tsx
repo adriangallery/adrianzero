@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Film, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
 import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
 import { useAllRentalStatus, usePendingRewards } from '../hooks/useRentalStatus';
