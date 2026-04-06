@@ -11,6 +11,7 @@ import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZERO_MOVIES_FACET_ABI } from '@/lib/web3/abi';
 import { formatEther } from 'viem';
+import { EnsName } from '@/components/shared/EnsName';
 
 interface MovieDetailModalProps {
   movie: Movie | null;
@@ -439,7 +440,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <span className="text-sm font-bold text-green-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
-                        <span className="ml-2 text-[9px] text-zinc-500">from {short(bestOfferBidder)}</span>
+                        <span className="ml-2 text-[9px] text-zinc-500">from <EnsName address={bestOfferBidder} className="text-emerald-400 text-[9px]" /></span>
                       </div>
                     </div>
                     <p className="text-[8px] text-zinc-500 mb-2">
@@ -509,7 +510,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="text-sm font-bold text-yellow-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
-                        <span className="ml-2 text-[9px] text-zinc-500">from {short(bestOfferBidder)}</span>
+                        <span className="ml-2 text-[9px] text-zinc-500">from <EnsName address={bestOfferBidder} className="text-emerald-400 text-[9px]" /></span>
                       </div>
                       <button
                         onClick={() => { if (!nftApproved) { approveNft(); } else { acceptOffer(movie.id); } }}
@@ -538,7 +539,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     <div className="space-y-1">
                       {collectionOffers.map((co, i) => (
                         <div key={i} className="flex items-center justify-between text-[10px]">
-                          <span className="text-zinc-500">{short(co.bidder)} · <span className="text-yellow-400">{co.amountFormatted.toLocaleString()} $ZERO</span></span>
+                          <span className="text-zinc-500"><EnsName address={co.bidder} className="text-emerald-400" /> · <span className="text-yellow-400">{co.amountFormatted.toLocaleString()} $ZERO</span></span>
                           <button
                             onClick={() => { if (!nftApproved) { approveNft(); } else { acceptColOffer(movie.id, i); } }}
                             disabled={isAcceptColPending || isAcceptColConfirming || isApprovePending || isApproveConfirming}

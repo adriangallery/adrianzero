@@ -9,6 +9,7 @@ import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZERO_MOVIES_FACET_ABI } from '@/lib/web3/abi';
+import { EnsName } from '@/components/shared/EnsName';
 
 function short(addr: string): string {
   if (!addr || addr.length < 10) return addr || '?';
@@ -98,7 +99,7 @@ export function MarketplaceSection() {
           <div className="mb-3 space-y-1">
             {offers.map((o, i) => (
               <div key={i} className="flex items-center justify-between rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px]">
-                <span className="text-zinc-400">{short(o.bidder)}</span>
+                <span className="text-zinc-400"><EnsName address={o.bidder} className="text-emerald-400" /></span>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-yellow-400">{o.amountFormatted.toLocaleString()} $ZERO</span>
                   {o.bidder.toLowerCase() === address?.toLowerCase() && (
