@@ -3,13 +3,15 @@
  * Returns { totalSupply, owners Map<tokenId, address>, loadPage(), ... }
  */
 
-import { useState, useCallback, useRef } from 'react';
-import { usePublicClient, useReadContract } from 'wagmi';
-import { encodeFunctionData, decodeFunctionResult } from 'viem';
+import { useState, useCallback, useRef, useMemo } from 'react';
+import { useReadContract } from 'wagmi';
+import { createPublicClient, http, encodeFunctionData, decodeFunctionResult } from 'viem';
+import { base } from 'viem/chains';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ADRIAN_ZERO_ABI, MULTICALL3_ABI } from '@/lib/web3/abi';
+import { buildAlchemyRpcUrls } from '@/config/alchemy';
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 25; // Reduced from 50 to avoid RPC rate limits
 
 export interface UseTokenListReturn {
   totalSupply: number;
@@ -23,11 +25,19 @@ export interface UseTokenListReturn {
 }
 
 export function useTokenList(): UseTokenListReturn {
-  const publicClient = usePublicClient();
+  // Use Alchemy RPC to avoid public RPC rate limits
+  const galleryClient = useMemo(() => {
+    const rpcUrls = buildAlchemyRpcUrls();
+    return createPublicClient({
+      chain: base,
+      transport: http(rpcUrls[0], { retryCount: 3, retryDelay: 1000 }),
+    });
+  }, []);
+
   const [owners, setOwners] = useState<Map<number, string>>(new Map());
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const nextPageRef = useRef(0); // next token index to load (0-based page cursor)
+  const nextPageRef = useRef(0);
 
   // 1. Read tokenCounter from contract
   const { data: tokenCounterRaw, isLoading: isLoadingSupply } = useReadContract({
@@ -45,7 +55,7 @@ export function useTokenList(): UseTokenListReturn {
 
   // 2. Load a page of owners via Multicall3
   const loadNextPage = useCallback(async () => {
-    if (!publicClient || totalSupply === 0 || isLoadingPage) return;
+    if (!galleryClient || totalSupply === 0 || isLoadingPage) return;
 
     const startId = nextPageRef.current;
     if (startId >= totalSupply) return;
@@ -70,7 +80,7 @@ export function useTokenList(): UseTokenListReturn {
         });
       }
 
-      const results = (await publicClient.readContract({
+      const results = (await galleryClient.readContract({
         address: CONTRACT_ADDRESSES.MULTICALL3 as `0x${string}`,
         abi: MULTICALL3_ABI,
         functionName: 'aggregate3',
@@ -104,7 +114,7 @@ export function useTokenList(): UseTokenListReturn {
     } finally {
       setIsLoadingPage(false);
     }
-  }, [publicClient, totalSupply, isLoadingPage]);
+  }, [galleryClient, totalSupply, isLoadingPage]);
 
   return {
     totalSupply,
