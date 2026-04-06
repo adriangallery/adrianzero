@@ -11,11 +11,6 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZERO_MOVIES_FACET_ABI } from '@/lib/web3/abi';
 import { EnsName } from '@/components/shared/EnsName';
 
-function short(addr: string): string {
-  if (!addr || addr.length < 10) return addr || '?';
-  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
-}
-
 export function MarketplaceSection() {
   const { address } = useAccount();
   const { listings } = useAllListings();

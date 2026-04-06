@@ -23,11 +23,6 @@ interface MovieDetailModalProps {
   rentalStatus?: { renter: string; deposit: bigint; rentedAt: number; permanent: boolean; rentCount: number } | null;
 }
 
-function short(addr: string): string {
-  if (!addr || addr.length < 10) return addr || '?';
-  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
-}
-
 export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSuccess, isMystery = false, rentalStatus }: MovieDetailModalProps) {
   const { address, isConnected } = useAccount();
   const { requireWallet } = useWalletPrompt();
