@@ -15,11 +15,16 @@ export function deriveNFTType(metadata: NFTMetadata): NFTType {
   const gen = metadata.attributes?.find((a) => a.trait_type === 'Generation');
   if (!gen) return 'Unknown';
   const v = gen.value;
-  if (v === 'Gen0' || v === 'OG') return 'Gen0';
   if (v === 'SamuraiZERO') return 'SamuraiZERO';
   if (v === 'SubZERO') return 'SubZERO';
   if (v === 'ZEROmovies') return 'ZEROmovies';
   if (v === 'GenZERO') return 'GenZERO';
+  if (v === 'Gen0' || v === 'OG') return 'Gen0';
+  // Generation '0' — check DupGeneration to distinguish GenZERO (GEN1/GEN2 duplicates) from Gen0
+  if (v === '0') {
+    const dup = metadata.attributes?.find((a) => a.trait_type === 'DupGeneration');
+    return dup ? 'GenZERO' : 'Gen0';
+  }
   return 'Unknown';
 }
 
