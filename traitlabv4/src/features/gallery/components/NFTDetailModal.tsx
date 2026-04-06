@@ -115,7 +115,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-zinc-900/95 shadow-2xl backdrop-blur-xl"
+              className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-zinc-900/95 shadow-2xl backdrop-blur-xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close */}
@@ -128,11 +128,11 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
 
               <div className="flex flex-col md:flex-row">
                 {/* Image */}
-                <div className="relative flex-shrink-0 flex items-center justify-center bg-black p-6 md:w-1/2">
+                <div className="relative flex-shrink-0 flex items-center justify-center bg-black p-4 md:p-6 md:w-1/2">
                   <img
                     src={imageUrl}
                     alt={localMeta?.name ?? `#${selectedTokenId}`}
-                    className="max-h-[400px] w-auto rounded"
+                    className="max-h-[250px] md:max-h-[400px] w-auto rounded"
                     style={{ imageRendering: 'pixelated' }}
                   />
 
@@ -154,7 +154,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                 </div>
 
                 {/* Metadata */}
-                <div className="flex-1 overflow-y-auto p-6 max-h-[80vh]">
+                <div className="flex-1 p-4 md:p-6 md:overflow-y-auto md:max-h-[80vh]">
                   {isLoadingMeta ? (
                     <div className="flex items-center justify-center py-12">
                       <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-500 border-t-transparent" />
