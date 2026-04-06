@@ -50,6 +50,10 @@ export const buildAlchemyRpcUrls = (): string[] => {
 
 /** Build Ethereum Mainnet RPC URL for ENS resolution */
 export const buildEthMainnetRpcUrl = (): string => {
+  const ensKey = import.meta.env.VITE_ALCHEMY_ENS_KEY;
+  if (isValidAlchemyKey(ensKey)) {
+    return `https://eth-mainnet.g.alchemy.com/v2/${ensKey}`;
+  }
   const keys = getAlchemyApiKeys();
   if (keys.length > 0) {
     return `https://eth-mainnet.g.alchemy.com/v2/${keys[0]}`;
