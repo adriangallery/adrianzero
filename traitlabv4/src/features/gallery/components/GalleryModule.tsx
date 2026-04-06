@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTokenList } from '../hooks/useTokenList';
 import { useTokenMetadata, deriveNFTType } from '../hooks/useTokenMetadata';
 import { useGalleryStore } from '../store/galleryStore';
@@ -19,10 +20,29 @@ const FILTER_COLORS: Record<string, string> = {
 
 const FILTER_INACTIVE = 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700';
 
+function getColumnCount(width: number): number {
+  if (width >= 1280) return 8;
+  if (width >= 1024) return 6;
+  if (width >= 768) return 5;
+  if (width >= 640) return 4;
+  return 3;
+}
+
 export function GalleryModule() {
   const { totalSupply, owners, loadedCount, isLoadingSupply, isLoadingPage, hasMore, loadNextPage, error } =
     useTokenList();
   const { activeFilter, setActiveFilter, openModal, setTokenIds, metadataCache } = useGalleryStore();
+
+  // Responsive column count
+  const [columns, setColumns] = useState(() =>
+    getColumnCount(typeof window !== 'undefined' ? window.innerWidth : 375)
+  );
+
+  useEffect(() => {
+    const onResize = () => setColumns(getColumnCount(window.innerWidth));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // Build sorted token ID list from loaded owners
   const allTokenIds = useMemo(() => {
@@ -58,29 +78,6 @@ export function GalleryModule() {
     }
   }, [totalSupply, loadedCount, isLoadingPage, loadNextPage]);
 
-  // Infinite scroll sentinel
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  const handleIntersect = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      if (entries[0]?.isIntersecting && hasMore && !isLoadingPage) {
-        loadNextPage();
-      }
-    },
-    [hasMore, isLoadingPage, loadNextPage]
-  );
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(handleIntersect, {
-      rootMargin: '600px',
-    });
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [handleIntersect]);
-
   // Count per type
   const typeCounts = useMemo(() => {
     const counts: Record<string, number> = { All: allTokenIds.length };
@@ -98,6 +95,26 @@ export function GalleryModule() {
     return counts;
   }, [allTokenIds, metadataCache]);
 
+  // Virtual scrolling
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const rowCount = Math.ceil(filteredTokenIds.length / columns);
+
+  const rowVirtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 160,
+    overscan: 3,
+  });
+
+  // Infinite scroll: load more when near the bottom
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  useEffect(() => {
+    const lastItem = virtualItems[virtualItems.length - 1];
+    if (lastItem && lastItem.index >= rowCount - 2 && hasMore && !isLoadingPage) {
+      loadNextPage();
+    }
+  }, [virtualItems, rowCount, hasMore, isLoadingPage, loadNextPage]);
+
   // --- Loading state ---
   if (isLoadingSupply) {
     return (
@@ -113,7 +130,6 @@ export function GalleryModule() {
 
   // --- Error state ---
   if (error) {
-    // Extract a short message — viem errors dump full RPC request body
     const shortMessage = error.message?.split('\n')[0]?.slice(0, 120) || 'Failed to load collection';
     return (
       <div className="flex h-screen w-full items-center justify-center bg-black">
@@ -133,9 +149,9 @@ export function GalleryModule() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-black">
+    <div className="flex flex-col h-screen w-full bg-black">
       {/* Header */}
-      <div className="sticky top-0 z-20 border-b border-zinc-800 bg-black/90 backdrop-blur-sm px-4 py-3">
+      <div className="flex-shrink-0 border-b border-zinc-800 bg-black/90 backdrop-blur-sm px-4 py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-lg font-bold text-white">AdrianZERO Collection</h1>
@@ -162,32 +178,60 @@ export function GalleryModule() {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="px-3 py-4">
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
-          {filteredTokenIds.map((tokenId) => {
-            const meta = metadataCache.get(tokenId);
-            const name = meta?.name ?? `AdrianZero #${tokenId}`;
-            const type = meta ? deriveNFTType(meta) : 'Unknown';
-            const imageUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
-            const owner = owners.get(tokenId) ?? '';
+      {/* Virtual scroll container */}
+      <div ref={scrollRef} className="flex-1 overflow-auto px-3 py-4">
+        <div
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            position: 'relative',
+            width: '100%',
+          }}
+        >
+          {virtualItems.map((virtualRow) => {
+            const startIdx = virtualRow.index * columns;
+            const rowTokenIds = filteredTokenIds.slice(startIdx, startIdx + columns);
 
             return (
-              <NFTCard
-                key={tokenId}
-                tokenId={tokenId}
-                name={name}
-                imageUrl={imageUrl}
-                type={type}
-                owner={owner}
-                onClick={() => openModal(tokenId)}
-              />
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={rowVirtualizer.measureElement}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+              >
+                <div
+                  className="grid gap-2 pb-2"
+                  style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+                >
+                  {rowTokenIds.map((tokenId) => {
+                    const meta = metadataCache.get(tokenId);
+                    const name = meta?.name ?? `AdrianZero #${tokenId}`;
+                    const type = meta ? deriveNFTType(meta) : 'Unknown';
+                    const imageUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+                    const owner = owners.get(tokenId) ?? '';
+
+                    return (
+                      <NFTCard
+                        key={tokenId}
+                        tokenId={tokenId}
+                        name={name}
+                        imageUrl={imageUrl}
+                        type={type}
+                        owner={owner}
+                        onClick={() => openModal(tokenId)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
-
-        {/* Infinite scroll sentinel */}
-        <div ref={sentinelRef} className="h-20 w-full" />
 
         {/* Loading indicator */}
         {isLoadingPage && (
