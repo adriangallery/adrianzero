@@ -106,14 +106,20 @@ export function GalleryModule() {
     overscan: 3,
   });
 
-  // Infinite scroll: load more when near the bottom
+  // Infinite scroll: load more when near the bottom or when filter has no results yet
   const virtualItems = rowVirtualizer.getVirtualItems();
   useEffect(() => {
+    if (!hasMore || isLoadingPage) return;
+    // If filtered list is empty but more tokens exist, keep loading
+    if (filteredTokenIds.length === 0) {
+      loadNextPage();
+      return;
+    }
     const lastItem = virtualItems[virtualItems.length - 1];
-    if (lastItem && lastItem.index >= rowCount - 2 && hasMore && !isLoadingPage) {
+    if (lastItem && lastItem.index >= rowCount - 2) {
       loadNextPage();
     }
-  }, [virtualItems, rowCount, hasMore, isLoadingPage, loadNextPage]);
+  }, [virtualItems, rowCount, hasMore, isLoadingPage, loadNextPage, filteredTokenIds.length]);
 
   // --- Loading state ---
   if (isLoadingSupply) {
