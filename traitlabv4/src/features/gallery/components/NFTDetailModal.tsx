@@ -5,6 +5,7 @@ import { useGalleryStore } from '../store/galleryStore';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import type { NFTMetadata, NFTType } from '../types/gallery.types';
 import { deriveNFTType } from '../hooks/useTokenMetadata';
+import { useEnsName } from '@/hooks/useEnsName';
 
 const METADATA_API = 'https://adrianlab.vercel.app/api/v2/metadata';
 const OPENSEA_BASE = `https://opensea.io/assets/base/${CONTRACT_ADDRESSES.ADRIAN_ZERO}`;
@@ -89,9 +90,12 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
+  const ownerAddress = selectedTokenId !== null ? owners.get(selectedTokenId) : undefined;
+  const { ensName } = useEnsName(ownerAddress);
+
   if (selectedTokenId === null) return null;
 
-  const owner = owners.get(selectedTokenId) ?? '—';
+  const owner = ownerAddress ?? '—';
   const nftType = localMeta ? deriveNFTType(localMeta) : 'Unknown';
   const imageUrl = `https://adrianlab.vercel.app/api/render/${selectedTokenId}.png`;
 
@@ -180,7 +184,14 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                       {/* Owner */}
                       <div className="mb-4 rounded-lg bg-zinc-800/50 p-3">
                         <div className="text-[10px] font-medium uppercase text-zinc-500 mb-1">Owner</div>
-                        <div className="font-mono text-xs text-zinc-300 break-all">{owner}</div>
+                        {ensName ? (
+                          <div>
+                            <span className="text-sm font-semibold text-emerald-400">{ensName}</span>
+                            <div className="font-mono text-[10px] text-zinc-500 mt-0.5 break-all">{owner}</div>
+                          </div>
+                        ) : (
+                          <div className="font-mono text-xs text-zinc-300 break-all">{owner}</div>
+                        )}
                       </div>
 
                       {/* Description */}

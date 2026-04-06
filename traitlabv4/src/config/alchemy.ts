@@ -48,4 +48,13 @@ export const buildAlchemyRpcUrls = (): string[] => {
   return urls;
 };
 
+/** Build Ethereum Mainnet RPC URL for ENS resolution */
+export const buildEthMainnetRpcUrl = (): string => {
+  const keys = getAlchemyApiKeys();
+  if (keys.length > 0) {
+    return `https://eth-mainnet.g.alchemy.com/v2/${keys[0]}`;
+  }
+  return 'https://eth.llamarpc.com';
+};
+
 export const ALCHEMY_NFT_BASE_URL = 'https://base-mainnet.g.alchemy.com/nft/v3';
