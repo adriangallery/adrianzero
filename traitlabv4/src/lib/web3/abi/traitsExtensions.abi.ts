@@ -4,7 +4,7 @@ export const TRAITS_EXTENSIONS_ABI = [
       { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
       { internalType: 'uint256[]', name: 'traitIds', type: 'uint256[]' },
     ],
-    name: 'applyTraits',
+    name: 'applyTraitMultiple',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',

@@ -58,7 +58,7 @@ export function useApplyTraits() {
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS,
         abi: TRAITS_EXTENSIONS_ABI,
-        functionName: 'applyTraits',
+        functionName: 'applyTraitMultiple',
         args: [BigInt(tokenId), traitIdsBigInt],
       });
 
