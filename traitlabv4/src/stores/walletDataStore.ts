@@ -248,6 +248,7 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
             seenIds.add(nft.tokenId);
 
             const githubSvgUrl = `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${nft.tokenId}.svg`;
+            const labimagesSvgUrl = `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${nft.tokenId}.svg`;
             const fallbackUrl = `https://adrianzero.com/traitlab/${metadata.category.toLowerCase()}/${metadata.fileName}`;
 
             return {
@@ -261,8 +262,8 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
               metadata: nft.raw?.metadata,
               image: {
                 cachedUrl: githubSvgUrl,
-                originalUrl: fallbackUrl,
-                thumbnailUrl: nft.image?.cachedUrl || nft.image?.thumbnailUrl || nft.image?.originalUrl,
+                originalUrl: labimagesSvgUrl,
+                thumbnailUrl: nft.image?.cachedUrl || nft.image?.thumbnailUrl || nft.image?.originalUrl || labimagesSvgUrl,
               },
             } as Trait;
           })
