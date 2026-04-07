@@ -249,7 +249,6 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
 
             const githubSvgUrl = `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${nft.tokenId}.svg`;
             const labimagesSvgUrl = `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${nft.tokenId}.svg`;
-            const fallbackUrl = `https://adrianzero.com/traitlab/${metadata.category.toLowerCase()}/${metadata.fileName}`;
 
             return {
               tokenId: nft.tokenId,
