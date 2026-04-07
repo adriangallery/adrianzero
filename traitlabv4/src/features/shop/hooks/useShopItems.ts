@@ -83,6 +83,7 @@ const ITEM_NAMES: Record<number, string> = {
   1044: 'MCD-Shake-S',
   1045: 'MCD-Shake-M',
   1046: 'MCD-Shake-L',
+  1175: 'ZERO-Green',
   // Floppies (from floppy.json)
   10000: 'OG Floppy',
   10003: 'GLITCH Floppy',
