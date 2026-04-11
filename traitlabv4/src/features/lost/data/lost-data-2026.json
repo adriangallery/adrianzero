@@ -214,6 +214,448 @@
           }
         }
       ]
+    },
+    {
+      "weekNumber": 4,
+      "date": "2026-01-25",
+      "title": "Sunday Recap — 25.01",
+      "events": [
+        {
+          "emoji": "👀",
+          "title": "OpenRarity Scraper",
+          "description": "Built a blockchain scraper + rarity script using the same model OpenSea uses — then plugged it straight into FloorENGINE so you can spot deals fast.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🧠✨",
+          "title": "FloorENGINE Rarity Tags",
+          "description": "Small thing… but it changes how you shop. Rarity scores right there when you browse.",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "🎁",
+          "title": "OG Reward #3",
+          "description": "Surprise box time: 1:1 claim per OG Punk you hold. Also pushed claim page fixes + optimisations so it doesn't feel like 2007.",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🍌",
+          "title": "BANANA Revert (Finally)",
+          "description": "Sometimes you don't want that banana AI shit — you want your safe pixels back. Revert to pixel mode for FREE; going banana again costs the same as the first time.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎂",
+          "title": "YEAR1 Airdrop",
+          "description": "No utility. Just a thank you. Already in wallets mfers 💙❤️",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🧱",
+          "title": "SVGmaker",
+          "description": "Terminal app to convert images into SVG effortlessly. Needed for ZERO traits + OG PDF print cards pipeline.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🧬",
+          "title": "PocketAdrians Sync",
+          "description": "You lazy mfers… collection is now complete on OpenSea 😭",
+          "status": "completed",
+          "category": "community",
+          "links": [
+            {
+              "text": "PocketAdrians on OpenSea",
+              "url": "https://opensea.io/es/collection/pocketadrians"
+            }
+          ]
+        },
+        {
+          "emoji": "🎵",
+          "title": "AdrianMusic (Side Quest)",
+          "description": "Exploring some cursed music stuff on the side. More later.",
+          "status": "in-progress",
+          "category": "other"
+        },
+        {
+          "emoji": "🏷️",
+          "title": "Discord Roles Update",
+          "description": "New / updated roles are live — go verify in Discord and reclaim.",
+          "status": "completed",
+          "category": "social"
+        }
+      ]
+    },
+    {
+      "weekNumber": 5,
+      "date": "2026-02-01",
+      "title": "Sunday Recap — 01.02",
+      "events": [
+        {
+          "emoji": "🤖",
+          "title": "AdrianBOT Price Scalping",
+          "description": "Now it spots price mismatches on active listings and extracts the moneys. Remember that scalping loop from weeks ago? Yeah… that one 😅",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🗄️",
+          "title": "Supabase Kicked Us",
+          "description": "FREE tier said goodbye 💀 So we built our own database: SQLite inside a GitHub repo. More than enough + most important: FREE.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "💩",
+          "title": "ShitDROP #7 — CLAW",
+          "description": "Claw / Molt bot hype pack: Mac Mini + Mask + Background + the vibes everyone's talking about 🤖🦞",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🧙‍♂️",
+          "title": "nftmaker CLI",
+          "description": "Full terminal wizard to create NFT collections from scratch. Expect new cursed tooling in the coming months 👀",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🪖",
+          "title": "VolumeARMY",
+          "description": "Spent some hours there, got detected, tweaked stuff… we'll see. If I get somewhere I'll ping you 😭",
+          "status": "in-progress",
+          "category": "bot"
+        },
+        {
+          "emoji": "⚙️",
+          "title": "Boring Optimisations Week",
+          "description": "Engagement low so I focused on polishing the gears: stats, Alchemy usage, random bots/dapps, TraitLAB… Looks the same. Feels way smoother.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🧪",
+          "title": "TraitLAB V4 (Cooking)",
+          "description": "Using ClaudeCode, rebuilding the LAB almost from scratch. Let's see if I can ship something clean and fast 🔥",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "💳",
+          "title": "AI Subs Reorg",
+          "description": "Removed Cursor PRO+, ChatGPT Pro, and X bluetick. Now running two ClaudePRO accounts… still hitting limits though 🤡",
+          "status": "completed",
+          "category": "personal"
+        }
+      ]
+    },
+    {
+      "weekNumber": 6,
+      "date": "2026-02-08",
+      "title": "Sunday Recap — 08.02",
+      "events": [
+        {
+          "emoji": "📱✨",
+          "title": "AdrianZERO Full Redesign",
+          "description": "Complete redesign using Vite + React — cohesive as hell, looks great on mobile. WalletConnect ready too. Smooth shit.",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🪖",
+          "title": "VolumeArmy (RIP)",
+          "description": "Spent more hours there… and yeah… I gave up 💀",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🧠",
+          "title": "FloorENGINE Backend Love",
+          "description": "Database fixes + API implementation at FloorENGINE. Boring work, but everything runs better after ⚙️",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🧬",
+          "title": "GEN Duplication is Live",
+          "description": "On-chain module + render logic shipped; Tiger cooked awesome damaged art 🐯🔥 AdrianBOT handles it + pays gas for you 🤖💸 Every 72h it mints a new duplicated ZERO to eligible holders. Deformed mfers, but hey… free airdropped shit to your wallet 😂",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎨",
+          "title": "Generative Art Exploration",
+          "description": "Been exploring some generative art experiments… might turn into something 👀",
+          "status": "in-progress",
+          "category": "art"
+        }
+      ]
+    },
+    {
+      "weekNumber": 7,
+      "date": "2026-02-15",
+      "title": "Sunday Recap — 15.02",
+      "events": [
+        {
+          "emoji": "🪦",
+          "title": "Closest Thing to a SLOWrug (LOL)",
+          "description": "Market dead, vibes dead, engagement dead… and dev is basically immune to that by now 😅",
+          "status": "completed",
+          "category": "announcement"
+        },
+        {
+          "emoji": "🤖💸",
+          "title": "AI Token Burnout",
+          "description": "AI tokens are limited + expensive and I've been burning them like a maniac on my new IRL business dapp: a full appointments + rewards system for my beauty studio. ClaudeCode + Agents = BEAST 🧠⚡ …but they chew tokens like addicted gremlins 🤣💀",
+          "status": "in-progress",
+          "category": "personal"
+        },
+        {
+          "emoji": "🧬",
+          "title": "GEN Airdrops",
+          "description": "2 GEN ZEROS minted by AdrianBOT this week — both went to Wassa's wallet… mfer 😭",
+          "status": "completed",
+          "category": "mint",
+          "stats": {
+            "genMinted": 2
+          }
+        },
+        {
+          "emoji": "🔐✨",
+          "title": "ZeroGlyphs (New Experiment)",
+          "description": "Generative art collection with a twist: hidden ciphered messages inside. Smol drop, likely ~100 pieces, launching on OpenSea 👀",
+          "status": "in-progress",
+          "category": "collection",
+          "stats": {
+            "plannedSupply": 100
+          }
+        }
+      ]
+    },
+    {
+      "weekNumber": 8,
+      "date": "2026-02-22",
+      "title": "Sunday Recap — 22.02",
+      "events": [
+        {
+          "emoji": "🧘",
+          "title": "Rug Practicing",
+          "description": "Nothing happened… We hit Alchemy limits — no one noticed 💀 AdrianBOT been sleeping. Dev only devved his Beauty app. Artist did… mmmmm… nothing? 🫠 Sometimes silence is part of the cycle. Next week we cook something.",
+          "status": "completed",
+          "category": "announcement"
+        }
+      ]
+    },
+    {
+      "weekNumber": 9,
+      "date": "2026-03-01",
+      "title": "Sunday Recap — 01.03",
+      "events": [
+        {
+          "emoji": "💎",
+          "title": "$ZERO is Coming",
+          "description": "A deflationary token on Base that turns trading volume into a floor-sweeping machine. The vision distilled into one coin.",
+          "status": "announced",
+          "category": "launch"
+        },
+        {
+          "emoji": "🔷",
+          "title": "Diamond Architecture (EIP-2535)",
+          "description": "Diamond proxy deployed on Base with 19 facets across 5 deployment phases. 18 isolated storage slots via keccak256 namespacing — zero collision risk. Bypasses the 24KB limit via delegatecall routing; any facet swappable atomically with a single diamondCut(). Two-step ownership transfer. Modular, upgradeable, degen-ready.",
+          "status": "completed",
+          "category": "infrastructure"
+        }
+      ]
+    },
+    {
+      "weekNumber": 10,
+      "date": "2026-03-08",
+      "title": "Sunday Recap — 08.03",
+      "events": [
+        {
+          "emoji": "🌑",
+          "title": "$ZERO Frontend Overhaul",
+          "description": "Dark mode + acid animated logos. Hero layout overhaul. Dropdown nav + access gate for pre-launch.",
+          "status": "completed",
+          "category": "ui"
+        },
+        {
+          "emoji": "🎯",
+          "title": "Engage / Airdrop System",
+          "description": "Referral system live (150 / 25 / 2 pts). Follow tasks + OG badges. Live airdrop scores via engage API.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "⚔️",
+          "title": "Smart Contract Updates",
+          "description": "TaxReaper module live. FloorEngine cooldown + NFT fixes. OpenSea floor price integration. Voting round + swap safety.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🤖",
+          "title": "X-Bot + Infra",
+          "description": "X-bot content update (6 tweets / 21 NFTs). Railway deploy improvements + CI/CD.",
+          "status": "completed",
+          "category": "bot"
+        },
+        {
+          "emoji": "🐯",
+          "title": "Tiger Art Leaks",
+          "description": "Quite some awesome art leaks by Tiger — go let him know he's da best 🔥",
+          "status": "completed",
+          "category": "art"
+        }
+      ]
+    },
+    {
+      "weekNumber": 11,
+      "date": "2026-03-15",
+      "title": "Sunday Recap — 15.03",
+      "events": [
+        {
+          "emoji": "🧪",
+          "title": "Mainnet Tests Running",
+          "description": "New features ready for launch day. X Bot moving. Everything basically ready for $ZERO launch.",
+          "status": "completed",
+          "category": "launch"
+        },
+        {
+          "emoji": "⚡",
+          "title": "Automated Launch Flow",
+          "description": "120+ transactions that let us click one button and launch $ZERO with the whole machine set from minute one. Diamond deployed, facets attached, settings configured, LP funded, money movements — all automated.",
+          "status": "completed",
+          "category": "infrastructure",
+          "stats": {
+            "launchTxns": 120
+          }
+        },
+        {
+          "emoji": "🧠",
+          "title": "Build-First Mentality",
+          "description": "I'm used to launching first and fixing things after 🤣 But building something that actually works properly from minute one is way harder than people think.",
+          "status": "completed",
+          "category": "announcement"
+        },
+        {
+          "emoji": "🐯",
+          "title": "Tiger Still Drawing…",
+          "description": "Looks like one pixel per day or something, don't blame him 😅",
+          "status": "in-progress",
+          "category": "art"
+        },
+        {
+          "emoji": "👀",
+          "title": "The Real Final Boss",
+          "description": "Finding 5–10 more people interested in this shit 👀",
+          "status": "in-progress",
+          "category": "community"
+        }
+      ]
+    },
+    {
+      "weekNumber": 12,
+      "date": "2026-03-22",
+      "title": "Sunday Recap — 22.03",
+      "events": [
+        {
+          "emoji": "💎",
+          "title": "$ZERO Final Touches",
+          "description": "0% tax for the first minutes 👀 Targeting Tue–Wed launch next week or the following.",
+          "status": "completed",
+          "category": "launch"
+        },
+        {
+          "emoji": "🚀",
+          "title": "Render MAX Optimization",
+          "description": "Refactored with new AI + dev skills. TraitLAB now 25x faster + cheaper infra on Alchemy + Vercel 🔥",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🐯🔥",
+          "title": "ChuckZERO Animated 1/1",
+          "description": "Tiger cooked an animated 1/1 ChuckZERO. We're close.",
+          "status": "completed",
+          "category": "art"
+        }
+      ]
+    },
+    {
+      "weekNumber": 13,
+      "date": "2026-03-29",
+      "title": "Sunday Recap — 29.03",
+      "events": [
+        {
+          "emoji": "😴",
+          "title": "Not My Most Productive Week",
+          "description": "… Zzzzz … 🕺 … Yeah… not my most productive crypto week 😴",
+          "status": "completed",
+          "category": "announcement"
+        },
+        {
+          "emoji": "💎",
+          "title": "Next Week We Launch",
+          "description": "Next week we launch a new Diamond token 💎 Sometimes you don't grind. You position. Get those 10 bucks ready. Let's send $ZERO somewhere stupid 🚀",
+          "status": "announced",
+          "category": "launch"
+        }
+      ]
+    },
+    {
+      "weekNumber": 14,
+      "date": "2026-04-05",
+      "title": "Sunday Recap — 05.04",
+      "events": [
+        {
+          "emoji": "🚀",
+          "title": "$ZERO Successful Launch",
+          "description": "$ZERO is live on Base. We're here. Now we build.",
+          "status": "completed",
+          "category": "launch"
+        },
+        {
+          "emoji": "🛒",
+          "title": "AdrianSHOP v2",
+          "description": "Now integrated into the $ZERO Diamond. Fixed ratio: 1 ADRIAN = 0.0774 ZERO.",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🎬",
+          "title": "ZEROmovies Season 1",
+          "description": "Started as a simple mint… then went full tokenomics mode. Minted out in 10 minutes. Rent → 50% refund. Buy → yield + rewards. Only buyers earn. 4-part trilogy. More coming 👀",
+          "status": "completed",
+          "category": "mint"
+        },
+        {
+          "emoji": "🧹",
+          "title": "FloorENGINE First $ZERO Buys",
+          "description": "First NFTs bought by the FloorENGINE. FUDengine activated ⚙️",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "💀",
+          "title": "TAXreaper Migrated",
+          "description": "TAXreaper migrated to the Diamond. Tons of fixes across the board.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🐯",
+          "title": "New NFT + Tiger Special",
+          "description": "New NFT minted on AdrianZERO. Tiger cooked something special 🐯",
+          "status": "completed",
+          "category": "mint"
+        }
+      ]
     }
   ]
 }
