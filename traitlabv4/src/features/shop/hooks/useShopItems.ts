@@ -230,10 +230,12 @@ export function useShopItems() {
   useEffect(() => {
     const processed: ShopItem[] = [];
 
-    // Active items first
+    // Active items first (filter out achievement badges — those are minted in-game, not sold in shop)
     if (activeData) {
       const [rawItems] = activeData as [readonly unknown[], bigint];
       for (const raw of rawItems) {
+        const assetId = Number((raw as RawShopItemView).assetId);
+        if (assetId >= ACHIEVEMENT_RANGE.min && assetId <= ACHIEVEMENT_RANGE.max) continue;
         processed.push(parseRawItem(raw, false));
       }
     }
