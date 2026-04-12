@@ -656,6 +656,62 @@
           "category": "mint"
         }
       ]
+    },
+    {
+      "weekNumber": 15,
+      "date": "2026-04-12",
+      "title": "Sunday Recap — 12.04",
+      "events": [
+        {
+          "emoji": "🎮",
+          "title": "ZEROadventure II — Beta LIVE",
+          "description": "Point-and-click adventure game shipped in a week. Play with or without wallet — holders get exclusive content, leaderboards and mintable achievement badges. Huge shoutout to Tiger for art and testing 🫡",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🧹",
+          "title": "FloorENGINE — 30+ NFTs Swept",
+          "description": "New collections added. 30+ NFTs swept this week. $ZERO sales at ~20% loss (holder wins + rest burns). OpenSea sales at +10% profit — all ETH buybacks and burns $ZERO.",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "😤",
+          "title": "FUDengine Activated",
+          "description": "12h of silence? FUDengine dumps. That dump buys NFTs from OpenSea, keeps the wheel spinning. Half of $ZERO allocated for this.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🔧",
+          "title": "ERC-1155 Support for FloorENGINE",
+          "description": "FloorENGINE now sweeps ERC-1155s. Started with BasePaint NFTs.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🎬",
+          "title": "ZEROmovies S2 + Marketplace",
+          "description": "New mechanics in the works. Rental late fees: 1k/day. Full marketplace for movie NFTs — offers, buys, everything.",
+          "status": "in-progress",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🖼️",
+          "title": "Gallery + Filters + Airdrop",
+          "description": "Gallery with filters ready. ZERO backgrounds airdropped to holders. AdrianZERO.com reshaped.",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "♻️",
+          "title": "$ZERO Rebrand",
+          "description": "Dropping Adrian where we can. $ZERO just hits better for new people. Cleaner. Universal.",
+          "status": "in-progress",
+          "category": "infrastructure"
+        }
+      ]
     }
   ]
 }
