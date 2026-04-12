@@ -36,12 +36,16 @@ export interface ShopItem {
 }
 
 // Asset ID ranges for categorization
-const FLOPPY_RANGE = { min: 10000, max: 20000 };
+const FLOPPY_RANGE = { min: 10000, max: 19999 };
+const ACHIEVEMENT_RANGE = { min: 20000, max: 29999 };
 const SERUM_RANGE = { min: 262144, max: 262147 };
 
 function categorizeItem(assetId: number): 'trait' | 'floppy' | 'serum' {
   if (assetId >= FLOPPY_RANGE.min && assetId <= FLOPPY_RANGE.max) {
     return 'floppy';
+  }
+  if (assetId >= ACHIEVEMENT_RANGE.min && assetId <= ACHIEVEMENT_RANGE.max) {
+    return 'trait'; // achievements display as traits in the shop
   }
   if (assetId >= SERUM_RANGE.min && assetId <= SERUM_RANGE.max) {
     return 'serum';
@@ -52,10 +56,22 @@ function categorizeItem(assetId: number): 'trait' | 'floppy' | 'serum' {
 // GitHub raw URL for rendered images (primary source for traits)
 const GITHUB_IMAGE_BASE = 'https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/rendered-images';
 
+// Achievement image mapping (from achievements.json)
+const ACHIEVEMENT_IMAGES: Record<number, string> = {
+  20001: 'ch1_complete', 20002: 'ch2_complete', 20003: 'ch3_complete',
+  20004: 'ch4_complete', 20005: 'patient_zero', 20006: 'game_complete',
+  20010: 'holder_vip_floppy', 20011: 'vip_access', 20012: 'archivist',
+  20013: 'alpha_leak', 20014: 'genesis_miner', 20015: 'sector_zero',
+  20016: 'medical_records', 20017: 'preserved', 20020: 'signal_boost',
+};
+
 // Fallback image URL based on asset type (exported for onError fallback in components)
 export function getFallbackImageUrl(assetId: number): string {
-  if (assetId >= 10000 && assetId <= 20000) {
+  if (assetId >= FLOPPY_RANGE.min && assetId <= FLOPPY_RANGE.max) {
     return `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${assetId}.gif`;
+  }
+  if (ACHIEVEMENT_IMAGES[assetId]) {
+    return `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/achievements/${ACHIEVEMENT_IMAGES[assetId]}.png`;
   }
   if (assetId >= 262144 && assetId <= 262147) {
     return getBaseGitHubImageUrl(IMAGE_PATHS.getComponentImage(assetId, 'gif'));
@@ -64,7 +80,8 @@ export function getFallbackImageUrl(assetId: number): string {
 }
 
 function getGitHubImageUrl(assetId: number): string | null {
-  if (assetId >= 10000 && assetId <= 20000) return null;
+  if (assetId >= FLOPPY_RANGE.min && assetId <= FLOPPY_RANGE.max) return null;
+  if (assetId >= ACHIEVEMENT_RANGE.min && assetId <= ACHIEVEMENT_RANGE.max) return null;
   if (assetId >= 262144 && assetId <= 262147) return null;
   return `${GITHUB_IMAGE_BASE}/${assetId}.png`;
 }
@@ -98,6 +115,22 @@ const ITEM_NAMES: Record<number, string> = {
   10013: 'Hello-WEN 25',
   10014: 'Blacklight Floppy',
   10015: 'X-Mas-Floppy',
+  // Achievements (ZEROadventure II badges)
+  20001: 'Breaking & Entering',
+  20002: 'The Receptionist',
+  20003: 'Below the Surface',
+  20004: 'The Mountain Path',
+  20005: 'Patient Zero',
+  20006: 'ZEROadventure II Complete',
+  20010: 'VIP Floppy Disc',
+  20011: 'VIP Access',
+  20012: 'Archivist',
+  20013: 'Alpha Leak',
+  20014: 'Genesis Miner',
+  20015: 'Sector Zero',
+  20016: 'Medical Records',
+  20017: 'Preserved',
+  20020: 'Signal Boost',
   // Serums (from serums.json)
   262144: 'AdrianGF',
   262145: 'GOLD Serum',

@@ -13,8 +13,17 @@ interface ShopItemCardProps {
   item: ShopItem;
 }
 
+// uint128 max — ShopFacet returns this when no price is set
+const UINT128_MAX = BigInt('340282366920938463463374607431768211455');
+
+// Check if price is a real configured price (not max/unset)
+export function isPriceConfigured(price: bigint): boolean {
+  return price > BigInt(0) && price < UINT128_MAX;
+}
+
 // Helper to format price
 function formatPrice(price: bigint): string {
+  if (!isPriceConfigured(price)) return '—';
   const formatted = Number(price) / 1e18;
   if (formatted >= 1000000) {
     return `${(formatted / 1000000).toFixed(1)}M`;
@@ -39,8 +48,8 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
   const priceFormatted = formatPrice(activePrice);
   const tokenSymbol = paymentToken === 'ZERO' ? '$ZERO' : '$ADRIAN';
 
-  // Check if this item accepts the selected payment token
-  const tokenAccepted = activePrice > BigInt(0);
+  // Check if this item accepts the selected payment token (uint128.max = not configured)
+  const tokenAccepted = isPriceConfigured(activePrice);
 
   const handleAdd = () => {
     addToCart({
