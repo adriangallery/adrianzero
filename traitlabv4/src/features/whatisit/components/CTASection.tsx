@@ -12,13 +12,13 @@ const ctaButtons = [
     primary: true,
   },
   {
-    label: 'Buy $ADRIAN',
-    url: 'https://app.uniswap.org/#/tokens/ethereum/0x...',
+    label: 'Buy $ZERO',
+    url: '/buy',
     primary: true,
   },
   {
     label: 'Visit TraitLAB',
-    url: '/lab',
+    url: '/mynfts',
     primary: false,
   },
   {
@@ -33,7 +33,7 @@ export function CTASection() {
     <div className="rounded-lg border border-border bg-card p-8 text-center">
       <h2 className="mb-4 text-3xl font-bold text-foreground">Ready to Dive In?</h2>
       <p className="mb-8 text-muted-foreground">
-        Join the $ADRIAN ecosystem and start building your AdrianZERO
+        Join the ecosystem and start building your AdrianZERO
       </p>
 
       <div className="flex flex-wrap justify-center gap-4">

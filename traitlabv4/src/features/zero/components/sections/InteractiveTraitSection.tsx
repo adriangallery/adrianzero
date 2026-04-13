@@ -51,7 +51,7 @@ export const InteractiveTraitSection: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Total Combinations: <span className="text-green-500 font-bold">1,000,000+</span>
+            <span className="text-green-500 font-bold">1,100+</span> traits across <span className="text-green-500 font-bold">27</span> categories
           </motion.p>
         </motion.div>
 

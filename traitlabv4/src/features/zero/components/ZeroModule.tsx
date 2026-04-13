@@ -125,9 +125,9 @@ export const ZeroModule: React.FC = () => {
           />
           <div className="pointer-events-none absolute inset-0 bg-black/40" />
           <div className="absolute bottom-8 left-4 right-4 sm:bottom-10 sm:left-6 sm:right-6 lg:left-8 lg:right-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: LIME }}>BE REAL | BE $ADRIAN</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: LIME }}>BE REAL | BE ZERO</p>
             <h2 className="mt-2 text-4xl font-black leading-[0.92] sm:text-5xl md:text-6xl lg:text-7xl">
-              FIRE MEETS
+              ART MEETS
               <br />
               BLOCKCHAIN
             </h2>
@@ -159,7 +159,7 @@ export const ZeroModule: React.FC = () => {
               className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#c6fff2] backdrop-blur"
             >
               <Sparkles className="h-4 w-4" />
-              Future Landing Experience
+              Live on Base
             </motion.div>
 
             <motion.h1
@@ -168,10 +168,10 @@ export const ZeroModule: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.1 }}
               className="text-balance text-5xl font-black leading-[0.92] sm:text-6xl md:text-7xl lg:text-8xl"
             >
-              ZERO IS
+              YOUR NFT
               <br />
                 <span className="bg-gradient-to-r from-[#00d2ff] via-[#55f7b7] to-[#ffb258] bg-clip-text text-transparent">
-                  PURE VISUAL ENERGY
+                  YOUR RULES
                 </span>
               </motion.h1>
 
@@ -181,7 +181,7 @@ export const ZeroModule: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="mt-6 max-w-2xl text-pretty text-base text-[#d8e2ff]/90 sm:text-lg md:text-xl"
             >
-              A next-gen showcase page for AdrianZERO: bold identity, dynamic composition, and a collector-first experience designed to feel premium on every screen.
+              Mint, customize, and evolve your AdrianZERO. Collect traits, open packs, and build a one-of-a-kind identity on Base.
             </motion.p>
 
             <motion.div
@@ -253,10 +253,10 @@ export const ZeroModule: React.FC = () => {
       <section className="relative z-[5] py-12">
         <div className="mx-auto mb-10 max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-black uppercase tracking-[0.08em] sm:text-4xl md:text-5xl">
-            Living Visual Gallery
+            The Collection
           </h2>
           <p className="mt-3 max-w-3xl text-sm text-[#d6dfff]/90 sm:text-base">
-            A cinematic stream of collector identities. Each ZERO carries a different composition, mood, and rarity profile.
+            Every ZERO is unique. Browse the community's custom identities.
           </p>
         </div>
 
@@ -360,7 +360,7 @@ export const ZeroModule: React.FC = () => {
           <div className="max-w-2xl">
             <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: LIME, borderColor: 'rgba(0,255,0,0.45)' }}>
               <ShieldCheck className="h-4 w-4" />
-              Built For The Next Era
+              Live on Base
             </p>
             <h3 className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
               Step Into The ZERO Timeline.

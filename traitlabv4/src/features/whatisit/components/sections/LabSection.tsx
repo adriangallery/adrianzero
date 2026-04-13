@@ -20,11 +20,11 @@ export function LabSection() {
 
           <div className="space-y-2">
             <div className="rounded-lg bg-muted/30 p-4 text-center">
-              <div className="text-3xl font-bold text-cyan-400">1,000+</div>
+              <div className="text-3xl font-bold text-cyan-400">1,100+</div>
               <p className="text-sm text-muted-foreground">Traits Created</p>
             </div>
             <div className="rounded-lg bg-muted/30 p-4 text-center">
-              <div className="text-3xl font-bold text-pink-400">10+</div>
+              <div className="text-3xl font-bold text-pink-400">7</div>
               <p className="text-sm text-muted-foreground">Product Lines</p>
             </div>
           </div>
@@ -62,7 +62,7 @@ export function LabSection() {
 
           <div className="flex gap-3 pt-2">
             <a
-              href="/"
+              href="/mynfts"
               className="flex-1 rounded-lg bg-primary px-4 py-2 text-center text-sm font-bold text-primary-foreground hover:bg-primary/90"
             >
               Try LAB →

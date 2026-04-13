@@ -20,7 +20,7 @@ export function ZeroSection() {
 
           <div className="flex gap-3">
             <a
-              href="/onboarding"
+              href="/mint"
               className="flex-1 rounded-lg bg-primary px-4 py-3 text-center font-bold text-primary-foreground hover:bg-primary/90"
             >
               Mint →

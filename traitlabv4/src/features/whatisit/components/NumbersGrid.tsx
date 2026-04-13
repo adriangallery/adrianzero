@@ -10,10 +10,10 @@ export function NumbersGrid() {
 
   const stats = [
     { label: 'AdrianPunks', value: '1,000', emoji: '👾' },
-    { label: 'AdrianZERO', value: '700+', emoji: '🧑' },
-    { label: 'Traits Created', value: '1,200+', emoji: '🧬' },
+    { label: 'AdrianZERO', value: '750+', emoji: '🧑' },
+    { label: 'Traits Created', value: '1,100+', emoji: '🧬' },
     { label: 'Active Builders', value: '1', emoji: '🔨' },
-    { label: '$ADRIAN Supply', value: '333M', emoji: '💰' },
+    { label: '$ADRIAN Supply', value: '323M', emoji: '💰' },
     { label: 'Days Building', value: days.toString(), emoji: '📅' },
   ];
 

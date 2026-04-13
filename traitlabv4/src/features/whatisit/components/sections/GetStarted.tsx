@@ -48,7 +48,7 @@ export function GetStarted() {
             Open packs & apply traits
           </p>
           <a
-            href="/"
+            href="/mynfts"
             className="block rounded-lg bg-primary px-4 py-2 text-center text-sm font-bold text-primary-foreground hover:bg-primary/90"
           >
             LAB →

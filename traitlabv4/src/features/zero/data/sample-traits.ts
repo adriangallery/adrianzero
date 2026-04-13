@@ -39,7 +39,7 @@ export const SAMPLE_TRAITS: TraitCategory[] = [
 export const UTILITY_CARDS = [
   {
     title: 'TraitLAB Customization',
-    description: 'Mix and match thousands of traits to create your perfect ZERO',
+    description: 'Mix and match 1,100+ traits to create your perfect ZERO',
     icon: '🔧',
   },
   {
@@ -53,25 +53,25 @@ export const UTILITY_CARDS = [
     icon: '⚔️',
   },
   {
-    title: '$ADRIAN Token Integration',
-    description: 'Use tokens for traits, upgrades, and ecosystem features',
+    title: '$ZERO Token Economy',
+    description: 'Deflationary token — swap tax fuels the floor engine, burns, and staking',
     icon: '💰',
   },
   {
-    title: 'Community Voting',
-    description: 'Shape the future with governance and trait proposals',
-    icon: '🗳️',
+    title: 'ZEROmovies',
+    description: 'Rent movies with $ZERO. Own a piece of the story.',
+    icon: '🎬',
   },
   {
-    title: 'Future Expansion',
-    description: 'New utilities, integrations, and experiences coming soon',
-    icon: '🚀',
+    title: 'TraitSHOP',
+    description: 'Buy traits, floppies, and serums directly with $ZERO or $ADRIAN',
+    icon: '🛒',
   },
 ];
 
 export const STATS_DATA = [
-  { value: '10,000', label: 'ZEROs Minted' },
-  { value: '5,000+', label: 'Traits Applied' },
-  { value: '1,000+', label: 'Active Holders' },
-  { value: '500+', label: 'Events Completed' },
+  { value: '750+', label: 'ZEROs Minted' },
+  { value: '1,100+', label: 'Unique Traits' },
+  { value: '1,000', label: 'AdrianPunks' },
+  { value: '55+', label: 'Weekly Recaps' },
 ];
