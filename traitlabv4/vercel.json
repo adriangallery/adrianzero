@@ -3,11 +3,10 @@
   "outputDirectory": "dist",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "vite",
-  "redirects": [
-    { "source": "/adventure", "destination": "/adventure/" }
-  ],
   "rewrites": [
-    { "source": "/adventure/:path*", "destination": "https://zeroadventure.vercel.app/:path*" },
+    { "source": "/adventure", "destination": "https://zeroadventure.vercel.app/" },
+    { "source": "/adventure/", "destination": "https://zeroadventure.vercel.app/" },
+    { "source": "/adventure/:path+", "destination": "https://zeroadventure.vercel.app/:path+" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
