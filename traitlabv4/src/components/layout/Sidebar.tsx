@@ -68,26 +68,43 @@ export function Sidebar({
           {/* Navigation - Scrollable */}
           <div className="flex-1 overflow-y-auto p-4">
             <nav className="space-y-1">
-              {visibleItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={onClose}
-                  className={`
-                    flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                    ${
-                      isActive(item.path)
-                        ? 'bg-primary text-primary-foreground'
-                        : item.highlight
-                        ? 'bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30'
-                        : 'text-foreground hover:bg-muted'
-                    }
-                  `}
-                >
-                  {item.icon}
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              ))}
+              {visibleItems.map((item) => {
+                const classes = `
+                  flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                  ${
+                    isActive(item.path)
+                      ? 'bg-primary text-primary-foreground'
+                      : item.highlight
+                      ? 'bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30'
+                      : 'text-foreground hover:bg-muted'
+                  }
+                `;
+                if (item.external) {
+                  return (
+                    <a
+                      key={item.path}
+                      href={item.path}
+                      target="_top"
+                      onClick={onClose}
+                      className={classes}
+                    >
+                      {item.icon}
+                      <span className="font-medium">{item.label}</span>
+                    </a>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={onClose}
+                    className={classes}
+                  >
+                    {item.icon}
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
             </nav>
           </div>
         </motion.aside>
@@ -106,25 +123,41 @@ export function Sidebar({
       {/* Navigation - Scrollable */}
       <div className="flex-1 overflow-y-auto p-4">
         <nav className="space-y-1">
-          {visibleItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`
-                flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                ${
-                  isActive(item.path)
-                    ? 'bg-primary text-primary-foreground'
-                    : item.highlight
-                    ? 'bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30'
-                    : 'text-foreground hover:bg-muted'
-                }
-              `}
-            >
-              <span className="text-2xl">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
+          {visibleItems.map((item) => {
+            const classes = `
+              flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+              ${
+                isActive(item.path)
+                  ? 'bg-primary text-primary-foreground'
+                  : item.highlight
+                  ? 'bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30'
+                  : 'text-foreground hover:bg-muted'
+              }
+            `;
+            if (item.external) {
+              return (
+                <a
+                  key={item.path}
+                  href={item.path}
+                  target="_top"
+                  className={classes}
+                >
+                  <span className="text-2xl">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
+                </a>
+              );
+            }
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={classes}
+              >
+                <span className="text-2xl">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
     </aside>

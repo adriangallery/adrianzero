@@ -6,6 +6,7 @@ import {
   Droplets,
   Film,
   Frame,
+  Gamepad2,
   Grid,
   HelpCircle,
   Rocket,
@@ -21,6 +22,8 @@ export interface NavItem {
   requiresAdrianPunks?: boolean;
   requiresConnection?: boolean;
   highlight?: boolean;
+  /** Opens in top frame (breaks out of iframe) */
+  external?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -29,6 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/mynfts', label: 'My NFTs', icon: <Frame className="h-5 w-5" />, requiresConnection: true },
   { path: '/shop', label: 'Shop', icon: <ShoppingBag className="h-5 w-5" /> },
   { path: '/buy', label: 'Buy $ZERO', icon: <DollarSign className="h-5 w-5" />, highlight: true },
+  { path: '/adventure/', label: 'Adventure', icon: <Gamepad2 className="h-5 w-5" />, external: true },
   { path: '/zeromovies', label: 'ZEROmovies', icon: <Film className="h-5 w-5" /> },
   { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> },
   { path: '/punks', label: 'Punks', icon: <Award className="h-5 w-5" />, requiresAdrianPunks: true },

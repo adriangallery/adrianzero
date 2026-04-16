@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "redirects": [
+    { "source": "/adventure", "destination": "/adventure/" }
+  ],
+  "rewrites": [
+    { "source": "/adventure/:path*", "destination": "https://zeroadventure.vercel.app/:path*" }
+  ]
 }
