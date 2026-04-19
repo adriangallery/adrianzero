@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" shape-rendering="crispEdges">
+  <!-- distant city skyline silhouette -->
+  <g fill="#1a1020">
+    <rect x="0" y="580" width="140" height="500"/>
+    <rect x="140" y="620" width="80" height="460"/>
+    <rect x="220" y="520" width="120" height="560"/>
+    <rect x="340" y="560" width="100" height="520"/>
+    <rect x="440" y="500" width="160" height="580"/>
+    <rect x="600" y="540" width="90" height="540"/>
+    <rect x="690" y="480" width="140" height="600"/>
+    <rect x="830" y="540" width="110" height="540"/>
+    <rect x="940" y="500" width="150" height="580"/>
+    <rect x="1090" y="560" width="90" height="520"/>
+    <rect x="1180" y="520" width="130" height="560"/>
+    <rect x="1310" y="600" width="100" height="480"/>
+    <rect x="1410" y="540" width="120" height="540"/>
+    <rect x="1530" y="580" width="90" height="500"/>
+    <rect x="1620" y="520" width="150" height="560"/>
+    <rect x="1770" y="580" width="150" height="500"/>
+  </g>
+  <!-- tiny windows -->
+  <g fill="#ffb040" opacity="0.5">
+    <rect x="30" y="640" width="4" height="4"/>
+    <rect x="80" y="700" width="4" height="4"/>
+    <rect x="260" y="580" width="4" height="4"/>
+    <rect x="480" y="600" width="4" height="4"/>
+    <rect x="720" y="560" width="4" height="4"/>
+    <rect x="970" y="600" width="4" height="4"/>
+    <rect x="1210" y="580" width="4" height="4"/>
+    <rect x="1440" y="620" width="4" height="4"/>
+    <rect x="1660" y="600" width="4" height="4"/>
+    <rect x="1820" y="660" width="4" height="4"/>
+  </g>
+</svg>

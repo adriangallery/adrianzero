@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" shape-rendering="crispEdges">
+  <!-- mid-ground: dead trees + fences -->
+  <g fill="#0a0a0f">
+    <rect x="80" y="640" width="14" height="240"/>
+    <rect x="50" y="660" width="30" height="6"/>
+    <rect x="90" y="700" width="40" height="6"/>
+    <rect x="60" y="740" width="25" height="6"/>
+
+    <rect x="420" y="600" width="18" height="280"/>
+    <rect x="380" y="620" width="40" height="8"/>
+    <rect x="440" y="660" width="50" height="8"/>
+    <rect x="400" y="700" width="30" height="8"/>
+
+    <rect x="880" y="620" width="16" height="260"/>
+    <rect x="850" y="640" width="30" height="6"/>
+    <rect x="895" y="680" width="40" height="6"/>
+
+    <rect x="1280" y="600" width="18" height="280"/>
+    <rect x="1240" y="620" width="40" height="8"/>
+    <rect x="1300" y="660" width="45" height="8"/>
+    <rect x="1260" y="700" width="30" height="8"/>
+
+    <rect x="1640" y="640" width="14" height="240"/>
+    <rect x="1610" y="660" width="30" height="6"/>
+    <rect x="1650" y="700" width="35" height="6"/>
+  </g>
+</svg>

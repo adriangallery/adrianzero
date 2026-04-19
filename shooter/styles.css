@@ -1,17 +1,138 @@
-/* Import Pixelify Sans font */
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap');
+* { box-sizing: border-box; }
 
-/* Apply font to all elements */
-* {
-    font-family: 'Pixelify Sans', cursive;
+html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a12;
+    color: #e6e6e6;
+    font-family: 'Pixelify Sans', monospace;
+    min-height: 100vh;
 }
 
-/* Game-specific text styles */
-.score-display, .time-display, .title, .button, .game-over-text, .high-score {
-    font-family: 'Pixelify Sans', cursive;
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    background: #11111a;
+    border-bottom: 2px solid #2a1a22;
 }
 
-/* Ensure canvas text uses the font */
-canvas {
-    font-family: 'Pixelify Sans', cursive;
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: #ffd24a;
+}
+
+.brand .dot {
+    width: 10px;
+    height: 10px;
+    background: #ff2a2a;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ff2a2a;
+    animation: pulse 1.4s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.wallet-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wallet-addr {
+    font-size: 14px;
+    color: #aaa;
+    padding: 6px 10px;
+    background: #1a1a22;
+    border-radius: 4px;
+}
+
+.btn-primary {
+    background: #8a1a1a;
+    color: #fff;
+    border: 2px solid #ffd24a;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-primary:hover { background: #a82a2a; }
+
+.game-container {
+    max-width: 960px;
+    margin: 24px auto;
+    padding: 0 12px;
+    text-align: center;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100%;
+    max-width: 960px;
+    aspect-ratio: 16 / 9;
+    margin: 0 auto;
+    background: #000;
+    border: 2px solid #2a1a22;
+    box-shadow: 0 0 40px rgba(255, 42, 42, 0.2);
+}
+
+.mint-status {
+    margin-top: 12px;
+    font-size: 16px;
+    min-height: 22px;
+}
+
+.mint-status a { color: #ffd24a; }
+
+.tier-panel {
+    max-width: 960px;
+    margin: 16px auto;
+    padding: 0 12px;
+}
+
+.tier-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.tier {
+    background: #11111a;
+    border: 2px solid #2a1a22;
+    padding: 14px 10px;
+    text-align: center;
+}
+
+.tier-name { color: #ffd24a; font-size: 16px; letter-spacing: 1px; }
+.tier-score { color: #888; font-size: 13px; margin-top: 4px; }
+.tier-price { color: #fff; font-size: 15px; margin-top: 6px; }
+.tier-price .discount {
+    color: #6aff6a;
+    font-size: 12px;
+    margin-left: 4px;
+}
+.tier-price.free { color: #6aff6a; font-weight: bold; }
+
+.footer {
+    text-align: center;
+    padding: 16px 20px 40px;
+    color: #666;
+    font-size: 13px;
+}
+.footer a { color: #ffd24a; text-decoration: none; }
+
+@media (max-width: 640px) {
+    .topbar { flex-direction: column; gap: 10px; padding: 10px; }
+    .tier-row { grid-template-columns: repeat(2, 1fr); }
+    .brand { font-size: 14px; }
 }

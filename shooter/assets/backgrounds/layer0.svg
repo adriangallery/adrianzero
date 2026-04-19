@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" shape-rendering="crispEdges">
+  <!-- sky with blood moon -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="60%" stop-color="#2a1a2a"/>
+      <stop offset="100%" stop-color="#4a2a3a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <!-- blood moon -->
+  <circle cx="1500" cy="280" r="120" fill="#ff4a3a"/>
+  <circle cx="1470" cy="260" r="18" fill="#c83a2a"/>
+  <circle cx="1540" cy="310" r="12" fill="#c83a2a"/>
+  <circle cx="1510" cy="240" r="8" fill="#c83a2a"/>
+  <!-- stars -->
+  <g fill="#ffe8aa">
+    <rect x="100" y="120" width="3" height="3"/>
+    <rect x="300" y="80" width="3" height="3"/>
+    <rect x="600" y="160" width="2" height="2"/>
+    <rect x="820" y="60" width="2" height="2"/>
+    <rect x="1100" y="140" width="3" height="3"/>
+    <rect x="1300" y="90" width="2" height="2"/>
+    <rect x="1700" y="180" width="3" height="3"/>
+    <rect x="1850" y="100" width="2" height="2"/>
+    <rect x="200" y="220" width="2" height="2"/>
+    <rect x="900" y="240" width="2" height="2"/>
+  </g>
+</svg>

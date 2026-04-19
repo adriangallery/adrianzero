@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="600" viewBox="0 0 1920 600" shape-rendering="crispEdges">
+  <!-- graveyard tombstones -->
+  <g fill="#3a3a42">
+    <rect x="60" y="80" width="80" height="160" rx="4"/>
+    <rect x="300" y="120" width="70" height="120" rx="4"/>
+    <rect x="520" y="70" width="90" height="180" rx="4"/>
+    <rect x="780" y="100" width="75" height="150" rx="4"/>
+    <rect x="1020" y="80" width="85" height="170" rx="4"/>
+    <rect x="1260" y="110" width="70" height="140" rx="4"/>
+    <rect x="1500" y="80" width="90" height="170" rx="4"/>
+    <rect x="1720" y="100" width="80" height="150" rx="4"/>
+  </g>
+  <!-- RIP inscriptions -->
+  <g fill="#1a1a22" font-family="monospace" font-size="22" text-anchor="middle">
+    <text x="100" y="160">RIP</text>
+    <text x="335" y="190">RIP</text>
+    <text x="565" y="160">RIP</text>
+    <text x="817" y="180">RIP</text>
+    <text x="1062" y="170">RIP</text>
+    <text x="1295" y="190">RIP</text>
+    <text x="1545" y="170">RIP</text>
+    <text x="1760" y="180">RIP</text>
+  </g>
+  <!-- dirt ground -->
+  <rect x="0" y="240" width="1920" height="360" fill="#2a1e14"/>
+  <g fill="#3a2a1a">
+    <rect x="0" y="240" width="1920" height="8"/>
+    <rect x="40" y="260" width="80" height="4"/>
+    <rect x="250" y="280" width="100" height="4"/>
+    <rect x="480" y="260" width="90" height="4"/>
+    <rect x="720" y="300" width="120" height="4"/>
+    <rect x="1000" y="280" width="100" height="4"/>
+    <rect x="1260" y="260" width="110" height="4"/>
+    <rect x="1560" y="290" width="90" height="4"/>
+    <rect x="1780" y="260" width="120" height="4"/>
+  </g>
+</svg>

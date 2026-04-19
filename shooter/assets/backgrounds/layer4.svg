@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="280" viewBox="0 0 1920 280" shape-rendering="crispEdges">
+  <!-- foreground: grass, crosses, fog -->
+  <rect x="0" y="0" width="1920" height="280" fill="#1a100a"/>
+  <g fill="#0a0a0a">
+    <!-- crosses -->
+    <rect x="180" y="40" width="8" height="80"/>
+    <rect x="168" y="60" width="32" height="8"/>
+    <rect x="820" y="50" width="8" height="90"/>
+    <rect x="806" y="70" width="36" height="8"/>
+    <rect x="1420" y="30" width="10" height="100"/>
+    <rect x="1402" y="55" width="46" height="8"/>
+  </g>
+  <!-- grass tufts -->
+  <g fill="#2a3a1a">
+    <rect x="0" y="120" width="1920" height="160"/>
+  </g>
+  <g fill="#3a4a22">
+    <rect x="40" y="120" width="6" height="10"/>
+    <rect x="120" y="125" width="5" height="8"/>
+    <rect x="260" y="122" width="6" height="10"/>
+    <rect x="380" y="125" width="5" height="8"/>
+    <rect x="520" y="120" width="6" height="10"/>
+    <rect x="680" y="125" width="5" height="8"/>
+    <rect x="900" y="122" width="6" height="10"/>
+    <rect x="1080" y="125" width="5" height="8"/>
+    <rect x="1240" y="120" width="6" height="10"/>
+    <rect x="1400" y="125" width="5" height="8"/>
+    <rect x="1580" y="122" width="6" height="10"/>
+    <rect x="1740" y="125" width="5" height="8"/>
+  </g>
+  <!-- fog overlay -->
+  <rect x="0" y="150" width="1920" height="130" fill="#8a8a9a" opacity="0.12"/>
+</svg>
