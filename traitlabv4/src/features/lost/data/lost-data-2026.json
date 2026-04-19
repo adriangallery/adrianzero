@@ -712,6 +712,55 @@
           "category": "infrastructure"
         }
       ]
+    },
+    {
+      "weekNumber": 16,
+      "date": "2026-04-19",
+      "title": "Sunday Recap — 19.04",
+      "events": [
+        {
+          "emoji": "🏛️",
+          "title": "VaultFacet Activated",
+          "description": "10M $ZERO seeded. 3% of tax now flows to the vault. More coming.",
+          "status": "completed",
+          "category": "infrastructure"
+        },
+        {
+          "emoji": "🧹",
+          "title": "FloorENGINE Smart Offer Mode",
+          "description": "Now bids below floor on OpenSea, not just sweeps. V2 added a holder governance toggle: BID vs SWEEP per collection.",
+          "status": "completed",
+          "category": "marketplace"
+        },
+        {
+          "emoji": "🗳️",
+          "title": "$ZEROgovern Live",
+          "description": "3 votes shipped — collection rotation, vote duration (1h/6h/12h/24h), and buyback toggle.",
+          "status": "completed",
+          "category": "feature"
+        },
+        {
+          "emoji": "🎨",
+          "title": "OK Computers — Next Sweep Collection",
+          "description": "Voted in by holders. Next FloorENGINE target on deck.",
+          "status": "completed",
+          "category": "announcement"
+        },
+        {
+          "emoji": "🎮",
+          "title": "ZEROadventure II — Playable + Trailer",
+          "description": "1,600+ AI voice lines, 22 SFX, iMUSE soundtrack. Free to play, trailer dropped. Art by Tiger 🐯",
+          "status": "completed",
+          "category": "dapp"
+        },
+        {
+          "emoji": "🔥",
+          "title": "Week in Numbers",
+          "description": "ZERO ATH hit. 70+ BasePaint NFTs swept (19 tonight alone). 6 sold → all ETH to buyback + burn. 2.97M ZERO burned, 8.03M staked. The machine doesn't sleep.",
+          "status": "completed",
+          "category": "marketplace"
+        }
+      ]
     }
   ]
 }
