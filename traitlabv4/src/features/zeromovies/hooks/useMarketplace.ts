@@ -1,4 +1,4 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZERO_MOVIES_FACET_ABI } from '@/lib/web3/abi';
 import { formatEther, parseEther } from 'viem';
@@ -13,6 +13,46 @@ export interface CollectionOffer {
   bidder: string;
   amount: bigint;
   amountFormatted: number;
+}
+
+export interface IndividualOffer {
+  movieId: number;
+  bidder: string;
+  amount: bigint;
+  amountFormatted: number;
+  timestamp: number;
+}
+
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
+
+export function useAllIndividualOffers(movieIds: number[]) {
+  const { data, refetch } = useReadContracts({
+    contracts: movieIds.map(id => ({
+      address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+      abi: ZERO_MOVIES_FACET_ABI,
+      functionName: 'getOffer',
+      args: [BigInt(id)],
+    })),
+    query: { refetchInterval: 15_000, enabled: movieIds.length > 0 },
+  });
+
+  const offers: IndividualOffer[] = [];
+  if (data) {
+    data.forEach((r, i) => {
+      if (r.status !== 'success' || !r.result) return;
+      const [bidder, amount, timestamp] = r.result as unknown as [string, bigint, bigint];
+      if (bidder === ZERO_ADDR || amount === 0n) return;
+      offers.push({
+        movieId: movieIds[i],
+        bidder,
+        amount,
+        amountFormatted: Number(formatEther(amount)),
+        timestamp: Number(timestamp),
+      });
+    });
+  }
+
+  return { offers, refetch };
 }
 
 export function useAllListings() {

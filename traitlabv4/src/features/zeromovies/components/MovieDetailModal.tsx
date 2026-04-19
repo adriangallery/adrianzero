@@ -307,11 +307,55 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
               </>
             )}
 
-            {/* Currently rented by someone else */}
+            {/* Currently rented by someone else — allow offers (renter can flip via acceptOfferAsRenter) */}
             {isRentedByOther && !isPermanent && (
-              <div className="rounded-lg border border-zinc-700/50 bg-zinc-900/50 p-3 text-center">
-                <p className="text-xs font-bold text-amber-400">Currently Rented</p>
-                <p className="mt-1 text-[10px] text-zinc-500">Check back later — it may be returned</p>
+              <div className="space-y-2">
+                <div className="rounded-lg border border-amber-700/40 bg-amber-900/10 p-3 text-center">
+                  <p className="text-xs font-bold text-amber-400">Currently Rented</p>
+                  <p className="mt-1 text-[10px] text-zinc-500">Make an offer — the renter can accept and flip it to you</p>
+                </div>
+
+                <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
+                  {hasOffer && (
+                    <p className="text-[9px] text-zinc-500 mb-2">
+                      Current offer: <span className="text-yellow-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
+                      {isMyOffer && ' (yours)'}
+                    </p>
+                  )}
+                  {isMyOffer ? (
+                    <>
+                      <button
+                        onClick={() => cancelOffer(movie.id)}
+                        disabled={isCancelOfferPending || isCancelOfferConfirming}
+                        className="w-full rounded bg-zinc-800 py-2 text-[10px] font-bold text-red-400 hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                      >
+                        {isCancelOfferPending || isCancelOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : 'WITHDRAW OFFER'}
+                      </button>
+                      <p className="mt-1 text-[8px] text-zinc-700">Cancel your offer and unlock your $ZERO.</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[10px] text-zinc-400 mb-2">Make an offer</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          value={offerInput}
+                          onChange={(e) => setOfferInput(e.target.value)}
+                          placeholder="$ZERO amount"
+                          className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
+                        />
+                        <button
+                          onClick={() => { if (!requireWallet('offer')) return; if (Number(offerInput) > 0) { makeIndOffer(movie.id, Number(offerInput)); setOfferInput(''); } }}
+                          disabled={isIndOfferPending || isIndOfferConfirming || !offerInput || Number(offerInput) <= 0}
+                          className="rounded bg-yellow-600 px-3 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                        >
+                          {isIndOfferPending || isIndOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
+                        </button>
+                      </div>
+                      <p className="mt-1 text-[8px] text-zinc-700">$ZERO locked. Must outbid current offer. If the renter accepts, it flips to you.</p>
+                    </>
+                  )}
+                </div>
               </div>
             )}
 

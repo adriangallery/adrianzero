@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ShoppingBag, Loader2, X } from 'lucide-react';
 import {
-  useAllListings, useCollectionOffers, useBuyListing,
-  useMakeCollectionOffer,
+  useAllListings, useCollectionOffers, useAllIndividualOffers, useBuyListing,
+  useMakeCollectionOffer, useCancelOffer,
 } from '../hooks/useMarketplace';
 import { useZeroBalance } from '../hooks/useZeroBalance';
 import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
@@ -11,14 +11,20 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZERO_MOVIES_FACET_ABI } from '@/lib/web3/abi';
 import { EnsName } from '@/components/shared/EnsName';
 
+type FeedRow =
+  | { kind: 'collection'; index: number; bidder: string; amount: number }
+  | { kind: 'individual'; movieId: number; bidder: string; amount: number };
+
 export function MarketplaceSection() {
   const { address } = useAccount();
   const { listings } = useAllListings();
-  const { offers } = useCollectionOffers();
+  const { offers: colOffers } = useCollectionOffers();
   const { movies } = useMoviesCatalog();
+  const { offers: indOffers } = useAllIndividualOffers(movies.map(m => m.id));
   const { balance } = useZeroBalance();
   const { buy, isPending: isBuying, isConfirming: isBuyConfirming } = useBuyListing();
   const { offer: makeColOffer, isPending: isOffering, isConfirming: isOfferConfirming } = useMakeCollectionOffer();
+  const { cancel: cancelIndOffer, isPending: isCancelIndPending, isConfirming: isCancelIndConfirming } = useCancelOffer();
 
   // Cancel collection offer
   const { writeContract: cancelColWrite, data: cancelColHash, isPending: isCancelColPending } = useWriteContract();
@@ -42,6 +48,13 @@ export function MarketplaceSection() {
       args: [BigInt(index)],
     });
   };
+
+  const feed: FeedRow[] = [
+    ...colOffers.map((o, i): FeedRow => ({ kind: 'collection', index: i, bidder: o.bidder, amount: o.amountFormatted })),
+    ...indOffers.map((o): FeedRow => ({ kind: 'individual', movieId: o.movieId, bidder: o.bidder, amount: o.amountFormatted })),
+  ].sort((a, b) => b.amount - a.amount);
+
+  const isCancelling = isCancelColPending || isCancelColConfirming || isCancelIndPending || isCancelIndConfirming;
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
@@ -86,39 +99,63 @@ export function MarketplaceSection() {
         )}
       </div>
 
-      {/* Collection Offers */}
+      {/* All Offers — individual + collection merged */}
       <div>
-        <h3 className="mb-2 text-[9px] font-bold uppercase tracking-wider text-zinc-500">Collection Offers</h3>
+        <h3 className="mb-2 text-[9px] font-bold uppercase tracking-wider text-zinc-500">Open Offers</h3>
 
-        {offers.length > 0 && (
+        {feed.length > 0 ? (
           <div className="mb-3 space-y-1">
-            {offers.map((o, i) => (
-              <div key={i} className="flex items-center justify-between rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px]">
-                <span className="text-zinc-400"><EnsName address={o.bidder} className="text-emerald-400" /></span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-yellow-400">{o.amountFormatted.toLocaleString()} $ZERO</span>
-                  {o.bidder.toLowerCase() === address?.toLowerCase() && (
-                    <button
-                      onClick={() => handleCancelColOffer(i)}
-                      disabled={isCancelColPending || isCancelColConfirming}
-                      className="text-zinc-600 hover:text-red-400 transition-colors"
-                      title="Cancel offer"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
+            {feed.map((row) => {
+              const isMine = row.bidder.toLowerCase() === address?.toLowerCase();
+              return (
+                <div
+                  key={row.kind === 'collection' ? `col-${row.index}` : `ind-${row.movieId}`}
+                  className="flex items-center justify-between rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px]"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    {row.kind === 'individual' ? (
+                      <>
+                        <img
+                          src={`/images/zeromovies/${row.movieId}.png`}
+                          alt={getMovieName(row.movieId)}
+                          className="h-6 w-6 rounded object-contain flex-shrink-0"
+                          style={{ imageRendering: 'pixelated' }}
+                        />
+                        <span className="truncate text-[9px] font-bold uppercase text-red-400">#{row.movieId} · {getMovieName(row.movieId)}</span>
+                      </>
+                    ) : (
+                      <span className="flex-shrink-0 rounded bg-zinc-800 px-1.5 py-0.5 text-[8px] font-bold uppercase text-zinc-300">Any Movie</span>
+                    )}
+                    <span className="truncate text-zinc-500"><EnsName address={row.bidder} className="text-emerald-400" /></span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="font-bold text-yellow-400">{row.amount.toLocaleString()} $ZERO</span>
+                    {isMine && (
+                      <button
+                        onClick={() => row.kind === 'collection' ? handleCancelColOffer(row.index) : cancelIndOffer(row.movieId)}
+                        disabled={isCancelling}
+                        className="text-zinc-600 hover:text-red-400 transition-colors disabled:opacity-50"
+                        title="Cancel offer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        ) : (
+          <p className="mb-3 text-[10px] text-zinc-700">No open offers yet. Be first.</p>
         )}
 
+        <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-zinc-500">Make a collection offer</p>
         <div className="flex gap-2">
           <input
             type="number"
             value={colOfferAmount}
             onChange={(e) => setColOfferAmount(e.target.value)}
-            placeholder="Amount in $ZERO"
+            placeholder="Amount in $ZERO · any movie"
             className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-red-600 focus:outline-none"
           />
           <button
@@ -129,7 +166,7 @@ export function MarketplaceSection() {
             {isOffering || isOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
           </button>
         </div>
-        <p className="mt-1 text-[8px] text-zinc-700">Offer for any movie. Any permanent owner can accept. $ZERO locked until accepted or cancelled.</p>
+        <p className="mt-1 text-[8px] text-zinc-700">Individual offers: open a movie card. Collection offers: any owner can accept. $ZERO locked until accepted or cancelled.</p>
       </div>
     </div>
   );
