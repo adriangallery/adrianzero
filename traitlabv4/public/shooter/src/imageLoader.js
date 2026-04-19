@@ -2,16 +2,24 @@
 
 import { ZOMBIE_TYPES } from './zombieManager.js';
 import { createZombiePlaceholder, getColorForType } from './utils.js';
+import { CONFIG } from './config.js';
+
+function assetUrl(path) {
+    if (/^https?:\/\//.test(path)) return path;
+    const base = CONFIG.assetBaseUrl || '';
+    return base + path;
+}
 
 export function loadImage(src) {
     return new Promise((resolve) => {
         const img = new Image();
+        img.crossOrigin = 'anonymous';
         img.onload = () => resolve(img);
         img.onerror = () => {
             console.warn(`Failed to load: ${src}`);
             resolve(null);
         };
-        img.src = src;
+        img.src = assetUrl(src);
     });
 }
 

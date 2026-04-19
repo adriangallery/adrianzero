@@ -18,5 +18,10 @@ export const CONFIG = {
     signerEndpoint: 'http://localhost:3337/sign',
 
     // Optional: allow public mint without signature (contract owner must enable)
-    allowPublicMint: false
+    allowPublicMint: false,
+
+    // Asset host. Empty string = serve from same origin (relative to <base href>).
+    // Set to a CDN prefix (e.g. jsDelivr → GitHub) to offload heavy art from Vercel.
+    // Example: 'https://cdn.jsdelivr.net/gh/adriangallery/zombie-assets@main/'
+    assetBaseUrl: ''
 };
