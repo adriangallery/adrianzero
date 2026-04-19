@@ -7,6 +7,8 @@
     { "source": "/adventure", "destination": "https://zeroadventure.vercel.app/" },
     { "source": "/adventure/", "destination": "https://zeroadventure.vercel.app/" },
     { "source": "/adventure/:path+", "destination": "https://zeroadventure.vercel.app/:path+" },
+    { "source": "/shooter", "destination": "/shooter/index.html" },
+    { "source": "/shooter/", "destination": "/shooter/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
