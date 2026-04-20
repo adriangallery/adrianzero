@@ -76,7 +76,9 @@ function useBracketData(budokaiId: number | null) {
 
     const client = useMemo(() => {
         const urls = buildAlchemyRpcUrls();
-        return createPublicClient({chain: base, transport: http(urls[0], {retryCount: 3})});
+        // retryCount=0: we already walk chunks sequentially; viem auto-retries
+        // amplify the Alchemy-free-tier rate-limit + CORS storm.
+        return createPublicClient({chain: base, transport: http(urls[0], {retryCount: 0})});
     }, []);
 
     useEffect(() => {
@@ -143,30 +145,36 @@ function useBracketData(budokaiId: number | null) {
                     // Cache was stale (reorg? shouldn't happen on Base, but be defensive) — fall through.
                 }
 
-                // Parallel scan across the entire valid window.
+                // Sequential scan with early exit. Parallelizing 26 chunks trips
+                // Alchemy free-tier rate limits (429 storm + CORS collapse). In
+                // practice the keeper resolves within ~50 blocks of resolveBlock
+                // so 1-5 chunks is enough. All MatchResolved events for a single
+                // resolve land in the same block, so one non-empty chunk returns
+                // the full bracket.
                 setStage('scanning');
                 const start = resolveBlock + RESOLVE_DELAY_BLOCKS;
                 const end = resolveBlock + RESOLVE_WINDOW_BLOCKS;
-                const ranges: Array<[bigint, bigint]> = [];
+                let hit: Awaited<ReturnType<typeof client.getLogs>> = [];
                 for (let from = start; from <= end; from += CHUNK_SIZE) {
+                    if (cancelled) return;
                     const to = from + CHUNK_SIZE - 1n > end ? end : from + CHUNK_SIZE - 1n;
-                    ranges.push([from, to]);
+                    try {
+                        const chunk = await client.getLogs({
+                            address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                            event: MATCH_RESOLVED_EVENT,
+                            args: {budokaiId: BigInt(budokaiId)},
+                            fromBlock: from,
+                            toBlock: to,
+                        });
+                        if (chunk.length > 0) {
+                            hit = chunk;
+                            break;
+                        }
+                    } catch {
+                        // Swallow single-chunk failures (rate limit, transient) — keep scanning.
+                    }
                 }
-                const results = await Promise.all(
-                    ranges.map(([from, to]) =>
-                        client
-                            .getLogs({
-                                address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
-                                event: MATCH_RESOLVED_EVENT,
-                                args: {budokaiId: BigInt(budokaiId)},
-                                fromBlock: from,
-                                toBlock: to,
-                            })
-                            .catch(() => [] as Awaited<ReturnType<typeof client.getLogs>>)
-                    )
-                );
                 if (cancelled) return;
-                const hit = results.flat();
                 const parsed = parseMatches(hit);
                 setMatches(parsed);
                 if (hit.length > 0) {
