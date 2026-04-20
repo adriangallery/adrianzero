@@ -120,7 +120,7 @@ export function SamuraiDojoModule() {
     };
 
     return (
-        <div className="min-h-screen bg-black">
+        <div className="min-h-screen bg-black pt-20 sm:pt-24">
             {/* Hero banner */}
             <HeroBanner />
 

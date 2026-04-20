@@ -5,6 +5,7 @@ import {createPublicClient, http, parseAbiItem} from 'viem';
 import {base} from 'viem/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {buildAlchemyRpcUrls} from '@/config/alchemy';
+import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
 import type {MatchResult} from '../types';
 
 interface BracketRevealProps {
@@ -21,6 +22,10 @@ const MATCH_RESOLVED_EVENT = parseAbiItem(
     'event MatchResolved(uint256 indexed budokaiId, uint8 round, uint256 tokenA, uint256 tokenB, uint256 winner, bool kaioken)'
 );
 
+// blockhash expires after 256 blocks on Base, so resolveBudokai MUST land in that window.
+// A 300-block lookahead from resolveBlock safely covers the commit + resolve txs.
+const RESOLVE_WINDOW_BLOCKS = 300n;
+
 function useMatchLogs(budokaiId: number | null) {
     const [matches, setMatches] = useState<MatchResult[]>([]);
     const [loading, setLoading] = useState(false);
@@ -36,12 +41,26 @@ function useMatchLogs(budokaiId: number | null) {
         setLoading(true);
         (async () => {
             try {
+                // Read resolveBlock from the contract so we can scan a tight range.
+                // Alchemy rejects 'earliest' → 'latest' on Base (too many blocks).
+                const info = (await client.readContract({
+                    address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                    abi: SAMURAI_DOJO_ABI,
+                    functionName: 'getBudokaiInfo',
+                    args: [BigInt(budokaiId)],
+                })) as readonly [bigint, bigint, bigint, bigint, bigint, number, number, bigint];
+                const resolveBlock = info[4];
+                if (cancelled) return;
+                if (resolveBlock === 0n) {
+                    setMatches([]);
+                    return;
+                }
                 const logs = await client.getLogs({
                     address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
                     event: MATCH_RESOLVED_EVENT,
                     args: {budokaiId: BigInt(budokaiId)},
-                    fromBlock: 'earliest',
-                    toBlock: 'latest',
+                    fromBlock: resolveBlock,
+                    toBlock: resolveBlock + RESOLVE_WINDOW_BLOCKS,
                 });
                 if (cancelled) return;
                 const parsed: MatchResult[] = logs.map((log) => ({
