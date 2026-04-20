@@ -1,10 +1,10 @@
 // Zombie spawning + lifecycle management
 
 export const ZOMBIE_TYPES = [
-    { name: 'common', points: 10,  width: 64,  height: 96,  speed: 2.0,  yPosition: 350, weight: 55, asset: 'assets/zombies/common.svg' },
-    { name: 'runner', points: 25,  width: 64,  height: 96,  speed: 3.2,  yPosition: 300, weight: 25, asset: 'assets/zombies/runner.svg' },
-    { name: 'brute',  points: 50,  width: 96,  height: 112, speed: 1.2,  yPosition: 260, weight: 15, asset: 'assets/zombies/brute.svg'  },
-    { name: 'boss',   points: 200, width: 112, height: 128, speed: 0.7,  yPosition: 220, weight: 5,  asset: 'assets/zombies/boss.svg'   }
+    { name: 'common', points: 10,  width: 74,  height: 74,  speed: 2.0, yPosition: 380, weight: 55, asset: 'assets/zombies/common.png' },
+    { name: 'runner', points: 25,  width: 74,  height: 74,  speed: 3.2, yPosition: 340, weight: 25, asset: 'assets/zombies/runner.png' },
+    { name: 'brute',  points: 50,  width: 111, height: 111, speed: 1.2, yPosition: 300, weight: 15, asset: 'assets/zombies/brute.png'  },
+    { name: 'boss',   points: 200, width: 148, height: 148, speed: 0.7, yPosition: 260, weight: 5,  asset: 'assets/zombies/boss.png'   }
 ];
 
 export const MOVEMENT_STATES = {

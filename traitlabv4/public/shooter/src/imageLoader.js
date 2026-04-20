@@ -34,11 +34,11 @@ export async function loadZombieImages() {
 
 export async function loadBackgroundLayers() {
     const paths = [
-        'assets/backgrounds/layer0.svg',
-        'assets/backgrounds/layer1.svg',
-        'assets/backgrounds/layer2.svg',
-        'assets/backgrounds/layer3.svg',
-        'assets/backgrounds/layer4.svg'
+        'assets/backgrounds/layer0.png',
+        'assets/backgrounds/layer1.png',
+        'assets/backgrounds/layer2.png',
+        'assets/backgrounds/layer3.png',
+        'assets/backgrounds/layer4.png'
     ];
     const layers = [];
     for (let i = 0; i < paths.length; i++) {

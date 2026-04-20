@@ -71,14 +71,17 @@ function drawZombie(z) {
     const ctx = this.ctx;
 
     if (z.image) {
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
         if (z.hitFlash > 0) {
-            ctx.save();
             ctx.filter = 'brightness(1.8) saturate(0)';
-            ctx.drawImage(z.image, z.x, z.y, z.width, z.height);
-            ctx.restore();
-        } else {
-            ctx.drawImage(z.image, z.x, z.y, z.width, z.height);
+        } else if (z.type === 'boss') {
+            ctx.filter = 'sepia(1) saturate(2.2) hue-rotate(-10deg) brightness(1.15)';
+        } else if (z.type === 'runner') {
+            ctx.filter = 'hue-rotate(-40deg) saturate(1.4)';
         }
+        ctx.drawImage(z.image, z.x, z.y, z.width, z.height);
+        ctx.restore();
     } else {
         ctx.fillStyle = z.killed ? lightenColor(getColorForType(z.type)) : getColorForType(z.type);
         ctx.fillRect(z.x, z.y, z.width, z.height);
