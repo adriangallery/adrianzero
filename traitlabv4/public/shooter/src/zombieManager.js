@@ -1,10 +1,18 @@
 // Zombie spawning + lifecycle management
 
+// Canvas is 960×540. After background analysis:
+//   bg3's first acid wave runs canvas y=341-379
+//   bg3's dark platform (solid) runs y=379-502   ← zombies here = invisible
+//   bg4 foreground strip runs y=400-540
+// So zombies' feet must rest at GROUND_Y ≈ 380 to land on the acid-wave band,
+// with their torso/head sticking up over y=341 (visible LAB background).
+const GROUND_Y = 380;
+
 export const ZOMBIE_TYPES = [
-    { name: 'common', points: 10,  width: 110, height: 110, speed: 2.0, yPosition: 320, weight: 55, asset: 'assets/zombies/common.png' },
-    { name: 'runner', points: 25,  width: 110, height: 110, speed: 3.2, yPosition: 300, weight: 25, asset: 'assets/zombies/runner.png' },
-    { name: 'brute',  points: 50,  width: 150, height: 150, speed: 1.2, yPosition: 260, weight: 15, asset: 'assets/zombies/brute.png'  },
-    { name: 'boss',   points: 200, width: 200, height: 200, speed: 0.7, yPosition: 220, weight: 5,  asset: 'assets/zombies/boss.png'   }
+    { name: 'common', points: 10,  width: 100, height: 100, speed: 2.0, yPosition: GROUND_Y - 100, weight: 55, asset: 'assets/zombies/common.png' },
+    { name: 'runner', points: 25,  width: 100, height: 100, speed: 3.2, yPosition: GROUND_Y - 100, weight: 25, asset: 'assets/zombies/runner.png' },
+    { name: 'brute',  points: 50,  width: 140, height: 140, speed: 1.2, yPosition: GROUND_Y - 140, weight: 15, asset: 'assets/zombies/brute.png'  },
+    { name: 'boss',   points: 200, width: 180, height: 180, speed: 0.7, yPosition: GROUND_Y - 180, weight: 5,  asset: 'assets/zombies/boss.png'   }
 ];
 
 export const MOVEMENT_STATES = {
@@ -41,7 +49,7 @@ export function spawnZombie() {
         visible: true,
         image,
         movementState: MOVEMENT_STATES.RISING,
-        targetY: type.yPosition + (Math.random() * 20 - 10),
+        targetY: type.yPosition + (Math.random() * 12 - 6),
         waitTime: 800 + Math.random() * 1200,
         waitStart: 0,
         hitFlash: 0
