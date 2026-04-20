@@ -280,15 +280,17 @@ function HeroBanner() {
         );
     }
     return (
-        <div className="relative w-full overflow-hidden">
-            <img
-                src="/images/budokai-hero.gif"
-                alt="600 Samurai Budokai"
-                className="w-full object-cover"
-                style={{imageRendering: 'pixelated', maxHeight: '60vh'}}
-                onError={() => setFailed(true)}
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
+        <div className="relative w-full overflow-hidden bg-black">
+            <div className="mx-auto max-w-5xl">
+                <img
+                    src="/images/budokai-hero.gif"
+                    alt="600 Samurai Budokai"
+                    className="block h-auto w-full"
+                    style={{imageRendering: 'pixelated'}}
+                    onError={() => setFailed(true)}
+                />
+            </div>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-black" />
         </div>
     );
 }
