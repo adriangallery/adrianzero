@@ -49,6 +49,7 @@ interface CacheEntry {
         champion: number;
         runnerUp: number;
     };
+    senryoku?: Array<[number, number]>;
 }
 
 function readCache(budokaiId: number): CacheEntry | null {
@@ -71,6 +72,7 @@ function writeCache(budokaiId: number, entry: CacheEntry) {
 function useBracketData(budokaiId: number | null) {
     const [matches, setMatches] = useState<MatchResult[]>([]);
     const [snapshot, setSnapshot] = useState<BudokaiSnapshot | null>(null);
+    const [senryoku, setSenryoku] = useState<Map<number, number>>(new Map());
     const [loading, setLoading] = useState(false);
     const [stage, setStage] = useState<'reading' | 'scanning' | 'done'>('reading');
 
@@ -85,6 +87,7 @@ function useBracketData(budokaiId: number | null) {
         if (budokaiId == null) {
             setMatches([]);
             setSnapshot(null);
+            setSenryoku(new Map());
             setStage('reading');
             return;
         }
@@ -138,7 +141,16 @@ function useBracketData(budokaiId: number | null) {
                         toBlock: blockNumber,
                     });
                     if (!cancelled && logs.length > 0) {
-                        setMatches(parseMatches(logs));
+                        const parsedCached = parseMatches(logs);
+                        setMatches(parsedCached);
+                        if (cached.senryoku) {
+                            setSenryoku(new Map(cached.senryoku));
+                        } else {
+                            // Backfill senryoku for legacy cache entries.
+                            const map = await fetchSenryoku(client, parsedCached);
+                            if (cancelled) return;
+                            setSenryoku(map);
+                        }
                         setStage('done');
                         return;
                     }
@@ -177,6 +189,12 @@ function useBracketData(budokaiId: number | null) {
                 if (cancelled) return;
                 const parsed = parseMatches(hit);
                 setMatches(parsed);
+                let senryokuMap = new Map<number, number>();
+                if (parsed.length > 0) {
+                    senryokuMap = await fetchSenryoku(client, parsed);
+                    if (cancelled) return;
+                    setSenryoku(senryokuMap);
+                }
                 if (hit.length > 0) {
                     writeCache(budokaiId, {
                         blockNumber: hit[0].blockNumber?.toString() ?? '0',
@@ -187,6 +205,7 @@ function useBracketData(budokaiId: number | null) {
                             champion: snap.champion,
                             runnerUp: snap.runnerUp,
                         },
+                        senryoku: Array.from(senryokuMap.entries()),
                     });
                 }
                 setStage('done');
@@ -201,7 +220,35 @@ function useBracketData(budokaiId: number | null) {
         };
     }, [budokaiId, client]);
 
-    return {matches, snapshot, loading, stage};
+    return {matches, snapshot, senryoku, loading, stage};
+}
+
+async function fetchSenryoku(
+    client: ReturnType<typeof createPublicClient>,
+    matches: MatchResult[]
+): Promise<Map<number, number>> {
+    const unique = [...new Set(matches.flatMap((m) => [m.tokenA, m.tokenB]).filter((id) => id > 0))];
+    if (unique.length === 0) return new Map();
+    try {
+        const results = await client.multicall({
+            contracts: unique.map((id) => ({
+                address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                abi: SAMURAI_DOJO_ABI,
+                functionName: 'getSenryoku',
+                args: [BigInt(id)],
+            })),
+            allowFailure: true,
+        });
+        const map = new Map<number, number>();
+        results.forEach((r, i) => {
+            if (r.status === 'success' && r.result != null) {
+                map.set(unique[i], Number(r.result));
+            }
+        });
+        return map;
+    } catch {
+        return new Map();
+    }
 }
 
 function parseMatches(logs: readonly unknown[]): MatchResult[] {
@@ -227,6 +274,74 @@ function roundLabel(round: number, totalRounds: number): {kanji: string; en: str
     return {kanji: `第${round}回戦`, en: `ROUND ${round}`};
 }
 
+/**
+ * Narrator that picks a flavor line per match, deterministically, using
+ * senryoku gap + kaioken flag + round as the bucket selector. Same match
+ * always returns the same line (reproducible across reloads).
+ */
+function makeLore(m: MatchResult, senryoku: Map<number, number>, totalRounds: number): string {
+    const w = m.winner;
+    const l = w === m.tokenA ? m.tokenB : m.tokenA;
+    const wPow = senryoku.get(w);
+    const lPow = senryoku.get(l);
+    const hasPower = wPow !== undefined && lPow !== undefined;
+    const gap = hasPower ? (wPow as number) - (lPow as number) : 0;
+    const isFinal = m.round === totalRounds;
+    const isSemi = m.round === totalRounds - 1;
+
+    const pick = (arr: string[]) => arr[(w * 31 + l * 17 + m.round * 7) % arr.length];
+
+    if (isFinal) {
+        return pick([
+            `Under the dojo lanterns, #${w} claims the Tenkaichi title over #${l}.`,
+            `Tenkaichi — #${w} stands alone. #${l} takes runner-up with honor.`,
+            `The final bell tolls. #${w} bows over a fallen #${l}.`,
+        ]);
+    }
+    if (isSemi) {
+        return pick([
+            `#${w} punches through to the final. #${l} exits with semifinal honors.`,
+            `At the gates of the final, #${w} cuts down #${l}.`,
+            `#${l} came close — but #${w} walks on to the title match.`,
+        ]);
+    }
+    if (m.kaioken) {
+        return pick([
+            `The Kaioken flared — #${w} overwhelmed #${l} in a crimson blur.`,
+            `Burning past the limit, #${w} dropped #${l} with a Kaioken surge.`,
+            `#${l} had no answer to the Kaioken roar from #${w}.`,
+            `A war cry tore through the dojo as #${w} invoked the Kaioken on #${l}.`,
+        ]);
+    }
+    if (hasPower && gap >= 30) {
+        return pick([
+            `#${w} (power ${wPow}) overwhelms #${l} (${lPow}) in one crushing exchange.`,
+            `No contest — #${w} dismantles #${l} cleanly.`,
+            `A textbook dismantling; #${l} was outclassed from bell to bell.`,
+        ]);
+    }
+    if (hasPower && gap <= -20) {
+        return pick([
+            `*Impossible.* #${w} (power ${wPow}) topples the favored #${l} (${lPow}).`,
+            `The dojo gasps — #${w} refuses to lose to #${l}.`,
+            `Against all odds, #${w} outlasts the stronger #${l}.`,
+        ]);
+    }
+    if (hasPower && Math.abs(gap) <= 10) {
+        return pick([
+            `A razor-thin duel — #${w} edges out #${l}.`,
+            `#${w} and #${l} trade blows until the final second. #${w} takes it.`,
+            `Too close to call… #${w} stands over #${l} at the end.`,
+        ]);
+    }
+    return pick([
+        `#${w} outlasts #${l} in a clean duel.`,
+        `#${w} finds the opening and drops #${l}.`,
+        `#${l} fought well — but #${w} closed the show.`,
+        `#${w} silences #${l} with disciplined technique.`,
+    ]);
+}
+
 const INTRO_BEAT_MS = 900;
 const MATCH_REVEAL_MS = 1200;
 const ROUND_INTRO_MS = 1400;
@@ -234,7 +349,7 @@ const ROUND_INTRO_MS = 1400;
 type Phase = 'intro' | 'scanning' | 'revealing' | 'complete';
 
 export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
-    const {matches, snapshot, stage} = useBracketData(open ? budokaiId : null);
+    const {matches, snapshot, senryoku, stage} = useBracketData(open ? budokaiId : null);
     const [phase, setPhase] = useState<Phase>('intro');
     const [introBeat, setIntroBeat] = useState(0);
     const [cursor, setCursor] = useState(0);
@@ -405,7 +520,12 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                                                 </div>
                                                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                                                     {rms.map((m, i) => (
-                                                        <MatchCard key={`${round}-${i}`} match={m} />
+                                                        <MatchCard
+                                                            key={`${round}-${i}`}
+                                                            match={m}
+                                                            senryoku={senryoku}
+                                                            totalRounds={totalRounds}
+                                                        />
                                                     ))}
                                                 </div>
                                             </div>
@@ -583,8 +703,22 @@ function RoundIntro({round, totalRounds}: {round: number; totalRounds: number}) 
     );
 }
 
-function MatchCard({match}: {match: MatchResult}) {
+function MatchCard({
+    match,
+    senryoku,
+    totalRounds,
+}: {
+    match: MatchResult;
+    senryoku: Map<number, number>;
+    totalRounds: number;
+}) {
     const winnerIsA = match.winner === match.tokenA;
+    const lore = useMemo(
+        () => makeLore(match, senryoku, totalRounds),
+        [match, senryoku, totalRounds]
+    );
+    const sA = senryoku.get(match.tokenA);
+    const sB = senryoku.get(match.tokenB);
     return (
         <motion.div
             initial={{opacity: 0, y: 12, scale: 0.96}}
@@ -602,18 +736,46 @@ function MatchCard({match}: {match: MatchResult}) {
                 </div>
             )}
             <div className="flex items-center justify-between gap-3">
-                <SamuraiAvatar tokenId={match.tokenA} isWinner={winnerIsA} kaioken={match.kaioken} />
+                <SamuraiAvatar
+                    tokenId={match.tokenA}
+                    isWinner={winnerIsA}
+                    kaioken={match.kaioken}
+                    senryoku={sA}
+                />
                 <div className="text-center">
                     <Zap className={`mx-auto h-4 w-4 ${match.kaioken ? 'text-red-400' : 'text-zinc-600'}`} />
                     <span className="block text-[8px] font-mono uppercase tracking-wider text-zinc-600">vs</span>
                 </div>
-                <SamuraiAvatar tokenId={match.tokenB} isWinner={!winnerIsA} kaioken={match.kaioken} />
+                <SamuraiAvatar
+                    tokenId={match.tokenB}
+                    isWinner={!winnerIsA}
+                    kaioken={match.kaioken}
+                    senryoku={sB}
+                />
             </div>
+            <motion.p
+                initial={{opacity: 0, y: 4}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.3, delay: 0.25, ease: 'easeOut'}}
+                className="mt-3 border-t border-zinc-900/60 pt-2 text-center text-[10px] italic leading-snug text-zinc-500"
+            >
+                {lore}
+            </motion.p>
         </motion.div>
     );
 }
 
-function SamuraiAvatar({tokenId, isWinner, kaioken}: {tokenId: number; isWinner: boolean; kaioken: boolean}) {
+function SamuraiAvatar({
+    tokenId,
+    isWinner,
+    kaioken,
+    senryoku,
+}: {
+    tokenId: number;
+    isWinner: boolean;
+    kaioken: boolean;
+    senryoku?: number;
+}) {
     return (
         <div className="flex flex-1 flex-col items-center gap-2">
             <img
@@ -628,13 +790,20 @@ function SamuraiAvatar({tokenId, isWinner, kaioken}: {tokenId: number; isWinner:
                 }`}
                 style={{imageRendering: 'pixelated'}}
             />
-            <span
-                className={`font-mono text-[10px] uppercase ${
-                    isWinner ? (kaioken ? 'text-red-300' : 'text-yellow-400') : 'text-zinc-600'
-                }`}
-            >
-                #{tokenId}
-            </span>
+            <div className="flex flex-col items-center leading-tight">
+                <span
+                    className={`font-mono text-[10px] uppercase ${
+                        isWinner ? (kaioken ? 'text-red-300' : 'text-yellow-400') : 'text-zinc-600'
+                    }`}
+                >
+                    #{tokenId}
+                </span>
+                {senryoku !== undefined && (
+                    <span className="font-mono text-[8px] tracking-wider text-zinc-600">
+                        戦力 {senryoku}
+                    </span>
+                )}
+            </div>
         </div>
     );
 }
