@@ -13,18 +13,14 @@ export function render() {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    const zombiesByLayer = { 0: [], 1: [], 2: [], 3: [] };
-    this.zombies.forEach(z => zombiesByLayer[layerFor(z.type)].push(z));
-
     drawBg.call(this, 0);
-    zombiesByLayer[0].forEach(z => drawZombie.call(this, z));
     drawBg.call(this, 1);
-    zombiesByLayer[1].forEach(z => drawZombie.call(this, z));
     drawBg.call(this, 2);
-    zombiesByLayer[2].forEach(z => drawZombie.call(this, z));
     drawBg.call(this, 3);
-    zombiesByLayer[3].forEach(z => drawZombie.call(this, z));
     drawBg.call(this, 4);
+
+    // Zombies on top of all background layers so they're never occluded
+    this.zombies.forEach(z => drawZombie.call(this, z));
 
     renderHitEffects.call(this);
     renderHUD.call(this);
@@ -44,26 +40,37 @@ function drawBg(layerIndex) {
     if (!layer || !layer.image) return;
 
     const parallaxX = (this.mouseX - (this.canvas.width / 2)) * layer.speed * 0.4;
-
     const img = layer.image;
     const aspect = img.width / img.height;
+    const cw = this.canvas.width;
+    const ch = this.canvas.height;
+
     let drawW, drawH, drawY;
 
-    if (layerIndex === 0 || layerIndex === 1 || layerIndex === 2) {
-        drawW = this.canvas.width + 40;
+    if (layerIndex === 0) {
+        // Full-canvas back wall. Scale to cover (no gaps).
+        drawH = ch;
+        drawW = drawH * aspect;
+        if (drawW < cw) { drawW = cw; drawH = drawW / aspect; }
+        drawY = 0;
+    } else if (layerIndex === 1 || layerIndex === 2) {
+        // Mid layers — drawn full-canvas, but their transparent tops let bg0 show through.
+        drawW = cw + 40;
         drawH = drawW / aspect;
+        if (drawH < ch) { drawH = ch; drawW = drawH * aspect; }
         drawY = 0;
     } else if (layerIndex === 3) {
-        drawW = this.canvas.width + 40;
-        drawH = this.canvas.height * 0.55;
-        drawY = this.canvas.height - drawH;
+        drawW = cw + 40;
+        drawH = ch * 0.55;
+        drawY = ch - drawH;
     } else {
-        drawW = this.canvas.width + 40;
-        drawH = this.canvas.height * 0.26;
-        drawY = this.canvas.height - drawH;
+        drawW = cw + 40;
+        drawH = ch * 0.26;
+        drawY = ch - drawH;
     }
 
-    ctx.drawImage(img, -20 + parallaxX, drawY, drawW, drawH);
+    const xOffset = (cw - drawW) / 2 + parallaxX;
+    ctx.drawImage(img, xOffset, drawY, drawW, drawH);
 }
 
 function drawZombie(z) {
