@@ -30,6 +30,26 @@ export function useEnterBudokai() {
 }
 
 /**
+ * Enter multiple samurai in a single transaction (one signature).
+ */
+export function useEnterBudokaiBatch() {
+    const {writeContract, data: hash, isPending, error, reset} = useWriteContract();
+    const {isLoading: isConfirming, isSuccess: isConfirmed} = useWaitForTransactionReceipt({hash});
+
+    const enterBatch = (tokenIds: number[]) => {
+        if (tokenIds.length === 0) return;
+        writeContract({
+            address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+            abi: SAMURAI_DOJO_ABI,
+            functionName: 'enterBudokaiBatch',
+            args: [tokenIds.map((id) => BigInt(id))],
+        });
+    };
+
+    return {enterBatch, isPending, isConfirming, isConfirmed, error, txHash: hash, reset};
+}
+
+/**
  * Revive a KO'd samurai by paying the Senzu Bean fee.
  */
 export function useReviveSamurai() {

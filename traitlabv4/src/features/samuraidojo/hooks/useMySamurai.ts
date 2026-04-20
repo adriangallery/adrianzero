@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import {useAccount} from 'wagmi';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {alchemyClient} from '@/lib/api/alchemy/client';
-import {FIRST_SAMURAI_TOKEN_ID, LAST_SAMURAI_TOKEN_ID} from '../types';
+import {useSamuraiRoster} from './useSamuraiRoster';
 
 /**
  * Resolve the connected wallet's SAMURAIzero token IDs via Alchemy NFT API
@@ -13,6 +13,7 @@ import {FIRST_SAMURAI_TOKEN_ID, LAST_SAMURAI_TOKEN_ID} from '../types';
  */
 export function useMySamurai(): {owned: number[]; isLoading: boolean; refetch: () => void} {
     const {address} = useAccount();
+    const {roster, isLoading: rosterLoading} = useSamuraiRoster();
     const [owned, setOwned] = useState<number[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [tick, setTick] = useState(0);
@@ -20,6 +21,10 @@ export function useMySamurai(): {owned: number[]; isLoading: boolean; refetch: (
     useEffect(() => {
         if (!address) {
             setOwned([]);
+            return;
+        }
+        if (roster.size === 0) {
+            // Wait for roster so we can filter correctly
             return;
         }
         let cancelled = false;
@@ -34,11 +39,10 @@ export function useMySamurai(): {owned: number[]; isLoading: boolean; refetch: (
                 const tokenIds: number[] = [];
                 for (const nft of response.ownedNfts) {
                     const id = Number(nft.tokenId);
-                    if (
-                        Number.isFinite(id)
-                        && id >= FIRST_SAMURAI_TOKEN_ID
-                        && id <= LAST_SAMURAI_TOKEN_ID
-                    ) {
+                    // Filter to the authoritative on-chain samurai roster.
+                    // The 500-1099 id range contains a mix of SamuraiZERO and regular
+                    // AdrianZERO tokens; the minter's tag is the only source of truth.
+                    if (Number.isFinite(id) && roster.has(id)) {
                         tokenIds.push(id);
                     }
                 }
@@ -57,7 +61,7 @@ export function useMySamurai(): {owned: number[]; isLoading: boolean; refetch: (
         return () => {
             cancelled = true;
         };
-    }, [address, tick]);
+    }, [address, tick, roster]);
 
-    return {owned, isLoading, refetch: () => setTick((n) => n + 1)};
+    return {owned, isLoading: isLoading || rosterLoading, refetch: () => setTick((n) => n + 1)};
 }

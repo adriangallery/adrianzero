@@ -12,6 +12,13 @@ export const SAMURAI_DOJO_ABI = [
         type: 'function',
     },
     {
+        inputs: [{name: 'tokenIds', type: 'uint256[]'}],
+        name: 'enterBudokaiBatch',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
         inputs: [{name: 'tokenId', type: 'uint256'}],
         name: 'reviveSamurai',
         outputs: [],

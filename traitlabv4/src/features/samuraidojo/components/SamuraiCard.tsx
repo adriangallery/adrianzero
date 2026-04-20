@@ -7,6 +7,8 @@ interface SamuraiCardProps {
     isKnockedOut: boolean;
     isMine: boolean;
     onClick: () => void;
+    multiSelectMode?: boolean;
+    isSelected?: boolean;
 }
 
 function getSamuraiImageUrl(tokenId: number): string {
@@ -20,12 +22,14 @@ export const SamuraiCard = memo(function SamuraiCard({
     isKnockedOut,
     isMine,
     onClick,
+    multiSelectMode = false,
+    isSelected = false,
 }: SamuraiCardProps) {
     return (
         <button
             onClick={onClick}
             className={`group relative flex min-w-0 flex-col overflow-hidden rounded text-left transition-all duration-300 cursor-pointer hover:scale-105 hover:z-10
-        ${isMine ? 'border-2 border-yellow-400' : ''}
+        ${isSelected ? 'border-2 border-red-500 ring-2 ring-red-500/50' : isMine ? 'border-2 border-yellow-400' : ''}
         ${isKnockedOut ? 'opacity-50 saturate-0' : ''}
       `}
         >
@@ -46,21 +50,34 @@ export const SamuraiCard = memo(function SamuraiCard({
                     <span className="ml-1 text-[9px] font-mono font-bold text-white">{senryoku}</span>
                 </div>
 
-                {/* Status badges — top-right */}
-                {isKnockedOut && (
-                    <div className="absolute top-1 right-1 rounded bg-red-700 px-1.5 py-0.5 text-[7px] font-bold uppercase text-white">
-                        KO
+                {/* Multi-select checkbox overrides badges when active */}
+                {multiSelectMode && isMine && !isEntered && !isKnockedOut ? (
+                    <div
+                        className={`absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded border-2 text-[10px] font-bold ${
+                            isSelected ? 'border-red-500 bg-red-500 text-white' : 'border-white/60 bg-black/60 text-transparent'
+                        }`}
+                    >
+                        ✓
                     </div>
-                )}
-                {isEntered && !isKnockedOut && (
-                    <div className="absolute top-1 right-1 rounded bg-yellow-400 px-1.5 py-0.5 text-[7px] font-bold uppercase text-black">
-                        IN
-                    </div>
-                )}
-                {isMine && !isEntered && !isKnockedOut && (
-                    <div className="absolute top-1 right-1 rounded bg-green-600 px-1.5 py-0.5 text-[7px] font-bold uppercase text-white">
-                        MINE
-                    </div>
+                ) : (
+                    <>
+                        {/* Status badges — top-right */}
+                        {isKnockedOut && (
+                            <div className="absolute top-1 right-1 rounded bg-red-700 px-1.5 py-0.5 text-[7px] font-bold uppercase text-white">
+                                KO
+                            </div>
+                        )}
+                        {isEntered && !isKnockedOut && (
+                            <div className="absolute top-1 right-1 rounded bg-yellow-400 px-1.5 py-0.5 text-[7px] font-bold uppercase text-black">
+                                IN
+                            </div>
+                        )}
+                        {isMine && !isEntered && !isKnockedOut && (
+                            <div className="absolute top-1 right-1 rounded bg-green-600 px-1.5 py-0.5 text-[7px] font-bold uppercase text-white">
+                                MINE
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* Red overlay for KO'd — dojo floor */}
