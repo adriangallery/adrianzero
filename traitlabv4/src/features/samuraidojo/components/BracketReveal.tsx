@@ -498,7 +498,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                             {(phase === 'revealing' || phase === 'complete') && matches.length > 0 && (
                                 <motion.div
                                     key="revealing"
-                                    className="h-full overflow-y-auto px-6 py-6"
+                                    className="flex h-full flex-col-reverse overflow-y-auto px-6 py-6"
                                     initial={{opacity: 0}}
                                     animate={{opacity: 1}}
                                     transition={{duration: 0.4}}
