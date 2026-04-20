@@ -15,6 +15,7 @@ import {TournamentStats} from './TournamentStats';
 import {SamuraiDetailModal} from './SamuraiDetailModal';
 import {ChampionsHall} from './ChampionsHall';
 import {BracketReveal} from './BracketReveal';
+import {PrizeShowcase} from './PrizeShowcase';
 
 type FilterMode = 'entrants' | 'mine' | 'ko' | 'all';
 
@@ -130,6 +131,8 @@ export function SamuraiDojoModule() {
                     zeroBalance={zeroBalance}
                     totalBurned={totalBurned}
                 />
+
+                <PrizeShowcase />
 
                 {/* Filter tabs + multi-select toggle */}
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
