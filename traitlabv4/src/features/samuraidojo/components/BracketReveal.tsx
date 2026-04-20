@@ -238,7 +238,7 @@ async function fetchSenryoku(client: any, matches: MatchResult[]): Promise<Map<n
             allowFailure: true,
         });
         const map = new Map<number, number>();
-        results.forEach((r, i) => {
+        (results as Array<{status: string; result?: unknown}>).forEach((r, i) => {
             if (r.status === 'success' && r.result != null) {
                 map.set(unique[i], Number(r.result));
             }
