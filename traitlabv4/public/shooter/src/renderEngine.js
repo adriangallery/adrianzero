@@ -39,35 +39,46 @@ function drawBg(layerIndex) {
     const layer = this.backgroundLayers[layerIndex];
     if (!layer || !layer.image) return;
 
-    const parallaxX = (this.mouseX - (this.canvas.width / 2)) * layer.speed * 0.4;
     const img = layer.image;
     const aspect = img.width / img.height;
     const cw = this.canvas.width;
     const ch = this.canvas.height;
 
+    // Need enough horizontal overdraw to absorb parallax motion without exposing edges.
+    // Max parallax magnitude = (cw/2) * speed * multiplier. Layer4 (speed 0.9) needs
+    // the most margin, so we compute per-layer.
+    const PARALLAX_MULT = 0.3;
+    const maxOffset = (cw / 2) * layer.speed * PARALLAX_MULT;
+    const targetWidth = cw + 2 * Math.ceil(maxOffset) + 40; // 40px safety buffer
+
     let drawW, drawH, drawY;
 
     if (layerIndex === 0) {
-        // Full-canvas back wall. Scale to cover (no gaps).
+        // Full-canvas back wall.
         drawH = ch;
         drawW = drawH * aspect;
-        if (drawW < cw) { drawW = cw; drawH = drawW / aspect; }
+        if (drawW < targetWidth) { drawW = targetWidth; drawH = drawW / aspect; }
         drawY = 0;
     } else if (layerIndex === 1 || layerIndex === 2) {
-        // Mid layers — drawn full-canvas, but their transparent tops let bg0 show through.
-        drawW = cw + 40;
+        drawW = targetWidth;
         drawH = drawW / aspect;
         if (drawH < ch) { drawH = ch; drawW = drawH * aspect; }
         drawY = 0;
     } else if (layerIndex === 3) {
-        drawW = cw + 40;
+        drawW = targetWidth;
         drawH = ch * 0.55;
         drawY = ch - drawH;
     } else {
-        drawW = cw + 40;
+        drawW = targetWidth;
         drawH = ch * 0.26;
         drawY = ch - drawH;
     }
+
+    // Clamp parallax so the image edges never come inside the canvas.
+    const available = (drawW - cw) / 2;
+    let parallaxX = (this.mouseX - cw / 2) * layer.speed * PARALLAX_MULT;
+    if (parallaxX >  available) parallaxX =  available;
+    if (parallaxX < -available) parallaxX = -available;
 
     const xOffset = (cw - drawW) / 2 + parallaxX;
     ctx.drawImage(img, xOffset, drawY, drawW, drawH);
