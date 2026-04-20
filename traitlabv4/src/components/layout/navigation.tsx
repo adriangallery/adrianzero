@@ -11,6 +11,7 @@ import {
   HelpCircle,
   Rocket,
   ShoppingBag,
+  Sword,
   Zap,
 } from 'lucide-react';
 
@@ -34,6 +35,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/buy', label: 'Buy $ZERO', icon: <DollarSign className="h-5 w-5" />, highlight: true },
   { path: '/adventure/', label: 'Adventure', icon: <Gamepad2 className="h-5 w-5" />, external: true },
   { path: '/zeromovies', label: 'ZEROmovies', icon: <Film className="h-5 w-5" /> },
+  { path: '/budokai', label: 'Budokai', icon: <Sword className="h-5 w-5" /> },
   { path: '/gallery', label: 'Gallery', icon: <Grid className="h-5 w-5" /> },
   { path: '/punks', label: 'Punks', icon: <Award className="h-5 w-5" />, requiresAdrianPunks: true },
   { path: '/shitdrop', label: 'ShitDROP', icon: <Droplets className="h-5 w-5" /> },

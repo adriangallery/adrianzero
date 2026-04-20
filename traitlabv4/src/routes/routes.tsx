@@ -47,6 +47,12 @@ const ZEROmoviesModule = lazy(() =>
   }))
 );
 
+const SamuraiDojoModule = lazy(() =>
+  import('@/features/samuraidojo/components/SamuraiDojoModule').then((m) => ({
+    default: m.SamuraiDojoModule,
+  }))
+);
+
 const GalleryModule = lazy(() =>
   import('@/features/gallery/components/GalleryModule').then((m) => ({
     default: m.GalleryModule,
@@ -90,6 +96,7 @@ export const routes: RouteObject[] = [
   { path: '/shop', element: <ShopModule /> },
   { path: '/buy', element: <BuyModule /> },
   { path: '/zeromovies', element: <ZEROmoviesModule /> },
+  { path: '/budokai', element: <SamuraiDojoModule /> },
   { path: '/gallery', element: <GalleryModule /> },
   { path: '/punks', element: <PunksModule /> },
   { path: '/shitdrop', element: <ShitdropModule /> },

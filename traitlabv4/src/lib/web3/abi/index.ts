@@ -23,3 +23,4 @@ export { REWARDS_ABI } from './rewards.abi';
 export { OGCLAIM_ABI } from './ogclaim.abi';
 export { MULTICALL3_ABI } from './multicall3.abi';
 export { ZERO_MOVIES_FACET_ABI } from './zeromoviesFacet.abi';
+export { SAMURAI_DOJO_ABI, BUDOKAI_STATUS, type BudokaiStatus } from './samuraiDojo.abi';
