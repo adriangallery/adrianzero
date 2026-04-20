@@ -79,8 +79,9 @@ function drawBg(layerIndex) {
         drawH = ch * 0.55;
         drawY = ch - drawH;
     } else {
+        // Foreground — thicker so it dominates the bottom of the scene
         drawW = targetWidth;
-        drawH = ch * 0.26;
+        drawH = ch * 0.31;
         drawY = ch - drawH;
     }
 
@@ -108,12 +109,13 @@ function drawZombie(z) {
         } else {
             if (z.type === 'boss')   filters.push('sepia(1)', 'saturate(2.2)', 'hue-rotate(-10deg)', 'brightness(1.15)');
             if (z.type === 'runner') filters.push('hue-rotate(-40deg)', 'saturate(1.4)');
-            // Depth dimming — back row slightly dark, front row full bright
-            if (z.row === 'back') filters.push('brightness(0.7)', 'contrast(0.9)');
-            else if (z.row === 'mid') filters.push('brightness(0.9)');
+            // Depth dimming — back row deep shadow, mid slightly, front full bright
+            if (z.row === 'back')      filters.push('brightness(0.55)', 'contrast(0.85)', 'blur(0.4px)');
+            else if (z.row === 'mid')  filters.push('brightness(0.85)');
         }
         if (filters.length) ctx.filter = filters.join(' ');
-        if (z.row === 'back') ctx.globalAlpha = 0.9;
+        if (z.row === 'back')      ctx.globalAlpha = 0.85;
+        else if (z.row === 'mid')  ctx.globalAlpha = 0.95;
 
         ctx.drawImage(z.image, z.x, z.y, z.width, z.height);
         ctx.restore();

@@ -12,9 +12,9 @@
 //   FRONT: full size, drawn AFTER bg4 → fully in front of everything
 
 export const ROWS = {
-    back:  { feetY: 365, scale: 0.55, renderOrder: 0, weight: 40 },
-    mid:   { feetY: 440, scale: 0.80, renderOrder: 1, weight: 35 },
-    front: { feetY: 510, scale: 1.00, renderOrder: 2, weight: 25 }
+    back:  { feetY: 358, scale: 0.42, renderOrder: 0, weight: 40 },
+    mid:   { feetY: 405, scale: 0.75, renderOrder: 1, weight: 35 },
+    front: { feetY: 535, scale: 1.20, renderOrder: 2, weight: 25 }
 };
 
 export const ZOMBIE_TYPES = [
