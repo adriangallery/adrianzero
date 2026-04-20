@@ -119,6 +119,20 @@ function drawZombie(z) {
 
         ctx.drawImage(z.image, z.x, z.y, z.width, z.height);
         ctx.restore();
+
+        // HP bar for multi-hit zombies (mid+front), shown only after first hit
+        if (z.maxHp > 1 && z.hp < z.maxHp && !z.killed) {
+            const barW = Math.max(40, z.width * 0.6);
+            const barH = 5;
+            const barX = z.x + (z.width - barW) / 2;
+            const barY = z.y - 10;
+            ctx.fillStyle = 'rgba(0,0,0,0.75)';
+            ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+            ctx.fillStyle = '#2a1a1a';
+            ctx.fillRect(barX, barY, barW, barH);
+            ctx.fillStyle = z.hp === 1 ? '#ff4a4a' : '#ffb34a';
+            ctx.fillRect(barX, barY, barW * (z.hp / z.maxHp), barH);
+        }
     } else {
         ctx.fillStyle = z.killed ? lightenColor(getColorForType(z.type)) : getColorForType(z.type);
         ctx.fillRect(z.x, z.y, z.width, z.height);

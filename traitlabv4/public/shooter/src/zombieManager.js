@@ -8,9 +8,9 @@
 //   bg4 transparent fade y=324, fully opaque from y=393
 
 export const ROWS = {
-    back:  { feetY: 348, width:  70, height:  70, renderOrder: 0, weight: 40 },
-    mid:   { feetY: 435, width: 115, height: 115, renderOrder: 1, weight: 35 },
-    front: { feetY: 540, width: 170, height: 170, renderOrder: 2, weight: 25 }
+    back:  { feetY: 405, width:  85,  height:  85,  renderOrder: 0, weight: 40, hp: 1 },
+    mid:   { feetY: 470, width: 130,  height: 130,  renderOrder: 1, weight: 35, hp: 2 },
+    front: { feetY: 540, width: 180,  height: 180,  renderOrder: 2, weight: 25, hp: 3 }
 };
 
 export const ZOMBIE_TYPES = [
@@ -69,6 +69,8 @@ export function spawnZombie() {
         renderOrder: row.renderOrder,
         points: type.points,
         speed,
+        hp: row.hp,
+        maxHp: row.hp,
         killed: false,
         visible: true,
         image,

@@ -130,13 +130,17 @@ class ZombieShooter {
             const z = this.zombies[i];
             if (!z.visible || z.killed) continue;
             if (x >= z.x && x <= z.x + z.width && y >= z.y && y <= z.y + z.height) {
-                z.killed = true;
+                z.hp -= 1;
                 z.hitFlash = 3;
-                this.score += z.points;
-                this.currentTier = tierForScore(this.score);
-                z.pointAnimation = { points: z.points, startTime: Date.now(), duration: 900 };
                 this.hitEffects.push({ x: z.x + z.width / 2, y: z.y + z.height / 2, radius: 4, maxRadius: 38, alpha: 1 });
-                setTimeout(() => { z.visible = false; }, 400);
+
+                if (z.hp <= 0) {
+                    z.killed = true;
+                    this.score += z.points;
+                    this.currentTier = tierForScore(this.score);
+                    z.pointAnimation = { points: z.points, startTime: Date.now(), duration: 900 };
+                    setTimeout(() => { z.visible = false; }, 400);
+                }
                 return;
             }
         }
