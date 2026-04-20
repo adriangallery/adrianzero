@@ -23,8 +23,11 @@ const MATCH_RESOLVED_EVENT = parseAbiItem(
 );
 
 // blockhash expires after 256 blocks on Base, so resolveBudokai MUST land in that window.
-// A 300-block lookahead from resolveBlock safely covers the commit + resolve txs.
-const RESOLVE_WINDOW_BLOCKS = 300n;
+// RESOLVE_BLOCK_DELAY is 5, so resolve is only callable from resolveBlock + 5 onwards.
+// Alchemy free tier caps eth_getLogs at 10 blocks per call, so we chunk.
+const RESOLVE_DELAY_BLOCKS = 5n;
+const RESOLVE_WINDOW_BLOCKS = 256n;
+const CHUNK_SIZE = 10n;
 
 function useMatchLogs(budokaiId: number | null) {
     const [matches, setMatches] = useState<MatchResult[]>([]);
@@ -55,13 +58,28 @@ function useMatchLogs(budokaiId: number | null) {
                     setMatches([]);
                     return;
                 }
-                const logs = await client.getLogs({
-                    address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
-                    event: MATCH_RESOLVED_EVENT,
-                    args: {budokaiId: BigInt(budokaiId)},
-                    fromBlock: resolveBlock,
-                    toBlock: resolveBlock + RESOLVE_WINDOW_BLOCKS,
-                });
+                // All MatchResolved events for one Budokai are emitted in the single
+                // resolveBudokai() tx → same block. Scan 10-block chunks (Alchemy free
+                // tier limit) from resolveBlock+5 onwards and stop at the first non-empty
+                // chunk.
+                const start = resolveBlock + RESOLVE_DELAY_BLOCKS;
+                const end = resolveBlock + RESOLVE_WINDOW_BLOCKS;
+                let logs: Awaited<ReturnType<typeof client.getLogs>> = [];
+                for (let from = start; from <= end; from += CHUNK_SIZE) {
+                    if (cancelled) return;
+                    const to = from + CHUNK_SIZE - 1n > end ? end : from + CHUNK_SIZE - 1n;
+                    const chunk = await client.getLogs({
+                        address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                        event: MATCH_RESOLVED_EVENT,
+                        args: {budokaiId: BigInt(budokaiId)},
+                        fromBlock: from,
+                        toBlock: to,
+                    });
+                    if (chunk.length > 0) {
+                        logs = chunk;
+                        break;
+                    }
+                }
                 if (cancelled) return;
                 const parsed: MatchResult[] = logs.map((log) => ({
                     budokaiId: Number(log.args.budokaiId ?? 0n),
