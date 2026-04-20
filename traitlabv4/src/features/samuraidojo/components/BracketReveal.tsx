@@ -31,7 +31,7 @@ function useMatchLogs(budokaiId: number | null) {
     }, []);
 
     useEffect(() => {
-        if (!budokaiId) return;
+        if (budokaiId == null) return;
         let cancelled = false;
         setLoading(true);
         (async () => {
