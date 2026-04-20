@@ -5,13 +5,8 @@ import {X, Loader2, Sword, Sparkles, Zap} from 'lucide-react';
 import {useWalletPrompt} from '@/hooks/useWalletPrompt';
 import {BUDOKAI_STATUS} from '@/lib/web3/abi';
 import {useDojoStore} from '../store/dojoStore';
-import {
-    ENTRY_FEE_ZERO,
-    SENZU_FEE_ZERO,
-    useEnterBudokai,
-    useReviveSamurai,
-} from '../hooks/useDojoActions';
-import type {BudokaiInfo, Samurai} from '../types';
+import {useEnterBudokai, useReviveSamurai} from '../hooks/useDojoActions';
+import {ENTRY_FEE_ZERO, SENZU_FEE_ZERO, type BudokaiInfo, type Samurai} from '../types';
 import {ScouterOverlay} from './ScouterOverlay';
 
 interface SamuraiDetailModalProps {
