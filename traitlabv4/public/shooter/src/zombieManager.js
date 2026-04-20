@@ -1,34 +1,23 @@
 // Zombie spawning + lifecycle management with 3-depth perspective
-
-// Canvas is 960×540. Background breakdown:
-//   bg3 acid wave  → canvas y=341-379   (translucent)
-//   bg3 platform   → canvas y=379-502   (solid dark)
-//   bg4 foreground → canvas y=400-540   (solid)
-// We spawn zombies at three depths. Each row anchors feet at a different
-// y and applies a scale so farther rows look smaller.
 //
-//   BACK : small, drawn BEFORE bg3 → emerges from the far acid wave
-//   MID  : medium, drawn BETWEEN bg3 and bg4 → wades through mid ground
-//   FRONT: full size, drawn AFTER bg4 → fully in front of everything
+// Each ROW has a fixed size regardless of zombie type.
+// Type still determines points, speed, sprite and tint.
+//
+// Canvas 960×540. Layer breakdown:
+//   bg3 opaque content from canvas y=341
+//   bg4 transparent fade y=324, fully opaque from y=393
 
-// Canvas 960×540. Layer breakdown (with current drawBg logic):
-//   bg3 opaque from canvas y≈341 (acid wave starts)
-//   bg4 transparent fade from canvas y=324, fully opaque from canvas y=393
-// Feet lines are picked so each row visibly sticks out above its front layer:
-//   back : feet 358 (in bg3 wave),      top ~316-284 visible over LAB
-//   mid  : feet 440 (behind bg4 dark),  top 296-360  visible above bg4 fade
-//   front: feet 540 (canvas bottom),    fully in front of bg4
 export const ROWS = {
-    back:  { feetY: 358, scale: 0.42, renderOrder: 0, weight: 40 },
-    mid:   { feetY: 440, scale: 0.80, renderOrder: 1, weight: 35 },
-    front: { feetY: 540, scale: 1.35, renderOrder: 2, weight: 25 }
+    back:  { feetY: 348, width:  70, height:  70, renderOrder: 0, weight: 40 },
+    mid:   { feetY: 435, width: 115, height: 115, renderOrder: 1, weight: 35 },
+    front: { feetY: 540, width: 170, height: 170, renderOrder: 2, weight: 25 }
 };
 
 export const ZOMBIE_TYPES = [
-    { name: 'common', points: 10,  baseWidth: 100, baseHeight: 100, speed: 2.0, weight: 55, asset: 'assets/zombies/common.png' },
-    { name: 'runner', points: 25,  baseWidth: 100, baseHeight: 100, speed: 3.2, weight: 25, asset: 'assets/zombies/runner.png' },
-    { name: 'brute',  points: 50,  baseWidth: 140, baseHeight: 140, speed: 1.2, weight: 15, asset: 'assets/zombies/brute.png'  },
-    { name: 'boss',   points: 200, baseWidth: 180, baseHeight: 180, speed: 0.7, weight: 5,  asset: 'assets/zombies/boss.png'   }
+    { name: 'common', points: 10,  speed: 2.0, weight: 55, asset: 'assets/zombies/common.png' },
+    { name: 'runner', points: 25,  speed: 3.2, weight: 25, asset: 'assets/zombies/runner.png' },
+    { name: 'brute',  points: 50,  speed: 1.2, weight: 15, asset: 'assets/zombies/brute.png'  },
+    { name: 'boss',   points: 200, speed: 0.7, weight: 5,  asset: 'assets/zombies/boss.png'   }
 ];
 
 export const MOVEMENT_STATES = {
@@ -61,12 +50,14 @@ export function spawnZombie() {
 
     const type = weightedPick(ZOMBIE_TYPES);
     const row  = pickRow();
-    const width  = Math.round(type.baseWidth  * row.scale);
-    const height = Math.round(type.baseHeight * row.scale);
-    const speed  = type.speed * (0.7 + row.scale * 0.5); // farther = a bit slower
+    const width  = row.width;
+    const height = row.height;
+    // Speed scaled by row — farther rows move slower for depth feel
+    const rowSpeed = row.key === 'back' ? 0.6 : row.key === 'mid' ? 0.85 : 1.0;
+    const speed = type.speed * rowSpeed;
 
     const image = this.zombieImages[type.name];
-    const targetY = (row.feetY - height) + (Math.random() * 8 - 4);
+    const targetY = row.feetY - height;
 
     const zombie = {
         x: Math.random() * (this.canvas.width - width),
@@ -76,7 +67,6 @@ export function spawnZombie() {
         type: type.name,
         row: row.key,
         renderOrder: row.renderOrder,
-        scale: row.scale,
         points: type.points,
         speed,
         killed: false,
