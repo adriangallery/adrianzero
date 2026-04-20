@@ -239,6 +239,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
     const [introBeat, setIntroBeat] = useState(0);
     const [cursor, setCursor] = useState(0);
     const [activeRoundIntro, setActiveRoundIntro] = useState<number | null>(null);
+    const [lastIntroedRound, setLastIntroedRound] = useState(0);
 
     const totalRounds = matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0;
 
@@ -249,6 +250,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
             setIntroBeat(0);
             setCursor(0);
             setActiveRoundIntro(null);
+            setLastIntroedRound(0);
         }
     }, [open]);
 
@@ -293,18 +295,22 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
             return () => clearTimeout(t);
         }
         if (activeRoundIntro != null) {
-            const t = setTimeout(() => setActiveRoundIntro(null), ROUND_INTRO_MS);
+            const introdRound = activeRoundIntro;
+            const t = setTimeout(() => {
+                setActiveRoundIntro(null);
+                setLastIntroedRound((prev) => Math.max(prev, introdRound));
+            }, ROUND_INTRO_MS);
             return () => clearTimeout(t);
         }
         const nextMatch = matches[cursor];
-        const prevRound = cursor === 0 ? null : matches[cursor - 1].round;
-        if (nextMatch.round !== prevRound) {
+        // Trigger a round intro only if we haven't shown one for this round yet.
+        if (nextMatch.round > lastIntroedRound) {
             setActiveRoundIntro(nextMatch.round);
             return;
         }
         const t = setTimeout(() => setCursor((c) => c + 1), MATCH_REVEAL_MS);
         return () => clearTimeout(t);
-    }, [phase, cursor, matches, activeRoundIntro]);
+    }, [phase, cursor, matches, activeRoundIntro, lastIntroedRound]);
 
     const visible = matches.slice(0, cursor);
     const groupedByRound = useMemo(() => {
@@ -325,6 +331,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
     const handleReplay = () => {
         setCursor(0);
         setActiveRoundIntro(null);
+        setLastIntroedRound(0);
         setPhase('revealing');
     };
 
