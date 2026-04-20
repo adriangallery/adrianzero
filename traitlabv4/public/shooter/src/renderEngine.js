@@ -1,6 +1,5 @@
 // Rendering
 
-import { layerFor } from './zombieManager.js';
 import { getColorForType, lightenColor } from './utils.js';
 
 const CANVAS_W = 960;
@@ -13,14 +12,25 @@ export function render() {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Back wall + mid layers, then zombies, then the acid platforms and foreground
-    // on top — gives the "rising from behind the bars" effect.
+    // 3-row perspective: each row has its own z-index
+    //   row 0 (back)  — drawn before bg3 → hidden by acid+platform
+    //   row 1 (mid)   — drawn between bg3 and bg4 → wades through foreground
+    //   row 2 (front) — drawn after bg4 → fully visible
+    const back = [], mid = [], front = [];
+    for (const z of this.zombies) {
+        if (z.renderOrder === 0) back.push(z);
+        else if (z.renderOrder === 1) mid.push(z);
+        else front.push(z);
+    }
+
     drawBg.call(this, 0);
     drawBg.call(this, 1);
     drawBg.call(this, 2);
-    this.zombies.forEach(z => drawZombie.call(this, z));
+    back.forEach(z => drawZombie.call(this, z));
     drawBg.call(this, 3);
+    mid.forEach(z => drawZombie.call(this, z));
     drawBg.call(this, 4);
+    front.forEach(z => drawZombie.call(this, z));
 
     renderHitEffects.call(this);
     renderHUD.call(this);
@@ -91,13 +101,20 @@ function drawZombie(z) {
     if (z.image) {
         ctx.save();
         ctx.imageSmoothingEnabled = false;
+
+        const filters = [];
         if (z.hitFlash > 0) {
-            ctx.filter = 'brightness(1.8) saturate(0)';
-        } else if (z.type === 'boss') {
-            ctx.filter = 'sepia(1) saturate(2.2) hue-rotate(-10deg) brightness(1.15)';
-        } else if (z.type === 'runner') {
-            ctx.filter = 'hue-rotate(-40deg) saturate(1.4)';
+            filters.push('brightness(1.8)', 'saturate(0)');
+        } else {
+            if (z.type === 'boss')   filters.push('sepia(1)', 'saturate(2.2)', 'hue-rotate(-10deg)', 'brightness(1.15)');
+            if (z.type === 'runner') filters.push('hue-rotate(-40deg)', 'saturate(1.4)');
+            // Depth dimming — back row slightly dark, front row full bright
+            if (z.row === 'back') filters.push('brightness(0.7)', 'contrast(0.9)');
+            else if (z.row === 'mid') filters.push('brightness(0.9)');
         }
+        if (filters.length) ctx.filter = filters.join(' ');
+        if (z.row === 'back') ctx.globalAlpha = 0.9;
+
         ctx.drawImage(z.image, z.x, z.y, z.width, z.height);
         ctx.restore();
     } else {
