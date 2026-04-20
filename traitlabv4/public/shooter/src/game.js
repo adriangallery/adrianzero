@@ -155,7 +155,7 @@ class ZombieShooter {
         clearInterval(this.spawnTimer);
         clearInterval(this.timer);
 
-        this.spawnTimer = setInterval(() => spawnZombie.call(this), 900);
+        this.spawnTimer = setInterval(() => spawnZombie.call(this), 1300);
         this.timer = setInterval(() => {
             this.timeLeft--;
             if (this.timeLeft <= 0) this.endGame();

@@ -13,14 +13,14 @@ export function render() {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // Back wall + mid layers, then zombies, then the acid platforms and foreground
+    // on top — gives the "rising from behind the bars" effect.
     drawBg.call(this, 0);
     drawBg.call(this, 1);
     drawBg.call(this, 2);
+    this.zombies.forEach(z => drawZombie.call(this, z));
     drawBg.call(this, 3);
     drawBg.call(this, 4);
-
-    // Zombies on top of all background layers so they're never occluded
-    this.zombies.forEach(z => drawZombie.call(this, z));
 
     renderHitEffects.call(this);
     renderHUD.call(this);

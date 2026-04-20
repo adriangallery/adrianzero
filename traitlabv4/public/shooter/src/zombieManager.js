@@ -42,7 +42,7 @@ export function spawnZombie() {
         image,
         movementState: MOVEMENT_STATES.RISING,
         targetY: type.yPosition + (Math.random() * 20 - 10),
-        waitTime: 1200 + Math.random() * 2500,
+        waitTime: 800 + Math.random() * 1200,
         waitStart: 0,
         hitFlash: 0
     };
