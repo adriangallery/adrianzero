@@ -342,7 +342,7 @@ function makeLore(m: MatchResult, senryoku: Map<number, number>, totalRounds: nu
     ]);
 }
 
-const INTRO_BEAT_MS = 900;
+const INTRO_BEAT_MS = 1500;
 const MATCH_REVEAL_MS = 1200;
 const ROUND_INTRO_MS = 1400;
 
@@ -626,7 +626,7 @@ function IntroSequence({
                 >
                     <motion.h3
                         animate={{scale: [1, 1.035, 1]}}
-                        transition={{duration: 0.9, ease: 'easeInOut', repeat: Infinity}}
+                        transition={{duration: 1.5, ease: 'easeInOut', repeat: Infinity}}
                         className="font-mono text-4xl font-bold tracking-[0.3em] text-red-500 sm:text-6xl"
                     >
                         {current.top}
