@@ -338,8 +338,9 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                 >
                     <Dialog.Title className="sr-only">Bracket replay — Budokai {budokaiId}</Dialog.Title>
 
-                    <div className="flex items-center justify-between border-b border-zinc-900 px-6 py-3">
-                        <div>
+                    {/* Header: title centered so the fixed MENU button (top-left z-60) never overlaps it. */}
+                    <div className="relative flex items-center justify-center border-b border-zinc-900 px-6 py-3 pt-20 sm:pt-24">
+                        <div className="text-center">
                             <h2 className="text-lg font-bold tracking-[0.3em] uppercase text-red-500">
                                 Budokai {budokaiId ?? '—'}
                             </h2>
@@ -356,7 +357,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                                         : 'budokai not yet resolved')}
                             </p>
                         </div>
-                        <Dialog.Close className="rounded-full bg-zinc-900 p-2 text-zinc-400 hover:text-white">
+                        <Dialog.Close className="absolute right-4 top-20 rounded-full bg-zinc-900 p-2 text-zinc-400 hover:text-white sm:top-24">
                             <X className="h-4 w-4" />
                         </Dialog.Close>
                     </div>
@@ -479,6 +480,7 @@ function IntroSequence({
         {top: '決勝戦開始', bottom: 'THE BRACKET OPENS'},
     ];
     const current = beats[Math.min(beat, beats.length - 1)];
+    // Uniform cross-fade between beats (no mode="wait" stutter) + subtle breath zoom loop.
     return (
         <motion.div
             className="flex h-full items-center justify-center"
@@ -486,18 +488,22 @@ function IntroSequence({
             animate={{opacity: 1}}
             exit={{opacity: 0}}
         >
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
                 <motion.div
                     key={beat}
-                    initial={{opacity: 0, scale: 0.9, y: 10}}
-                    animate={{opacity: 1, scale: 1, y: 0}}
-                    exit={{opacity: 0, scale: 1.05, y: -10}}
-                    transition={{duration: 0.35, ease: 'easeOut'}}
-                    className="text-center"
+                    initial={{opacity: 0}}
+                    animate={{opacity: 1}}
+                    exit={{opacity: 0}}
+                    transition={{duration: 0.25, ease: 'easeOut'}}
+                    className="absolute text-center"
                 >
-                    <h3 className="font-mono text-4xl font-bold tracking-[0.3em] text-red-500 sm:text-6xl">
+                    <motion.h3
+                        animate={{scale: [1, 1.035, 1]}}
+                        transition={{duration: 0.9, ease: 'easeInOut', repeat: Infinity}}
+                        className="font-mono text-4xl font-bold tracking-[0.3em] text-red-500 sm:text-6xl"
+                    >
                         {current.top}
-                    </h3>
+                    </motion.h3>
                     <p className="mt-3 text-[10px] uppercase tracking-[0.4em] text-zinc-500 sm:text-xs">
                         {current.bottom}
                     </p>
@@ -602,11 +608,11 @@ function MatchCard({match}: {match: MatchResult}) {
 
 function SamuraiAvatar({tokenId, isWinner, kaioken}: {tokenId: number; isWinner: boolean; kaioken: boolean}) {
     return (
-        <div className="flex flex-1 flex-col items-center gap-1">
+        <div className="flex flex-1 flex-col items-center gap-2">
             <img
                 src={getSamuraiImageUrl(tokenId)}
                 alt={`#${tokenId}`}
-                className={`h-16 w-16 rounded transition-all ${
+                className={`h-24 w-24 rounded transition-all sm:h-28 sm:w-28 lg:h-32 lg:w-32 ${
                     isWinner
                         ? kaioken
                             ? 'ring-2 ring-red-400 shadow-[0_0_16px_rgba(239,68,68,0.6)]'
@@ -616,7 +622,7 @@ function SamuraiAvatar({tokenId, isWinner, kaioken}: {tokenId: number; isWinner:
                 style={{imageRendering: 'pixelated'}}
             />
             <span
-                className={`font-mono text-[9px] uppercase ${
+                className={`font-mono text-[10px] uppercase ${
                     isWinner ? (kaioken ? 'text-red-300' : 'text-yellow-400') : 'text-zinc-600'
                 }`}
             >
