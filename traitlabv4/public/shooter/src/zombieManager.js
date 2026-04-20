@@ -11,10 +11,17 @@
 //   MID  : medium, drawn BETWEEN bg3 and bg4 → wades through mid ground
 //   FRONT: full size, drawn AFTER bg4 → fully in front of everything
 
+// Canvas 960×540. Layer breakdown (with current drawBg logic):
+//   bg3 opaque from canvas y≈341 (acid wave starts)
+//   bg4 transparent fade from canvas y=324, fully opaque from canvas y=393
+// Feet lines are picked so each row visibly sticks out above its front layer:
+//   back : feet 358 (in bg3 wave),      top ~316-284 visible over LAB
+//   mid  : feet 440 (behind bg4 dark),  top 296-360  visible above bg4 fade
+//   front: feet 540 (canvas bottom),    fully in front of bg4
 export const ROWS = {
     back:  { feetY: 358, scale: 0.42, renderOrder: 0, weight: 40 },
-    mid:   { feetY: 405, scale: 0.75, renderOrder: 1, weight: 35 },
-    front: { feetY: 535, scale: 1.20, renderOrder: 2, weight: 25 }
+    mid:   { feetY: 440, scale: 0.80, renderOrder: 1, weight: 35 },
+    front: { feetY: 540, scale: 1.35, renderOrder: 2, weight: 25 }
 };
 
 export const ZOMBIE_TYPES = [

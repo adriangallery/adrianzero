@@ -79,9 +79,9 @@ function drawBg(layerIndex) {
         drawH = ch * 0.55;
         drawY = ch - drawH;
     } else {
-        // Foreground — thicker so it dominates the bottom of the scene
+        // Foreground — big, flush to canvas bottom, dominant
         drawW = targetWidth;
-        drawH = ch * 0.31;
+        drawH = ch * 0.40;
         drawY = ch - drawH;
     }
 
