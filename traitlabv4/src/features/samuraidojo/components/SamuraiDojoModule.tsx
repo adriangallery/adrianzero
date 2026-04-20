@@ -282,7 +282,7 @@ function HeroBanner() {
     return (
         <div className="relative w-full overflow-hidden">
             <img
-                src="/images/budokai-hero.png"
+                src="/images/budokai-hero.gif"
                 alt="600 Samurai Budokai"
                 className="w-full object-cover"
                 style={{imageRendering: 'pixelated', maxHeight: '60vh'}}
