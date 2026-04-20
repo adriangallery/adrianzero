@@ -196,15 +196,18 @@ function useBracketData(budokaiId: number | null) {
     return {matches, snapshot, loading, stage};
 }
 
-function parseMatches(logs: Array<{args: Record<string, unknown>}>): MatchResult[] {
-    const parsed: MatchResult[] = logs.map((log) => ({
-        budokaiId: Number(log.args.budokaiId ?? 0n),
-        round: Number(log.args.round ?? 0),
-        tokenA: Number(log.args.tokenA ?? 0n),
-        tokenB: Number(log.args.tokenB ?? 0n),
-        winner: Number(log.args.winner ?? 0n),
-        kaioken: !!log.args.kaioken,
-    }));
+function parseMatches(logs: readonly unknown[]): MatchResult[] {
+    const parsed: MatchResult[] = logs.map((raw) => {
+        const args = (raw as {args?: Record<string, unknown>}).args ?? {};
+        return {
+            budokaiId: Number(args.budokaiId ?? 0n),
+            round: Number(args.round ?? 0),
+            tokenA: Number(args.tokenA ?? 0n),
+            tokenB: Number(args.tokenB ?? 0n),
+            winner: Number(args.winner ?? 0n),
+            kaioken: !!args.kaioken,
+        };
+    });
     parsed.sort((a, b) => a.round - b.round);
     return parsed;
 }
