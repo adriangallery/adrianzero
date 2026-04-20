@@ -223,10 +223,8 @@ function useBracketData(budokaiId: number | null) {
     return {matches, snapshot, senryoku, loading, stage};
 }
 
-async function fetchSenryoku(
-    client: ReturnType<typeof createPublicClient>,
-    matches: MatchResult[]
-): Promise<Map<number, number>> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchSenryoku(client: any, matches: MatchResult[]): Promise<Map<number, number>> {
     const unique = [...new Set(matches.flatMap((m) => [m.tokenA, m.tokenB]).filter((id) => id > 0))];
     if (unique.length === 0) return new Map();
     try {
