@@ -432,7 +432,11 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
             if (!map.has(m.round)) map.set(m.round, []);
             map.get(m.round)!.push(m);
         }
-        return Array.from(map.entries()).sort(([a], [b]) => a - b);
+        // Newest round on top, newest match at the top of each round — no reverse-flex,
+        // so native scroll behaves normally.
+        return Array.from(map.entries())
+            .sort(([a], [b]) => b - a)
+            .map(([r, ms]) => [r, [...ms].reverse()] as [number, MatchResult[]]);
     }, [visible]);
 
     const handleSkip = () => {
@@ -498,11 +502,19 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                             {(phase === 'revealing' || phase === 'complete') && matches.length > 0 && (
                                 <motion.div
                                     key="revealing"
-                                    className="flex h-full flex-col-reverse overflow-y-auto px-6 py-6"
+                                    className="h-full overflow-y-auto px-6 py-6"
                                     initial={{opacity: 0}}
                                     animate={{opacity: 1}}
                                     transition={{duration: 0.4}}
                                 >
+                                    {phase === 'complete' && snapshot && snapshot.champion > 0 && (
+                                        <ChampionBanner
+                                            champion={snapshot.champion}
+                                            runnerUp={snapshot.runnerUp}
+                                            pool={snapshot.pool}
+                                        />
+                                    )}
+
                                     {groupedByRound.map(([round, rms]) => {
                                         const label = roundLabel(round, totalRounds);
                                         return (
@@ -529,14 +541,6 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                                             </div>
                                         );
                                     })}
-
-                                    {phase === 'complete' && snapshot && snapshot.champion > 0 && (
-                                        <ChampionBanner
-                                            champion={snapshot.champion}
-                                            runnerUp={snapshot.runnerUp}
-                                            pool={snapshot.pool}
-                                        />
-                                    )}
                                 </motion.div>
                             )}
 
@@ -814,7 +818,7 @@ function ChampionBanner({champion, runnerUp, pool}: {champion: number; runnerUp:
             initial={{opacity: 0, scale: 0.95}}
             animate={{opacity: 1, scale: 1}}
             transition={{duration: 0.6, ease: 'easeOut'}}
-            className="mt-8 rounded border border-yellow-500/50 bg-gradient-to-b from-yellow-950/30 via-black to-black p-6 shadow-[0_0_40px_rgba(234,179,8,0.2)]"
+            className="mb-8 rounded border border-yellow-500/50 bg-gradient-to-b from-yellow-950/30 via-black to-black p-6 shadow-[0_0_40px_rgba(234,179,8,0.2)]"
         >
             <div className="mb-4 flex items-center justify-center gap-2">
                 <Trophy className="h-4 w-4 text-yellow-400" />
