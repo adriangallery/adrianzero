@@ -103,8 +103,12 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
     set({ isLoadingMetadata: true });
 
     try {
-      const traitsJsonResponse = await fetch('/data/traits.json');
+      const [traitsJsonResponse, ogpunksJsonResponse] = await Promise.all([
+        fetch('/data/traits.json'),
+        fetch('/data/ogpunks.json'),
+      ]);
       const traitsJson = await traitsJsonResponse.json();
+      const ogpunksJson = await ogpunksJsonResponse.json();
 
       const traitsMetadata: Record<string, TraitMetadata> = {};
       if (traitsJson.traits && Array.isArray(traitsJson.traits)) {
@@ -114,6 +118,18 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
             name: trait.name,
             category: trait.category,
             fileName: trait.fileName,
+            maxSupply: trait.maxSupply,
+            rarity: trait.rarity,
+          };
+        });
+      }
+      if (ogpunksJson.traits && Array.isArray(ogpunksJson.traits)) {
+        ogpunksJson.traits.forEach((trait: any) => {
+          traitsMetadata[trait.tokenId.toString()] = {
+            tokenId: trait.tokenId.toString(),
+            name: trait.name,
+            category: 'PUNK REWARDS',
+            fileName: trait.fileName ?? trait.tokenId.toString(),
             maxSupply: trait.maxSupply,
             rarity: trait.rarity,
           };
@@ -247,8 +263,14 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
             }
             seenIds.add(nft.tokenId);
 
-            const githubSvgUrl = `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${nft.tokenId}.svg`;
-            const labimagesSvgUrl = `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${nft.tokenId}.svg`;
+            const numericId = parseInt(nft.tokenId);
+            const isOgPunkReward = numericId >= 100001 && numericId <= 101003;
+            const githubSvgUrl = isOgPunkReward
+              ? `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/ogpunks/${nft.tokenId}.svg`
+              : `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${nft.tokenId}.svg`;
+            const labimagesSvgUrl = isOgPunkReward
+              ? `https://adrianlab.vercel.app/labimages/ogpunks/${nft.tokenId}.svg`
+              : `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${nft.tokenId}.svg`;
 
             return {
               tokenId: nft.tokenId,

@@ -54,7 +54,7 @@ export function TraitsModule({ embedded }: { embedded?: boolean } = {}) {
 
   // Get traits for active category
   const displayTraits = useMemo(() => {
-    if (activeCategory === 'ALL') return allTraits;
+    if (activeCategory === 'ALL') return allTraits.filter(t => t.category !== 'PUNK REWARDS');
     return traitsByCategory[activeCategory] || [];
   }, [activeCategory, allTraits, traitsByCategory]);
 

@@ -33,6 +33,7 @@ const categoryLabels: Record<string, string> = {
   'NECK': 'Neck',
   'NOSE': 'Nose',
   'PAGERS': 'Pagers',
+  'PUNK REWARDS': 'Punk Rewards',
   'RANDOMSHIT': 'Random Stuff',
   'SKIN': 'Skin',
   'SKINTRAIT': 'Skin Trait',
@@ -47,8 +48,8 @@ export function TraitCategories({
   activeCategory,
   onCategoryChange,
 }: TraitCategoriesProps) {
-  const allCount = Object.values(traitsByCategory).reduce(
-    (sum, traits) => sum + traits.length,
+  const allCount = Object.entries(traitsByCategory).reduce(
+    (sum, [category, traits]) => (category === 'PUNK REWARDS' ? sum : sum + traits.length),
     0
   );
 
