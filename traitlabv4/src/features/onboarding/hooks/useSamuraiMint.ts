@@ -85,8 +85,13 @@ export function useSamuraiSupplyCombined() {
   let newMaxSupply = BigInt(0);
 
   if (data?.[0]?.status === 'success') {
-    const legacy = data[0].result as { minted: bigint } | readonly unknown[];
-    legacyMinted = Array.isArray(legacy) ? (legacy[3] as bigint) : legacy.minted;
+    const legacy = data[0].result as unknown;
+    if (Array.isArray(legacy)) {
+      // BatchConfig struct returned as tuple — minted is index 3
+      legacyMinted = (legacy[3] as bigint) ?? BigInt(0);
+    } else if (legacy && typeof legacy === 'object' && 'minted' in legacy) {
+      legacyMinted = (legacy as { minted: bigint }).minted;
+    }
   }
   if (data?.[1]?.status === 'success') {
     const d = data[1].result as readonly unknown[];
