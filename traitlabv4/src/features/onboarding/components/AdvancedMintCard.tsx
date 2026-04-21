@@ -1,12 +1,12 @@
 /**
  * AdvancedMintCard Component
- * Card for SamuraiZERO and AdrianZERO with $ADRIAN mints
- * Only shown to users who already own an AdrianZERO NFT
+ * Card for SamuraiZERO and AdrianZERO mints paid in $ZERO (post-migration).
+ * Only shown to users who already own an AdrianZERO NFT.
  */
 
 import { useState, useEffect, useRef } from 'react';
 import { Loader2, Plus, Minus, Coins } from 'lucide-react';
-import { useAdrianBalance } from '@/features/shop/hooks/useAdrianBalance';
+import { useTokenBalance } from '@/features/shop/hooks/useTokenBalance';
 
 interface AdvancedMintCardProps {
   type: 'samurai' | 'adrianWithAdrian';
@@ -29,7 +29,7 @@ interface AdvancedMintCardProps {
   refetchAllowance: () => void;
 }
 
-function formatAdrian(amount: bigint): string {
+function formatToken(amount: bigint): string {
   const formatted = Number(amount) / 1e18;
   if (formatted >= 1000000) {
     return `${(formatted / 1000000).toFixed(1)}M`;
@@ -58,7 +58,9 @@ export function AdvancedMintCard({
   refetchAllowance,
 }: AdvancedMintCardProps) {
   const [quantity, setQuantity] = useState(1);
-  const { balance, formatted: balanceFormatted } = useAdrianBalance();
+  const { zeroBalance, zeroFormatted } = useTokenBalance();
+  const balance = zeroBalance;
+  const balanceFormatted = zeroFormatted;
   const hasAutoMintedRef = useRef(false);
 
   const borderColor = type === 'samurai' ? 'border-pink-500' : 'border-cyan-500';
@@ -115,7 +117,7 @@ export function AdvancedMintCard({
     if (isMinting) return 'Minting...';
     if (isApproving) return 'Approving...';
     if (isSoldOut) return 'Sold Out';
-    if (hasInsufficientBalance) return 'Insufficient $ADRIAN';
+    if (hasInsufficientBalance) return 'Insufficient $ZERO';
     if (needsApproval) return 'Approve & Mint';
     return `Mint ${quantity}`;
   };
@@ -155,7 +157,7 @@ export function AdvancedMintCard({
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Price</span>
           <span className={`font-bold ${accentColor}`}>
-            {isLoading || !price ? '...' : `${formatAdrian(price)} $ADRIAN`}
+            {isLoading || !price ? '...' : `${formatToken(price)} $ZERO`}
           </span>
         </div>
 
@@ -164,7 +166,7 @@ export function AdvancedMintCard({
           <span className="text-muted-foreground">Your Balance</span>
           <span className="font-medium text-foreground flex items-center gap-1">
             <Coins className="h-3 w-3" />
-            {balanceFormatted.toLocaleString()} $ADRIAN
+            {balanceFormatted.toLocaleString()} $ZERO
           </span>
         </div>
 
@@ -190,7 +192,7 @@ export function AdvancedMintCard({
         {/* Total */}
         <div className="rounded-lg bg-muted/50 p-3 text-center">
           <div className={`text-2xl font-bold ${accentColor}`}>
-            {price ? formatAdrian(totalCost) : '...'} $ADRIAN
+            {price ? formatToken(totalCost) : '...'} $ZERO
           </div>
           <div className="text-xs text-muted-foreground">Total Cost</div>
         </div>
