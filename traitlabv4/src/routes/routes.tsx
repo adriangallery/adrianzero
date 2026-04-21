@@ -83,6 +83,12 @@ const WhatIsItModule = lazy(() =>
   }))
 );
 
+const ExplainJBModule = lazy(() =>
+  import('@/features/explainjb/components/ExplainJBModule').then((m) => ({
+    default: m.ExplainJBModule,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -102,6 +108,9 @@ export const routes: RouteObject[] = [
   { path: '/shitdrop', element: <ShitdropModule /> },
   { path: '/timeline', element: <LostModule /> },
   { path: '/about', element: <WhatIsItModule /> },
+
+  // ─── Link-only (not in menu) ─────────────────────────────────────────────
+  { path: '/explain-to-jb', element: <ExplainJBModule /> },
 
   // ─── Redirects (backward compatibility) ──────────────────────────────────
   { path: '/dashboard', element: <Navigate to="/zero" replace /> },
