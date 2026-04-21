@@ -1,7 +1,9 @@
 /**
  * AdvancedMintsSection Component
- * Shows SamuraiZERO and AdrianZERO with $ADRIAN mints
- * Only visible to users who already own an AdrianZERO NFT
+ * Shows SamuraiZERO and AdrianZERO mints — now paid in $ZERO via the Diamond.
+ * Supply counter aggregates legacy BatchDeployer (pre-migration) + Diamond
+ * SamuraiMintFacet (post-migration) so the UI still shows the 196/600 progression.
+ * Only visible to users who already own an AdrianZERO NFT.
  */
 
 import { Sparkles } from 'lucide-react';
@@ -9,11 +11,13 @@ import { AdvancedMintCard } from './AdvancedMintCard';
 import { useHasAdrianZero } from '../hooks/useHasAdrianZero';
 import {
   useSamuraiBatchInfo,
+  useSamuraiSupplyCombined,
   useSamuraiApproval,
   useSamuraiMint,
 } from '../hooks/useSamuraiMint';
 import {
   useAdrianMintBatchInfo,
+  useAdrianSupplyCombined,
   useAdrianMintApproval,
   useAdrianMint,
 } from '../hooks/useAdrianMint';
@@ -24,11 +28,13 @@ export function AdvancedMintsSection() {
 
   // SamuraiZERO hooks
   const { batchInfo: samuraiBatch, isLoading: samuraiLoading } = useSamuraiBatchInfo();
+  const samuraiSupply = useSamuraiSupplyCombined();
   const samuraiApproval = useSamuraiApproval();
   const samuraiMint = useSamuraiMint();
 
-  // AdrianZERO with $ADRIAN hooks
+  // AdrianZERO hooks
   const { batchInfo: adrianBatch, isLoading: adrianLoading } = useAdrianMintBatchInfo();
+  const adrianSupply = useAdrianSupplyCombined();
   const adrianApproval = useAdrianMintApproval();
   const adrianMintHook = useAdrianMint();
 
@@ -53,7 +59,7 @@ export function AdvancedMintsSection() {
           Expand Your <span className="text-[#00ff00]">Collection</span>
         </h2>
         <p className="mt-2 text-muted-foreground">
-          Mint more NFTs using your $ADRIAN tokens
+          Mint more NFTs using your $ZERO tokens
         </p>
       </div>
 
@@ -66,10 +72,10 @@ export function AdvancedMintsSection() {
           subtitle="Warrior of the Collection"
           imageUrl={getGitHubImageUrl(IMAGE_PATHS.getComponentImage(595, 'png'))}
           price={samuraiBatch?.price}
-          minted={samuraiBatch ? Number(samuraiBatch.minted) : 0}
-          maxSupply={samuraiBatch ? Number(samuraiBatch.maxSupply) : 0}
+          minted={Number(samuraiSupply.totalMinted)}
+          maxSupply={Number(samuraiSupply.totalSupply)}
           active={samuraiBatch?.active ?? false}
-          isLoading={samuraiLoading}
+          isLoading={samuraiLoading || samuraiSupply.isLoading}
           allowance={samuraiApproval.allowance}
           onApprove={samuraiApproval.approveTokens}
           onMint={samuraiMint.mint}
@@ -81,17 +87,17 @@ export function AdvancedMintsSection() {
           refetchAllowance={samuraiApproval.refetchAllowance}
         />
 
-        {/* AdrianZERO with $ADRIAN */}
+        {/* AdrianZERO with $ZERO */}
         <AdvancedMintCard
           type="adrianWithAdrian"
           title="AdrianZERO"
-          subtitle="Mint with $ADRIAN"
+          subtitle="Mint with $ZERO"
           imageUrl="https://adrianlab.vercel.app/api/render/1"
           price={adrianBatch?.price}
-          minted={adrianBatch ? Number(adrianBatch.minted) : 0}
-          maxSupply={adrianBatch ? Number(adrianBatch.maxSupply) : 0}
+          minted={Number(adrianSupply.totalMinted)}
+          maxSupply={Number(adrianSupply.totalSupply)}
           active={adrianBatch?.active ?? false}
-          isLoading={adrianLoading}
+          isLoading={adrianLoading || adrianSupply.isLoading}
           allowance={adrianApproval.allowance}
           onApprove={adrianApproval.approveTokens}
           onMint={adrianMintHook.mint}
