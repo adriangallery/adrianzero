@@ -62,6 +62,11 @@ export function useAdrianSupplyCombined() {
         args: [BigInt(ADRIAN_BATCH_ID)],
       },
     ],
+    query: {
+      refetchInterval: 30_000,
+      refetchOnWindowFocus: true,
+      staleTime: 0,
+    },
   });
 
   let legacyMinted = BigInt(0);
