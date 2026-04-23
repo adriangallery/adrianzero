@@ -10,7 +10,20 @@ import { Sidebar } from './Sidebar';
 import { Container } from './Container';
 import { ToastContainer } from '../notifications/Toast';
 import { ZeroStyleChrome } from './ZeroStyleChrome';
+import { NAV_ITEMS } from './navigation';
 import { useWalletDataSync } from '@/hooks/useWalletDataSync';
+
+const EXTRA_TITLES: Record<string, string> = {
+  '/explain-to-jb': 'Explain to JB',
+};
+
+function getPageTitle(pathname: string): string {
+  if (EXTRA_TITLES[pathname]) return EXTRA_TITLES[pathname];
+  const match = NAV_ITEMS.find(
+    (item) => pathname === item.path || pathname.startsWith(`${item.path}/`)
+  );
+  return match?.label ?? 'Home';
+}
 
 export function MainLayout() {
   // Sync wallet connection and auto-load all NFT data
@@ -23,6 +36,10 @@ export function MainLayout() {
   });
   const location = useLocation();
   const isZeroLanding = location.pathname.startsWith('/zero');
+
+  useEffect(() => {
+    document.title = `ZERO - ${getPageTitle(location.pathname)}`;
+  }, [location.pathname]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 1024px)');
