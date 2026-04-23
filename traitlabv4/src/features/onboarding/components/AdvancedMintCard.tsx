@@ -76,21 +76,34 @@ export function AdvancedMintCard({
   const isSoldOut = minted >= maxSupply;
   const isDisabled = isLoading || !active || isSoldOut || hasInsufficientBalance || isMinting || isApproving || autoMintPending;
 
-  // Auto-mint after approval is confirmed (only once). Keep the button
-  // disabled via `autoMintPending` until the mint writeContract actually
-  // fires — otherwise there's a race window where `isApproving` already
-  // flipped to false but allowance hasn't been refetched yet, so the button
-  // re-enables showing "Approve & Mint" and the user re-fires a second approve.
+  // Auto-mint after approval is confirmed (only once). Two gotchas this
+  // guards against:
+  //   1. Race window where isApproving already flipped to false but the
+  //      allowance refetch hasn't landed — button would re-enable as
+  //      "Approve & Mint" and a second click would fire a second approve.
+  //      `autoMintPending` keeps the button disabled through the window.
+  //   2. MetaMask silently drops the next writeContract if its popup is
+  //      still closing from the approve. We delay the mint call long enough
+  //      for MM to settle, and a watchdog clears autoMintPending if the mint
+  //      never gets picked up (e.g. wallet ignored the request).
   useEffect(() => {
-    if (isApprovalConfirmed && !hasAutoMintedRef.current) {
-      hasAutoMintedRef.current = true;
-      setAutoMintPending(true);
-      refetchAllowance();
+    if (!isApprovalConfirmed || hasAutoMintedRef.current) return;
+    hasAutoMintedRef.current = true;
+    setAutoMintPending(true);
+    refetchAllowance();
+    const mintTimer = setTimeout(() => {
       onMint(quantity);
-    }
+    }, 1500);
+    const watchdogTimer = setTimeout(() => {
+      setAutoMintPending(false);
+    }, 30_000);
+    return () => {
+      clearTimeout(mintTimer);
+      clearTimeout(watchdogTimer);
+    };
   }, [isApprovalConfirmed]);
 
-  // Clear the auto-mint gate once the mint itself is in flight or errored.
+  // Clear the auto-mint gate once the mint itself is in flight or done.
   useEffect(() => {
     if (autoMintPending && (isMinting || isConfirmed)) {
       setAutoMintPending(false);
