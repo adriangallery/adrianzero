@@ -58,6 +58,7 @@ export function AdvancedMintCard({
   refetchAllowance,
 }: AdvancedMintCardProps) {
   const [quantity, setQuantity] = useState(1);
+  const [autoMintPending, setAutoMintPending] = useState(false);
   const { zeroBalance, zeroFormatted } = useTokenBalance();
   const balance = zeroBalance;
   const balanceFormatted = zeroFormatted;
@@ -73,19 +74,28 @@ export function AdvancedMintCard({
   const needsApproval = allowance < totalCost;
   const hasInsufficientBalance = balance ? totalCost > balance : true;
   const isSoldOut = minted >= maxSupply;
-  const isDisabled = isLoading || !active || isSoldOut || hasInsufficientBalance || isMinting || isApproving;
+  const isDisabled = isLoading || !active || isSoldOut || hasInsufficientBalance || isMinting || isApproving || autoMintPending;
 
-  // Auto-mint after approval is confirmed (only once)
+  // Auto-mint after approval is confirmed (only once). Keep the button
+  // disabled via `autoMintPending` until the mint writeContract actually
+  // fires — otherwise there's a race window where `isApproving` already
+  // flipped to false but allowance hasn't been refetched yet, so the button
+  // re-enables showing "Approve & Mint" and the user re-fires a second approve.
   useEffect(() => {
     if (isApprovalConfirmed && !hasAutoMintedRef.current) {
       hasAutoMintedRef.current = true;
+      setAutoMintPending(true);
       refetchAllowance();
-      // Automatically trigger mint after approval
-      setTimeout(() => {
-        onMint(quantity);
-      }, 500); // Small delay to ensure allowance is updated
+      onMint(quantity);
     }
   }, [isApprovalConfirmed]);
+
+  // Clear the auto-mint gate once the mint itself is in flight or errored.
+  useEffect(() => {
+    if (autoMintPending && (isMinting || isConfirmed)) {
+      setAutoMintPending(false);
+    }
+  }, [autoMintPending, isMinting, isConfirmed]);
 
   // Reset confirmed state after showing success
   useEffect(() => {
@@ -97,10 +107,11 @@ export function AdvancedMintCard({
     }
   }, [isConfirmed, onReset, refetchAllowance]);
 
-  // Reset auto-mint flag when user changes quantity or starts new approval
+  // Reset auto-mint flag when user starts a new approval
   useEffect(() => {
     if (isApproving) {
       hasAutoMintedRef.current = false;
+      setAutoMintPending(false);
     }
   }, [isApproving]);
 
@@ -115,6 +126,7 @@ export function AdvancedMintCard({
   const getButtonText = () => {
     if (isConfirmed) return 'Minted!';
     if (isMinting) return 'Minting...';
+    if (autoMintPending) return 'Confirm Mint in Wallet...';
     if (isApproving) return 'Approving...';
     if (isSoldOut) return 'Sold Out';
     if (hasInsufficientBalance) return 'Insufficient $ZERO';
@@ -203,7 +215,7 @@ export function AdvancedMintCard({
           disabled={isDisabled}
           className={`w-full rounded-lg ${buttonBg} px-4 py-3 text-lg font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2`}
         >
-          {(isMinting || isApproving) && <Loader2 className="h-5 w-5 animate-spin" />}
+          {(isMinting || isApproving || autoMintPending) && <Loader2 className="h-5 w-5 animate-spin" />}
           {getButtonText()}
         </button>
 
