@@ -276,8 +276,18 @@ function roundLabel(round: number, totalRounds: number): {kanji: string; en: str
  * Narrator that picks a flavor line per match, deterministically, using
  * senryoku gap + kaioken flag + round as the bucket selector. Same match
  * always returns the same line (reproducible across reloads).
+ *
+ * Extra buckets:
+ *   - First Blood   — round 1, match index 0 (detected via `isFirstBlood`)
+ *   - Close final   — final round where |gap| <= 5 (Chronicles-worthy)
+ *   - Close semi    — semifinal where |gap| <= 5 (razor edge to the throne)
  */
-function makeLore(m: MatchResult, senryoku: Map<number, number>, totalRounds: number): string {
+function makeLore(
+    m: MatchResult,
+    senryoku: Map<number, number>,
+    totalRounds: number,
+    isFirstBlood: boolean = false,
+): string {
     const w = m.winner;
     const l = w === m.tokenA ? m.tokenB : m.tokenA;
     const wPow = senryoku.get(w);
@@ -289,7 +299,24 @@ function makeLore(m: MatchResult, senryoku: Map<number, number>, totalRounds: nu
 
     const pick = (arr: string[]) => arr[(w * 31 + l * 17 + m.round * 7) % arr.length];
 
+    // First Blood: only the very first match of round 1.
+    if (isFirstBlood && !isFinal && !isSemi && !m.kaioken) {
+        return pick([
+            `First blood of the Budokai — #${w} draws the opening cut on #${l}.`,
+            `The gates open. #${w} is the first to taste victory over #${l}.`,
+            `An opening strike. #${w} drops #${l} before the dojo can breathe.`,
+        ]);
+    }
+
     if (isFinal) {
+        // Chronicles-worthy close final: |gap| <= 5.
+        if (hasPower && Math.abs(gap) <= 5) {
+            return pick([
+                `A final that will be retold in the Chronicles — #${w} edges out #${l} by a single breath.`,
+                `Two heartbeats. Two fates. #${w} stands, #${l} bows — by the thinnest margin ever recorded.`,
+                `The dojo will never forget this final. #${w} over #${l} by a sliver.`,
+            ]);
+        }
         return pick([
             `Under the dojo lanterns, #${w} claims the Tenkaichi title over #${l}.`,
             `Tenkaichi — #${w} stands alone. #${l} takes runner-up with honor.`,
@@ -426,6 +453,13 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
     }, [phase, cursor, matches, activeRoundIntro, lastIntroedRound]);
 
     const visible = matches.slice(0, cursor);
+    // First-blood detection: the earliest round-1 match. Stable key = "tokenA-tokenB-round".
+    const firstBloodKey = useMemo(() => {
+        const r1 = matches.filter((m) => m.round === 1);
+        if (r1.length === 0) return null;
+        const first = r1[0]; // matches arrive in block/log order → first is chronologically first
+        return `${first.tokenA}-${first.tokenB}-${first.round}`;
+    }, [matches]);
     const groupedByRound = useMemo(() => {
         const map = new Map<number, MatchResult[]>();
         for (const m of visible) {
@@ -529,14 +563,18 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                                                     <div className="h-px flex-1 bg-zinc-900" />
                                                 </div>
                                                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                                                    {rms.map((m, i) => (
-                                                        <MatchCard
-                                                            key={`${round}-${i}`}
-                                                            match={m}
-                                                            senryoku={senryoku}
-                                                            totalRounds={totalRounds}
-                                                        />
-                                                    ))}
+                                                    {rms.map((m, i) => {
+                                                        const key = `${m.tokenA}-${m.tokenB}-${m.round}`;
+                                                        return (
+                                                            <MatchCard
+                                                                key={`${round}-${i}`}
+                                                                match={m}
+                                                                senryoku={senryoku}
+                                                                totalRounds={totalRounds}
+                                                                isFirstBlood={firstBloodKey === key}
+                                                            />
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         );
@@ -709,15 +747,17 @@ function MatchCard({
     match,
     senryoku,
     totalRounds,
+    isFirstBlood = false,
 }: {
     match: MatchResult;
     senryoku: Map<number, number>;
     totalRounds: number;
+    isFirstBlood?: boolean;
 }) {
     const winnerIsA = match.winner === match.tokenA;
     const lore = useMemo(
-        () => makeLore(match, senryoku, totalRounds),
-        [match, senryoku, totalRounds]
+        () => makeLore(match, senryoku, totalRounds, isFirstBlood),
+        [match, senryoku, totalRounds, isFirstBlood]
     );
     const sA = senryoku.get(match.tokenA);
     const sB = senryoku.get(match.tokenB);

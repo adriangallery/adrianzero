@@ -9,6 +9,7 @@ interface SamuraiCardProps {
     onClick: () => void;
     multiSelectMode?: boolean;
     isSelected?: boolean;
+    honor?: number; // v6: persistent combat bonus from podium finishes. 0 on v4.
 }
 
 function getSamuraiImageUrl(tokenId: number): string {
@@ -24,12 +25,27 @@ export const SamuraiCard = memo(function SamuraiCard({
     onClick,
     multiSelectMode = false,
     isSelected = false,
+    honor = 0,
 }: SamuraiCardProps) {
+    // Border hierarchy (MINE tab visual fix):
+    //   selected (multi-select)  → red solid + ring
+    //   mine & IN this Budokai   → yellow solid + glow  (committed, locked in)
+    //   mine & READY to enter    → zinc dashed          (available, opt-in vibe)
+    //   mine & KO'd              → no border (gray overlay handles it)
+    //   community / read-only    → no border
+    const mineBorder = isSelected
+        ? 'border-2 border-red-500 ring-2 ring-red-500/50'
+        : isMine && isEntered && !isKnockedOut
+            ? 'border-2 border-yellow-400 shadow-[0_0_16px_rgba(250,204,21,0.25)]'
+            : isMine && !isEntered && !isKnockedOut
+                ? 'border-2 border-dashed border-zinc-600'
+                : '';
+
     return (
         <button
             onClick={onClick}
             className={`group relative flex min-w-0 flex-col overflow-hidden rounded text-left transition-all duration-300 cursor-pointer hover:scale-105 hover:z-10
-        ${isSelected ? 'border-2 border-red-500 ring-2 ring-red-500/50' : isMine ? 'border-2 border-yellow-400' : ''}
+        ${mineBorder}
         ${isKnockedOut ? 'opacity-50 saturate-0' : ''}
       `}
         >
@@ -42,12 +58,17 @@ export const SamuraiCard = memo(function SamuraiCard({
                     loading="lazy"
                 />
 
-                {/* Senryoku — top-left scouter readout */}
+                {/* Senryoku — top-left scouter readout. v6: shows "+H" honor bonus in gold if any. */}
                 <div className="absolute top-1 left-1 rounded border border-red-500/40 bg-black/70 px-1.5 py-0.5 backdrop-blur-sm">
                     <span className="text-[7px] font-mono font-bold uppercase tracking-wider text-red-400">
                         SR
                     </span>
                     <span className="ml-1 text-[9px] font-mono font-bold text-white">{senryoku}</span>
+                    {honor > 0 && (
+                        <span className="ml-0.5 text-[9px] font-mono font-bold text-yellow-400" title={`Honor bonus: +${honor}`}>
+                            +{honor}
+                        </span>
+                    )}
                 </div>
 
                 {/* Multi-select checkbox overrides badges when active */}

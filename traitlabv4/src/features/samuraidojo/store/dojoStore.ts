@@ -15,6 +15,7 @@ interface DojoState {
     toggleMultiSelectMode: () => void;
     toggleId: (tokenId: number) => void;
     clearSelection: () => void;
+    selectMany: (tokenIds: number[], enableMultiSelect?: boolean) => void;
     selectSamurai: (tokenId: number) => void;
     closeDetail: () => void;
     openBracket: (budokaiId: number) => void;
@@ -45,6 +46,11 @@ export const useDojoStore = create<DojoState>((set) => ({
             return {selectedIds: next};
         }),
     clearSelection: () => set({selectedIds: new Set<number>()}),
+    selectMany: (tokenIds, enableMultiSelect = true) =>
+        set(() => ({
+            multiSelectMode: enableMultiSelect,
+            selectedIds: new Set<number>(tokenIds),
+        })),
     selectSamurai: (tokenId) => set({selectedTokenId: tokenId, isDetailOpen: true}),
     closeDetail: () => set({isDetailOpen: false}),
     openBracket: (budokaiId) => set({isBracketOpen: true, bracketBudokaiId: budokaiId}),

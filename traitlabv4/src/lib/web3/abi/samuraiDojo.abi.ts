@@ -98,6 +98,77 @@ export const SAMURAI_DOJO_ABI = [
         type: 'function',
     },
 
+    // ─── v6 views (graceful on v4 — call reverts and wagmi returns failure) ───
+    {
+        inputs: [{name: 'tokenId', type: 'uint256'}],
+        name: 'getHonor',
+        outputs: [{name: '', type: 'uint32'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{name: 'tokenId', type: 'uint256'}],
+        name: 'getEffectiveSR',
+        outputs: [{name: '', type: 'uint256'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'getLastCreatedBudokaiId',
+        outputs: [{name: '', type: 'uint256'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{name: 'budokaiId', type: 'uint256'}],
+        name: 'getBudokaiCounters',
+        outputs: [
+            {name: 'samuraiCount', type: 'uint32'},
+            {name: 'civilianCount', type: 'uint32'},
+            {name: 'maxPerWallet', type: 'uint32'},
+            {name: 'entryFee', type: 'uint128'},
+            {name: 'freeEntry', type: 'bool'},
+        ],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{name: 'budokaiId', type: 'uint256'}],
+        name: 'getBudokaiTrophy',
+        outputs: [
+            {name: 'trophyType', type: 'uint8'},
+            {name: 'trophyTraitId', type: 'uint256'},
+            {name: 'trophyWinners', type: 'uint8'},
+        ],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [{name: 'budokaiId', type: 'uint256'}],
+        name: 'getBudokaiTheme',
+        outputs: [
+            {name: 'tagline', type: 'string'},
+            {name: 'themeColor', type: 'uint8'},
+            {name: 'iconVariant', type: 'uint8'},
+            {name: 'isSpecialEvent', type: 'bool'},
+        ],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        anonymous: false,
+        inputs: [
+            {indexed: true, name: 'budokaiId', type: 'uint256'},
+            {indexed: true, name: 'tokenId', type: 'uint256'},
+            {indexed: false, name: 'amount', type: 'uint32'},
+            {indexed: false, name: 'reason', type: 'uint8'},
+            {indexed: false, name: 'trophyType', type: 'uint8'},
+        ],
+        name: 'HonorAwarded',
+        type: 'event',
+    },
+
     // ─── Events ───
     {
         anonymous: false,

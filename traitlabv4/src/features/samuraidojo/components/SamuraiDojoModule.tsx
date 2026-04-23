@@ -6,6 +6,7 @@ import {SAMURAI_DOJO_ABI, BUDOKAI_STATUS} from '@/lib/web3/abi';
 import {useZeroBalance} from '@/features/zeromovies/hooks/useZeroBalance';
 import {useBudokaiEntries, useBudokaiInfo, useCurrentBudokaiId} from '../hooks/useDojoContract';
 import {useMySamurai} from '../hooks/useMySamurai';
+import {useSamuraiRoster} from '../hooks/useSamuraiRoster';
 import {useSamuraiState} from '../hooks/useSamuraiState';
 import {useEnterBudokaiBatch} from '../hooks/useDojoActions';
 import {ENTRY_FEE_ZERO} from '../types';
@@ -17,7 +18,7 @@ import {ChampionsHall} from './ChampionsHall';
 import {BracketReveal} from './BracketReveal';
 import {PrizeShowcase} from './PrizeShowcase';
 
-type FilterMode = 'entrants' | 'mine' | 'ko' | 'all';
+type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 
 export function SamuraiDojoModule() {
     const {currentBudokaiId, refetch: refetchCurrent} = useCurrentBudokaiId();
@@ -43,6 +44,7 @@ export function SamuraiDojoModule() {
         toggleMultiSelectMode,
         toggleId,
         clearSelection,
+        selectMany,
         selectSamurai,
         closeDetail,
         openBracket,
@@ -50,11 +52,17 @@ export function SamuraiDojoModule() {
     } = useDojoStore();
 
     const [filter, setFilter] = useState<FilterMode>('mine');
+    const {roster} = useSamuraiRoster();
 
-    // Figure out which tokenIds we need to display + batch-read state for them
+    // Which tokenIds do we need state for?
+    //   entrants  → current Budokai entries
+    //   mine      → my tokens (to classify into IN / READY / KO)
+    //   ko        → my tokens + the FULL roster (to show community KO'd too)
+    //   hall      → no grid; skip
     const visibleTokenIds = useMemo(() => {
         const set = new Set<number>();
-        if (filter === 'entrants' || filter === 'ko' || filter === 'all') {
+        if (filter === 'hall') return [];
+        if (filter === 'entrants' || filter === 'all') {
             for (const id of entries) set.add(id);
         }
         if (filter === 'mine' || filter === 'all') {
@@ -62,21 +70,34 @@ export function SamuraiDojoModule() {
         }
         if (filter === 'ko' || filter === 'all') {
             for (const id of myTokenIds) set.add(id);
+            for (const id of roster) set.add(id); // community KO pool
         }
         return Array.from(set).sort((a, b) => a - b);
-    }, [filter, entries, myTokenIds]);
+    }, [filter, entries, myTokenIds, roster]);
 
     const {states, refetch: refetchStates} = useSamuraiState(visibleTokenIds);
 
-    const filteredTokenIds = useMemo(() => {
-        if (filter === 'ko') {
-            return visibleTokenIds.filter((id) => states.get(id)?.isKnockedOut);
-        }
-        return visibleTokenIds;
-    }, [filter, visibleTokenIds, states]);
-
     const myOwnedSet = useMemo(() => new Set(myTokenIds), [myTokenIds]);
     const enteredSet = useMemo(() => new Set(entries), [entries]);
+
+    // MINE tab sub-buckets.
+    const mineInIds = useMemo(() => myTokenIds.filter((id) => enteredSet.has(id) && !states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myTokenIds, enteredSet, states]);
+    const mineReadyIds = useMemo(() => myTokenIds.filter((id) => !enteredSet.has(id) && !states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myTokenIds, enteredSet, states]);
+    const mineKoIds = useMemo(() => myTokenIds.filter((id) => states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myTokenIds, states]);
+
+    // KO'd tab split: mine vs community (roster \ mine, both KO'd).
+    const koMineIds = mineKoIds;
+    const koCommunityIds = useMemo(() => {
+        const arr: number[] = [];
+        for (const id of roster) {
+            if (myOwnedSet.has(id)) continue;
+            if (states.get(id)?.isKnockedOut) arr.push(id);
+        }
+        return arr.sort((a, b) => a - b);
+    }, [roster, myOwnedSet, states]);
+
+    // Entrants tab token list.
+    const entrantsIds = useMemo(() => [...entries].sort((a, b) => a - b), [entries]);
 
     const handleRefresh = () => {
         refetchCurrent();
@@ -107,6 +128,12 @@ export function SamuraiDojoModule() {
     const selectedTotalFee = selectedCount * ENTRY_FEE_ZERO;
     const insufficientBatchBalance = zeroBalance < selectedTotalFee;
 
+    const handleSelectAllReady = () => {
+        if (mineReadyIds.length === 0) return;
+        // Pre-populate the multi-select bar; user sees the floating CTA and confirms.
+        selectMany(mineReadyIds, true);
+    };
+
     const handleCardClick = (tokenId: number) => {
         if (multiSelectMode) {
             // Only eligible samurai (mine + not entered + not KO) can be selected
@@ -136,18 +163,38 @@ export function SamuraiDojoModule() {
 
                 {/* Filter tabs + multi-select toggle */}
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex gap-1 rounded border border-zinc-800 p-1">
+                    <div className="flex flex-wrap gap-1 rounded border border-zinc-800 p-1">
                         <FilterTab label="Entrants" count={entries.length} active={filter === 'entrants'} onClick={() => setFilter('entrants')} />
                         <FilterTab label="Mine" count={myTokenIds.length} active={filter === 'mine'} onClick={() => setFilter('mine')} />
                         <FilterTab
                             label="KO'd"
-                            count={myTokenIds.filter((id) => states.get(id)?.isKnockedOut).length}
+                            count={mineKoIds.length + koCommunityIds.length}
                             active={filter === 'ko'}
                             onClick={() => setFilter('ko')}
+                        />
+                        <FilterTab
+                            label="Hall of Fame"
+                            count={0}
+                            hideCount
+                            active={filter === 'hall'}
+                            onClick={() => setFilter('hall')}
                         />
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {filter === 'mine' && budokaiInfo?.status === BUDOKAI_STATUS.Open && mineReadyIds.length > 0 && !multiSelectMode && (
+                            <button
+                                onClick={() => {
+                                    // Toggle multi-select AND preselect all READY tokens.
+                                    // Parent wires this via a selectMany call handled below.
+                                    handleSelectAllReady();
+                                }}
+                                className="rounded border border-yellow-500/50 bg-yellow-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-yellow-400 hover:bg-yellow-500/20"
+                            >
+                                <Sword className="mr-1 inline h-3 w-3" />
+                                Enter all Ready ({mineReadyIds.length})
+                            </button>
+                        )}
                         {budokaiInfo?.status === BUDOKAI_STATUS.Open && myOwnedSet.size > 0 && (
                             <button
                                 onClick={() => toggleMultiSelectMode()}
@@ -173,22 +220,47 @@ export function SamuraiDojoModule() {
                     </div>
                 </div>
 
-                {/* Grid */}
-                {filteredTokenIds.length === 0 ? (
+                {/* Content per filter */}
+                {filter === 'hall' ? (
+                    <ChampionsHall />
+                ) : filter === 'mine' ? (
+                    <MineSections
+                        inIds={mineInIds}
+                        readyIds={mineReadyIds}
+                        koIds={mineKoIds}
+                        states={states}
+                        enteredSet={enteredSet}
+                        myOwnedSet={myOwnedSet}
+                        multiSelectMode={multiSelectMode}
+                        selectedIds={selectedIds}
+                        onCardClick={handleCardClick}
+                        ownedCount={myTokenIds.length}
+                    />
+                ) : filter === 'ko' ? (
+                    <KoSections
+                        mineIds={koMineIds}
+                        communityIds={koCommunityIds}
+                        states={states}
+                        enteredSet={enteredSet}
+                        myOwnedSet={myOwnedSet}
+                        onCardClick={handleCardClick}
+                        multiSelectMode={multiSelectMode}
+                        selectedIds={selectedIds}
+                    />
+                ) : entrantsIds.length === 0 ? (
                     <div className="flex h-40 items-center justify-center rounded border border-dashed border-zinc-800 text-[11px] text-zinc-600">
-                        {filter === 'mine' && myTokenIds.length === 0 && 'You don\'t own any SAMURAIzero.'}
-                        {filter === 'entrants' && entries.length === 0 && 'No entries yet. Be the first to enter!'}
-                        {filter === 'ko' && 'No KO\'d samurai in your collection.'}
+                        No entries yet. Be the first to enter!
                     </div>
                 ) : (
                     <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
-                        {filteredTokenIds.map((tokenId) => {
+                        {entrantsIds.map((tokenId) => {
                             const state = states.get(tokenId);
                             return (
                                 <SamuraiCard
                                     key={tokenId}
                                     tokenId={tokenId}
                                     senryoku={state?.senryoku ?? 0}
+                                    honor={state?.honor ?? 0}
                                     isEntered={enteredSet.has(tokenId)}
                                     isKnockedOut={state?.isKnockedOut ?? false}
                                     isMine={myOwnedSet.has(tokenId)}
@@ -201,8 +273,6 @@ export function SamuraiDojoModule() {
                     </div>
                 )}
             </div>
-
-            <ChampionsHall budokaiIds={[1, 2, 3]} />
 
             {/* Floating batch action bar */}
             {multiSelectMode && selectedCount > 0 && (
@@ -298,7 +368,7 @@ function HeroBanner() {
     );
 }
 
-function FilterTab({label, count, active, onClick}: {label: string; count: number; active: boolean; onClick: () => void}) {
+function FilterTab({label, count, active, onClick, hideCount}: {label: string; count: number; active: boolean; onClick: () => void; hideCount?: boolean}) {
     return (
         <button
             onClick={onClick}
@@ -306,7 +376,257 @@ function FilterTab({label, count, active, onClick}: {label: string; count: numbe
                 active ? 'bg-red-600 text-white' : 'text-zinc-400 hover:text-white'
             }`}
         >
-            {label} <span className="text-[9px] opacity-60">({count})</span>
+            {label}{hideCount ? '' : <span className="text-[9px] opacity-60"> ({count})</span>}
         </button>
+    );
+}
+
+/**
+ * MINE tab — three buckets, visually distinct, scannable at a glance.
+ *   1. IN THE DOJO   — tokens entered in current Budokai, solid yellow border + glow.
+ *   2. READY         — owned, not entered, not KO'd; dashed border. (Fresh meat.)
+ *   3. KNOCKED OUT   — owned + KO'd; grayscale.
+ */
+function MineSections({
+    inIds,
+    readyIds,
+    koIds,
+    states,
+    enteredSet,
+    myOwnedSet,
+    multiSelectMode,
+    selectedIds,
+    onCardClick,
+    ownedCount,
+}: {
+    inIds: number[];
+    readyIds: number[];
+    koIds: number[];
+    states: Map<number, {senryoku: number; isKnockedOut: boolean; honor: number}>;
+    enteredSet: Set<number>;
+    myOwnedSet: Set<number>;
+    multiSelectMode: boolean;
+    selectedIds: Set<number>;
+    onCardClick: (tokenId: number) => void;
+    ownedCount: number;
+}) {
+    if (ownedCount === 0) {
+        return (
+            <div className="flex h-40 items-center justify-center rounded border border-dashed border-zinc-800 text-[11px] text-zinc-600">
+                You don&apos;t own any SAMURAIzero.
+            </div>
+        );
+    }
+    return (
+        <div className="space-y-6">
+            <SectionBlock
+                title="In the Dojo"
+                kanji="出場"
+                sub="Committed. Awaiting the bracket."
+                color="text-yellow-400"
+                count={inIds.length}
+                emptyMsg="None of yours are in yet. Enter to secure bracket slots."
+            >
+                <CardGrid
+                    ids={inIds}
+                    states={states}
+                    enteredSet={enteredSet}
+                    myOwnedSet={myOwnedSet}
+                    multiSelectMode={multiSelectMode}
+                    selectedIds={selectedIds}
+                    onCardClick={onCardClick}
+                />
+            </SectionBlock>
+
+            <SectionBlock
+                title="Ready to Enter"
+                kanji="待機"
+                sub="Available. Pay the fee and lock them in."
+                color="text-zinc-300"
+                count={readyIds.length}
+                emptyMsg="No available samurai to enter."
+            >
+                <CardGrid
+                    ids={readyIds}
+                    states={states}
+                    enteredSet={enteredSet}
+                    myOwnedSet={myOwnedSet}
+                    multiSelectMode={multiSelectMode}
+                    selectedIds={selectedIds}
+                    onCardClick={onCardClick}
+                />
+            </SectionBlock>
+
+            {koIds.length > 0 && (
+                <SectionBlock
+                    title="Knocked Out"
+                    kanji="気絶"
+                    sub="Revive with Senzu to re-enter."
+                    color="text-red-400"
+                    count={koIds.length}
+                >
+                    <CardGrid
+                        ids={koIds}
+                        states={states}
+                        enteredSet={enteredSet}
+                        myOwnedSet={myOwnedSet}
+                        multiSelectMode={multiSelectMode}
+                        selectedIds={selectedIds}
+                        onCardClick={onCardClick}
+                    />
+                </SectionBlock>
+            )}
+        </div>
+    );
+}
+
+/**
+ * KO'D tab — "YOURS" first, then "COMMUNITY" (everyone else KO'd). Creates a revive market:
+ * cheap KO'd tokens can be bought on OpenSea, revived, and re-entered in the next Budokai.
+ */
+function KoSections({
+    mineIds,
+    communityIds,
+    states,
+    enteredSet,
+    myOwnedSet,
+    onCardClick,
+    multiSelectMode,
+    selectedIds,
+}: {
+    mineIds: number[];
+    communityIds: number[];
+    states: Map<number, {senryoku: number; isKnockedOut: boolean; honor: number}>;
+    enteredSet: Set<number>;
+    myOwnedSet: Set<number>;
+    onCardClick: (tokenId: number) => void;
+    multiSelectMode: boolean;
+    selectedIds: Set<number>;
+}) {
+    if (mineIds.length === 0 && communityIds.length === 0) {
+        return (
+            <div className="flex h-40 items-center justify-center rounded border border-dashed border-zinc-800 text-[11px] text-zinc-600">
+                No knocked-out samurai. The dojo rests.
+            </div>
+        );
+    }
+    return (
+        <div className="space-y-6">
+            <SectionBlock
+                title="Yours"
+                kanji="自軍"
+                sub="Your downed samurai. Revive to re-enter."
+                color="text-red-400"
+                count={mineIds.length}
+                emptyMsg="None of yours are down — for now."
+            >
+                <CardGrid
+                    ids={mineIds}
+                    states={states}
+                    enteredSet={enteredSet}
+                    myOwnedSet={myOwnedSet}
+                    multiSelectMode={multiSelectMode}
+                    selectedIds={selectedIds}
+                    onCardClick={onCardClick}
+                />
+            </SectionBlock>
+
+            <SectionBlock
+                title="Community"
+                kanji="衆生"
+                sub="Available KO'd tokens across the dojo. Buy, revive, fight."
+                color="text-zinc-400"
+                count={communityIds.length}
+                emptyMsg="No community KO'd tokens."
+            >
+                <CardGrid
+                    ids={communityIds}
+                    states={states}
+                    enteredSet={enteredSet}
+                    myOwnedSet={myOwnedSet}
+                    multiSelectMode={multiSelectMode}
+                    selectedIds={selectedIds}
+                    onCardClick={onCardClick}
+                />
+            </SectionBlock>
+        </div>
+    );
+}
+
+function SectionBlock({
+    title,
+    kanji,
+    sub,
+    color,
+    count,
+    emptyMsg,
+    children,
+}: {
+    title: string;
+    kanji: string;
+    sub: string;
+    color: string;
+    count: number;
+    emptyMsg?: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div>
+            <div className="mb-3 flex items-baseline gap-3">
+                <span className={`text-[11px] font-bold uppercase tracking-[0.3em] ${color}`}>{title}</span>
+                <span className="font-mono text-[10px] text-zinc-600">{kanji}</span>
+                <span className="text-[9px] tracking-wider text-zinc-600">{sub}</span>
+                <div className="h-px flex-1 bg-zinc-900" />
+                <span className="font-mono text-[9px] text-zinc-500">({count})</span>
+            </div>
+            {count === 0 && emptyMsg ? (
+                <div className="flex h-20 items-center justify-center rounded border border-dashed border-zinc-900 text-[10px] text-zinc-700">
+                    {emptyMsg}
+                </div>
+            ) : (
+                children
+            )}
+        </div>
+    );
+}
+
+function CardGrid({
+    ids,
+    states,
+    enteredSet,
+    myOwnedSet,
+    multiSelectMode,
+    selectedIds,
+    onCardClick,
+}: {
+    ids: number[];
+    states: Map<number, {senryoku: number; isKnockedOut: boolean; honor: number}>;
+    enteredSet: Set<number>;
+    myOwnedSet: Set<number>;
+    multiSelectMode: boolean;
+    selectedIds: Set<number>;
+    onCardClick: (tokenId: number) => void;
+}) {
+    if (ids.length === 0) return null;
+    return (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
+            {ids.map((tokenId) => {
+                const state = states.get(tokenId);
+                return (
+                    <SamuraiCard
+                        key={tokenId}
+                        tokenId={tokenId}
+                        senryoku={state?.senryoku ?? 0}
+                        honor={state?.honor ?? 0}
+                        isEntered={enteredSet.has(tokenId)}
+                        isKnockedOut={state?.isKnockedOut ?? false}
+                        isMine={myOwnedSet.has(tokenId)}
+                        onClick={() => onCardClick(tokenId)}
+                        multiSelectMode={multiSelectMode}
+                        isSelected={selectedIds.has(tokenId)}
+                    />
+                );
+            })}
+        </div>
     );
 }

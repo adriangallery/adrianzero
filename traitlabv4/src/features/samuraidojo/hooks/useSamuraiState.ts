@@ -7,11 +7,15 @@ export interface PerTokenState {
     tokenId: number;
     senryoku: number;
     isKnockedOut: boolean;
+    honor: number; // v6: persistent bracket-combat bonus. 0 on v4.
 }
 
 /**
- * Batch-read Senryoku + KO status for a list of tokenIds via a single multicall.
+ * Batch-read Senryoku + KO status + honor for a list of tokenIds via a single multicall.
  * Returns a map keyed by tokenId.
+ *
+ * v6 note: `getHonor` is a v6 selector. On v4-deployed diamonds the call fails gracefully
+ * (wagmi returns status='failure' per contract) and we default honor to 0 for those tokens.
  */
 export function useSamuraiState(tokenIds: number[]): {
     states: Map<number, PerTokenState>;
@@ -19,7 +23,13 @@ export function useSamuraiState(tokenIds: number[]): {
     isLoading: boolean;
 } {
     const contracts = useMemo(() => {
-        const list: Array<{address: `0x${string}`; abi: typeof SAMURAI_DOJO_ABI; functionName: 'getSenryoku' | 'isKnockedOut'; args: [bigint]}> = [];
+        type Call = {
+            address: `0x${string}`;
+            abi: typeof SAMURAI_DOJO_ABI;
+            functionName: 'getSenryoku' | 'isKnockedOut' | 'getHonor';
+            args: [bigint];
+        };
+        const list: Call[] = [];
         for (const id of tokenIds) {
             list.push({
                 address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
@@ -31,6 +41,12 @@ export function useSamuraiState(tokenIds: number[]): {
                 address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
                 abi: SAMURAI_DOJO_ABI,
                 functionName: 'isKnockedOut',
+                args: [BigInt(id)],
+            });
+            list.push({
+                address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                abi: SAMURAI_DOJO_ABI,
+                functionName: 'getHonor',
                 args: [BigInt(id)],
             });
         }
@@ -46,12 +62,14 @@ export function useSamuraiState(tokenIds: number[]): {
         const map = new Map<number, PerTokenState>();
         if (!data) return map;
         for (let i = 0; i < tokenIds.length; ++i) {
-            const senryokuRaw = data[i * 2]?.result;
-            const koRaw = data[i * 2 + 1]?.result;
+            const senryokuRaw = data[i * 3]?.result;
+            const koRaw = data[i * 3 + 1]?.result;
+            const honorRaw = data[i * 3 + 2]?.result;
             map.set(tokenIds[i], {
                 tokenId: tokenIds[i],
                 senryoku: senryokuRaw !== undefined ? Number(senryokuRaw) : 0,
                 isKnockedOut: !!koRaw,
+                honor: honorRaw !== undefined ? Number(honorRaw) : 0,
             });
         }
         return map;

@@ -1,4 +1,5 @@
-import {useReadContract} from 'wagmi';
+import {useMemo} from 'react';
+import {useReadContract, useReadContracts} from 'wagmi';
 import {formatEther} from 'viem';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_DOJO_ABI, BUDOKAI_STATUS} from '@/lib/web3/abi';
@@ -151,4 +152,62 @@ export function formatPool(pool: bigint | undefined): string {
     if (!pool) return '0';
     const whole = Number(formatEther(pool));
     return whole.toLocaleString(undefined, {maximumFractionDigits: 0});
+}
+
+/**
+ * Probes Budokai IDs 1..MAX_PROBE via multicall and returns the list of ones that have been
+ * configured (status != Unconfigured), along with their entry count.
+ *
+ * WHY: The Hall of Fame tab needs to render "whatever Budokais exist", not a hardcoded [1,2,3].
+ * v6 adds `getLastCreatedBudokaiId()` which would be cheaper, but we also want backward compat
+ * with v4 where that selector doesn't exist. Probing is universal.
+ */
+const HALL_MAX_PROBE = 30;
+
+export interface BudokaiSummary {
+    id: number;
+    status: number;
+    entryCount: number;
+    pool: bigint;
+}
+
+export function useConfiguredBudokais(): {summaries: BudokaiSummary[]; isLoading: boolean; refetch: () => void} {
+    const contracts = useMemo(() => {
+        const list = [];
+        for (let i = 1; i <= HALL_MAX_PROBE; ++i) {
+            list.push({
+                address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                abi: SAMURAI_DOJO_ABI,
+                functionName: 'getBudokaiInfo' as const,
+                args: [BigInt(i)],
+            });
+        }
+        return list;
+    }, []);
+
+    const {data, isLoading, refetch} = useReadContracts({
+        contracts,
+        query: {staleTime: 60_000, refetchInterval: 60_000},
+    });
+
+    const summaries = useMemo(() => {
+        const out: BudokaiSummary[] = [];
+        if (!data) return out;
+        for (let i = 0; i < HALL_MAX_PROBE; ++i) {
+            const r = data[i];
+            if (r?.status !== 'success' || !r.result) continue;
+            const tuple = r.result as [bigint, bigint, bigint, bigint, bigint, number, number, bigint];
+            const status = tuple[6];
+            if (status === BUDOKAI_STATUS.Unconfigured) continue;
+            out.push({
+                id: i + 1,
+                status,
+                entryCount: Number(tuple[7]),
+                pool: tuple[1],
+            });
+        }
+        return out;
+    }, [data]);
+
+    return {summaries, isLoading, refetch};
 }
