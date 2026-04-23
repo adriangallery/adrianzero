@@ -4,9 +4,9 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useWriteContract, usePublicClient } from 'wagmi';
+import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
-import { SERUM_ABI } from '@/lib/web3/abi';
+import { SERUM_ABI, ADRIAN_LAB_ABI } from '@/lib/web3/abi';
 import { useNotifications } from '@/hooks/useNotifications';
 
 interface ApplySerumParams {
@@ -18,12 +18,35 @@ export function useApplySerum() {
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const { address } = useAccount();
   const notifications = useNotifications();
 
   const mutation = useMutation({
     mutationFn: async ({ tokenId, serumId }: ApplySerumParams) => {
-      if (!publicClient) {
-        throw new Error('Public client not available');
+      if (!address || !publicClient) {
+        throw new Error('Wallet not connected');
+      }
+
+      // Serums are ERC-1155 in ADRIAN_LAB — SERUM_MODULE must be approved to burn them
+      const isApproved = await publicClient.readContract({
+        address: CONTRACT_ADDRESSES.ADRIAN_LAB,
+        abi: ADRIAN_LAB_ABI,
+        functionName: 'isApprovedForAll',
+        args: [address, CONTRACT_ADDRESSES.SERUM_MODULE],
+      });
+
+      if (!isApproved) {
+        if (import.meta.env.DEV) console.log('Requesting ERC1155 approval for SERUM_MODULE...');
+        const approvalHash = await writeContractAsync({
+          address: CONTRACT_ADDRESSES.ADRIAN_LAB,
+          abi: ADRIAN_LAB_ABI,
+          functionName: 'setApprovalForAll',
+          args: [CONTRACT_ADDRESSES.SERUM_MODULE, true],
+        });
+
+        if (import.meta.env.DEV) console.log('Approval transaction sent:', approvalHash);
+        await publicClient.waitForTransactionReceipt({ hash: approvalHash });
+        if (import.meta.env.DEV) console.log('Approval confirmed');
       }
 
       const hash = await writeContractAsync({
