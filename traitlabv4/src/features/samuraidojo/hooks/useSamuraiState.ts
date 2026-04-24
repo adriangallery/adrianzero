@@ -1,5 +1,6 @@
 import {useMemo} from 'react';
 import {useReadContracts} from 'wagmi';
+import {base} from 'wagmi/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
 
@@ -28,6 +29,7 @@ export function useSamuraiState(tokenIds: number[]): {
             abi: typeof SAMURAI_DOJO_ABI;
             functionName: 'getSenryoku' | 'isKnockedOut' | 'getHonor';
             args: [bigint];
+            chainId: number;
         };
         const list: Call[] = [];
         for (const id of tokenIds) {
@@ -36,18 +38,21 @@ export function useSamuraiState(tokenIds: number[]): {
                 abi: SAMURAI_DOJO_ABI,
                 functionName: 'getSenryoku',
                 args: [BigInt(id)],
+                chainId: base.id,
             });
             list.push({
                 address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
                 abi: SAMURAI_DOJO_ABI,
                 functionName: 'isKnockedOut',
                 args: [BigInt(id)],
+                chainId: base.id,
             });
             list.push({
                 address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
                 abi: SAMURAI_DOJO_ABI,
                 functionName: 'getHonor',
                 args: [BigInt(id)],
+                chainId: base.id,
             });
         }
         return list;

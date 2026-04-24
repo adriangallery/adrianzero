@@ -1,5 +1,6 @@
 import {useMemo} from 'react';
 import {useReadContracts} from 'wagmi';
+import {base} from 'wagmi/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_BATCH_ABI, SAMURAI_MINT_FACET_ABI} from '@/lib/web3/abi';
 
@@ -30,12 +31,14 @@ export function useSamuraiRoster(): {roster: Set<number>; isLoading: boolean} {
                 abi: SAMURAI_BATCH_ABI,
                 functionName: 'getTokensByTag',
                 args: ['SamuraiZERO'],
+                chainId: base.id,
             },
             {
                 address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
                 abi: SAMURAI_MINT_FACET_ABI,
                 functionName: 'getTokensByTag',
                 args: ['SamuraiZERO'],
+                chainId: base.id,
             },
         ],
         query: {
