@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useState} from 'react';
 import {useReadContract} from 'wagmi';
+import {base} from 'wagmi/chains';
 import {Loader2, Sword} from 'lucide-react';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_DOJO_ABI, BUDOKAI_STATUS} from '@/lib/web3/abi';
@@ -30,6 +31,7 @@ export function SamuraiDojoModule() {
         address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
         abi: SAMURAI_DOJO_ABI,
         functionName: 'getTotalBurned',
+        chainId: base.id,
         query: {refetchInterval: 30_000},
     });
     const totalBurned = (totalBurnedRaw as bigint | undefined) ?? 0n;

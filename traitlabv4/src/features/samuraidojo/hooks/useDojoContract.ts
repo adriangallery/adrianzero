@@ -1,9 +1,18 @@
 import {useMemo} from 'react';
 import {useReadContract, useReadContracts} from 'wagmi';
+import {base} from 'wagmi/chains';
 import {formatEther} from 'viem';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_DOJO_ABI, BUDOKAI_STATUS} from '@/lib/web3/abi';
 import type {BudokaiInfo, Champions} from '../types';
+
+/**
+ * Pin every dojo read to Base. Without this, if the user's wallet is connected to a
+ * different chain (e.g. Ethereum mainnet), wagmi routes reads to that chain, where the
+ * Diamond address doesn't exist → reads silently return 0 → UI shows "BUDOKAI —" / "SOON"
+ * even when Budokai is live. Fixed 2026-04-24 after production regression.
+ */
+const DOJO_CHAIN_ID = base.id;
 
 /**
  * Reads the currently-open Budokai ID (0 if none configured).
@@ -13,6 +22,7 @@ export function useCurrentBudokaiId() {
         address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
         abi: SAMURAI_DOJO_ABI,
         functionName: 'getCurrentBudokaiId',
+        chainId: DOJO_CHAIN_ID,
         query: {refetchInterval: 30_000},
     });
     return {
@@ -36,6 +46,7 @@ export function useBudokaiInfo(budokaiId: number | undefined): {
         abi: SAMURAI_DOJO_ABI,
         functionName: 'getBudokaiInfo',
         args: budokaiId !== undefined ? [BigInt(budokaiId)] : undefined,
+        chainId: DOJO_CHAIN_ID,
         query: {enabled: budokaiId !== undefined, refetchInterval: 15_000},
     });
 
@@ -80,6 +91,7 @@ export function useBudokaiEntries(budokaiId: number | undefined) {
         abi: SAMURAI_DOJO_ABI,
         functionName: 'getEntries',
         args: budokaiId !== undefined ? [BigInt(budokaiId)] : undefined,
+        chainId: DOJO_CHAIN_ID,
         query: {enabled: budokaiId !== undefined, refetchInterval: 15_000},
     });
 
@@ -100,6 +112,7 @@ export function useChampions(budokaiId: number | undefined): {
         abi: SAMURAI_DOJO_ABI,
         functionName: 'getChampions',
         args: budokaiId !== undefined ? [BigInt(budokaiId)] : undefined,
+        chainId: DOJO_CHAIN_ID,
         query: {enabled: budokaiId !== undefined},
     });
 
@@ -180,6 +193,7 @@ export function useConfiguredBudokais(): {summaries: BudokaiSummary[]; isLoading
                 abi: SAMURAI_DOJO_ABI,
                 functionName: 'getBudokaiInfo' as const,
                 args: [BigInt(i)],
+                chainId: DOJO_CHAIN_ID,
             });
         }
         return list;
