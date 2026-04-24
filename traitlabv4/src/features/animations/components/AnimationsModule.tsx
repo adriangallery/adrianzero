@@ -13,6 +13,7 @@ type Animation = {
 
 const ANIMATIONS: Animation[] = [
   { file: 'Trait_Annimation.gif', title: 'Trait Showcase', tag: 'featured' },
+  { file: 'Referee.webp', title: 'Referee' },
   { file: 'NEO_Zero.gif', title: 'NEO Zero' },
   { file: 'VIBE.gif', title: 'VIBE' },
   { file: 'VESUVIO.gif', title: 'Vesuvio' },
