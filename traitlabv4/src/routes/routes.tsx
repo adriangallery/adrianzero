@@ -89,6 +89,12 @@ const ExplainJBModule = lazy(() =>
   }))
 );
 
+const AnimationsModule = lazy(() =>
+  import('@/features/animations/components/AnimationsModule').then((m) => ({
+    default: m.AnimationsModule,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -111,6 +117,7 @@ export const routes: RouteObject[] = [
 
   // ─── Link-only (not in menu) ─────────────────────────────────────────────
   { path: '/explain-to-jb', element: <ExplainJBModule /> },
+  { path: '/animations', element: <AnimationsModule /> },
 
   // ─── Redirects (backward compatibility) ──────────────────────────────────
   { path: '/dashboard', element: <Navigate to="/zero" replace /> },
