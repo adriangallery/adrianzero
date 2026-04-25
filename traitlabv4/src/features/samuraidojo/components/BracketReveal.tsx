@@ -1,13 +1,14 @@
 import {useEffect, useMemo, useState} from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import {AnimatePresence, motion} from 'framer-motion';
-import {X, Flame, Zap, Trophy} from 'lucide-react';
+import {X} from 'lucide-react';
 import {createPublicClient, http, parseAbiItem} from 'viem';
 import {base} from 'viem/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {buildAlchemyRpcUrls} from '@/config/alchemy';
 import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
 import type {MatchResult} from '../types';
+import {BudokaiChronicle} from './BudokaiChronicle';
 
 interface BracketRevealProps {
     open: boolean;
@@ -20,10 +21,6 @@ interface BudokaiSnapshot {
     entryCount: number;
     champion: number;
     runnerUp: number;
-}
-
-function getSamuraiImageUrl(tokenId: number): string {
-    return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
 }
 
 const MATCH_RESOLVED_EVENT = parseAbiItem(
@@ -54,7 +51,7 @@ interface StaticSnapshotJson {
 
 async function loadFromStaticSnapshot(
     budokaiId: number,
-): Promise<{matches: MatchResult[]; snapshot: BudokaiSnapshot; senryoku: Map<number, number>} | null> {
+): Promise<{matches: MatchResult[]; snapshot: BudokaiSnapshot} | null> {
     try {
         const res = await fetch(`/budokai/${budokaiId}.json`, {cache: 'force-cache'});
         if (!res.ok) return null;
@@ -74,13 +71,7 @@ async function loadFromStaticSnapshot(
             champion: data.champion,
             runnerUp: data.runnerUp,
         };
-        const senryoku = new Map<number, number>();
-        if (data.senryoku) {
-            for (const [k, v] of Object.entries(data.senryoku)) {
-                senryoku.set(Number(k), Number(v));
-            }
-        }
-        return {matches, snapshot, senryoku};
+        return {matches, snapshot};
     } catch {
         return null;
     }
@@ -95,7 +86,6 @@ interface CacheEntry {
         champion: number;
         runnerUp: number;
     };
-    senryoku?: Array<[number, number]>;
 }
 
 function readCache(budokaiId: number): CacheEntry | null {
@@ -115,46 +105,44 @@ function writeCache(budokaiId: number, entry: CacheEntry) {
     }
 }
 
-function useBracketData(budokaiId: number | null) {
-    const [matches, setMatches] = useState<MatchResult[]>([]);
+/**
+ * Loads the snapshot needed for the opening ceremony intro (pool reveal,
+ * warrior count, resolved status). Tries the static JSON first, falls back
+ * to chain reads. The Chronicle component handles its own data load.
+ */
+function useBudokaiSnapshot(budokaiId: number | null) {
     const [snapshot, setSnapshot] = useState<BudokaiSnapshot | null>(null);
-    const [senryoku, setSenryoku] = useState<Map<number, number>>(new Map());
-    const [loading, setLoading] = useState(false);
     const [stage, setStage] = useState<'reading' | 'scanning' | 'done'>('reading');
+    const [hasMatches, setHasMatches] = useState(false);
 
     const client = useMemo(() => {
         const urls = buildAlchemyRpcUrls();
-        // retryCount=0: we already walk chunks sequentially; viem auto-retries
-        // amplify the Alchemy-free-tier rate-limit + CORS storm.
         return createPublicClient({chain: base, transport: http(urls[0], {retryCount: 0})});
     }, []);
 
     useEffect(() => {
         if (budokaiId == null) {
-            setMatches([]);
             setSnapshot(null);
-            setSenryoku(new Map());
+            setHasMatches(false);
             setStage('reading');
             return;
         }
         let cancelled = false;
-        setLoading(true);
         setStage('reading');
-        (async () => {
-            try {
-                // Try static snapshot JSON first (canonical source for resolved budokais).
-                // This is instant and avoids the on-chain pool=0 bug post-resolve.
-                const staticSnap = await loadFromStaticSnapshot(budokaiId);
-                if (cancelled) return;
-                if (staticSnap && staticSnap.matches.length > 0) {
-                    setSnapshot(staticSnap.snapshot);
-                    setMatches(staticSnap.matches);
-                    setSenryoku(staticSnap.senryoku);
-                    setStage('done');
-                    return;
-                }
 
-                // Read info + champions in parallel — both needed regardless of cache state.
+        (async () => {
+            // Static JSON first — instant, canonical for resolved budokais.
+            const staticSnap = await loadFromStaticSnapshot(budokaiId);
+            if (cancelled) return;
+            if (staticSnap && staticSnap.matches.length > 0) {
+                setSnapshot(staticSnap.snapshot);
+                setHasMatches(true);
+                setStage('done');
+                return;
+            }
+
+            // Fall back to chain for unresolved or missing-snapshot budokais.
+            try {
                 const [info, champions] = (await Promise.all([
                     client.readContract({
                         address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
@@ -181,50 +169,25 @@ function useBracketData(budokaiId: number | null) {
                     runnerUp: Number(champions[1]),
                 };
                 setSnapshot(snap);
+
                 if (resolveBlock === 0n) {
-                    setMatches([]);
+                    setHasMatches(false);
                     setStage('done');
                     return;
                 }
 
-                // Try cache — instant hit if we've scanned this budokai before.
                 const cached = readCache(budokaiId);
                 if (cached) {
-                    const blockNumber = BigInt(cached.blockNumber);
-                    const logs = await client.getLogs({
-                        address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
-                        event: MATCH_RESOLVED_EVENT,
-                        args: {budokaiId: BigInt(budokaiId)},
-                        fromBlock: blockNumber,
-                        toBlock: blockNumber,
-                    });
-                    if (!cancelled && logs.length > 0) {
-                        const parsedCached = parseMatches(logs);
-                        setMatches(parsedCached);
-                        if (cached.senryoku) {
-                            setSenryoku(new Map(cached.senryoku));
-                        } else {
-                            // Backfill senryoku for legacy cache entries.
-                            const map = await fetchSenryoku(client, parsedCached);
-                            if (cancelled) return;
-                            setSenryoku(map);
-                        }
-                        setStage('done');
-                        return;
-                    }
-                    // Cache was stale (reorg? shouldn't happen on Base, but be defensive) — fall through.
+                    setHasMatches(cached.matches.length > 0);
+                    setStage('done');
+                    return;
                 }
 
-                // Sequential scan with early exit. Parallelizing 26 chunks trips
-                // Alchemy free-tier rate limits (429 storm + CORS collapse). In
-                // practice the keeper resolves within ~50 blocks of resolveBlock
-                // so 1-5 chunks is enough. All MatchResolved events for a single
-                // resolve land in the same block, so one non-empty chunk returns
-                // the full bracket.
+                // Probe for any MatchResolved log to confirm the budokai actually
+                // resolved on-chain (not just status). Stop on first hit.
                 setStage('scanning');
                 const start = resolveBlock + RESOLVE_DELAY_BLOCKS;
                 const end = resolveBlock + RESOLVE_WINDOW_BLOCKS;
-                let hit: Awaited<ReturnType<typeof client.getLogs>> = [];
                 for (let from = start; from <= end; from += CHUNK_SIZE) {
                     if (cancelled) return;
                     const to = from + CHUNK_SIZE - 1n > end ? end : from + CHUNK_SIZE - 1n;
@@ -237,362 +200,75 @@ function useBracketData(budokaiId: number | null) {
                             toBlock: to,
                         });
                         if (chunk.length > 0) {
-                            hit = chunk;
-                            break;
+                            if (cancelled) return;
+                            setHasMatches(true);
+                            writeCache(budokaiId, {
+                                blockNumber: chunk[0].blockNumber?.toString() ?? '0',
+                                matches: [],
+                                snapshot: {
+                                    pool: snap.pool.toString(),
+                                    entryCount: snap.entryCount,
+                                    champion: snap.champion,
+                                    runnerUp: snap.runnerUp,
+                                },
+                            });
+                            setStage('done');
+                            return;
                         }
                     } catch {
-                        // Swallow single-chunk failures (rate limit, transient) — keep scanning.
+                        // ignore single-chunk failures
                     }
                 }
-                if (cancelled) return;
-                const parsed = parseMatches(hit);
-                setMatches(parsed);
-                let senryokuMap = new Map<number, number>();
-                if (parsed.length > 0) {
-                    senryokuMap = await fetchSenryoku(client, parsed);
-                    if (cancelled) return;
-                    setSenryoku(senryokuMap);
+                if (!cancelled) {
+                    setHasMatches(false);
+                    setStage('done');
                 }
-                if (hit.length > 0) {
-                    writeCache(budokaiId, {
-                        blockNumber: hit[0].blockNumber?.toString() ?? '0',
-                        matches: parsed,
-                        snapshot: {
-                            pool: snap.pool.toString(),
-                            entryCount: snap.entryCount,
-                            champion: snap.champion,
-                            runnerUp: snap.runnerUp,
-                        },
-                        senryoku: Array.from(senryokuMap.entries()),
-                    });
-                }
-                setStage('done');
             } catch {
                 if (!cancelled) setStage('done');
-            } finally {
-                if (!cancelled) setLoading(false);
             }
         })();
+
         return () => {
             cancelled = true;
         };
     }, [budokaiId, client]);
 
-    return {matches, snapshot, senryoku, loading, stage};
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function fetchSenryoku(client: any, matches: MatchResult[]): Promise<Map<number, number>> {
-    const unique = [...new Set(matches.flatMap((m) => [m.tokenA, m.tokenB]).filter((id) => id > 0))];
-    if (unique.length === 0) return new Map();
-    try {
-        const results = await client.multicall({
-            contracts: unique.map((id) => ({
-                address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
-                abi: SAMURAI_DOJO_ABI,
-                functionName: 'getSenryoku',
-                args: [BigInt(id)],
-            })),
-            allowFailure: true,
-        });
-        const map = new Map<number, number>();
-        (results as Array<{status: string; result?: unknown}>).forEach((r, i) => {
-            if (r.status === 'success' && r.result != null) {
-                map.set(unique[i], Number(r.result));
-            }
-        });
-        return map;
-    } catch {
-        return new Map();
-    }
-}
-
-function parseMatches(logs: readonly unknown[]): MatchResult[] {
-    const parsed: MatchResult[] = logs.map((raw) => {
-        const args = (raw as {args?: Record<string, unknown>}).args ?? {};
-        return {
-            budokaiId: Number(args.budokaiId ?? 0n),
-            round: Number(args.round ?? 0),
-            tokenA: Number(args.tokenA ?? 0n),
-            tokenB: Number(args.tokenB ?? 0n),
-            winner: Number(args.winner ?? 0n),
-            kaioken: !!args.kaioken,
-        };
-    });
-    parsed.sort((a, b) => a.round - b.round);
-    return parsed;
-}
-
-function roundLabel(round: number, totalRounds: number): {kanji: string; en: string} {
-    if (round === totalRounds) return {kanji: '決勝', en: 'FINAL'};
-    if (round === totalRounds - 1) return {kanji: '準決勝', en: 'SEMIFINAL'};
-    if (round === totalRounds - 2) return {kanji: '準々決勝', en: 'QUARTERFINAL'};
-    return {kanji: `第${round}回戦`, en: `ROUND ${round}`};
-}
-
-/**
- * Narrator that picks a flavor line per match, deterministically, using
- * senryoku gap + kaioken flag + round as the bucket selector. Same match
- * always returns the same line (reproducible across reloads).
- *
- * Extra buckets:
- *   - First Blood   — round 1, match index 0 (detected via `isFirstBlood`)
- *   - Close final   — final round where |gap| <= 5 (Chronicles-worthy)
- *   - Close semi    — semifinal where |gap| <= 5 (razor edge to the throne)
- */
-function makeLore(
-    m: MatchResult,
-    senryoku: Map<number, number>,
-    totalRounds: number,
-    isFirstBlood: boolean = false,
-): string {
-    const w = m.winner;
-    const l = w === m.tokenA ? m.tokenB : m.tokenA;
-    const wPow = senryoku.get(w);
-    const lPow = senryoku.get(l);
-    const hasPower = wPow !== undefined && lPow !== undefined;
-    const gap = hasPower ? (wPow as number) - (lPow as number) : 0;
-    const isFinal = m.round === totalRounds;
-    const isSemi = m.round === totalRounds - 1;
-
-    const pick = (arr: string[]) => arr[(w * 31 + l * 17 + m.round * 7) % arr.length];
-
-    // First Blood: only the very first match of round 1.
-    if (isFirstBlood && !isFinal && !isSemi && !m.kaioken) {
-        return pick([
-            `First blood of the Budokai — #${w} draws the opening cut on #${l}.`,
-            `The gates open. #${w} is the first to taste victory over #${l}.`,
-            `An opening strike. #${w} drops #${l} before the dojo can breathe.`,
-        ]);
-    }
-
-    if (isFinal) {
-        // Chronicles-worthy close final: |gap| <= 5.
-        if (hasPower && Math.abs(gap) <= 5) {
-            return pick([
-                `A final that will be retold in the Chronicles — #${w} edges out #${l} by a single breath.`,
-                `Two heartbeats. Two fates. #${w} stands, #${l} bows — by the thinnest margin ever recorded.`,
-                `The dojo will never forget this final. #${w} over #${l} by a sliver.`,
-            ]);
-        }
-        return pick([
-            `Under the dojo lanterns, #${w} claims the Tenkaichi title over #${l}.`,
-            `Tenkaichi — #${w} stands alone. #${l} takes runner-up with honor.`,
-            `The final bell tolls. #${w} bows over a fallen #${l}.`,
-        ]);
-    }
-    if (isSemi) {
-        return pick([
-            `#${w} punches through to the final. #${l} exits with semifinal honors.`,
-            `At the gates of the final, #${w} cuts down #${l}.`,
-            `#${l} came close — but #${w} walks on to the title match.`,
-        ]);
-    }
-    if (m.kaioken) {
-        return pick([
-            `The Kaioken flared — #${w} overwhelmed #${l} in a crimson blur.`,
-            `Burning past the limit, #${w} dropped #${l} with a Kaioken surge.`,
-            `#${l} had no answer to the Kaioken roar from #${w}.`,
-            `A war cry tore through the dojo as #${w} invoked the Kaioken on #${l}.`,
-        ]);
-    }
-    if (hasPower && gap >= 30) {
-        return pick([
-            `#${w} (power ${wPow}) overwhelms #${l} (${lPow}) in one crushing exchange.`,
-            `No contest — #${w} dismantles #${l} cleanly.`,
-            `A textbook dismantling; #${l} was outclassed from bell to bell.`,
-        ]);
-    }
-    if (hasPower && gap <= -20) {
-        return pick([
-            `*Impossible.* #${w} (power ${wPow}) topples the favored #${l} (${lPow}).`,
-            `The dojo gasps — #${w} refuses to lose to #${l}.`,
-            `Against all odds, #${w} outlasts the stronger #${l}.`,
-        ]);
-    }
-    if (hasPower && Math.abs(gap) <= 10) {
-        return pick([
-            `A razor-thin duel — #${w} edges out #${l}.`,
-            `#${w} and #${l} trade blows until the final second. #${w} takes it.`,
-            `Too close to call… #${w} stands over #${l} at the end.`,
-        ]);
-    }
-    return pick([
-        `#${w} outlasts #${l} in a clean duel.`,
-        `#${w} finds the opening and drops #${l}.`,
-        `#${l} fought well — but #${w} closed the show.`,
-        `#${w} silences #${l} with disciplined technique.`,
-    ]);
+    return {snapshot, hasMatches, stage};
 }
 
 const INTRO_BEAT_MS = 1500;
-const MATCH_REVEAL_MS = 1200;
-const ROUND_INTRO_MS = 1400;
 
-type Phase = 'intro' | 'scanning' | 'revealing' | 'complete';
-type ViewMode = 'champion-path' | 'all-fights';
-
-interface ChampionPathNode {
-    championMatch: MatchResult;
-    rivalToken: number;
-    rivalPrev: MatchResult | null;
-}
-
-/**
- * Build the champion's lineage:
- *   - All matches the champion played (one per round, skipping byes).
- *   - For each rival, the previous match they won to face the champion.
- * Result is the "genealogical tree" of the champion's path: ~14 matches max for an
- * 8-round bracket instead of 128.
- */
-function buildChampionPath(matches: MatchResult[], championToken: number): ChampionPathNode[] {
-    if (championToken <= 0 || matches.length === 0) return [];
-    const totalRounds = Math.max(...matches.map((m) => m.round));
-    const path: ChampionPathNode[] = [];
-    for (let r = 1; r <= totalRounds; r++) {
-        const championMatch = matches.find(
-            (m) => m.round === r && (m.tokenA === championToken || m.tokenB === championToken),
-        );
-        if (!championMatch) continue; // bye for the champion this round
-        const rivalToken =
-            championMatch.tokenA === championToken ? championMatch.tokenB : championMatch.tokenA;
-        const rivalPrev =
-            r > 1
-                ? matches.find(
-                      (m) =>
-                          m.round === r - 1 &&
-                          m.winner === rivalToken &&
-                          (m.tokenA === rivalToken || m.tokenB === rivalToken),
-                  ) ?? null
-                : null;
-        path.push({championMatch, rivalToken, rivalPrev});
-    }
-    return path;
-}
-
-/** Density tier from a round number, scaled relative to the total rounds. */
-function densityForRound(round: number, totalRounds: number): 'tiny' | 'small' | 'medium' | 'large' {
-    const fromTop = totalRounds - round;
-    if (fromTop >= 5) return 'tiny';
-    if (fromTop >= 3) return 'small';
-    if (fromTop >= 1) return 'medium';
-    return 'large';
-}
+type Phase = 'intro' | 'scanning' | 'chronicle';
 
 export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
-    const {matches, snapshot, senryoku, stage} = useBracketData(open ? budokaiId : null);
+    const {snapshot, hasMatches, stage} = useBudokaiSnapshot(open ? budokaiId : null);
     const [phase, setPhase] = useState<Phase>('intro');
     const [introBeat, setIntroBeat] = useState(0);
-    const [cursor, setCursor] = useState(0);
-    const [activeRoundIntro, setActiveRoundIntro] = useState<number | null>(null);
-    const [lastIntroedRound, setLastIntroedRound] = useState(0);
-    const [viewMode, setViewMode] = useState<ViewMode>('champion-path');
-
-    const totalRounds = matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0;
 
     // Reset on close
     useEffect(() => {
         if (!open) {
             setPhase('intro');
             setIntroBeat(0);
-            setCursor(0);
-            setActiveRoundIntro(null);
-            setLastIntroedRound(0);
-            setViewMode('champion-path');
         }
     }, [open]);
 
-    // Advance intro beats (runs in parallel with data fetch)
+    // Advance intro beats; transition to scanning or chronicle when intro ends.
     useEffect(() => {
         if (!open || phase !== 'intro') return;
         if (introBeat >= 3) {
-            // Intro finished. If data is ready, go to revealing; else show scanning.
-            if (stage === 'done' && matches.length > 0) {
-                setPhase('revealing');
-            } else if (stage === 'done' && matches.length === 0) {
-                setPhase('complete');
-            } else {
-                setPhase('scanning');
-            }
+            setPhase(stage === 'done' ? 'chronicle' : 'scanning');
             return;
         }
         const t = setTimeout(() => setIntroBeat((b) => b + 1), INTRO_BEAT_MS);
         return () => clearTimeout(t);
-    }, [open, phase, introBeat, stage, matches.length]);
+    }, [open, phase, introBeat, stage]);
 
-    // When data lands during scanning phase, switch to revealing
+    // When data lands during scanning phase, switch to chronicle.
     useEffect(() => {
         if (phase !== 'scanning') return;
-        if (stage !== 'done') return;
-        if (matches.length === 0) {
-            setPhase('complete');
-            return;
-        }
-        setPhase('revealing');
-    }, [phase, stage, matches.length]);
-
-    // Auto-advance matches + show round intros between rounds
-    useEffect(() => {
-        if (phase !== 'revealing') return;
-        if (matches.length === 0) {
-            setPhase('complete');
-            return;
-        }
-        if (cursor >= matches.length) {
-            const t = setTimeout(() => setPhase('complete'), 1000);
-            return () => clearTimeout(t);
-        }
-        if (activeRoundIntro != null) {
-            const introdRound = activeRoundIntro;
-            const t = setTimeout(() => {
-                setActiveRoundIntro(null);
-                setLastIntroedRound((prev) => Math.max(prev, introdRound));
-            }, ROUND_INTRO_MS);
-            return () => clearTimeout(t);
-        }
-        const nextMatch = matches[cursor];
-        // Trigger a round intro only if we haven't shown one for this round yet.
-        if (nextMatch.round > lastIntroedRound) {
-            setActiveRoundIntro(nextMatch.round);
-            return;
-        }
-        const t = setTimeout(() => setCursor((c) => c + 1), MATCH_REVEAL_MS);
-        return () => clearTimeout(t);
-    }, [phase, cursor, matches, activeRoundIntro, lastIntroedRound]);
-
-    const visible = matches.slice(0, cursor);
-    // First-blood detection: the earliest round-1 match. Stable key = "tokenA-tokenB-round".
-    const firstBloodKey = useMemo(() => {
-        const r1 = matches.filter((m) => m.round === 1);
-        if (r1.length === 0) return null;
-        const first = r1[0]; // matches arrive in block/log order → first is chronologically first
-        return `${first.tokenA}-${first.tokenB}-${first.round}`;
-    }, [matches]);
-    const groupedByRound = useMemo(() => {
-        const map = new Map<number, MatchResult[]>();
-        for (const m of visible) {
-            if (!map.has(m.round)) map.set(m.round, []);
-            map.get(m.round)!.push(m);
-        }
-        // Newest round on top, newest match at the top of each round — no reverse-flex,
-        // so native scroll behaves normally.
-        return Array.from(map.entries())
-            .sort(([a], [b]) => b - a)
-            .map(([r, ms]) => [r, [...ms].reverse()] as [number, MatchResult[]]);
-    }, [visible]);
-
-    const handleSkip = () => {
-        setActiveRoundIntro(null);
-        setCursor(matches.length);
-        setPhase('complete');
-    };
-
-    const handleReplay = () => {
-        setCursor(0);
-        setActiveRoundIntro(null);
-        setLastIntroedRound(0);
-        setPhase('revealing');
-    };
+        if (stage === 'done') setPhase('chronicle');
+    }, [phase, stage]);
 
     return (
         <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
@@ -604,7 +280,6 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                 >
                     <Dialog.Title className="sr-only">Bracket replay — Budokai {budokaiId}</Dialog.Title>
 
-                    {/* Header: title centered so the fixed MENU button (top-left z-60) never overlaps it. */}
                     <div className="relative flex items-center justify-center border-b border-zinc-900 px-6 py-3 pt-20 sm:pt-24">
                         <div className="text-center">
                             <h2 className="text-lg font-bold tracking-[0.3em] uppercase text-red-500">
@@ -613,14 +288,8 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                             <p className="text-[9px] tracking-wider text-zinc-600">
                                 {phase === 'intro' && 'opening ceremony...'}
                                 {phase === 'scanning' && 'reading the chronicles...'}
-                                {phase === 'revealing' &&
-                                    `${visible.length}/${matches.length} fights revealed${
-                                        totalRounds > 0 ? ` · ${totalRounds} rounds` : ''
-                                    }`}
-                                {phase === 'complete' &&
-                                    (matches.length > 0
-                                        ? `bracket complete · ${matches.length} fights`
-                                        : 'budokai not yet resolved')}
+                                {phase === 'chronicle' &&
+                                    (hasMatches ? 'the chronicles' : 'budokai not yet resolved')}
                             </p>
                         </div>
                         <Dialog.Close className="absolute right-4 top-20 rounded-full bg-zinc-900 p-2 text-zinc-400 hover:text-white sm:top-24">
@@ -641,82 +310,19 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
 
                             {phase === 'scanning' && <ScanningSequence key="scan" />}
 
-                            {(phase === 'revealing' || phase === 'complete') && matches.length > 0 && (
+                            {phase === 'chronicle' && hasMatches && budokaiId != null && (
                                 <motion.div
-                                    key="revealing"
-                                    className="h-full overflow-y-auto px-6 py-6"
+                                    key="chronicle"
+                                    className="h-full overflow-y-auto"
                                     initial={{opacity: 0}}
                                     animate={{opacity: 1}}
                                     transition={{duration: 0.4}}
                                 >
-                                    {phase === 'complete' && snapshot && snapshot.champion > 0 && (
-                                        <>
-                                            <ChampionBanner
-                                                champion={snapshot.champion}
-                                                runnerUp={snapshot.runnerUp}
-                                                pool={snapshot.pool}
-                                            />
-                                            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
-                                        </>
-                                    )}
-
-                                    {phase === 'complete' && viewMode === 'champion-path' && snapshot && snapshot.champion > 0 ? (
-                                        <ChampionPathView
-                                            matches={matches}
-                                            championToken={snapshot.champion}
-                                            senryoku={senryoku}
-                                            totalRounds={totalRounds}
-                                        />
-                                    ) : (
-                                        groupedByRound.map(([round, rms]) => {
-                                            const label = roundLabel(round, totalRounds);
-                                            const density =
-                                                phase === 'complete' && viewMode === 'all-fights'
-                                                    ? densityForRound(round, totalRounds)
-                                                    : 'large';
-                                            const cols =
-                                                density === 'tiny'
-                                                    ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6'
-                                                    : density === 'small'
-                                                      ? 'grid-cols-1 sm:grid-cols-3 lg:grid-cols-4'
-                                                      : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
-                                            return (
-                                                <div key={round} className="mb-8">
-                                                    <div className="mb-3 flex items-baseline gap-3">
-                                                        <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-red-500">
-                                                            {label.en}
-                                                        </span>
-                                                        <span className="font-mono text-[10px] text-zinc-600">
-                                                            {label.kanji}
-                                                        </span>
-                                                        <span className="font-mono text-[9px] text-zinc-700">
-                                                            {rms.length} {rms.length === 1 ? 'fight' : 'fights'}
-                                                        </span>
-                                                        <div className="h-px flex-1 bg-zinc-900" />
-                                                    </div>
-                                                    <div className={`grid gap-2 ${cols}`}>
-                                                        {rms.map((m, i) => {
-                                                            const key = `${m.tokenA}-${m.tokenB}-${m.round}`;
-                                                            return (
-                                                                <MatchCard
-                                                                    key={`${round}-${i}`}
-                                                                    match={m}
-                                                                    senryoku={senryoku}
-                                                                    totalRounds={totalRounds}
-                                                                    isFirstBlood={firstBloodKey === key}
-                                                                    density={density}
-                                                                />
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    )}
+                                    <BudokaiChronicle budokaiId={budokaiId} standalone={false} />
                                 </motion.div>
                             )}
 
-                            {phase === 'complete' && matches.length === 0 && (
+                            {phase === 'chronicle' && !hasMatches && (
                                 <motion.div
                                     key="empty"
                                     className="flex h-full items-center justify-center"
@@ -729,35 +335,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                                 </motion.div>
                             )}
                         </AnimatePresence>
-
-                        {/* Round intro flash overlay */}
-                        <AnimatePresence>
-                            {phase === 'revealing' && activeRoundIntro != null && (
-                                <RoundIntro round={activeRoundIntro} totalRounds={totalRounds} />
-                            )}
-                        </AnimatePresence>
                     </div>
-
-                    {/* Replay controls */}
-                    {(phase === 'revealing' || phase === 'complete') && matches.length > 0 && (
-                        <div className="border-t border-zinc-900 px-6 py-3">
-                            <div className="flex items-center justify-center gap-3">
-                                <button
-                                    onClick={handleSkip}
-                                    disabled={phase === 'complete' && cursor >= matches.length}
-                                    className="rounded border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-wider text-zinc-400 hover:text-white disabled:opacity-30"
-                                >
-                                    Skip to end
-                                </button>
-                                <button
-                                    onClick={handleReplay}
-                                    className="rounded border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-wider text-zinc-400 hover:text-white"
-                                >
-                                    Replay
-                                </button>
-                            </div>
-                        </div>
-                    )}
                 </Dialog.Content>
             </Dialog.Portal>
         </Dialog.Root>
@@ -781,7 +359,6 @@ function IntroSequence({
         {top: '決勝戦開始', bottom: 'THE BRACKET OPENS'},
     ];
     const current = beats[Math.min(beat, beats.length - 1)];
-    // Uniform cross-fade between beats (no mode="wait" stutter) + subtle breath zoom loop.
     return (
         <motion.div
             className="flex h-full items-center justify-center"
@@ -849,329 +426,6 @@ function ScanningSequence() {
                     {messages[idx]}...
                 </motion.p>
             </AnimatePresence>
-        </motion.div>
-    );
-}
-
-function RoundIntro({round, totalRounds}: {round: number; totalRounds: number}) {
-    const label = roundLabel(round, totalRounds);
-    return (
-        <motion.div
-            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-            initial={{opacity: 0}}
-            animate={{opacity: 1}}
-            exit={{opacity: 0}}
-            transition={{duration: 0.2}}
-        >
-            <motion.div
-                initial={{scale: 0.8, opacity: 0}}
-                animate={{scale: 1, opacity: 1}}
-                exit={{scale: 1.1, opacity: 0}}
-                transition={{duration: 0.4, ease: 'easeOut'}}
-                className="text-center"
-            >
-                <p className="font-mono text-5xl font-bold text-red-500 sm:text-7xl">{label.kanji}</p>
-                <p className="mt-2 text-xs uppercase tracking-[0.5em] text-zinc-400 sm:text-sm">{label.en}</p>
-            </motion.div>
-        </motion.div>
-    );
-}
-
-type Density = 'tiny' | 'small' | 'medium' | 'large';
-
-function MatchCard({
-    match,
-    senryoku,
-    totalRounds,
-    isFirstBlood = false,
-    density = 'large',
-}: {
-    match: MatchResult;
-    senryoku: Map<number, number>;
-    totalRounds: number;
-    isFirstBlood?: boolean;
-    density?: Density;
-}) {
-    const winnerIsA = match.winner === match.tokenA;
-    // Always show lore on kaioken/upsets even in tiny mode (drama beats density).
-    const showLore = density !== 'tiny' || match.kaioken;
-    const lore = useMemo(
-        () => (showLore ? makeLore(match, senryoku, totalRounds, isFirstBlood) : ''),
-        [showLore, match, senryoku, totalRounds, isFirstBlood],
-    );
-    const sA = senryoku.get(match.tokenA);
-    const sB = senryoku.get(match.tokenB);
-    const padding =
-        density === 'tiny' ? 'p-1.5' : density === 'small' ? 'p-2' : 'p-3';
-    return (
-        <motion.div
-            initial={{opacity: 0, y: 12, scale: 0.96}}
-            animate={{opacity: 1, y: 0, scale: 1}}
-            transition={{duration: 0.4, ease: 'easeOut'}}
-            className={`relative overflow-hidden rounded border ${padding} ${
-                match.kaioken
-                    ? 'border-red-500/60 bg-red-950/20 shadow-[0_0_20px_rgba(239,68,68,0.25)]'
-                    : 'border-zinc-800 bg-zinc-950/70'
-            }`}
-        >
-            {match.kaioken && density !== 'tiny' && (
-                <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-red-600/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-300">
-                    <Flame className="h-3 w-3" /> Kaioken
-                </div>
-            )}
-            {match.kaioken && density === 'tiny' && (
-                <Flame className="absolute right-1 top-1 h-3 w-3 text-red-400" />
-            )}
-            <div className={`flex items-center justify-between ${density === 'tiny' ? 'gap-1.5' : 'gap-3'}`}>
-                <SamuraiAvatar
-                    tokenId={match.tokenA}
-                    isWinner={winnerIsA}
-                    kaioken={match.kaioken}
-                    senryoku={sA}
-                    density={density}
-                />
-                <div className="text-center">
-                    {density !== 'tiny' && (
-                        <Zap className={`mx-auto h-4 w-4 ${match.kaioken ? 'text-red-400' : 'text-zinc-600'}`} />
-                    )}
-                    <span className="block text-[8px] font-mono uppercase tracking-wider text-zinc-600">vs</span>
-                </div>
-                <SamuraiAvatar
-                    tokenId={match.tokenB}
-                    isWinner={!winnerIsA}
-                    kaioken={match.kaioken}
-                    senryoku={sB}
-                    density={density}
-                />
-            </div>
-            {showLore && (
-                <motion.p
-                    initial={{opacity: 0, y: 4}}
-                    animate={{opacity: 1, y: 0}}
-                    transition={{duration: 0.3, delay: 0.25, ease: 'easeOut'}}
-                    className={`mt-3 border-t border-zinc-900/60 pt-2 text-center italic leading-snug text-zinc-500 ${
-                        density === 'small' ? 'text-[9px]' : 'text-[10px]'
-                    }`}
-                >
-                    {lore}
-                </motion.p>
-            )}
-        </motion.div>
-    );
-}
-
-function SamuraiAvatar({
-    tokenId,
-    isWinner,
-    kaioken,
-    senryoku,
-    density = 'large',
-}: {
-    tokenId: number;
-    isWinner: boolean;
-    kaioken: boolean;
-    senryoku?: number;
-    density?: Density;
-}) {
-    const sizeClass =
-        density === 'tiny'
-            ? 'h-10 w-10'
-            : density === 'small'
-              ? 'h-16 w-16'
-              : density === 'medium'
-                ? 'h-20 w-20 sm:h-24 sm:w-24'
-                : 'h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32';
-    return (
-        <div className={`flex flex-1 flex-col items-center ${density === 'tiny' ? 'gap-0.5' : 'gap-2'}`}>
-            <img
-                src={getSamuraiImageUrl(tokenId)}
-                alt={`#${tokenId}`}
-                className={`rounded transition-all ${sizeClass} ${
-                    isWinner
-                        ? kaioken
-                            ? 'ring-2 ring-red-400 shadow-[0_0_16px_rgba(239,68,68,0.6)]'
-                            : 'ring-2 ring-yellow-400'
-                        : 'opacity-40 saturate-0'
-                }`}
-                style={{imageRendering: 'pixelated'}}
-            />
-            <div className="flex flex-col items-center leading-tight">
-                <span
-                    className={`font-mono uppercase ${density === 'tiny' ? 'text-[8px]' : 'text-[10px]'} ${
-                        isWinner ? (kaioken ? 'text-red-300' : 'text-yellow-400') : 'text-zinc-600'
-                    }`}
-                >
-                    #{tokenId}
-                </span>
-                {senryoku !== undefined && density !== 'tiny' && (
-                    <span className="font-mono text-[8px] tracking-wider text-zinc-600">
-                        戦力 {senryoku}
-                    </span>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function ViewModeToggle({
-    viewMode,
-    setViewMode,
-}: {
-    viewMode: ViewMode;
-    setViewMode: (m: ViewMode) => void;
-}) {
-    return (
-        <div className="mb-6 flex justify-center gap-2">
-            <button
-                onClick={() => setViewMode('champion-path')}
-                className={`rounded border px-3 py-1.5 text-[10px] uppercase tracking-wider transition-colors ${
-                    viewMode === 'champion-path'
-                        ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-300'
-                        : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                }`}
-            >
-                Champion&rsquo;s Path
-            </button>
-            <button
-                onClick={() => setViewMode('all-fights')}
-                className={`rounded border px-3 py-1.5 text-[10px] uppercase tracking-wider transition-colors ${
-                    viewMode === 'all-fights'
-                        ? 'border-red-500/60 bg-red-500/10 text-red-300'
-                        : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
-                }`}
-            >
-                All Fights
-            </button>
-        </div>
-    );
-}
-
-/**
- * Vertical timeline of the champion's road to glory: one card per round the
- * champion fought, each showing the opponent's previous match as a smaller
- * "lineage" card so you can see where each rival came from. ~14 cards instead
- * of 128 for an 8-round bracket.
- */
-function ChampionPathView({
-    matches,
-    championToken,
-    senryoku,
-    totalRounds,
-}: {
-    matches: MatchResult[];
-    championToken: number;
-    senryoku: Map<number, number>;
-    totalRounds: number;
-}) {
-    const path = useMemo(() => buildChampionPath(matches, championToken), [matches, championToken]);
-    if (path.length === 0) {
-        return (
-            <p className="py-8 text-center text-[11px] text-zinc-500">
-                Champion&rsquo;s path unavailable.
-            </p>
-        );
-    }
-    return (
-        <div className="relative mx-auto max-w-2xl">
-            {/* Glowing thread connecting all of the champion's fights */}
-            <div className="absolute bottom-0 left-1/2 top-0 -ml-px w-px bg-gradient-to-b from-yellow-500/0 via-yellow-500/40 to-yellow-500/0" />
-            <div className="relative space-y-6">
-                {path.map((node, idx) => {
-                    const label = roundLabel(node.championMatch.round, totalRounds);
-                    return (
-                        <motion.div
-                            key={`${node.championMatch.round}-${node.championMatch.tokenA}-${node.championMatch.tokenB}`}
-                            initial={{opacity: 0, y: 12}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{duration: 0.4, delay: idx * 0.05}}
-                            className="relative"
-                        >
-                            <div className="mb-2 flex items-baseline justify-center gap-3">
-                                <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-yellow-400">
-                                    {label.en}
-                                </span>
-                                <span className="font-mono text-[10px] text-zinc-600">{label.kanji}</span>
-                            </div>
-                            <MatchCard
-                                match={node.championMatch}
-                                senryoku={senryoku}
-                                totalRounds={totalRounds}
-                                density="medium"
-                            />
-                            {node.rivalPrev && (
-                                <div className="ml-8 mt-2 border-l-2 border-zinc-800 pl-4">
-                                    <p className="mb-1 font-mono text-[8px] uppercase tracking-[0.3em] text-zinc-600">
-                                        ↑ rival #{node.rivalToken} came from
-                                    </p>
-                                    <MatchCard
-                                        match={node.rivalPrev}
-                                        senryoku={senryoku}
-                                        totalRounds={totalRounds}
-                                        density="small"
-                                    />
-                                </div>
-                            )}
-                        </motion.div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-function ChampionBanner({champion, runnerUp, pool}: {champion: number; runnerUp: number; pool: bigint}) {
-    const championPrize = Number((pool * 5000n) / 10000n / 10n ** 18n);
-    const runnerUpPrize = Number((pool * 2000n) / 10000n / 10n ** 18n);
-    return (
-        <motion.div
-            initial={{opacity: 0, scale: 0.95}}
-            animate={{opacity: 1, scale: 1}}
-            transition={{duration: 0.6, ease: 'easeOut'}}
-            className="mb-8 rounded border border-yellow-500/50 bg-gradient-to-b from-yellow-950/30 via-black to-black p-6 shadow-[0_0_40px_rgba(234,179,8,0.2)]"
-        >
-            <div className="mb-4 flex items-center justify-center gap-2">
-                <Trophy className="h-4 w-4 text-yellow-400" />
-                <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-yellow-400">Champion</p>
-                <Trophy className="h-4 w-4 text-yellow-400" />
-            </div>
-            <div className="flex flex-col items-center justify-center gap-6 sm:flex-row">
-                <motion.div
-                    initial={{y: 20, opacity: 0}}
-                    animate={{y: 0, opacity: 1}}
-                    transition={{delay: 0.2, duration: 0.5}}
-                    className="flex flex-col items-center"
-                >
-                    <img
-                        src={getSamuraiImageUrl(champion)}
-                        alt={`Champion #${champion}`}
-                        className="h-32 w-32 rounded ring-4 ring-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.5)] sm:h-40 sm:w-40"
-                        style={{imageRendering: 'pixelated'}}
-                    />
-                    <p className="mt-3 font-mono text-2xl font-bold text-yellow-400">#{champion}</p>
-                    <p className="mt-1 font-mono text-[11px] text-yellow-500/80">
-                        {championPrize.toLocaleString()} $ZERO
-                    </p>
-                </motion.div>
-                {runnerUp > 0 && (
-                    <motion.div
-                        initial={{y: 20, opacity: 0}}
-                        animate={{y: 0, opacity: 1}}
-                        transition={{delay: 0.4, duration: 0.5}}
-                        className="flex flex-col items-center"
-                    >
-                        <img
-                            src={getSamuraiImageUrl(runnerUp)}
-                            alt={`Runner-up #${runnerUp}`}
-                            className="h-24 w-24 rounded ring-2 ring-zinc-400 sm:h-28 sm:w-28"
-                            style={{imageRendering: 'pixelated'}}
-                        />
-                        <p className="mt-2 font-mono text-lg font-bold text-zinc-300">#{runnerUp}</p>
-                        <p className="mt-1 font-mono text-[10px] text-zinc-500">
-                            {runnerUpPrize.toLocaleString()} $ZERO
-                        </p>
-                    </motion.div>
-                )}
-            </div>
         </motion.div>
     );
 }

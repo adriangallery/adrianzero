@@ -1,9 +1,14 @@
 /**
- * MOCKUP — "Crónica" / Newspaper-style static replay for a resolved Budokai.
+ * Static "Crónica" — newspaper-style replay for a resolved Budokai.
  *
- * Standalone page (route: /budokai-replay-mockup). Reads /budokai/1.json,
- * renders as a designed retrospective document with no animation and no
- * auto-advance. Comparison target for the current animated BracketReveal.
+ * Reads /budokai/{id}.json and renders the resolved bracket as a designed
+ * retrospective document: champion hero → prize table → Champion's Path →
+ * Notable Moments → round tally → expandable full bracket. No animation,
+ * no auto-advance — the user reads at their own pace.
+ *
+ * Used by:
+ *   - BracketReveal (after the opening ceremony intro)
+ *   - /budokai-replay-mockup (standalone preview route)
  */
 import {useEffect, useMemo, useState} from 'react';
 import {Flame, Trophy, Zap} from 'lucide-react';
@@ -316,19 +321,28 @@ function FightCard({
     );
 }
 
-export function BudokaiChronicleMockup() {
+interface BudokaiChronicleProps {
+    budokaiId: number;
+    /** When false, omits the page-level wrapper (use inside an existing modal). */
+    standalone?: boolean;
+}
+
+export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicleProps) {
     const [data, setData] = useState<ChronicleData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [showAllFights, setShowAllFights] = useState(false);
 
     useEffect(() => {
-        loadChronicle(1)
+        setData(null);
+        setError(null);
+        setShowAllFights(false);
+        loadChronicle(budokaiId)
             .then((d) => {
                 if (!d) setError('Snapshot not found');
                 else setData(d);
             })
             .catch((e) => setError(String(e?.message ?? e)));
-    }, []);
+    }, [budokaiId]);
 
     const championPath = useMemo(
         () => (data ? buildChampionPath(data.matches, data.champion) : []),
@@ -391,9 +405,8 @@ export function BudokaiChronicleMockup() {
     const semiPrize = (data.pool * 1500n) / 10000n / 2n;
     const quarterPrize = (data.pool * 1500n) / 10000n / 4n;
 
-    return (
-        <div className="min-h-screen bg-black text-zinc-200">
-            <div className="mx-auto max-w-3xl px-6 py-12 sm:px-8">
+    const content = (
+        <div className="mx-auto max-w-3xl px-6 py-12 sm:px-8">
                 {/* Masthead */}
                 <header className="mb-12 border-b border-zinc-800 pb-6 text-center">
                     <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-red-500">
@@ -665,6 +678,8 @@ export function BudokaiChronicleMockup() {
                     The Dojo · Tenkaichi Budokai {data.id} · A static replay
                 </footer>
             </div>
-        </div>
     );
+
+    if (!standalone) return content;
+    return <div className="min-h-screen bg-black text-zinc-200">{content}</div>;
 }

@@ -96,8 +96,8 @@ const AnimationsModule = lazy(() =>
 );
 
 const BudokaiChronicleMockup = lazy(() =>
-  import('@/features/samuraidojo/components/BudokaiChronicleMockup').then((m) => ({
-    default: m.BudokaiChronicleMockup,
+  import('@/features/samuraidojo/components/BudokaiChronicle').then((m) => ({
+    default: () => <m.BudokaiChronicle budokaiId={1} />,
   }))
 );
 
