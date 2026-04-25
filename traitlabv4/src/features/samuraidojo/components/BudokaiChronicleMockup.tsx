@@ -1,0 +1,565 @@
+/**
+ * MOCKUP — "Crónica" / Newspaper-style static replay for a resolved Budokai.
+ *
+ * Standalone page (route: /budokai-replay-mockup). Reads /budokai/1.json,
+ * renders as a designed retrospective document with no animation and no
+ * auto-advance. Comparison target for the current animated BracketReveal.
+ */
+import {useEffect, useMemo, useState} from 'react';
+import {Flame, Trophy, Zap} from 'lucide-react';
+import type {MatchResult} from '../types';
+
+const SAMURAI_IMG = (id: number) => `https://adrianlab.vercel.app/api/render/${id}.png`;
+
+interface ChronicleData {
+    id: number;
+    pool: bigint;
+    entryCount: number;
+    resolveBlock: number;
+    matches: MatchResult[];
+    senryoku: Map<number, number>;
+    champion: number;
+    runnerUp: number;
+    semifinalists: number[];
+    quarterfinalists: number[];
+    totalRounds: number;
+}
+
+interface RawSnapshot {
+    id: number;
+    pool: string;
+    entryCount: number;
+    resolveBlock: number;
+    matches: Array<{round: number; tokenA: number; tokenB: number; winner: number; kaioken: boolean}>;
+    senryoku?: Record<string, number>;
+    champion: number;
+    runnerUp: number;
+    semifinalists: number[];
+    quarterfinalists: number[];
+}
+
+async function loadChronicle(id: number): Promise<ChronicleData | null> {
+    const res = await fetch(`/budokai/${id}.json`, {cache: 'force-cache'});
+    if (!res.ok) return null;
+    const raw = (await res.json()) as RawSnapshot;
+    const matches: MatchResult[] = raw.matches.map((m) => ({
+        budokaiId: id,
+        round: m.round,
+        tokenA: m.tokenA,
+        tokenB: m.tokenB,
+        winner: m.winner,
+        kaioken: m.kaioken,
+    }));
+    matches.sort((a, b) => a.round - b.round);
+    const senryoku = new Map<number, number>();
+    if (raw.senryoku) {
+        for (const [k, v] of Object.entries(raw.senryoku)) senryoku.set(Number(k), Number(v));
+    }
+    return {
+        id: raw.id,
+        pool: BigInt(raw.pool),
+        entryCount: raw.entryCount,
+        resolveBlock: raw.resolveBlock,
+        matches,
+        senryoku,
+        champion: raw.champion,
+        runnerUp: raw.runnerUp,
+        semifinalists: raw.semifinalists,
+        quarterfinalists: raw.quarterfinalists,
+        totalRounds: matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0,
+    };
+}
+
+function roundLabel(round: number, totalRounds: number): {kanji: string; en: string} {
+    if (round === totalRounds) return {kanji: '決勝', en: 'FINAL'};
+    if (round === totalRounds - 1) return {kanji: '準決勝', en: 'SEMIFINAL'};
+    if (round === totalRounds - 2) return {kanji: '準々決勝', en: 'QUARTERFINAL'};
+    return {kanji: `第${round}回戦`, en: `ROUND ${round}`};
+}
+
+function buildChampionPath(matches: MatchResult[], champ: number) {
+    if (champ <= 0 || matches.length === 0) return [];
+    const totalRounds = Math.max(...matches.map((m) => m.round));
+    const path: Array<{m: MatchResult; rival: number; rivalPrev: MatchResult | null}> = [];
+    for (let r = 1; r <= totalRounds; r++) {
+        const cm = matches.find((x) => x.round === r && (x.tokenA === champ || x.tokenB === champ));
+        if (!cm) continue;
+        const rival = cm.tokenA === champ ? cm.tokenB : cm.tokenA;
+        const rivalPrev =
+            r > 1
+                ? matches.find(
+                      (x) =>
+                          x.round === r - 1 &&
+                          x.winner === rival &&
+                          (x.tokenA === rival || x.tokenB === rival),
+                  ) ?? null
+                : null;
+        path.push({m: cm, rival, rivalPrev});
+    }
+    return path;
+}
+
+function pickUpsets(matches: MatchResult[], senryoku: Map<number, number>, threshold = 20) {
+    return matches.filter((m) => {
+        const w = m.winner;
+        const l = w === m.tokenA ? m.tokenB : m.tokenA;
+        const ws = senryoku.get(w);
+        const ls = senryoku.get(l);
+        if (ws === undefined || ls === undefined) return false;
+        return ls - ws >= threshold; // loser was favored by ≥ threshold
+    });
+}
+
+function loserOf(m: MatchResult) {
+    return m.winner === m.tokenA ? m.tokenB : m.tokenA;
+}
+
+function formatPool(pool: bigint): string {
+    return Number(pool / 10n ** 18n).toLocaleString();
+}
+
+function PrizeRow({label, tokens, amount, accent}: {label: string; tokens: number[]; amount: string; accent: string}) {
+    return (
+        <div className="flex items-center gap-3 border-b border-zinc-900 py-2 last:border-0">
+            <div className={`w-24 font-mono text-[10px] uppercase tracking-[0.25em] ${accent}`}>{label}</div>
+            <div className="flex flex-1 flex-wrap gap-1.5">
+                {tokens.map((t) => (
+                    <span key={t} className="rounded border border-zinc-800 px-2 py-0.5 font-mono text-[10px] text-zinc-300">
+                        #{t}
+                    </span>
+                ))}
+            </div>
+            <div className="font-mono text-[11px] text-zinc-400">{amount}</div>
+        </div>
+    );
+}
+
+function FightCard({
+    match,
+    senryoku,
+    totalRounds,
+    annotation,
+    size = 'md',
+}: {
+    match: MatchResult;
+    senryoku: Map<number, number>;
+    totalRounds: number;
+    annotation?: string;
+    size?: 'sm' | 'md' | 'lg';
+}) {
+    const winnerIsA = match.winner === match.tokenA;
+    const sA = senryoku.get(match.tokenA);
+    const sB = senryoku.get(match.tokenB);
+    const label = roundLabel(match.round, totalRounds);
+    const avatar = size === 'lg' ? 'h-28 w-28' : size === 'sm' ? 'h-14 w-14' : 'h-20 w-20';
+    return (
+        <div
+            className={`relative rounded border ${
+                match.kaioken
+                    ? 'border-red-500/50 bg-red-950/15'
+                    : 'border-zinc-800 bg-zinc-950/60'
+            } p-3`}
+        >
+            <div className="mb-2 flex items-center justify-between">
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-zinc-600">
+                    {label.en}
+                </span>
+                {match.kaioken && (
+                    <span className="flex items-center gap-1 rounded bg-red-600/25 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-300">
+                        <Flame className="h-3 w-3" /> Kaioken
+                    </span>
+                )}
+            </div>
+            <div className="flex items-center gap-3">
+                <div className="flex flex-1 flex-col items-center gap-1">
+                    <img
+                        src={SAMURAI_IMG(match.tokenA)}
+                        alt={`#${match.tokenA}`}
+                        className={`${avatar} rounded ${
+                            winnerIsA
+                                ? match.kaioken
+                                    ? 'ring-2 ring-red-400'
+                                    : 'ring-2 ring-yellow-400'
+                                : 'opacity-40 saturate-0'
+                        }`}
+                        style={{imageRendering: 'pixelated'}}
+                    />
+                    <span
+                        className={`font-mono text-[10px] uppercase ${
+                            winnerIsA ? (match.kaioken ? 'text-red-300' : 'text-yellow-400') : 'text-zinc-600'
+                        }`}
+                    >
+                        #{match.tokenA}
+                    </span>
+                    {sA !== undefined && (
+                        <span className="font-mono text-[8px] text-zinc-600">戦力 {sA}</span>
+                    )}
+                </div>
+                <Zap className={`h-4 w-4 ${match.kaioken ? 'text-red-400' : 'text-zinc-700'}`} />
+                <div className="flex flex-1 flex-col items-center gap-1">
+                    <img
+                        src={SAMURAI_IMG(match.tokenB)}
+                        alt={`#${match.tokenB}`}
+                        className={`${avatar} rounded ${
+                            !winnerIsA
+                                ? match.kaioken
+                                    ? 'ring-2 ring-red-400'
+                                    : 'ring-2 ring-yellow-400'
+                                : 'opacity-40 saturate-0'
+                        }`}
+                        style={{imageRendering: 'pixelated'}}
+                    />
+                    <span
+                        className={`font-mono text-[10px] uppercase ${
+                            !winnerIsA ? (match.kaioken ? 'text-red-300' : 'text-yellow-400') : 'text-zinc-600'
+                        }`}
+                    >
+                        #{match.tokenB}
+                    </span>
+                    {sB !== undefined && (
+                        <span className="font-mono text-[8px] text-zinc-600">戦力 {sB}</span>
+                    )}
+                </div>
+            </div>
+            {annotation && (
+                <p className="mt-3 border-t border-zinc-900 pt-2 text-center text-[10px] italic leading-snug text-zinc-400">
+                    {annotation}
+                </p>
+            )}
+        </div>
+    );
+}
+
+export function BudokaiChronicleMockup() {
+    const [data, setData] = useState<ChronicleData | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [showAllFights, setShowAllFights] = useState(false);
+
+    useEffect(() => {
+        loadChronicle(1)
+            .then((d) => {
+                if (!d) setError('Snapshot not found');
+                else setData(d);
+            })
+            .catch((e) => setError(String(e?.message ?? e)));
+    }, []);
+
+    const championPath = useMemo(
+        () => (data ? buildChampionPath(data.matches, data.champion) : []),
+        [data],
+    );
+    const upsets = useMemo(
+        () => (data ? pickUpsets(data.matches, data.senryoku, 20) : []),
+        [data],
+    );
+    const kaiokens = useMemo(() => (data ? data.matches.filter((m) => m.kaioken) : []), [data]);
+    const firstBlood = useMemo(() => {
+        if (!data) return null;
+        return data.matches.find((m) => m.round === 1) ?? null;
+    }, [data]);
+
+    const roundTally = useMemo(() => {
+        if (!data) return [];
+        const map = new Map<number, {fights: number; kaiokens: number; upsets: number}>();
+        for (const m of data.matches) {
+            const e = map.get(m.round) ?? {fights: 0, kaiokens: 0, upsets: 0};
+            e.fights += 1;
+            if (m.kaioken) e.kaiokens += 1;
+            const w = m.winner;
+            const l = w === m.tokenA ? m.tokenB : m.tokenA;
+            const ws = data.senryoku.get(w);
+            const ls = data.senryoku.get(l);
+            if (ws !== undefined && ls !== undefined && ls - ws >= 20) e.upsets += 1;
+            map.set(m.round, e);
+        }
+        return Array.from(map.entries()).sort(([a], [b]) => a - b);
+    }, [data]);
+
+    const groupedAll = useMemo(() => {
+        if (!data) return [];
+        const map = new Map<number, MatchResult[]>();
+        for (const m of data.matches) {
+            if (!map.has(m.round)) map.set(m.round, []);
+            map.get(m.round)!.push(m);
+        }
+        return Array.from(map.entries()).sort(([a], [b]) => a - b);
+    }, [data]);
+
+    if (error) {
+        return (
+            <div className="mx-auto max-w-3xl p-12 text-center font-mono text-sm text-red-400">
+                error: {error}
+            </div>
+        );
+    }
+    if (!data) {
+        return (
+            <div className="mx-auto max-w-3xl p-12 text-center font-mono text-xs uppercase tracking-[0.4em] text-zinc-500">
+                loading the chronicles...
+            </div>
+        );
+    }
+
+    const championPrize = (data.pool * 5000n) / 10000n;
+    const runnerPrize = (data.pool * 2000n) / 10000n;
+    const semiPrize = (data.pool * 1500n) / 10000n / 2n;
+    const quarterPrize = (data.pool * 1500n) / 10000n / 4n;
+
+    return (
+        <div className="min-h-screen bg-black text-zinc-200">
+            <div className="mx-auto max-w-3xl px-6 py-12 sm:px-8">
+                {/* Masthead */}
+                <header className="mb-12 border-b border-zinc-800 pb-6 text-center">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-red-500">
+                        天下一武道会
+                    </p>
+                    <h1 className="mt-1 font-serif text-4xl font-bold tracking-tight sm:text-5xl">
+                        The Tenkaichi Chronicles
+                    </h1>
+                    <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.4em] text-zinc-500">
+                        Budokai {data.id} · {data.entryCount} warriors · {formatPool(data.pool)} $ZERO
+                        prize pool · resolved on block {data.resolveBlock.toLocaleString()}
+                    </p>
+                </header>
+
+                {/* Hero — champion */}
+                <section className="mb-16 grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
+                    <div className="relative">
+                        <img
+                            src={SAMURAI_IMG(data.champion)}
+                            alt={`Champion #${data.champion}`}
+                            className="h-44 w-44 rounded ring-4 ring-yellow-400 sm:h-56 sm:w-56"
+                            style={{imageRendering: 'pixelated'}}
+                        />
+                        <Trophy className="absolute -right-3 -top-3 h-12 w-12 text-yellow-400 drop-shadow-[0_0_12px_rgba(234,179,8,0.6)]" />
+                    </div>
+                    <div>
+                        <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-yellow-400">
+                            Tenkaichi Champion
+                        </p>
+                        <h2 className="mt-1 font-serif text-5xl font-bold text-yellow-300">
+                            #{data.champion}
+                        </h2>
+                        {data.senryoku.get(data.champion) !== undefined && (
+                            <p className="font-mono text-xs text-zinc-500">
+                                戦力 {data.senryoku.get(data.champion)}
+                            </p>
+                        )}
+                        <p className="mt-3 text-2xl font-bold text-yellow-300">
+                            {formatPool(championPrize)} $ZERO
+                        </p>
+                        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+                            crowned over {data.totalRounds} rounds and {data.matches.length} fights
+                        </p>
+                    </div>
+                </section>
+
+                {/* Podium */}
+                <section className="mb-16">
+                    <h3 className="mb-3 font-mono text-[11px] uppercase tracking-[0.4em] text-zinc-500">
+                        Prize Distribution
+                    </h3>
+                    <div className="rounded border border-zinc-800 bg-zinc-950/60 px-4 py-2">
+                        <PrizeRow
+                            label="Champion"
+                            tokens={[data.champion]}
+                            amount={`${formatPool(championPrize)} $ZERO`}
+                            accent="text-yellow-400"
+                        />
+                        <PrizeRow
+                            label="Runner-up"
+                            tokens={[data.runnerUp]}
+                            amount={`${formatPool(runnerPrize)} $ZERO`}
+                            accent="text-zinc-300"
+                        />
+                        <PrizeRow
+                            label="Semifinals"
+                            tokens={data.semifinalists}
+                            amount={`${formatPool(semiPrize)} $ZERO ea.`}
+                            accent="text-zinc-400"
+                        />
+                        <PrizeRow
+                            label="Quarters"
+                            tokens={data.quarterfinalists}
+                            amount={`${formatPool(quarterPrize)} $ZERO ea.`}
+                            accent="text-zinc-500"
+                        />
+                    </div>
+                </section>
+
+                {/* The Champion's Path */}
+                <section className="mb-16">
+                    <h3 className="mb-2 font-serif text-2xl font-bold text-yellow-300">
+                        The Champion&rsquo;s Path
+                    </h3>
+                    <p className="mb-6 font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+                        The {championPath.length} fights that crowned #{data.champion}
+                    </p>
+                    <div className="space-y-4">
+                        {championPath.map((node) => (
+                            <div
+                                key={`${node.m.round}-${node.m.tokenA}-${node.m.tokenB}`}
+                                className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-stretch"
+                            >
+                                <FightCard
+                                    match={node.m}
+                                    senryoku={data.senryoku}
+                                    totalRounds={data.totalRounds}
+                                    size="md"
+                                />
+                                {node.rivalPrev ? (
+                                    <div className="rounded border border-dashed border-zinc-900 bg-zinc-950/30 p-3 sm:w-56">
+                                        <p className="mb-2 font-mono text-[8px] uppercase tracking-[0.3em] text-zinc-600">
+                                            ↑ #{node.rival} came from
+                                        </p>
+                                        <FightCard
+                                            match={node.rivalPrev}
+                                            senryoku={data.senryoku}
+                                            totalRounds={data.totalRounds}
+                                            size="sm"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="hidden sm:block sm:w-56" />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Notable Moments */}
+                <section className="mb-16">
+                    <h3 className="mb-2 font-serif text-2xl font-bold text-red-400">
+                        Notable Moments
+                    </h3>
+                    <p className="mb-6 font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+                        First blood · {kaiokens.length} kaioken{kaiokens.length === 1 ? '' : 's'} ·{' '}
+                        {upsets.length} upset{upsets.length === 1 ? '' : 's'}
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {firstBlood && (
+                            <FightCard
+                                match={firstBlood}
+                                senryoku={data.senryoku}
+                                totalRounds={data.totalRounds}
+                                annotation={`First blood — #${firstBlood.winner} drew the opening cut.`}
+                            />
+                        )}
+                        {kaiokens.slice(0, 4).map((m) => (
+                            <FightCard
+                                key={`k-${m.round}-${m.tokenA}-${m.tokenB}`}
+                                match={m}
+                                senryoku={data.senryoku}
+                                totalRounds={data.totalRounds}
+                                annotation={`Kaioken — #${m.winner} burned past the limit on #${loserOf(m)}.`}
+                            />
+                        ))}
+                        {upsets.slice(0, 6).map((m) => {
+                            const w = m.winner;
+                            const l = loserOf(m);
+                            const ws = data.senryoku.get(w);
+                            const ls = data.senryoku.get(l);
+                            return (
+                                <FightCard
+                                    key={`u-${m.round}-${m.tokenA}-${m.tokenB}`}
+                                    match={m}
+                                    senryoku={data.senryoku}
+                                    totalRounds={data.totalRounds}
+                                    annotation={`Upset — #${w} (${ws}) toppled the favored #${l} (${ls}).`}
+                                />
+                            );
+                        })}
+                    </div>
+                </section>
+
+                {/* Round-by-round tally */}
+                <section className="mb-16">
+                    <h3 className="mb-3 font-mono text-[11px] uppercase tracking-[0.4em] text-zinc-500">
+                        Round-by-Round Tally
+                    </h3>
+                    <div className="overflow-hidden rounded border border-zinc-800">
+                        <table className="w-full font-mono text-[11px]">
+                            <thead className="bg-zinc-950 text-zinc-500">
+                                <tr>
+                                    <th className="px-3 py-2 text-left uppercase tracking-wider">Round</th>
+                                    <th className="px-3 py-2 text-right uppercase tracking-wider">Fights</th>
+                                    <th className="px-3 py-2 text-right uppercase tracking-wider">Kaiokens</th>
+                                    <th className="px-3 py-2 text-right uppercase tracking-wider">Upsets</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {roundTally.map(([r, t]) => {
+                                    const lab = roundLabel(r, data.totalRounds);
+                                    return (
+                                        <tr key={r} className="border-t border-zinc-900">
+                                            <td className="px-3 py-2">
+                                                <span className="text-zinc-300">{lab.en}</span>{' '}
+                                                <span className="text-zinc-700">{lab.kanji}</span>
+                                            </td>
+                                            <td className="px-3 py-2 text-right text-zinc-300">{t.fights}</td>
+                                            <td className="px-3 py-2 text-right text-red-400">
+                                                {t.kaiokens || '—'}
+                                            </td>
+                                            <td className="px-3 py-2 text-right text-yellow-400">
+                                                {t.upsets || '—'}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                {/* Full bracket disclosure */}
+                <section className="mb-16">
+                    <button
+                        onClick={() => setShowAllFights((v) => !v)}
+                        className="w-full rounded border border-zinc-800 bg-zinc-950/60 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-400 hover:text-white"
+                    >
+                        {showAllFights ? '▴ Hide' : '▾ Show'} all {data.matches.length} matches
+                    </button>
+                    {showAllFights && (
+                        <div className="mt-6 space-y-8">
+                            {groupedAll.map(([r, ms]) => {
+                                const lab = roundLabel(r, data.totalRounds);
+                                return (
+                                    <div key={r}>
+                                        <div className="mb-3 flex items-baseline gap-3">
+                                            <span className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-red-500">
+                                                {lab.en}
+                                            </span>
+                                            <span className="font-mono text-[10px] text-zinc-600">
+                                                {lab.kanji}
+                                            </span>
+                                            <span className="font-mono text-[9px] text-zinc-700">
+                                                {ms.length} fights
+                                            </span>
+                                            <div className="h-px flex-1 bg-zinc-900" />
+                                        </div>
+                                        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                            {ms.map((m) => (
+                                                <FightCard
+                                                    key={`${m.round}-${m.tokenA}-${m.tokenB}`}
+                                                    match={m}
+                                                    senryoku={data.senryoku}
+                                                    totalRounds={data.totalRounds}
+                                                    size="sm"
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </section>
+
+                {/* Footer */}
+                <footer className="border-t border-zinc-800 pt-6 text-center font-mono text-[9px] uppercase tracking-[0.4em] text-zinc-700">
+                    The Dojo · Tenkaichi Budokai {data.id} · A static replay
+                </footer>
+            </div>
+        </div>
+    );
+}

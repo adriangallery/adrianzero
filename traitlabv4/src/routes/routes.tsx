@@ -95,6 +95,12 @@ const AnimationsModule = lazy(() =>
   }))
 );
 
+const BudokaiChronicleMockup = lazy(() =>
+  import('@/features/samuraidojo/components/BudokaiChronicleMockup').then((m) => ({
+    default: m.BudokaiChronicleMockup,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -118,6 +124,7 @@ export const routes: RouteObject[] = [
   // ─── Link-only (not in menu) ─────────────────────────────────────────────
   { path: '/explain-to-jb', element: <ExplainJBModule /> },
   { path: '/animations', element: <AnimationsModule /> },
+  { path: '/budokai-replay-mockup', element: <BudokaiChronicleMockup /> },
 
   // ─── Redirects (backward compatibility) ──────────────────────────────────
   { path: '/dashboard', element: <Navigate to="/zero" replace /> },
