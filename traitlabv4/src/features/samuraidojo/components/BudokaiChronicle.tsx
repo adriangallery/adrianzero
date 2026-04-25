@@ -125,6 +125,11 @@ function makeLore(
     const isSemi = m.round === totalRounds - 1;
     const pick = (arr: string[]) => arr[(w * 31 + l * 17 + m.round * 7) % arr.length];
 
+    // v6 civilian classifier — derived SR is 1-15, samurai start at 20+. Use a 15/20 split with
+    // an "ambiguous" gap (16-19) treated as samurai to avoid misfiring civilian flavor.
+    const winnerCivilian = hasPower && (wPow as number) <= 15;
+    const loserSamurai = hasPower && (lPow as number) >= 20;
+
     if (isFirstBlood && !isFinal && !isSemi && !m.kaioken) {
         return pick([
             `First blood of the Budokai — #${w} draws the opening cut on #${l}.`,
@@ -133,6 +138,15 @@ function makeLore(
         ]);
     }
     if (isFinal) {
+        // v6: Commoner King (民の王) — civilian wins the entire tournament.
+        if (winnerCivilian) {
+            return pick([
+                `民の王 — #${w} ascends from the streets. The dojo bows to a Commoner King.`,
+                `An AdrianZERO with no name carved in the roster takes the Tenkaichi title. #${w} is the people's champion now.`,
+                `The samurai class will never live this down. #${w}, a civilian, holds the trophy over a fallen #${l}.`,
+                `History rewrites itself. #${w} — a regular soul — strikes down #${l} and claims the dojo's highest seat.`,
+            ]);
+        }
         if (hasPower && Math.abs(gap) <= 5) {
             return pick([
                 `A final that will be retold in the Chronicles — #${w} edges out #${l} by a single breath.`,
@@ -147,10 +161,27 @@ function makeLore(
         ]);
     }
     if (isSemi) {
+        // Civilian into the final.
+        if (winnerCivilian) {
+            return pick([
+                `民兵の刃 — #${w}, a civilian, slips past #${l} and into the final. The samurai look at each other.`,
+                `The dojo's hierarchy keeps cracking — #${w} buries #${l} and walks toward the trophy.`,
+                `One step from the title. #${w}, no roster mark, eliminates #${l} in the semis.`,
+            ]);
+        }
         return pick([
             `#${w} punches through to the final. #${l} exits with semifinal honors.`,
             `At the gates of the final, #${w} cuts down #${l}.`,
             `#${l} came close — but #${w} walks on to the title match.`,
+        ]);
+    }
+    // v6: civilian upset — civilian (SR ≤15) drops a samurai (SR ≥20).
+    if (winnerCivilian && loserSamurai) {
+        return pick([
+            `Civilian upset — #${w} (SR ${wPow}) drops the trained #${l} (SR ${lPow}). The dojo whispers.`,
+            `The hierarchy cracks. #${w}, no samurai mark, takes down #${l} cleanly.`,
+            `#${l} expected an easy round. #${w} reminded them why the dojo opened its gates.`,
+            `民兵の刃 — #${w} channels the people's fury and strikes #${l} from the ranks.`,
         ]);
     }
     if (m.kaioken) {
@@ -199,10 +230,6 @@ function pickUpsets(matches: MatchResult[], senryoku: Map<number, number>, thres
         if (ws === undefined || ls === undefined) return false;
         return ls - ws >= threshold; // loser was favored by ≥ threshold
     });
-}
-
-function loserOf(m: MatchResult) {
-    return m.winner === m.tokenA ? m.tokenB : m.tokenA;
 }
 
 function formatPool(pool: bigint): string {
