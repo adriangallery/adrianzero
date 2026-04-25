@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Season1Tab } from './Season1Tab';
 import { Season2Tab } from './Season2Tab';
+import { MultiSeasonMarketplace } from './MultiSeasonMarketplace';
 
 type SeasonTab = 's1' | 's2';
 
@@ -10,7 +11,7 @@ export function ZEROmoviesModule() {
   return (
     <div className="min-h-screen bg-black">
       <div className="mx-auto max-w-6xl px-4 pt-20 pb-8 sm:px-6 sm:pt-24">
-        {/* Tab strip */}
+        {/* Top-level season tabs (catalog) */}
         <div className="mb-6 flex justify-center gap-1 border-b border-zinc-800">
           <TabButton active={active === 's1'} onClick={() => setActive('s1')} label="Season 1" sub="Trilogy Part One" accent="red" />
           <TabButton
@@ -24,6 +25,9 @@ export function ZEROmoviesModule() {
 
         {active === 's1' ? <Season1Tab /> : <Season2Tab />}
       </div>
+
+      {/* One marketplace for the whole trilogy — visible whatever season is active */}
+      <MultiSeasonMarketplace />
 
       <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
     </div>
