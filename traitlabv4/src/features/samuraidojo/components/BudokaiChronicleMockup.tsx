@@ -99,6 +99,92 @@ function buildChampionPath(matches: MatchResult[], champ: number) {
     return path;
 }
 
+/**
+ * Same flavor narrator as BracketReveal's makeLore — picks a deterministic
+ * line per match using senryoku gap + kaioken + round as the bucket selector.
+ * Same match always returns the same line (reproducible across reloads).
+ */
+function makeLore(
+    m: MatchResult,
+    senryoku: Map<number, number>,
+    totalRounds: number,
+    isFirstBlood: boolean = false,
+): string {
+    const w = m.winner;
+    const l = w === m.tokenA ? m.tokenB : m.tokenA;
+    const wPow = senryoku.get(w);
+    const lPow = senryoku.get(l);
+    const hasPower = wPow !== undefined && lPow !== undefined;
+    const gap = hasPower ? (wPow as number) - (lPow as number) : 0;
+    const isFinal = m.round === totalRounds;
+    const isSemi = m.round === totalRounds - 1;
+    const pick = (arr: string[]) => arr[(w * 31 + l * 17 + m.round * 7) % arr.length];
+
+    if (isFirstBlood && !isFinal && !isSemi && !m.kaioken) {
+        return pick([
+            `First blood of the Budokai — #${w} draws the opening cut on #${l}.`,
+            `The gates open. #${w} is the first to taste victory over #${l}.`,
+            `An opening strike. #${w} drops #${l} before the dojo can breathe.`,
+        ]);
+    }
+    if (isFinal) {
+        if (hasPower && Math.abs(gap) <= 5) {
+            return pick([
+                `A final that will be retold in the Chronicles — #${w} edges out #${l} by a single breath.`,
+                `Two heartbeats. Two fates. #${w} stands, #${l} bows — by the thinnest margin ever recorded.`,
+                `The dojo will never forget this final. #${w} over #${l} by a sliver.`,
+            ]);
+        }
+        return pick([
+            `Under the dojo lanterns, #${w} claims the Tenkaichi title over #${l}.`,
+            `Tenkaichi — #${w} stands alone. #${l} takes runner-up with honor.`,
+            `The final bell tolls. #${w} bows over a fallen #${l}.`,
+        ]);
+    }
+    if (isSemi) {
+        return pick([
+            `#${w} punches through to the final. #${l} exits with semifinal honors.`,
+            `At the gates of the final, #${w} cuts down #${l}.`,
+            `#${l} came close — but #${w} walks on to the title match.`,
+        ]);
+    }
+    if (m.kaioken) {
+        return pick([
+            `The Kaioken flared — #${w} overwhelmed #${l} in a crimson blur.`,
+            `Burning past the limit, #${w} dropped #${l} with a Kaioken surge.`,
+            `#${l} had no answer to the Kaioken roar from #${w}.`,
+            `A war cry tore through the dojo as #${w} invoked the Kaioken on #${l}.`,
+        ]);
+    }
+    if (hasPower && gap >= 30) {
+        return pick([
+            `#${w} (power ${wPow}) overwhelms #${l} (${lPow}) in one crushing exchange.`,
+            `No contest — #${w} dismantles #${l} cleanly.`,
+            `A textbook dismantling; #${l} was outclassed from bell to bell.`,
+        ]);
+    }
+    if (hasPower && gap <= -20) {
+        return pick([
+            `*Impossible.* #${w} (power ${wPow}) topples the favored #${l} (${lPow}).`,
+            `The dojo gasps — #${w} refuses to lose to #${l}.`,
+            `Against all odds, #${w} outlasts the stronger #${l}.`,
+        ]);
+    }
+    if (hasPower && Math.abs(gap) <= 10) {
+        return pick([
+            `A razor-thin duel — #${w} edges out #${l}.`,
+            `#${w} and #${l} trade blows until the final second. #${w} takes it.`,
+            `Too close to call… #${w} stands over #${l} at the end.`,
+        ]);
+    }
+    return pick([
+        `#${w} outlasts #${l} in a clean duel.`,
+        `#${w} finds the opening and drops #${l}.`,
+        `#${l} fought well — but #${w} closed the show.`,
+        `#${w} silences #${l} with disciplined technique.`,
+    ]);
+}
+
 function pickUpsets(matches: MatchResult[], senryoku: Map<number, number>, threshold = 20) {
     return matches.filter((m) => {
         const w = m.winner;
@@ -406,6 +492,16 @@ export function BudokaiChronicleMockup() {
                                     senryoku={data.senryoku}
                                     totalRounds={data.totalRounds}
                                     size="md"
+                                    annotation={makeLore(
+                                        node.m,
+                                        data.senryoku,
+                                        data.totalRounds,
+                                        firstBlood
+                                            ? node.m.tokenA === firstBlood.tokenA &&
+                                                  node.m.tokenB === firstBlood.tokenB &&
+                                                  node.m.round === firstBlood.round
+                                            : false,
+                                    )}
                                 />
                                 {node.rivalPrev ? (
                                     <div className="rounded border border-dashed border-zinc-900 bg-zinc-950/30 p-3 sm:w-56">
@@ -417,6 +513,11 @@ export function BudokaiChronicleMockup() {
                                             senryoku={data.senryoku}
                                             totalRounds={data.totalRounds}
                                             size="sm"
+                                            annotation={makeLore(
+                                                node.rivalPrev,
+                                                data.senryoku,
+                                                data.totalRounds,
+                                            )}
                                         />
                                     </div>
                                 ) : (
@@ -442,7 +543,7 @@ export function BudokaiChronicleMockup() {
                                 match={firstBlood}
                                 senryoku={data.senryoku}
                                 totalRounds={data.totalRounds}
-                                annotation={`First blood — #${firstBlood.winner} drew the opening cut.`}
+                                annotation={makeLore(firstBlood, data.senryoku, data.totalRounds, true)}
                             />
                         )}
                         {kaiokens.slice(0, 4).map((m) => (
@@ -451,24 +552,18 @@ export function BudokaiChronicleMockup() {
                                 match={m}
                                 senryoku={data.senryoku}
                                 totalRounds={data.totalRounds}
-                                annotation={`Kaioken — #${m.winner} burned past the limit on #${loserOf(m)}.`}
+                                annotation={makeLore(m, data.senryoku, data.totalRounds)}
                             />
                         ))}
-                        {upsets.slice(0, 6).map((m) => {
-                            const w = m.winner;
-                            const l = loserOf(m);
-                            const ws = data.senryoku.get(w);
-                            const ls = data.senryoku.get(l);
-                            return (
-                                <FightCard
-                                    key={`u-${m.round}-${m.tokenA}-${m.tokenB}`}
-                                    match={m}
-                                    senryoku={data.senryoku}
-                                    totalRounds={data.totalRounds}
-                                    annotation={`Upset — #${w} (${ws}) toppled the favored #${l} (${ls}).`}
-                                />
-                            );
-                        })}
+                        {upsets.slice(0, 6).map((m) => (
+                            <FightCard
+                                key={`u-${m.round}-${m.tokenA}-${m.tokenB}`}
+                                match={m}
+                                senryoku={data.senryoku}
+                                totalRounds={data.totalRounds}
+                                annotation={makeLore(m, data.senryoku, data.totalRounds)}
+                            />
+                        ))}
                     </div>
                 </section>
 
@@ -545,6 +640,16 @@ export function BudokaiChronicleMockup() {
                                                     senryoku={data.senryoku}
                                                     totalRounds={data.totalRounds}
                                                     size="sm"
+                                                    annotation={makeLore(
+                                                        m,
+                                                        data.senryoku,
+                                                        data.totalRounds,
+                                                        firstBlood
+                                                            ? m.tokenA === firstBlood.tokenA &&
+                                                                  m.tokenB === firstBlood.tokenB &&
+                                                                  m.round === firstBlood.round
+                                                            : false,
+                                                    )}
                                                 />
                                             ))}
                                         </div>
