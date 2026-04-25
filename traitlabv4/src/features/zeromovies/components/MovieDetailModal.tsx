@@ -5,6 +5,7 @@ import type { Movie } from '../types';
 import { useMovieMint, useMovieBuy, useMovieReturn, useMovieKeep, useUpgradeRental, useNftApproval } from '../hooks/useMovieMint';
 import { useListMovie, useDelistMovie, useAcceptOffer, useAcceptOfferAsRenter, useMakeOffer, useCancelOffer, useBuyListing, useCollectionOffers, useAcceptCollectionOffer } from '../hooks/useMarketplace';
 import { useZeroBalance, useMoviesConfig, useBuyPrice } from '../hooks/useZeroBalance';
+import { useS1LateFeeConfig, deriveS1Overdue } from '../hooks/useS1LateFeeConfig';
 import { useMoviesStore } from '../store/moviesStore';
 import { useAccount, useReadContract } from 'wagmi';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
@@ -122,6 +123,20 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
     ? Math.floor((Date.now() / 1000 - Number(rentalStatus.rentedAt)) / 86400)
     : 0;
 
+  // Overdue derivation — same source the card grid uses, so the modal stays
+  // consistent with what the user clicked
+  const { gracePeriod, feePerDay } = useS1LateFeeConfig();
+  const overdueDerived = deriveS1Overdue(
+    rentalStatus
+      ? { renter: rentalStatus.renter, permanent: rentalStatus.permanent, rentedAt: Number(rentalStatus.rentedAt) }
+      : undefined,
+    gracePeriod,
+  );
+  const isOverdue = overdueDerived.isOverdue;
+  const daysOverdue = overdueDerived.daysOverdue;
+  const accumulatedLateFee = isOverdue ? daysOverdue * feePerDay : 0;
+  const graceDays = Math.max(1, Math.round(gracePeriod / 86_400));
+
   useEffect(() => {
     if (isConfirmed && movie) { showSuccess(movie.tokenId || 0, 'rent'); onMintSuccess(); reset(); }
   }, [isConfirmed]);
@@ -206,12 +221,48 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
               {isMystery ? 'Mystery Movie' : movie.name}
             </Dialog.Title>
 
+            {/* OVERDUE banner — surfaces the on-chain late-fee state when this
+                wallet is overdue. The two paths below the banner already exist
+                via Return / Buy buttons, but become much clearer here. */}
+            {isYours && !isPermanent && isOverdue && (
+              <div className="rounded-md border-2 border-red-600 bg-red-900/20 p-3 text-[10px]">
+                <div className="flex items-center gap-2">
+                  <span className="rotate-[-6deg] rounded border border-red-500 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-red-400">
+                    OVERDUE
+                  </span>
+                  <span className="font-bold text-red-300">
+                    {daysOverdue} day{daysOverdue === 1 ? '' : 's'} past grace
+                  </span>
+                  <span className="ml-auto text-red-400">
+                    Late fee: <span className="font-bold">{accumulatedLateFee.toLocaleString()} $ZERO</span>
+                  </span>
+                </div>
+                <ul className="mt-2 space-y-1 text-zinc-400">
+                  <li>
+                    <span className="text-emerald-400 font-bold">Return now</span> — you get your full {depositFormatted.toLocaleString()} $ZERO deposit back. No late fee charged on return.
+                  </li>
+                  <li>
+                    <span className="text-yellow-400 font-bold">Upgrade to permanent</span> — pay the buy price; the {accumulatedLateFee.toLocaleString()} $ZERO late fee is already included below ({dynamicBuyPriceFormatted.toLocaleString()} $ZERO total).
+                  </li>
+                </ul>
+              </div>
+            )}
+
             {/* Status + Stats */}
-            {isYours && !isPermanent && (
+            {isYours && !isPermanent && !isOverdue && (
               <div className="flex items-center gap-2 text-[10px] text-zinc-400">
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                 Rented {daysSinceRent} day{daysSinceRent !== 1 ? 's' : ''} ago
                 {depositFormatted > 0 && <span>· {depositFormatted.toLocaleString()} $ZERO deposit</span>}
+                {graceDays - daysSinceRent > 0 && (
+                  <span className="text-zinc-500">· {graceDays - daysSinceRent}d before late fees</span>
+                )}
+              </div>
+            )}
+            {isYours && !isPermanent && isOverdue && (
+              <div className="flex items-center gap-2 text-[10px] text-red-400">
+                <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                Tape held {daysSinceRent} day{daysSinceRent !== 1 ? 's' : ''} · {feePerDay.toLocaleString()} $ZERO/day accruing
               </div>
             )}
             {isYours && isPermanent && (
@@ -310,9 +361,20 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             {/* Currently rented by someone else — allow offers (renter can flip via acceptOfferAsRenter) */}
             {isRentedByOther && !isPermanent && (
               <div className="space-y-2">
-                <div className="rounded-lg border border-amber-700/40 bg-amber-900/10 p-3 text-center">
-                  <p className="text-xs font-bold text-amber-400">Currently Rented</p>
-                  <p className="mt-1 text-[10px] text-zinc-500">Make an offer — the renter can accept and flip it to you</p>
+                <div className={`rounded-lg p-3 text-center ${isOverdue ? 'border-2 border-red-600 bg-red-900/20' : 'border border-amber-700/40 bg-amber-900/10'}`}>
+                  {isOverdue ? (
+                    <>
+                      <p className="text-xs font-bold text-red-400">Held Overdue · {daysOverdue}d past grace</p>
+                      <p className="mt-1 text-[10px] text-zinc-500">
+                        The renter has accrued {accumulatedLateFee.toLocaleString()} $ZERO in late fees. Your offer pressures them to accept and unlock the tape.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs font-bold text-amber-400">Currently Rented</p>
+                      <p className="mt-1 text-[10px] text-zinc-500">Make an offer — the renter can accept and flip it to you</p>
+                    </>
+                  )}
                 </div>
 
                 <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ShoppingBag, Lock } from 'lucide-react';
 import { MarketplaceSection } from './MarketplaceSection';
+import { MarketplaceSeason2 } from './MarketplaceSeason2';
 
 type SeasonId = 1 | 2 | 3 | 4;
 
@@ -14,8 +15,8 @@ interface SeasonMeta {
 }
 
 const SEASONS: SeasonMeta[] = [
-  { id: 1, label: 'Season 1', sub: 'Trilogy Part One', accent: 'red',     status: 'live',         hint: '5% fee · 3% burn + 2% holders' },
-  { id: 2, label: 'Season 2', sub: 'Return of the Pixel', accent: 'yellow', status: 'soon',       hint: 'No marketplace at S2 launch — coming with a follow-up facet' },
+  { id: 1, label: 'Season 1', sub: 'Trilogy Part One', accent: 'red',     status: 'live',        hint: '5% fee · 3% burn + 2% holders' },
+  { id: 2, label: 'Season 2', sub: 'Return of the Pixel', accent: 'yellow', status: 'soon',     hint: 'Preview — listings + offers route here when the S2 marketplace facet ships' },
   { id: 3, label: 'Season 3', sub: 'Coming later',  accent: 'emerald',  status: 'unannounced',  hint: 'Catalog and mechanics will be announced before mint' },
   { id: 4, label: 'Season 4', sub: 'The finale',    accent: 'fuchsia',  status: 'unannounced',  hint: 'A four-piece trilogy ends with Season 4' },
 ];
@@ -63,7 +64,8 @@ export function MultiSeasonMarketplace() {
 
       {/* Per-season content */}
       {active === 1 && <MarketplaceSection />}
-      {active !== 1 && <PlaceholderPanel meta={SEASONS.find((s) => s.id === active)!} />}
+      {active === 2 && <MarketplaceSeason2 />}
+      {active !== 1 && active !== 2 && <PlaceholderPanel meta={SEASONS.find((s) => s.id === active)!} />}
     </section>
   );
 }
