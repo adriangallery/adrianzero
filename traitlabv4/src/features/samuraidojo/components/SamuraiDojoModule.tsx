@@ -94,47 +94,24 @@ export function SamuraiDojoModule() {
 
     const {states, refetch: refetchStates} = useSamuraiState(visibleTokenIds);
 
-    // RECLASSIFY samurai vs civilian using ON-CHAIN senryoku (source of truth), not the roster.
-    // The BatchDeployer tag list can lag/be incomplete (e.g. post-migration mints not tagged in
-    // both contracts), but the senryoku slot in storage is canonical: samurai SR is loaded into
-    // the 1-100 range at mint time, civilian SR is derived 1-15 at first entry.
-    //   sr > 15            → unambiguous samurai (civ ceiling is 15)
-    //   sr in [1,15]       → civilian who already entered (SR persisted)
-    //   sr == 0 + roster   → samurai with unloaded SR (rare edge, treat as samurai)
-    //   sr == 0, no roster → fresh civilian (use derived preview)
-    const allOwnedIds = useMemo(
-        () => [...new Set([...myTokenIds, ...myCivilianIds])].sort((a, b) => a - b),
-        [myTokenIds, myCivilianIds],
-    );
-    const samuraiOwnedIds = useMemo(
-        () =>
-            allOwnedIds.filter((id) => {
-                const sr = states.get(id)?.senryoku ?? 0;
-                if (sr > 15) return true;
-                if (sr === 0 && roster.has(id)) return true;
-                return false;
-            }),
-        [allOwnedIds, states, roster],
-    );
-    const civilianOwnedIds = useMemo(() => {
-        const samSet = new Set(samuraiOwnedIds);
-        return allOwnedIds.filter((id) => !samSet.has(id));
-    }, [allOwnedIds, samuraiOwnedIds]);
+    // Roster is the source of truth for samurai vs civilian classification (user mental model).
+    // Some non-roster AdrianZEROs have "stale senryoku" stored on-chain from legacy mint scripts
+    // (e.g. tokens with tag "ZEROS" that got SR populated). We ignore that stored SR for owned
+    // tokens — civilians always show derived SR (1-15) from previewCivilianSenryoku.
+    // Note: the contract still classifies on entry by `senryoku[id] > 0`, so a civilian with
+    // stale stored SR will end up entering as samurai with that SR. That's a contract-level
+    // artifact; surfaced via warning below.
+    const samuraiOwnedIds = myTokenIds; // already roster-filtered by useMySamurai
+    const civilianOwnedIds = myCivilianIds; // owned but not in roster
 
-    // Preview SR for civilians (keccak-derived 1-15) so MINE can show what they'd fight with.
-    // Only ask for tokens with sr==0 — others have a real on-chain SR already.
-    const civilNeedsPreview = useMemo(
-        () => civilianOwnedIds.filter((id) => (states.get(id)?.senryoku ?? 0) === 0),
-        [civilianOwnedIds, states],
-    );
-    const {previews: civilianPreviews} = useCivilianPreview(civilNeedsPreview);
+    const {previews: civilianPreviews} = useCivilianPreview(civilianOwnedIds);
 
-    const myOwnedSet = useMemo(() => new Set(allOwnedIds), [allOwnedIds]);
+    const myOwnedSet = useMemo(() => new Set([...samuraiOwnedIds, ...civilianOwnedIds]), [samuraiOwnedIds, civilianOwnedIds]);
     const samuraiOwnedSet = useMemo(() => new Set(samuraiOwnedIds), [samuraiOwnedIds]);
     const civilianOwnedSet = useMemo(() => new Set(civilianOwnedIds), [civilianOwnedIds]);
     const enteredSet = useMemo(() => new Set(entries), [entries]);
 
-    // MINE tab sub-buckets — samurai (now derived from on-chain SR).
+    // MINE tab sub-buckets — samurai.
     const mineInIds = useMemo(() => samuraiOwnedIds.filter((id) => enteredSet.has(id) && !states.get(id)?.isKnockedOut), [samuraiOwnedIds, enteredSet, states]);
     const mineReadyIds = useMemo(() => samuraiOwnedIds.filter((id) => !enteredSet.has(id) && !states.get(id)?.isKnockedOut), [samuraiOwnedIds, enteredSet, states]);
     const mineKoIds = useMemo(() => samuraiOwnedIds.filter((id) => states.get(id)?.isKnockedOut), [samuraiOwnedIds, states]);
@@ -143,6 +120,13 @@ export function SamuraiDojoModule() {
     const civilInIds = useMemo(() => civilianOwnedIds.filter((id) => enteredSet.has(id) && !states.get(id)?.isKnockedOut), [civilianOwnedIds, enteredSet, states]);
     const civilReadyIds = useMemo(() => civilianOwnedIds.filter((id) => !enteredSet.has(id) && !states.get(id)?.isKnockedOut), [civilianOwnedIds, enteredSet, states]);
     const civilKoIds = useMemo(() => civilianOwnedIds.filter((id) => states.get(id)?.isKnockedOut), [civilianOwnedIds, states]);
+
+    // Civilians with STALE stored SR (>15, not derived). Surfaced as warning so users know
+    // these will enter as samurai-with-that-SR despite their roster status.
+    const civilStaleSrIds = useMemo(
+        () => civilianOwnedIds.filter((id) => (states.get(id)?.senryoku ?? 0) > 15),
+        [civilianOwnedIds, states],
+    );
 
     const civilSlotsAvail = civilianSlotsAvailable(budokaiCounters);
 
@@ -306,6 +290,7 @@ export function SamuraiDojoModule() {
                         civilInIds={civilInIds}
                         civilReadyIds={civilReadyIds}
                         civilKoIds={civilKoIds}
+                        civilStaleSrIds={civilStaleSrIds}
                         civilianPreviews={civilianPreviews}
                         civilSlotsAvail={civilSlotsAvail}
                         samuraiOwnedSet={samuraiOwnedSet}
@@ -552,6 +537,7 @@ function MineSections({
     civilInIds,
     civilReadyIds,
     civilKoIds,
+    civilStaleSrIds,
     civilianPreviews,
     civilSlotsAvail,
     samuraiOwnedSet,
@@ -569,6 +555,7 @@ function MineSections({
     civilInIds: number[];
     civilReadyIds: number[];
     civilKoIds: number[];
+    civilStaleSrIds: number[];
     civilianPreviews: Map<number, number>;
     civilSlotsAvail: number;
     samuraiOwnedSet: Set<number>;
@@ -635,6 +622,15 @@ function MineSections({
                             {civilSlotsAvail > 0 ? `${civilSlotsAvail} slot${civilSlotsAvail === 1 ? '' : 's'} open` : 'no slots — need more samurai'}
                         </div>
                     </div>
+                    {/* Stale-SR warning — civilians whose stored on-chain senryoku is >15 (set by a
+                        legacy mint script). These will enter the contract as samurai-with-that-SR
+                        rather than civilians, bypassing the 1-15 derived range and the ratio gate. */}
+                    {civilStaleSrIds.length > 0 && (
+                        <div className="rounded border border-amber-500/40 bg-amber-950/20 px-3 py-2 text-[10px] text-amber-300">
+                            <p className="font-bold uppercase tracking-wider">⚠ {civilStaleSrIds.length} civilian{civilStaleSrIds.length === 1 ? '' : 's'} with stored SR &gt; 15</p>
+                            <p className="mt-1 text-amber-200/80">Tokens minted with legacy senryoku stored on-chain. Despite their civilian roster status, the contract will treat them as samurai-with-that-SR on entry. Affected: {civilStaleSrIds.slice(0, 8).map((id) => `#${id}`).join(', ')}{civilStaleSrIds.length > 8 ? `, +${civilStaleSrIds.length - 8} more` : ''}.</p>
+                        </div>
+                    )}
                     <SectionBlock
                         title="In the Dojo"
                         kanji="出場"
@@ -807,21 +803,19 @@ function CardGrid({
                 const state = states.get(tokenId);
                 const onChainSR = state?.senryoku ?? 0;
                 const isMine = myOwnedSet.has(tokenId);
-                // SR-driven classifier (source of truth). Falls back to owned-set membership
-                // when SR is 0 (token never entered) since the on-chain check is ambiguous.
-                let isSamurai: boolean;
-                if (onChainSR > 15) isSamurai = true;
-                else if (onChainSR > 0) isSamurai = false; // 1-15 = persisted civilian
-                else if (isMine) isSamurai = samuraiOwnedSet.has(tokenId);
-                else isSamurai = false; // unknown community token with SR=0 — civilian preview
-                // Civilian preview: use derived SR when on-chain is 0 (token hasn't entered yet).
+                // For owned tokens: roster is the truth (matches user mental model).
+                // For community/entrants: stored SR > 15 indicates samurai (civilian ceiling=15).
+                // Civilian SR display: ALWAYS show derived preview (1-15), never the stale stored value.
+                const isSamurai = isMine
+                    ? samuraiOwnedSet.has(tokenId)
+                    : onChainSR > 15;
                 let displaySR = onChainSR;
                 let isPreview = false;
-                if (!isSamurai && onChainSR === 0) {
+                if (!isSamurai) {
                     const preview = civilianPreviews.get(tokenId);
                     if (preview !== undefined && preview > 0) {
                         displaySR = preview;
-                        isPreview = true;
+                        isPreview = onChainSR !== preview; // preview shown over (or instead of) stored
                     }
                 }
                 return (
