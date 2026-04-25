@@ -37,8 +37,54 @@ const RESOLVE_DELAY_BLOCKS = 5n;
 const RESOLVE_WINDOW_BLOCKS = 256n;
 const CHUNK_SIZE = 10n;
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const cacheKey = (budokaiId: number) => `budokai-bracket-${CACHE_VERSION}-${budokaiId}`;
+
+interface StaticSnapshotJson {
+    id: number;
+    pool: string;
+    entryCount: number;
+    resolveBlock: number;
+    resolveTx?: string;
+    matches: Array<{round: number; tokenA: number; tokenB: number; winner: number; kaioken: boolean}>;
+    senryoku?: Record<string, number>;
+    champion: number;
+    runnerUp: number;
+}
+
+async function loadFromStaticSnapshot(
+    budokaiId: number,
+): Promise<{matches: MatchResult[]; snapshot: BudokaiSnapshot; senryoku: Map<number, number>} | null> {
+    try {
+        const res = await fetch(`/budokai/${budokaiId}.json`, {cache: 'force-cache'});
+        if (!res.ok) return null;
+        const data = (await res.json()) as StaticSnapshotJson;
+        const matches: MatchResult[] = data.matches.map((m) => ({
+            budokaiId,
+            round: m.round,
+            tokenA: m.tokenA,
+            tokenB: m.tokenB,
+            winner: m.winner,
+            kaioken: m.kaioken,
+        }));
+        matches.sort((a, b) => a.round - b.round);
+        const snapshot: BudokaiSnapshot = {
+            pool: BigInt(data.pool),
+            entryCount: data.entryCount,
+            champion: data.champion,
+            runnerUp: data.runnerUp,
+        };
+        const senryoku = new Map<number, number>();
+        if (data.senryoku) {
+            for (const [k, v] of Object.entries(data.senryoku)) {
+                senryoku.set(Number(k), Number(v));
+            }
+        }
+        return {matches, snapshot, senryoku};
+    } catch {
+        return null;
+    }
+}
 
 interface CacheEntry {
     blockNumber: string;
@@ -96,6 +142,18 @@ function useBracketData(budokaiId: number | null) {
         setStage('reading');
         (async () => {
             try {
+                // Try static snapshot JSON first (canonical source for resolved budokais).
+                // This is instant and avoids the on-chain pool=0 bug post-resolve.
+                const staticSnap = await loadFromStaticSnapshot(budokaiId);
+                if (cancelled) return;
+                if (staticSnap && staticSnap.matches.length > 0) {
+                    setSnapshot(staticSnap.snapshot);
+                    setMatches(staticSnap.matches);
+                    setSenryoku(staticSnap.senryoku);
+                    setStage('done');
+                    return;
+                }
+
                 // Read info + champions in parallel — both needed regardless of cache state.
                 const [info, champions] = (await Promise.all([
                     client.readContract({
@@ -372,6 +430,54 @@ const MATCH_REVEAL_MS = 1200;
 const ROUND_INTRO_MS = 1400;
 
 type Phase = 'intro' | 'scanning' | 'revealing' | 'complete';
+type ViewMode = 'champion-path' | 'all-fights';
+
+interface ChampionPathNode {
+    championMatch: MatchResult;
+    rivalToken: number;
+    rivalPrev: MatchResult | null;
+}
+
+/**
+ * Build the champion's lineage:
+ *   - All matches the champion played (one per round, skipping byes).
+ *   - For each rival, the previous match they won to face the champion.
+ * Result is the "genealogical tree" of the champion's path: ~14 matches max for an
+ * 8-round bracket instead of 128.
+ */
+function buildChampionPath(matches: MatchResult[], championToken: number): ChampionPathNode[] {
+    if (championToken <= 0 || matches.length === 0) return [];
+    const totalRounds = Math.max(...matches.map((m) => m.round));
+    const path: ChampionPathNode[] = [];
+    for (let r = 1; r <= totalRounds; r++) {
+        const championMatch = matches.find(
+            (m) => m.round === r && (m.tokenA === championToken || m.tokenB === championToken),
+        );
+        if (!championMatch) continue; // bye for the champion this round
+        const rivalToken =
+            championMatch.tokenA === championToken ? championMatch.tokenB : championMatch.tokenA;
+        const rivalPrev =
+            r > 1
+                ? matches.find(
+                      (m) =>
+                          m.round === r - 1 &&
+                          m.winner === rivalToken &&
+                          (m.tokenA === rivalToken || m.tokenB === rivalToken),
+                  ) ?? null
+                : null;
+        path.push({championMatch, rivalToken, rivalPrev});
+    }
+    return path;
+}
+
+/** Density tier from a round number, scaled relative to the total rounds. */
+function densityForRound(round: number, totalRounds: number): 'tiny' | 'small' | 'medium' | 'large' {
+    const fromTop = totalRounds - round;
+    if (fromTop >= 5) return 'tiny';
+    if (fromTop >= 3) return 'small';
+    if (fromTop >= 1) return 'medium';
+    return 'large';
+}
 
 export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
     const {matches, snapshot, senryoku, stage} = useBracketData(open ? budokaiId : null);
@@ -380,6 +486,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
     const [cursor, setCursor] = useState(0);
     const [activeRoundIntro, setActiveRoundIntro] = useState<number | null>(null);
     const [lastIntroedRound, setLastIntroedRound] = useState(0);
+    const [viewMode, setViewMode] = useState<ViewMode>('champion-path');
 
     const totalRounds = matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0;
 
@@ -391,6 +498,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
             setCursor(0);
             setActiveRoundIntro(null);
             setLastIntroedRound(0);
+            setViewMode('champion-path');
         }
     }, [open]);
 
@@ -542,43 +650,69 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                                     transition={{duration: 0.4}}
                                 >
                                     {phase === 'complete' && snapshot && snapshot.champion > 0 && (
-                                        <ChampionBanner
-                                            champion={snapshot.champion}
-                                            runnerUp={snapshot.runnerUp}
-                                            pool={snapshot.pool}
-                                        />
+                                        <>
+                                            <ChampionBanner
+                                                champion={snapshot.champion}
+                                                runnerUp={snapshot.runnerUp}
+                                                pool={snapshot.pool}
+                                            />
+                                            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+                                        </>
                                     )}
 
-                                    {groupedByRound.map(([round, rms]) => {
-                                        const label = roundLabel(round, totalRounds);
-                                        return (
-                                            <div key={round} className="mb-8">
-                                                <div className="mb-3 flex items-baseline gap-3">
-                                                    <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-red-500">
-                                                        {label.en}
-                                                    </span>
-                                                    <span className="font-mono text-[10px] text-zinc-600">
-                                                        {label.kanji}
-                                                    </span>
-                                                    <div className="h-px flex-1 bg-zinc-900" />
+                                    {phase === 'complete' && viewMode === 'champion-path' && snapshot && snapshot.champion > 0 ? (
+                                        <ChampionPathView
+                                            matches={matches}
+                                            championToken={snapshot.champion}
+                                            senryoku={senryoku}
+                                            totalRounds={totalRounds}
+                                        />
+                                    ) : (
+                                        groupedByRound.map(([round, rms]) => {
+                                            const label = roundLabel(round, totalRounds);
+                                            const density =
+                                                phase === 'complete' && viewMode === 'all-fights'
+                                                    ? densityForRound(round, totalRounds)
+                                                    : 'large';
+                                            const cols =
+                                                density === 'tiny'
+                                                    ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6'
+                                                    : density === 'small'
+                                                      ? 'grid-cols-1 sm:grid-cols-3 lg:grid-cols-4'
+                                                      : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+                                            return (
+                                                <div key={round} className="mb-8">
+                                                    <div className="mb-3 flex items-baseline gap-3">
+                                                        <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-red-500">
+                                                            {label.en}
+                                                        </span>
+                                                        <span className="font-mono text-[10px] text-zinc-600">
+                                                            {label.kanji}
+                                                        </span>
+                                                        <span className="font-mono text-[9px] text-zinc-700">
+                                                            {rms.length} {rms.length === 1 ? 'fight' : 'fights'}
+                                                        </span>
+                                                        <div className="h-px flex-1 bg-zinc-900" />
+                                                    </div>
+                                                    <div className={`grid gap-2 ${cols}`}>
+                                                        {rms.map((m, i) => {
+                                                            const key = `${m.tokenA}-${m.tokenB}-${m.round}`;
+                                                            return (
+                                                                <MatchCard
+                                                                    key={`${round}-${i}`}
+                                                                    match={m}
+                                                                    senryoku={senryoku}
+                                                                    totalRounds={totalRounds}
+                                                                    isFirstBlood={firstBloodKey === key}
+                                                                    density={density}
+                                                                />
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                                                    {rms.map((m, i) => {
-                                                        const key = `${m.tokenA}-${m.tokenB}-${m.round}`;
-                                                        return (
-                                                            <MatchCard
-                                                                key={`${round}-${i}`}
-                                                                match={m}
-                                                                senryoku={senryoku}
-                                                                totalRounds={totalRounds}
-                                                                isFirstBlood={firstBloodKey === key}
-                                                            />
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })
+                                    )}
                                 </motion.div>
                             )}
 
@@ -743,49 +877,63 @@ function RoundIntro({round, totalRounds}: {round: number; totalRounds: number}) 
     );
 }
 
+type Density = 'tiny' | 'small' | 'medium' | 'large';
+
 function MatchCard({
     match,
     senryoku,
     totalRounds,
     isFirstBlood = false,
+    density = 'large',
 }: {
     match: MatchResult;
     senryoku: Map<number, number>;
     totalRounds: number;
     isFirstBlood?: boolean;
+    density?: Density;
 }) {
     const winnerIsA = match.winner === match.tokenA;
+    // Always show lore on kaioken/upsets even in tiny mode (drama beats density).
+    const showLore = density !== 'tiny' || match.kaioken;
     const lore = useMemo(
-        () => makeLore(match, senryoku, totalRounds, isFirstBlood),
-        [match, senryoku, totalRounds, isFirstBlood]
+        () => (showLore ? makeLore(match, senryoku, totalRounds, isFirstBlood) : ''),
+        [showLore, match, senryoku, totalRounds, isFirstBlood],
     );
     const sA = senryoku.get(match.tokenA);
     const sB = senryoku.get(match.tokenB);
+    const padding =
+        density === 'tiny' ? 'p-1.5' : density === 'small' ? 'p-2' : 'p-3';
     return (
         <motion.div
             initial={{opacity: 0, y: 12, scale: 0.96}}
             animate={{opacity: 1, y: 0, scale: 1}}
             transition={{duration: 0.4, ease: 'easeOut'}}
-            className={`relative overflow-hidden rounded border p-3 ${
+            className={`relative overflow-hidden rounded border ${padding} ${
                 match.kaioken
                     ? 'border-red-500/60 bg-red-950/20 shadow-[0_0_20px_rgba(239,68,68,0.25)]'
                     : 'border-zinc-800 bg-zinc-950/70'
             }`}
         >
-            {match.kaioken && (
+            {match.kaioken && density !== 'tiny' && (
                 <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-red-600/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-300">
                     <Flame className="h-3 w-3" /> Kaioken
                 </div>
             )}
-            <div className="flex items-center justify-between gap-3">
+            {match.kaioken && density === 'tiny' && (
+                <Flame className="absolute right-1 top-1 h-3 w-3 text-red-400" />
+            )}
+            <div className={`flex items-center justify-between ${density === 'tiny' ? 'gap-1.5' : 'gap-3'}`}>
                 <SamuraiAvatar
                     tokenId={match.tokenA}
                     isWinner={winnerIsA}
                     kaioken={match.kaioken}
                     senryoku={sA}
+                    density={density}
                 />
                 <div className="text-center">
-                    <Zap className={`mx-auto h-4 w-4 ${match.kaioken ? 'text-red-400' : 'text-zinc-600'}`} />
+                    {density !== 'tiny' && (
+                        <Zap className={`mx-auto h-4 w-4 ${match.kaioken ? 'text-red-400' : 'text-zinc-600'}`} />
+                    )}
                     <span className="block text-[8px] font-mono uppercase tracking-wider text-zinc-600">vs</span>
                 </div>
                 <SamuraiAvatar
@@ -793,16 +941,21 @@ function MatchCard({
                     isWinner={!winnerIsA}
                     kaioken={match.kaioken}
                     senryoku={sB}
+                    density={density}
                 />
             </div>
-            <motion.p
-                initial={{opacity: 0, y: 4}}
-                animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.3, delay: 0.25, ease: 'easeOut'}}
-                className="mt-3 border-t border-zinc-900/60 pt-2 text-center text-[10px] italic leading-snug text-zinc-500"
-            >
-                {lore}
-            </motion.p>
+            {showLore && (
+                <motion.p
+                    initial={{opacity: 0, y: 4}}
+                    animate={{opacity: 1, y: 0}}
+                    transition={{duration: 0.3, delay: 0.25, ease: 'easeOut'}}
+                    className={`mt-3 border-t border-zinc-900/60 pt-2 text-center italic leading-snug text-zinc-500 ${
+                        density === 'small' ? 'text-[9px]' : 'text-[10px]'
+                    }`}
+                >
+                    {lore}
+                </motion.p>
+            )}
         </motion.div>
     );
 }
@@ -812,18 +965,28 @@ function SamuraiAvatar({
     isWinner,
     kaioken,
     senryoku,
+    density = 'large',
 }: {
     tokenId: number;
     isWinner: boolean;
     kaioken: boolean;
     senryoku?: number;
+    density?: Density;
 }) {
+    const sizeClass =
+        density === 'tiny'
+            ? 'h-10 w-10'
+            : density === 'small'
+              ? 'h-16 w-16'
+              : density === 'medium'
+                ? 'h-20 w-20 sm:h-24 sm:w-24'
+                : 'h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32';
     return (
-        <div className="flex flex-1 flex-col items-center gap-2">
+        <div className={`flex flex-1 flex-col items-center ${density === 'tiny' ? 'gap-0.5' : 'gap-2'}`}>
             <img
                 src={getSamuraiImageUrl(tokenId)}
                 alt={`#${tokenId}`}
-                className={`h-24 w-24 rounded transition-all sm:h-28 sm:w-28 lg:h-32 lg:w-32 ${
+                className={`rounded transition-all ${sizeClass} ${
                     isWinner
                         ? kaioken
                             ? 'ring-2 ring-red-400 shadow-[0_0_16px_rgba(239,68,68,0.6)]'
@@ -834,17 +997,123 @@ function SamuraiAvatar({
             />
             <div className="flex flex-col items-center leading-tight">
                 <span
-                    className={`font-mono text-[10px] uppercase ${
+                    className={`font-mono uppercase ${density === 'tiny' ? 'text-[8px]' : 'text-[10px]'} ${
                         isWinner ? (kaioken ? 'text-red-300' : 'text-yellow-400') : 'text-zinc-600'
                     }`}
                 >
                     #{tokenId}
                 </span>
-                {senryoku !== undefined && (
+                {senryoku !== undefined && density !== 'tiny' && (
                     <span className="font-mono text-[8px] tracking-wider text-zinc-600">
                         戦力 {senryoku}
                     </span>
                 )}
+            </div>
+        </div>
+    );
+}
+
+function ViewModeToggle({
+    viewMode,
+    setViewMode,
+}: {
+    viewMode: ViewMode;
+    setViewMode: (m: ViewMode) => void;
+}) {
+    return (
+        <div className="mb-6 flex justify-center gap-2">
+            <button
+                onClick={() => setViewMode('champion-path')}
+                className={`rounded border px-3 py-1.5 text-[10px] uppercase tracking-wider transition-colors ${
+                    viewMode === 'champion-path'
+                        ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-300'
+                        : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                }`}
+            >
+                Champion&rsquo;s Path
+            </button>
+            <button
+                onClick={() => setViewMode('all-fights')}
+                className={`rounded border px-3 py-1.5 text-[10px] uppercase tracking-wider transition-colors ${
+                    viewMode === 'all-fights'
+                        ? 'border-red-500/60 bg-red-500/10 text-red-300'
+                        : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                }`}
+            >
+                All Fights
+            </button>
+        </div>
+    );
+}
+
+/**
+ * Vertical timeline of the champion's road to glory: one card per round the
+ * champion fought, each showing the opponent's previous match as a smaller
+ * "lineage" card so you can see where each rival came from. ~14 cards instead
+ * of 128 for an 8-round bracket.
+ */
+function ChampionPathView({
+    matches,
+    championToken,
+    senryoku,
+    totalRounds,
+}: {
+    matches: MatchResult[];
+    championToken: number;
+    senryoku: Map<number, number>;
+    totalRounds: number;
+}) {
+    const path = useMemo(() => buildChampionPath(matches, championToken), [matches, championToken]);
+    if (path.length === 0) {
+        return (
+            <p className="py-8 text-center text-[11px] text-zinc-500">
+                Champion&rsquo;s path unavailable.
+            </p>
+        );
+    }
+    return (
+        <div className="relative mx-auto max-w-2xl">
+            {/* Glowing thread connecting all of the champion's fights */}
+            <div className="absolute bottom-0 left-1/2 top-0 -ml-px w-px bg-gradient-to-b from-yellow-500/0 via-yellow-500/40 to-yellow-500/0" />
+            <div className="relative space-y-6">
+                {path.map((node, idx) => {
+                    const label = roundLabel(node.championMatch.round, totalRounds);
+                    return (
+                        <motion.div
+                            key={`${node.championMatch.round}-${node.championMatch.tokenA}-${node.championMatch.tokenB}`}
+                            initial={{opacity: 0, y: 12}}
+                            animate={{opacity: 1, y: 0}}
+                            transition={{duration: 0.4, delay: idx * 0.05}}
+                            className="relative"
+                        >
+                            <div className="mb-2 flex items-baseline justify-center gap-3">
+                                <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-yellow-400">
+                                    {label.en}
+                                </span>
+                                <span className="font-mono text-[10px] text-zinc-600">{label.kanji}</span>
+                            </div>
+                            <MatchCard
+                                match={node.championMatch}
+                                senryoku={senryoku}
+                                totalRounds={totalRounds}
+                                density="medium"
+                            />
+                            {node.rivalPrev && (
+                                <div className="ml-8 mt-2 border-l-2 border-zinc-800 pl-4">
+                                    <p className="mb-1 font-mono text-[8px] uppercase tracking-[0.3em] text-zinc-600">
+                                        ↑ rival #{node.rivalToken} came from
+                                    </p>
+                                    <MatchCard
+                                        match={node.rivalPrev}
+                                        senryoku={senryoku}
+                                        totalRounds={totalRounds}
+                                        density="small"
+                                    />
+                                </div>
+                            )}
+                        </motion.div>
+                    );
+                })}
             </div>
         </div>
     );
