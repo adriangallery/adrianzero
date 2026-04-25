@@ -12,7 +12,31 @@
  */
 import {useEffect, useMemo, useState} from 'react';
 import {Flame, Trophy, Zap} from 'lucide-react';
+import {useReadContracts} from 'wagmi';
+import {base} from 'wagmi/chains';
+import {createPublicClient, http, parseAbiItem} from 'viem';
+import {CONTRACT_ADDRESSES} from '@/config/contracts';
+import {buildAlchemyRpcUrls} from '@/config/alchemy';
+import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
 import type {MatchResult} from '../types';
+
+interface HonorAward {
+    tokenId: number;
+    amount: number;
+    reason: number; // 1=champion, 2=runnerUp, 3=semi
+    trophyType: number;
+}
+
+const HONOR_AWARDED_EVENT = parseAbiItem(
+    'event HonorAwarded(uint256 indexed budokaiId, uint256 indexed tokenId, uint32 amount, uint8 reason, uint8 trophyType)',
+);
+
+function honorReasonLabel(reason: number): string {
+    if (reason === 1) return 'Champion';
+    if (reason === 2) return 'Runner-up';
+    if (reason === 3) return 'Semifinalist';
+    return 'Awarded';
+}
 
 const SAMURAI_IMG = (id: number) => `https://adrianlab.vercel.app/api/render/${id}.png`;
 
@@ -80,6 +104,30 @@ function roundLabel(round: number, totalRounds: number): {kanji: string; en: str
     if (round === totalRounds - 1) return {kanji: '準決勝', en: 'SEMIFINAL'};
     if (round === totalRounds - 2) return {kanji: '準々決勝', en: 'QUARTERFINAL'};
     return {kanji: `第${round}回戦`, en: `ROUND ${round}`};
+}
+
+/** Number → spelled-out copy (warrior counts 1-256). Round headers use this for dynamic intro copy. */
+function numberWord(n: number): string {
+    const ones = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
+    const teens = ['TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+    const tens = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+    if (n <= 0) return '';
+    if (n < 10) return ones[n];
+    if (n < 20) return teens[n - 10];
+    if (n < 100) {
+        const t = Math.floor(n / 10);
+        const o = n % 10;
+        return o === 0 ? tens[t] : `${tens[t]}-${ones[o]}`;
+    }
+    const h = Math.floor(n / 100);
+    const r = n % 100;
+    const head = `${ones[h]}-HUNDRED`;
+    if (r === 0) return head;
+    if (r < 10) return `${head}-${ones[r]}`;
+    if (r < 20) return `${head}-${teens[r - 10]}`;
+    const t = Math.floor(r / 10);
+    const o = r % 10;
+    return o === 0 ? `${head}-${tens[t]}` : `${head}-${tens[t]}-${ones[o]}`;
 }
 
 function buildChampionPath(matches: MatchResult[], champ: number) {
@@ -236,16 +284,20 @@ function formatPool(pool: bigint): string {
     return Number(pool / 10n ** 18n).toLocaleString();
 }
 
-function PrizeRow({label, tokens, amount, accent}: {label: string; tokens: number[]; amount: string; accent: string}) {
+function PrizeRow({label, tokens, amount, accent, nicknames}: {label: string; tokens: number[]; amount: string; accent: string; nicknames?: Map<number, string>}) {
     return (
         <div className="flex items-center gap-3 border-b border-zinc-900 py-2 last:border-0">
             <div className={`w-24 font-mono text-[10px] uppercase tracking-[0.25em] ${accent}`}>{label}</div>
             <div className="flex flex-1 flex-wrap gap-1.5">
-                {tokens.map((t) => (
-                    <span key={t} className="rounded border border-zinc-800 px-2 py-0.5 font-mono text-[10px] text-zinc-300">
-                        #{t}
-                    </span>
-                ))}
+                {tokens.map((t) => {
+                    const nick = nicknames?.get(t);
+                    return (
+                        <span key={t} className="rounded border border-zinc-800 px-2 py-0.5 font-mono text-[10px] text-zinc-300" title={nick ?? `#${t}`}>
+                            #{t}
+                            {nick && <span className="ml-1 text-zinc-500">· {nick}</span>}
+                        </span>
+                    );
+                })}
             </div>
             <div className="font-mono text-[11px] text-zinc-400">{amount}</div>
         </div>
@@ -255,12 +307,14 @@ function PrizeRow({label, tokens, amount, accent}: {label: string; tokens: numbe
 function FightCard({
     match,
     senryoku,
+    honor,
     totalRounds,
     annotation,
     size = 'md',
 }: {
     match: MatchResult;
     senryoku: Map<number, number>;
+    honor?: Map<number, number>;
     totalRounds: number;
     annotation?: string;
     size?: 'sm' | 'md' | 'lg';
@@ -268,6 +322,8 @@ function FightCard({
     const winnerIsA = match.winner === match.tokenA;
     const sA = senryoku.get(match.tokenA);
     const sB = senryoku.get(match.tokenB);
+    const hA = honor?.get(match.tokenA) ?? 0;
+    const hB = honor?.get(match.tokenB) ?? 0;
     const label = roundLabel(match.round, totalRounds);
     const avatar = size === 'lg' ? 'h-28 w-28' : size === 'sm' ? 'h-14 w-14' : 'h-20 w-20';
     return (
@@ -310,7 +366,14 @@ function FightCard({
                         #{match.tokenA}
                     </span>
                     {sA !== undefined && (
-                        <span className="font-mono text-[8px] text-zinc-600">戦力 {sA}</span>
+                        <span className="font-mono text-[8px] text-zinc-600">
+                            戦力 {sA}
+                            {hA > 0 && (
+                                <span className="ml-1 text-yellow-500" title={`Effective ${sA + hA} (Senryoku ${sA} + Honor ${hA})`}>
+                                    +{hA} = {sA + hA}
+                                </span>
+                            )}
+                        </span>
                     )}
                 </div>
                 <Zap className={`h-4 w-4 ${match.kaioken ? 'text-red-400' : 'text-zinc-700'}`} />
@@ -335,7 +398,14 @@ function FightCard({
                         #{match.tokenB}
                     </span>
                     {sB !== undefined && (
-                        <span className="font-mono text-[8px] text-zinc-600">戦力 {sB}</span>
+                        <span className="font-mono text-[8px] text-zinc-600">
+                            戦力 {sB}
+                            {hB > 0 && (
+                                <span className="ml-1 text-yellow-500" title={`Effective ${sB + hB} (Senryoku ${sB} + Honor ${hB})`}>
+                                    +{hB} = {sB + hB}
+                                </span>
+                            )}
+                        </span>
                     )}
                 </div>
             </div>
@@ -370,6 +440,134 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
             })
             .catch((e) => setError(String(e?.message ?? e)));
     }, [budokaiId]);
+
+    // Honor multicall — fetches current on-chain honor for every token that appears in this
+    // bracket. Honor is persistent across Budokais, so a snapshot view of B2 will show
+    // honor that B1 podium-finishers already had at the time. Read happens once per chronicle
+    // load; staleTime 60s avoids refetching while the user reads.
+    const allBracketTokens = useMemo(() => {
+        if (!data) return [] as number[];
+        const set = new Set<number>();
+        for (const m of data.matches) {
+            set.add(m.tokenA);
+            set.add(m.tokenB);
+        }
+        return Array.from(set);
+    }, [data]);
+    const honorContracts = useMemo(
+        () =>
+            allBracketTokens.map((id) => ({
+                address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                abi: SAMURAI_DOJO_ABI,
+                functionName: 'getHonor' as const,
+                args: [BigInt(id)] as const,
+                chainId: base.id,
+            })),
+        [allBracketTokens],
+    );
+    const {data: honorRaw} = useReadContracts({
+        contracts: honorContracts,
+        query: {enabled: allBracketTokens.length > 0, staleTime: 60_000},
+    });
+    const honorMap = useMemo(() => {
+        const m = new Map<number, number>();
+        if (!honorRaw) return m;
+        for (let i = 0; i < allBracketTokens.length; ++i) {
+            const v = honorRaw[i]?.result;
+            if (v !== undefined) m.set(allBracketTokens[i], Number(v));
+        }
+        return m;
+    }, [honorRaw, allBracketTokens]);
+
+    // Nickname lookup — fetch AdrianLAB metadata `name` for the podium tokens. Falls back to
+    // "#tokenId" when the metadata is the default "SamuraiZERO #N". Cheap (4-7 fetches) and
+    // adds personality to the hero card + prize table without bloating the bundle.
+    const [nicknames, setNicknames] = useState<Map<number, string>>(new Map());
+    useEffect(() => {
+        if (!data) return;
+        const podium = new Set<number>([
+            data.champion,
+            data.runnerUp,
+            ...data.semifinalists,
+            ...data.quarterfinalists,
+        ].filter((id) => id > 0));
+        if (podium.size === 0) return;
+        let cancelled = false;
+        (async () => {
+            const out = new Map<number, string>();
+            await Promise.all(
+                Array.from(podium).map(async (tokenId) => {
+                    try {
+                        const res = await fetch(`https://adrianlab.vercel.app/api/metadata/${tokenId}`, {cache: 'force-cache'});
+                        if (!res.ok) return;
+                        const meta = await res.json();
+                        const raw = String(meta?.name ?? '');
+                        // Skip generic fallbacks like "SamuraiZERO #634" — only keep custom nicknames.
+                        const trimmed = raw.replace(/^SamuraiZERO\s*#\d+\s*/i, '').replace(/^AdrianZERO\s*#\d+\s*/i, '').trim();
+                        if (trimmed) out.set(tokenId, trimmed);
+                    } catch { /* ignore */ }
+                }),
+            );
+            if (!cancelled) setNicknames(out);
+        })();
+        return () => { cancelled = true; };
+    }, [data]);
+
+    // HonorAwarded events for this Budokai — emitted at resolveBudokai time alongside MatchResolved.
+    // Same scan window (resolveBlock + 5..256) as the bracket events.
+    const [honorAwards, setHonorAwards] = useState<HonorAward[]>([]);
+    useEffect(() => {
+        if (!data || data.resolveBlock === 0) {
+            setHonorAwards([]);
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            try {
+                const urls = buildAlchemyRpcUrls();
+                const client = createPublicClient({chain: base, transport: http(urls[0])});
+                const fromBlock = BigInt(data.resolveBlock + 5);
+                const toBlock = BigInt(data.resolveBlock + 256);
+                const idTopic = `0x${BigInt(data.id).toString(16).padStart(64, '0')}` as `0x${string}`;
+                // Scan in chunks of 10 to stay under Alchemy free-tier getLogs limits.
+                const collected: HonorAward[] = [];
+                for (let from = fromBlock; from <= toBlock; from += 10n) {
+                    if (cancelled) return;
+                    const to = from + 9n > toBlock ? toBlock : from + 9n;
+                    try {
+                        const logs = await client.getLogs({
+                            address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                            event: HONOR_AWARDED_EVENT,
+                            args: {budokaiId: BigInt(data.id)},
+                            fromBlock: from,
+                            toBlock: to,
+                        });
+                        for (const log of logs) {
+                            collected.push({
+                                tokenId: Number(log.args.tokenId ?? 0n),
+                                amount: Number(log.args.amount ?? 0),
+                                reason: Number(log.args.reason ?? 0),
+                                trophyType: Number(log.args.trophyType ?? 0),
+                            });
+                        }
+                        if (collected.length > 0) {
+                            // All HonorAwarded logs land in the same tx — break early after first hit chunk.
+                            break;
+                        }
+                    } catch {
+                        // ignore per-chunk errors, keep scanning
+                    }
+                    void idTopic; // reserved for raw-getLogs fallback if we drop viem-typed args
+                }
+                if (!cancelled) setHonorAwards(collected);
+            } catch (err) {
+                if (!cancelled) console.warn('[chronicle] honor scan failed:', err);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [data]);
 
     const championPath = useMemo(
         () => (data ? buildChampionPath(data.matches, data.champion) : []),
@@ -448,37 +646,67 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                     </p>
                 </header>
 
-                {/* Hero — champion */}
-                <section className="mb-16 grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
-                    <div className="relative">
-                        <img
-                            src={SAMURAI_IMG(data.champion)}
-                            alt={`Champion #${data.champion}`}
-                            className="h-44 w-44 rounded ring-4 ring-yellow-400 sm:h-56 sm:w-56"
-                            style={{imageRendering: 'pixelated'}}
-                        />
-                        <Trophy className="absolute -right-3 -top-3 h-12 w-12 text-yellow-400 drop-shadow-[0_0_12px_rgba(234,179,8,0.6)]" />
-                    </div>
-                    <div>
-                        <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-yellow-400">
-                            Tenkaichi Champion
-                        </p>
-                        <h2 className="mt-1 font-serif text-5xl font-bold text-yellow-300">
-                            #{data.champion}
-                        </h2>
-                        {data.senryoku.get(data.champion) !== undefined && (
-                            <p className="font-mono text-xs text-zinc-500">
-                                戦力 {data.senryoku.get(data.champion)}
-                            </p>
-                        )}
-                        <p className="mt-3 text-2xl font-bold text-yellow-300">
-                            {formatPool(championPrize)} $ZERO
-                        </p>
-                        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-600">
-                            crowned over {data.totalRounds} rounds and {data.matches.length} fights
-                        </p>
-                    </div>
-                </section>
+                {/* Hero — champion. v6: Commoner King variant when champion SR ≤15 (civilian winner). */}
+                {(() => {
+                    const champSR = data.senryoku.get(data.champion);
+                    const isCommoner = champSR !== undefined && champSR <= 15;
+                    return (
+                        <section className="mb-16 grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
+                            <div className="relative">
+                                <img
+                                    src={SAMURAI_IMG(data.champion)}
+                                    alt={`Champion #${data.champion}`}
+                                    className={`h-44 w-44 rounded ring-4 sm:h-56 sm:w-56 ${
+                                        isCommoner ? 'ring-fuchsia-400' : 'ring-yellow-400'
+                                    }`}
+                                    style={{imageRendering: 'pixelated'}}
+                                />
+                                <Trophy className={`absolute -right-3 -top-3 h-12 w-12 drop-shadow-[0_0_12px_rgba(234,179,8,0.6)] ${
+                                    isCommoner ? 'text-fuchsia-400 drop-shadow-[0_0_12px_rgba(232,121,249,0.6)]' : 'text-yellow-400'
+                                }`} />
+                                {isCommoner && (
+                                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-fuchsia-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.3em] text-white shadow-lg">
+                                        民の王 · COMMONER KING
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <p className={`font-mono text-[10px] uppercase tracking-[0.4em] ${
+                                    isCommoner ? 'text-fuchsia-400' : 'text-yellow-400'
+                                }`}>
+                                    {isCommoner ? "The People's Champion" : 'Tenkaichi Champion'}
+                                </p>
+                                <h2 className={`mt-1 font-serif text-5xl font-bold ${
+                                    isCommoner ? 'text-fuchsia-300' : 'text-yellow-300'
+                                }`}>
+                                    #{data.champion}
+                                </h2>
+                                {nicknames.get(data.champion) && (
+                                    <p className={`mt-1 font-serif text-2xl italic ${
+                                        isCommoner ? 'text-fuchsia-200/80' : 'text-yellow-200/80'
+                                    }`}>
+                                        {nicknames.get(data.champion)}
+                                    </p>
+                                )}
+                                {champSR !== undefined && (
+                                    <p className="font-mono text-xs text-zinc-500">
+                                        戦力 {champSR}{isCommoner && ' · civilian'}
+                                    </p>
+                                )}
+                                <p className={`mt-3 text-2xl font-bold ${
+                                    isCommoner ? 'text-fuchsia-300' : 'text-yellow-300'
+                                }`}>
+                                    {formatPool(championPrize)} $ZERO
+                                </p>
+                                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+                                    {isCommoner
+                                        ? `a regular AdrianZERO climbed ${data.totalRounds} rounds and ${data.matches.length} fights`
+                                        : `crowned over ${data.totalRounds} rounds and ${data.matches.length} fights`}
+                                </p>
+                            </div>
+                        </section>
+                    );
+                })()}
 
                 {/* Podium */}
                 <section className="mb-16">
@@ -491,27 +719,58 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                             tokens={[data.champion]}
                             amount={`${formatPool(championPrize)} $ZERO`}
                             accent="text-yellow-400"
+                            nicknames={nicknames}
                         />
                         <PrizeRow
                             label="Runner-up"
                             tokens={[data.runnerUp]}
                             amount={`${formatPool(runnerPrize)} $ZERO`}
                             accent="text-zinc-300"
+                            nicknames={nicknames}
                         />
                         <PrizeRow
                             label="Semifinals"
                             tokens={data.semifinalists}
                             amount={`${formatPool(semiPrize)} $ZERO ea.`}
                             accent="text-zinc-400"
+                            nicknames={nicknames}
                         />
                         <PrizeRow
                             label="Quarters"
                             tokens={data.quarterfinalists}
                             amount={`${formatPool(quarterPrize)} $ZERO ea.`}
                             accent="text-zinc-500"
+                            nicknames={nicknames}
                         />
                     </div>
                 </section>
+
+                {/* Honor Earned — v6 HonorAwarded event readout */}
+                {honorAwards.length > 0 && (
+                    <section className="mb-16">
+                        <h3 className="mb-2 font-serif text-2xl font-bold text-yellow-300">
+                            Honor Earned · 名誉
+                        </h3>
+                        <p className="mb-6 font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+                            Persistent combat bonus, stacks with Senryoku in future Budokais.
+                        </p>
+                        <div className="space-y-1 rounded border border-yellow-600/30 bg-yellow-950/10 px-4 py-3">
+                            {honorAwards.map((h, i) => (
+                                <div key={`${h.tokenId}-${i}`} className="flex items-center gap-3 border-b border-yellow-900/30 py-1.5 last:border-0">
+                                    <span className="w-24 font-mono text-[10px] uppercase tracking-wider text-yellow-400">
+                                        {honorReasonLabel(h.reason)}
+                                    </span>
+                                    <span className="flex-1 font-mono text-[11px] text-zinc-300">
+                                        #{h.tokenId}
+                                    </span>
+                                    <span className="font-mono text-[12px] font-bold text-yellow-300">
+                                        +{h.amount} honor
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {/* The Champion's Path */}
                 <section className="mb-16">
@@ -530,6 +789,7 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                                 <FightCard
                                     match={node.m}
                                     senryoku={data.senryoku}
+                                    honor={honorMap}
                                     totalRounds={data.totalRounds}
                                     size="md"
                                     annotation={makeLore(
@@ -551,6 +811,7 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                                         <FightCard
                                             match={node.rivalPrev}
                                             senryoku={data.senryoku}
+                                            honor={honorMap}
                                             totalRounds={data.totalRounds}
                                             size="sm"
                                             annotation={makeLore(
@@ -582,6 +843,7 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                             <FightCard
                                 match={firstBlood}
                                 senryoku={data.senryoku}
+                                honor={honorMap}
                                 totalRounds={data.totalRounds}
                                 annotation={makeLore(firstBlood, data.senryoku, data.totalRounds, true)}
                             />
@@ -591,6 +853,7 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                                 key={`k-${m.round}-${m.tokenA}-${m.tokenB}`}
                                 match={m}
                                 senryoku={data.senryoku}
+                                honor={honorMap}
                                 totalRounds={data.totalRounds}
                                 annotation={makeLore(m, data.senryoku, data.totalRounds)}
                             />
@@ -600,6 +863,7 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                                 key={`u-${m.round}-${m.tokenA}-${m.tokenB}`}
                                 match={m}
                                 senryoku={data.senryoku}
+                                honor={honorMap}
                                 totalRounds={data.totalRounds}
                                 annotation={makeLore(m, data.senryoku, data.totalRounds)}
                             />
@@ -658,8 +922,15 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                         <div className="mt-6 space-y-8">
                             {groupedAll.map(([r, ms]) => {
                                 const lab = roundLabel(r, data.totalRounds);
+                                // Warriors entering this round = matches × 2. Champion round (R=totalRounds) = 1 winner.
+                                // We surface the spelled-out count as the round's hero copy ("ONE-HUNDRED-TWENTY-EIGHT REMAIN").
+                                const enterCount = ms.length * 2;
+                                const remainCopy = `${numberWord(enterCount)} REMAIN`;
                                 return (
                                     <div key={r}>
+                                        <div className="mb-1 font-mono text-[10px] font-bold uppercase tracking-[0.4em] text-fuchsia-400/80 sm:text-[11px]">
+                                            {remainCopy}
+                                        </div>
                                         <div className="mb-3 flex items-baseline gap-3">
                                             <span className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-red-500">
                                                 {lab.en}
@@ -678,6 +949,7 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
                                                     key={`${m.round}-${m.tokenA}-${m.tokenB}`}
                                                     match={m}
                                                     senryoku={data.senryoku}
+                                                    honor={honorMap}
                                                     totalRounds={data.totalRounds}
                                                     size="sm"
                                                     annotation={makeLore(

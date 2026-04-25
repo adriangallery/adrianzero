@@ -8,6 +8,7 @@ import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {buildAlchemyRpcUrls} from '@/config/alchemy';
 import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
 import type {MatchResult} from '../types';
+import {useBudokaiTheme} from '../hooks/useBudokaiTheme';
 import {BudokaiChronicle} from './BudokaiChronicle';
 
 interface BracketRevealProps {
@@ -253,16 +254,21 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
         }
     }, [open]);
 
+    // Theme drives an optional extra intro beat (tagline). Read here so the beat-count
+    // calc stays in sync with the IntroSequence render.
+    const {theme} = useBudokaiTheme(budokaiId !== null ? BigInt(budokaiId) : null);
+    const introBeatCount = theme?.tagline ? 5 : 4;
+
     // Advance intro beats; transition to scanning or chronicle when intro ends.
     useEffect(() => {
         if (!open || phase !== 'intro') return;
-        if (introBeat >= 3) {
+        if (introBeat >= introBeatCount - 1) {
             setPhase(stage === 'done' ? 'chronicle' : 'scanning');
             return;
         }
         const t = setTimeout(() => setIntroBeat((b) => b + 1), INTRO_BEAT_MS);
         return () => clearTimeout(t);
-    }, [open, phase, introBeat, stage]);
+    }, [open, phase, introBeat, stage, introBeatCount]);
 
     // When data lands during scanning phase, switch to chronicle.
     useEffect(() => {
@@ -305,6 +311,7 @@ export function BracketReveal({open, onClose, budokaiId}: BracketRevealProps) {
                                     beat={introBeat}
                                     budokaiId={budokaiId}
                                     snapshot={snapshot}
+                                    tagline={theme?.tagline}
                                 />
                             )}
 
@@ -346,19 +353,25 @@ function IntroSequence({
     beat,
     budokaiId,
     snapshot,
+    tagline,
 }: {
     beat: number;
     budokaiId: number | null;
     snapshot: BudokaiSnapshot | null;
+    tagline?: string;
 }) {
     const poolZero = snapshot ? Number(snapshot.pool / 10n ** 18n) : 0;
+    // Tagline is inserted as beat 1.5 — between the Budokai number and the prize pool reveal.
+    // Uses the v6 getBudokaiTheme.tagline ("Civilian Rebellion", etc).
     const beats = [
         {top: '天下一武道会', bottom: 'TENKAICHI BUDOKAI'},
         {top: `BUDOKAI ${budokaiId ?? '—'}`, bottom: snapshot ? `${snapshot.entryCount} WARRIORS` : '...'},
+        ...(tagline ? [{top: tagline.toUpperCase(), bottom: 'THIS BUDOKAI', accent: 'fuchsia' as const}] : []),
         {top: `${poolZero.toLocaleString()} $ZERO`, bottom: 'PRIZE POOL'},
         {top: '決勝戦開始', bottom: 'THE BRACKET OPENS'},
     ];
     const current = beats[Math.min(beat, beats.length - 1)];
+    const accent = (current as {accent?: 'fuchsia'}).accent === 'fuchsia' ? 'text-fuchsia-400' : 'text-red-500';
     return (
         <motion.div
             className="flex h-full items-center justify-center"
@@ -378,7 +391,7 @@ function IntroSequence({
                     <motion.h3
                         animate={{scale: [1, 1.035, 1]}}
                         transition={{duration: 1.5, ease: 'easeInOut', repeat: Infinity}}
-                        className="font-mono text-4xl font-bold tracking-[0.3em] text-red-500 sm:text-6xl"
+                        className={`font-mono text-4xl font-bold tracking-[0.3em] sm:text-6xl ${accent}`}
                     >
                         {current.top}
                     </motion.h3>
