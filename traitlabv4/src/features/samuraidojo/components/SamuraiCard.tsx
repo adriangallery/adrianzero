@@ -10,6 +10,8 @@ interface SamuraiCardProps {
     multiSelectMode?: boolean;
     isSelected?: boolean;
     honor?: number; // v6: persistent combat bonus from podium finishes. 0 on v4.
+    isSamurai?: boolean; // v6: false = civilian (regular AdrianZERO entering with derived SR 1-15). Default true for back-compat.
+    isCivilianPreview?: boolean; // v6: senryoku is a *preview* (token hasn't entered yet), shown grayed out
 }
 
 function getSamuraiImageUrl(tokenId: number): string {
@@ -26,19 +28,27 @@ export const SamuraiCard = memo(function SamuraiCard({
     multiSelectMode = false,
     isSelected = false,
     honor = 0,
+    isSamurai = true,
+    isCivilianPreview = false,
 }: SamuraiCardProps) {
     // Border hierarchy (MINE tab visual fix):
     //   selected (multi-select)  → red solid + ring
-    //   mine & IN this Budokai   → yellow solid + glow  (committed, locked in)
-    //   mine & READY to enter    → zinc dashed          (available, opt-in vibe)
+    //   mine & IN this Budokai   → solid border + glow  (samurai=yellow, civilian=fuchsia)
+    //   mine & READY to enter    → dashed                (samurai=zinc, civilian=fuchsia)
     //   mine & KO'd              → no border (gray overlay handles it)
     //   community / read-only    → no border
+    const inBorder = isSamurai
+        ? 'border-2 border-yellow-400 shadow-[0_0_16px_rgba(250,204,21,0.25)]'
+        : 'border-2 border-fuchsia-400 shadow-[0_0_16px_rgba(232,121,249,0.30)]';
+    const readyBorder = isSamurai
+        ? 'border-2 border-dashed border-zinc-600'
+        : 'border-2 border-dashed border-fuchsia-700/70';
     const mineBorder = isSelected
         ? 'border-2 border-red-500 ring-2 ring-red-500/50'
         : isMine && isEntered && !isKnockedOut
-            ? 'border-2 border-yellow-400 shadow-[0_0_16px_rgba(250,204,21,0.25)]'
+            ? inBorder
             : isMine && !isEntered && !isKnockedOut
-                ? 'border-2 border-dashed border-zinc-600'
+                ? readyBorder
                 : '';
 
     return (
@@ -58,12 +68,19 @@ export const SamuraiCard = memo(function SamuraiCard({
                     loading="lazy"
                 />
 
-                {/* Senryoku — top-left scouter readout. v6: shows "+H" honor bonus in gold if any. */}
-                <div className="absolute top-1 left-1 rounded border border-red-500/40 bg-black/70 px-1.5 py-0.5 backdrop-blur-sm">
-                    <span className="text-[7px] font-mono font-bold uppercase tracking-wider text-red-400">
+                {/* Senryoku — top-left scouter readout. v6: shows "+H" honor bonus in gold if any.
+                    Civilian variant: fuchsia accent + "~" prefix when previewing pre-entry SR. */}
+                <div className={`absolute top-1 left-1 rounded border ${
+                    isSamurai ? 'border-red-500/40' : 'border-fuchsia-500/40'
+                } bg-black/70 px-1.5 py-0.5 backdrop-blur-sm`}>
+                    <span className={`text-[7px] font-mono font-bold uppercase tracking-wider ${
+                        isSamurai ? 'text-red-400' : 'text-fuchsia-400'
+                    }`}>
                         SR
                     </span>
-                    <span className="ml-1 text-[9px] font-mono font-bold text-white">{senryoku}</span>
+                    <span className={`ml-1 text-[9px] font-mono font-bold ${isCivilianPreview ? 'text-fuchsia-200/80' : 'text-white'}`}>
+                        {isCivilianPreview ? '~' : ''}{senryoku}
+                    </span>
                     {honor > 0 && (
                         <span className="ml-0.5 text-[9px] font-mono font-bold text-yellow-400" title={`Honor bonus: +${honor}`}>
                             +{honor}
@@ -94,8 +111,10 @@ export const SamuraiCard = memo(function SamuraiCard({
                             </div>
                         )}
                         {isMine && !isEntered && !isKnockedOut && (
-                            <div className="absolute top-1 right-1 rounded bg-green-600 px-1.5 py-0.5 text-[7px] font-bold uppercase text-white">
-                                MINE
+                            <div className={`absolute top-1 right-1 rounded px-1.5 py-0.5 text-[7px] font-bold uppercase text-white ${
+                                isSamurai ? 'bg-green-600' : 'bg-fuchsia-600'
+                            }`}>
+                                {isSamurai ? 'MINE' : 'CIVIL'}
                             </div>
                         )}
                     </>
@@ -112,7 +131,9 @@ export const SamuraiCard = memo(function SamuraiCard({
             </div>
 
             <div className="px-1 py-1.5">
-                <p className="truncate text-[9px] font-bold text-zinc-300 transition-colors group-hover:text-white">
+                <p className={`truncate text-[9px] font-bold transition-colors group-hover:text-white ${
+                    isSamurai ? 'text-zinc-300' : 'text-fuchsia-300'
+                }`}>
                     #{tokenId}
                 </p>
             </div>

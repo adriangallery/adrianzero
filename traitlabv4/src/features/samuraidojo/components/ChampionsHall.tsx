@@ -1,4 +1,8 @@
 import {Trophy, Medal, Award, Swords} from 'lucide-react';
+import {useReadContract} from 'wagmi';
+import {base} from 'wagmi/chains';
+import {CONTRACT_ADDRESSES} from '@/config/contracts';
+import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
 import {useChampions, useBudokaiInfo, useConfiguredBudokais} from '../hooks/useDojoContract';
 import {useDojoStore} from '../store/dojoStore';
 
@@ -196,6 +200,26 @@ function PodiumRow({rank, tokenId, color, icon}: {rank: string; tokenId: number;
                 <span className="font-mono uppercase tracking-wider">{rank}</span>
             </div>
             <span className="ml-auto font-mono text-[10px] text-zinc-400">#{tokenId}</span>
+            <HonorTag tokenId={tokenId} />
         </div>
+    );
+}
+
+/** v6: per-token persistent honor displayed next to the token id. Hidden when honor=0. */
+function HonorTag({tokenId}: {tokenId: number}) {
+    const {data} = useReadContract({
+        address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+        abi: SAMURAI_DOJO_ABI,
+        functionName: 'getHonor',
+        args: [BigInt(tokenId)],
+        chainId: base.id,
+        query: {staleTime: 60_000},
+    });
+    const honor = data !== undefined ? Number(data) : 0;
+    if (honor === 0) return null;
+    return (
+        <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-[9px] font-mono font-bold text-yellow-400" title={`Honor: +${honor}. Stacks with Senryoku in combat.`}>
+            +{honor}
+        </span>
     );
 }

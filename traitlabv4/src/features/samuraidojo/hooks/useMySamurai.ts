@@ -1,30 +1,47 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useAccount} from 'wagmi';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {alchemyClient} from '@/lib/api/alchemy/client';
 import {useSamuraiRoster} from './useSamuraiRoster';
 
+export interface OwnedZero {
+    tokenId: number;
+    isSamurai: boolean; // true = pre-loaded senryoku roster member, false = civilian (1-15 SR derived)
+}
+
 /**
- * Resolve the connected wallet's SAMURAIzero token IDs via Alchemy NFT API
- * (single paginated request per collection) and filter to the samurai range [500, 1099].
+ * Resolve the connected wallet's AdrianZERO holdings via Alchemy NFT API and tag each as
+ * samurai (in the on-chain roster — pre-loaded senryoku) or civilian (regular AdrianZERO).
  *
- * This replaces a naïve 600-ownerOf multicall that hammered the public Base RPC
- * and produced 429 rate-limit errors.
+ * v6 added civilian mode: any AdrianZERO can enter via keccak-derived senryoku 1-15 (subject
+ * to the 10:1 ratio gate). Returning all owned tokens with an isSamurai flag lets the UI
+ * surface civilians too, gated by `samuraiCount/civilianCount` from getBudokaiCounters.
+ *
+ * Backwards-compatible API:
+ *   - `owned` is the legacy shape: samurai-only id list (existing callers stay correct)
+ *   - `civilians` lists the rest of owned AdrianZEROs, sorted
+ *   - `all` combines both with isSamurai flag
  */
-export function useMySamurai(): {owned: number[]; isLoading: boolean; refetch: () => void} {
+export function useMySamurai(): {
+    owned: number[];
+    civilians: number[];
+    all: OwnedZero[];
+    isLoading: boolean;
+    refetch: () => void;
+} {
     const {address} = useAccount();
     const {roster, isLoading: rosterLoading} = useSamuraiRoster();
-    const [owned, setOwned] = useState<number[]>([]);
+    const [allOwned, setAllOwned] = useState<OwnedZero[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [tick, setTick] = useState(0);
 
     useEffect(() => {
         if (!address) {
-            setOwned([]);
+            setAllOwned([]);
             return;
         }
         if (roster.size === 0) {
-            // Wait for roster so we can filter correctly
+            // Wait for roster so we can tag samurai vs civilian correctly.
             return;
         }
         let cancelled = false;
@@ -36,22 +53,18 @@ export function useMySamurai(): {owned: number[]; isLoading: boolean; refetch: (
                     CONTRACT_ADDRESSES.ADRIAN_ZERO,
                 ]);
                 if (cancelled) return;
-                const tokenIds: number[] = [];
+                const list: OwnedZero[] = [];
                 for (const nft of response.ownedNfts) {
                     const id = Number(nft.tokenId);
-                    // Filter to the authoritative on-chain samurai roster.
-                    // The 500-1099 id range contains a mix of SamuraiZERO and regular
-                    // AdrianZERO tokens; the minter's tag is the only source of truth.
-                    if (Number.isFinite(id) && roster.has(id)) {
-                        tokenIds.push(id);
-                    }
+                    if (!Number.isFinite(id)) continue;
+                    list.push({tokenId: id, isSamurai: roster.has(id)});
                 }
-                tokenIds.sort((a, b) => a - b);
-                setOwned(tokenIds);
+                list.sort((a, b) => a.tokenId - b.tokenId);
+                setAllOwned(list);
             } catch (err) {
                 if (!cancelled) {
                     console.warn('[useMySamurai] Alchemy getERC721Tokens failed:', err);
-                    setOwned([]);
+                    setAllOwned([]);
                 }
             } finally {
                 if (!cancelled) setIsLoading(false);
@@ -63,5 +76,20 @@ export function useMySamurai(): {owned: number[]; isLoading: boolean; refetch: (
         };
     }, [address, tick, roster]);
 
-    return {owned, isLoading: isLoading || rosterLoading, refetch: () => setTick((n) => n + 1)};
+    const owned = useMemo(
+        () => allOwned.filter((z) => z.isSamurai).map((z) => z.tokenId),
+        [allOwned],
+    );
+    const civilians = useMemo(
+        () => allOwned.filter((z) => !z.isSamurai).map((z) => z.tokenId),
+        [allOwned],
+    );
+
+    return {
+        owned,
+        civilians,
+        all: allOwned,
+        isLoading: isLoading || rosterLoading,
+        refetch: () => setTick((n) => n + 1),
+    };
 }

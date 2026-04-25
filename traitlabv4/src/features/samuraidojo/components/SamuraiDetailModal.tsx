@@ -12,6 +12,8 @@ import {ScouterOverlay} from './ScouterOverlay';
 interface SamuraiDetailModalProps {
     tokenId: number | null;
     senryoku: number;
+    honor?: number; // v6: persistent bonus from podium finishes. effectiveSR = senryoku + honor
+    isSamurai?: boolean; // v6: false = civilian variant (regular AdrianZERO with derived SR 1-15)
     isKnockedOut: boolean;
     isEntered: boolean;
     isMine: boolean;
@@ -51,6 +53,8 @@ async function fetchSamuraiMeta(tokenId: number): Promise<Samurai | null> {
 export function SamuraiDetailModal({
     tokenId,
     senryoku,
+    honor = 0,
+    isSamurai = true,
     isKnockedOut,
     isEntered,
     isMine,
@@ -163,10 +167,23 @@ export function SamuraiDetailModal({
 
                     <div className="space-y-4 p-5">
                         <div>
-                            <h2 className="text-xl font-bold text-white">{meta?.name ?? `SamuraiZERO #${tokenId}`}</h2>
-                            {meta?.tier && (
-                                <p className="mt-0.5 text-[10px] uppercase tracking-wider text-zinc-500">{meta.tier}</p>
-                            )}
+                            <h2 className="text-xl font-bold text-white">
+                                {isSamurai ? (meta?.name ?? `SamuraiZERO #${tokenId}`) : `AdrianZERO #${tokenId}`}
+                            </h2>
+                            <p className="mt-0.5 text-[10px] uppercase tracking-wider">
+                                {isSamurai ? (
+                                    <span className="text-zinc-500">{meta?.tier ?? '—'}</span>
+                                ) : (
+                                    <span className="text-fuchsia-400">Civilian · 民 · derived SR 1–15</span>
+                                )}
+                            </p>
+                        </div>
+
+                        {/* v6 stat strip — Senryoku + Honor + EffectiveSR */}
+                        <div className="grid grid-cols-3 gap-2">
+                            <StatBox label="Senryoku" value={senryoku.toString()} kanji="戦力" accent={isSamurai ? 'red' : 'fuchsia'} />
+                            <StatBox label="Honor" value={honor > 0 ? `+${honor}` : '—'} kanji="名誉" accent={honor > 0 ? 'gold' : 'muted'} title={honor > 0 ? `Earned from past podium finishes. Stacks with Senryoku in combat.` : 'Earn honor by reaching the podium in any Budokai.'} />
+                            <StatBox label="Effective" value={(senryoku + honor).toString()} kanji="実力" accent="white" title="Combat power = Senryoku + Honor" />
                         </div>
 
                         {meta && (
@@ -192,7 +209,9 @@ export function SamuraiDetailModal({
 
                         {isKnockedOut && isMine && (
                             <div className="rounded border border-red-600/30 bg-red-900/10 p-3 text-[10px] text-red-300">
-                                <Zap className="mr-1 inline h-3 w-3" /> Your samurai is unconscious. Pay 10,000 $ZERO (1,000 burned, 9,000 to the next Budokai pool) to revive.
+                                <Zap className="mr-1 inline h-3 w-3" /> Unconscious. v6 tiered Senzu cost ={' '}
+                                <span className="font-bold">SR × 10 $ZERO</span>. This token: {senryoku > 0 ? `${(senryoku * 10).toLocaleString()} $ZERO` : '10,000 $ZERO (legacy)'}.
+                                10% burned, 90% to current pool.
                             </div>
                         )}
 
@@ -235,6 +254,24 @@ function Attr({label, value, icon}: {label: string; value: string; icon?: React.
                 {label}
             </span>
             <span className="truncate text-[10px] font-mono text-zinc-300">{value}</span>
+        </div>
+    );
+}
+
+function StatBox({label, value, kanji, accent, title}: {label: string; value: string; kanji: string; accent: 'red' | 'fuchsia' | 'gold' | 'white' | 'muted'; title?: string}) {
+    const accentMap: Record<string, {label: string; value: string; border: string}> = {
+        red: {label: 'text-red-400', value: 'text-white', border: 'border-red-600/30 bg-red-900/10'},
+        fuchsia: {label: 'text-fuchsia-400', value: 'text-white', border: 'border-fuchsia-600/30 bg-fuchsia-900/10'},
+        gold: {label: 'text-yellow-400', value: 'text-yellow-300', border: 'border-yellow-600/30 bg-yellow-900/10'},
+        white: {label: 'text-zinc-400', value: 'text-white', border: 'border-zinc-700 bg-zinc-900'},
+        muted: {label: 'text-zinc-600', value: 'text-zinc-600', border: 'border-zinc-800 bg-zinc-950'},
+    };
+    const a = accentMap[accent];
+    return (
+        <div className={`flex flex-col items-center justify-center rounded border p-2 ${a.border}`} title={title}>
+            <span className={`text-[8px] uppercase tracking-wider ${a.label}`}>{label}</span>
+            <span className="font-mono text-[7px] text-zinc-700">{kanji}</span>
+            <span className={`mt-0.5 font-mono text-sm font-bold ${a.value}`}>{value}</span>
         </div>
     );
 }

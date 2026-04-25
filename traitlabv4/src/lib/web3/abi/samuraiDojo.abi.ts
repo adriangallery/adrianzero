@@ -114,6 +114,13 @@ export const SAMURAI_DOJO_ABI = [
         type: 'function',
     },
     {
+        inputs: [{name: 'tokenId', type: 'uint256'}],
+        name: 'previewCivilianSenryoku',
+        outputs: [{name: '', type: 'uint8'}],
+        stateMutability: 'pure',
+        type: 'function',
+    },
+    {
         inputs: [],
         name: 'getLastCreatedBudokaiId',
         outputs: [{name: '', type: 'uint256'}],
