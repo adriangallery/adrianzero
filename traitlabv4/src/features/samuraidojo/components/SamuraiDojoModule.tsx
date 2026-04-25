@@ -93,23 +93,56 @@ export function SamuraiDojoModule() {
     }, [filter, entries, myTokenIds, myCivilianIds, roster]);
 
     const {states, refetch: refetchStates} = useSamuraiState(visibleTokenIds);
-    // Preview SR for civilians (keccak-derived 1-15) so MINE can show what they'd fight with.
-    const {previews: civilianPreviews} = useCivilianPreview(myCivilianIds);
 
-    const myOwnedSet = useMemo(() => new Set([...myTokenIds, ...myCivilianIds]), [myTokenIds, myCivilianIds]);
-    const samuraiOwnedSet = useMemo(() => new Set(myTokenIds), [myTokenIds]);
-    const civilianOwnedSet = useMemo(() => new Set(myCivilianIds), [myCivilianIds]);
+    // RECLASSIFY samurai vs civilian using ON-CHAIN senryoku (source of truth), not the roster.
+    // The BatchDeployer tag list can lag/be incomplete (e.g. post-migration mints not tagged in
+    // both contracts), but the senryoku slot in storage is canonical: samurai SR is loaded into
+    // the 1-100 range at mint time, civilian SR is derived 1-15 at first entry.
+    //   sr > 15            → unambiguous samurai (civ ceiling is 15)
+    //   sr in [1,15]       → civilian who already entered (SR persisted)
+    //   sr == 0 + roster   → samurai with unloaded SR (rare edge, treat as samurai)
+    //   sr == 0, no roster → fresh civilian (use derived preview)
+    const allOwnedIds = useMemo(
+        () => [...new Set([...myTokenIds, ...myCivilianIds])].sort((a, b) => a - b),
+        [myTokenIds, myCivilianIds],
+    );
+    const samuraiOwnedIds = useMemo(
+        () =>
+            allOwnedIds.filter((id) => {
+                const sr = states.get(id)?.senryoku ?? 0;
+                if (sr > 15) return true;
+                if (sr === 0 && roster.has(id)) return true;
+                return false;
+            }),
+        [allOwnedIds, states, roster],
+    );
+    const civilianOwnedIds = useMemo(() => {
+        const samSet = new Set(samuraiOwnedIds);
+        return allOwnedIds.filter((id) => !samSet.has(id));
+    }, [allOwnedIds, samuraiOwnedIds]);
+
+    // Preview SR for civilians (keccak-derived 1-15) so MINE can show what they'd fight with.
+    // Only ask for tokens with sr==0 — others have a real on-chain SR already.
+    const civilNeedsPreview = useMemo(
+        () => civilianOwnedIds.filter((id) => (states.get(id)?.senryoku ?? 0) === 0),
+        [civilianOwnedIds, states],
+    );
+    const {previews: civilianPreviews} = useCivilianPreview(civilNeedsPreview);
+
+    const myOwnedSet = useMemo(() => new Set(allOwnedIds), [allOwnedIds]);
+    const samuraiOwnedSet = useMemo(() => new Set(samuraiOwnedIds), [samuraiOwnedIds]);
+    const civilianOwnedSet = useMemo(() => new Set(civilianOwnedIds), [civilianOwnedIds]);
     const enteredSet = useMemo(() => new Set(entries), [entries]);
 
-    // MINE tab sub-buckets — samurai.
-    const mineInIds = useMemo(() => myTokenIds.filter((id) => enteredSet.has(id) && !states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myTokenIds, enteredSet, states]);
-    const mineReadyIds = useMemo(() => myTokenIds.filter((id) => !enteredSet.has(id) && !states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myTokenIds, enteredSet, states]);
-    const mineKoIds = useMemo(() => myTokenIds.filter((id) => states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myTokenIds, states]);
+    // MINE tab sub-buckets — samurai (now derived from on-chain SR).
+    const mineInIds = useMemo(() => samuraiOwnedIds.filter((id) => enteredSet.has(id) && !states.get(id)?.isKnockedOut), [samuraiOwnedIds, enteredSet, states]);
+    const mineReadyIds = useMemo(() => samuraiOwnedIds.filter((id) => !enteredSet.has(id) && !states.get(id)?.isKnockedOut), [samuraiOwnedIds, enteredSet, states]);
+    const mineKoIds = useMemo(() => samuraiOwnedIds.filter((id) => states.get(id)?.isKnockedOut), [samuraiOwnedIds, states]);
 
-    // MINE tab — civilians (regular AdrianZEROs that can enter via v6 derived senryoku).
-    const civilInIds = useMemo(() => myCivilianIds.filter((id) => enteredSet.has(id) && !states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myCivilianIds, enteredSet, states]);
-    const civilReadyIds = useMemo(() => myCivilianIds.filter((id) => !enteredSet.has(id) && !states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myCivilianIds, enteredSet, states]);
-    const civilKoIds = useMemo(() => myCivilianIds.filter((id) => states.get(id)?.isKnockedOut).sort((a, b) => a - b), [myCivilianIds, states]);
+    // MINE tab — civilians.
+    const civilInIds = useMemo(() => civilianOwnedIds.filter((id) => enteredSet.has(id) && !states.get(id)?.isKnockedOut), [civilianOwnedIds, enteredSet, states]);
+    const civilReadyIds = useMemo(() => civilianOwnedIds.filter((id) => !enteredSet.has(id) && !states.get(id)?.isKnockedOut), [civilianOwnedIds, enteredSet, states]);
+    const civilKoIds = useMemo(() => civilianOwnedIds.filter((id) => states.get(id)?.isKnockedOut), [civilianOwnedIds, states]);
 
     const civilSlotsAvail = civilianSlotsAvailable(budokaiCounters);
 
@@ -314,7 +347,9 @@ export function SamuraiDojoModule() {
                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
                             {entrantsIds.map((tokenId) => {
                                 const state = states.get(tokenId);
-                                const isSam = samuraiOwnedSet.has(tokenId) || (state?.senryoku ?? 0) > 15;
+                                const sr = state?.senryoku ?? 0;
+                                // Entrants always have SR>0 (samurai pre-loaded, civilians persisted on entry).
+                                const isSam = sr > 15 || (sr === 0 && samuraiOwnedSet.has(tokenId));
                                 return (
                                     <SamuraiCard
                                         key={tokenId}
@@ -391,7 +426,13 @@ export function SamuraiDojoModule() {
                     return 0;
                 })()}
                 honor={selectedState?.honor ?? 0}
-                isSamurai={selectedTokenId ? samuraiOwnedSet.has(selectedTokenId) || ((selectedState?.senryoku ?? 0) > 15) : true}
+                isSamurai={(() => {
+                    if (!selectedTokenId) return true;
+                    const sr = selectedState?.senryoku ?? 0;
+                    if (sr > 15) return true;
+                    if (sr > 0) return false; // 1-15 persisted civilian
+                    return samuraiOwnedSet.has(selectedTokenId);
+                })()}
                 isKnockedOut={selectedState?.isKnockedOut ?? false}
                 isEntered={selectedTokenId ? enteredSet.has(selectedTokenId) : false}
                 isMine={selectedTokenId ? myOwnedSet.has(selectedTokenId) : false}
@@ -764,12 +805,16 @@ function CardGrid({
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
             {ids.map((tokenId) => {
                 const state = states.get(tokenId);
-                // For my own tokens, samurai membership is canonical via the roster set.
-                // For community tokens we infer from on-chain SR (>15 == samurai by definition).
-                const isMine = myOwnedSet.has(tokenId);
-                const isSamurai = isMine ? samuraiOwnedSet.has(tokenId) : (state?.senryoku ?? 0) > 15 || (state?.senryoku ?? 0) === 0;
-                // Civilian preview: use derived SR when on-chain is 0 (token hasn't entered yet).
                 const onChainSR = state?.senryoku ?? 0;
+                const isMine = myOwnedSet.has(tokenId);
+                // SR-driven classifier (source of truth). Falls back to owned-set membership
+                // when SR is 0 (token never entered) since the on-chain check is ambiguous.
+                let isSamurai: boolean;
+                if (onChainSR > 15) isSamurai = true;
+                else if (onChainSR > 0) isSamurai = false; // 1-15 = persisted civilian
+                else if (isMine) isSamurai = samuraiOwnedSet.has(tokenId);
+                else isSamurai = false; // unknown community token with SR=0 — civilian preview
+                // Civilian preview: use derived SR when on-chain is 0 (token hasn't entered yet).
                 let displaySR = onChainSR;
                 let isPreview = false;
                 if (!isSamurai && onChainSR === 0) {
