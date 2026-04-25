@@ -1,113 +1,54 @@
-import { useMoviesCatalog } from '../hooks/useMoviesCatalog';
-import { useZeroBalance, useMoviesConfig } from '../hooks/useZeroBalance';
-import { useAllRentalStatus, usePendingRewards } from '../hooks/useRentalStatus';
-import { useClaimMovieRewards } from '../hooks/useMovieMint';
-import { useAllListings } from '../hooks/useMarketplace';
-import { useMoviesStore } from '../store/moviesStore';
-import { MovieCard } from './MovieCard';
-import { MovieDetailModal } from './MovieDetailModal';
-import { MintSuccessModal } from './MintSuccessModal';
-import { MarketplaceSection } from './MarketplaceSection';
+import { useState } from 'react';
+import { Season1Tab } from './Season1Tab';
+import { Season2Tab } from './Season2Tab';
 
-const MYSTERY_IDS = new Set([2, 5, 11, 12, 13, 18, 21, 26]);
-
-function getPosterUrl(movieId: number): string {
-  return `/images/zeromovies/${movieId}.png`;
-}
-
-function isMystery(movieId: number, minted: boolean): boolean {
-  return MYSTERY_IDS.has(movieId) && !minted;
-}
+type SeasonTab = 's1' | 's2';
 
 export function ZEROmoviesModule() {
-  const { movies, isLoading, refetch } = useMoviesCatalog();
-  const { balance } = useZeroBalance();
-  const { priceFormatted, paused, movieCount } = useMoviesConfig();
-  const { statusMap, refetch: refetchStatus } = useAllRentalStatus();
-  const { listings } = useAllListings();
-  const listingMap = new Map(listings.map(l => [l.movieId, l.priceFormatted]));
-  const { pending: pendingRewards } = usePendingRewards();
-  const { claim, isPending: isClaimPending } = useClaimMovieRewards();
-  const { selectedMovieId, isDetailOpen, selectMovie, closeDetail } = useMoviesStore();
-
-  const selectedMovie = movies.find((m) => m.id === selectedMovieId) || null;
-  const selectedMystery = selectedMovie ? isMystery(selectedMovie.id, selectedMovie.minted) : false;
-  const selectedRentalStatus = selectedMovie ? statusMap.get(selectedMovie.id) || null : null;
-
-  const handleRefresh = () => { refetch(); refetchStatus(); };
-
-  const takenCount = Array.from(statusMap.values()).filter(r => (r.renter && r.renter !== '0x0000000000000000000000000000000000000000') || r.permanent).length;
+  const [active, setActive] = useState<SeasonTab>('s1');
 
   return (
     <div className="min-h-screen bg-black">
-
-      {/* 1. MOVIE GRID — first thing users see */}
       <div className="mx-auto max-w-6xl px-4 pt-20 pb-8 sm:px-6 sm:pt-24">
-        {/* Title + stats */}
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold tracking-wider text-red-600 sm:text-3xl">ZEROmovies</h1>
-          <p className="text-[9px] tracking-[0.3em] text-zinc-600 sm:text-[10px]">PART ONE · A four-piece trilogy</p>
+        {/* Tab strip */}
+        <div className="mb-6 flex justify-center gap-1 border-b border-zinc-800">
+          <TabButton active={active === 's1'} onClick={() => setActive('s1')} label="Season 1" sub="Trilogy Part One" accent="red" />
+          <TabButton
+            active={active === 's2'}
+            onClick={() => setActive('s2')}
+            label="Season 2"
+            sub="The Return of the Pixel"
+            accent="yellow"
+          />
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:text-[10px]">
-            <span>Taken: <span className="text-white">{takenCount}/{movieCount}</span></span>
-            <span>Rent: <span className="text-red-400">{priceFormatted.toLocaleString()}</span></span>
-            <span>Bal: <span className="text-green-400">{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span></span>
-            {paused && <span className="animate-pulse text-yellow-400">SOON</span>}
-          </div>
-          {pendingRewards > 0 && (
-            <button
-              onClick={() => claim()}
-              disabled={isClaimPending}
-              className="rounded-full border border-green-600/30 bg-green-900/20 px-3 py-1 text-[9px] font-bold text-green-400 hover:bg-green-900/40 transition-colors"
-            >
-              {isClaimPending ? '...' : `Claim ${pendingRewards.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO`}
-            </button>
-          )}
-        </div>
-
-        {/* Grid */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
-            {movies.map((movie) => {
-              const r = statusMap.get(movie.id);
-              return (
-                <MovieCard
-                  key={movie.id}
-                  movie={movie}
-                  posterUrl={getPosterUrl(movie.id)}
-                  onClick={() => selectMovie(movie.id)}
-                  isCurrentlyRented={r?.renter != null && r.renter !== '0x0000000000000000000000000000000000000000'}
-                  isPermanent={r?.permanent}
-                  renterAddr={r?.renter}
-                  listingPrice={listingMap.get(movie.id)}
-                />
-              );
-            })}
-          </div>
-        )}
+        {active === 's1' ? <Season1Tab /> : <Season2Tab />}
       </div>
-
-      {/* 2. MARKETPLACE */}
-      <MarketplaceSection />
-
-      <MovieDetailModal
-        movie={selectedMovie}
-        posterUrl={selectedMovie && !selectedMystery ? getPosterUrl(selectedMovie.id) : ''}
-        open={isDetailOpen}
-        onClose={closeDetail}
-        onMintSuccess={handleRefresh}
-        isMystery={selectedMystery}
-        rentalStatus={selectedRentalStatus}
-      />
-      <MintSuccessModal movieName={selectedMovie?.name || ''} />
 
       <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
     </div>
+  );
+}
+
+interface TabButtonProps {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  sub: string;
+  accent: 'red' | 'yellow';
+}
+
+function TabButton({ active, onClick, label, sub, accent }: TabButtonProps) {
+  const accentBorder = accent === 'red' ? 'border-red-600' : 'border-yellow-500';
+  const accentText = accent === 'red' ? 'text-red-500' : 'text-yellow-400';
+  return (
+    <button
+      onClick={onClick}
+      className={`relative px-5 pb-2 pt-1 transition-colors ${active ? accentText : 'text-zinc-600 hover:text-zinc-400'}`}
+    >
+      <div className="text-sm font-bold tracking-wider">{label}</div>
+      <div className="text-[8px] uppercase tracking-[0.25em] opacity-80">{sub}</div>
+      {active && <div className={`absolute -bottom-px left-0 right-0 h-[2px] ${accentBorder} bg-current`} />}
+    </button>
   );
 }
