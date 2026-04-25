@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { MOVIES_S2_MOCK, MOVIES_S2_RENTAL_MOCK } from '../data/movies2Mock';
+import { useMovies2Store } from '../store/movies2Store';
 import type { Movie2, Movie2RentalState } from '../types';
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
@@ -14,24 +15,46 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
  */
 export function useMovies2Catalog() {
   const movies: Movie2[] = MOVIES_S2_MOCK;
+  const overrides = useMovies2Store((s) => s.rentalOverrides);
 
   const rentalMap = useMemo(() => {
     const map = new Map<number, Movie2RentalState>();
+    const nowSec = Math.floor(Date.now() / 1000);
+    const grace = 7 * 86_400;
+
     for (const m of movies) {
-      const r = MOVIES_S2_RENTAL_MOCK[m.id];
-      map.set(
-        m.id,
-        r ?? {
-          permanent: false,
-          renter: ZERO_ADDR,
-          rentedAt: 0,
-          isOverdue: false,
-          daysOverdue: 0,
-        },
-      );
+      const base: Movie2RentalState = MOVIES_S2_RENTAL_MOCK[m.id] ?? {
+        permanent: false,
+        renter: ZERO_ADDR,
+        rentedAt: 0,
+        isOverdue: false,
+        daysOverdue: 0,
+      };
+      const ov = overrides[m.id];
+      const merged: Movie2RentalState = ov ? { ...base, ...ov } : base;
+
+      // Re-derive overdue from rentedAt + gracePeriod when not explicitly set.
+      // Mirrors what the on-chain getMovie2RentalInfo would return.
+      if (
+        !merged.permanent &&
+        merged.renter !== ZERO_ADDR &&
+        merged.rentedAt > 0 &&
+        ov?.isOverdue === undefined
+      ) {
+        const overdueAt = merged.rentedAt + grace;
+        if (nowSec > overdueAt) {
+          merged.isOverdue = true;
+          merged.daysOverdue = Math.max(1, Math.floor((nowSec - overdueAt) / 86_400));
+        } else {
+          merged.isOverdue = false;
+          merged.daysOverdue = 0;
+        }
+      }
+
+      map.set(m.id, merged);
     }
     return map;
-  }, [movies]);
+  }, [movies, overrides]);
 
   const onShelf = movies.filter((m) => {
     const r = rentalMap.get(m.id)!;

@@ -1,12 +1,21 @@
 import { useMovies2Catalog } from '../hooks/useMovies2Catalog';
 import { useGoldenEligibility } from '../hooks/useGoldenEligibility';
+import { useMovie2Actions } from '../hooks/useMovie2Actions';
 import { Movie2Card } from './Movie2Card';
+import { Movie2DetailModal } from './Movie2DetailModal';
 import { S2GoldenClaimBanner } from './S2GoldenClaimBanner';
+import { S2SuccessToast } from './S2SuccessToast';
 import { getS2PosterUrl } from '../data/movies2Mock';
+import { useMovies2Store } from '../store/movies2Store';
 
 export function Season2Tab() {
   const { movies, rentalMap, onShelf, config, isMock } = useMovies2Catalog();
   const { snapshotMeta } = useGoldenEligibility();
+  const { selectedMovieId, isDetailOpen, selectMovie, closeDetail, goldenClaimed } = useMovies2Store();
+  const { claimGoldenMint, isPending, pendingAction } = useMovie2Actions();
+
+  const selectedMovie = movies.find((m) => m.id === selectedMovieId) ?? null;
+  const selectedRental = selectedMovie ? rentalMap.get(selectedMovie.id) ?? null : null;
 
   const overdueCount = movies.reduce((acc, m) => acc + (rentalMap.get(m.id)?.isOverdue ? 1 : 0), 0);
   const permanentCount = movies.reduce((acc, m) => acc + (rentalMap.get(m.id)?.permanent ? 1 : 0), 0);
@@ -27,7 +36,13 @@ export function Season2Tab() {
         </div>
       )}
 
-      <S2GoldenClaimBanner unpauseAt={undefined} alreadyClaimed={false} />
+      <S2GoldenClaimBanner
+        unpauseAt={Math.floor(Date.now() / 1000) - 60}
+        alreadyClaimed={goldenClaimed}
+        onClaim={claimGoldenMint}
+        isClaiming={pendingAction === 'claimGolden'}
+        isClaimDisabled={isPending}
+      />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:text-[10px]">
@@ -52,9 +67,7 @@ export function Season2Tab() {
               movie={m}
               posterUrl={getS2PosterUrl(m.id, m.isMystery)}
               rental={rental}
-              onClick={() => {
-                /* MovieDetailModal hook-up pending: needs Movie2-aware modal */
-              }}
+              onClick={() => selectMovie(m.id)}
             />
           );
         })}
@@ -79,6 +92,15 @@ export function Season2Tab() {
           </p>
         </div>
       </div>
+
+      <Movie2DetailModal
+        movie={selectedMovie}
+        rental={selectedRental}
+        posterUrl={selectedMovie ? getS2PosterUrl(selectedMovie.id, selectedMovie.isMystery) : ''}
+        open={isDetailOpen}
+        onClose={closeDetail}
+      />
+      <S2SuccessToast />
     </>
   );
 }

@@ -6,13 +6,25 @@ interface S2GoldenClaimBannerProps {
   unpauseAt?: number;
   /** Set true once the connected wallet's goldenClaimed flag flips on-chain. */
   alreadyClaimed?: boolean;
+  /** Triggered when the user clicks "Claim N random movies". */
+  onClaim?: (ticketCount: number) => void;
+  /** True while a claim tx is being submitted/confirmed. */
+  isClaiming?: boolean;
+  /** Disable the button (e.g. another action in flight in the same tab). */
+  isClaimDisabled?: boolean;
 }
 
 const CLAIM_WINDOW_SEC = 7 * 86_400;
 
-export function S2GoldenClaimBanner({ unpauseAt, alreadyClaimed = false }: S2GoldenClaimBannerProps) {
+export function S2GoldenClaimBanner({
+  unpauseAt,
+  alreadyClaimed = false,
+  onClaim,
+  isClaiming = false,
+  isClaimDisabled = false,
+}: S2GoldenClaimBannerProps) {
   const { isConnected } = useAccount();
-  const { isEligible, ticketCount, crossSeasonWeight, snapshotMeta, isMock } = useGoldenEligibility();
+  const { isEligible, ticketCount, crossSeasonWeight, snapshotMeta } = useGoldenEligibility();
 
   if (!isConnected) {
     return (
@@ -59,11 +71,13 @@ export function S2GoldenClaimBanner({ unpauseAt, alreadyClaimed = false }: S2Gol
           ) : claimWindowOpen ? (
             <>
               <button
-                disabled={isMock}
+                disabled={isClaimDisabled || isClaiming}
+                onClick={() => onClaim?.(ticketCount)}
                 className="rounded bg-yellow-500 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-black hover:bg-yellow-400 disabled:cursor-not-allowed disabled:opacity-40"
-                title={isMock ? 'Live on-chain after deploy' : undefined}
               >
-                Claim {ticketCount} random {ticketCount === 1 ? 'movie' : 'movies'}
+                {isClaiming
+                  ? 'Claiming...'
+                  : `Claim ${ticketCount} random ${ticketCount === 1 ? 'movie' : 'movies'}`}
               </button>
               <span className="mt-1 text-[9px] tabular-nums text-zinc-500">
                 Window closes in {daysLeft}d {hoursLeft}h
