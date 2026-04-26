@@ -73,10 +73,10 @@ export function SamuraiDojoModule() {
     //   entrants  → current Budokai entries
     //   mine      → my tokens (to classify into IN / READY / KO)
     //   ko        → my tokens + the FULL roster (to show community KO'd too)
-    //   hall      → no grid; skip
+    //   hall      → no grid; but still load state for the selected token so the detail modal
+    //               has fresh SR + honor when opened from a podium row.
     const visibleTokenIds = useMemo(() => {
         const set = new Set<number>();
-        if (filter === 'hall') return [];
         if (filter === 'entrants' || filter === 'all') {
             for (const id of entries) set.add(id);
         }
@@ -89,8 +89,11 @@ export function SamuraiDojoModule() {
             for (const id of myCivilianIds) set.add(id);
             for (const id of roster) set.add(id); // community KO pool
         }
+        // Always include the currently-selected token (for the detail modal opened from any tab,
+        // including Hall of Fame which would otherwise have visibleTokenIds === []).
+        if (selectedTokenId) set.add(selectedTokenId);
         return Array.from(set).sort((a, b) => a - b);
-    }, [filter, entries, myTokenIds, myCivilianIds, roster]);
+    }, [filter, entries, myTokenIds, myCivilianIds, roster, selectedTokenId]);
 
     const {states, refetch: refetchStates} = useSamuraiState(visibleTokenIds);
 
@@ -417,6 +420,10 @@ export function SamuraiDojoModule() {
                     const sr = selectedState?.senryoku ?? 0;
                     if (sr > 15) return true;
                     if (sr > 0) return false; // 1-15 persisted civilian
+                    // sr=0 → check roster (samurai with unloaded SR) before falling back to owned set.
+                    // Important when the modal opens from Hall of Fame on a token the user doesn't
+                    // own — samuraiOwnedSet would say false even though it IS a samurai.
+                    if (roster.has(selectedTokenId)) return true;
                     return samuraiOwnedSet.has(selectedTokenId);
                 })()}
                 civilSlotsAvail={civilSlotsAvail}
