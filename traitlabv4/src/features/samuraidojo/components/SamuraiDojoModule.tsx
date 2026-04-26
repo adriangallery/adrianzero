@@ -293,6 +293,7 @@ export function SamuraiDojoModule() {
                         civilStaleSrIds={civilStaleSrIds}
                         civilianPreviews={civilianPreviews}
                         civilSlotsAvail={civilSlotsAvail}
+                        budokaiCounters={budokaiCounters}
                         samuraiOwnedSet={samuraiOwnedSet}
                         states={states}
                         enteredSet={enteredSet}
@@ -540,6 +541,7 @@ function MineSections({
     civilStaleSrIds,
     civilianPreviews,
     civilSlotsAvail,
+    budokaiCounters,
     samuraiOwnedSet,
     states,
     enteredSet,
@@ -558,6 +560,7 @@ function MineSections({
     civilStaleSrIds: number[];
     civilianPreviews: Map<number, number>;
     civilSlotsAvail: number;
+    budokaiCounters: ReturnType<typeof useBudokaiCounters>['counters'];
     samuraiOwnedSet: Set<number>;
     states: Map<number, {senryoku: number; isKnockedOut: boolean; honor: number}>;
     enteredSet: Set<number>;
@@ -619,9 +622,30 @@ function MineSections({
                         <span className="font-mono text-[9px] text-fuchsia-700">民</span>
                         <span className="text-[9px] tracking-wider text-fuchsia-300/60">Regular AdrianZERO. Derived SR 1–15. Underdog mode.</span>
                         <div className="ml-auto rounded border border-fuchsia-500/40 bg-fuchsia-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-fuchsia-300">
-                            {civilSlotsAvail > 0 ? `${civilSlotsAvail} slot${civilSlotsAvail === 1 ? '' : 's'} open` : 'no slots — need more samurai'}
+                            {civilSlotsAvail > 0 ? `${civilSlotsAvail} slot${civilSlotsAvail === 1 ? '' : 's'} open` : 'civilian slots locked'}
                         </div>
                     </div>
+                    {/* Ratio-gate explainer — replaces the cryptic "no slots — need more samurai" tag.
+                        Shows the live samurai/civilian count and computes how many more samurai are
+                        needed before the next civilian slot opens. */}
+                    {civilSlotsAvail === 0 && budokaiCounters && (() => {
+                        const sam = budokaiCounters.samuraiCount;
+                        const civ = budokaiCounters.civilianCount;
+                        const samuraiNeededForNext = (civ + 1) * 10 - sam;
+                        return (
+                            <div className="rounded border border-fuchsia-500/30 bg-fuchsia-950/15 px-3 py-2 text-[10px] text-fuchsia-200">
+                                <p className="font-bold uppercase tracking-wider text-fuchsia-300">Why can't I enter civilians right now?</p>
+                                <p className="mt-1 text-fuchsia-200/80">
+                                    Civilian entries are gated <span className="font-bold text-fuchsia-300">10:1</span> by samurai count.
+                                    Currently <span className="font-bold">{sam}</span> samurai and <span className="font-bold">{civ}</span> civilian{civ === 1 ? '' : 's'} are entered.
+                                    {' '}For the next civilian slot to open, <span className="font-bold text-fuchsia-300">{samuraiNeededForNext} more samurai</span> must enter the Budokai.
+                                </p>
+                                <p className="mt-1 text-fuchsia-300/70">
+                                    The rule prevents civilian flooding: a civilian can only fight if 10 samurai are willing to fight too. Wait for samurai entries, or enter your own samurai first.
+                                </p>
+                            </div>
+                        );
+                    })()}
                     {/* Stale-SR warning — civilians whose stored on-chain senryoku is >15 (set by a
                         legacy mint script). These will enter the contract as samurai-with-that-SR
                         rather than civilians, bypassing the 1-15 derived range and the ratio gate. */}
