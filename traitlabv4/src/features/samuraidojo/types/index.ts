@@ -5,6 +5,8 @@ export const LAST_SAMURAI_TOKEN_ID = 1099;
 export const TOTAL_SAMURAI = 600;
 export const ENTRY_FEE_ZERO = 100;
 export const SENZU_FEE_ZERO = 10_000;
+// v6: tiered revive cost = senryoku × SENZU_REVIVE_PER_SR_ZERO. Civil SR 8 → 80, Samurai SR 100 → 1000.
+export const SENZU_REVIVE_PER_SR_ZERO = 10;
 
 export interface Samurai {
     tokenId: number;

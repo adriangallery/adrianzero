@@ -12,8 +12,8 @@ import {useSamuraiState} from '../hooks/useSamuraiState';
 import {useCivilianPreview} from '../hooks/useCivilianPreview';
 import {useBudokaiCounters, civilianSlotsAvailable} from '../hooks/useBudokaiCounters';
 import {useWalletEntryCount} from '../hooks/useWalletEntryCount';
-import {useEnterBudokaiBatch} from '../hooks/useDojoActions';
-import {ENTRY_FEE_ZERO} from '../types';
+import {useEnterBudokaiBatch, useReviveSamuraiBatch} from '../hooks/useDojoActions';
+import {ENTRY_FEE_ZERO, SENZU_REVIVE_PER_SR_ZERO} from '../types';
 import {useDojoStore} from '../store/dojoStore';
 import {useBudokaiTheme, themeAccent, iconVariantSymbol} from '../hooks/useBudokaiTheme';
 import {useBudokaiTrophy, trophyLabel, trophyEmoji, TROPHY_TYPE} from '../hooks/useBudokaiTrophy';
@@ -164,10 +164,18 @@ export function SamuraiDojoModule() {
 
     const selectedState = selectedTokenId ? states.get(selectedTokenId) : undefined;
 
+    // Multi-select kind: derived from active filter. KO'd tab → revive batch; everywhere else → entry batch.
+    const multiSelectKind: 'enter' | 'revive' = filter === 'ko' ? 'revive' : 'enter';
+
     // Batch entry
     const {enterBatch, isPending: isBatchPending, isConfirming: isBatchConfirming, isConfirmed: isBatchConfirmed, reset: resetBatch} =
         useEnterBudokaiBatch();
     const isBatchBusy = isBatchPending || isBatchConfirming;
+
+    // Batch revive (v6 reviveSamuraiBatch — single tx, fee = Σ sr × 10 ZERO)
+    const {reviveBatch, isPending: isRevivePending, isConfirming: isReviveConfirming, isConfirmed: isReviveConfirmed, reset: resetRevive} =
+        useReviveSamuraiBatch();
+    const isReviveBusy = isRevivePending || isReviveConfirming;
 
     useEffect(() => {
         if (isBatchConfirmed) {
@@ -179,11 +187,34 @@ export function SamuraiDojoModule() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isBatchConfirmed]);
 
+    useEffect(() => {
+        if (isReviveConfirmed) {
+            clearSelection();
+            toggleMultiSelectMode();
+            handleRefresh();
+            resetRevive();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isReviveConfirmed]);
+
     const selectedCount = selectedIds.size;
     const selectedTotalFee = selectedCount * ENTRY_FEE_ZERO;
     const insufficientBatchBalance = zeroBalance < selectedTotalFee;
     // v6 per-wallet cap: contract reverts if entriesByWallet + new entries > cap. Mirror it client-side.
     const walletCapExceeded = walletGate.cap > 0 && selectedCount > walletGate.remaining;
+
+    // Revive total: sum of (senryoku × 10) across selected. Computed live as user toggles.
+    // Tokens missing senryoku in `states` (shouldn't happen for KO'd, since SR is set on entry)
+    // contribute 0 — will revert on-chain via LEGACY_SENZU_FEE path if it slips through.
+    const selectedReviveTotal = useMemo(() => {
+        let total = 0;
+        for (const id of selectedIds) {
+            const sr = states.get(id)?.senryoku ?? 0;
+            total += sr * SENZU_REVIVE_PER_SR_ZERO;
+        }
+        return total;
+    }, [selectedIds, states]);
+    const insufficientReviveBalance = zeroBalance < selectedReviveTotal;
 
     const handleSelectAllReady = () => {
         const samuraiToSelect = mineReadyIds;
@@ -198,9 +229,23 @@ export function SamuraiDojoModule() {
         selectMany(all, true);
     };
 
+    // Preselect all KO'd tokens the user owns (samurai + civilian). Used by "Revive all yours" CTA.
+    const handleSelectAllKo = () => {
+        const all = [...mineKoIds, ...civilKoIds];
+        if (all.length === 0) return;
+        selectMany(all, true);
+    };
+
     const handleCardClick = (tokenId: number) => {
         if (multiSelectMode) {
-            // Eligible: owned, not entered, not KO. Includes both samurai and civilians.
+            if (multiSelectKind === 'revive') {
+                // Revive eligibility: owned + KO'd in current Budokai. Community KO'd is read-only.
+                if (!myOwnedSet.has(tokenId)) return;
+                if (!states.get(tokenId)?.isKnockedOut) return;
+                toggleId(tokenId);
+                return;
+            }
+            // Entry eligibility: owned, not entered, not KO. Includes both samurai and civilians.
             if (!myOwnedSet.has(tokenId)) return;
             if (enteredSet.has(tokenId)) return;
             if (states.get(tokenId)?.isKnockedOut) return;
@@ -217,6 +262,16 @@ export function SamuraiDojoModule() {
             selectSamurai(tokenId);
         }
     };
+
+    // When the user switches tabs, the previous selection is no longer meaningful (entry vs revive
+    // pools are different). Drop selection + exit multi-select on tab change.
+    useEffect(() => {
+        if (multiSelectMode) {
+            clearSelection();
+            toggleMultiSelectMode();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filter]);
 
     return (
         <div className="min-h-screen bg-black pt-20 sm:pt-24">
@@ -271,7 +326,16 @@ export function SamuraiDojoModule() {
                                 Enter all Ready ({mineReadyIds.length + Math.min(civilReadyIds.length, civilSlotsAvail)})
                             </button>
                         )}
-                        {budokaiInfo?.status === BUDOKAI_STATUS.Open && myOwnedSet.size > 0 && (
+                        {filter === 'ko' && budokaiInfo?.status === BUDOKAI_STATUS.Open && (mineKoIds.length + civilKoIds.length) > 0 && !multiSelectMode && (
+                            <button
+                                onClick={() => handleSelectAllKo()}
+                                className="rounded border border-red-500/60 bg-red-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-red-300 hover:bg-red-500/20"
+                            >
+                                <Sword className="mr-1 inline h-3 w-3" />
+                                Revive all yours ({mineKoIds.length + civilKoIds.length})
+                            </button>
+                        )}
+                        {budokaiInfo?.status === BUDOKAI_STATUS.Open && myOwnedSet.size > 0 && (filter !== 'ko' || (mineKoIds.length + civilKoIds.length) > 0) && (
                             <button
                                 onClick={() => toggleMultiSelectMode()}
                                 className={`rounded border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
@@ -281,7 +345,7 @@ export function SamuraiDojoModule() {
                                 }`}
                             >
                                 <Sword className="mr-1 inline h-3 w-3" />
-                                {multiSelectMode ? 'Cancel' : 'Multi-Enter'}
+                                {multiSelectMode ? 'Cancel' : (filter === 'ko' ? 'Multi-Revive' : 'Multi-Enter')}
                             </button>
                         )}
 
@@ -316,6 +380,7 @@ export function SamuraiDojoModule() {
                         enteredSet={enteredSet}
                         myOwnedSet={myOwnedSet}
                         multiSelectMode={multiSelectMode}
+                        multiSelectKind={multiSelectKind}
                         selectedIds={selectedIds}
                         onCardClick={handleCardClick}
                         ownedCount={myTokenIds.length + myCivilianIds.length}
@@ -332,6 +397,7 @@ export function SamuraiDojoModule() {
                         myOwnedSet={myOwnedSet}
                         onCardClick={handleCardClick}
                         multiSelectMode={multiSelectMode}
+                        multiSelectKind={multiSelectKind}
                         selectedIds={selectedIds}
                     />
                 ) : entrantsIds.length === 0 ? (
@@ -365,6 +431,7 @@ export function SamuraiDojoModule() {
                                         isSamurai={isSam}
                                         onClick={() => handleCardClick(tokenId)}
                                         multiSelectMode={multiSelectMode}
+                                        multiSelectKind={multiSelectKind}
                                         isSelected={selectedIds.has(tokenId)}
                                     />
                                 );
@@ -374,8 +441,8 @@ export function SamuraiDojoModule() {
                 )}
             </div>
 
-            {/* Floating batch action bar */}
-            {multiSelectMode && selectedCount > 0 && (
+            {/* Floating batch action bar — branches on entry vs revive kind. */}
+            {multiSelectMode && selectedCount > 0 && multiSelectKind === 'enter' && (
                 <div className="fixed inset-x-0 bottom-0 z-40 border-t border-red-600/40 bg-black/95 backdrop-blur-md">
                     <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
                         <div className="flex flex-col">
@@ -414,6 +481,50 @@ export function SamuraiDojoModule() {
                                     </span>
                                 ) : (
                                     `Enter ${selectedCount} (${selectedTotalFee.toLocaleString()} $ZERO)`
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {multiSelectMode && selectedCount > 0 && multiSelectKind === 'revive' && (
+                <div className="fixed inset-x-0 bottom-0 z-40 border-t border-red-600/40 bg-black/95 backdrop-blur-md">
+                    <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-500">Senzu Beans</span>
+                            <span className="font-mono text-sm font-bold text-white">
+                                Revive {selectedCount} · {selectedReviveTotal.toLocaleString()} $ZERO
+                            </span>
+                            <span className="mt-0.5 text-[9px] text-zinc-500">
+                                Cost = Σ senryoku × 10 ZERO. Calculated live as you select.
+                            </span>
+                            {insufficientReviveBalance && (
+                                <span className="mt-0.5 text-[9px] text-red-400">
+                                    Need {(selectedReviveTotal - zeroBalance).toLocaleString()} more $ZERO
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => clearSelection()}
+                                disabled={isReviveBusy}
+                                className="rounded border border-zinc-700 px-3 py-2 text-[10px] uppercase tracking-wider text-zinc-400 hover:text-white disabled:opacity-50"
+                            >
+                                Clear
+                            </button>
+                            <button
+                                onClick={() => reviveBatch(Array.from(selectedIds))}
+                                disabled={isReviveBusy || insufficientReviveBalance || selectedCount === 0}
+                                className="rounded bg-red-600 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
+                            >
+                                {isReviveBusy ? (
+                                    <span className="flex items-center gap-2">
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                        Reviving {selectedCount}...
+                                    </span>
+                                ) : (
+                                    `Revive ${selectedCount} (${selectedReviveTotal.toLocaleString()} $ZERO)`
                                 )}
                             </button>
                         </div>
@@ -579,6 +690,7 @@ function MineSections({
     enteredSet,
     myOwnedSet,
     multiSelectMode,
+    multiSelectKind,
     selectedIds,
     onCardClick,
     ownedCount,
@@ -598,6 +710,7 @@ function MineSections({
     enteredSet: Set<number>;
     myOwnedSet: Set<number>;
     multiSelectMode: boolean;
+    multiSelectKind: 'enter' | 'revive';
     selectedIds: Set<number>;
     onCardClick: (tokenId: number) => void;
     ownedCount: number;
@@ -627,7 +740,7 @@ function MineSections({
                     color="text-yellow-400"
                     count={allInIds.length}
                 >
-                    <CardGrid ids={allInIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                    <CardGrid ids={allInIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
                 </SectionBlock>
             )}
 
@@ -647,12 +760,12 @@ function MineSections({
                             color="text-zinc-300"
                             count={samuraiReadyIds.length}
                         >
-                            <CardGrid ids={samuraiReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                            <CardGrid ids={samuraiReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
                         </SectionBlock>
                     )}
                     {samuraiKoIds.length > 0 && (
                         <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu to re-enter." color="text-red-400" count={samuraiKoIds.length}>
-                            <CardGrid ids={samuraiKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                            <CardGrid ids={samuraiKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
                         </SectionBlock>
                     )}
                 </div>
@@ -701,12 +814,12 @@ function MineSections({
                             color="text-fuchsia-300"
                             count={civilReadyIds.length}
                         >
-                            <CardGrid ids={civilReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                            <CardGrid ids={civilReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
                         </SectionBlock>
                     )}
                     {civilKoIds.length > 0 && (
                         <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu (cost = SR × 10 ZERO)." color="text-red-400" count={civilKoIds.length}>
-                            <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                            <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
                         </SectionBlock>
                     )}
                 </div>
@@ -731,6 +844,7 @@ function KoSections({
     myOwnedSet,
     onCardClick,
     multiSelectMode,
+    multiSelectKind,
     selectedIds,
 }: {
     mineIds: number[];
@@ -743,6 +857,7 @@ function KoSections({
     myOwnedSet: Set<number>;
     onCardClick: (tokenId: number) => void;
     multiSelectMode: boolean;
+    multiSelectKind: 'enter' | 'revive';
     selectedIds: Set<number>;
 }) {
     if (mineIds.length === 0 && communityIds.length === 0 && civilKoIds.length === 0) {
@@ -762,7 +877,7 @@ function KoSections({
                 count={mineIds.length}
                 emptyMsg="None of yours are down — for now."
             >
-                <CardGrid ids={mineIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                <CardGrid ids={mineIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
             </SectionBlock>
 
             {civilKoIds.length > 0 && (
@@ -773,7 +888,7 @@ function KoSections({
                     color="text-fuchsia-400"
                     count={civilKoIds.length}
                 >
-                    <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                    <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
                 </SectionBlock>
             )}
 
@@ -785,7 +900,7 @@ function KoSections({
                 count={communityIds.length}
                 emptyMsg="No community KO'd tokens."
             >
-                <CardGrid ids={communityIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                <CardGrid ids={communityIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
             </SectionBlock>
         </div>
     );
@@ -836,6 +951,7 @@ function CardGrid({
     samuraiOwnedSet,
     civilianPreviews,
     multiSelectMode,
+    multiSelectKind,
     selectedIds,
     onCardClick,
 }: {
@@ -846,6 +962,7 @@ function CardGrid({
     samuraiOwnedSet: Set<number>;
     civilianPreviews: Map<number, number>;
     multiSelectMode: boolean;
+    multiSelectKind: 'enter' | 'revive';
     selectedIds: Set<number>;
     onCardClick: (tokenId: number) => void;
 }) {
@@ -884,6 +1001,7 @@ function CardGrid({
                         isCivilianPreview={isPreview}
                         onClick={() => onCardClick(tokenId)}
                         multiSelectMode={multiSelectMode}
+                        multiSelectKind={multiSelectKind}
                         isSelected={selectedIds.has(tokenId)}
                     />
                 );

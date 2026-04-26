@@ -67,3 +67,24 @@ export function useReviveSamurai() {
 
     return {revive, isPending, isConfirming, isConfirmed, error, txHash: hash, reset};
 }
+
+/**
+ * Revive multiple KO'd tokens in a single transaction. All must be owned by msg.sender and KO'd
+ * in the currently-open Budokai. Per-token cost = senryoku × 10 ZERO; reverts atomically.
+ */
+export function useReviveSamuraiBatch() {
+    const {writeContract, data: hash, isPending, error, reset} = useWriteContract();
+    const {isLoading: isConfirming, isSuccess: isConfirmed} = useWaitForTransactionReceipt({hash});
+
+    const reviveBatch = (tokenIds: number[]) => {
+        if (tokenIds.length === 0) return;
+        writeContract({
+            address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+            abi: SAMURAI_DOJO_ABI,
+            functionName: 'reviveSamuraiBatch',
+            args: [tokenIds.map((id) => BigInt(id))],
+        });
+    };
+
+    return {reviveBatch, isPending, isConfirming, isConfirmed, error, txHash: hash, reset};
+}

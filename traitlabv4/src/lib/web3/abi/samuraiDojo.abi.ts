@@ -25,6 +25,13 @@ export const SAMURAI_DOJO_ABI = [
         stateMutability: 'nonpayable',
         type: 'function',
     },
+    {
+        inputs: [{name: 'tokenIds', type: 'uint256[]'}],
+        name: 'reviveSamuraiBatch',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
 
     // ─── Views ───
     {

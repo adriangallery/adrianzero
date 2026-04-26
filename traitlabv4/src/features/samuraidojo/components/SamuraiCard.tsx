@@ -8,6 +8,7 @@ interface SamuraiCardProps {
     isMine: boolean;
     onClick: () => void;
     multiSelectMode?: boolean;
+    multiSelectKind?: 'enter' | 'revive'; // determines which cards show a checkbox
     isSelected?: boolean;
     honor?: number; // v6: persistent combat bonus from podium finishes. 0 on v4.
     isSamurai?: boolean; // v6: false = civilian (regular AdrianZERO entering with derived SR 1-15). Default true for back-compat.
@@ -26,6 +27,7 @@ export const SamuraiCard = memo(function SamuraiCard({
     isMine,
     onClick,
     multiSelectMode = false,
+    multiSelectKind = 'enter',
     isSelected = false,
     honor = 0,
     isSamurai = true,
@@ -88,8 +90,14 @@ export const SamuraiCard = memo(function SamuraiCard({
                     )}
                 </div>
 
-                {/* Multi-select checkbox overrides badges when active */}
-                {multiSelectMode && isMine && !isEntered && !isKnockedOut ? (
+                {/* Multi-select checkbox overrides badges when active.
+                    'enter' kind: show on owned tokens that are not entered and not KO.
+                    'revive' kind: show on owned tokens that ARE KO. */}
+                {multiSelectMode && isMine && (
+                    multiSelectKind === 'revive'
+                        ? isKnockedOut
+                        : !isEntered && !isKnockedOut
+                ) ? (
                     <div
                         className={`absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded border-2 text-[10px] font-bold ${
                             isSelected ? 'border-red-500 bg-red-500 text-white' : 'border-white/60 bg-black/60 text-transparent'
