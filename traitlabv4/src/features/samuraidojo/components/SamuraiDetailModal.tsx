@@ -141,14 +141,15 @@ export function SamuraiDetailModal({
         <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-                <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[min(560px,95vw)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95">
+                <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[92vh] w-[min(560px,95vw)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95">
                     <Dialog.Title className="sr-only">SamuraiZERO #{tokenId}</Dialog.Title>
 
-                    <div className="relative">
+                    {/* Image area — capped at ~40vh so the action panel below always stays in view. */}
+                    <div className="relative shrink-0 max-h-[40vh] overflow-hidden">
                         <img
                             src={getSamuraiImageUrl(tokenId)}
                             alt={`SamuraiZERO #${tokenId}`}
-                            className={`aspect-square w-full object-contain ${isKnockedOut ? 'opacity-50 saturate-0' : ''}`}
+                            className={`mx-auto h-full max-h-[40vh] w-auto object-contain ${isKnockedOut ? 'opacity-50 saturate-0' : ''}`}
                             style={{imageRendering: 'pixelated'}}
                         />
 
@@ -158,7 +159,7 @@ export function SamuraiDetailModal({
 
                         {isKnockedOut && (
                             <div className="absolute inset-0 flex items-center justify-center bg-red-900/20">
-                                <span className="rounded border-2 border-red-600 bg-black/80 px-6 py-2 text-lg font-bold uppercase tracking-[0.4em] text-red-500">
+                                <span className="rounded border-2 border-red-600 bg-black/80 px-4 py-1.5 text-sm font-bold uppercase tracking-[0.4em] text-red-500">
                                     Knocked Out
                                 </span>
                             </div>
@@ -169,7 +170,8 @@ export function SamuraiDetailModal({
                         </div>
                     </div>
 
-                    <div className="space-y-4 p-5">
+                    {/* Scrollable content — everything except image + sticky action button. */}
+                    <div className="flex-1 space-y-4 overflow-y-auto p-5">
                         <div>
                             <h2 className="text-xl font-bold text-white">
                                 {isSamurai ? (meta?.name ?? `SamuraiZERO #${tokenId}`) : `AdrianZERO #${tokenId}`}
@@ -219,6 +221,13 @@ export function SamuraiDetailModal({
                             </div>
                         )}
 
+                        {errorMsg && (
+                            <p className="text-[10px] text-red-400">{errorMsg.split('\n')[0]}</p>
+                        )}
+                    </div>
+
+                    {/* Sticky action footer — always visible regardless of scroll position. */}
+                    <div className="shrink-0 border-t border-zinc-800 bg-zinc-950/95 p-4 backdrop-blur">
                         <button
                             onClick={handlePrimary}
                             disabled={primaryDisabled}
@@ -239,10 +248,6 @@ export function SamuraiDetailModal({
                                 primaryLabel
                             )}
                         </button>
-
-                        {errorMsg && (
-                            <p className="text-[10px] text-red-400">{errorMsg.split('\n')[0]}</p>
-                        )}
                     </div>
                 </Dialog.Content>
             </Dialog.Portal>
