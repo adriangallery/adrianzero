@@ -14,6 +14,8 @@ interface SamuraiDetailModalProps {
     senryoku: number;
     honor?: number; // v6: persistent bonus from podium finishes. effectiveSR = senryoku + honor
     isSamurai?: boolean; // v6: false = civilian variant (regular AdrianZERO with derived SR 1-15)
+    civilSlotsAvail?: number; // v6: 10:1 ratio gate. 0 = no civilian can enter right now.
+    samuraiNeededForNextSlot?: number; // v6: how many more samurai must enter before next civilian slot opens
     isKnockedOut: boolean;
     isEntered: boolean;
     isMine: boolean;
@@ -55,6 +57,8 @@ export function SamuraiDetailModal({
     senryoku,
     honor = 0,
     isSamurai = true,
+    civilSlotsAvail = 0,
+    samuraiNeededForNextSlot = 0,
     isKnockedOut,
     isEntered,
     isMine,
@@ -105,7 +109,10 @@ export function SamuraiDetailModal({
     const budokaiOpen = budokaiInfo?.status === BUDOKAI_STATUS.Open;
     const now = Math.floor(Date.now() / 1000);
     const withinWindow = budokaiInfo && now >= budokaiInfo.entryStart && now <= budokaiInfo.entryEnd;
-    const canEnter = !isKnockedOut && !isEntered && isMine && budokaiOpen && withinWindow;
+    // v6: civilian entries are gated 10:1 by samurai count. If a civilian tries to enter
+    // when civilSlotsAvail==0 the contract reverts (NotEnoughSamurai). Gate the UI.
+    const civilianGated = !isSamurai && !isEntered && !isKnockedOut && civilSlotsAvail === 0;
+    const canEnter = !isKnockedOut && !isEntered && isMine && budokaiOpen && withinWindow && !civilianGated;
     const canRevive = isKnockedOut && isMine && budokaiOpen;
     const insufficientBalance = zeroBalance < feeLabel;
     const isBusy = isEntering || isEnterConfirming || isReviving || isReviveConfirming;
@@ -124,6 +131,7 @@ export function SamuraiDetailModal({
 
     const primaryLabel = (() => {
         if (!isConnected) return 'Connect Wallet';
+        if (civilianGated) return `Locked — need ${samuraiNeededForNextSlot} more samurai`;
         if (insufficientBalance) return `Need ${feeLabel.toLocaleString()} $ZERO`;
         if (isKnockedOut) return `Senzu Bean (${feeLabel.toLocaleString()} $ZERO)`;
         return `Enter Budokai (${feeLabel.toLocaleString()} $ZERO)`;
@@ -218,6 +226,22 @@ export function SamuraiDetailModal({
                                 {isSamurai
                                     ? "You don't own this samurai. Buy it on OpenSea to enter it in the next Budokai."
                                     : "You don't own this AdrianZERO. Civilians can be bought on OpenSea — any AdrianZERO can fight."}
+                            </div>
+                        )}
+
+                        {civilianGated && isMine && (
+                            <div className="rounded border border-fuchsia-500/40 bg-fuchsia-950/20 p-3 text-[10px] text-fuchsia-200">
+                                <p className="font-bold uppercase tracking-wider text-fuchsia-300">⚠ Civilian slot locked</p>
+                                <p className="mt-1 text-fuchsia-200/80">
+                                    Civilian entries are gated <span className="font-bold text-fuchsia-300">10:1</span> by samurai count.
+                                    Right now there are not enough samurai entered to open a civilian slot.
+                                </p>
+                                <p className="mt-1 text-fuchsia-300/90">
+                                    <span className="font-bold">{samuraiNeededForNextSlot} more samurai</span> must enter the Budokai before this civilian can fight.
+                                </p>
+                                <p className="mt-1 text-fuchsia-400/70">
+                                    Trying to enter now would revert the transaction (and burn your gas). Wait for samurai entries, or enter your own samurai first.
+                                </p>
                             </div>
                         )}
 

@@ -419,6 +419,10 @@ export function SamuraiDojoModule() {
                     if (sr > 0) return false; // 1-15 persisted civilian
                     return samuraiOwnedSet.has(selectedTokenId);
                 })()}
+                civilSlotsAvail={civilSlotsAvail}
+                samuraiNeededForNextSlot={budokaiCounters
+                    ? Math.max(0, (budokaiCounters.civilianCount + 1) * 10 - budokaiCounters.samuraiCount)
+                    : 0}
                 isKnockedOut={selectedState?.isKnockedOut ?? false}
                 isEntered={selectedTokenId ? enteredSet.has(selectedTokenId) : false}
                 isMine={selectedTokenId ? myOwnedSet.has(selectedTokenId) : false}
