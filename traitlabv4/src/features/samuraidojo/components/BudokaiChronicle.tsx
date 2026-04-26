@@ -68,7 +68,8 @@ interface RawSnapshot {
 }
 
 async function loadChronicle(id: number): Promise<ChronicleData | null> {
-    const res = await fetch(`/budokai/${id}.json`, {cache: 'force-cache'});
+    // See BracketReveal note: 'default' avoids serving a stale cached 404 once the snapshot ships.
+    const res = await fetch(`/budokai/${id}.json`, {cache: 'default'});
     if (!res.ok) return null;
     // Vercel may return 200 + HTML SPA fallback when the static file is missing.
     // Treat that as "not snapshotted yet" rather than letting JSON.parse crash the modal.

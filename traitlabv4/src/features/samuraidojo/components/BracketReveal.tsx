@@ -54,7 +54,9 @@ async function loadFromStaticSnapshot(
     budokaiId: number,
 ): Promise<{matches: MatchResult[]; snapshot: BudokaiSnapshot} | null> {
     try {
-        const res = await fetch(`/budokai/${budokaiId}.json`, {cache: 'force-cache'});
+        // 'default' (vs force-cache) lets a freshly-published snapshot override a previously
+        // cached 404/HTML for the same path. Static JSON is small; the round-trip is cheap.
+        const res = await fetch(`/budokai/${budokaiId}.json`, {cache: 'default'});
         if (!res.ok) return null;
         const data = (await res.json()) as StaticSnapshotJson;
         const matches: MatchResult[] = data.matches.map((m) => ({
