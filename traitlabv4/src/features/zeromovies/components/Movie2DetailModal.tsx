@@ -28,7 +28,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
   const { address, isConnected } = useAccount();
   const { requireWallet } = useWalletPrompt();
   const { config } = useMovies2Catalog();
-  const { rent2, buy2, payLateFee2, upgradeRent2ToBuy, isPending, pendingAction } = useMovie2Actions();
+  const { rent2, buy2, returnMovie2, upgradeRent2ToBuy, isPending, pendingAction } = useMovie2Actions();
   const { isEligible, ticketCount } = useGoldenEligibility();
 
   if (!movie || !rental) return null;
@@ -41,8 +41,8 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
   const isOthers = (rental.permanent || hasRenter) && !isMine;
   const isOverdue = rental.isOverdue;
 
-  // Buy / upgrade pricing (mirrors on-chain split): when the rent is overdue,
-  // the on-chain payLateFee2 / upgradeRent2ToBuy add `daysOverdue * 1k ZERO`.
+  // On-chain: returnMovie2 is FREE at any time. Late fees only flow on
+  // upgradeRent2ToBuy when the rent is overdue (`daysOverdue * 1k ZERO`).
   const lateFee = isMineRent && isOverdue ? rental.daysOverdue * config.lateFeePerDay : 0;
   const upgradeCost = config.buyPrice - config.rentPrice + lateFee;
 
@@ -162,9 +162,18 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                 </>
               )}
 
-              {/* MY ACTIVE RENT (in-grace) → upgrade only */}
+              {/* MY ACTIVE RENT (in-grace) → free return | upgrade */}
               {isMineRent && !isOverdue && (
                 <>
+                  <ActionRow
+                    label="Return tape"
+                    sub="Free · drops back on the shelf for anyone to rent or buy"
+                    cost="Free"
+                    accent="emerald"
+                    busy={pendingAction === 'return'}
+                    disabled={isPending}
+                    onClick={requireConnected(() => returnMovie2(movie.id))}
+                  />
                   <ActionRow
                     label="Upgrade rent → Buy"
                     sub={`Pay ${(config.buyPrice - config.rentPrice).toLocaleString()} $ZERO diff, keep forever`}
@@ -176,22 +185,22 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                   />
                   <div className="rounded border border-zinc-900 bg-zinc-950 p-2 text-[9px] text-zinc-500">
                     Tape due back in <span className="text-zinc-300">{Math.max(0, 7 - Math.floor((Date.now() / 1000 - rental.rentedAt) / 86_400))}d</span>.
-                    After 7d, late fees of {config.lateFeePerDay.toLocaleString()} $ZERO/day accrue and you can't rent another tape.
+                    After 7d the tape shows OVERDUE on every marketplace and you can't rent another one — return is still free.
                   </div>
                 </>
               )}
 
-              {/* MY OVERDUE RENT → pay late fee | upgrade */}
+              {/* MY OVERDUE RENT → free return | upgrade (late fees only on upgrade) */}
               {isMineRent && isOverdue && (
                 <>
                   <ActionRow
-                    label="Pay late fee · return tape"
-                    sub={`${rental.daysOverdue}d × ${config.lateFeePerDay.toLocaleString()} $ZERO`}
-                    cost={`${lateFee.toLocaleString()} $ZERO`}
-                    accent="red"
-                    busy={pendingAction === 'payLateFee'}
+                    label="Return tape"
+                    sub="Still free · {daysOverdue}d overdue, no late fee charged on return"
+                    cost="Free"
+                    accent="emerald"
+                    busy={pendingAction === 'return'}
                     disabled={isPending}
-                    onClick={requireConnected(() => payLateFee2(movie.id))}
+                    onClick={requireConnected(() => returnMovie2(movie.id))}
                   />
                   <ActionRow
                     label="Upgrade rent → Buy"
@@ -203,7 +212,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                     onClick={requireConnected(() => upgradeRent2ToBuy(movie.id))}
                   />
                   <div className="rounded border border-red-900/40 bg-red-950/20 p-2 text-[9px] text-red-300">
-                    You can't rent another tape until you settle this one.
+                    Late fees ({lateFee.toLocaleString()} $ZERO so far) only apply if you upgrade to buy. Returning the tape is always free.
                   </div>
                 </>
               )}
@@ -248,7 +257,7 @@ interface ActionRowProps {
   label: string;
   sub: string;
   cost: string;
-  accent: 'sky' | 'yellow' | 'red';
+  accent: 'sky' | 'yellow' | 'red' | 'emerald';
   busy: boolean;
   disabled: boolean;
   onClick: () => void;
@@ -258,6 +267,7 @@ function ActionRow({ label, sub, cost, accent, busy, disabled, onClick }: Action
   const accentBg =
     accent === 'sky' ? 'bg-sky-500 hover:bg-sky-400 text-black'
     : accent === 'yellow' ? 'bg-yellow-500 hover:bg-yellow-400 text-black'
+    : accent === 'emerald' ? 'bg-emerald-500 hover:bg-emerald-400 text-black'
     : 'bg-red-500 hover:bg-red-400 text-white';
 
   return (

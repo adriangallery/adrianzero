@@ -5,7 +5,7 @@ import { MOVIES_S2_MOCK } from '../data/movies2Mock';
 const ACTION_COPY: Record<string, { title: string; sub: string; accent: string }> = {
   rent: { title: 'Tape rented', sub: 'You have 7 days of grace before late fees', accent: 'text-sky-400 border-sky-500/40' },
   buy: { title: 'Tape bought', sub: 'Permanent. The S1 cross-season pool just grew', accent: 'text-yellow-400 border-yellow-500/40' },
-  payLateFee: { title: 'Late fee paid', sub: 'Tape returned to the shelf · you can rent again', accent: 'text-red-400 border-red-500/40' },
+  return: { title: 'Tape returned', sub: 'Back on the shelf · you can rent again', accent: 'text-emerald-400 border-emerald-500/40' },
   upgrade: { title: 'Upgraded to permanent', sub: 'Diff (+ late fees) absorbed · yours forever', accent: 'text-yellow-400 border-yellow-500/40' },
   claimGolden: { title: 'Golden Mint redeemed', sub: 'Random tape(s) airdropped to your wallet', accent: 'text-yellow-300 border-yellow-400/40' },
 };

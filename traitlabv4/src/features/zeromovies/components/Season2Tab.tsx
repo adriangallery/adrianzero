@@ -86,9 +86,11 @@ export function Season2Tab() {
         <div className="rounded border border-zinc-800 bg-zinc-950/40 p-3">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-500">Return-the-tape</h3>
           <p className="mt-1 text-[10px] leading-relaxed text-zinc-400">
-            7-day grace, then <span className="text-red-400">1k ZERO/day late fee</span> until the renter
-            settles or upgrades to permanent. The NFT itself shows OVERDUE on every marketplace.
-            No second rental until the late fee is paid.
+            7-day grace, then the NFT shows <span className="text-red-400">OVERDUE</span> on every
+            marketplace. <span className="text-emerald-400">Returning the tape is always free</span> — the rent
+            itself is non-refundable, but you can drop it back on the shelf any time.
+            Late fees (<span className="text-red-400">1k ZERO/day</span>) only apply if you upgrade
+            an overdue rent into a permanent buy, never on a plain return.
           </p>
         </div>
       </div>

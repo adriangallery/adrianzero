@@ -12,7 +12,7 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
  *
  * When the on-chain ZEROmoviesFacet2 lands, swap each function for the
  * matching wagmi `useWriteContract` hook (rentMovie2, buyMovie2,
- * payLateFee2, upgradeRent2ToBuy, claimGoldenMint). The exposed shape
+ * returnMovie2, upgradeRent2ToBuy, claimGoldenMint). The exposed shape
  * (isPending / error / call signatures) is identical so consumers don't change.
  */
 export function useMovie2Actions() {
@@ -64,12 +64,12 @@ export function useMovie2Actions() {
     }
   }
 
-  async function payLateFee2(movieId: number) {
+  async function returnMovie2(movieId: number) {
     if (!address) return;
-    setPendingAction('payLateFee');
+    setPendingAction('return');
     try {
       await fakeWait();
-      // Returns NFT to the shelf
+      // Free return — NFT goes back to the shelf, no $ZERO charged
       setRental(movieId, {
         renter: ZERO_ADDR,
         rentedAt: 0,
@@ -77,7 +77,7 @@ export function useMovie2Actions() {
         isOverdue: false,
         daysOverdue: 0,
       });
-      showSuccess(movieId, 'payLateFee');
+      showSuccess(movieId, 'return');
     } finally {
       setPendingAction(null);
     }
@@ -143,7 +143,7 @@ export function useMovie2Actions() {
   return {
     rent2,
     buy2,
-    payLateFee2,
+    returnMovie2,
     upgradeRent2ToBuy,
     claimGoldenMint,
     isPending,

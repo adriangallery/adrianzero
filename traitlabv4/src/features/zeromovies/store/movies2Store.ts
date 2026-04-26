@@ -3,7 +3,7 @@ import type { Movie2RentalState } from '../types';
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 
-type S2Action = 'rent' | 'buy' | 'payLateFee' | 'upgrade' | 'claimGolden';
+type S2Action = 'rent' | 'buy' | 'return' | 'upgrade' | 'claimGolden';
 
 interface Movies2State {
   // Modal selection
