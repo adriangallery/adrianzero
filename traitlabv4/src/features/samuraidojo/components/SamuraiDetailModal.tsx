@@ -16,6 +16,8 @@ interface SamuraiDetailModalProps {
     isSamurai?: boolean; // v6: false = civilian variant (regular AdrianZERO with derived SR 1-15)
     civilSlotsAvail?: number; // v6: 10:1 ratio gate. 0 = no civilian can enter right now.
     samuraiNeededForNextSlot?: number; // v6: how many more samurai must enter before next civilian slot opens
+    walletEntries?: number; // v6: how many tokens this wallet has already entered in the current Budokai
+    walletCap?: number; // v6: per-Budokai override if non-zero, else defaultMaxPerWallet
     isKnockedOut: boolean;
     isEntered: boolean;
     isMine: boolean;
@@ -59,6 +61,8 @@ export function SamuraiDetailModal({
     isSamurai = true,
     civilSlotsAvail = 0,
     samuraiNeededForNextSlot = 0,
+    walletEntries = 0,
+    walletCap = 0,
     isKnockedOut,
     isEntered,
     isMine,
@@ -112,7 +116,10 @@ export function SamuraiDetailModal({
     // v6: civilian entries are gated 10:1 by samurai count. If a civilian tries to enter
     // when civilSlotsAvail==0 the contract reverts (NotEnoughSamurai). Gate the UI.
     const civilianGated = !isSamurai && !isEntered && !isKnockedOut && civilSlotsAvail === 0;
-    const canEnter = !isKnockedOut && !isEntered && isMine && budokaiOpen && withinWindow && !civilianGated;
+    // v6 per-wallet cap: contract reverts WalletCapReached if entriesByWallet >= cap.
+    // Mirror it client-side so we never let the user submit a guaranteed-revert tx.
+    const walletCapReached = walletCap > 0 && walletEntries >= walletCap && !isEntered;
+    const canEnter = !isKnockedOut && !isEntered && isMine && budokaiOpen && withinWindow && !civilianGated && !walletCapReached;
     const canRevive = isKnockedOut && isMine && budokaiOpen;
     const insufficientBalance = zeroBalance < feeLabel;
     const isBusy = isEntering || isEnterConfirming || isReviving || isReviveConfirming;
@@ -131,6 +138,7 @@ export function SamuraiDetailModal({
 
     const primaryLabel = (() => {
         if (!isConnected) return 'Connect Wallet';
+        if (walletCapReached && !isKnockedOut) return `Wallet cap reached (${walletEntries}/${walletCap})`;
         if (civilianGated) return `Locked — need ${samuraiNeededForNextSlot} more samurai`;
         if (insufficientBalance) return `Need ${feeLabel.toLocaleString()} $ZERO`;
         if (isKnockedOut) return `Senzu Bean (${feeLabel.toLocaleString()} $ZERO)`;
@@ -229,6 +237,18 @@ export function SamuraiDetailModal({
                                 {isSamurai
                                     ? "You don't own this samurai. Buy it on OpenSea to enter it in the next Budokai."
                                     : "You don't own this AdrianZERO. Civilians can be bought on OpenSea — any AdrianZERO can fight."}
+                            </div>
+                        )}
+
+                        {walletCapReached && isMine && !isKnockedOut && (
+                            <div className="rounded border border-amber-500/40 bg-amber-950/20 p-3 text-[10px] text-amber-200">
+                                <p className="font-bold uppercase tracking-wider text-amber-300">⚠ Wallet cap reached</p>
+                                <p className="mt-1 text-amber-200/80">
+                                    This wallet already has <span className="font-bold text-amber-300">{walletEntries}</span> tokens entered in this Budokai — the per-wallet cap is <span className="font-bold text-amber-300">{walletCap}</span>.
+                                </p>
+                                <p className="mt-1 text-amber-300/90">
+                                    No more entries from this wallet until the next Budokai opens. Sending the tx now would revert and burn your gas.
+                                </p>
                             </div>
                         )}
 

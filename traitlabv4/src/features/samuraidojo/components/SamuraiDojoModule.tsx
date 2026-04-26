@@ -11,6 +11,7 @@ import {useSamuraiRoster} from '../hooks/useSamuraiRoster';
 import {useSamuraiState} from '../hooks/useSamuraiState';
 import {useCivilianPreview} from '../hooks/useCivilianPreview';
 import {useBudokaiCounters, civilianSlotsAvailable} from '../hooks/useBudokaiCounters';
+import {useWalletEntryCount} from '../hooks/useWalletEntryCount';
 import {useEnterBudokaiBatch} from '../hooks/useDojoActions';
 import {ENTRY_FEE_ZERO} from '../types';
 import {useDojoStore} from '../store/dojoStore';
@@ -32,6 +33,10 @@ export function SamuraiDojoModule() {
     const {owned: myTokenIds, civilians: myCivilianIds, refetch: refetchOwned} = useMySamurai();
     const {counters: budokaiCounters, refetch: refetchCounters} = useBudokaiCounters(
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
+    );
+    const {gate: walletGate, refetch: refetchWalletGate} = useWalletEntryCount(
+        currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
+        budokaiCounters,
     );
     const {theme: budokaiTheme} = useBudokaiTheme(
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
@@ -154,6 +159,7 @@ export function SamuraiDojoModule() {
         refetchOwned();
         refetchStates();
         refetchCounters();
+        refetchWalletGate();
     };
 
     const selectedState = selectedTokenId ? states.get(selectedTokenId) : undefined;
@@ -176,12 +182,18 @@ export function SamuraiDojoModule() {
     const selectedCount = selectedIds.size;
     const selectedTotalFee = selectedCount * ENTRY_FEE_ZERO;
     const insufficientBatchBalance = zeroBalance < selectedTotalFee;
+    // v6 per-wallet cap: contract reverts if entriesByWallet + new entries > cap. Mirror it client-side.
+    const walletCapExceeded = walletGate.cap > 0 && selectedCount > walletGate.remaining;
 
     const handleSelectAllReady = () => {
         const samuraiToSelect = mineReadyIds;
         // Civilians need slot availability — clamp to ratio gate.
         const civilToSelect = civilReadyIds.slice(0, civilSlotsAvail);
-        const all = [...samuraiToSelect, ...civilToSelect];
+        let all = [...samuraiToSelect, ...civilToSelect];
+        // Clamp to per-wallet cap (samurai first, then civilian).
+        if (walletGate.cap > 0 && all.length > walletGate.remaining) {
+            all = all.slice(0, walletGate.remaining);
+        }
         if (all.length === 0) return;
         selectMany(all, true);
     };
@@ -198,6 +210,8 @@ export function SamuraiDojoModule() {
                 const civsSelected = Array.from(selectedIds).filter((id) => civilianOwnedSet.has(id)).length;
                 if (!alreadySelected && civsSelected >= civilSlotsAvail) return;
             }
+            // v6 per-wallet cap: don't allow selecting beyond remaining slots (keep deselect path open).
+            if (!selectedIds.has(tokenId) && walletGate.cap > 0 && selectedIds.size >= walletGate.remaining) return;
             toggleId(tokenId);
         } else {
             selectSamurai(tokenId);
@@ -374,6 +388,11 @@ export function SamuraiDojoModule() {
                                     Need {(selectedTotalFee - zeroBalance).toLocaleString()} more $ZERO
                                 </span>
                             )}
+                            {walletCapExceeded && (
+                                <span className="mt-0.5 text-[9px] text-amber-400">
+                                    Wallet cap: {walletGate.entries}/{walletGate.cap} entered · only {walletGate.remaining} slot{walletGate.remaining === 1 ? '' : 's'} left
+                                </span>
+                            )}
                         </div>
                         <div className="flex gap-2">
                             <button
@@ -385,7 +404,7 @@ export function SamuraiDojoModule() {
                             </button>
                             <button
                                 onClick={() => enterBatch(Array.from(selectedIds))}
-                                disabled={isBatchBusy || insufficientBatchBalance || selectedCount === 0}
+                                disabled={isBatchBusy || insufficientBatchBalance || walletCapExceeded || selectedCount === 0}
                                 className="rounded bg-red-600 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
                             >
                                 {isBatchBusy ? (
@@ -430,6 +449,8 @@ export function SamuraiDojoModule() {
                 samuraiNeededForNextSlot={budokaiCounters
                     ? Math.max(0, (budokaiCounters.civilianCount + 1) * 10 - budokaiCounters.samuraiCount)
                     : 0}
+                walletEntries={walletGate.entries}
+                walletCap={walletGate.cap}
                 isKnockedOut={selectedState?.isKnockedOut ?? false}
                 isEntered={selectedTokenId ? enteredSet.has(selectedTokenId) : false}
                 isMine={selectedTokenId ? myOwnedSet.has(selectedTokenId) : false}

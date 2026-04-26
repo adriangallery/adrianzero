@@ -152,6 +152,23 @@ export const SAMURAI_DOJO_ABI = [
         type: 'function',
     },
     {
+        inputs: [
+            {name: 'budokaiId', type: 'uint256'},
+            {name: 'wallet', type: 'address'},
+        ],
+        name: 'getEntriesByWallet',
+        outputs: [{name: '', type: 'uint32'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'getDefaultMaxPerWallet',
+        outputs: [{name: '', type: 'uint32'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
         inputs: [{name: 'budokaiId', type: 'uint256'}],
         name: 'getBudokaiTheme',
         outputs: [
