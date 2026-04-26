@@ -70,7 +70,14 @@ interface RawSnapshot {
 async function loadChronicle(id: number): Promise<ChronicleData | null> {
     const res = await fetch(`/budokai/${id}.json`, {cache: 'force-cache'});
     if (!res.ok) return null;
-    const raw = (await res.json()) as RawSnapshot;
+    // Vercel may return 200 + HTML SPA fallback when the static file is missing.
+    // Treat that as "not snapshotted yet" rather than letting JSON.parse crash the modal.
+    let raw: RawSnapshot;
+    try {
+        raw = (await res.json()) as RawSnapshot;
+    } catch {
+        return null;
+    }
     const matches: MatchResult[] = raw.matches.map((m) => ({
         budokaiId: id,
         round: m.round,
@@ -610,6 +617,16 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
         return Array.from(map.entries()).sort(([a], [b]) => a - b);
     }, [data]);
 
+    if (error === 'Snapshot not found') {
+        return (
+            <div className="mx-auto max-w-3xl p-12 text-center font-mono text-xs uppercase tracking-[0.4em] text-zinc-500">
+                Chronicles not yet available for Budokai {budokaiId}.
+                <p className="mt-3 normal-case tracking-normal text-zinc-600">
+                    The bracket is recorded on-chain. The narrative replay is generated shortly after each Budokai resolves.
+                </p>
+            </div>
+        );
+    }
     if (error) {
         return (
             <div className="mx-auto max-w-3xl p-12 text-center font-mono text-sm text-red-400">
