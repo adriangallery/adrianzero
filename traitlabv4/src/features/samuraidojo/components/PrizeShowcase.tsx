@@ -37,8 +37,8 @@ export function PrizeShowcase() {
                 </div>
             </div>
 
-            {/* Mechanics strip */}
-            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-800 pt-4 sm:grid-cols-4">
+            {/* Mechanics strip — 5 tiles incl. Kaioken so it's not buried in the prose. */}
+            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-800 pt-4 sm:grid-cols-3 lg:grid-cols-5">
                 <Rule
                     icon={<Zap className="h-3 w-3 text-red-400" />}
                     label="Entry Fee"
@@ -59,19 +59,36 @@ export function PrizeShowcase() {
                 />
                 <Rule
                     icon={<Flame className="h-3 w-3 text-orange-400" />}
-                    label="Losers KO'd"
-                    value="10k Senzu"
-                    sub="Persistent until revived"
+                    label="Senzu Revive"
+                    value="SR × 10 $ZERO"
+                    sub="Tiered. Persistent KO."
                 />
+                <Rule
+                    icon={<Flame className="h-3 w-3 text-red-400" />}
+                    label="Kaioken"
+                    value="5% chance"
+                    sub="×2 SR · upsets happen"
+                />
+            </div>
+
+            {/* Kaioken callout — explicit so first-time viewers know what the lore means. */}
+            <div className="mt-4 rounded border border-red-600/40 bg-red-950/20 p-3 text-[10px] leading-relaxed text-red-200">
+                <div className="mb-1 flex items-center gap-2">
+                    <Flame className="h-3.5 w-3.5 text-red-400" />
+                    <span className="font-bold uppercase tracking-[0.3em] text-red-400">Kaioken · 界王拳</span>
+                </div>
+                <p className="text-zinc-300">
+                    Each match has a deterministic <span className="font-bold text-red-400">5% chance</span> of triggering a <span className="font-bold text-red-400">Kaioken</span> — the favored fighter's effective Senryoku is doubled for that match. The roar of the underdog. This is how SR-50 civilians topple SR-100 samurai. Watch for the red flame badge in match cards: that's a Kaioken match.
+                </p>
             </div>
 
             {/* Quick rules */}
             <div className="mt-4 rounded bg-black/40 p-3 text-[10px] leading-relaxed text-zinc-400">
                 <span className="font-bold text-yellow-400">How it works: </span>
-                Enter your SAMURAIzero for 100 $ZERO (use <span className="text-white">Multi-Enter</span> for several at once).
-                When the window closes, a bracket resolves automatically — each match is weighted by <span className="text-red-400">Senryoku (SR)</span> with a 5% <span className="text-red-400">Kaioken</span> chance (×2 power, real upsets).
-                Champion takes 50% of the pool + the Golden Shuriken. 2nd: 20%. 3rd-4th: 8% each. 5th-8th: 3.5% each.
-                Anyone losing before the semifinals is <span className="text-red-400">KO'd</span> — they can't re-enter until you pay <span className="text-orange-400">10,000 $ZERO Senzu Bean</span> to revive them (90% goes to the NEXT Budokai's pool).
+                Enter your SAMURAIzero (or any AdrianZERO as <span className="text-fuchsia-400">civilian</span>) for the entry fee.
+                When the window closes, a bracket resolves automatically — each match is weighted by <span className="text-red-400">Senryoku (SR) + Honor</span> with the 5% <span className="text-red-400">Kaioken</span> roll.
+                Champion takes 50% of the pool + the Golden/Metal Shuriken. 2nd: 20%. 3rd-4th: 8% each. 5th-8th: 3.5% each.
+                Anyone losing before the semifinals is <span className="text-red-400">KO'd</span> — they can't re-enter until you pay <span className="text-orange-400">SR × 10 $ZERO</span> for a Senzu Bean (10% burned, 90% to current pool).
             </div>
         </div>
     );

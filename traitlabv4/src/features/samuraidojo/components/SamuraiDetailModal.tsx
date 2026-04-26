@@ -69,7 +69,11 @@ export function SamuraiDetailModal({
     const {showSuccess} = useDojoStore();
     const [meta, setMeta] = useState<Samurai | null>(null);
 
-    const feeLabel = isKnockedOut ? SENZU_FEE_ZERO : ENTRY_FEE_ZERO;
+    // v6 tiered Senzu cost: senryoku × 10 ZERO. Falls back to LEGACY_SENZU_FEE (10k) only when
+    // senryoku is 0 — which shouldn't happen for KO'd tokens (they had to enter first to get KO'd,
+    // and entry persists SR for civilians).
+    const senzuFee = isKnockedOut && senryoku > 0 ? senryoku * 10 : SENZU_FEE_ZERO;
+    const feeLabel = isKnockedOut ? senzuFee : ENTRY_FEE_ZERO;
     const {enter, isPending: isEntering, isConfirming: isEnterConfirming, isConfirmed: isEnterConfirmed, error: enterError, reset: resetEnter} = useEnterBudokai();
     const {revive, isPending: isReviving, isConfirming: isReviveConfirming, isConfirmed: isReviveConfirmed, error: reviveError, reset: resetRevive} = useReviveSamurai();
 

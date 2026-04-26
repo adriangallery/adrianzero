@@ -120,11 +120,11 @@ export const SamuraiCard = memo(function SamuraiCard({
                     </>
                 )}
 
-                {/* Red overlay for KO'd — dojo floor */}
+                {/* Red overlay for KO'd — dojo floor. Tag scales down with card to avoid overflow on tight grids. */}
                 {isKnockedOut && (
                     <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-red-900/40 to-transparent">
-                        <span className="mb-2 rounded bg-black/70 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-400">
-                            Unconscious
+                        <span className="mb-1.5 rounded bg-black/70 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-red-400 sm:text-[8px]">
+                            KO
                         </span>
                     </div>
                 )}

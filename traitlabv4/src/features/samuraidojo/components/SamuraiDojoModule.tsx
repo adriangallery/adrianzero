@@ -329,7 +329,7 @@ export function SamuraiDojoModule() {
                                 <span className="text-fuchsia-200/70">ratio gate 10:1</span>
                             </div>
                         )}
-                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
+                        <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 sm:gap-2 md:grid-cols-7 lg:grid-cols-9">
                             {entrantsIds.map((tokenId) => {
                                 const state = states.get(tokenId);
                                 const sr = state?.senryoku ?? 0;
@@ -798,7 +798,7 @@ function CardGrid({
 }) {
     if (ids.length === 0) return null;
     return (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
+        <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 sm:gap-2 md:grid-cols-7 lg:grid-cols-9">
             {ids.map((tokenId) => {
                 const state = states.get(tokenId);
                 const onChainSR = state?.senryoku ?? 0;

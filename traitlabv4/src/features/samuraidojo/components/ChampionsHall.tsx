@@ -147,13 +147,10 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
                 </div>
             ) : (
                 <>
-                    <div className="space-y-2">
-                        <PodiumRow
-                            rank="1st"
-                            tokenId={champions!.champion}
-                            color="text-yellow-400"
-                            icon={<Trophy className="h-3 w-3" />}
-                        />
+                    {/* Champion: prominent hero with large image. Click → detail modal. */}
+                    <ChampionHero tokenId={champions!.champion} />
+                    {/* Runner-up + semis: compact rows below. */}
+                    <div className="mt-3 space-y-1.5">
                         <PodiumRow
                             rank="2nd"
                             tokenId={champions!.runnerUp}
@@ -186,9 +183,13 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
 }
 
 function PodiumRow({rank, tokenId, color, icon}: {rank: string; tokenId: number; color: string; icon: React.ReactNode}) {
+    const {selectSamurai} = useDojoStore();
     if (!tokenId) return null;
     return (
-        <div className="flex items-center gap-3">
+        <button
+            onClick={() => selectSamurai(tokenId)}
+            className="flex w-full items-center gap-3 rounded px-1 py-0.5 text-left transition-colors hover:bg-zinc-900/50"
+        >
             <img
                 src={getSamuraiImageUrl(tokenId)}
                 alt={`#${tokenId}`}
@@ -201,7 +202,39 @@ function PodiumRow({rank, tokenId, color, icon}: {rank: string; tokenId: number;
             </div>
             <span className="ml-auto font-mono text-[10px] text-zinc-400">#{tokenId}</span>
             <HonorTag tokenId={tokenId} />
-        </div>
+        </button>
+    );
+}
+
+/** Champion hero — large image + 1ST badge. Click opens the detail modal. */
+function ChampionHero({tokenId}: {tokenId: number}) {
+    const {selectSamurai} = useDojoStore();
+    if (!tokenId) return null;
+    return (
+        <button
+            onClick={() => selectSamurai(tokenId)}
+            className="group relative block w-full overflow-hidden rounded border border-yellow-500/40 bg-gradient-to-b from-yellow-950/30 to-transparent text-left transition-all hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(234,179,8,0.25)]"
+        >
+            <div className="relative aspect-square w-full">
+                <img
+                    src={getSamuraiImageUrl(tokenId)}
+                    alt={`Champion #${tokenId}`}
+                    className="h-full w-full object-contain"
+                    style={{imageRendering: 'pixelated'}}
+                />
+                <div className="absolute left-2 top-2 flex items-center gap-1 rounded bg-black/70 px-1.5 py-0.5 backdrop-blur-sm">
+                    <Trophy className="h-3 w-3 text-yellow-400" />
+                    <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-yellow-400">1st</span>
+                </div>
+                <div className="absolute right-2 top-2 flex items-center gap-1">
+                    <HonorTag tokenId={tokenId} />
+                </div>
+            </div>
+            <div className="flex items-center justify-between border-t border-yellow-900/40 px-2.5 py-1.5">
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-yellow-400">Champion</span>
+                <span className="font-mono text-[11px] font-bold text-yellow-300">#{tokenId}</span>
+            </div>
+        </button>
     );
 }
 
