@@ -182,7 +182,10 @@ export function SamuraiDetailModal({
                     <div className="flex-1 space-y-4 overflow-y-auto p-5">
                         <div>
                             <h2 className="text-xl font-bold text-white">
-                                {isSamurai ? (meta?.name ?? `SamuraiZERO #${tokenId}`) : `AdrianZERO #${tokenId}`}
+                                {/* Always prefer the AdrianLAB metadata name — civilians have official
+                                    names too (e.g. #148 "Adrian"). Fall back to the generic format
+                                    only when metadata is missing/loading. */}
+                                {meta?.name ?? (isSamurai ? `SamuraiZERO #${tokenId}` : `AdrianZERO #${tokenId}`)}
                             </h2>
                             <p className="mt-0.5 text-[10px] uppercase tracking-wider">
                                 {isSamurai ? (
