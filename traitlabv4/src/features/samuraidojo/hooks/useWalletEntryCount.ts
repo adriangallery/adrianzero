@@ -1,5 +1,5 @@
 import {useMemo} from 'react';
-import {useAccount, useReadContract, useReadContracts} from 'wagmi';
+import {useAccount, useReadContracts} from 'wagmi';
 import {base} from 'wagmi/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
