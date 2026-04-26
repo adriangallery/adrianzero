@@ -577,37 +577,47 @@ function MineSections({
             </div>
         );
     }
-    const hasSamurai = samuraiInIds.length + samuraiReadyIds.length + samuraiKoIds.length > 0;
-    const hasCivilians = civilInIds.length + civilReadyIds.length + civilKoIds.length > 0;
+    const hasSamurai = samuraiReadyIds.length + samuraiKoIds.length > 0 || samuraiInIds.length > 0;
+    const hasCivilians = civilReadyIds.length + civilKoIds.length > 0 || civilInIds.length > 0;
+
+    // Combined "In the Dojo" — once a token is committed, the samurai/civilian distinction matters
+    // less than "they're locked into the bracket". Card border still shows the type at a glance.
+    const allInIds = [...samuraiInIds, ...civilInIds].sort((a, b) => a - b);
+
     return (
         <div className="space-y-8">
-            {hasSamurai && (
+            {/* IN THE DOJO — unified across samurai + civilian. */}
+            {allInIds.length > 0 && (
+                <SectionBlock
+                    title="In the Dojo"
+                    kanji="出場"
+                    sub="Committed. Awaiting the bracket."
+                    color="text-yellow-400"
+                    count={allInIds.length}
+                >
+                    <CardGrid ids={allInIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                </SectionBlock>
+            )}
+
+            {/* SAMURAI section — only Ready + KO, since In the Dojo is shared above. */}
+            {hasSamurai && (samuraiReadyIds.length + samuraiKoIds.length > 0) && (
                 <div className="space-y-6">
                     <div className="flex items-baseline gap-3 border-b border-zinc-900 pb-1">
                         <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-yellow-500">Samurai</span>
                         <span className="font-mono text-[9px] text-zinc-700">侍</span>
                         <span className="text-[9px] tracking-wider text-zinc-700">Pre-loaded SR. Trained warriors.</span>
                     </div>
-                    <SectionBlock
-                        title="In the Dojo"
-                        kanji="出場"
-                        sub="Committed. Awaiting the bracket."
-                        color="text-yellow-400"
-                        count={samuraiInIds.length}
-                        emptyMsg="None of yours are in yet. Enter to secure bracket slots."
-                    >
-                        <CardGrid ids={samuraiInIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
-                    </SectionBlock>
-                    <SectionBlock
-                        title="Ready to Enter"
-                        kanji="待機"
-                        sub="Available. Pay the fee and lock them in."
-                        color="text-zinc-300"
-                        count={samuraiReadyIds.length}
-                        emptyMsg="No available samurai to enter."
-                    >
-                        <CardGrid ids={samuraiReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
-                    </SectionBlock>
+                    {samuraiReadyIds.length > 0 && (
+                        <SectionBlock
+                            title="Ready to Enter"
+                            kanji="待機"
+                            sub="Available. Pay the fee and lock them in."
+                            color="text-zinc-300"
+                            count={samuraiReadyIds.length}
+                        >
+                            <CardGrid ids={samuraiReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                        </SectionBlock>
+                    )}
                     {samuraiKoIds.length > 0 && (
                         <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu to re-enter." color="text-red-400" count={samuraiKoIds.length}>
                             <CardGrid ids={samuraiKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
@@ -615,7 +625,9 @@ function MineSections({
                     )}
                 </div>
             )}
-            {hasCivilians && (
+
+            {/* CIVILIAN section — only Ready + KO + warnings, since In the Dojo is shared above. */}
+            {hasCivilians && (civilReadyIds.length + civilKoIds.length > 0) && (
                 <div className="space-y-6">
                     <div className="flex flex-wrap items-baseline gap-3 border-b border-fuchsia-900/40 pb-1">
                         <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-fuchsia-400">Civilian</span>
@@ -625,10 +637,7 @@ function MineSections({
                             {civilSlotsAvail > 0 ? `${civilSlotsAvail} slot${civilSlotsAvail === 1 ? '' : 's'} open` : 'civilian slots locked'}
                         </div>
                     </div>
-                    {/* Ratio-gate explainer — replaces the cryptic "no slots — need more samurai" tag.
-                        Shows the live samurai/civilian count and computes how many more samurai are
-                        needed before the next civilian slot opens. */}
-                    {civilSlotsAvail === 0 && budokaiCounters && (() => {
+                    {civilSlotsAvail === 0 && budokaiCounters && civilReadyIds.length > 0 && (() => {
                         const sam = budokaiCounters.samuraiCount;
                         const civ = budokaiCounters.civilianCount;
                         const samuraiNeededForNext = (civ + 1) * 10 - sam;
@@ -646,35 +655,23 @@ function MineSections({
                             </div>
                         );
                     })()}
-                    {/* Stale-SR warning — civilians whose stored on-chain senryoku is >15 (set by a
-                        legacy mint script). These will enter the contract as samurai-with-that-SR
-                        rather than civilians, bypassing the 1-15 derived range and the ratio gate. */}
                     {civilStaleSrIds.length > 0 && (
                         <div className="rounded border border-amber-500/40 bg-amber-950/20 px-3 py-2 text-[10px] text-amber-300">
                             <p className="font-bold uppercase tracking-wider">⚠ {civilStaleSrIds.length} civilian{civilStaleSrIds.length === 1 ? '' : 's'} with stored SR &gt; 15</p>
                             <p className="mt-1 text-amber-200/80">Tokens minted with legacy senryoku stored on-chain. Despite their civilian roster status, the contract will treat them as samurai-with-that-SR on entry. Affected: {civilStaleSrIds.slice(0, 8).map((id) => `#${id}`).join(', ')}{civilStaleSrIds.length > 8 ? `, +${civilStaleSrIds.length - 8} more` : ''}.</p>
                         </div>
                     )}
-                    <SectionBlock
-                        title="In the Dojo"
-                        kanji="出場"
-                        sub="Civilians who made the cut."
-                        color="text-fuchsia-400"
-                        count={civilInIds.length}
-                        emptyMsg="No civilians of yours are in yet."
-                    >
-                        <CardGrid ids={civilInIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
-                    </SectionBlock>
-                    <SectionBlock
-                        title="Ready to Rise"
-                        kanji="決起"
-                        sub="Pay the fee, derive SR 1–15, fight the odds."
-                        color="text-fuchsia-300"
-                        count={civilReadyIds.length}
-                        emptyMsg="No civilian AdrianZEROs available."
-                    >
-                        <CardGrid ids={civilReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
-                    </SectionBlock>
+                    {civilReadyIds.length > 0 && (
+                        <SectionBlock
+                            title="Ready to Rise"
+                            kanji="決起"
+                            sub="Pay the fee, derive SR 1–15, fight the odds."
+                            color="text-fuchsia-300"
+                            count={civilReadyIds.length}
+                        >
+                            <CardGrid ids={civilReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                        </SectionBlock>
+                    )}
                     {civilKoIds.length > 0 && (
                         <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu (cost = SR × 10 ZERO)." color="text-red-400" count={civilKoIds.length}>
                             <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
