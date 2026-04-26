@@ -166,7 +166,7 @@ export function SamuraiDetailModal({
                         )}
 
                         <div className="absolute left-3 bottom-3">
-                            <ScouterOverlay senryoku={senryoku} tier={meta?.tier} animate={open} />
+                            <ScouterOverlay senryoku={senryoku} honor={honor} tier={meta?.tier} animate={open} />
                         </div>
                     </div>
 
