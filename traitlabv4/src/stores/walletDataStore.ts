@@ -5,9 +5,21 @@
  */
 
 import { create } from 'zustand';
+import { createPublicClient, http, parseAbi } from 'viem';
+import { base } from 'viem/chains';
 import { alchemyClient } from '@/lib/api/alchemy/client';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
+import { buildAlchemyRpcUrls } from '@/config/alchemy';
 import type { AdrianZeroToken, Trait, TraitCategory } from '@/types/nft.types';
+
+// Public Base RPC client for direct on-chain balance queries. We bypass Alchemy's
+// NFT API for ERC-1155 trait balances because it silently filters out a large
+// portion of holdings (spam/airdrop heuristics) — confirmed 2026-04-26 when
+// Alchemy returned ~17 traits while balanceOfBatch returned 333 on the same wallet.
+const ERC1155_ABI = parseAbi([
+  'function balanceOfBatch(address[] accounts, uint256[] ids) view returns (uint256[])',
+]);
+const BATCH_CHUNK_SIZE = 500;
 
 interface TraitMetadata {
   tokenId: string;
@@ -207,104 +219,93 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
   },
 
   loadAllTraits: async (address) => {
-    const metadata = get().traitsMetadata;
-    if (!metadata) {
-      // Load metadata first
+    if (!get().traitsMetadata) {
       await get().loadTraitsMetadata();
+    }
+    const allMetadata = get().traitsMetadata;
+    if (!allMetadata) {
+      set({ traitsError: new Error('traits metadata unavailable'), isLoadingTraits: false });
+      return;
     }
 
     set({ isLoadingTraits: true, traitsProgress: 0, traitsError: null });
 
     try {
+      const allIds = Object.keys(allMetadata)
+        .map((s) => Number(s))
+        .filter((n) => Number.isFinite(n) && n > 0)
+        .sort((a, b) => a - b);
+
+      const rpcUrls = buildAlchemyRpcUrls();
+      const client = createPublicClient({
+        chain: base,
+        transport: http(rpcUrls[0], { retryCount: 1 }),
+      });
+
       const allTraits: Trait[] = [];
       const allRawTokens: RawERC1155Token[] = [];
-      const seenIds = new Set<string>();
-      const seenRawIds = new Set<string>();
-      let pageKey: string | undefined = undefined;
-      let totalEstimate = 0;
+      const wallet = address as `0x${string}`;
 
-      // Load all pages
-      do {
-        const response = await alchemyClient.getERC1155TokensPage(address, [
-          CONTRACT_ADDRESSES.ADRIAN_LAB,
-        ], pageKey);
+      for (let i = 0; i < allIds.length; i += BATCH_CHUNK_SIZE) {
+        const chunk = allIds.slice(i, i + BATCH_CHUNK_SIZE);
+        const accounts = new Array<`0x${string}`>(chunk.length).fill(wallet);
+        const ids = chunk.map((n) => BigInt(n));
 
-        // Accumulate raw tokens for packs/serums derivation
-        response.ownedNfts.forEach((nft) => {
-          if (!seenRawIds.has(nft.tokenId)) {
-            seenRawIds.add(nft.tokenId);
-            allRawTokens.push({
-              tokenId: nft.tokenId,
-              balance: nft.balance || '0',
-              name: nft.name,
-              image: nft.image,
-              metadata: nft.raw?.metadata,
-            });
-          }
-        });
-
-        // Transform to our type
-        const traits: Trait[] = response.ownedNfts
-          .map((nft) => {
-            const metadata = get().traitsMetadata?.[nft.tokenId];
-
-            if (!metadata) {
-              return null;
-            }
-
-            const balance = parseInt(nft.balance || '0');
-            if (balance === 0) {
-              return null;
-            }
-
-            // Deduplicate
-            if (seenIds.has(nft.tokenId)) {
-              return null;
-            }
-            seenIds.add(nft.tokenId);
-
-            const numericId = parseInt(nft.tokenId);
-            const isOgPunkReward = numericId >= 100001 && numericId <= 101003;
-            const githubSvgUrl = isOgPunkReward
-              ? `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/ogpunks/${nft.tokenId}.svg`
-              : `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${nft.tokenId}.svg`;
-            const labimagesSvgUrl = isOgPunkReward
-              ? `https://adrianlab.vercel.app/labimages/ogpunks/${nft.tokenId}.svg`
-              : `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${nft.tokenId}.svg`;
-
-            return {
-              tokenId: nft.tokenId,
-              name: metadata.name,
-              category: metadata.category.toUpperCase(),
-              fileName: metadata.fileName,
-              maxSupply: metadata.maxSupply,
-              balance,
-              rarity: metadata.rarity,
-              metadata: nft.raw?.metadata,
-              image: {
-                cachedUrl: githubSvgUrl,
-                originalUrl: labimagesSvgUrl,
-                thumbnailUrl: nft.image?.cachedUrl || nft.image?.thumbnailUrl || nft.image?.originalUrl || labimagesSvgUrl,
-              },
-            } as Trait;
-          })
-          .filter((trait): trait is Trait => trait !== null);
-
-        allTraits.push(...traits);
-        totalEstimate = Math.max(totalEstimate, response.totalCount || allTraits.length);
-
-        // Update progress
-        set({
-          traitsProgress: totalEstimate > 0 ? Math.round((allTraits.length / totalEstimate) * 100) : 0,
-        });
-
-        pageKey = response.pageKey;
-
-        // Small delay to avoid rate limiting
-        if (pageKey) {
-          await new Promise(resolve => setTimeout(resolve, 150));
+        let balances: readonly bigint[];
+        try {
+          balances = (await client.readContract({
+            address: CONTRACT_ADDRESSES.ADRIAN_LAB as `0x${string}`,
+            abi: ERC1155_ABI,
+            functionName: 'balanceOfBatch',
+            args: [accounts, ids],
+          })) as readonly bigint[];
+        } catch (err) {
+          console.error('balanceOfBatch failed for chunk', i, err);
+          continue;
         }
-      } while (pageKey);
+
+        for (let j = 0; j < chunk.length; j++) {
+          const balance = Number(balances[j] ?? 0n);
+          if (balance === 0) continue;
+
+          const tokenId = String(chunk[j]);
+          const metadata = allMetadata[tokenId];
+          if (!metadata) continue;
+
+          const numericId = chunk[j];
+          const isOgPunkReward = numericId >= 100001 && numericId <= 101003;
+          const githubSvgUrl = isOgPunkReward
+            ? `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/ogpunks/${tokenId}.svg`
+            : `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${tokenId}.svg`;
+          const labimagesSvgUrl = isOgPunkReward
+            ? `https://adrianlab.vercel.app/labimages/ogpunks/${tokenId}.svg`
+            : `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${tokenId}.svg`;
+
+          allTraits.push({
+            tokenId,
+            name: metadata.name,
+            category: metadata.category.toUpperCase(),
+            fileName: metadata.fileName,
+            maxSupply: metadata.maxSupply,
+            balance,
+            rarity: metadata.rarity,
+            image: {
+              cachedUrl: githubSvgUrl,
+              originalUrl: labimagesSvgUrl,
+              thumbnailUrl: labimagesSvgUrl,
+            },
+          } as Trait);
+
+          allRawTokens.push({
+            tokenId,
+            balance: String(balance),
+          });
+        }
+
+        set({
+          traitsProgress: Math.min(100, Math.round(((i + chunk.length) / allIds.length) * 100)),
+        });
+      }
 
       set({
         traits: allTraits,
