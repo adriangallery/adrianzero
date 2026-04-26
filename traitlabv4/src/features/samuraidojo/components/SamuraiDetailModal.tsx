@@ -202,14 +202,22 @@ export function SamuraiDetailModal({
                         )}
 
                         {isEntered && !isKnockedOut && (
-                            <div className="rounded border border-yellow-600/30 bg-yellow-900/10 p-3 text-[10px] text-yellow-400">
-                                <Sparkles className="mr-1 inline h-3 w-3" /> Already entered in the current Budokai.
-                            </div>
+                            isSamurai ? (
+                                <div className="rounded border border-yellow-600/30 bg-yellow-900/10 p-3 text-[10px] text-yellow-400">
+                                    <Sparkles className="mr-1 inline h-3 w-3" /> Already entered in the current Budokai.
+                                </div>
+                            ) : (
+                                <div className="rounded border border-fuchsia-600/40 bg-fuchsia-900/15 p-3 text-[10px] text-fuchsia-300">
+                                    <Sparkles className="mr-1 inline h-3 w-3" /> {pickCivilianEnteredCopy(tokenId ?? 0)}
+                                </div>
+                            )
                         )}
 
                         {!isMine && (
                             <div className="rounded border border-zinc-700 bg-zinc-900 p-3 text-[10px] text-zinc-400">
-                                You don't own this samurai. Buy it on OpenSea to enter it in the next Budokai.
+                                {isSamurai
+                                    ? "You don't own this samurai. Buy it on OpenSea to enter it in the next Budokai."
+                                    : "You don't own this AdrianZERO. Civilians can be bought on OpenSea — any AdrianZERO can fight."}
                             </div>
                         )}
 
@@ -253,6 +261,22 @@ export function SamuraiDetailModal({
             </Dialog.Portal>
         </Dialog.Root>
     );
+}
+
+/** Picks a deterministic flavor line for a civilian who has entered the current Budokai.
+ *  The same tokenId always returns the same line — keeps the modal stable across re-renders. */
+function pickCivilianEnteredCopy(tokenId: number): string {
+    const lines = [
+        '民兵 — A commoner crossed the dojo gates. The samurai class watches with concern.',
+        `#${tokenId} traded comfort for combat. The rebellion grows by one.`,
+        '民の王 awaits. No senryoku, no fear — just the bracket and the will.',
+        'A regular AdrianZERO chose violence. The dojo respects it.',
+        `#${tokenId} bowed at the gates. Kaioken doesn't care about your tier.`,
+        'Drafted into the underdog bracket. May the upset find you.',
+        `The hierarchy trembles. #${tokenId} is in.`,
+        'No samurai mark, no roster line. Just heart. Welcome to the dojo.',
+    ];
+    return lines[tokenId % lines.length];
 }
 
 function Attr({label, value, icon}: {label: string; value: string; icon?: React.ReactNode}) {
