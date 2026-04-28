@@ -6,6 +6,16 @@ import {useAuction, useOutbidBalance} from '../hooks/useAuction';
 import {useWithdrawOutbid} from '../hooks/useAuctionActions';
 import {CountdownTimer} from './CountdownTimer';
 import {BidPanel} from './BidPanel';
+import {MOVIES_S2_MOCK} from '@/features/zeromovies/data/movies2Mock';
+
+/**
+ * Pre-launch placeholder. Until the owner calls `createAuction(42, ...)`, the
+ * page shows the queued auction movie (Major Dutch Schaefer GIF) with a
+ * "coming soon" badge — that way visitors know what's about to drop and the
+ * page isn't a blank "no auction" message.
+ */
+const RESERVED_AUCTION_MOVIE = MOVIES_S2_MOCK.find((m) => m.reservedFor === 'auction');
+const ADRIAN_LAB_BASE = 'https://adrianlab.vercel.app/labimages/zeromovies2';
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 
@@ -33,14 +43,79 @@ export function AuctionModule() {
     }
 
     if (!auction) {
+        const reserved = RESERVED_AUCTION_MOVIE;
+        const previewUrl = reserved?.hasAnimation
+            ? `${ADRIAN_LAB_BASE}/animated/${reserved.id}.gif`
+            : reserved
+              ? `${ADRIAN_LAB_BASE}/${reserved.id}.svg`
+              : null;
         return (
-            <div className="mx-auto max-w-2xl px-4 py-12 text-center">
-                <Film className="mx-auto mb-4 h-12 w-12 text-zinc-700" />
-                <h1 className="text-xl font-bold tracking-wider text-zinc-300">No live auction</h1>
-                <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
-                    The next ZEROmovies S2 pre-launch auction will appear here. Watch the
-                    Discord for the announcement — pre-auctions kick off on a few hours' notice.
-                </p>
+            <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+                <div className="text-center">
+                    <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-purple-400">
+                        ZEROmovies S2 · Pre-launch Auction
+                    </span>
+                    <h1 className="mt-1 text-2xl font-bold tracking-wider text-yellow-400 sm:text-3xl">
+                        {reserved?.name ?? 'Coming soon'}
+                    </h1>
+                    <p className="mt-2 text-[11px] uppercase tracking-widest text-zinc-500">
+                        Auction date · TBD
+                    </p>
+                </div>
+
+                <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
+                    {previewUrl ? (
+                        <div className="relative w-full max-w-xs shrink-0">
+                            <div className="relative overflow-hidden rounded border-2 border-purple-500/40 bg-zinc-950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
+                                <img
+                                    src={previewUrl}
+                                    alt={reserved?.name ?? 'Movie preview'}
+                                    className="aspect-square w-full object-contain"
+                                    style={{imageRendering: 'pixelated'}}
+                                    loading="eager"
+                                />
+                                {reserved?.hasAnimation && (
+                                    <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">
+                                        Animated · GIF
+                                    </div>
+                                )}
+                                <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/80 to-transparent px-2 pt-6 pb-2">
+                                    <span className="rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">
+                                        Reserved · Auction
+                                    </span>
+                                </div>
+                            </div>
+                            <p className="mt-2 text-center text-[10px] text-zinc-500">
+                                Movie ID #{reserved?.id} · 1/1 ZEROmovies S2 cover
+                            </p>
+                        </div>
+                    ) : (
+                        <Film className="h-12 w-12 text-zinc-700" />
+                    )}
+
+                    <div className="flex-1 space-y-3">
+                        <div className="rounded border border-zinc-800 bg-zinc-950/60 p-3">
+                            <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-500">What's coming</span>
+                            <p className="mt-1 text-[11px] leading-relaxed text-zinc-300">
+                                A 48-hour English auction in <span className="font-bold text-yellow-400">$ZERO</span> for
+                                the only animated cover in S2. Bids start at{' '}
+                                <span className="font-bold text-white">5,000 ZERO</span>, +5% min increment, with anti-snipe
+                                extensions on bids placed in the last 5 minutes.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                            <Stat label="Start price" value="5,000 ZERO" sub="no reserve" />
+                            <Stat label="Duration" value="48h" sub="anti-snipe +5min" />
+                            <Stat label="Split" value="50/30/20" sub="burn / FF / S1 pool" />
+                        </div>
+
+                        <div className="rounded border border-purple-500/30 bg-purple-950/20 p-3 text-[10px] leading-relaxed text-purple-200">
+                            Watch the Discord and X feed for the start time announcement. The
+                            countdown lights up here the moment the auction goes live.
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
