@@ -18,7 +18,7 @@ interface BidPanelProps {
 
 export function BidPanel({auction, onAfterAction}: BidPanelProps) {
     const {address, isConnected} = useAccount();
-    const {balance: zeroBalance} = useZeroBalance();
+    const {balanceRaw: zeroBalance} = useZeroBalance();
     const {allowance, refetch: refetchAllowance} = useZeroAllowanceForAuction();
 
     const minNextZ = Number(formatUnits(auction.minNextBid, 18));

@@ -27,7 +27,7 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 export function AuctionModule() {
     const {auction, isLoading, refetch} = useAuction();
     const {balance: outbidBalance, refetch: refetchOutbid} = useOutbidBalance();
-    const {address, isConnected} = useAccount();
+    const {isConnected} = useAccount();
     const {withdraw, isPending: isWithdrawPending, isConfirming: isWithdrawConfirming, isConfirmed: isWithdrawConfirmed} = useWithdrawOutbid();
 
     useEffect(() => {
