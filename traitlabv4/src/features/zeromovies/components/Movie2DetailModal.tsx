@@ -73,7 +73,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
 
             {/* Poster */}
             <div className="relative aspect-square w-full overflow-hidden bg-zinc-950">
-              {movie.isMystery ? (
+              {movie.isMystery && !movie.revealed ? (
                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-black">
                   <span className="font-mono text-6xl font-bold text-zinc-700">???</span>
                 </div>
@@ -108,7 +108,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                 Season 2 · {ANGLE_LABEL[movie.angle]} · #{movie.id}
               </div>
               <div className="mt-0.5 text-base font-bold text-white">
-                {movie.isMystery ? 'Mystery card' : movie.name}
+                {movie.isMystery && !movie.revealed ? 'Mystery card' : movie.name}
               </div>
               {/* Status line */}
               <div className="mt-2 text-[10px] text-zinc-500">

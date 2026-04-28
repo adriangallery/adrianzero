@@ -113,13 +113,21 @@ export function useMovies2Catalog() {
       ];
       const onChainName = tuple[1];
       const isMystery = tuple[2];
+      const revealed = tuple[3];
 
+      // Hide the real name from the client-side overlay if the movie is still
+      // a mystery and hasn't been revealed yet — overlay.name would otherwise
+      // leak the answer in dev tools / the bundle.
       const overlay = MOVIES_S2_MOCK.find((m) => m.id === id);
+      const hideName = isMystery && !revealed;
+      const displayName = hideName ? '???' : (overlay?.name || onChainName);
+
       out.push({
         id,
-        name: overlay?.name || onChainName,
+        name: displayName,
         angle: overlay?.angle ?? 'cult',
         isMystery,
+        revealed,
         reservedFor: overlay?.reservedFor,
         hasAnimation: overlay?.hasAnimation,
       });

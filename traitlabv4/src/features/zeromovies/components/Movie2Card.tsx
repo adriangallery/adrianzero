@@ -53,7 +53,7 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
       `}
     >
       <div className="relative aspect-square w-full overflow-hidden rounded-t bg-zinc-900">
-        {movie.isMystery ? (
+        {movie.isMystery && !movie.revealed ? (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-black">
             <span className="font-mono text-3xl font-bold text-zinc-700">???</span>
           </div>

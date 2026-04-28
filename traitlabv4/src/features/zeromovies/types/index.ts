@@ -23,6 +23,12 @@ export interface Movie2 {
   angle: 'cult' | 'pixel' | 'horror';
   isMystery: boolean;
   /**
+   * On-chain `movieRevealed` flag. Flips to true the first time the movie is
+   * rented or bought. While `isMystery && !revealed`, the UI hides the cover
+   * and renders a "???" tile.
+   */
+  revealed: boolean;
+  /**
    * Pre-launch reservation marker. The auction movie and Budokai prize are
    * locked off the public shelf and routed through their own flows. Once the
    * underlying token is minted via `adminMintMovie2`, S2 marks it

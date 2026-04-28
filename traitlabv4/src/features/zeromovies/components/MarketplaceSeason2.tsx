@@ -41,7 +41,13 @@ export function MarketplaceSeason2() {
   const [colOfferAmount, setColOfferAmount] = useState('');
 
   const movieName = (id: number) => movies.find((m) => m.id === id)?.name ?? `Movie #${id}`;
-  const isMystery = (id: number) => movies.find((m) => m.id === id)?.isMystery ?? false;
+  // A movie counts as "mystery" in the marketplace UI only when it's still
+  // un-revealed on-chain. Once `_maybeReveal` flips `revealed=true`, the
+  // poster shows even if the catalog entry was originally seeded mystery.
+  const isMystery = (id: number) => {
+    const m = movies.find((x) => x.id === id);
+    return !!m && m.isMystery && !m.revealed;
+  };
   const sortedFeed = [...MOCK_OFFERS].sort((a, b) => b.amount - a.amount);
 
   return (
