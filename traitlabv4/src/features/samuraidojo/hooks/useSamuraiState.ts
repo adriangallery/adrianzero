@@ -17,12 +17,18 @@ export interface PerTokenState {
  *
  * v6 note: `getHonor` is a v6 selector. On v4-deployed diamonds the call fails gracefully
  * (wagmi returns status='failure' per contract) and we default honor to 0 for those tokens.
+ *
+ * `pollMs` is plumbed from the parent so once a Budokai is Resolved the per-token state is
+ * frozen and we stop polling — SR/KO/honor don't change without an on-chain action.
  */
-export function useSamuraiState(tokenIds: number[]): {
+export function useSamuraiState(tokenIds: number[], pollMs?: number | false): {
     states: Map<number, PerTokenState>;
     refetch: () => void;
     isLoading: boolean;
 } {
+    // Stable key for tokenIds — protects the contracts memo from unstable array refs upstream.
+    const tokenIdsKey = useMemo(() => tokenIds.join(','), [tokenIds]);
+
     const contracts = useMemo(() => {
         type Call = {
             address: `0x${string}`;
@@ -56,11 +62,16 @@ export function useSamuraiState(tokenIds: number[]): {
             });
         }
         return list;
-    }, [tokenIds]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tokenIdsKey]);
 
     const {data, refetch, isLoading} = useReadContracts({
         contracts,
-        query: {enabled: tokenIds.length > 0, refetchInterval: 30_000},
+        query: {
+            enabled: tokenIds.length > 0,
+            refetchInterval: pollMs === undefined ? 30_000 : pollMs,
+            refetchOnWindowFocus: true,
+        },
     });
 
     const states = useMemo(() => {

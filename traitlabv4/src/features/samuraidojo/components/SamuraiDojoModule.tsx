@@ -1,11 +1,12 @@
 import {useEffect, useMemo, useState} from 'react';
-import {useReadContract} from 'wagmi';
+import {useAccount, useReadContract} from 'wagmi';
 import {base} from 'wagmi/chains';
-import {Loader2, Sword} from 'lucide-react';
+import {useConnectModal} from '@rainbow-me/rainbowkit';
+import {Loader2, Sword, Eye, Wallet} from 'lucide-react';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_DOJO_ABI, BUDOKAI_STATUS} from '@/lib/web3/abi';
 import {useZeroBalance} from '@/features/zeromovies/hooks/useZeroBalance';
-import {useBudokaiEntries, useBudokaiInfo, useCurrentBudokaiId} from '../hooks/useDojoContract';
+import {dojoPollInterval, useBudokaiEntries, useBudokaiInfo, useCurrentBudokaiId} from '../hooks/useDojoContract';
 import {useMySamurai} from '../hooks/useMySamurai';
 import {useSamuraiRoster} from '../hooks/useSamuraiRoster';
 import {useSamuraiState} from '../hooks/useSamuraiState';
@@ -31,14 +32,22 @@ type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 export function SamuraiDojoModule() {
     const {currentBudokaiId, refetch: refetchCurrent} = useCurrentBudokaiId();
     const {info: budokaiInfo, refetch: refetchInfo} = useBudokaiInfo(currentBudokaiId);
-    const {entries, refetch: refetchEntries} = useBudokaiEntries(currentBudokaiId);
+
+    // Adaptive polling — Resolved Budokais are frozen on-chain so polling burns RPC for nothing.
+    // Resolving polls fast (about to flip). Other states use the per-hook default.
+    const fastPoll = dojoPollInterval(budokaiInfo?.status, 15_000);
+    const slowPoll = dojoPollInterval(budokaiInfo?.status, 30_000);
+
+    const {entries, refetch: refetchEntries} = useBudokaiEntries(currentBudokaiId, fastPoll);
     const {owned: myTokenIds, civilians: myCivilianIds, refetch: refetchOwned} = useMySamurai();
     const {counters: budokaiCounters, refetch: refetchCounters} = useBudokaiCounters(
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
+        slowPoll,
     );
     const {gate: walletGate, refetch: refetchWalletGate} = useWalletEntryCount(
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
         budokaiCounters,
+        slowPoll,
     );
     const {theme: budokaiTheme} = useBudokaiTheme(
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
@@ -55,7 +64,7 @@ export function SamuraiDojoModule() {
         abi: SAMURAI_DOJO_ABI,
         functionName: 'getTotalBurned',
         chainId: base.id,
-        query: {refetchInterval: 30_000},
+        query: {refetchInterval: slowPoll, refetchOnWindowFocus: true},
     });
     const totalBurned = (totalBurnedRaw as bigint | undefined) ?? 0n;
 
@@ -77,6 +86,10 @@ export function SamuraiDojoModule() {
     } = useDojoStore();
 
     const [filter, setFilter] = useState<FilterMode>('mine');
+    // Pending multi-action triggered by the PrimaryActionBar when it auto-switches tabs.
+    // Resolved by a useEffect once `filter` matches the action's target tab — without this
+    // intermediate, the [filter]-change effect below would wipe a freshly-populated selection.
+    const [pendingMultiAction, setPendingMultiAction] = useState<null | 'enterAll' | 'reviveAll'>(null);
     const {roster} = useSamuraiRoster();
 
     // Which tokenIds do we need state for?
@@ -105,7 +118,7 @@ export function SamuraiDojoModule() {
         return Array.from(set).sort((a, b) => a - b);
     }, [filter, entries, myTokenIds, myCivilianIds, roster, selectedTokenId]);
 
-    const {states, refetch: refetchStates} = useSamuraiState(visibleTokenIds);
+    const {states, refetch: refetchStates} = useSamuraiState(visibleTokenIds, slowPoll);
 
     // Roster is the source of truth for samurai vs civilian classification (user mental model).
     // Some non-roster AdrianZEROs have "stale senryoku" stored on-chain from legacy mint scripts
@@ -269,14 +282,30 @@ export function SamuraiDojoModule() {
     };
 
     // When the user switches tabs, the previous selection is no longer meaningful (entry vs revive
-    // pools are different). Drop selection + exit multi-select on tab change.
+    // pools are different). Drop selection + exit multi-select on tab change. Skip when a
+    // PrimaryActionBar-initiated tab switch is in flight (pendingMultiAction != null) — that
+    // case is auto-switching us into a tab that's about to receive a fresh selection, and we
+    // don't want to wipe it before it lands.
     useEffect(() => {
+        if (pendingMultiAction !== null) return;
         if (multiSelectMode) {
             clearSelection();
             toggleMultiSelectMode();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter]);
+
+    // Resolve a pending PrimaryActionBar action once the filter has caught up to its target tab.
+    useEffect(() => {
+        if (pendingMultiAction === 'enterAll' && filter === 'mine') {
+            handleSelectAllReady();
+            setPendingMultiAction(null);
+        } else if (pendingMultiAction === 'reviveAll' && filter === 'ko') {
+            handleSelectAllKo();
+            setPendingMultiAction(null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pendingMultiAction, filter]);
 
     return (
         <div className="min-h-screen bg-black pt-20 sm:pt-24">
@@ -301,7 +330,31 @@ export function SamuraiDojoModule() {
                     extraPrize (i.e. a ZEROmovies S2 cover for the champion). */}
                 {moviePrize && <MoviePrizeBanner prize={moviePrize} />}
 
-                <PrizeShowcase />
+                {/* Primary action — top-level CTA so the user lands on action, not on a wall of text. */}
+                <PrimaryActionBar
+                    isResolved={budokaiInfo?.status === BUDOKAI_STATUS.Resolved}
+                    isOpen={budokaiInfo?.status === BUDOKAI_STATUS.Open}
+                    readyCount={mineReadyIds.length + Math.min(civilReadyIds.length, civilSlotsAvail)}
+                    koCount={mineKoIds.length + civilKoIds.length}
+                    multiSelectMode={multiSelectMode}
+                    onEnterAll={() => {
+                        if (filter === 'mine') {
+                            handleSelectAllReady();
+                        } else {
+                            setFilter('mine');
+                            setPendingMultiAction('enterAll');
+                        }
+                    }}
+                    onReviveAll={() => {
+                        if (filter === 'ko') {
+                            handleSelectAllKo();
+                        } else {
+                            setFilter('ko');
+                            setPendingMultiAction('reviveAll');
+                        }
+                    }}
+                    onWatchReplay={() => openBracket(currentBudokaiId)}
+                />
 
                 {/* Filter tabs + multi-select toggle */}
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -323,51 +376,19 @@ export function SamuraiDojoModule() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        {filter === 'mine' && budokaiInfo?.status === BUDOKAI_STATUS.Open && (mineReadyIds.length + Math.min(civilReadyIds.length, civilSlotsAvail)) > 0 && !multiSelectMode && (
-                            <button
-                                onClick={() => {
-                                    // Toggle multi-select AND preselect all READY tokens (samurai + civilians up to ratio cap).
-                                    handleSelectAllReady();
-                                }}
-                                className="rounded border border-yellow-500/50 bg-yellow-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-yellow-400 hover:bg-yellow-500/20"
-                            >
-                                <Sword className="mr-1 inline h-3 w-3" />
-                                Enter all Ready ({mineReadyIds.length + Math.min(civilReadyIds.length, civilSlotsAvail)})
-                            </button>
-                        )}
-                        {filter === 'ko' && budokaiInfo?.status === BUDOKAI_STATUS.Open && (mineKoIds.length + civilKoIds.length) > 0 && !multiSelectMode && (
-                            <button
-                                onClick={() => handleSelectAllKo()}
-                                className="rounded border border-red-500/60 bg-red-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-red-300 hover:bg-red-500/20"
-                            >
-                                <Sword className="mr-1 inline h-3 w-3" />
-                                Revive all yours ({mineKoIds.length + civilKoIds.length})
-                            </button>
-                        )}
-                        {budokaiInfo?.status === BUDOKAI_STATUS.Open && myOwnedSet.size > 0 && (filter !== 'ko' || (mineKoIds.length + civilKoIds.length) > 0) && (
-                            <button
-                                onClick={() => toggleMultiSelectMode()}
-                                className={`rounded border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                                    multiSelectMode
-                                        ? 'border-red-500 bg-red-600 text-white hover:bg-red-500'
-                                        : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
-                                }`}
-                            >
-                                <Sword className="mr-1 inline h-3 w-3" />
-                                {multiSelectMode ? 'Cancel' : (filter === 'ko' ? 'Multi-Revive' : 'Multi-Enter')}
-                            </button>
-                        )}
-
-                        {budokaiInfo?.status === BUDOKAI_STATUS.Resolved && (
-                            <button
-                                onClick={() => openBracket(currentBudokaiId)}
-                                className="rounded border border-red-600/40 bg-red-900/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-red-400 hover:bg-red-900/40"
-                            >
-                                Watch Bracket Replay
-                            </button>
-                        )}
-                    </div>
+                    {budokaiInfo?.status === BUDOKAI_STATUS.Open && myOwnedSet.size > 0 && (filter !== 'ko' || (mineKoIds.length + civilKoIds.length) > 0) && (
+                        <button
+                            onClick={() => toggleMultiSelectMode()}
+                            className={`rounded border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                                multiSelectMode
+                                    ? 'border-red-500 bg-red-600 text-white hover:bg-red-500'
+                                    : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                            }`}
+                        >
+                            <Sword className="mr-1 inline h-3 w-3" />
+                            {multiSelectMode ? 'Cancel' : (filter === 'ko' ? 'Multi-Revive' : 'Multi-Enter')}
+                        </button>
+                    )}
                 </div>
 
                 {/* Content per filter */}
@@ -449,6 +470,10 @@ export function SamuraiDojoModule() {
                         </div>
                     </>
                 )}
+
+                {/* Tournament rules — moved below the action so first-time visitors land on
+                    tabs + tokens, not on a wall of explanatory text. Collapsible. */}
+                <PrizeShowcase />
             </div>
 
             {/* Floating batch action bar — branches on entry vs revive kind. */}
@@ -641,7 +666,7 @@ function HeroBanner() {
                 <div className="text-center">
                     <p className="text-[10px] uppercase tracking-[0.3em] text-fuchsia-500">Adrian Zero presents</p>
                     <h1 className="mt-2 text-5xl font-black tracking-wider text-yellow-400 sm:text-7xl">
-                        600 SAMURAI
+                        BUDOKAI
                     </h1>
                     <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-zinc-600">
                         Tenkaichi Budokai · Tournament Saga
@@ -654,14 +679,16 @@ function HeroBanner() {
         <div className="relative w-full overflow-hidden bg-black">
             <div className="mx-auto max-w-5xl">
                 <img
-                    src="/images/budokai-hero.gif"
-                    alt="600 Samurai Budokai"
+                    src="/images/budokai-hero.jpg"
+                    alt="Budokai"
                     className="block h-auto w-full"
                     style={{imageRendering: 'pixelated'}}
+                    loading="eager"
+                    fetchPriority="high"
                     onError={() => setFailed(true)}
                 />
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-black" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-black" />
         </div>
     );
 }
@@ -677,6 +704,102 @@ function FilterTab({label, count, active, onClick, hideCount}: {label: string; c
             {label}{hideCount ? '' : <span className="text-[9px] opacity-60"> ({count})</span>}
         </button>
     );
+}
+
+/**
+ * Top-level call-to-action above the tabs. Renders the most relevant single action for the
+ * current state so the page lands on something clickable, not on a wall of explanatory text.
+ *
+ * Wallet not connected   → Connect Wallet
+ * Open + ready tokens    → Enter all Ready (N)        — switches to Mine + preselects
+ * Open + only KO'd       → Revive your warriors (N)   — switches to KO + preselects
+ * Open + nothing usable  → null (no CTA — the entrants grid speaks for itself)
+ * Resolved               → Watch Bracket Replay
+ * Otherwise              → null
+ *
+ * Hidden while a multi-select session is active (the floating batch bar takes over).
+ */
+function PrimaryActionBar({
+    isResolved,
+    isOpen,
+    readyCount,
+    koCount,
+    multiSelectMode,
+    onEnterAll,
+    onReviveAll,
+    onWatchReplay,
+}: {
+    isResolved: boolean;
+    isOpen: boolean;
+    readyCount: number;
+    koCount: number;
+    multiSelectMode: boolean;
+    onEnterAll: () => void;
+    onReviveAll: () => void;
+    onWatchReplay: () => void;
+}) {
+    const {isConnected} = useAccount();
+    const {openConnectModal} = useConnectModal();
+
+    if (multiSelectMode) return null;
+
+    if (!isConnected) {
+        return (
+            <div className="mb-4">
+                <button
+                    onClick={() => openConnectModal?.()}
+                    className="flex w-full items-center justify-center gap-2 rounded border border-yellow-500/60 bg-yellow-500/10 px-4 py-3 text-[12px] font-bold uppercase tracking-wider text-yellow-300 transition-colors hover:bg-yellow-500/20"
+                >
+                    <Wallet className="h-4 w-4" />
+                    Connect Wallet to Enter Budokai
+                </button>
+            </div>
+        );
+    }
+
+    if (isOpen && readyCount > 0) {
+        return (
+            <div className="mb-4">
+                <button
+                    onClick={onEnterAll}
+                    className="flex w-full items-center justify-center gap-2 rounded border border-yellow-500/60 bg-gradient-to-r from-yellow-500/15 via-yellow-500/10 to-yellow-500/15 px-4 py-3 text-[12px] font-bold uppercase tracking-wider text-yellow-300 shadow-[0_0_20px_rgba(250,204,21,0.10)] transition-all hover:from-yellow-500/25 hover:to-yellow-500/25"
+                >
+                    <Sword className="h-4 w-4" />
+                    Enter all Ready ({readyCount})
+                </button>
+            </div>
+        );
+    }
+
+    if (isOpen && koCount > 0) {
+        return (
+            <div className="mb-4">
+                <button
+                    onClick={onReviveAll}
+                    className="flex w-full items-center justify-center gap-2 rounded border border-red-500/60 bg-red-500/10 px-4 py-3 text-[12px] font-bold uppercase tracking-wider text-red-300 transition-colors hover:bg-red-500/20"
+                >
+                    <Sword className="h-4 w-4" />
+                    Revive your warriors ({koCount})
+                </button>
+            </div>
+        );
+    }
+
+    if (isResolved) {
+        return (
+            <div className="mb-4">
+                <button
+                    onClick={onWatchReplay}
+                    className="flex w-full items-center justify-center gap-2 rounded border border-red-600/50 bg-red-900/25 px-4 py-3 text-[12px] font-bold uppercase tracking-wider text-red-300 transition-colors hover:bg-red-900/40"
+                >
+                    <Eye className="h-4 w-4" />
+                    Watch Bracket Replay
+                </button>
+            </div>
+        );
+    }
+
+    return null;
 }
 
 /**

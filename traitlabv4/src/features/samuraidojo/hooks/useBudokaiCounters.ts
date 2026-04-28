@@ -19,7 +19,10 @@ export interface BudokaiCounters {
  * On v4 diamonds (or for legacy Budokais ≤1) the call returns zeros, which the UI
  * should treat as "civilians not yet enabled / falls back to legacy path".
  */
-export function useBudokaiCounters(budokaiId: bigint | null | undefined): {
+export function useBudokaiCounters(
+    budokaiId: bigint | null | undefined,
+    pollMs?: number | false,
+): {
     counters: BudokaiCounters | null;
     refetch: () => void;
 } {
@@ -31,7 +34,8 @@ export function useBudokaiCounters(budokaiId: bigint | null | undefined): {
         chainId: base.id,
         query: {
             enabled: budokaiId !== null && budokaiId !== undefined,
-            refetchInterval: 30_000,
+            refetchInterval: pollMs === undefined ? 30_000 : pollMs,
+            refetchOnWindowFocus: true,
         },
     });
 

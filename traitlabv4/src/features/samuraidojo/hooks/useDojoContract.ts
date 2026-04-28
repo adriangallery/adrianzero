@@ -15,6 +15,19 @@ import type {BudokaiInfo, Champions} from '../types';
 const DOJO_CHAIN_ID = base.id;
 
 /**
+ * Adaptive polling helper. When the current Budokai is Resolved nothing on-chain changes
+ * until the next one opens, so polling at 15s/30s burns RPC for nothing. Returning `false`
+ * disables the interval — the queries still refetch on window focus (see `useBudokaiInfo`).
+ *
+ * `Resolving` polls fast (about to flip to Resolved). Other states use the default cadence.
+ */
+export function dojoPollInterval(status: number | undefined, base: number): number | false {
+    if (status === BUDOKAI_STATUS.Resolved) return false;
+    if (status === BUDOKAI_STATUS.Resolving) return Math.min(base, 5_000);
+    return base;
+}
+
+/**
  * Reads the currently-open Budokai ID (0 if none configured).
  */
 export function useCurrentBudokaiId() {
@@ -23,7 +36,7 @@ export function useCurrentBudokaiId() {
         abi: SAMURAI_DOJO_ABI,
         functionName: 'getCurrentBudokaiId',
         chainId: DOJO_CHAIN_ID,
-        query: {refetchInterval: 30_000},
+        query: {refetchInterval: 30_000, refetchOnWindowFocus: true},
     });
     return {
         currentBudokaiId: data ? Number(data) : 0,
@@ -47,7 +60,7 @@ export function useBudokaiInfo(budokaiId: number | undefined): {
         functionName: 'getBudokaiInfo',
         args: budokaiId !== undefined ? [BigInt(budokaiId)] : undefined,
         chainId: DOJO_CHAIN_ID,
-        query: {enabled: budokaiId !== undefined, refetchInterval: 15_000},
+        query: {enabled: budokaiId !== undefined, refetchInterval: 15_000, refetchOnWindowFocus: true},
     });
 
     if (!data || budokaiId === undefined) {
@@ -84,18 +97,32 @@ export function useBudokaiInfo(budokaiId: number | undefined): {
 
 /**
  * Reads the full list of tokenIds entered in a given Budokai.
+ *
+ * `entries` is memoized off `data` — without this, every parent render returns a new array
+ * reference, which busts every downstream `useMemo`/`useEffect` that depends on it (notably
+ * the visibleTokenIds → contracts list in `useSamuraiState`, which would needlessly rebuild
+ * the multicall list and re-fire the query).
+ *
+ * `pollMs` is plumbed from the parent so we can pause polling once the Budokai is Resolved.
  */
-export function useBudokaiEntries(budokaiId: number | undefined) {
+export function useBudokaiEntries(budokaiId: number | undefined, pollMs?: number | false) {
     const {data, refetch, isLoading} = useReadContract({
         address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
         abi: SAMURAI_DOJO_ABI,
         functionName: 'getEntries',
         args: budokaiId !== undefined ? [BigInt(budokaiId)] : undefined,
         chainId: DOJO_CHAIN_ID,
-        query: {enabled: budokaiId !== undefined, refetchInterval: 15_000},
+        query: {
+            enabled: budokaiId !== undefined,
+            refetchInterval: pollMs === undefined ? 15_000 : pollMs,
+            refetchOnWindowFocus: true,
+        },
     });
 
-    const entries = ((data as bigint[] | undefined) ?? []).map((id) => Number(id));
+    const entries = useMemo(
+        () => ((data as bigint[] | undefined) ?? []).map((id) => Number(id)),
+        [data],
+    );
     return {entries, refetch, isLoading};
 }
 

@@ -22,6 +22,7 @@ export interface WalletEntryGate {
 export function useWalletEntryCount(
     budokaiId: bigint | null | undefined,
     counters: BudokaiCounters | null,
+    pollMs?: number | false,
 ): {gate: WalletEntryGate; refetch: () => void} {
     const {address} = useAccount();
     const enabled = budokaiId !== null && budokaiId !== undefined && !!address;
@@ -45,7 +46,11 @@ export function useWalletEntryCount(
                   },
               ]
             : [],
-        query: {enabled, refetchInterval: 30_000},
+        query: {
+            enabled,
+            refetchInterval: pollMs === undefined ? 30_000 : pollMs,
+            refetchOnWindowFocus: true,
+        },
     });
 
     const gate = useMemo<WalletEntryGate>(() => {
