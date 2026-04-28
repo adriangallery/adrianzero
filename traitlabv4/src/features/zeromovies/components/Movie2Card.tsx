@@ -32,6 +32,11 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
   // Overdue routing: mine = action needed (loud); others = passive info (muted).
   const isMineOverdue = isOverdue && isYoursRental;
   const isOthersOverdue = isOverdue && !isYoursRental;
+  // Pre-launch reservations for Movie #42 (auction) and #28 (Budokai prize).
+  // Once `adminMintMovie2` lands the movie becomes `permanentlyOwned` and the
+  // standard "Taken / Owned by you" branches above take precedence.
+  const isReservedAuction = movie.reservedFor === 'auction' && !rental.permanent && !hasRenter;
+  const isReservedBudokai = movie.reservedFor === 'budokai' && !rental.permanent && !hasRenter;
 
   return (
     <button
@@ -42,7 +47,9 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
         ${isYoursRental && !isOverdue ? 'border-2 border-sky-400' : ''}
         ${isMineOverdue ? 'border-2 border-red-500 ring-2 ring-red-500/40' : ''}
         ${isOthersOverdue ? 'border border-red-900/60' : ''}
-        ${!isYoursPermanent && !isYoursRental && !isOverdue ? `border ${ANGLE_ACCENT[movie.angle]}` : ''}
+        ${isReservedAuction ? 'border-2 border-purple-500 ring-2 ring-purple-500/30' : ''}
+        ${isReservedBudokai ? 'border-2 border-amber-500 ring-2 ring-amber-500/30' : ''}
+        ${!isYoursPermanent && !isYoursRental && !isOverdue && !isReservedAuction && !isReservedBudokai ? `border ${ANGLE_ACCENT[movie.angle]}` : ''}
       `}
     >
       <div className="relative aspect-square w-full overflow-hidden rounded-t bg-zinc-900">
@@ -117,6 +124,27 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
             <span className="rounded bg-zinc-800/85 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-zinc-400">
               Taken
             </span>
+          </div>
+        )}
+        {/* Pre-launch reservations — auction (purple) and Budokai (amber) */}
+        {isReservedAuction && (
+          <div className="absolute inset-0 flex flex-col items-center justify-end gap-0.5 bg-gradient-to-t from-purple-950/85 via-purple-950/35 to-transparent pb-1.5">
+            <span className="rounded bg-purple-500 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-black">
+              Auction
+            </span>
+          </div>
+        )}
+        {isReservedBudokai && (
+          <div className="absolute inset-0 flex flex-col items-center justify-end gap-0.5 bg-gradient-to-t from-amber-950/85 via-amber-950/35 to-transparent pb-1.5">
+            <span className="rounded bg-amber-500 px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wider text-black">
+              Budokai Prize
+            </span>
+          </div>
+        )}
+        {/* Animated movie indicator — small badge in corner */}
+        {movie.hasAnimation && !isReservedAuction && !isReservedBudokai && (
+          <div className="absolute top-1 left-1 rounded bg-purple-500/80 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wider text-white">
+            GIF
           </div>
         )}
       </div>

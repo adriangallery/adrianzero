@@ -101,6 +101,12 @@ const BudokaiChronicleMockup = lazy(() =>
   }))
 );
 
+const AuctionModule = lazy(() =>
+  import('@/features/movieauction/components/AuctionModule').then((m) => ({
+    default: m.AuctionModule,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -114,6 +120,7 @@ export const routes: RouteObject[] = [
   { path: '/shop', element: <ShopModule /> },
   { path: '/buy', element: <BuyModule /> },
   { path: '/zeromovies', element: <ZEROmoviesModule /> },
+  { path: '/auction', element: <AuctionModule /> },
   { path: '/budokai', element: <SamuraiDojoModule /> },
   { path: '/gallery', element: <GalleryModule /> },
   { path: '/punks', element: <PunksModule /> },

@@ -188,6 +188,24 @@ export const SAMURAI_DOJO_ABI = [
         type: 'function',
     },
     {
+        inputs: [{name: 'budokaiId', type: 'uint256'}],
+        name: 'getExtraPrizes',
+        outputs: [
+            {
+                components: [
+                    {name: 'kind', type: 'uint8'},
+                    {name: 'token', type: 'address'},
+                    {name: 'tokenIdOrAmount', type: 'uint256'},
+                    {name: 'rank', type: 'uint8'},
+                ],
+                name: '',
+                type: 'tuple[]',
+            },
+        ],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
         anonymous: false,
         inputs: [
             {indexed: true, name: 'budokaiId', type: 'uint256'},

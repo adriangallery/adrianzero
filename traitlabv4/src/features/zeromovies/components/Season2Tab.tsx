@@ -25,7 +25,7 @@ export function Season2Tab() {
       <div className="mb-6 text-center">
         <h2 className="text-2xl font-bold tracking-wider text-yellow-500 sm:text-3xl">ZEROmovies II</h2>
         <p className="text-[9px] tracking-[0.3em] text-zinc-600 sm:text-[10px]">
-          THE RETURN OF THE PIXEL
+          THE RETURN OF THE PIXEL · 24 MOVIES
         </p>
       </div>
 
@@ -33,6 +33,31 @@ export function Season2Tab() {
       {isMock && (
         <div className="mb-4 rounded border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-center text-[9px] uppercase tracking-widest text-zinc-500">
           Preview · Catalog and rental state are mock data — replace once the on-chain facet ships
+        </div>
+      )}
+
+      {/* Pre-launch reservations banner: 2 movies routed off-shelf into auction
+          + Premiere Budokai. Disappears once both are minted (permanentlyOwned). */}
+      {movies.some((m) => m.reservedFor && !rentalMap.get(m.id)?.permanent) && (
+        <div className="mb-4 grid gap-2 sm:grid-cols-2">
+          <a href="/auction" className="block rounded border border-purple-500/50 bg-gradient-to-br from-purple-950/40 to-zinc-950/40 px-3 py-2 transition hover:border-purple-400 hover:from-purple-900/50">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-purple-400">Live Auction</span>
+              <span className="text-[8px] uppercase tracking-wider text-purple-300">→</span>
+            </div>
+            <p className="mt-1 text-[10px] text-zinc-300">
+              <span className="text-white">Major Dutch Schaefer</span> (animated GIF) — bid in $ZERO
+            </p>
+          </a>
+          <a href="/dojo" className="block rounded border border-amber-500/50 bg-gradient-to-br from-amber-950/40 to-zinc-950/40 px-3 py-2 transition hover:border-amber-400 hover:from-amber-900/50">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-amber-400">Premiere Budokai</span>
+              <span className="text-[8px] uppercase tracking-wider text-amber-300">→</span>
+            </div>
+            <p className="mt-1 text-[10px] text-zinc-300">
+              <span className="text-white">Bruce Lee</span> goes to the champion of the next Budokai
+            </p>
+          </a>
         </div>
       )}
 

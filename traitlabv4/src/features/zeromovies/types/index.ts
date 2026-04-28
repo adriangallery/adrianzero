@@ -22,6 +22,15 @@ export interface Movie2 {
   /** Theme bucket — drives accent colour in the UI grid. */
   angle: 'cult' | 'pixel' | 'horror';
   isMystery: boolean;
+  /**
+   * Pre-launch reservation marker. The auction movie and Budokai prize are
+   * locked off the public shelf and routed through their own flows. Once the
+   * underlying token is minted via `adminMintMovie2`, S2 marks it
+   * `permanentlyOwned` and the standard "Taken" badge takes over.
+   */
+  reservedFor?: 'auction' | 'budokai';
+  /** True for movies whose AdrianLAB cover is a looping GIF, not a static SVG. */
+  hasAnimation?: boolean;
 }
 
 /** Per-movie rental state (mirrors getMovie2RentalInfo on-chain). */

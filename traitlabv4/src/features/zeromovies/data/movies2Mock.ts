@@ -1,82 +1,66 @@
 import type { Movie2 } from '../types';
 
 /**
- * Placeholder S2 catalog while the artist finalises art.
- * 26 movies, mix of three angles: 90s/2000s cult, videogame-as-movie, horror.
- * ~30% are mystery cards (revealed only after first interaction).
+ * ZEROmovies S2 — "Return of the Pixel"
  *
- * Final names + cover art replace this when delivered. The shape mirrors the
+ * 24 movies, IDs 27-50. Catalog mirrors `AdrianLAB/public/labmetadata/zeromovies2metadata.json`
+ * exactly so the renderer reads the same names this UI displays. The shape mirrors the
  * on-chain `Movie2` returned by `getMovie2(movieId)` so swapping to the real
  * hook is a one-line change.
+ *
+ * Two movies are reserved off the public shelf:
+ *   - #42 Major Dutch Schaefer  → pre-launch auction (animated GIF)
+ *   - #28 Bruce Lee             → Premiere Budokai prize
  */
 export const MOVIES_S2_MOCK: Movie2[] = [
-  // 90s/2000s cult (8)
-  { id: 1,  name: 'Tyler Durden',         angle: 'cult',   isMystery: false },
-  { id: 2,  name: 'The Dude',             angle: 'cult',   isMystery: false },
-  { id: 3,  name: '???',                  angle: 'cult',   isMystery: true  },
-  { id: 4,  name: 'Jack Sparrow',         angle: 'cult',   isMystery: false },
-  { id: 5,  name: 'Shrek',                angle: 'cult',   isMystery: false },
-  { id: 6,  name: 'Neo (The One)',        angle: 'cult',   isMystery: false },
-  { id: 7,  name: '???',                  angle: 'cult',   isMystery: true  },
-  { id: 8,  name: 'Smith',                angle: 'cult',   isMystery: false },
-  // Videogame-as-movie (8)
-  { id: 9,  name: 'Lara Croft',           angle: 'pixel',  isMystery: false },
-  { id: 10, name: 'Mario',                angle: 'pixel',  isMystery: false },
-  { id: 11, name: '???',                  angle: 'pixel',  isMystery: true  },
-  { id: 12, name: 'Sonic',                angle: 'pixel',  isMystery: false },
-  { id: 13, name: 'Master Chief',         angle: 'pixel',  isMystery: false },
-  { id: 14, name: '???',                  angle: 'pixel',  isMystery: true  },
-  { id: 15, name: 'Solid Snake',          angle: 'pixel',  isMystery: false },
-  { id: 16, name: 'Pac-Man',              angle: 'pixel',  isMystery: false },
-  // Horror legends (10)
-  { id: 17, name: 'Freddy',               angle: 'horror', isMystery: false },
-  { id: 18, name: 'Jason',                angle: 'horror', isMystery: false },
-  { id: 19, name: '???',                  angle: 'horror', isMystery: true  },
-  { id: 20, name: 'Pennywise',            angle: 'horror', isMystery: false },
-  { id: 21, name: 'Alien',                angle: 'horror', isMystery: false },
-  { id: 22, name: '???',                  angle: 'horror', isMystery: true  },
-  { id: 23, name: 'Ghostface',            angle: 'horror', isMystery: false },
-  { id: 24, name: 'Michael Myers',        angle: 'horror', isMystery: false },
-  { id: 25, name: '???',                  angle: 'horror', isMystery: true  },
-  { id: 26, name: 'Chucky',               angle: 'horror', isMystery: false },
+  { id: 27, name: 'Leeloo',                angle: 'pixel',  isMystery: false },
+  { id: 28, name: 'Bruce Lee',             angle: 'cult',   isMystery: false, reservedFor: 'budokai' },
+  { id: 29, name: 'Cruella',               angle: 'horror', isMystery: false },
+  { id: 30, name: 'Donatello',             angle: 'pixel',  isMystery: false },
+  { id: 31, name: 'Ivan Drago',            angle: 'horror', isMystery: false },
+  { id: 32, name: 'Elwood Blues',          angle: 'cult',   isMystery: false },
+  { id: 33, name: 'Harley Quinn',          angle: 'horror', isMystery: false },
+  { id: 34, name: 'Holly Golightly',       angle: 'cult',   isMystery: false },
+  { id: 35, name: 'Indiana Jones',         angle: 'cult',   isMystery: false },
+  { id: 36, name: 'Jake Blues',            angle: 'cult',   isMystery: false },
+  { id: 37, name: 'John Rambo',            angle: 'horror', isMystery: false },
+  { id: 38, name: 'Joker',                 angle: 'horror', isMystery: false },
+  { id: 39, name: 'The Bride',             angle: 'horror', isMystery: false },
+  { id: 40, name: 'Lara Croft',            angle: 'pixel',  isMystery: false },
+  { id: 41, name: 'Luke, C-3PO & R2-D2',   angle: 'pixel',  isMystery: false },
+  { id: 42, name: 'Major Dutch Schaefer',  angle: 'pixel',  isMystery: false, reservedFor: 'auction', hasAnimation: true },
+  { id: 43, name: 'Maverick',              angle: 'cult',   isMystery: false },
+  { id: 44, name: 'Michelangelo',          angle: 'pixel',  isMystery: false },
+  { id: 45, name: 'Obi-Wan Kenobi',        angle: 'pixel',  isMystery: false },
+  { id: 46, name: 'The Predator',          angle: 'horror', isMystery: false },
+  { id: 47, name: 'Rocky Balboa',          angle: 'cult',   isMystery: false },
+  { id: 48, name: 'Spider-Man',            angle: 'pixel',  isMystery: false },
+  { id: 49, name: 'Superman',              angle: 'pixel',  isMystery: false },
+  { id: 50, name: 'Topper Harley',         angle: 'cult',   isMystery: false },
 ];
 
-/** mock placeholder image (until artist delivers covers) */
+/**
+ * Resolve cover URL. Animated movies use the GIF; everything else uses the
+ * AdrianLAB pixel SVG. AdrianLAB is the source of truth — same path the
+ * compositor reads, so what you see here matches the on-chain render.
+ */
 export function getS2PosterUrl(movieId: number, isMystery: boolean): string {
   if (isMystery) return '/images/zeromovies2/_mystery.svg';
-  return `/images/zeromovies2/${movieId}.png`;
+  const m = MOVIES_S2_MOCK.find((x) => x.id === movieId);
+  const base = 'https://adrianlab.vercel.app/labimages/zeromovies2';
+  if (m?.hasAnimation) return `${base}/animated/${movieId}.gif`;
+  return `${base}/${movieId}.svg`;
 }
 
-/** Mock rental state per movieId — start everything available, randomise a few */
+/**
+ * Mock rental state per movieId. Default = on shelf, no renter. Only seeded
+ * with a handful of demo states so the UI can be exercised without on-chain
+ * data. Swapped for live `getMovie2RentalInfo` reads once S2 ships.
+ */
 export const MOVIES_S2_RENTAL_MOCK: Record<number, {
   permanent: boolean;
   renter: string;
   rentedAt: number;
   isOverdue: boolean;
   daysOverdue: number;
-}> = {
-  // movie 1 — rented by 0xCAFE 3 days ago, not overdue yet
-  1: {
-    permanent: false,
-    renter: '0x000000000000000000000000000000000000cafe',
-    rentedAt: Math.floor(Date.now() / 1000) - 3 * 86_400,
-    isOverdue: false,
-    daysOverdue: 0,
-  },
-  // movie 5 — rented 12 days ago, overdue 5 days
-  5: {
-    permanent: false,
-    renter: '0x00000000000000000000000000000000c0ffee00',
-    rentedAt: Math.floor(Date.now() / 1000) - 12 * 86_400,
-    isOverdue: true,
-    daysOverdue: 5,
-  },
-  // movie 10 — bought permanently
-  10: {
-    permanent: true,
-    renter: '0x000000000000000000000000000000000000beef',
-    rentedAt: Math.floor(Date.now() / 1000) - 1 * 86_400,
-    isOverdue: false,
-    daysOverdue: 0,
-  },
-};
+}> = {};

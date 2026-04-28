@@ -17,12 +17,14 @@ import {ENTRY_FEE_ZERO, SENZU_REVIVE_PER_SR_ZERO} from '../types';
 import {useDojoStore} from '../store/dojoStore';
 import {useBudokaiTheme, themeAccent, iconVariantSymbol} from '../hooks/useBudokaiTheme';
 import {useBudokaiTrophy, trophyLabel, trophyEmoji, TROPHY_TYPE} from '../hooks/useBudokaiTrophy';
+import {useMoviePrize} from '../hooks/useExtraPrizes';
 import {SamuraiCard} from './SamuraiCard';
 import {TournamentStats} from './TournamentStats';
 import {SamuraiDetailModal} from './SamuraiDetailModal';
 import {ChampionsHall} from './ChampionsHall';
 import {BracketReveal} from './BracketReveal';
 import {PrizeShowcase} from './PrizeShowcase';
+import {MoviePrizeBanner} from './MoviePrizeBanner';
 
 type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 
@@ -42,6 +44,9 @@ export function SamuraiDojoModule() {
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
     );
     const {trophy: budokaiTrophy} = useBudokaiTrophy(
+        currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
+    );
+    const {moviePrize} = useMoviePrize(
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
     );
     const {balance: zeroBalance} = useZeroBalance();
@@ -290,6 +295,11 @@ export function SamuraiDojoModule() {
                     zeroBalance={zeroBalance}
                     totalBurned={totalBurned}
                 />
+
+                {/* Premiere Budokai movie prize banner — shown only when the
+                    current Budokai has a rank-1 ERC721 from AdrianLabCore as
+                    extraPrize (i.e. a ZEROmovies S2 cover for the champion). */}
+                {moviePrize && <MoviePrizeBanner prize={moviePrize} />}
 
                 <PrizeShowcase />
 
