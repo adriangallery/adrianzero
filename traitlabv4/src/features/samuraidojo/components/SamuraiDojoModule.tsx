@@ -472,8 +472,12 @@ export function SamuraiDojoModule() {
                 )}
 
                 {/* Tournament rules — moved below the action so first-time visitors land on
-                    tabs + tokens, not on a wall of explanatory text. Collapsible. */}
-                <PrizeShowcase />
+                    tabs + tokens, not on a wall of explanatory text. Collapsible.
+                    Trophy variant tracks the current Budokai (Golden / Metal / Custom). */}
+                <PrizeShowcase
+                    trophyType={budokaiTrophy?.trophyType}
+                    trophyTraitId={budokaiTrophy?.trophyTraitId}
+                />
             </div>
 
             {/* Floating batch action bar — branches on entry vs revive kind. */}
