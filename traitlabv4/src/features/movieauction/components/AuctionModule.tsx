@@ -6,6 +6,7 @@ import {useAuction, useOutbidBalance} from '../hooks/useAuction';
 import {useWithdrawOutbid} from '../hooks/useAuctionActions';
 import {CountdownTimer} from './CountdownTimer';
 import {BidPanel} from './BidPanel';
+import {MovieCover} from './MovieCover';
 import {MOVIES_S2_MOCK} from '@/features/zeromovies/data/movies2Mock';
 
 /**
@@ -44,11 +45,8 @@ export function AuctionModule() {
 
     if (!auction) {
         const reserved = RESERVED_AUCTION_MOVIE;
-        const previewUrl = reserved?.hasAnimation
-            ? `${ADRIAN_LAB_BASE}/animated/${reserved.id}.gif`
-            : reserved
-              ? `${ADRIAN_LAB_BASE}/${reserved.id}.svg`
-              : null;
+        const stillUrl = reserved ? `${ADRIAN_LAB_BASE}/${reserved.id}.svg` : null;
+        const gifUrl = reserved?.hasAnimation ? `${ADRIAN_LAB_BASE}/animated/${reserved.id}.gif` : stillUrl;
         return (
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
                 <div className="text-center">
@@ -64,29 +62,33 @@ export function AuctionModule() {
                 </div>
 
                 <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
-                    {previewUrl ? (
+                    {reserved && stillUrl && gifUrl ? (
                         <div className="relative w-full max-w-xs shrink-0">
-                            <div className="relative overflow-hidden rounded border-2 border-purple-500/40 bg-zinc-950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
-                                <img
-                                    src={previewUrl}
-                                    alt={reserved?.name ?? 'Movie preview'}
-                                    className="aspect-square w-full object-contain"
-                                    style={{imageRendering: 'pixelated'}}
-                                    loading="eager"
+                            <div className="group relative overflow-hidden rounded border-2 border-purple-500/40 bg-zinc-950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
+                                <MovieCover
+                                    stillUrl={stillUrl}
+                                    gifUrl={gifUrl}
+                                    hasAnimation={!!reserved.hasAnimation}
+                                    alt={reserved.name}
+                                    className="aspect-square w-full"
+                                    eager
                                 />
-                                {reserved?.hasAnimation && (
-                                    <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">
+                                {reserved.hasAnimation && (
+                                    <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black transition-opacity group-hover:opacity-0 pointer-coarse:opacity-100">
                                         Animated · GIF
                                     </div>
                                 )}
-                                <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/80 to-transparent px-2 pt-6 pb-2">
+                                <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/80 to-transparent px-2 pt-6 pb-2 pointer-events-none">
                                     <span className="rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">
                                         Reserved · Auction
                                     </span>
                                 </div>
                             </div>
                             <p className="mt-2 text-center text-[10px] text-zinc-500">
-                                Movie ID #{reserved?.id} · 1/1 ZEROmovies S2 cover
+                                Movie ID #{reserved.id} · 1/1 ZEROmovies S2 cover
+                                {reserved.hasAnimation && (
+                                    <span className="ml-1 hidden pointer-fine:inline text-purple-400/70">· hover to play</span>
+                                )}
                             </p>
                         </div>
                     ) : (
@@ -156,22 +158,26 @@ export function AuctionModule() {
             <div className="grid gap-4 md:grid-cols-2">
                 {/* Movie cover */}
                 <div className="flex flex-col items-center">
-                    <div className="relative w-full max-w-sm overflow-hidden rounded border-2 border-yellow-500/40 bg-zinc-950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
-                        <img
-                            src={auction.posterUrl}
+                    <div className="group relative w-full max-w-sm overflow-hidden rounded border-2 border-yellow-500/40 bg-zinc-950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
+                        <MovieCover
+                            stillUrl={auction.posterStillUrl}
+                            gifUrl={auction.posterUrl}
+                            hasAnimation={auction.hasAnimation}
                             alt={auction.movieName}
-                            className="aspect-square w-full object-contain"
-                            style={{imageRendering: 'pixelated'}}
-                            loading="eager"
+                            className="aspect-square w-full"
+                            eager
                         />
                         {auction.hasAnimation && (
-                            <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">
+                            <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black transition-opacity group-hover:opacity-0 pointer-coarse:opacity-100">
                                 Animated · GIF
                             </div>
                         )}
                     </div>
                     <p className="mt-3 text-center text-[10px] text-zinc-500">
                         Movie ID #{auction.movieId} · 1/1 ZEROmovies S2 cover
+                        {auction.hasAnimation && (
+                            <span className="ml-1 hidden pointer-fine:inline text-purple-400/70">· hover to play</span>
+                        )}
                     </p>
                 </div>
 

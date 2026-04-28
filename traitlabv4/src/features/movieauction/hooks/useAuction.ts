@@ -9,7 +9,10 @@ export interface AuctionState {
     auctionId: bigint;
     movieId: number;
     movieName: string;
+    /** GIF for animated movies, SVG otherwise. The "live" cover. */
     posterUrl: string;
+    /** Always the static SVG. Used as the still default on desktop hover-swap. */
+    posterStillUrl: string;
     hasAnimation: boolean;
     startTime: number;       // unix seconds
     endTime: number;         // unix seconds (mutable via anti-snipe)
@@ -29,16 +32,19 @@ const ADRIAN_LAB_BASE = 'https://adrianlab.vercel.app/labimages/zeromovies2';
 
 function resolveMovieMeta(movieId: number) {
     const entry = MOVIES_S2_MOCK.find((m) => m.id === movieId);
+    const stillUrl = `${ADRIAN_LAB_BASE}/${movieId}.svg`;
     if (!entry) {
         return {
             name: `Movie #${movieId}`,
-            posterUrl: `${ADRIAN_LAB_BASE}/${movieId}.svg`,
+            posterUrl: stillUrl,
+            posterStillUrl: stillUrl,
             hasAnimation: false,
         };
     }
     return {
         name: entry.name,
-        posterUrl: entry.hasAnimation ? `${ADRIAN_LAB_BASE}/animated/${entry.id}.gif` : `${ADRIAN_LAB_BASE}/${entry.id}.svg`,
+        posterUrl: entry.hasAnimation ? `${ADRIAN_LAB_BASE}/animated/${entry.id}.gif` : stillUrl,
+        posterStillUrl: stillUrl,
         hasAnimation: !!entry.hasAnimation,
     };
 }
@@ -123,6 +129,7 @@ export function useAuction(): {
             movieId,
             movieName: meta.name,
             posterUrl: meta.posterUrl,
+            posterStillUrl: meta.posterStillUrl,
             hasAnimation: meta.hasAnimation,
             startTime,
             endTime,
