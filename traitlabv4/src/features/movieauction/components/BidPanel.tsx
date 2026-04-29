@@ -142,12 +142,12 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
             <div className="mt-3 flex flex-col gap-2">
                 {needsApproval ? (
                     <button
-                        onClick={() => approve(bidAmountWei * 5n)} // 5x headroom for follow-up bids
+                        onClick={() => approve(bidAmountWei)}
                         disabled={isApprovePending || isApproveConfirming || balanceShort || !!parseErr}
                         className="inline-flex items-center justify-center gap-2 rounded bg-purple-500 px-4 py-2.5 text-sm font-bold uppercase tracking-wider text-black hover:bg-purple-400 disabled:opacity-50"
                     >
                         {(isApprovePending || isApproveConfirming) && <Loader2 className="h-4 w-4 animate-spin" />}
-                        Approve {Number(formatUnits(bidAmountWei * 5n, 18)).toLocaleString()} ZERO
+                        Approve {Number(formatUnits(bidAmountWei, 18)).toLocaleString()} ZERO
                     </button>
                 ) : (
                     <button
