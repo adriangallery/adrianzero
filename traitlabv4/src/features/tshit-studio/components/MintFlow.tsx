@@ -22,9 +22,11 @@ const PHASE_LABEL: Record<string, string> = {
 };
 
 export function MintFlow() {
-  const { status, mint, reset, mintPrice, isActive } = useTShitMint();
+  const { status, mint, reset, mintPrice, isActive, registeredRemaining } = useTShitMint();
 
   const priceWhole = Number(mintPrice / 10n ** 18n);
+  const noSlots = isActive && registeredRemaining === 0;
+  const lowSlots = isActive && registeredRemaining > 0 && registeredRemaining <= 10;
 
   const busy =
     status.phase !== 'idle' &&
@@ -39,14 +41,32 @@ export function MintFlow() {
           {priceWhole.toLocaleString()} $ZERO <Flame className="inline w-3.5 h-3.5 ml-1 mb-0.5" />
         </span>
       </div>
+      {isActive && (
+        <div className="flex items-center justify-between text-xs text-zinc-400">
+          <span className="uppercase tracking-wide">Slots open</span>
+          <span className={`font-mono ${noSlots ? 'text-amber-400' : lowSlots ? 'text-amber-300' : 'text-zinc-300'}`}>
+            {registeredRemaining}
+          </span>
+        </div>
+      )}
       {!isActive && (
         <div className="text-xs text-amber-400 border border-amber-700 bg-amber-950/30 rounded p-2">
           T-Shit Studio is currently paused on-chain. Check back soon.
         </div>
       )}
+      {noSlots && (
+        <div className="text-xs text-amber-300 border border-amber-700 bg-amber-950/30 rounded p-2">
+          All current mint slots are filled. Admin is restocking — refresh in a minute.
+        </div>
+      )}
+      {lowSlots && (
+        <div className="text-xs text-amber-200 border border-amber-800/60 bg-amber-950/20 rounded p-2">
+          Only {registeredRemaining} slot{registeredRemaining === 1 ? '' : 's'} left in this batch.
+        </div>
+      )}
       <button
         onClick={() => mint()}
-        disabled={busy || !isActive}
+        disabled={busy || !isActive || noSlots}
         className="w-full py-3 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2"
       >
         {busy && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -56,6 +76,8 @@ export function MintFlow() {
           ? 'Try again'
           : busy
           ? PHASE_LABEL[status.phase]
+          : noSlots
+          ? 'Restocking…'
           : `Mint for ${priceWhole.toLocaleString()} $ZERO (100% burn)`}
       </button>
 

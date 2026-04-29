@@ -55,6 +55,13 @@ export function useTShitMint() {
     functionName: 'tshitIsActive',
   });
 
+  const { data: registeredRemaining, refetch: refetchRemaining } = useReadContract({
+    address: DIAMOND,
+    abi: TSHIT_FACET_ABI,
+    functionName: 'tshitRegisteredRemaining',
+    query: { refetchInterval: 30_000 },
+  });
+
   // Allowance check
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: DIAMOND,
@@ -113,6 +120,14 @@ export function useTShitMint() {
       }
       if (isActive === false) {
         setStatus({ phase: 'error', error: 'T-Shit Studio is currently paused' });
+        return;
+      }
+      const remaining = (registeredRemaining as bigint | undefined) ?? 0n;
+      if (remaining === 0n) {
+        setStatus({
+          phase: 'error',
+          error: 'No mint slots available right now — admin is restocking. Try again shortly.',
+        });
         return;
       }
       const price = (mintPrice as bigint | undefined) ?? 1000n * 10n ** 18n;
@@ -188,5 +203,7 @@ export function useTShitMint() {
     reset,
     mintPrice: (mintPrice as bigint | undefined) ?? 1000n * 10n ** 18n,
     isActive: isActive === true,
+    registeredRemaining: Number((registeredRemaining as bigint | undefined) ?? 0n),
+    refetchRemaining,
   };
 }

@@ -45,6 +45,13 @@ export const TSHIT_FACET_ABI = [
   },
   {
     type: 'function',
+    name: 'tshitRegisteredRemaining',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'uint256' }],
+  },
+  {
+    type: 'function',
     name: 'tshitGetDesignURI',
     stateMutability: 'view',
     inputs: [{ name: 'tokenId', type: 'uint256' }],
