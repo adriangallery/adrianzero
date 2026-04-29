@@ -51,25 +51,30 @@ export const buildAlchemyRpcUrls = (): string[] => {
   return urls;
 };
 
-/** Build Ethereum Mainnet RPC URLs for ENS resolution (rotation + public fallback) */
+/** Build Ethereum Mainnet RPC URLs for ENS resolution.
+ *  Public RPCs go FIRST: most of our Alchemy apps are configured for Base only
+ *  (return 403 Forbidden on Ethereum mainnet). Adding the Alchemy URL still helps
+ *  when the operator enables Ethereum on the app in the Alchemy dashboard, but we
+ *  can't depend on that — ENS is low-volume so public RPCs + 24h localStorage
+ *  cache (see useEnsName) handle the load. */
 export const buildEthMainnetRpcUrls = (): string[] => {
-  const urls: string[] = [];
+  const urls: string[] = [
+    'https://ethereum.publicnode.com',
+    'https://rpc.ankr.com/eth',
+    'https://1rpc.io/eth',
+    'https://cloudflare-eth.com',
+    'https://eth.llamarpc.com',
+  ];
 
+  // Append Alchemy keys as last resort — only resolves if the app has Ethereum enabled.
   const ensKey = import.meta.env.VITE_ALCHEMY_ENS_KEY;
   if (isValidAlchemyKey(ensKey)) {
     urls.push(`https://eth-mainnet.g.alchemy.com/v2/${ensKey}`);
   }
-
-  // Rotate across all configured Alchemy keys for ENS too — same per-second rate limit
-  // applies whether it's Base or Ethereum, so concentrating on one key 429s on wallet
-  // connect bursts.
   getAlchemyApiKeys().forEach((key) => {
     const url = `https://eth-mainnet.g.alchemy.com/v2/${key}`;
     if (!urls.includes(url)) urls.push(url);
   });
-
-  // Public fallbacks
-  urls.push('https://eth.llamarpc.com', 'https://cloudflare-eth.com');
 
   return urls;
 };
