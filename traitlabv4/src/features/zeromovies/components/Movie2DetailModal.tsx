@@ -5,6 +5,7 @@ import type { Movie2, Movie2RentalState } from '../types';
 import { useMovie2Actions } from '../hooks/useMovie2Actions';
 import { useMovies2Catalog } from '../hooks/useMovies2Catalog';
 import { useGoldenEligibility } from '../hooks/useGoldenEligibility';
+import { useWalletRentalCap } from '../hooks/useWalletRentalCap';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import { EnsName } from '@/components/shared/EnsName';
 
@@ -30,6 +31,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
   const { config } = useMovies2Catalog();
   const { rent2, buy2, returnMovie2, upgradeRent2ToBuy, isPending, pendingAction } = useMovie2Actions();
   const { isEligible, ticketCount } = useGoldenEligibility();
+  const rentalCap = useWalletRentalCap();
 
   if (!movie || !rental) return null;
 
@@ -141,18 +143,44 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
               {/* AVAILABLE → rent | buy */}
               {isOnShelf && (
                 <>
+                  {/* Rental cap warning — shown when connected and cap is active */}
+                  {isConnected && rentalCap.cap > 0 && (
+                    <div className={`rounded border px-3 py-2 text-[10px] leading-relaxed ${
+                      !rentalCap.canRent
+                        ? 'border-orange-500/40 bg-orange-950/30 text-orange-300'
+                        : rentalCap.slotsLeft === 1
+                          ? 'border-yellow-600/30 bg-yellow-950/20 text-yellow-400'
+                          : 'border-zinc-800 bg-zinc-950/60 text-zinc-500'
+                    }`}>
+                      {!rentalCap.canRent ? (
+                        <>
+                          <span className="font-bold">Rental cap reached.</span> You have{' '}
+                          <span className="font-bold text-white">{rentalCap.total}/{rentalCap.cap}</span> active rentals
+                          across S1+S2. Return a tape to free a slot, or buy permanently — buys don't count toward the cap.
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-bold text-white">{rentalCap.slotsLeft}</span> rental slot{rentalCap.slotsLeft === 1 ? '' : 's'}{' '}
+                          remaining{rentalCap.s1Active > 0 ? ` (${rentalCap.s1Active} in S1, ${rentalCap.s2Active} in S2)` : ''}.
+                          {rentalCap.slotsLeft === 1 && ' Last slot — buy for unlimited.'}
+                        </>
+                      )}
+                    </div>
+                  )}
                   <ActionRow
                     label="Rent"
-                    sub="7d grace, then 1k ZERO/day late fee"
+                    sub={rentalCap.cap > 0 && !rentalCap.canRent
+                      ? 'Cap reached — return a tape first or buy permanently'
+                      : '7d grace · after grace 1k ZERO/day late fee'}
                     cost={`${config.rentPrice.toLocaleString()} $ZERO`}
                     accent="sky"
                     busy={pendingAction === 'rent'}
-                    disabled={isPending}
+                    disabled={isPending || (isConnected && !rentalCap.canRent)}
                     onClick={requireConnected(() => rent2(movie.id))}
                   />
                   <ActionRow
-                    label="Buy"
-                    sub="Permanent ownership, no grace"
+                    label="Buy permanently"
+                    sub="No cap, no grace period, no late fees — yours forever"
                     cost={`${config.buyPrice.toLocaleString()} $ZERO`}
                     accent="yellow"
                     busy={pendingAction === 'buy'}
@@ -183,9 +211,17 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                     disabled={isPending}
                     onClick={requireConnected(() => upgradeRent2ToBuy(movie.id))}
                   />
-                  <div className="rounded border border-zinc-900 bg-zinc-950 p-2 text-[9px] text-zinc-500">
-                    Tape due back in <span className="text-zinc-300">{Math.max(0, 7 - Math.floor((Date.now() / 1000 - rental.rentedAt) / 86_400))}d</span>.
-                    After 7d the tape shows OVERDUE on every marketplace and you can't rent another one — return is still free.
+                  <div className="rounded border border-zinc-900 bg-zinc-950 p-2 text-[9px] text-zinc-500 space-y-1">
+                    <div>
+                      Tape due back in <span className="text-zinc-300">{Math.max(0, 7 - Math.floor((Date.now() / 1000 - rental.rentedAt) / 86_400))}d</span>.
+                      After 7 days it shows <span className="text-red-400">OVERDUE</span> everywhere — return is always free.
+                    </div>
+                    {isConnected && rentalCap.cap > 0 && (
+                      <div className={rentalCap.slotsLeft === 0 ? 'text-orange-400' : 'text-zinc-600'}>
+                        Rental slots: <span className="font-bold text-zinc-300">{rentalCap.total}/{rentalCap.cap}</span> used across S1+S2.
+                        {rentalCap.slotsLeft === 0 && ' Return this tape to unlock another rental.'}
+                      </div>
+                    )}
                   </div>
                 </>
               )}
@@ -195,7 +231,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                 <>
                   <ActionRow
                     label="Return tape"
-                    sub="Still free · {daysOverdue}d overdue, no late fee charged on return"
+                    sub={`Still free · ${rental.daysOverdue}d overdue · no late fee charged on return`}
                     cost="Free"
                     accent="emerald"
                     busy={pendingAction === 'return'}

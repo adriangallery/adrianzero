@@ -104,4 +104,49 @@ export const ZERO_MOVIES_FACET_2_ABI = [
         stateMutability: 'nonpayable',
         type: 'function',
     },
+    {
+        inputs: [{name: 'user', type: 'address'}],
+        name: 'getWalletActiveRentals2',
+        outputs: [
+            {name: 's1Active', type: 'uint256'},
+            {name: 's2Active', type: 'uint256'},
+            {name: 'cap', type: 'uint256'},
+            {name: 'canRent', type: 'bool'},
+        ],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'getMaxCrossRentals2',
+        outputs: [{name: '', type: 'uint256'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    // ─── Errors (decoded by wagmi on revert) ───
+    {
+        inputs: [{name: 'cap', type: 'uint256'}],
+        name: 'RentalCapReached',
+        type: 'error',
+    },
+    {
+        inputs: [],
+        name: 'HasOverdueRental',
+        type: 'error',
+    },
+    {
+        inputs: [],
+        name: 'Paused',
+        type: 'error',
+    },
+    {
+        inputs: [{name: 'movieId', type: 'uint256'}],
+        name: 'MovieCurrentlyRented',
+        type: 'error',
+    },
+    {
+        inputs: [{name: 'movieId', type: 'uint256'}],
+        name: 'MoviePermanentlyOwned',
+        type: 'error',
+    },
 ] as const;
