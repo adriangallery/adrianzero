@@ -18,7 +18,14 @@ export function useZeroAllowanceForAuction(): {
         functionName: 'allowance',
         args: address ? [address, CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`] : undefined,
         chainId: base.id,
-        query: {enabled: !!address, refetchInterval: 30_000},
+        // staleTime: 0 + window-focus refetch so the panel reflects fresh state
+        // immediately after an approve lands (Base RPC can lag a beat).
+        query: {
+            enabled: !!address,
+            staleTime: 0,
+            refetchInterval: 8_000,
+            refetchOnWindowFocus: true,
+        },
     });
     return {allowance: (data as bigint | undefined) ?? 0n, refetch};
 }

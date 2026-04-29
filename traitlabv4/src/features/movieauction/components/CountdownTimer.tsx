@@ -23,7 +23,12 @@ export function CountdownTimer({secondsLeft, extendedRecently}: CountdownTimerPr
                 {isEnded ? 'Ended' : 'Time left'}
             </span>
             <div className={`flex items-center gap-1 font-mono tabular-nums ${isEnded ? 'text-zinc-600' : inSnipeWindow ? 'text-red-400' : 'text-yellow-400'}`}>
-                {days > 0 && <Block label="D" value={pad(days)} />}
+                {days > 0 && (
+                    <>
+                        <Block label="D" value={pad(days)} />
+                        <Colon />
+                    </>
+                )}
                 <Block label="H" value={pad(hours)} />
                 <Colon />
                 <Block label="M" value={pad(minutes)} />

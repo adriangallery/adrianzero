@@ -29,12 +29,18 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
         setBidInput(minNextZ.toString());
     }, [auction.auctionId, minNextZ]);
 
-    const {approve, isPending: isApprovePending, isConfirming: isApproveConfirming, isConfirmed: isApproveConfirmed} = useApproveZeroForAuction();
+    const {approve, isPending: isApprovePending, isConfirming: isApproveConfirming, isConfirmed: isApproveConfirmed, error: approveError} = useApproveZeroForAuction();
     const {placeBid, isPending: isBidPending, isConfirming: isBidConfirming, isConfirmed: isBidConfirmed, error: bidError} = usePlaceBid();
     const {settle, isPending: isSettlePending, isConfirming: isSettleConfirming, isConfirmed: isSettleConfirmed} = useSettleAuction();
 
     useEffect(() => {
-        if (isApproveConfirmed) refetchAllowance();
+        if (!isApproveConfirmed) return;
+        // Base RPC nodes can lag for a few seconds after a tx confirms, so a
+        // single refetch sometimes still returns the pre-approve allowance.
+        // Re-poll a handful of times so the UI flips from "Approve" to "Place
+        // bid" within a couple of seconds without the user having to refresh.
+        const timers = [200, 1000, 2500, 5000].map((ms) => setTimeout(() => refetchAllowance(), ms));
+        return () => timers.forEach(clearTimeout);
     }, [isApproveConfirmed, refetchAllowance]);
 
     useEffect(() => {
@@ -141,14 +147,23 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
 
             <div className="mt-3 flex flex-col gap-2">
                 {needsApproval ? (
-                    <button
-                        onClick={() => approve(bidAmountWei)}
-                        disabled={isApprovePending || isApproveConfirming || balanceShort || !!parseErr}
-                        className="inline-flex items-center justify-center gap-2 rounded bg-purple-500 px-4 py-2.5 text-sm font-bold uppercase tracking-wider text-black hover:bg-purple-400 disabled:opacity-50"
-                    >
-                        {(isApprovePending || isApproveConfirming) && <Loader2 className="h-4 w-4 animate-spin" />}
-                        Approve {Number(formatUnits(bidAmountWei, 18)).toLocaleString()} ZERO
-                    </button>
+                    <>
+                        <button
+                            onClick={() => approve(bidAmountWei)}
+                            disabled={isApprovePending || isApproveConfirming || balanceShort || !!parseErr}
+                            className="inline-flex items-center justify-center gap-2 rounded bg-purple-500 px-4 py-2.5 text-sm font-bold uppercase tracking-wider text-black hover:bg-purple-400 disabled:opacity-50"
+                        >
+                            {(isApprovePending || isApproveConfirming) && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {isApproveConfirmed
+                                ? 'Approved · syncing…'
+                                : `Approve ${Number(formatUnits(bidAmountWei, 18)).toLocaleString()} ZERO`}
+                        </button>
+                        {isApproveConfirmed && (
+                            <p className="text-center text-[10px] text-zinc-500">
+                                Tx confirmed. Waiting for the RPC to reflect the new allowance — this auto-updates in a few seconds.
+                            </p>
+                        )}
+                    </>
                 ) : (
                     <button
                         onClick={() => placeBid(auction.auctionId, bidAmountWei)}
@@ -158,6 +173,11 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
                         {(isBidPending || isBidConfirming) && <Loader2 className="h-4 w-4 animate-spin" />}
                         Place bid
                     </button>
+                )}
+                {approveError && (
+                    <p className="text-[10px] text-red-400">
+                        Approve failed: {approveError.message?.split('\n')[0]}
+                    </p>
                 )}
                 {bidError && <p className="text-[10px] text-red-400">{bidError.message?.split('\n')[0]}</p>}
             </div>
