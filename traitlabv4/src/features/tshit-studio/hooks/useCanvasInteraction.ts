@@ -24,7 +24,20 @@ interface Args {
 export function useCanvasInteraction({ canvasEl, pixelSize }: Args) {
   const activePointerId = useRef<number | null>(null);
   const lastCellRef = useRef<{ x: number; y: number } | null>(null);
-  const { tool, color, brushSize, beginStroke, addPendingPixel, removePendingPixel, commitStroke, cancelStroke, setColor, getAllPixels } = useTShitStore();
+  // Subscribe to individual store fields rather than calling useTShitStore()
+  // bare — the latter returns the entire state object whose reference changes
+  // on every mutation and provokes infinite re-renders under React 19 +
+  // zustand v5. Actions are stable refs grabbed via getState() (no subscription).
+  const tool = useTShitStore(s => s.tool);
+  const color = useTShitStore(s => s.color);
+  const brushSize = useTShitStore(s => s.brushSize);
+  const beginStroke = useTShitStore(s => s.beginStroke);
+  const addPendingPixel = useTShitStore(s => s.addPendingPixel);
+  const removePendingPixel = useTShitStore(s => s.removePendingPixel);
+  const commitStroke = useTShitStore(s => s.commitStroke);
+  const cancelStroke = useTShitStore(s => s.cancelStroke);
+  const setColor = useTShitStore(s => s.setColor);
+  const getAllPixels = useTShitStore(s => s.getAllPixels);
 
   // Convert client (x,y) to canvas cell coords
   const cellFromClient = useCallback(

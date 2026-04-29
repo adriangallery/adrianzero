@@ -9,7 +9,7 @@
  * is sized in CSS pixels — `pixelSize` controls 1 cell = N CSS px.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTShitStore, selectVisiblePixels } from '../store/tshitStore';
+import { useTShitStore, computeVisiblePixels } from '../store/tshitStore';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, MANNEQUIN_SVG_URL, TSHIRT_SVG_URL, isPaintable } from '../lib/tshirtMask';
 
@@ -41,7 +41,16 @@ export function Canvas({ pixelSize = 4 }: Props) {
   const tool = useTShitStore(s => s.tool);
   const showGrid = useTShitStore(s => s.showGrid);
   const fillPaintable = useTShitStore(s => s.fillPaintable);
-  const visiblePixels = useTShitStore(selectVisiblePixels);
+  // Subscribe to the raw state pieces (referentially stable) and memoise the
+  // derived array. Subscribing to a derived selector that returns a fresh
+  // array each call sends React 19 + zustand v5 into an infinite render
+  // loop (#185), because the snapshot is "different" on every check.
+  const layers = useTShitStore(s => s.layers);
+  const pendingPixels = useTShitStore(s => s.pendingPixels);
+  const visiblePixels = useMemo(
+    () => computeVisiblePixels(layers, pendingPixels),
+    [layers, pendingPixels]
+  );
 
   // Single-tap fill bucket (interaction hook ignores 'fill' to avoid drag spam)
   const handleFillClick = (e: React.MouseEvent) => {

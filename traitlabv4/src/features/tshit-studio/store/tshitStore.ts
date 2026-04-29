@@ -178,12 +178,18 @@ export const useTShitStore = create<TShitState>((set, get) => ({
 }));
 
 /**
- * Helper to render the current canvas state — combines committed layers with
- * the in-progress stroke so the user sees their brush as they paint.
+ * Pure helper — combines committed layers with the in-progress stroke so the
+ * user sees their brush as they paint. Pass the raw state pieces (not the
+ * whole store) so the caller can subscribe to those individually and memoise
+ * the result. Subscribing to a selector that returns a fresh derived array
+ * every call sends React 19 + zustand v5 into render-loop territory.
  */
-export function selectVisiblePixels(state: TShitState): Pixel[] {
-  const flat = flatten(state.layers);
-  for (const p of state.pendingPixels.values()) {
+export function computeVisiblePixels(
+  layers: Layer[],
+  pendingPixels: Map<string, Pixel>
+): Pixel[] {
+  const flat = flatten(layers);
+  for (const p of pendingPixels.values()) {
     if (p.color === '__erase__') flat.delete(pkey(p.x, p.y));
     else flat.set(pkey(p.x, p.y), p);
   }

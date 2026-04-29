@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useTShitStore, selectVisiblePixels } from '../store/tshitStore';
+import { useTShitStore, computeVisiblePixels } from '../store/tshitStore';
 
 beforeEach(() => {
   useTShitStore.getState().clear();
@@ -43,12 +43,13 @@ describe('tshitStore', () => {
     expect(useTShitStore.getState().getAllPixels().length).toBe(0);
   });
 
-  it('selectVisiblePixels merges committed layers with in-progress stroke', () => {
+  it('computeVisiblePixels merges committed layers with in-progress stroke', () => {
     const { applyLayer, beginStroke, addPendingPixel } = useTShitStore.getState();
     applyLayer({ pixels: [{ x: 0, y: 0, color: '#000' }] });
     beginStroke();
     addPendingPixel({ x: 5, y: 5, color: '#fff' });
-    const visible = selectVisiblePixels(useTShitStore.getState());
+    const s = useTShitStore.getState();
+    const visible = computeVisiblePixels(s.layers, s.pendingPixels);
     expect(visible.length).toBe(2);
   });
 
