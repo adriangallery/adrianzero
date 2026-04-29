@@ -16,10 +16,13 @@ export const getAlchemyApiKeys = (): string[] => {
     .map((key: string) => key.trim())
     .filter((key: string) => key.length > 0);
 
+  // listKeys (CSV rotation) goes FIRST so the cleanest/least-used key is tried before
+  // the legacy VITE_ALCHEMY_API_KEY. Otherwise every parallel React Query starts at the
+  // same key index and stampedes one quota while fresh keys sit idle.
   const rawKeys = [
+    ...listKeys,
     import.meta.env.VITE_ALCHEMY_API_KEY,
     import.meta.env.VITE_ALCHEMY_API_KEY_FALLBACK,
-    ...listKeys,
   ];
 
   return Array.from(new Set(rawKeys.filter(isValidAlchemyKey)));
