@@ -30,3 +30,21 @@ export function* paintableCells(): Generator<{ x: number; y: number }> {
 /** URL of the T-shirt SVG (background). Served from /public. */
 export const TSHIRT_SVG_URL = '/tshit-tshirt.svg';
 export const MANNEQUIN_SVG_URL = '/tshit-mannequin.svg';
+
+/**
+ * Bounding box of the paintable region inside the 148x148 canvas.
+ * Pre-computed offline from the mask — no need to scan at runtime.
+ * The t-shirt's chest/torso paint area is roughly the lower-middle quadrant;
+ * stamps (text, year, stickers) anchor to this box so they land on fabric
+ * rather than off-canvas above the shirt.
+ */
+export const PAINTABLE_BOUNDS = {
+  minX: 20,
+  maxX: 112,
+  minY: 107,
+  maxY: 147,
+  width: 93,    // maxX - minX + 1
+  height: 41,   // maxY - minY + 1
+  centerX: 66,  // floor((minX + maxX) / 2)
+  centerY: 127, // floor((minY + maxY) / 2)
+} as const;

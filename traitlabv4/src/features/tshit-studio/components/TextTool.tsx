@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { Type } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
 import { renderText, measureText, GLYPH_HEIGHT } from '../data/glyphs';
-import { CANVAS_WIDTH, CANVAS_HEIGHT, isPaintable } from '../lib/tshirtMask';
+import { isPaintable, PAINTABLE_BOUNDS } from '../lib/tshirtMask';
 import type { Layer } from '../types/tshit.types';
 
 const SCALES: (1 | 2 | 3)[] = [1, 2, 3];
@@ -26,9 +26,16 @@ export function TextTool() {
     if (glyphPixels.length === 0) return;
     const w = measureText(text, textScale);
     const h = GLYPH_HEIGHT * textScale;
-    // Center horizontally; vertically place around chest (~y=70 for an average tee)
-    const ox = Math.max(0, Math.floor((CANVAS_WIDTH - w) / 2));
-    const oy = Math.max(0, Math.min(CANVAS_HEIGHT - h, 70 - Math.floor(h / 2)));
+    // Center horizontally on the t-shirt's paintable area; place text in the
+    // upper third of that region (chest area, leaves room for year below).
+    const ox = Math.max(
+      PAINTABLE_BOUNDS.minX,
+      PAINTABLE_BOUNDS.centerX - Math.floor(w / 2)
+    );
+    const oy = Math.max(
+      PAINTABLE_BOUNDS.minY,
+      PAINTABLE_BOUNDS.minY + Math.floor(PAINTABLE_BOUNDS.height / 4) - Math.floor(h / 2)
+    );
     const placed = glyphPixels
       .map(p => ({ x: ox + p.x, y: oy + p.y, color }))
       .filter(p => isPaintable(p.x, p.y));

@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
-import { CANVAS_HEIGHT, CANVAS_WIDTH, isPaintable } from '../lib/tshirtMask';
+import { isPaintable, PAINTABLE_BOUNDS } from '../lib/tshirtMask';
 import type { Sticker } from '../types/tshit.types';
 
 const MANIFEST_URL = '/tshit-stickers/manifest.json';
@@ -27,6 +27,11 @@ interface ManifestEntry {
 interface Manifest {
   version: number;
   stickers: ManifestEntry[];
+}
+
+function clamp(v: number, lo: number, hi: number): number {
+  if (hi < lo) return lo; // sticker bigger than bounds → snap to top-left of region
+  return Math.max(lo, Math.min(hi, v));
 }
 
 /**
@@ -97,8 +102,18 @@ export function StickerLibrary() {
     setError(null);
     try {
       const pixels = await svgToPixels(s.url, s.width, s.height, color);
-      const ox = Math.max(0, Math.floor((CANVAS_WIDTH - s.width) / 2));
-      const oy = Math.max(0, Math.min(CANVAS_HEIGHT - s.height, 80 - Math.floor(s.height / 2)));
+      // Center the sticker on the paintable region (chest area), then clamp
+      // so it never lands fully outside even for stickers larger than the box.
+      const ox = clamp(
+        PAINTABLE_BOUNDS.centerX - Math.floor(s.width / 2),
+        PAINTABLE_BOUNDS.minX,
+        PAINTABLE_BOUNDS.maxX - s.width + 1
+      );
+      const oy = clamp(
+        PAINTABLE_BOUNDS.centerY - Math.floor(s.height / 2),
+        PAINTABLE_BOUNDS.minY,
+        PAINTABLE_BOUNDS.maxY - s.height + 1
+      );
       const placed = pixels
         .map(p => ({ x: ox + p.x, y: oy + p.y, color: p.color }))
         .filter(p => isPaintable(p.x, p.y));

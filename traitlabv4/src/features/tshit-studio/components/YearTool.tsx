@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Hash } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
 import { renderText, measureText, GLYPH_HEIGHT } from '../data/glyphs';
-import { CANVAS_WIDTH, CANVAS_HEIGHT, isPaintable } from '../lib/tshirtMask';
+import { isPaintable, PAINTABLE_BOUNDS } from '../lib/tshirtMask';
 
 export function YearTool() {
   const [value, setValue] = useState('');
@@ -23,9 +23,16 @@ export function YearTool() {
     if (glyphPixels.length === 0) return;
     const w = measureText(cleaned, textScale);
     const h = GLYPH_HEIGHT * textScale;
-    const ox = Math.max(0, Math.floor((CANVAS_WIDTH - w) / 2));
-    // Place a bit lower than text — typical "year stamp" sits below the main slogan
-    const oy = Math.max(0, Math.min(CANVAS_HEIGHT - h, 95 - Math.floor(h / 2)));
+    const ox = Math.max(
+      PAINTABLE_BOUNDS.minX,
+      PAINTABLE_BOUNDS.centerX - Math.floor(w / 2)
+    );
+    // Year stamp sits in the lower third of the t-shirt paint area
+    // (below where the text tool drops its slogan).
+    const oy = Math.max(
+      PAINTABLE_BOUNDS.minY,
+      PAINTABLE_BOUNDS.minY + Math.floor(PAINTABLE_BOUNDS.height * 2 / 3) - Math.floor(h / 2)
+    );
     const placed = glyphPixels
       .map(p => ({ x: ox + p.x, y: oy + p.y, color }))
       .filter(p => isPaintable(p.x, p.y));
