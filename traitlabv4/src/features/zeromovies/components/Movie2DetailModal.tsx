@@ -143,35 +143,21 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
               {/* AVAILABLE → rent | buy */}
               {isOnShelf && (
                 <>
-                  {/* Rental cap warning — shown when connected and cap is active */}
-                  {isConnected && rentalCap.cap > 0 && (
-                    <div className={`rounded border px-3 py-2 text-[10px] leading-relaxed ${
-                      !rentalCap.canRent
-                        ? 'border-orange-500/40 bg-orange-950/30 text-orange-300'
-                        : rentalCap.slotsLeft === 1
-                          ? 'border-yellow-600/30 bg-yellow-950/20 text-yellow-400'
-                          : 'border-zinc-800 bg-zinc-950/60 text-zinc-500'
-                    }`}>
-                      {!rentalCap.canRent ? (
-                        <>
-                          <span className="font-bold">Rental cap reached.</span> You have{' '}
-                          <span className="font-bold text-white">{rentalCap.total}/{rentalCap.cap}</span> active rentals
-                          across S1+S2. Return a tape to free a slot, or buy permanently — buys don't count toward the cap.
-                        </>
-                      ) : (
-                        <>
-                          <span className="font-bold text-white">{rentalCap.slotsLeft}</span> rental slot{rentalCap.slotsLeft === 1 ? '' : 's'}{' '}
-                          remaining{rentalCap.s1Active > 0 ? ` (${rentalCap.s1Active} in S1, ${rentalCap.s2Active} in S2)` : ''}.
-                          {rentalCap.slotsLeft === 1 && ' Last slot — buy for unlimited.'}
-                        </>
-                      )}
+                  {/* Cap-reached warning — only shown when there's no slot left */}
+                  {isConnected && rentalCap.cap > 0 && !rentalCap.canRent && (
+                    <div className="rounded border border-orange-500/40 bg-orange-950/30 px-3 py-2 text-[10px] leading-relaxed text-orange-300">
+                      <span className="font-bold">Rental cap reached.</span> You have{' '}
+                      <span className="font-bold text-white">{rentalCap.total}/{rentalCap.cap}</span> active rentals across S1+S2.
+                      Return a tape to free a slot, or buy permanently — buys don't count toward the cap.
                     </div>
                   )}
                   <ActionRow
                     label="Rent"
                     sub={rentalCap.cap > 0 && !rentalCap.canRent
                       ? 'Cap reached — return a tape first or buy permanently'
-                      : '7d grace · after grace 1k ZERO/day late fee'}
+                      : isConnected && rentalCap.cap > 0
+                        ? `${rentalCap.slotsLeft}/${rentalCap.cap} slots left · 7d grace, then 1k ZERO/day late fee`
+                        : '7d grace · after grace 1k ZERO/day late fee'}
                     cost={`${config.rentPrice.toLocaleString()} $ZERO`}
                     accent="sky"
                     busy={pendingAction === 'rent'}
