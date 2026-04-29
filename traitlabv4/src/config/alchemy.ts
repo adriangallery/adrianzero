@@ -51,17 +51,30 @@ export const buildAlchemyRpcUrls = (): string[] => {
   return urls;
 };
 
-/** Build Ethereum Mainnet RPC URL for ENS resolution */
-export const buildEthMainnetRpcUrl = (): string => {
+/** Build Ethereum Mainnet RPC URLs for ENS resolution (rotation + public fallback) */
+export const buildEthMainnetRpcUrls = (): string[] => {
+  const urls: string[] = [];
+
   const ensKey = import.meta.env.VITE_ALCHEMY_ENS_KEY;
   if (isValidAlchemyKey(ensKey)) {
-    return `https://eth-mainnet.g.alchemy.com/v2/${ensKey}`;
+    urls.push(`https://eth-mainnet.g.alchemy.com/v2/${ensKey}`);
   }
-  const keys = getAlchemyApiKeys();
-  if (keys.length > 0) {
-    return `https://eth-mainnet.g.alchemy.com/v2/${keys[0]}`;
-  }
-  return 'https://eth.llamarpc.com';
+
+  // Rotate across all configured Alchemy keys for ENS too — same per-second rate limit
+  // applies whether it's Base or Ethereum, so concentrating on one key 429s on wallet
+  // connect bursts.
+  getAlchemyApiKeys().forEach((key) => {
+    const url = `https://eth-mainnet.g.alchemy.com/v2/${key}`;
+    if (!urls.includes(url)) urls.push(url);
+  });
+
+  // Public fallbacks
+  urls.push('https://eth.llamarpc.com', 'https://cloudflare-eth.com');
+
+  return urls;
 };
+
+/** @deprecated Use buildEthMainnetRpcUrls() (plural) — keeps compat for any external callers. */
+export const buildEthMainnetRpcUrl = (): string => buildEthMainnetRpcUrls()[0];
 
 export const ALCHEMY_NFT_BASE_URL = 'https://base-mainnet.g.alchemy.com/nft/v3';

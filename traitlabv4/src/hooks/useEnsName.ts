@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, fallback, http } from 'viem';
 import { mainnet } from 'viem/chains';
-import { buildEthMainnetRpcUrl } from '@/config/alchemy';
+import { buildEthMainnetRpcUrls } from '@/config/alchemy';
 
 const ENS_CACHE_KEY = 'ens-cache';
 const ENS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
@@ -42,7 +42,9 @@ export function useEnsName(address: string | undefined) {
     () =>
       createPublicClient({
         chain: mainnet,
-        transport: http(buildEthMainnetRpcUrl(), { retryCount: 2, retryDelay: 500 }),
+        transport: fallback(
+          buildEthMainnetRpcUrls().map((url) => http(url, { retryCount: 0 })),
+        ),
       }),
     []
   );
