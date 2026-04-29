@@ -7,8 +7,10 @@ import { buildAlchemyRpcUrls, buildEthMainnetRpcUrl } from './alchemy';
 // Without this, wagmi's default http() lands on mainnet.base.org which rate-limits
 // (429) under heavy multicall loads (e.g. scanning 600 Samurai NFT states).
 const baseRpcUrls = buildAlchemyRpcUrls();
+// retryCount: 0 = fail fast so the fallback chain reaches Infura/public immediately
+// when Alchemy returns 429 (monthly cap). Retrying within a capped key wastes time.
 const baseTransport = fallback(
-  baseRpcUrls.map((url) => http(url, { retryCount: 2, retryDelay: 250 })),
+  baseRpcUrls.map((url) => http(url, { retryCount: 0 })),
   { rank: false },
 );
 

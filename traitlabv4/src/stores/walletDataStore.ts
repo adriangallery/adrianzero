@@ -5,7 +5,7 @@
  */
 
 import { create } from 'zustand';
-import { createPublicClient, http, parseAbi } from 'viem';
+import { createPublicClient, fallback, http, parseAbi } from 'viem';
 import { base } from 'viem/chains';
 import { alchemyClient } from '@/lib/api/alchemy/client';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
@@ -239,7 +239,7 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
       const rpcUrls = buildAlchemyRpcUrls();
       const client = createPublicClient({
         chain: base,
-        transport: http(rpcUrls[0], { retryCount: 1 }),
+        transport: fallback(rpcUrls.map((url) => http(url, { retryCount: 0 }))),
       });
 
       const allTraits: Trait[] = [];
