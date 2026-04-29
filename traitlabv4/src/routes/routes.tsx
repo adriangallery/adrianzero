@@ -71,6 +71,12 @@ const ShitdropModule = lazy(() =>
   }))
 );
 
+const TShitStudioModule = lazy(() =>
+  import('@/features/tshit-studio/components/TShitStudioModule').then((m) => ({
+    default: m.TShitStudioModule,
+  }))
+);
+
 const LostModule = lazy(() =>
   import('@/features/lost/components/LostModule').then((m) => ({
     default: m.LostModule,
@@ -118,6 +124,7 @@ export const routes: RouteObject[] = [
   { path: '/mint', element: <OnboardingModule /> },
   { path: '/mynfts', element: <MyNFTsModule /> },
   { path: '/shop', element: <ShopModule /> },
+  { path: '/tshit', element: <TShitStudioModule /> },
   { path: '/buy', element: <BuyModule /> },
   { path: '/zeromovies', element: <ZEROmoviesModule /> },
   { path: '/auction', element: <AuctionModule /> },

@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "stickers": [
+    {
+      "id": "heart",
+      "name": "Heart",
+      "file": "heart.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "skull",
+      "name": "Skull",
+      "file": "skull.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "star",
+      "name": "Star",
+      "file": "star.svg",
+      "width": 9,
+      "height": 9,
+      "category": "starter"
+    },
+    {
+      "id": "smile",
+      "name": "Smile",
+      "file": "smile.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "lightning",
+      "name": "Lightning",
+      "file": "lightning.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "fire",
+      "name": "Fire",
+      "file": "fire.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "peace",
+      "name": "Peace",
+      "file": "peace.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "arrow_up",
+      "name": "Arrow Up",
+      "file": "arrow_up.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "diamond",
+      "name": "Diamond",
+      "file": "diamond.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "cross",
+      "name": "Cross",
+      "file": "cross.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "zero_z",
+      "name": "Zero Z",
+      "file": "zero_z.svg",
+      "width": 8,
+      "height": 8,
+      "category": "starter"
+    },
+    {
+      "id": "dollar",
+      "name": "Dollar",
+      "file": "dollar.svg",
+      "width": 8,
+      "height": 9,
+      "category": "starter"
+    }
+  ]
+}
