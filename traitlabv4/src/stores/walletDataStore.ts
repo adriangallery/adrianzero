@@ -19,7 +19,17 @@ import type { AdrianZeroToken, Trait, TraitCategory } from '@/types/nft.types';
 const ERC1155_ABI = parseAbi([
   'function balanceOfBatch(address[] accounts, uint256[] ids) view returns (uint256[])',
 ]);
+const TSHIT_STATS_ABI = parseAbi([
+  'function tshitStats() view returns (uint256 totalMinted, uint256 totalZeroBurned, uint256 nextId, uint256 idsRemaining)',
+]);
 const BATCH_CHUNK_SIZE = 500;
+
+// Studio T-Shit token range — 1/1 user-minted designs in the AdrianTraitsCore
+// ERC1155. They aren't listed in /data/traits.json (the design URLs live
+// on-chain via tshitGetDesignURI), so we inject synthetic metadata for any
+// minted ID in [STUDIO_TSHIT_MIN_ID, nextId-1] before running balanceOfBatch.
+const STUDIO_TSHIT_MIN_ID = 30014;
+const STUDIO_TSHIT_MAX_ID = 35000;
 
 interface TraitMetadata {
   tokenId: string;
@@ -242,6 +252,33 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
         transport: fallback(rpcUrls.map((url) => http(url, { retryCount: 0 }))),
       });
 
+      // Append the Studio T-Shit minted range so user-designed 1/1s show up in
+      // the trait inventory even though they aren't listed in traits.json.
+      try {
+        const stats = (await client.readContract({
+          address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+          abi: TSHIT_STATS_ABI,
+          functionName: 'tshitStats',
+        })) as readonly [bigint, bigint, bigint, bigint];
+        const nextId = Number(stats[2]);
+        const upper = Math.min(nextId - 1, STUDIO_TSHIT_MAX_ID);
+        for (let id = STUDIO_TSHIT_MIN_ID; id <= upper; id++) {
+          const key = String(id);
+          if (!allMetadata[key]) {
+            allMetadata[key] = {
+              tokenId: key,
+              name: `Studio T-Shit #${id}`,
+              category: 'STUDIO' as TraitCategory,
+              fileName: key,
+              maxSupply: 1,
+            };
+            allIds.push(id);
+          }
+        }
+      } catch (err) {
+        console.warn('Studio T-Shit range probe failed; skipping', err);
+      }
+
       const allTraits: Trait[] = [];
       const allRawTokens: RawERC1155Token[] = [];
       const wallet = address as `0x${string}`;
@@ -274,11 +311,16 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
 
           const numericId = chunk[j];
           const isOgPunkReward = numericId >= 100001 && numericId <= 101003;
+          const isStudioTshit = numericId >= STUDIO_TSHIT_MIN_ID && numericId <= STUDIO_TSHIT_MAX_ID;
           const githubSvgUrl = isOgPunkReward
             ? `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/ogpunks/${tokenId}.svg`
+            : isStudioTshit
+            ? `https://adrianlab.vercel.app/api/render/${tokenId}.png`
             : `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${tokenId}.svg`;
           const labimagesSvgUrl = isOgPunkReward
             ? `https://adrianlab.vercel.app/labimages/ogpunks/${tokenId}.svg`
+            : isStudioTshit
+            ? `https://adrianlab.vercel.app/api/render/${tokenId}.png`
             : `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${tokenId}.svg`;
 
           allTraits.push({
