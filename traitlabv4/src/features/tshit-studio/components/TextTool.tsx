@@ -8,8 +8,7 @@ import { useState } from 'react';
 import { Type } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
 import { renderText, measureText, GLYPH_HEIGHT } from '../data/glyphs';
-import { isPaintable, PAINTABLE_BOUNDS } from '../lib/tshirtMask';
-import type { Layer } from '../types/tshit.types';
+import { PAINTABLE_BOUNDS } from '../lib/tshirtMask';
 
 const SCALES: (1 | 2 | 3)[] = [1, 2, 3];
 
@@ -18,30 +17,24 @@ export function TextTool() {
   const color = useTShitStore(s => s.color);
   const textScale = useTShitStore(s => s.textScale);
   const setTextScale = useTShitStore(s => s.setTextScale);
-  const applyLayer = useTShitStore(s => s.applyLayer);
+  const beginPendingStamp = useTShitStore(s => s.beginPendingStamp);
 
   const stamp = () => {
     if (!text.trim()) return;
-    const glyphPixels = renderText(text, textScale);
+    const glyphPixels = renderText(text, textScale).map(p => ({ ...p, color }));
     if (glyphPixels.length === 0) return;
     const w = measureText(text, textScale);
     const h = GLYPH_HEIGHT * textScale;
-    // Center horizontally on the t-shirt's paintable area; place text in the
-    // upper third of that region (chest area, leaves room for year below).
-    const ox = Math.max(
+    // Default-anchor on the chest area's upper third; user can drag from there.
+    const anchorX = Math.max(
       PAINTABLE_BOUNDS.minX,
       PAINTABLE_BOUNDS.centerX - Math.floor(w / 2)
     );
-    const oy = Math.max(
+    const anchorY = Math.max(
       PAINTABLE_BOUNDS.minY,
       PAINTABLE_BOUNDS.minY + Math.floor(PAINTABLE_BOUNDS.height / 4) - Math.floor(h / 2)
     );
-    const placed = glyphPixels
-      .map(p => ({ x: ox + p.x, y: oy + p.y, color }))
-      .filter(p => isPaintable(p.x, p.y));
-    if (placed.length === 0) return;
-    const layer: Layer = { pixels: placed, origin: 'text' };
-    applyLayer(layer);
+    beginPendingStamp(glyphPixels, 'text', anchorX, anchorY);
     setText('');
   };
 

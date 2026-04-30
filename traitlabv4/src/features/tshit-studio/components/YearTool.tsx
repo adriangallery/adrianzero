@@ -6,38 +6,36 @@ import { useState } from 'react';
 import { Hash } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
 import { renderText, measureText, GLYPH_HEIGHT } from '../data/glyphs';
-import { isPaintable, PAINTABLE_BOUNDS } from '../lib/tshirtMask';
+import { PAINTABLE_BOUNDS } from '../lib/tshirtMask';
 
 export function YearTool() {
   const [value, setValue] = useState('');
   const color = useTShitStore(s => s.color);
   const textScale = useTShitStore(s => s.textScale);
-  const applyLayer = useTShitStore(s => s.applyLayer);
+  const beginPendingStamp = useTShitStore(s => s.beginPendingStamp);
 
   const stamp = () => {
     const cleaned = value.trim();
     if (!cleaned) return;
     const allowed = /^'?\d{1,4}$/;
     if (!allowed.test(cleaned)) return;
-    const glyphPixels = renderText(cleaned, textScale);
+    // Years render at least 2x — the digits read better at a glance and the
+    // year is a focal element of the design (think "vintage tee" stamps).
+    const yearScale = Math.min(3, Math.max(2, textScale)) as 2 | 3;
+    const glyphPixels = renderText(cleaned, yearScale).map(p => ({ ...p, color }));
     if (glyphPixels.length === 0) return;
-    const w = measureText(cleaned, textScale);
-    const h = GLYPH_HEIGHT * textScale;
-    const ox = Math.max(
+    const w = measureText(cleaned, yearScale);
+    const h = GLYPH_HEIGHT * yearScale;
+    const anchorX = Math.max(
       PAINTABLE_BOUNDS.minX,
       PAINTABLE_BOUNDS.centerX - Math.floor(w / 2)
     );
-    // Year stamp sits in the lower third of the t-shirt paint area
-    // (below where the text tool drops its slogan).
-    const oy = Math.max(
+    // Year stamp default-anchors low in the chest area (below text slogan).
+    const anchorY = Math.max(
       PAINTABLE_BOUNDS.minY,
-      PAINTABLE_BOUNDS.minY + Math.floor(PAINTABLE_BOUNDS.height * 2 / 3) - Math.floor(h / 2)
+      PAINTABLE_BOUNDS.minY + Math.floor((PAINTABLE_BOUNDS.height * 2) / 3) - Math.floor(h / 2)
     );
-    const placed = glyphPixels
-      .map(p => ({ x: ox + p.x, y: oy + p.y, color }))
-      .filter(p => isPaintable(p.x, p.y));
-    if (placed.length === 0) return;
-    applyLayer({ pixels: placed, origin: 'text' });
+    beginPendingStamp(glyphPixels, 'year', anchorX, anchorY);
     setValue('');
   };
 

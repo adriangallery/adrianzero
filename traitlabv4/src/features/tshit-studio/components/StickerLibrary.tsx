@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
-import { isPaintable, PAINTABLE_BOUNDS } from '../lib/tshirtMask';
+import { PAINTABLE_BOUNDS } from '../lib/tshirtMask';
 import type { Sticker } from '../types/tshit.types';
 
 const MANIFEST_URL = '/tshit-stickers/manifest.json';
@@ -68,7 +68,7 @@ async function svgToPixels(url: string, w: number, h: number, color: string) {
 
 export function StickerLibrary() {
   const color = useTShitStore(s => s.color);
-  const applyLayer = useTShitStore(s => s.applyLayer);
+  const beginPendingStamp = useTShitStore(s => s.beginPendingStamp);
   const [manifest, setManifest] = useState<Sticker[] | null>(null);
   const [stamping, setStamping] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -102,23 +102,19 @@ export function StickerLibrary() {
     setError(null);
     try {
       const pixels = await svgToPixels(s.url, s.width, s.height, color);
-      // Center the sticker on the paintable region (chest area), then clamp
-      // so it never lands fully outside even for stickers larger than the box.
-      const ox = clamp(
+      // Default-anchor on the chest center; user can drag from there.
+      const anchorX = clamp(
         PAINTABLE_BOUNDS.centerX - Math.floor(s.width / 2),
         PAINTABLE_BOUNDS.minX,
         PAINTABLE_BOUNDS.maxX - s.width + 1
       );
-      const oy = clamp(
+      const anchorY = clamp(
         PAINTABLE_BOUNDS.centerY - Math.floor(s.height / 2),
         PAINTABLE_BOUNDS.minY,
         PAINTABLE_BOUNDS.maxY - s.height + 1
       );
-      const placed = pixels
-        .map(p => ({ x: ox + p.x, y: oy + p.y, color: p.color }))
-        .filter(p => isPaintable(p.x, p.y));
-      if (placed.length === 0) throw new Error('Sticker fell outside paintable area');
-      applyLayer({ pixels: placed, origin: 'sticker' });
+      if (pixels.length === 0) throw new Error('Sticker has no visible pixels');
+      beginPendingStamp(pixels, 'sticker', anchorX, anchorY);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Sticker stamp failed');
     } finally {

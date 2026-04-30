@@ -436,39 +436,55 @@ const G: Record<string, Glyph> = {
 /**
  * Render a string into a flat pixel list (relative coords, top-left = 0,0).
  * Unknown chars render as empty space (1 column wide).
+ *
+ * `bold` (default true) thickens each lit pixel by stamping an extra block
+ * to its right — strokes go from 1px thick to 2px thick without doubling
+ * the height. Cursor advance bumps by `+1*scale` per char to avoid bleeding
+ * into the next glyph's spacing column.
  */
-export function renderText(text: string, scale = 1): { x: number; y: number }[] {
+export function renderText(text: string, scale = 1, bold = true): { x: number; y: number }[] {
   const out: { x: number; y: number }[] = [];
   if (scale < 1 || !Number.isFinite(scale)) scale = 1;
   scale = Math.floor(scale);
+  const advance = (GLYPH_WIDTH + GLYPH_SPACING + (bold ? 1 : 0)) * scale;
+  const boldOffset = bold ? scale : 0;
 
   let cursor = 0;
   for (const raw of text) {
     const ch = raw.toUpperCase();
     const glyph = G[ch];
     if (!glyph) {
-      cursor += (GLYPH_WIDTH + GLYPH_SPACING) * scale;
+      cursor += advance;
       continue;
     }
     for (let row = 0; row < GLYPH_HEIGHT; row++) {
       const line = glyph[row];
       for (let col = 0; col < GLYPH_WIDTH; col++) {
         if (line[col] !== '#') continue;
-        // Stamp scale × scale block per pixel
         for (let dy = 0; dy < scale; dy++) {
           for (let dx = 0; dx < scale; dx++) {
             out.push({ x: cursor + col * scale + dx, y: row * scale + dy });
+            if (boldOffset) {
+              out.push({ x: cursor + col * scale + dx + boldOffset, y: row * scale + dy });
+            }
           }
         }
       }
     }
-    cursor += (GLYPH_WIDTH + GLYPH_SPACING) * scale;
+    cursor += advance;
   }
   return out;
 }
 
-/** Width of a rendered string in pixels at given scale. */
-export function measureText(text: string, scale = 1): number {
+/** Width of a rendered string in pixels at given scale (bold-aware). */
+export function measureText(text: string, scale = 1, bold = true): number {
   if (text.length === 0) return 0;
-  return text.length * (GLYPH_WIDTH + GLYPH_SPACING) * scale - GLYPH_SPACING * scale;
+  const charWidth = (GLYPH_WIDTH + (bold ? 1 : 0)) * scale;
+  const totalSpacing = (text.length - 1) * GLYPH_SPACING * scale;
+  return text.length * charWidth + totalSpacing;
+}
+
+/** Glyph height including bold dilation (matches what renderText emits). */
+export function measureTextHeight(scale = 1, _bold = true): number {
+  return GLYPH_HEIGHT * scale;
 }

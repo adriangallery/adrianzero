@@ -14,7 +14,7 @@ export interface Pixel {
 export interface Layer {
   pixels: Pixel[];
   /** Origin tag for analytics/debug; optional. */
-  origin?: 'brush' | 'fill' | 'text' | 'sticker' | 'paste';
+  origin?: 'brush' | 'fill' | 'text' | 'year' | 'sticker' | 'paste';
 }
 
 export interface Sticker {

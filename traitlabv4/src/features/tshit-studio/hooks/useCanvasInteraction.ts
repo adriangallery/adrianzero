@@ -21,9 +21,13 @@ interface Args {
   pixelSize: number;
 }
 
+type DragMode = 'paint' | 'stamp';
+
 export function useCanvasInteraction({ canvasEl, pixelSize }: Args) {
   const activePointerId = useRef<number | null>(null);
+  const dragModeRef = useRef<DragMode>('paint');
   const lastCellRef = useRef<{ x: number; y: number } | null>(null);
+  const stampGrabOffsetRef = useRef<{ dx: number; dy: number } | null>(null);
   // Subscribe to individual store fields rather than calling useTShitStore()
   // bare — the latter returns the entire state object whose reference changes
   // on every mutation and provokes infinite re-renders under React 19 +
@@ -38,6 +42,7 @@ export function useCanvasInteraction({ canvasEl, pixelSize }: Args) {
   const cancelStroke = useTShitStore(s => s.cancelStroke);
   const setColor = useTShitStore(s => s.setColor);
   const getAllPixels = useTShitStore(s => s.getAllPixels);
+  const movePendingStamp = useTShitStore(s => s.movePendingStamp);
 
   // Convert client (x,y) to canvas cell coords
   const cellFromClient = useCallback(
@@ -94,6 +99,17 @@ export function useCanvasInteraction({ canvasEl, pixelSize }: Args) {
   useEffect(() => {
     if (!canvasEl) return;
 
+    const isInsideStamp = (cell: { x: number; y: number }) => {
+      const ps = useTShitStore.getState().pendingStamp;
+      if (!ps) return null;
+      const left = ps.offsetX;
+      const right = ps.offsetX + ps.width - 1;
+      const top = ps.offsetY;
+      const bottom = ps.offsetY + ps.height - 1;
+      if (cell.x < left || cell.x > right || cell.y < top || cell.y > bottom) return null;
+      return ps;
+    };
+
     const onDown = (e: PointerEvent) => {
       if (activePointerId.current !== null) return; // palm rejection
       const cell = cellFromClient(e.clientX, e.clientY);
@@ -101,6 +117,22 @@ export function useCanvasInteraction({ canvasEl, pixelSize }: Args) {
       activePointerId.current = e.pointerId;
       canvasEl.setPointerCapture?.(e.pointerId);
       e.preventDefault();
+
+      // Pending stamp drag-and-drop takes precedence over paint tools so the
+      // user can re-grab the layer they just spawned without thinking about
+      // tool state.
+      const stampHit = isInsideStamp(cell);
+      if (stampHit) {
+        dragModeRef.current = 'stamp';
+        stampGrabOffsetRef.current = {
+          dx: cell.x - stampHit.offsetX,
+          dy: cell.y - stampHit.offsetY,
+        };
+        return;
+      }
+
+      dragModeRef.current = 'paint';
+      stampGrabOffsetRef.current = null;
 
       if (tool === 'picker') {
         const all = getAllPixels();
@@ -118,20 +150,30 @@ export function useCanvasInteraction({ canvasEl, pixelSize }: Args) {
     const onMove = (e: PointerEvent) => {
       if (activePointerId.current !== e.pointerId) return;
       const cell = cellFromClient(e.clientX, e.clientY);
-      if (!cell || !lastCellRef.current) return;
+      if (!cell) return;
+
+      if (dragModeRef.current === 'stamp') {
+        const grab = stampGrabOffsetRef.current;
+        if (!grab) return;
+        movePendingStamp(cell.x - grab.dx, cell.y - grab.dy);
+        return;
+      }
+
+      if (!lastCellRef.current) return;
       if (cell.x === lastCellRef.current.x && cell.y === lastCellRef.current.y) return;
       drawLine(lastCellRef.current, cell);
       lastCellRef.current = cell;
     };
 
     const finish = (commit: boolean) => {
-      if (commit) {
-        commitStroke(tool === 'eraser' ? 'brush' : 'brush');
-      } else {
-        cancelStroke();
+      if (dragModeRef.current === 'paint') {
+        if (commit) commitStroke(tool === 'eraser' ? 'brush' : 'brush');
+        else cancelStroke();
       }
       activePointerId.current = null;
       lastCellRef.current = null;
+      stampGrabOffsetRef.current = null;
+      dragModeRef.current = 'paint';
     };
 
     const onUp = (e: PointerEvent) => {
@@ -157,5 +199,5 @@ export function useCanvasInteraction({ canvasEl, pixelSize }: Args) {
       canvasEl.removeEventListener('pointercancel', onCancel);
       canvasEl.removeEventListener('pointerleave', onUp);
     };
-  }, [canvasEl, beginStroke, cancelStroke, cellFromClient, commitStroke, drawLine, getAllPixels, setColor, stamp, tool]);
+  }, [canvasEl, beginStroke, cancelStroke, cellFromClient, commitStroke, drawLine, getAllPixels, movePendingStamp, setColor, stamp, tool]);
 }

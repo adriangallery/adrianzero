@@ -41,6 +41,7 @@ export function Canvas({ pixelSize = 4 }: Props) {
   const tool = useTShitStore(s => s.tool);
   const showGrid = useTShitStore(s => s.showGrid);
   const fillPaintable = useTShitStore(s => s.fillPaintable);
+  const pendingStamp = useTShitStore(s => s.pendingStamp);
   // Subscribe to the raw state pieces (referentially stable) and memoise the
   // derived array. Subscribing to a derived selector that returns a fresh
   // array each call sends React 19 + zustand v5 into an infinite render
@@ -48,8 +49,8 @@ export function Canvas({ pixelSize = 4 }: Props) {
   const layers = useTShitStore(s => s.layers);
   const pendingPixels = useTShitStore(s => s.pendingPixels);
   const visiblePixels = useMemo(
-    () => computeVisiblePixels(layers, pendingPixels),
-    [layers, pendingPixels]
+    () => computeVisiblePixels(layers, pendingPixels, pendingStamp),
+    [layers, pendingPixels, pendingStamp]
   );
 
   // Single-tap fill bucket (interaction hook ignores 'fill' to avoid drag spam)
@@ -128,6 +129,22 @@ export function Canvas({ pixelSize = 4 }: Props) {
                 `linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), ` +
                 `linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)`,
               backgroundSize: `${responsiveSize}px ${responsiveSize}px`,
+            }}
+          />
+        )}
+        {/* Pending stamp bounding box — animated dashed outline so the user
+            knows it's still draggable. */}
+        {pendingStamp && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left: pendingStamp.offsetX * responsiveSize - 2,
+              top: pendingStamp.offsetY * responsiveSize - 2,
+              width: pendingStamp.width * responsiveSize + 4,
+              height: pendingStamp.height * responsiveSize + 4,
+              border: '2px dashed rgba(16, 185, 129, 0.85)',
+              boxShadow: '0 0 0 1px rgba(0,0,0,0.4)',
+              borderRadius: 2,
             }}
           />
         )}

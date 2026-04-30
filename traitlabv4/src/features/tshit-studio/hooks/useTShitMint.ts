@@ -21,7 +21,7 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ERC20_ABI } from '@/lib/web3/abi';
 import { TSHIT_FACET_ABI } from '../lib/abi';
 import { buildDesignSvg } from '../lib/svgExport';
-import { TSHIRT_SVG_URL } from '../lib/tshirtMask';
+import { TSHIRT_SVG_URL, isPaintable } from '../lib/tshirtMask';
 import { useUploadDesign } from './useUploadDesign';
 import { useTShitStore } from '../store/tshitStore';
 import type { MintStatus } from '../types/tshit.types';
@@ -131,6 +131,12 @@ export function useTShitMint() {
         return;
       }
       const price = (mintPrice as bigint | undefined) ?? 1000n * 10n ** 18n;
+      // Auto-commit any unconfirmed stamp the user is still dragging — without
+      // this the pending pixels would be discarded silently when we read
+      // getAllPixels() below.
+      if (useTShitStore.getState().pendingStamp) {
+        useTShitStore.getState().commitPendingStamp(isPaintable);
+      }
       const pixels = useTShitStore.getState().getAllPixels();
       if (pixels.length === 0) {
         setStatus({ phase: 'error', error: 'Canvas is empty' });
