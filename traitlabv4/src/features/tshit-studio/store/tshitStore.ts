@@ -8,7 +8,24 @@ import { create } from 'zustand';
 import type { Layer, Pixel, Tool } from '../types/tshit.types';
 import { DEFAULT_COLOR } from '../data/palette';
 
-const MAX_HISTORY = 30;
+/**
+ * Maximum number of independently-undoable layers. When the user goes past
+ * this, the oldest two layers are flattened into a single base layer so the
+ * pixel content is *preserved* (no canvas rollback) but the undo granularity
+ * stops earlier. Bumped well past V1's 30-stroke cap so detailed drawings
+ * don't lose pixels mid-session.
+ */
+const MAX_HISTORY = 200;
+
+function trimHistory(layers: Layer[]): Layer[] {
+  if (layers.length <= MAX_HISTORY) return layers;
+  // Merge the oldest two layers into one. We use `flatten()` so erase
+  // sentinels are honoured (a paste layer that erases earlier work stays
+  // erased after the merge).
+  const head = flatten(layers.slice(0, 2));
+  const merged: Layer = { pixels: Array.from(head.values()), origin: 'paste' };
+  return [merged, ...layers.slice(2)];
+}
 
 /**
  * A movable stamp the user just placed. Lives above the committed layers as
@@ -35,6 +52,16 @@ interface TShitState {
   brushSize: 1 | 2 | 4 | 8;
   showGrid: boolean;
   textScale: 1 | 2 | 3;
+
+  /**
+   * Optional base color of the t-shirt itself. When set, every paintable cell
+   * not covered by a user-painted pixel renders in this colour (multiplied by
+   * the template luminance so shadows survive). null = leave the template's
+   * native grey showing through. Lets the user "pick a color for your tshit"
+   * without flood-filling layers and clogging undo history.
+   */
+  tshirtBaseColor: string | null;
+  setTshirtBaseColor: (c: string | null) => void;
 
   // Canvas
   layers: Layer[];           // committed layers (chronological)
@@ -110,6 +137,9 @@ export const useTShitStore = create<TShitState>((set, get) => ({
   showGrid: true,
   textScale: 1,
 
+  tshirtBaseColor: null,
+  setTshirtBaseColor: c => set({ tshirtBaseColor: c }),
+
   layers: [],
   redoStack: [],
   pendingPixels: new Map(),
@@ -139,7 +169,7 @@ export const useTShitStore = create<TShitState>((set, get) => ({
     const pending = get().pendingPixels;
     if (pending.size === 0) return;
     const layer: Layer = { pixels: Array.from(pending.values()), origin };
-    const next = [...get().layers, layer].slice(-MAX_HISTORY);
+    const next = trimHistory([...get().layers, layer]);
     set({ layers: next, redoStack: [], pendingPixels: new Map() });
   },
 
@@ -147,7 +177,7 @@ export const useTShitStore = create<TShitState>((set, get) => ({
 
   applyLayer: layer => {
     if (layer.pixels.length === 0) return;
-    const next = [...get().layers, layer].slice(-MAX_HISTORY);
+    const next = trimHistory([...get().layers, layer]);
     set({ layers: next, redoStack: [] });
   },
 
@@ -190,7 +220,7 @@ export const useTShitStore = create<TShitState>((set, get) => ({
     set({ pendingStamp: null });
     if (placed.length === 0) return;
     set({
-      layers: [...get().layers, { pixels: placed, origin: cur.origin }].slice(-MAX_HISTORY),
+      layers: trimHistory([...get().layers, { pixels: placed, origin: cur.origin }]),
       redoStack: [],
     });
   },
@@ -211,7 +241,7 @@ export const useTShitStore = create<TShitState>((set, get) => ({
     if (pixels.length === 0) return;
     const layer: Layer = { pixels, origin: 'fill' };
     set({
-      layers: [...get().layers, layer].slice(-MAX_HISTORY),
+      layers: trimHistory([...get().layers, layer]),
       redoStack: [],
     });
   },
@@ -231,7 +261,7 @@ export const useTShitStore = create<TShitState>((set, get) => ({
     if (stack.length === 0) return;
     const top = stack[stack.length - 1];
     set({
-      layers: [...get().layers, top].slice(-MAX_HISTORY),
+      layers: trimHistory([...get().layers, top]),
       redoStack: stack.slice(0, -1),
     });
   },
@@ -258,15 +288,20 @@ export const useTShitStore = create<TShitState>((set, get) => ({
 }));
 
 /**
- * Pure helper — combines committed layers with the in-progress stroke and
- * (if present) the unconfirmed pending stamp the user is dragging. Pass the
- * raw state pieces individually so the caller can subscribe to each and
- * memoise the result.
+ * Pure helper — combines the (optional) t-shirt base colour, committed layers,
+ * the in-progress stroke and the unconfirmed pending stamp into the final
+ * visible pixel set. Pass the raw state pieces individually so the caller can
+ * subscribe to each and memoise the result.
+ *
+ * `paintable` is the t-shirt mask predicate; it's only consulted when a base
+ * colour is set (otherwise the function is mask-agnostic).
  */
 export function computeVisiblePixels(
   layers: Layer[],
   pendingPixels: Map<string, Pixel>,
-  pendingStamp: PendingStamp | null = null
+  pendingStamp: PendingStamp | null = null,
+  tshirtBaseColor: string | null = null,
+  paintable?: (x: number, y: number) => boolean
 ): Pixel[] {
   const flat = flatten(layers);
   for (const p of pendingPixels.values()) {
@@ -280,6 +315,18 @@ export function computeVisiblePixels(
         y: p.y + pendingStamp.offsetY,
         color: p.color,
       });
+    }
+  }
+  if (tshirtBaseColor && paintable) {
+    // Pre-fill empty paintable cells with the base colour. Order matters:
+    // user pixels (already in `flat`) win, base only fills the gaps.
+    for (let y = 0; y < 148; y++) {
+      for (let x = 0; x < 148; x++) {
+        if (!paintable(x, y)) continue;
+        const k = pkey(x, y);
+        if (flat.has(k)) continue;
+        flat.set(k, { x, y, color: tshirtBaseColor });
+      }
     }
   }
   return Array.from(flat.values());

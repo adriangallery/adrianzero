@@ -132,7 +132,13 @@ export function useTShitMint() {
 
       try {
         // ─── 1. Build SVG ───
-        const svg = buildDesignSvg({ pixels, title: opts?.title });
+        const tshirtBaseColor = useTShitStore.getState().tshirtBaseColor;
+        const svg = buildDesignSvg({
+          pixels,
+          title: opts?.title,
+          tshirtBaseColor,
+          paintable: tshirtBaseColor ? isPaintable : undefined,
+        });
 
         // ─── 2. Upload ───
         setStatus({ phase: 'uploading' });

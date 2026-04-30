@@ -13,6 +13,7 @@ import { YearTool } from './YearTool';
 import { StickerLibrary } from './StickerLibrary';
 import { MintFlow } from './MintFlow';
 import { PendingStampControls } from './PendingStampControls';
+import { TshirtColorPicker } from './TshirtColorPicker';
 import { useDraftAutosave, loadDraft } from '../hooks/useDraftAutosave';
 import { useTShitStore } from '../store/tshitStore';
 
@@ -50,6 +51,8 @@ export function TShitStudioModule() {
 
         <aside className="space-y-5 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
           <PendingStampControls />
+          <TshirtColorPicker />
+          <hr className="border-zinc-800" />
           <ColorPalette />
           <hr className="border-zinc-800" />
           <TextTool />

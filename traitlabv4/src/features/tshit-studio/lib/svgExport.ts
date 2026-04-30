@@ -16,25 +16,45 @@ import templatePng from '../data/tshirt-template-png.json';
 
 interface BuildArgs {
   pixels: Pixel[];
-  /**
-   * Full markup of the T-shirt template (kept for backwards compatibility
-   * with callers that already fetched it). No longer used internally — the
-   * template is shipped as a baked PNG inside the bundle.
-   */
-  tshirtSvg?: string;
   /** Optional title metadata embedded as <title>; falls back to "T-Shit". */
   title?: string;
+  /**
+   * Optional t-shirt base colour (e.g. "#0080ff"). Every paintable cell
+   * not covered by `pixels` gets baked in with this colour multiplied by the
+   * cell's luminance. null/undefined leaves the template's grey showing.
+   */
+  tshirtBaseColor?: string | null;
+  /** Predicate used when baking the base colour into empty paintable cells. */
+  paintable?: (x: number, y: number) => boolean;
 }
 
 const TEMPLATE_DATA_URI = `data:image/png;base64,${(templatePng as { b64: string }).b64}`;
 
-export function buildDesignSvg({ pixels, title }: BuildArgs): string {
+export function buildDesignSvg({ pixels, title, tshirtBaseColor, paintable }: BuildArgs): string {
+
+  // Combine optional base colour with the user's painted pixels. Painted
+  // pixels win at any cell they cover; unpainted paintable cells fall back to
+  // the base colour when supplied.
+  const userMap = new Map<string, Pixel>();
+  for (const p of pixels) userMap.set(`${p.x},${p.y}`, p);
+
+  const allPixels: Pixel[] = [];
+  if (tshirtBaseColor && paintable) {
+    for (let y = 0; y < CANVAS_HEIGHT; y++) {
+      for (let x = 0; x < CANVAS_WIDTH; x++) {
+        if (!paintable(x, y)) continue;
+        if (userMap.has(`${x},${y}`)) continue;
+        allPixels.push({ x, y, color: tshirtBaseColor });
+      }
+    }
+  }
+  for (const p of pixels) allPixels.push(p);
 
   // Bake the t-shirt's per-cell luminance into each painted pixel so the
   // exported SVG carries the same shading the user sees in the editor. The
   // original (unshaded) color is still recoverable via Pick because the
   // store keeps it; only the rendered output applies the multiply.
-  const shadedPixels: Pixel[] = pixels.map(p => ({
+  const shadedPixels: Pixel[] = allPixels.map(p => ({
     x: p.x,
     y: p.y,
     color: shadedAt(p.x, p.y, p.color),

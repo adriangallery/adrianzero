@@ -42,6 +42,7 @@ export function Canvas({ pixelSize = 4 }: Props) {
   const showGrid = useTShitStore(s => s.showGrid);
   const fillPaintable = useTShitStore(s => s.fillPaintable);
   const pendingStamp = useTShitStore(s => s.pendingStamp);
+  const tshirtBaseColor = useTShitStore(s => s.tshirtBaseColor);
   // Subscribe to the raw state pieces (referentially stable) and memoise the
   // derived array. Subscribing to a derived selector that returns a fresh
   // array each call sends React 19 + zustand v5 into an infinite render
@@ -49,8 +50,8 @@ export function Canvas({ pixelSize = 4 }: Props) {
   const layers = useTShitStore(s => s.layers);
   const pendingPixels = useTShitStore(s => s.pendingPixels);
   const visiblePixels = useMemo(
-    () => computeVisiblePixels(layers, pendingPixels, pendingStamp),
-    [layers, pendingPixels, pendingStamp]
+    () => computeVisiblePixels(layers, pendingPixels, pendingStamp, tshirtBaseColor, isPaintable),
+    [layers, pendingPixels, pendingStamp, tshirtBaseColor]
   );
 
   // Single-tap fill bucket (interaction hook ignores 'fill' to avoid drag spam)
