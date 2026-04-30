@@ -21,7 +21,7 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ERC20_ABI } from '@/lib/web3/abi';
 import { TSHIT_FACET_ABI } from '../lib/abi';
 import { buildDesignSvg } from '../lib/svgExport';
-import { TSHIRT_SVG_URL, isPaintable } from '../lib/tshirtMask';
+import { isPaintable } from '../lib/tshirtMask';
 import { useUploadDesign } from './useUploadDesign';
 import { useTShitStore } from '../store/tshitStore';
 import type { MintStatus } from '../types/tshit.types';
@@ -32,15 +32,6 @@ const DIAMOND = CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`;
 export function useTShitMint() {
   const { address } = useAccount();
   const [status, setStatus] = useState<MintStatus>({ phase: 'idle' });
-  const [tshirtSvg, setTshirtSvg] = useState<string | null>(null);
-
-  // Pre-load the T-shirt template once
-  useEffect(() => {
-    fetch(TSHIRT_SVG_URL)
-      .then(r => r.text())
-      .then(setTshirtSvg)
-      .catch(() => setTshirtSvg(''));
-  }, []);
 
   // Read mint price (default 1000e18) — pulled live in case admin changes it
   const { data: mintPrice } = useReadContract({
@@ -114,10 +105,6 @@ export function useTShitMint() {
         setStatus({ phase: 'error', error: 'Wallet not connected' });
         return;
       }
-      if (!tshirtSvg) {
-        setStatus({ phase: 'error', error: 'T-shirt template still loading' });
-        return;
-      }
       if (isActive === false) {
         setStatus({ phase: 'error', error: 'T-Shit Studio is currently paused' });
         return;
@@ -145,7 +132,7 @@ export function useTShitMint() {
 
       try {
         // ─── 1. Build SVG ───
-        const svg = buildDesignSvg({ pixels, tshirtSvg, title: opts?.title });
+        const svg = buildDesignSvg({ pixels, title: opts?.title });
 
         // ─── 2. Upload ───
         setStatus({ phase: 'uploading' });
@@ -192,7 +179,7 @@ export function useTShitMint() {
         setStatus({ phase: 'error', error: msg });
       }
     },
-    [address, allowance, isActive, mintPrice, refetchAllowance, tshirtSvg, upload, writeContractAsync]
+    [address, allowance, isActive, mintPrice, refetchAllowance, registeredRemaining, upload, writeContractAsync]
   );
 
   const reset = useCallback((opts?: { clearCanvas?: boolean }) => {
