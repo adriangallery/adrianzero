@@ -13,6 +13,8 @@ import { useTShitStore } from '../store/tshitStore';
 import { PAINTABLE_BOUNDS } from '../lib/tshirtMask';
 import type { Sticker } from '../types/tshit.types';
 
+const SCALES: (1 | 2 | 3)[] = [1, 2, 3];
+
 const MANIFEST_URL = '/tshit-stickers/manifest.json';
 
 interface ManifestEntry {
@@ -72,6 +74,7 @@ export function StickerLibrary() {
   const [manifest, setManifest] = useState<Sticker[] | null>(null);
   const [stamping, setStamping] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scale, setScale] = useState<1 | 2 | 3>(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,20 +104,32 @@ export function StickerLibrary() {
     setStamping(s.id);
     setError(null);
     try {
-      const pixels = await svgToPixels(s.url, s.width, s.height, color);
-      // Default-anchor on the chest center; user can drag from there.
+      // Rasterise at sticker's native resolution, then upscale by integer
+      // multiples to keep crispEdges intact (avoids canvas resampling blur).
+      const basePixels = await svgToPixels(s.url, s.width, s.height, color);
+      if (basePixels.length === 0) throw new Error('Sticker has no visible pixels');
+      const scaledPixels = scale === 1
+        ? basePixels
+        : basePixels.flatMap(p => {
+            const out = [];
+            for (let dy = 0; dy < scale; dy++)
+              for (let dx = 0; dx < scale; dx++)
+                out.push({ x: p.x * scale + dx, y: p.y * scale + dy, color: p.color });
+            return out;
+          });
+      const sw = s.width * scale;
+      const sh = s.height * scale;
       const anchorX = clamp(
-        PAINTABLE_BOUNDS.centerX - Math.floor(s.width / 2),
+        PAINTABLE_BOUNDS.centerX - Math.floor(sw / 2),
         PAINTABLE_BOUNDS.minX,
-        PAINTABLE_BOUNDS.maxX - s.width + 1
+        PAINTABLE_BOUNDS.maxX - sw + 1
       );
       const anchorY = clamp(
-        PAINTABLE_BOUNDS.centerY - Math.floor(s.height / 2),
+        PAINTABLE_BOUNDS.centerY - Math.floor(sh / 2),
         PAINTABLE_BOUNDS.minY,
-        PAINTABLE_BOUNDS.maxY - s.height + 1
+        PAINTABLE_BOUNDS.maxY - sh + 1
       );
-      if (pixels.length === 0) throw new Error('Sticker has no visible pixels');
-      beginPendingStamp(pixels, 'sticker', anchorX, anchorY);
+      beginPendingStamp(scaledPixels, 'sticker', anchorX, anchorY);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Sticker stamp failed');
     } finally {
@@ -124,9 +139,28 @@ export function StickerLibrary() {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-zinc-400" />
-        <span className="text-xs uppercase tracking-wide text-zinc-400">Stickers</span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-zinc-400" />
+          <span className="text-xs uppercase tracking-wide text-zinc-400">Stickers</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-zinc-500 mr-1">Scale</span>
+          {SCALES.map(s => (
+            <button
+              key={s}
+              onClick={() => setScale(s)}
+              aria-pressed={scale === s}
+              className={`px-1.5 py-0.5 rounded border text-[11px] ${
+                scale === s
+                  ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200'
+                  : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500'
+              }`}
+            >
+              {s}×
+            </button>
+          ))}
+        </div>
       </div>
       {manifest === null && (
         <div className="text-xs text-zinc-500">Loading…</div>

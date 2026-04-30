@@ -33,24 +33,30 @@ export function useTShitMint() {
   const { address } = useAccount();
   const [status, setStatus] = useState<MintStatus>({ phase: 'idle' });
 
-  // Read mint price (default 1000e18) — pulled live in case admin changes it
+  // Read mint price (default 1000e18) — admin rarely changes it, cache for 5 min
   const { data: mintPrice } = useReadContract({
     address: DIAMOND,
     abi: TSHIT_FACET_ABI,
     functionName: 'tshitMintPrice',
+    query: { staleTime: 5 * 60_000, gcTime: 10 * 60_000 },
   });
 
+  // Pause toggle — also rare; refresh on tab focus is enough
   const { data: isActive } = useReadContract({
     address: DIAMOND,
     abi: TSHIT_FACET_ABI,
     functionName: 'tshitIsActive',
+    query: { staleTime: 5 * 60_000, gcTime: 10 * 60_000, refetchOnWindowFocus: true },
   });
 
+  // Registered slots — only changes when admin tops up or someone mints. 60s
+  // poll is plenty for the "Slots open: N" badge; we also re-fetch right
+  // after a successful mint inside the success effect below.
   const { data: registeredRemaining, refetch: refetchRemaining } = useReadContract({
     address: DIAMOND,
     abi: TSHIT_FACET_ABI,
     functionName: 'tshitRegisteredRemaining',
-    query: { refetchInterval: 30_000 },
+    query: { refetchInterval: 60_000, staleTime: 30_000 },
   });
 
   // Allowance check
@@ -97,7 +103,10 @@ export function useTShitMint() {
       txHash: receipt.transactionHash,
     }));
     clearDraft();
-  }, [receipt, status.phase]);
+    // Drop "slots open" by 1 immediately after our own mint instead of
+    // waiting for the next 60s poll.
+    refetchRemaining();
+  }, [receipt, status.phase, refetchRemaining]);
 
   const mint = useCallback(
     async (opts?: { title?: string }) => {

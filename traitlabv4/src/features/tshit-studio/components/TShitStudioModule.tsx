@@ -9,7 +9,6 @@ import { Canvas } from './Canvas';
 import { Toolbar } from './Toolbar';
 import { ColorPalette } from './ColorPalette';
 import { TextTool } from './TextTool';
-import { YearTool } from './YearTool';
 import { StickerLibrary } from './StickerLibrary';
 import { MintFlow } from './MintFlow';
 import { PendingStampControls } from './PendingStampControls';
@@ -56,8 +55,6 @@ export function TShitStudioModule() {
           <ColorPalette />
           <hr className="border-zinc-800" />
           <TextTool />
-          <hr className="border-zinc-800" />
-          <YearTool />
           <hr className="border-zinc-800" />
           <StickerLibrary />
           <hr className="border-zinc-800" />
