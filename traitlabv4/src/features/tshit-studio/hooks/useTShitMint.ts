@@ -185,7 +185,10 @@ export function useTShitMint() {
           abi: TSHIT_FACET_ABI,
           functionName: 'mintTShit',
           args: [url],
-          gas: 300_000n,
+          // Real consumption is ~390k (ERC20 burn + multiple SSTOREs + external
+          // ERC1155 mint on AdrianTraitsCore + event emission). Keep a healthy
+          // headroom for storage-heavy paths like first-mint-in-a-batch.
+          gas: 600_000n,
         });
         setStatus({ phase: 'awaiting-mint-confirm', txHash: mintTx, designUrl: url });
         setPendingTxHash(mintTx);
