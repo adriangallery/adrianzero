@@ -13,7 +13,7 @@
  * fancy <use> / <pattern> tricks.
  */
 import type { Pixel } from '../types/tshit.types';
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from './tshirtMask';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, shadedAt } from './tshirtMask';
 
 interface BuildArgs {
   pixels: Pixel[];
@@ -39,10 +39,20 @@ function extractInner(svgMarkup: string): string {
 export function buildDesignSvg({ pixels, tshirtSvg, title }: BuildArgs): string {
   const inner = extractInner(tshirtSvg).trim();
 
+  // Bake the t-shirt's per-cell luminance into each painted pixel so the
+  // exported SVG carries the same shading the user sees in the editor. The
+  // original (unshaded) color is still recoverable via Pick because the
+  // store keeps it; only the rendered output applies the multiply.
+  const shadedPixels: Pixel[] = pixels.map(p => ({
+    x: p.x,
+    y: p.y,
+    color: shadedAt(p.x, p.y, p.color),
+  }));
+
   // Group identical-color runs to keep the SVG compact. Sort by color first,
   // then merge horizontally adjacent same-color cells in the same row.
   const buckets = new Map<string, Pixel[]>();
-  for (const p of pixels) {
+  for (const p of shadedPixels) {
     let arr = buckets.get(p.color);
     if (!arr) buckets.set(p.color, (arr = []));
     arr.push(p);

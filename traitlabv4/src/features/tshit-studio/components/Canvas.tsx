@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTShitStore, computeVisiblePixels } from '../store/tshitStore';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
-import { CANVAS_HEIGHT, CANVAS_WIDTH, MANNEQUIN_SVG_URL, TSHIRT_SVG_URL, isPaintable } from '../lib/tshirtMask';
+import { CANVAS_HEIGHT, CANVAS_WIDTH, MANNEQUIN_SVG_URL, TSHIRT_SVG_URL, isPaintable, shadedAt } from '../lib/tshirtMask';
 
 interface Props {
   /** CSS px per pixel cell. 4 → 592×592 visible canvas. */
@@ -77,7 +77,10 @@ export function Canvas({ pixelSize = 4 }: Props) {
           top: p.y * responsiveSize,
           width: responsiveSize,
           height: responsiveSize,
-          backgroundColor: p.color,
+          // Multiply the user color by the t-shirt template's per-cell luminance
+          // so the original shadows survive — flat fills no longer wash over
+          // the natural shading of the shirt.
+          backgroundColor: shadedAt(p.x, p.y, p.color),
         }}
       />
     ));
