@@ -40,13 +40,13 @@ export function TshirtColorPicker() {
         />
       </div>
 
-      <div className="grid grid-cols-8 gap-1.5">
+      <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 sm:gap-1.5">
         {RETRO_COLORS.map(c => (
           <button
             key={c}
             onClick={() => setTshirtBaseColor(c)}
             aria-pressed={tshirtBaseColor?.toLowerCase() === c.toLowerCase()}
-            className={`w-7 h-7 rounded transition-transform border ${
+            className={`aspect-square w-full sm:w-7 rounded transition-transform border ${
               tshirtBaseColor?.toLowerCase() === c.toLowerCase()
                 ? 'border-emerald-400 scale-110'
                 : 'border-zinc-700 hover:scale-105'

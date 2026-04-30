@@ -171,7 +171,7 @@ export function StickerLibrary() {
         </div>
       )}
       {manifest && manifest.length > 0 && (
-        <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[60vh] sm:max-h-48 overflow-y-auto">
           {manifest.map(s => (
             <button
               key={s.id}

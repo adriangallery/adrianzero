@@ -11,6 +11,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTShitStore, computeVisiblePixels } from '../store/tshitStore';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
+import { useCanvasViewport } from '../hooks/useCanvasViewport';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, MANNEQUIN_SVG_URL, TSHIRT_SVG_URL, isPaintable, shadedAt } from '../lib/tshirtMask';
 
 interface Props {
@@ -36,7 +37,13 @@ export function Canvas({ pixelSize = 4 }: Props) {
     return () => window.removeEventListener('resize', fit);
   }, [pixelSize]);
 
-  useCanvasInteraction({ canvasEl: surfaceRef.current, pixelSize: responsiveSize });
+  const { viewport, viewportRef, setViewport } = useCanvasViewport();
+  useCanvasInteraction({
+    canvasEl: surfaceRef.current,
+    pixelSize: responsiveSize,
+    viewportRef,
+    setViewport,
+  });
 
   const tool = useTShitStore(s => s.tool);
   const showGrid = useTShitStore(s => s.showGrid);
@@ -88,10 +95,16 @@ export function Canvas({ pixelSize = 4 }: Props) {
   }, [visiblePixels, responsiveSize]);
 
   return (
-    <div ref={containerRef} className="w-full flex justify-center">
+    <div ref={containerRef} className="w-full flex justify-center overflow-hidden">
       <div
         className="relative bg-zinc-900 border border-zinc-700 select-none touch-none"
-        style={{ width: w, height: h }}
+        style={{
+          width: w,
+          height: h,
+          transform: `translate(${viewport.tx}px, ${viewport.ty}px) scale(${viewport.scale})`,
+          transformOrigin: '0 0',
+          willChange: viewport.scale !== 1 ? 'transform' : undefined,
+        }}
       >
         {/* Mannequin background — scaled to fit canvas, very low opacity */}
         <img

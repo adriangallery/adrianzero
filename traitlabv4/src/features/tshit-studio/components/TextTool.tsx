@@ -111,7 +111,7 @@ export function TextTool() {
         maxLength={16}
         className="w-full px-2 py-1.5 bg-zinc-900 border border-zinc-700 rounded text-sm text-zinc-100 placeholder:text-zinc-600 font-mono uppercase"
       />
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-zinc-500">Scale</span>
         {SCALES.map(s => (
           <button
