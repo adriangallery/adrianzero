@@ -27,6 +27,13 @@ function getSamuraiImageUrl(tokenId: number): string {
 // Post-Budokai III the facet v6 configures Metal Shuriken for id 4+.
 const GOLDEN_MAX_ID = 3;
 
+// Frontend tagline overrides for Budokais launched before v6 stored the theme
+// on-chain (legacy `configureBudokai` left `eventTagline` empty). Used as
+// fallback when `getBudokaiTheme().tagline` is the empty string.
+const TAGLINE_OVERRIDES: Record<number, string> = {
+    1: 'The First Golden',
+};
+
 export function ChampionsHall({budokaiIds}: ChampionsHallProps) {
     const {summaries, isLoading} = useConfiguredBudokais();
     const ids = budokaiIds ?? summaries.map((s) => s.id);
@@ -136,6 +143,7 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
     const {openBracket} = useDojoStore();
     const unresolved = !champions || champions.champion === 0;
     const warriors = info?.entryCount ?? 0;
+    const tagline = theme?.tagline || TAGLINE_OVERRIDES[budokaiId];
 
     return (
         <div className="group rounded border border-zinc-800 bg-zinc-950/70 p-4 transition-colors hover:border-zinc-700">
@@ -144,9 +152,9 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
                     <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-500">
                         Budokai {budokaiId}
                     </span>
-                    {theme?.tagline && (
+                    {tagline && (
                         <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-yellow-300/80">
-                            {theme.tagline}
+                            {tagline}
                         </span>
                     )}
                 </div>
@@ -216,6 +224,7 @@ function MetalRecap({budokaiId}: {budokaiId: number}) {
     const unresolved = !champions || champions.champion === 0;
     const warriors = info?.entryCount ?? 0;
     const tokenId = champions?.champion ?? 0;
+    const tagline = theme?.tagline || TAGLINE_OVERRIDES[budokaiId];
 
     return (
         <div className="group rounded border border-zinc-800 bg-zinc-950/70 p-2 transition-colors hover:border-zinc-700">
@@ -260,9 +269,9 @@ function MetalRecap({budokaiId}: {budokaiId: number}) {
 
             {!unresolved && (
                 <div className="mt-1.5 space-y-0.5">
-                    {theme?.tagline && (
-                        <div className="truncate text-[9px] font-bold uppercase tracking-wider text-zinc-300" title={theme.tagline}>
-                            {theme.tagline}
+                    {tagline && (
+                        <div className="truncate text-[9px] font-bold uppercase tracking-wider text-zinc-300" title={tagline}>
+                            {tagline}
                         </div>
                     )}
                     <div className="flex items-center justify-between font-mono text-[9px] text-zinc-400">
