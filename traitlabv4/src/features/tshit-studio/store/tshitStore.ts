@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 import type { Layer, Pixel, Tool } from '../types/tshit.types';
 import { DEFAULT_COLOR } from '../data/palette';
+import { isPaintable } from '../lib/tshirtMask';
 
 /**
  * Maximum number of independently-undoable layers. When the user goes past
@@ -183,6 +184,22 @@ export const useTShitStore = create<TShitState>((set, get) => ({
 
   beginPendingStamp: (basePixels, origin, anchorX, anchorY) => {
     if (basePixels.length === 0) return;
+
+    // Auto-commit any previously-pending stamp at its current position so the
+    // user can stack multiple text/sticker layers in a single session. The
+    // user can still drop the previous stamp explicitly by hitting Cancel
+    // before placing a new one.
+    const prev = get().pendingStamp;
+    let nextLayers = get().layers;
+    if (prev) {
+      const placed = prev.basePixels
+        .map(p => ({ x: p.x + prev.offsetX, y: p.y + prev.offsetY, color: p.color }))
+        .filter(p => isPaintable(p.x, p.y));
+      if (placed.length > 0) {
+        nextLayers = trimHistory([...nextLayers, { pixels: placed, origin: prev.origin }]);
+      }
+    }
+
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (const p of basePixels) {
       if (p.x < minX) minX = p.x;
@@ -190,10 +207,9 @@ export const useTShitStore = create<TShitState>((set, get) => ({
       if (p.x > maxX) maxX = p.x;
       if (p.y > maxY) maxY = p.y;
     }
-    // If a previous stamp was still pending, commit-or-discard it: easier UX
-    // to auto-commit with the previous filter is impossible without paintable
-    // here, so we just discard. (User explicitly clicked a new Stamp button.)
     set({
+      layers: nextLayers,
+      redoStack: prev ? [] : get().redoStack,
       pendingStamp: {
         basePixels,
         offsetX: anchorX - minX,
