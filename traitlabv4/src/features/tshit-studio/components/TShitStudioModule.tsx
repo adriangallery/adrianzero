@@ -14,6 +14,7 @@ import { ColorPalette } from './ColorPalette';
 import { TextTool } from './TextTool';
 import { StickerLibrary } from './StickerLibrary';
 import { MintFlow } from './MintFlow';
+import { MintBar } from './MintBar';
 import { PendingStampControls } from './PendingStampControls';
 import { TshirtColorPicker } from './TshirtColorPicker';
 import { MobileToolbar, type MobileSheet } from './MobileToolbar';
@@ -38,46 +39,54 @@ export function TShitStudioModule() {
 
   return (
     <div className="mx-auto max-w-7xl px-2 py-3 lg:px-4 lg:py-6 space-y-4">
-      <header className="space-y-1 px-1 lg:px-0">
+      <header className="px-1 lg:px-0">
         <div className="flex items-center gap-2">
           <Shirt className="h-5 w-5 lg:h-6 lg:w-6 text-emerald-400" />
           <h1 className="text-lg lg:text-3xl font-bold text-white">T-Shit Studio</h1>
         </div>
-        <p className="hidden lg:block text-sm text-zinc-400">
-          Design a 1/1 pixel-art T-shirt trait. 1000 $ZERO per mint, fully burned.
-          Each design lives forever on the AdrianTraitsCore ERC1155.
-        </p>
       </header>
 
       {/* ============== DESKTOP WORKSPACE ============== */}
       <div
-        className="hidden lg:flex rounded-xl border border-zinc-800 bg-zinc-950/60 overflow-hidden shadow-lg shadow-black/30"
-        style={{ height: 'min(760px, calc(100vh - 200px))', minHeight: 640 }}
+        className="hidden lg:flex flex-col rounded-xl border border-zinc-800 bg-zinc-950/60 overflow-hidden shadow-lg shadow-black/30"
+        style={{ height: 'min(820px, calc(100vh - 180px))', minHeight: 680 }}
       >
-        {/* Left: vertical icon toolbar */}
-        <div className="w-16 shrink-0 border-r border-zinc-800 bg-zinc-900/50">
-          <Toolbar />
-        </div>
+        {/* Top row: tools | canvas | properties */}
+        <div className="flex flex-1 min-h-0">
+          {/* Left: vertical icon toolbar */}
+          <div className="w-16 shrink-0 border-r border-zinc-800 bg-zinc-900/50">
+            <Toolbar />
+          </div>
 
-        {/* Center: canvas workspace (darker neutral background, like Photoshop) */}
-        <div className="relative flex-1 flex items-center justify-center bg-zinc-950 p-6 overflow-auto">
-          <Canvas pixelSize={4} />
-          {/* Pending stamp controls float over the canvas — they're contextual
-              to a placed sticker/text and shouldn't push the right panel around. */}
-          {pendingStamp && (
-            <div className="absolute top-4 right-4 w-[280px]">
-              <div className="rounded-lg border border-emerald-500/40 bg-zinc-950/95 p-3 shadow-xl backdrop-blur">
-                <PendingStampControls />
+          {/* Center: canvas workspace (darker neutral background, like Photoshop) */}
+          <div className="relative flex-1 flex items-center justify-center bg-zinc-950 p-6 overflow-auto">
+            <Canvas pixelSize={4} />
+            {/* Pending stamp controls float over the canvas — they're contextual
+                to a placed sticker/text and shouldn't push the right panel around. */}
+            {pendingStamp && (
+              <div className="absolute top-4 right-4 w-[280px]">
+                <div className="rounded-lg border border-emerald-500/40 bg-zinc-950/95 p-3 shadow-xl backdrop-blur">
+                  <PendingStampControls />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Right: properties panel */}
+          <aside className="w-[340px] shrink-0 border-l border-zinc-800 bg-zinc-900/50 overflow-y-auto">
+            <PropertiesPanel />
+          </aside>
         </div>
 
-        {/* Right: properties panel */}
-        <aside className="w-[340px] shrink-0 border-l border-zinc-800 bg-zinc-900/50 overflow-y-auto">
-          <PropertiesPanel isConnected={isConnected} />
-        </aside>
+        {/* Bottom: persistent mint bar (always visible, spans full workspace) */}
+        <MintBar isConnected={isConnected} />
       </div>
+
+      {/* Description sits below the workspace as a small caption */}
+      <p className="hidden lg:block text-xs text-zinc-500 px-1">
+        Design a 1/1 pixel-art T-shirt trait. 1000 $ZERO per mint, fully burned.
+        Each design lives forever on the AdrianTraitsCore ERC1155.
+      </p>
 
       {/* ============== MOBILE LAYOUT ============== */}
       <div className="lg:hidden">
@@ -153,8 +162,9 @@ export function TShitStudioModule() {
 /**
  * Right-hand properties panel — each section is its own card so the panel
  * reads as a stack of related-but-distinct controls instead of one long list.
+ * Mint lives in the persistent footer bar, not here.
  */
-function PropertiesPanel({ isConnected }: { isConnected: boolean }) {
+function PropertiesPanel() {
   return (
     <div className="divide-y divide-zinc-800">
       <Section title="T-shirt color">
@@ -169,22 +179,13 @@ function PropertiesPanel({ isConnected }: { isConnected: boolean }) {
       <Section title="Stickers">
         <StickerLibrary />
       </Section>
-      <Section title="Mint" tight>
-        {isConnected ? (
-          <MintFlow />
-        ) : (
-          <div className="text-sm text-zinc-400 text-center py-3 border border-zinc-800 rounded">
-            Connect a wallet to mint your design.
-          </div>
-        )}
-      </Section>
     </div>
   );
 }
 
-function Section({ title, children, tight }: { title: string; children: ReactNode; tight?: boolean }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className={tight ? 'p-3' : 'p-4'}>
+    <section className="p-4">
       <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 mb-2.5">
         {title}
       </h2>
