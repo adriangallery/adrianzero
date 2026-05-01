@@ -82,7 +82,12 @@ export function useSettleAuction() {
             abi: MOVIE_AUCTION_FACET_ABI,
             functionName: 'settleAuction',
             args: [auctionId],
-            gas: 600_000n,
+            // settleAuction does ZERO split (burn + transfer) + self-call into
+            // adminMintMovie2 → delegator → AdrianLabCore.safeMint → ERC721
+            // hooks (recordEvent, onERC721Received) + S2 bookkeeping. Real cost
+            // is ~810k (verified via cast run on a failed 600k attempt that
+            // OOGed at the post-mint SSTOREs). 1.5M leaves headroom.
+            gas: 1_500_000n,
         });
     };
 
