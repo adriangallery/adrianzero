@@ -8,7 +8,6 @@
  * shows an empty state instead of erroring.
  */
 import { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
 import { PAINTABLE_BOUNDS } from '../lib/tshirtMask';
 import type { Sticker } from '../types/tshit.types';
@@ -139,11 +138,7 @@ export function StickerLibrary() {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-zinc-400" />
-          <span className="text-xs uppercase tracking-wide text-zinc-400">Stickers</span>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-1">
           <span className="text-[10px] text-zinc-500 mr-1">Scale</span>
           {SCALES.map(s => (

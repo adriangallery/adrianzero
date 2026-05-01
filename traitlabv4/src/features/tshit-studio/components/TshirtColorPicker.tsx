@@ -4,7 +4,6 @@
  * covered by user pixels renders in this colour, multiplied by the template's
  * per-cell luminance so the natural shadows survive.
  */
-import { Shirt } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
 import { RETRO_COLORS } from '../data/palette';
 
@@ -14,11 +13,6 @@ export function TshirtColorPicker() {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Shirt className="w-4 h-4 text-zinc-400" />
-        <span className="text-xs uppercase tracking-wide text-zinc-400">Pick a color for your tshit</span>
-      </div>
-
       <div className="flex items-center gap-2">
         <button
           onClick={() => setTshirtBaseColor(null)}

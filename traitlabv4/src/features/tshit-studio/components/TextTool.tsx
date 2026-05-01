@@ -5,7 +5,6 @@
  * paint zone). The stamped pixels become a single layer (one undo step).
  */
 import { useState } from 'react';
-import { Type } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
 import { renderText, measureText, GLYPH_HEIGHT } from '../data/glyphs';
 import { PAINTABLE_BOUNDS } from '../lib/tshirtMask';
@@ -99,10 +98,6 @@ export function TextTool() {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Type className="w-4 h-4 text-zinc-400" />
-        <span className="text-xs uppercase tracking-wide text-zinc-400">Text or year</span>
-      </div>
       <input
         value={text}
         onChange={e => setText(e.target.value.slice(0, 16))}

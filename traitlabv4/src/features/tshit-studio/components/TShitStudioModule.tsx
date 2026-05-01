@@ -1,9 +1,11 @@
 /**
  * T-Shit Studio root.
  * Mobile (<lg): canvas-hero + sticky bottom toolbar + bottom sheets for pickers.
- * Desktop (lg+): canvas + tools left, sidebar right (unchanged).
+ * Desktop (lg+): single Photoshop-style workspace panel — vertical icon
+ *   toolbar on the left, canvas centered, properties (colors / text / stickers
+ *   / mint) docked on the right.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useAccount } from 'wagmi';
 import { Shirt } from 'lucide-react';
 import { Canvas } from './Canvas';
@@ -35,8 +37,8 @@ export function TShitStudioModule() {
   }, [loadFromPixels]);
 
   return (
-    <div className="mx-auto max-w-6xl px-2 py-3 lg:px-4 lg:py-6 lg:space-y-6">
-      <header className="space-y-1 px-1 lg:px-0 mb-3 lg:mb-0">
+    <div className="mx-auto max-w-7xl px-2 py-3 lg:px-4 lg:py-6 space-y-4">
+      <header className="space-y-1 px-1 lg:px-0">
         <div className="flex items-center gap-2">
           <Shirt className="h-5 w-5 lg:h-6 lg:w-6 text-emerald-400" />
           <h1 className="text-lg lg:text-3xl font-bold text-white">T-Shit Studio</h1>
@@ -47,33 +49,39 @@ export function TShitStudioModule() {
         </p>
       </header>
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
-        <div className="space-y-3 lg:space-y-4">
-          <Canvas pixelSize={4} />
-          {/* Desktop-only inline toolbar — mobile uses the sticky MobileToolbar */}
-          <div className="hidden lg:block">
-            <Toolbar />
-          </div>
+      {/* ============== DESKTOP WORKSPACE ============== */}
+      <div
+        className="hidden lg:flex rounded-xl border border-zinc-800 bg-zinc-950/60 overflow-hidden shadow-lg shadow-black/30"
+        style={{ height: 'min(760px, calc(100vh - 200px))', minHeight: 640 }}
+      >
+        {/* Left: vertical icon toolbar */}
+        <div className="w-16 shrink-0 border-r border-zinc-800 bg-zinc-900/50">
+          <Toolbar />
         </div>
 
-        <aside className="hidden lg:block space-y-5 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
-          <PendingStampControls />
-          <TshirtColorPicker />
-          <hr className="border-zinc-800" />
-          <ColorPalette />
-          <hr className="border-zinc-800" />
-          <TextTool />
-          <hr className="border-zinc-800" />
-          <StickerLibrary />
-          <hr className="border-zinc-800" />
-          {isConnected ? (
-            <MintFlow />
-          ) : (
-            <div className="text-sm text-zinc-400 text-center py-3 border border-zinc-800 rounded">
-              Connect a wallet to mint your design.
+        {/* Center: canvas workspace (darker neutral background, like Photoshop) */}
+        <div className="relative flex-1 flex items-center justify-center bg-zinc-950 p-6 overflow-auto">
+          <Canvas pixelSize={4} />
+          {/* Pending stamp controls float over the canvas — they're contextual
+              to a placed sticker/text and shouldn't push the right panel around. */}
+          {pendingStamp && (
+            <div className="absolute top-4 right-4 w-[280px]">
+              <div className="rounded-lg border border-emerald-500/40 bg-zinc-950/95 p-3 shadow-xl backdrop-blur">
+                <PendingStampControls />
+              </div>
             </div>
           )}
+        </div>
+
+        {/* Right: properties panel */}
+        <aside className="w-[340px] shrink-0 border-l border-zinc-800 bg-zinc-900/50 overflow-y-auto">
+          <PropertiesPanel isConnected={isConnected} />
         </aside>
+      </div>
+
+      {/* ============== MOBILE LAYOUT ============== */}
+      <div className="lg:hidden">
+        <Canvas pixelSize={4} />
       </div>
 
       {/* Mobile: floating pending-stamp panel (sits above the toolbar) */}
@@ -139,5 +147,48 @@ export function TShitStudioModule() {
       {/* Spacer so the canvas/aside don't sit under the fixed mobile toolbar */}
       <div className="h-[110px] lg:hidden" aria-hidden />
     </div>
+  );
+}
+
+/**
+ * Right-hand properties panel — each section is its own card so the panel
+ * reads as a stack of related-but-distinct controls instead of one long list.
+ */
+function PropertiesPanel({ isConnected }: { isConnected: boolean }) {
+  return (
+    <div className="divide-y divide-zinc-800">
+      <Section title="T-shirt color">
+        <TshirtColorPicker />
+      </Section>
+      <Section title="Brush color">
+        <ColorPalette />
+      </Section>
+      <Section title="Text & year">
+        <TextTool />
+      </Section>
+      <Section title="Stickers">
+        <StickerLibrary />
+      </Section>
+      <Section title="Mint" tight>
+        {isConnected ? (
+          <MintFlow />
+        ) : (
+          <div className="text-sm text-zinc-400 text-center py-3 border border-zinc-800 rounded">
+            Connect a wallet to mint your design.
+          </div>
+        )}
+      </Section>
+    </div>
+  );
+}
+
+function Section({ title, children, tight }: { title: string; children: ReactNode; tight?: boolean }) {
+  return (
+    <section className={tight ? 'p-3' : 'p-4'}>
+      <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 mb-2.5">
+        {title}
+      </h2>
+      {children}
+    </section>
   );
 }
