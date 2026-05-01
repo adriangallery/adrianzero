@@ -4,6 +4,7 @@ import {base} from 'wagmi/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
 import {useChampions, useBudokaiInfo, useConfiguredBudokais} from '../hooks/useDojoContract';
+import {useBudokaiTheme} from '../hooks/useBudokaiTheme';
 import {useDojoStore} from '../store/dojoStore';
 
 /**
@@ -44,7 +45,7 @@ export function ChampionsHall({budokaiIds}: ChampionsHallProps) {
                 </p>
             </div>
 
-            {/* Golden tier */}
+            {/* Golden tier — full podium card */}
             <TierSection
                 label="Golden Shuriken Tier"
                 kanji="黄金"
@@ -54,9 +55,10 @@ export function ChampionsHall({budokaiIds}: ChampionsHallProps) {
                 ids={goldenIds}
                 isLoading={isLoading}
                 emptyMsg="Awaiting the first Tenkaichi."
+                variant="full"
             />
 
-            {/* Metal tier */}
+            {/* Metal tier — compact champion-only card */}
             {(metalIds.length > 0 || !isLoading) && (
                 <TierSection
                     label="Metal Shuriken Tier"
@@ -67,6 +69,7 @@ export function ChampionsHall({budokaiIds}: ChampionsHallProps) {
                     ids={metalIds}
                     isLoading={isLoading}
                     emptyMsg="The Eternal Dojo opens after Budokai III."
+                    variant="compact"
                 />
             )}
         </div>
@@ -82,6 +85,7 @@ function TierSection({
     ids,
     isLoading,
     emptyMsg,
+    variant,
 }: {
     label: string;
     kanji: string;
@@ -91,7 +95,12 @@ function TierSection({
     ids: number[];
     isLoading: boolean;
     emptyMsg: string;
+    variant: 'full' | 'compact';
 }) {
+    const gridClass =
+        variant === 'full'
+            ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3'
+            : 'grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
     return (
         <div className="mb-8">
             <div className={`mb-3 flex items-baseline gap-3 bg-gradient-to-r ${accentBg} via-transparent to-transparent px-2 py-2`}>
@@ -106,10 +115,14 @@ function TierSection({
                     {isLoading ? 'Loading...' : emptyMsg}
                 </div>
             ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {ids.map((id) => (
-                        <BudokaiRecap key={id} budokaiId={id} />
-                    ))}
+                <div className={gridClass}>
+                    {ids.map((id) =>
+                        variant === 'full' ? (
+                            <BudokaiRecap key={id} budokaiId={id} />
+                        ) : (
+                            <MetalRecap key={id} budokaiId={id} />
+                        ),
+                    )}
                 </div>
             )}
         </div>
@@ -119,6 +132,7 @@ function TierSection({
 function BudokaiRecap({budokaiId}: {budokaiId: number}) {
     const {champions} = useChampions(budokaiId);
     const {info} = useBudokaiInfo(budokaiId);
+    const {theme} = useBudokaiTheme(BigInt(budokaiId));
     const {openBracket} = useDojoStore();
     const unresolved = !champions || champions.champion === 0;
     const warriors = info?.entryCount ?? 0;
@@ -126,9 +140,16 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
     return (
         <div className="group rounded border border-zinc-800 bg-zinc-950/70 p-4 transition-colors hover:border-zinc-700">
             <div className="mb-3 flex items-center justify-between">
-                <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-500">
-                    Budokai {budokaiId}
-                </span>
+                <div className="flex flex-col">
+                    <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-500">
+                        Budokai {budokaiId}
+                    </span>
+                    {theme?.tagline && (
+                        <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-yellow-300/80">
+                            {theme.tagline}
+                        </span>
+                    )}
+                </div>
                 {unresolved ? (
                     <span className="text-[8px] uppercase text-zinc-600">Pending</span>
                 ) : (
@@ -177,6 +198,83 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
                         </div>
                     )}
                 </>
+            )}
+        </div>
+    );
+}
+
+/**
+ * Compact recap card for Metal Shuriken tier (Budokai IV+).
+ * Shows champion image + tagline + warriors fought, no podium runner-ups.
+ * Designed to fit a denser grid (up to 6 cols on xl) so dozens of Budokais stay browsable.
+ */
+function MetalRecap({budokaiId}: {budokaiId: number}) {
+    const {champions} = useChampions(budokaiId);
+    const {info} = useBudokaiInfo(budokaiId);
+    const {theme} = useBudokaiTheme(BigInt(budokaiId));
+    const {openBracket, selectSamurai} = useDojoStore();
+    const unresolved = !champions || champions.champion === 0;
+    const warriors = info?.entryCount ?? 0;
+    const tokenId = champions?.champion ?? 0;
+
+    return (
+        <div className="group rounded border border-zinc-800 bg-zinc-950/70 p-2 transition-colors hover:border-zinc-700">
+            <div className="mb-1.5 flex items-center justify-between gap-1">
+                <span className="text-[8px] uppercase tracking-[0.2em] text-zinc-500">
+                    Budokai {budokaiId}
+                </span>
+                {!unresolved && (
+                    <button
+                        onClick={() => openBracket(budokaiId)}
+                        className="text-[7px] uppercase text-red-400 hover:text-red-300"
+                    >
+                        ▶ Replay
+                    </button>
+                )}
+            </div>
+
+            {unresolved ? (
+                <div className="flex aspect-square items-center justify-center text-[9px] text-zinc-700">
+                    Pending
+                </div>
+            ) : (
+                <button
+                    onClick={() => selectSamurai(tokenId)}
+                    className="relative block aspect-square w-full overflow-hidden rounded border border-zinc-700 bg-gradient-to-b from-zinc-800/30 to-transparent transition-all hover:border-zinc-500"
+                >
+                    <img
+                        src={getSamuraiImageUrl(tokenId)}
+                        alt={`Champion #${tokenId}`}
+                        className="h-full w-full object-contain"
+                        style={{imageRendering: 'pixelated'}}
+                    />
+                    <div className="absolute left-1 top-1 flex items-center gap-0.5 rounded bg-black/70 px-1 py-0.5 backdrop-blur-sm">
+                        <Trophy className="h-2.5 w-2.5 text-zinc-300" />
+                        <span className="font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-zinc-300">1st</span>
+                    </div>
+                    <div className="absolute right-1 top-1">
+                        <HonorTag tokenId={tokenId} />
+                    </div>
+                </button>
+            )}
+
+            {!unresolved && (
+                <div className="mt-1.5 space-y-0.5">
+                    {theme?.tagline && (
+                        <div className="truncate text-[9px] font-bold uppercase tracking-wider text-zinc-300" title={theme.tagline}>
+                            {theme.tagline}
+                        </div>
+                    )}
+                    <div className="flex items-center justify-between font-mono text-[9px] text-zinc-400">
+                        <span>#{tokenId}</span>
+                        {warriors > 0 && (
+                            <span className="flex items-center gap-1 text-zinc-500">
+                                <Swords className="h-2.5 w-2.5" />
+                                {warriors}
+                            </span>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );
