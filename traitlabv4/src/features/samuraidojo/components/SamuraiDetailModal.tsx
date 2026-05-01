@@ -18,6 +18,8 @@ interface SamuraiDetailModalProps {
     samuraiNeededForNextSlot?: number; // v6: how many more samurai must enter before next civilian slot opens
     walletEntries?: number; // v6: how many tokens this wallet has already entered in the current Budokai
     walletCap?: number; // v6: per-Budokai override if non-zero, else defaultMaxPerWallet
+    entryFeeWei?: bigint; // v6: per-Budokai entry fee in wei. 0 + freeEntry=true → free.
+    freeEntry?: boolean; // v6: when true, entry costs nothing (overrides entryFeeWei display).
     isKnockedOut: boolean;
     isEntered: boolean;
     isMine: boolean;
@@ -63,6 +65,8 @@ export function SamuraiDetailModal({
     samuraiNeededForNextSlot = 0,
     walletEntries = 0,
     walletCap = 0,
+    entryFeeWei,
+    freeEntry = false,
     isKnockedOut,
     isEntered,
     isMine,
@@ -81,7 +85,14 @@ export function SamuraiDetailModal({
     // senryoku is 0 — which shouldn't happen for KO'd tokens (they had to enter first to get KO'd,
     // and entry persists SR for civilians).
     const senzuFee = isKnockedOut && senryoku > 0 ? senryoku * 10 : SENZU_FEE_ZERO;
-    const feeLabel = isKnockedOut ? senzuFee : ENTRY_FEE_ZERO;
+    // v6: per-Budokai entry fee. freeEntry=true → 0; otherwise on-chain entryFee in wei → ZERO units.
+    // Falls back to ENTRY_FEE_ZERO only for legacy Budokais (pre-v6) where entryFee=0 + freeEntry=false.
+    const onChainEntryFee = freeEntry
+        ? 0
+        : entryFeeWei !== undefined && entryFeeWei > 0n
+            ? Number(entryFeeWei / 10n ** 18n)
+            : ENTRY_FEE_ZERO;
+    const feeLabel = isKnockedOut ? senzuFee : onChainEntryFee;
     const {enter, isPending: isEntering, isConfirming: isEnterConfirming, isConfirmed: isEnterConfirmed, error: enterError, reset: resetEnter} = useEnterBudokai();
     const {revive, isPending: isReviving, isConfirming: isReviveConfirming, isConfirmed: isReviveConfirmed, error: reviveError, reset: resetRevive} = useReviveSamurai();
 
@@ -142,6 +153,7 @@ export function SamuraiDetailModal({
         if (civilianGated) return `Locked — need ${samuraiNeededForNextSlot} more samurai`;
         if (insufficientBalance) return `Need ${feeLabel.toLocaleString()} $ZERO`;
         if (isKnockedOut) return `Senzu Bean (${feeLabel.toLocaleString()} $ZERO)`;
+        if (freeEntry) return 'Enter Budokai (FREE)';
         return `Enter Budokai (${feeLabel.toLocaleString()} $ZERO)`;
     })();
 

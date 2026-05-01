@@ -216,7 +216,13 @@ export function SamuraiDojoModule() {
     }, [isReviveConfirmed]);
 
     const selectedCount = selectedIds.size;
-    const selectedTotalFee = selectedCount * ENTRY_FEE_ZERO;
+    // v6: per-Budokai entry fee. freeEntry=true → 0 per token; otherwise on-chain entryFee in wei → ZERO units.
+    const perEntryFeeZero = budokaiCounters?.freeEntry
+        ? 0
+        : budokaiCounters && budokaiCounters.entryFee > 0n
+            ? Number(budokaiCounters.entryFee / 10n ** 18n)
+            : ENTRY_FEE_ZERO;
+    const selectedTotalFee = selectedCount * perEntryFeeZero;
     const insufficientBatchBalance = zeroBalance < selectedTotalFee;
     // v6 per-wallet cap: contract reverts if entriesByWallet + new entries > cap. Mirror it client-side.
     const walletCapExceeded = walletGate.cap > 0 && selectedCount > walletGate.remaining;
@@ -487,7 +493,7 @@ export function SamuraiDojoModule() {
                         <div className="flex flex-col">
                             <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-500">Selected</span>
                             <span className="font-mono text-sm font-bold text-white">
-                                {selectedCount} samurai · {selectedTotalFee.toLocaleString()} $ZERO
+                                {selectedCount} samurai · {budokaiCounters?.freeEntry ? 'FREE' : `${selectedTotalFee.toLocaleString()} $ZERO`}
                             </span>
                             {insufficientBatchBalance && (
                                 <span className="mt-0.5 text-[9px] text-red-400">
@@ -519,7 +525,9 @@ export function SamuraiDojoModule() {
                                         Entering {selectedCount}...
                                     </span>
                                 ) : (
-                                    `Enter ${selectedCount} (${selectedTotalFee.toLocaleString()} $ZERO)`
+                                    budokaiCounters?.freeEntry
+                                        ? `Enter ${selectedCount} (FREE)`
+                                        : `Enter ${selectedCount} (${selectedTotalFee.toLocaleString()} $ZERO)`
                                 )}
                             </button>
                         </div>
@@ -601,6 +609,8 @@ export function SamuraiDojoModule() {
                     : 0}
                 walletEntries={walletGate.entries}
                 walletCap={walletGate.cap}
+                entryFeeWei={budokaiCounters?.entryFee}
+                freeEntry={budokaiCounters?.freeEntry ?? false}
                 isKnockedOut={selectedState?.isKnockedOut ?? false}
                 isEntered={selectedTokenId ? enteredSet.has(selectedTokenId) : false}
                 isMine={selectedTokenId ? myOwnedSet.has(selectedTokenId) : false}
