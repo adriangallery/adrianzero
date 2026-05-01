@@ -19,6 +19,13 @@ interface Props {
   pixelSize?: number;
 }
 
+function hexToRgba(hex: string, alpha: number): string {
+  const m = /^#?([a-f0-9]{6})$/i.exec(hex.trim());
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  return `rgba(${(n >> 16) & 0xff}, ${(n >> 8) & 0xff}, ${n & 0xff}, ${alpha})`;
+}
+
 export function Canvas({ pixelSize = 4 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
@@ -38,7 +45,7 @@ export function Canvas({ pixelSize = 4 }: Props) {
   }, [pixelSize]);
 
   const { viewport, viewportRef, setViewport } = useCanvasViewport();
-  useCanvasInteraction({
+  const { cursorPreview } = useCanvasInteraction({
     canvasEl: surfaceRef.current,
     pixelSize: responsiveSize,
     viewportRef,
@@ -46,6 +53,8 @@ export function Canvas({ pixelSize = 4 }: Props) {
   });
 
   const tool = useTShitStore(s => s.tool);
+  const brushSize = useTShitStore(s => s.brushSize);
+  const color = useTShitStore(s => s.color);
   const showGrid = useTShitStore(s => s.showGrid);
   const fillPaintable = useTShitStore(s => s.fillPaintable);
   const pendingStamp = useTShitStore(s => s.pendingStamp);
@@ -149,6 +158,27 @@ export function Canvas({ pixelSize = 4 }: Props) {
             }}
           />
         )}
+        {/* Brush cursor preview — outlines the cells that will be painted next,
+            so the user (especially on touch, where the brush is offset above
+            the finger) can see exactly where pixels will land. Only meaningful
+            for paint tools. */}
+        {cursorPreview && (tool === 'brush' || tool === 'eraser' || tool === 'picker') && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left: cursorPreview.x * responsiveSize,
+              top: cursorPreview.y * responsiveSize,
+              width: (tool === 'picker' ? 1 : brushSize) * responsiveSize,
+              height: (tool === 'picker' ? 1 : brushSize) * responsiveSize,
+              backgroundColor:
+                tool === 'brush' ? hexToRgba(color, 0.55) : 'transparent',
+              boxShadow:
+                tool === 'eraser'
+                  ? '0 0 0 1px #fff, 0 0 0 2px #ef4444'
+                  : '0 0 0 1px #000, 0 0 0 2px #fff',
+            }}
+          />
+        )}
         {/* Pending stamp bounding box — animated dashed outline so the user
             knows it's still draggable. */}
         {pendingStamp && (
@@ -165,12 +195,23 @@ export function Canvas({ pixelSize = 4 }: Props) {
             }}
           />
         )}
-        {/* Pointer surface — top of the stack so it gets every event */}
+        {/* Pointer surface — top of the stack so it gets every event.
+            For brush/eraser/picker we hide the system cursor so the brush
+            preview is the only visual indicator (avoids competing with the
+            OS crosshair). */}
         <div
           ref={surfaceRef}
           onClick={handleFillClick}
-          className={tool === 'fill' ? 'absolute inset-0 cursor-crosshair' : 'absolute inset-0 cursor-crosshair'}
-          style={{ touchAction: 'none' }}
+          className="absolute inset-0"
+          style={{
+            touchAction: 'none',
+            cursor:
+              tool === 'fill'
+                ? 'crosshair'
+                : tool === 'brush' || tool === 'eraser' || tool === 'picker'
+                  ? 'none'
+                  : 'crosshair',
+          }}
         />
       </div>
     </div>

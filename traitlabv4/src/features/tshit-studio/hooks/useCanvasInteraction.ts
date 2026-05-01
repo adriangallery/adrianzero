@@ -13,7 +13,7 @@
  * coords are unprojected through the current scale/translate before turning
  * into cell coords.
  */
-import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { useTShitStore } from '../store/tshitStore';
 import { isPaintable } from '../lib/tshirtMask';
 import { clampScale, type ViewportState } from './useCanvasViewport';
@@ -30,6 +30,21 @@ interface Args {
 }
 
 type DragMode = 'paint' | 'stamp' | 'pinch';
+
+/** Live cursor preview — Canvas renders an outlined brush footprint at this cell. */
+export interface CursorPreview {
+  x: number;
+  y: number;
+  pointerType: 'mouse' | 'touch' | 'pen';
+}
+
+/**
+ * On touch, paint at a fixed screen-pixel offset above the finger so the
+ * fingertip doesn't cover the cells being drawn. Tuned to ~50 CSS px which is
+ * roughly half a fingertip — large enough to clear, small enough to feel
+ * connected to the touch.
+ */
+const TOUCH_OFFSET_CSS_PX = 52;
 
 export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setViewport }: Args) {
   const activePointerId = useRef<number | null>(null);
@@ -65,17 +80,25 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
   const getAllPixels = useTShitStore(s => s.getAllPixels);
   const movePendingStamp = useTShitStore(s => s.movePendingStamp);
 
+  const [cursorPreview, setCursorPreview] = useState<CursorPreview | null>(null);
+
   // Convert client (x,y) to canvas cell coords.
   // When a viewport is active, getBoundingClientRect() already reflects the
   // applied scale/translate (the rect is the post-transform box), so we just
   // divide by pixelSize * scale to land on the correct cell.
+  // `withTouchOffset` shifts the cell upward by ~50 CSS px so a touch finger
+  // doesn't cover the painted area.
   const cellFromClient = useCallback(
-    (clientX: number, clientY: number) => {
+    (clientX: number, clientY: number, withTouchOffset = false) => {
       if (!canvasEl) return null;
       const rect = canvasEl.getBoundingClientRect();
       const scale = viewportRef?.current.scale ?? 1;
+      let projY = clientY;
+      if (withTouchOffset) {
+        projY = clientY - TOUCH_OFFSET_CSS_PX;
+      }
       const cx = Math.floor((clientX - rect.left) / pixelSize / scale);
-      const cy = Math.floor((clientY - rect.top) / pixelSize / scale);
+      const cy = Math.floor((projY - rect.top) / pixelSize / scale);
       return { x: cx, y: cy };
     },
     [canvasEl, pixelSize, viewportRef]
@@ -173,6 +196,7 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
     };
 
     const onDown = (e: PointerEvent) => {
+      const isTouch = e.pointerType === 'touch';
       // Track every pointer for pinch detection
       if (viewportRef) {
         pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -184,6 +208,7 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
           activePointerId.current = null;
           lastCellRef.current = null;
           stampGrabOffsetRef.current = null;
+          setCursorPreview(null);
           startPinch();
           e.preventDefault();
           return;
@@ -191,8 +216,11 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
       }
 
       if (activePointerId.current !== null) return; // palm rejection
-      const cell = cellFromClient(e.clientX, e.clientY);
-      if (!cell) return;
+      // Stamp hit-test uses raw cell — finger should grab the stamp where it
+      // physically lands, not at the offset position.
+      const rawCell = cellFromClient(e.clientX, e.clientY, false);
+      if (!rawCell) return;
+      const cell = isTouch ? cellFromClient(e.clientX, e.clientY, true)! : rawCell;
       activePointerId.current = e.pointerId;
       canvasEl.setPointerCapture?.(e.pointerId);
       e.preventDefault();
@@ -200,18 +228,20 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
       // Pending stamp drag-and-drop takes precedence over paint tools so the
       // user can re-grab the layer they just spawned without thinking about
       // tool state.
-      const stampHit = isInsideStamp(cell);
+      const stampHit = isInsideStamp(rawCell);
       if (stampHit) {
         dragModeRef.current = 'stamp';
         stampGrabOffsetRef.current = {
-          dx: cell.x - stampHit.offsetX,
-          dy: cell.y - stampHit.offsetY,
+          dx: rawCell.x - stampHit.offsetX,
+          dy: rawCell.y - stampHit.offsetY,
         };
+        setCursorPreview(null);
         return;
       }
 
       dragModeRef.current = 'paint';
       stampGrabOffsetRef.current = null;
+      setCursorPreview({ x: cell.x, y: cell.y, pointerType: e.pointerType as CursorPreview['pointerType'] });
 
       if (tool === 'picker') {
         const all = getAllPixels();
@@ -227,6 +257,7 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
     };
 
     const onMove = (e: PointerEvent) => {
+      const isTouch = e.pointerType === 'touch';
       if (viewportRef && pointersRef.current.has(e.pointerId)) {
         pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
       }
@@ -234,16 +265,30 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
         updatePinch();
         return;
       }
+
+      // Mouse hover (no buttons pressed) → just update the preview cursor so
+      // the user can see where the next click will land.
+      if (!isTouch && activePointerId.current === null) {
+        const hover = cellFromClient(e.clientX, e.clientY, false);
+        if (hover) {
+          setCursorPreview({ x: hover.x, y: hover.y, pointerType: e.pointerType as CursorPreview['pointerType'] });
+        }
+        return;
+      }
+
       if (activePointerId.current !== e.pointerId) return;
-      const cell = cellFromClient(e.clientX, e.clientY);
-      if (!cell) return;
+      const rawCell = cellFromClient(e.clientX, e.clientY, false);
+      if (!rawCell) return;
+      const cell = isTouch ? cellFromClient(e.clientX, e.clientY, true)! : rawCell;
 
       if (dragModeRef.current === 'stamp') {
         const grab = stampGrabOffsetRef.current;
         if (!grab) return;
-        movePendingStamp(cell.x - grab.dx, cell.y - grab.dy);
+        movePendingStamp(rawCell.x - grab.dx, rawCell.y - grab.dy);
         return;
       }
+
+      setCursorPreview({ x: cell.x, y: cell.y, pointerType: e.pointerType as CursorPreview['pointerType'] });
 
       if (!lastCellRef.current) return;
       if (cell.x === lastCellRef.current.x && cell.y === lastCellRef.current.y) return;
@@ -283,6 +328,7 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
     };
 
     const onUp = (e: PointerEvent) => {
+      const isTouch = e.pointerType === 'touch';
       if (viewportRef) {
         pointersRef.current.delete(e.pointerId);
         if (dragModeRef.current === 'pinch') {
@@ -295,11 +341,15 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
       }
       if (activePointerId.current !== e.pointerId) return;
       finish(true);
+      // Touch has no hover state — clear the preview when the finger lifts.
+      // For mouse, we keep the preview visible until the cursor leaves.
+      if (isTouch) setCursorPreview(null);
       // Double-tap reset (only fires when there was an actual single-tap finish)
       detectDoubleTap(e);
     };
 
     const onCancel = (e: PointerEvent) => {
+      const isTouch = e.pointerType === 'touch';
       if (viewportRef) {
         pointersRef.current.delete(e.pointerId);
         if (dragModeRef.current === 'pinch' && pointersRef.current.size < 2) {
@@ -309,20 +359,30 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
       }
       if (activePointerId.current !== e.pointerId) return;
       finish(false);
+      if (isTouch) setCursorPreview(null);
+    };
+
+    const onLeave = (e: PointerEvent) => {
+      // Mouse left the canvas → hide the hover preview. Touch already clears
+      // on up/cancel.
+      if (e.pointerType !== 'touch') setCursorPreview(null);
+      onUp(e);
     };
 
     canvasEl.addEventListener('pointerdown', onDown);
     canvasEl.addEventListener('pointermove', onMove);
     canvasEl.addEventListener('pointerup', onUp);
     canvasEl.addEventListener('pointercancel', onCancel);
-    canvasEl.addEventListener('pointerleave', onUp);
+    canvasEl.addEventListener('pointerleave', onLeave);
 
     return () => {
       canvasEl.removeEventListener('pointerdown', onDown);
       canvasEl.removeEventListener('pointermove', onMove);
       canvasEl.removeEventListener('pointerup', onUp);
       canvasEl.removeEventListener('pointercancel', onCancel);
-      canvasEl.removeEventListener('pointerleave', onUp);
+      canvasEl.removeEventListener('pointerleave', onLeave);
     };
   }, [canvasEl, beginStroke, cancelStroke, cellFromClient, commitStroke, drawLine, getAllPixels, movePendingStamp, setColor, setViewport, stamp, tool, viewportRef]);
+
+  return { cursorPreview };
 }
