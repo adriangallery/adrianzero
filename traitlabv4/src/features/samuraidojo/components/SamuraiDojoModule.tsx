@@ -8,6 +8,7 @@ import {SAMURAI_DOJO_ABI, BUDOKAI_STATUS} from '@/lib/web3/abi';
 import {useZeroBalance} from '@/features/zeromovies/hooks/useZeroBalance';
 import {dojoPollInterval, useBudokaiEntries, useBudokaiInfo, useCurrentBudokaiId} from '../hooks/useDojoContract';
 import {useMySamurai} from '../hooks/useMySamurai';
+import {useHasZeroNfts} from '../hooks/useHasZeroNfts';
 import {useSamuraiRoster} from '../hooks/useSamuraiRoster';
 import {useSamuraiState} from '../hooks/useSamuraiState';
 import {useCivilianPreview} from '../hooks/useCivilianPreview';
@@ -26,6 +27,7 @@ import {ChampionsHall} from './ChampionsHall';
 import {BracketReveal} from './BracketReveal';
 import {PrizeShowcase} from './PrizeShowcase';
 import {MoviePrizeBanner} from './MoviePrizeBanner';
+import {BudokaiOnboarding} from './BudokaiOnboarding';
 
 type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 
@@ -40,6 +42,8 @@ export function SamuraiDojoModule() {
 
     const {entries, refetch: refetchEntries} = useBudokaiEntries(currentBudokaiId, fastPoll);
     const {owned: myTokenIds, civilians: myCivilianIds, refetch: refetchOwned} = useMySamurai();
+    const {hasAny: hasZeroNfts, isLoading: nftsLoading, refetch: refetchHasNfts} = useHasZeroNfts();
+    const {address} = useAccount();
     const {counters: budokaiCounters, refetch: refetchCounters} = useBudokaiCounters(
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
         slowPoll,
@@ -312,6 +316,23 @@ export function SamuraiDojoModule() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pendingMultiAction, filter]);
+
+    // Onboarding gate — same layout for !connected and connected-but-empty so the entry
+    // point is the same path. When connected, wait for the NFT lookup to settle before
+    // deciding so users with holdings don't briefly flash the onboarding.
+    if (!address) {
+        return <BudokaiOnboarding onAfterMint={refetchHasNfts} />;
+    }
+    if (nftsLoading && !hasZeroNfts) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-black">
+                <Loader2 className="h-6 w-6 animate-spin text-zinc-600" />
+            </div>
+        );
+    }
+    if (!hasZeroNfts) {
+        return <BudokaiOnboarding onAfterMint={refetchHasNfts} />;
+    }
 
     return (
         <div className="min-h-screen bg-black pt-20 sm:pt-24">
