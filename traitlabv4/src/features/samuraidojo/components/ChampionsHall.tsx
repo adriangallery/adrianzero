@@ -6,6 +6,7 @@ import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
 import {useChampions, useBudokaiInfo, useConfiguredBudokais} from '../hooks/useDojoContract';
 import {useBudokaiTheme} from '../hooks/useBudokaiTheme';
 import {useDojoStore} from '../store/dojoStore';
+import {TopSamuraiBoard} from './TopSamuraiBoard';
 
 /**
  * Hall of Fame — renders every configured Budokai, split into Golden (I-III) and Metal (IV+) tiers.
@@ -51,6 +52,9 @@ export function ChampionsHall({budokaiIds}: ChampionsHallProps) {
                     Podium winners of every resolved Budokai
                 </p>
             </div>
+
+            {/* Strongest samurai — refreshed every 5 min via multicall */}
+            <TopSamuraiBoard />
 
             {/* Golden tier — full podium card */}
             <TierSection

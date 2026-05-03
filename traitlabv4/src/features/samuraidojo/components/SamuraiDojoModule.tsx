@@ -12,7 +12,7 @@ import {useHasZeroNfts} from '../hooks/useHasZeroNfts';
 import {useSamuraiRoster} from '../hooks/useSamuraiRoster';
 import {useSamuraiState} from '../hooks/useSamuraiState';
 import {useCivilianPreview} from '../hooks/useCivilianPreview';
-import {useBudokaiCounters, civilianSlotsAvailable} from '../hooks/useBudokaiCounters';
+import {useBudokaiCounters, civilianSlotsForWallet} from '../hooks/useBudokaiCounters';
 import {useWalletEntryCount} from '../hooks/useWalletEntryCount';
 import {useEnterBudokaiBatch, useReviveSamuraiBatch} from '../hooks/useDojoActions';
 import {ENTRY_FEE_ZERO, SENZU_REVIVE_PER_SR_ZERO} from '../types';
@@ -158,7 +158,8 @@ export function SamuraiDojoModule() {
         [civilianOwnedIds, states],
     );
 
-    const civilSlotsAvail = civilianSlotsAvailable(budokaiCounters);
+    // v8: civilian slot is per-wallet — 1 slot, consumed once you have a civilian IN.
+    const civilSlotsAvail = civilianSlotsForWallet(civilInIds.length);
 
     // KO'd tab split: mine vs community (roster \ mine, both KO'd).
     const koMineIds = mineKoIds;
@@ -246,7 +247,7 @@ export function SamuraiDojoModule() {
 
     const handleSelectAllReady = () => {
         const samuraiToSelect = mineReadyIds;
-        // Civilians need slot availability — clamp to ratio gate.
+        // v8: civilian slot is per-wallet, so clamp at most 1 civilian regardless of how many are ready.
         const civilToSelect = civilReadyIds.slice(0, civilSlotsAvail);
         let all = [...samuraiToSelect, ...civilToSelect];
         // Clamp to per-wallet cap (samurai first, then civilian).
@@ -277,7 +278,7 @@ export function SamuraiDojoModule() {
             if (!myOwnedSet.has(tokenId)) return;
             if (enteredSet.has(tokenId)) return;
             if (states.get(tokenId)?.isKnockedOut) return;
-            // For civilians, only allow if there's a free ratio slot OR token already selected (deselect path).
+            // v8: civilians are 1-per-wallet. Block selecting a 2nd civilian (allow deselect of current pick).
             if (civilianOwnedSet.has(tokenId)) {
                 const alreadySelected = selectedIds.has(tokenId);
                 const civsSelected = Array.from(selectedIds).filter((id) => civilianOwnedSet.has(id)).length;
@@ -432,7 +433,6 @@ export function SamuraiDojoModule() {
                         civilStaleSrIds={civilStaleSrIds}
                         civilianPreviews={civilianPreviews}
                         civilSlotsAvail={civilSlotsAvail}
-                        budokaiCounters={budokaiCounters}
                         samuraiOwnedSet={samuraiOwnedSet}
                         states={states}
                         enteredSet={enteredSet}
@@ -468,7 +468,7 @@ export function SamuraiDojoModule() {
                             <div className="mb-3 rounded border border-fuchsia-500/30 bg-fuchsia-500/5 px-3 py-2 text-[10px] uppercase tracking-wider text-fuchsia-300">
                                 <span className="font-bold">{budokaiCounters.samuraiCount}</span> samurai ·{' '}
                                 <span className="font-bold">{budokaiCounters.civilianCount}</span> civilian ·{' '}
-                                <span className="text-fuchsia-200/70">ratio gate 10:1</span>
+                                <span className="text-fuchsia-200/70">1 civilian per wallet</span>
                             </div>
                         )}
                         <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 sm:gap-2 md:grid-cols-7 lg:grid-cols-9">
@@ -625,9 +625,6 @@ export function SamuraiDojoModule() {
                     return samuraiOwnedSet.has(selectedTokenId);
                 })()}
                 civilSlotsAvail={civilSlotsAvail}
-                samuraiNeededForNextSlot={budokaiCounters
-                    ? Math.max(0, (budokaiCounters.civilianCount + 1) * 10 - budokaiCounters.samuraiCount)
-                    : 0}
                 walletEntries={walletGate.entries}
                 walletCap={walletGate.cap}
                 entryFeeWei={budokaiCounters?.entryFee}
@@ -840,7 +837,7 @@ function PrimaryActionBar({
 /**
  * MINE tab — buckets split by samurai vs civilian (v6).
  *   Samurai:   IN THE DOJO (yellow), READY (dashed zinc), KO (grayscale)
- *   Civilian:  IN THE DOJO (fuchsia), READY (dashed fuchsia + ratio gate), KO (grayscale)
+ *   Civilian:  IN THE DOJO (fuchsia), READY (dashed fuchsia + 1-per-wallet gate), KO (grayscale)
  */
 function MineSections({
     samuraiInIds,
@@ -852,7 +849,6 @@ function MineSections({
     civilStaleSrIds,
     civilianPreviews,
     civilSlotsAvail,
-    budokaiCounters,
     samuraiOwnedSet,
     states,
     enteredSet,
@@ -872,7 +868,6 @@ function MineSections({
     civilStaleSrIds: number[];
     civilianPreviews: Map<number, number>;
     civilSlotsAvail: number;
-    budokaiCounters: ReturnType<typeof useBudokaiCounters>['counters'];
     samuraiOwnedSet: Set<number>;
     states: Map<number, {senryoku: number; isKnockedOut: boolean; honor: number}>;
     enteredSet: Set<number>;
@@ -945,29 +940,20 @@ function MineSections({
                     <div className="flex flex-wrap items-baseline gap-3 border-b border-fuchsia-900/40 pb-1">
                         <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-fuchsia-400">Civilian</span>
                         <span className="font-mono text-[9px] text-fuchsia-700">民</span>
-                        <span className="text-[9px] tracking-wider text-fuchsia-300/60">Regular AdrianZERO. Derived SR 1–15. Underdog mode.</span>
+                        <span className="text-[9px] tracking-wider text-fuchsia-300/60">Regular AdrianZERO. Derived SR 1–15. Underdog mode. 1 per wallet.</span>
                         <div className="ml-auto rounded border border-fuchsia-500/40 bg-fuchsia-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-fuchsia-300">
-                            {civilSlotsAvail > 0 ? `${civilSlotsAvail} slot${civilSlotsAvail === 1 ? '' : 's'} open` : 'civilian slots locked'}
+                            {civilSlotsAvail > 0 ? 'civilian slot open' : 'civilian slot used'}
                         </div>
                     </div>
-                    {civilSlotsAvail === 0 && budokaiCounters && civilReadyIds.length > 0 && (() => {
-                        const sam = budokaiCounters.samuraiCount;
-                        const civ = budokaiCounters.civilianCount;
-                        const samuraiNeededForNext = (civ + 1) * 10 - sam;
-                        return (
-                            <div className="rounded border border-fuchsia-500/30 bg-fuchsia-950/15 px-3 py-2 text-[10px] text-fuchsia-200">
-                                <p className="font-bold uppercase tracking-wider text-fuchsia-300">Why can't I enter civilians right now?</p>
-                                <p className="mt-1 text-fuchsia-200/80">
-                                    Civilian entries are gated <span className="font-bold text-fuchsia-300">10:1</span> by samurai count.
-                                    Currently <span className="font-bold">{sam}</span> samurai and <span className="font-bold">{civ}</span> civilian{civ === 1 ? '' : 's'} are entered.
-                                    {' '}For the next civilian slot to open, <span className="font-bold text-fuchsia-300">{samuraiNeededForNext} more samurai</span> must enter the Budokai.
-                                </p>
-                                <p className="mt-1 text-fuchsia-300/70">
-                                    The rule prevents civilian flooding: a civilian can only fight if 10 samurai are willing to fight too. Wait for samurai entries, or enter your own samurai first.
-                                </p>
-                            </div>
-                        );
-                    })()}
+                    {civilSlotsAvail === 0 && civilReadyIds.length > 0 && (
+                        <div className="rounded border border-fuchsia-500/30 bg-fuchsia-950/15 px-3 py-2 text-[10px] text-fuchsia-200">
+                            <p className="font-bold uppercase tracking-wider text-fuchsia-300">Civilian slot already used</p>
+                            <p className="mt-1 text-fuchsia-200/80">
+                                Each wallet may field <span className="font-bold text-fuchsia-300">one civilian</span> per Budokai.
+                                You already have a civilian in the dojo, so the rest of your civilians sit this one out — they'll be eligible again next Budokai.
+                            </p>
+                        </div>
+                    )}
                     {civilStaleSrIds.length > 0 && (
                         <div className="rounded border border-amber-500/40 bg-amber-950/20 px-3 py-2 text-[10px] text-amber-300">
                             <p className="font-bold uppercase tracking-wider">⚠ {civilStaleSrIds.length} civilian{civilStaleSrIds.length === 1 ? '' : 's'} with stored SR &gt; 15</p>

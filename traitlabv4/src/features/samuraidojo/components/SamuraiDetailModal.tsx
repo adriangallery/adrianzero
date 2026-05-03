@@ -14,8 +14,7 @@ interface SamuraiDetailModalProps {
     senryoku: number;
     honor?: number; // v6: persistent bonus from podium finishes. effectiveSR = senryoku + honor
     isSamurai?: boolean; // v6: false = civilian variant (regular AdrianZERO with derived SR 1-15)
-    civilSlotsAvail?: number; // v6: 10:1 ratio gate. 0 = no civilian can enter right now.
-    samuraiNeededForNextSlot?: number; // v6: how many more samurai must enter before next civilian slot opens
+    civilSlotsAvail?: number; // v8: 1 = wallet can still field a civilian, 0 = already used its slot
     walletEntries?: number; // v6: how many tokens this wallet has already entered in the current Budokai
     walletCap?: number; // v6: per-Budokai override if non-zero, else defaultMaxPerWallet
     entryFeeWei?: bigint; // v6: per-Budokai entry fee in wei. 0 + freeEntry=true → free.
@@ -61,8 +60,7 @@ export function SamuraiDetailModal({
     senryoku,
     honor = 0,
     isSamurai = true,
-    civilSlotsAvail = 0,
-    samuraiNeededForNextSlot = 0,
+    civilSlotsAvail = 1,
     walletEntries = 0,
     walletCap = 0,
     entryFeeWei,
@@ -124,8 +122,10 @@ export function SamuraiDetailModal({
     const budokaiOpen = budokaiInfo?.status === BUDOKAI_STATUS.Open;
     const now = Math.floor(Date.now() / 1000);
     const withinWindow = budokaiInfo && now >= budokaiInfo.entryStart && now <= budokaiInfo.entryEnd;
-    // v6: civilian entries are gated 10:1 by samurai count. If a civilian tries to enter
-    // when civilSlotsAvail==0 the contract reverts (NotEnoughSamurai). Gate the UI.
+    // v8: civilians are gated 1-per-wallet. civilSlotsAvail comes from the parent and is
+    // 0 if the user already has a civilian entered, 1 otherwise. If the user tries anyway
+    // the contract reverts with OneCivilianPerWallet — mirror that here so we don't let
+    // them submit a guaranteed-revert tx.
     const civilianGated = !isSamurai && !isEntered && !isKnockedOut && civilSlotsAvail === 0;
     // v6 per-wallet cap: contract reverts WalletCapReached if entriesByWallet >= cap.
     // Mirror it client-side so we never let the user submit a guaranteed-revert tx.
@@ -150,7 +150,7 @@ export function SamuraiDetailModal({
     const primaryLabel = (() => {
         if (!isConnected) return 'Connect Wallet';
         if (walletCapReached && !isKnockedOut) return `Wallet cap reached (${walletEntries}/${walletCap})`;
-        if (civilianGated) return `Locked — need ${samuraiNeededForNextSlot} more samurai`;
+        if (civilianGated) return 'Civilian slot already used (1 per wallet)';
         if (insufficientBalance) return `Need ${feeLabel.toLocaleString()} $ZERO`;
         if (isKnockedOut) return `Senzu Bean (${feeLabel.toLocaleString()} $ZERO)`;
         if (freeEntry) return 'Enter Budokai (FREE)';
@@ -266,16 +266,13 @@ export function SamuraiDetailModal({
 
                         {civilianGated && isMine && (
                             <div className="rounded border border-fuchsia-500/40 bg-fuchsia-950/20 p-3 text-[10px] text-fuchsia-200">
-                                <p className="font-bold uppercase tracking-wider text-fuchsia-300">⚠ Civilian slot locked</p>
+                                <p className="font-bold uppercase tracking-wider text-fuchsia-300">⚠ Civilian slot already used</p>
                                 <p className="mt-1 text-fuchsia-200/80">
-                                    Civilian entries are gated <span className="font-bold text-fuchsia-300">10:1</span> by samurai count.
-                                    Right now there are not enough samurai entered to open a civilian slot.
-                                </p>
-                                <p className="mt-1 text-fuchsia-300/90">
-                                    <span className="font-bold">{samuraiNeededForNextSlot} more samurai</span> must enter the Budokai before this civilian can fight.
+                                    Each wallet may field <span className="font-bold text-fuchsia-300">one civilian</span> per Budokai.
+                                    You already have a civilian in the dojo, so this one has to sit out.
                                 </p>
                                 <p className="mt-1 text-fuchsia-400/70">
-                                    Trying to enter now would revert the transaction (and burn your gas). Wait for samurai entries, or enter your own samurai first.
+                                    Trying to enter would revert the transaction (and burn your gas). This civilian will be eligible again in the next Budokai.
                                 </p>
                             </div>
                         )}

@@ -14,10 +14,10 @@ export interface BudokaiCounters {
 
 /**
  * Read v6 Budokai counters: samurai/civilian split, per-Budokai cap, fee, free flag.
- * Used to drive the ratio gate UI (10:1 samurai:civilian) and per-wallet cap warnings.
+ * Used for stats display (samurai vs civilian counts) and per-wallet cap warnings.
  *
- * On v4 diamonds (or for legacy Budokais ≤1) the call returns zeros, which the UI
- * should treat as "civilians not yet enabled / falls back to legacy path".
+ * v8: the 10:1 ratio gate was retired. Civilian eligibility is now per-wallet — see
+ * `civilianSlotsForWallet` below.
  */
 export function useBudokaiCounters(
     budokaiId: bigint | null | undefined,
@@ -61,13 +61,19 @@ export function useBudokaiCounters(
 }
 
 /**
- * Compute civilian slots available given current counters and the 10:1 ratio gate.
- * Formula (matches contract): `samuraiCount >= (civilianCount + 1) * 10`
- *   → max civilians allowed = floor(samuraiCount / 10)
- *   → available now = max(0, max - civilianCount)
+ * v8 civilian slot computation — purely per-wallet.
+ *
+ * The contract enforces ONE civilian per wallet per Budokai. We derive the wallet's
+ * available slots client-side from the user's own civilian-IN tokens (tokens owned by
+ * the user, in the entries set, and outside the Samurai roster). No extra RPC call —
+ * the inputs are already loaded by the parent module.
+ *
+ * Returns 1 (still has a slot) or 0 (already used). The `number` return type is kept
+ * so existing call sites (`min(civilReadyIds.length, civilSlotsAvail)`) keep working.
+ *
+ * Backstop: if the derivation drifts (e.g. user transferred their entered civilian),
+ * the contract will revert with `OneCivilianPerWallet()` and the UI surfaces the error.
  */
-export function civilianSlotsAvailable(counters: BudokaiCounters | null): number {
-    if (!counters) return 0;
-    const maxCivilians = Math.floor(counters.samuraiCount / 10);
-    return Math.max(0, maxCivilians - counters.civilianCount);
+export function civilianSlotsForWallet(civilianInCount: number): number {
+    return civilianInCount > 0 ? 0 : 1;
 }

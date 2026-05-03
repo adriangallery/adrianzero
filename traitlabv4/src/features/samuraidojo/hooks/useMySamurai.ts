@@ -13,9 +13,10 @@ export interface OwnedZero {
  * Resolve the connected wallet's AdrianZERO holdings via Alchemy NFT API and tag each as
  * samurai (in the on-chain roster — pre-loaded senryoku) or civilian (regular AdrianZERO).
  *
- * v6 added civilian mode: any AdrianZERO can enter via keccak-derived senryoku 1-15 (subject
- * to the 10:1 ratio gate). Returning all owned tokens with an isSamurai flag lets the UI
- * surface civilians too, gated by `samuraiCount/civilianCount` from getBudokaiCounters.
+ * v6 added civilian mode: any AdrianZERO can enter via keccak-derived senryoku 1-15. v8
+ * simplified the gate to "1 civilian per wallet, per Budokai" (the old 10:1 ratio gate is
+ * retired). Returning all owned tokens with an isSamurai flag lets the UI surface civilians
+ * separately and apply the per-wallet rule client-side before submitting the tx.
  *
  * Backwards-compatible API:
  *   - `owned` is the legacy shape: samurai-only id list (existing callers stay correct)

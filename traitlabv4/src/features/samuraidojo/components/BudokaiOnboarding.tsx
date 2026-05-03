@@ -317,7 +317,7 @@ function HowItWorks() {
                 <p>
                     <span className="font-bold text-zinc-200">Civilian mode.</span>{' '}
                     Any AdrianZERO (including SubZERO) can fight as a Civilian with derived power
-                    1–15. Underdog mode — gated 10:1 by samurai entries.
+                    1–15. Underdog mode — one civilian per wallet, per Budokai.
                 </p>
                 <p>
                     <span className="font-bold text-zinc-200">The pot.</span>{' '}
