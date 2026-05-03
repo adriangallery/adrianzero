@@ -159,15 +159,7 @@ export function SamuraiDojoModule() {
     );
 
     // v8: civilian slot is per-wallet — 1 slot, consumed once you have a civilian IN.
-    // Transitional guard: until the v8 facet is cut in, the live contract still enforces the
-    // 10:1 ratio gate, so we take the MIN of both rules to avoid letting users submit a
-    // tx that the contract will revert. Once v8 lands, this min collapses to civilianSlotsForWallet
-    // (the legacy term goes effectively-infinite as samurai entries grow). REMOVE the legacy
-    // term post-v8 cut.
-    const legacyRatioSlots = budokaiCounters
-        ? Math.max(0, Math.floor(budokaiCounters.samuraiCount / 10) - budokaiCounters.civilianCount)
-        : 0;
-    const civilSlotsAvail = Math.min(civilianSlotsForWallet(civilInIds.length), legacyRatioSlots);
+    const civilSlotsAvail = civilianSlotsForWallet(civilInIds.length);
 
     // KO'd tab split: mine vs community (roster \ mine, both KO'd).
     const koMineIds = mineKoIds;
