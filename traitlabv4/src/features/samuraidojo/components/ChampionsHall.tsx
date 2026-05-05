@@ -181,22 +181,28 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
             ) : (
                 <>
                     {/* Champion: prominent hero with large image. Click → detail modal. */}
-                    <ChampionHero tokenId={champions!.champion} />
+                    <ChampionHero tokenId={champions!.champion} budokaiId={budokaiId} />
                     {/* Runner-up + semis: compact rows below. */}
                     <div className="mt-3 space-y-1.5">
                         <PodiumRow
+                            budokaiId={budokaiId}
+                            honorRank="runnerUp"
                             rank="2nd"
                             tokenId={champions!.runnerUp}
                             color="text-zinc-300"
                             icon={<Medal className="h-3 w-3" />}
                         />
                         <PodiumRow
+                            budokaiId={budokaiId}
+                            honorRank="semi"
                             rank="3rd-4th"
                             tokenId={champions!.semifinalists[0]}
                             color="text-orange-400"
                             icon={<Award className="h-3 w-3" />}
                         />
                         <PodiumRow
+                            budokaiId={budokaiId}
+                            honorRank="semi"
                             rank="3rd-4th"
                             tokenId={champions!.semifinalists[1]}
                             color="text-orange-400"
@@ -266,7 +272,7 @@ function MetalRecap({budokaiId}: {budokaiId: number}) {
                         <span className="font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-zinc-300">1st</span>
                     </div>
                     <div className="absolute right-1 top-1">
-                        <HonorTag tokenId={tokenId} />
+                        <HonorTag budokaiId={budokaiId} rank="champion" />
                     </div>
                 </button>
             )}
@@ -293,7 +299,21 @@ function MetalRecap({budokaiId}: {budokaiId: number}) {
     );
 }
 
-function PodiumRow({rank, tokenId, color, icon}: {rank: string; tokenId: number; color: string; icon: React.ReactNode}) {
+function PodiumRow({
+    budokaiId,
+    honorRank,
+    rank,
+    tokenId,
+    color,
+    icon,
+}: {
+    budokaiId: number;
+    honorRank: HonorRank;
+    rank: string;
+    tokenId: number;
+    color: string;
+    icon: React.ReactNode;
+}) {
     const {selectSamurai} = useDojoStore();
     if (!tokenId) return null;
     return (
@@ -312,13 +332,13 @@ function PodiumRow({rank, tokenId, color, icon}: {rank: string; tokenId: number;
                 <span className="font-mono uppercase tracking-wider">{rank}</span>
             </div>
             <span className="ml-auto font-mono text-[10px] text-zinc-400">#{tokenId}</span>
-            <HonorTag tokenId={tokenId} />
+            <HonorTag budokaiId={budokaiId} rank={honorRank} />
         </button>
     );
 }
 
 /** Champion hero — large image + 1ST badge. Click opens the detail modal. */
-function ChampionHero({tokenId}: {tokenId: number}) {
+function ChampionHero({tokenId, budokaiId}: {tokenId: number; budokaiId: number}) {
     const {selectSamurai} = useDojoStore();
     if (!tokenId) return null;
     return (
@@ -338,7 +358,7 @@ function ChampionHero({tokenId}: {tokenId: number}) {
                     <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-yellow-400">1st</span>
                 </div>
                 <div className="absolute right-2 top-2 flex items-center gap-1">
-                    <HonorTag tokenId={tokenId} />
+                    <HonorTag budokaiId={budokaiId} rank="champion" />
                 </div>
             </div>
             <div className="flex items-center justify-between border-t border-yellow-900/40 px-2.5 py-1.5">
@@ -349,20 +369,46 @@ function ChampionHero({tokenId}: {tokenId: number}) {
     );
 }
 
-/** v6: per-token persistent honor displayed next to the token id. Hidden when honor=0. */
-function HonorTag({tokenId}: {tokenId: number}) {
+/**
+ * v6: honor delta earned in THIS Budokai (per rank + trophy type).
+ *
+ * Mirrors LibSamuraiDojo constants:
+ *   Golden champ +10 / runner-up +5 / semi +2
+ *   Metal  champ +3  / runner-up +1 / semi +0
+ *   Custom = same as Metal (admin can re-grant via adminGrantHonor)
+ *   None   = no honor awarded
+ *
+ * Until 2026-05-05 this badge showed `getHonor(tokenId)` (the running per-token
+ * total), which made every card display the same number on multi-win champions
+ * (#634 showed +13 in Budokai 7 AND Budokai 9). Switched to per-Budokai delta
+ * so the card reflects what the samurai earned in *that* battle.
+ */
+type HonorRank = 'champion' | 'runnerUp' | 'semi';
+
+const HONOR_DELTAS: Record<number, Record<HonorRank, number>> = {
+    0: {champion: 0, runnerUp: 0, semi: 0}, // None
+    1: {champion: 10, runnerUp: 5, semi: 2}, // Golden Shuriken
+    2: {champion: 3, runnerUp: 1, semi: 0}, // Metal Shuriken
+    3: {champion: 3, runnerUp: 1, semi: 0}, // Custom (mirrors Metal)
+};
+
+function HonorTag({budokaiId, rank}: {budokaiId: number; rank: HonorRank}) {
     const {data} = useReadContract({
         address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
         abi: SAMURAI_DOJO_ABI,
-        functionName: 'getHonor',
-        args: [BigInt(tokenId)],
+        functionName: 'getBudokaiTrophy',
+        args: [BigInt(budokaiId)],
         chainId: base.id,
-        query: {staleTime: 60_000},
+        query: {staleTime: 5 * 60_000},
     });
-    const honor = data !== undefined ? Number(data) : 0;
+    const trophyType = data ? Number((data as readonly [number, bigint, number])[0]) : 0;
+    const honor = HONOR_DELTAS[trophyType]?.[rank] ?? 0;
     if (honor === 0) return null;
     return (
-        <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-[9px] font-mono font-bold text-yellow-400" title={`Honor: +${honor}. Stacks with Senryoku in combat.`}>
+        <span
+            className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-[9px] font-mono font-bold text-yellow-400"
+            title={`+${honor} honor earned in this Budokai. Honor stacks with Senryoku in combat.`}
+        >
             +{honor}
         </span>
     );
