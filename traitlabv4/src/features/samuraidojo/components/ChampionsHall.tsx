@@ -2,7 +2,7 @@ import {Trophy, Medal, Award, Swords} from 'lucide-react';
 import {useReadContract} from 'wagmi';
 import {base} from 'wagmi/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
-import {SAMURAI_DOJO_ABI} from '@/lib/web3/abi';
+import {SAMURAI_DOJO_ABI, BUDOKAI_STATUS} from '@/lib/web3/abi';
 import {useChampions, useBudokaiInfo, useConfiguredBudokais} from '../hooks/useDojoContract';
 import {useBudokaiTheme} from '../hooks/useBudokaiTheme';
 import {useDojoStore} from '../store/dojoStore';
@@ -145,7 +145,10 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
     const {info} = useBudokaiInfo(budokaiId);
     const {theme} = useBudokaiTheme(BigInt(budokaiId));
     const {openBracket} = useDojoStore();
-    const unresolved = !champions || champions.champion === 0;
+    const isResolved = info?.status === BUDOKAI_STATUS.Resolved;
+    const hasChampion = !!champions && champions.champion !== 0;
+    const isUndisputed = isResolved && !hasChampion;
+    const isPending = !isResolved && !hasChampion;
     const warriors = info?.entryCount ?? 0;
     const tagline = theme?.tagline || TAGLINE_OVERRIDES[budokaiId];
 
@@ -162,9 +165,11 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
                         </span>
                     )}
                 </div>
-                {unresolved ? (
-                    <span className="text-[8px] uppercase text-zinc-600">Pending</span>
-                ) : (
+                {isPending && <span className="text-[8px] uppercase text-zinc-600">Pending</span>}
+                {isUndisputed && (
+                    <span className="text-[8px] uppercase text-zinc-500">Undisputed</span>
+                )}
+                {hasChampion && (
                     <button
                         onClick={() => openBracket(budokaiId)}
                         className="text-[8px] uppercase text-red-400 hover:text-red-300"
@@ -174,9 +179,21 @@ function BudokaiRecap({budokaiId}: {budokaiId: number}) {
                 )}
             </div>
 
-            {unresolved ? (
+            {isPending ? (
                 <div className="flex h-24 items-center justify-center text-[10px] text-zinc-700">
                     Awaiting resolution
+                </div>
+            ) : isUndisputed ? (
+                <div
+                    className="flex h-24 flex-col items-center justify-center gap-1 rounded border border-dashed border-zinc-800 bg-gradient-to-b from-zinc-950 to-black text-center"
+                    title="No challengers entered. The pool was rolled over to the next Budokai."
+                >
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400">
+                        Undisputed
+                    </span>
+                    <span className="text-[8px] uppercase tracking-wider text-zinc-600">
+                        no challengers · pool rolled over
+                    </span>
                 </div>
             ) : (
                 <>
@@ -231,7 +248,13 @@ function MetalRecap({budokaiId}: {budokaiId: number}) {
     const {info} = useBudokaiInfo(budokaiId);
     const {theme} = useBudokaiTheme(BigInt(budokaiId));
     const {openBracket, selectSamurai} = useDojoStore();
-    const unresolved = !champions || champions.champion === 0;
+    // Resolved with no entries → keeper called _rolloverBudokai, the seed pool was carried
+    // to the next configured Budokai, and this slot was marked Resolved without a champion.
+    // Distinct from "still open / awaiting resolve" — keep them visually different.
+    const isResolved = info?.status === BUDOKAI_STATUS.Resolved;
+    const hasChampion = !!champions && champions.champion !== 0;
+    const isUndisputed = isResolved && !hasChampion;
+    const isPending = !isResolved && !hasChampion;
     const warriors = info?.entryCount ?? 0;
     const tokenId = champions?.champion ?? 0;
     const tagline = theme?.tagline || TAGLINE_OVERRIDES[budokaiId];
@@ -242,7 +265,7 @@ function MetalRecap({budokaiId}: {budokaiId: number}) {
                 <span className="text-[8px] uppercase tracking-[0.2em] text-zinc-500">
                     Budokai {budokaiId}
                 </span>
-                {!unresolved && (
+                {hasChampion && (
                     <button
                         onClick={() => openBracket(budokaiId)}
                         className="text-[7px] uppercase text-red-400 hover:text-red-300"
@@ -252,9 +275,24 @@ function MetalRecap({budokaiId}: {budokaiId: number}) {
                 )}
             </div>
 
-            {unresolved ? (
+            {isPending ? (
                 <div className="flex aspect-square items-center justify-center text-[9px] text-zinc-700">
                     Pending
+                </div>
+            ) : isUndisputed ? (
+                <div
+                    className="flex aspect-square flex-col items-center justify-center gap-1 rounded border border-dashed border-zinc-800 bg-gradient-to-b from-zinc-950 to-black px-2 text-center"
+                    title="No challengers entered. The pool was rolled over to the next Budokai."
+                >
+                    <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                        Undisputed
+                    </span>
+                    <span className="text-[7px] uppercase tracking-wider text-zinc-600">
+                        no challengers
+                    </span>
+                    <span className="text-[7px] uppercase tracking-wider text-zinc-600">
+                        pool rolled over
+                    </span>
                 </div>
             ) : (
                 <button
@@ -277,7 +315,7 @@ function MetalRecap({budokaiId}: {budokaiId: number}) {
                 </button>
             )}
 
-            {!unresolved && (
+            {hasChampion && (
                 <div className="mt-1.5 space-y-0.5">
                     {tagline && (
                         <div className="truncate text-[9px] font-bold uppercase tracking-wider text-zinc-300" title={tagline}>
