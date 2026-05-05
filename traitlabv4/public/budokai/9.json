@@ -1,0 +1,40 @@
+{
+  "id": 9,
+  "pool": "1918620000000000000000",
+  "entryCount": 3,
+  "resolveBlock": 45605449,
+  "resolveTx": "0x468fbbd436deebdce159b1239e0d79e1ffe322e475ce6ea42cdd24142fe7d453",
+  "matches": [
+    {
+      "round": 1,
+      "tokenA": 148,
+      "tokenB": 1062,
+      "winner": 1062,
+      "kaioken": true
+    },
+    {
+      "round": 2,
+      "tokenA": 634,
+      "tokenB": 1062,
+      "winner": 634,
+      "kaioken": false
+    }
+  ],
+  "senryoku": {
+    "148": 7,
+    "634": 96,
+    "1062": 100
+  },
+  "champion": 634,
+  "runnerUp": 1062,
+  "semifinalists": [
+    148,
+    0
+  ],
+  "quarterfinalists": [
+    0,
+    0,
+    0,
+    0
+  ]
+}
