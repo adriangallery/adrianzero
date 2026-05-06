@@ -30,6 +30,28 @@ export function useEnterBudokai() {
 }
 
 /**
+ * v10: Enter the active Budokai as an anonymous civilian — no NFT required.
+ * Pays the same entry fee in $ZERO. The contract assigns a synthetic
+ * tokenId (≥1_000_001) recorded in `anonymousOwner[tokenId] = msg.sender`.
+ * Cannot revive after KO (that's the AdrianZERO civilian's upgrade).
+ */
+export function useEnterAsAnonymousCivilian() {
+    const {writeContract, data: hash, isPending, error, reset} = useWriteContract();
+    const {isLoading: isConfirming, isSuccess: isConfirmed} = useWaitForTransactionReceipt({hash});
+
+    const enterAnon = () => {
+        writeContract({
+            address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+            abi: SAMURAI_DOJO_ABI,
+            functionName: 'enterAsAnonymousCivilian',
+            args: [],
+        });
+    };
+
+    return {enterAnon, isPending, isConfirming, isConfirmed, error, txHash: hash, reset};
+}
+
+/**
  * Enter multiple samurai in a single transaction (one signature).
  */
 export function useEnterBudokaiBatch() {

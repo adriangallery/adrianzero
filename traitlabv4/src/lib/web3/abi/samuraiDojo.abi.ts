@@ -18,6 +18,28 @@ export const SAMURAI_DOJO_ABI = [
         stateMutability: 'nonpayable',
         type: 'function',
     },
+    // v10: enter without owning AdrianZERO. Synthetic tokenId minted in [1_000_001, ∞).
+    {
+        inputs: [],
+        name: 'enterAsAnonymousCivilian',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [{name: 'tokenId', type: 'uint256'}],
+        name: 'getAnonymousOwner',
+        outputs: [{name: '', type: 'address'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
+        name: 'getNextAnonymousTokenId',
+        outputs: [{name: '', type: 'uint256'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
     {
         inputs: [{name: 'tokenId', type: 'uint256'}],
         name: 'reviveSamurai',
