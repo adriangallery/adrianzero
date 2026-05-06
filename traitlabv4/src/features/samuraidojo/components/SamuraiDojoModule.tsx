@@ -23,6 +23,8 @@ import {useMoviePrize} from '../hooks/useExtraPrizes';
 import {SamuraiCard} from './SamuraiCard';
 import {TournamentStats} from './TournamentStats';
 import {SamuraiDetailModal} from './SamuraiDetailModal';
+import {CivilianEntryDialog} from './CivilianEntryDialog';
+import {useCivilianEntryFlow} from '../hooks/useCivilianEntryFlow';
 import {ChampionsHall} from './ChampionsHall';
 import {BracketReveal} from './BracketReveal';
 import {PrizeShowcase} from './PrizeShowcase';
@@ -32,6 +34,7 @@ import {BudokaiOnboarding} from './BudokaiOnboarding';
 type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 
 export function SamuraiDojoModule() {
+    const civilianFlow = useCivilianEntryFlow();
     const {currentBudokaiId, refetch: refetchCurrent} = useCurrentBudokaiId();
     const {info: budokaiInfo, refetch: refetchInfo} = useBudokaiInfo(currentBudokaiId);
 
@@ -640,6 +643,16 @@ export function SamuraiDojoModule() {
             />
 
             <BracketReveal open={isBracketOpen} onClose={closeBracket} budokaiId={bracketBudokaiId} />
+
+            {civilianFlow.isActive && civilianFlow.discordUserId && (
+                <CivilianEntryDialog
+                    open={civilianFlow.isActive}
+                    discordUserId={civilianFlow.discordUserId}
+                    guildId={civilianFlow.guildId}
+                    representation={civilianFlow.representation}
+                    onClose={civilianFlow.dismiss}
+                />
+            )}
         </div>
     );
 }
