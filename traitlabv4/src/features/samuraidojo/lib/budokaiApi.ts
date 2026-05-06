@@ -20,6 +20,33 @@ export interface CreateIntentRequest {
     } | null;
 }
 
+export interface WalletFirstIntentRequest {
+    wallet: string;
+    representation: {
+        chain: string;
+        contract: string;
+        tokenId: string;
+        name: string;
+        imageUrl: string | null;
+    } | null;
+}
+
+export interface PartnerSkin {
+    contract: string;
+    tokenId: string;
+    name: string;
+    imageUrl: string | null;
+    collectionName: string | null;
+}
+
+export interface SkinsForWalletResponse {
+    ok: true;
+    wallet: string;
+    discord: {userId: string; username: string} | null;
+    collectionCount: number;
+    skins: PartnerSkin[];
+}
+
 export interface CreateIntentResponse {
     intentId: number;
     budokaiId: string;
@@ -68,6 +95,36 @@ export async function createCivilianIntent(
         method: 'POST',
         body: JSON.stringify(body),
     });
+}
+
+/**
+ * Wallet-first variant — no Discord identity required. Used by the
+ * /budokai page when the visitor connects a wallet that owns NFTs from
+ * a registered partner collection (e.g. Doodles). The on-chain entry
+ * still happens via enterAsAnonymousCivilian; this just records the
+ * cosmetic skin so the narrator + cross-server embeds show the partner
+ * NFT instead of "civilian #N".
+ */
+export async function createWalletSkinIntent(
+    body: WalletFirstIntentRequest,
+): Promise<{ok: true} & CreateIntentResponse> {
+    return jsonFetch<{ok: true} & CreateIntentResponse>('/api/budokai/civil-intent', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+}
+
+/**
+ * List the partner-collection NFTs owned by `wallet` across every
+ * guild's registry. The endpoint dedupes by contract — a contract
+ * registered in N guilds returns once.
+ */
+export async function fetchSkinsForWallet(
+    wallet: string,
+): Promise<SkinsForWalletResponse> {
+    return jsonFetch<SkinsForWalletResponse>(
+        `/api/budokai/skins-for-wallet?wallet=${wallet}`,
+    );
 }
 
 /**

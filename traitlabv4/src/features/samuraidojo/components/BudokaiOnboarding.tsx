@@ -9,6 +9,7 @@ import {BUDOKAI_STATUS} from '@/lib/web3/abi';
 import {useCurrentBudokaiId, useBudokaiInfo, useBudokaiEntries, dojoPollInterval} from '../hooks/useDojoContract';
 import {useBudokaiCounters} from '../hooks/useBudokaiCounters';
 import {useEnterAsAnonymousCivilian} from '../hooks/useDojoActions';
+import {PartnerSkinsSection} from './PartnerSkinsSection';
 
 const DISCORD_URL = 'https://discord.gg/wDsSreEDnf';
 
@@ -30,6 +31,10 @@ export function BudokaiOnboarding({onAfterMint}: {onAfterMint?: () => void}) {
             <div className="mx-auto max-w-3xl space-y-6 px-4 pb-16 pt-6 sm:px-6">
                 <LiveStrip />
                 <StepLadder isConnected={isConnected} onAfterMint={onAfterMint} />
+                {/* Self-hides when wallet has no NFTs from registered partner
+                    collections. Shown here above HowItWorks so partner-only
+                    holders (no AdrianZERO) immediately see their skin. */}
+                <PartnerSkinsSection />
                 <HowItWorks />
             </div>
         </div>

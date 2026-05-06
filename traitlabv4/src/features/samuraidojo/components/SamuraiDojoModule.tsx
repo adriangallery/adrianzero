@@ -30,6 +30,7 @@ import {BracketReveal} from './BracketReveal';
 import {PrizeShowcase} from './PrizeShowcase';
 import {MoviePrizeBanner} from './MoviePrizeBanner';
 import {BudokaiOnboarding} from './BudokaiOnboarding';
+import {PartnerSkinsSection} from './PartnerSkinsSection';
 
 type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 
@@ -901,6 +902,8 @@ function MineSections({
     const hasSamurai = samuraiReadyIds.length + samuraiKoIds.length > 0 || samuraiInIds.length > 0;
     const hasCivilians = civilReadyIds.length + civilKoIds.length > 0 || civilInIds.length > 0;
 
+    const partnerSkins = <PartnerSkinsSection />;
+
     // Combined "In the Dojo" — once a token is committed, the samurai/civilian distinction matters
     // less than "they're locked into the bracket". Card border still shows the type at a glance.
     const allInIds = [...samuraiInIds, ...civilInIds].sort((a, b) => a - b);
@@ -991,6 +994,11 @@ function MineSections({
                     )}
                 </div>
             )}
+
+            {/* Partner-collection NFTs the wallet owns (Doodles, Pudgy, etc.).
+                Self-hides when none. Click → records cosmetic skin + fires
+                v10 enterAsAnonymousCivilian. */}
+            {partnerSkins}
         </div>
     );
 }
