@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useAccount} from 'wagmi';
-import {Loader2, Sparkles, ExternalLink} from 'lucide-react';
+import {Loader2, Sparkles} from 'lucide-react';
 import {usePartnerSkins} from '../hooks/usePartnerSkins';
 import {useEnterAsAnonymousCivilian} from '../hooks/useDojoActions';
 import {createWalletSkinIntent, type PartnerSkin} from '../lib/budokaiApi';
@@ -9,14 +9,14 @@ import {useBudokaiCounters} from '../hooks/useBudokaiCounters';
 import {BUDOKAI_STATUS} from '@/lib/web3/abi';
 
 /**
- * Shows the partner-collection NFTs (Doodles, Pudgy Penguins, etc.) that
- * the connected wallet owns. Pick one → records the cosmetic skin on the
- * backend → fires v10 enterAsAnonymousCivilian on-chain. The narrator
- * then renders the partner NFT image instead of "civilian #N" across
- * every wired Discord server.
+ * Lists the partner-collection NFTs owned by the connected wallet
+ * (Doodles, Pudgy, etc.). Click a card → records the cosmetic skin →
+ * fires v10 enterAsAnonymousCivilian. The narrator broadcasts the
+ * partner image instead of "civilian #N" across every wired Discord.
  *
- * Hidden when wallet has no partner skins (vast majority of users) so it
- * doesn't add noise.
+ * Visual sizing matches the dojo's regular SamuraiCard grid so partner
+ * skins sit alongside SamuraiZERO/AdrianZERO cards at the same scale.
+ * Self-hides when wallet has no partner skins.
  */
 export function PartnerSkinsSection() {
     const {address} = useAccount();
@@ -27,8 +27,14 @@ export function PartnerSkinsSection() {
     const {counters} = useBudokaiCounters(
         currentBudokaiId ? BigInt(currentBudokaiId) : null,
     );
-    const {enterAnon, isPending, isConfirming, isConfirmed, error: txError, reset} =
-        useEnterAsAnonymousCivilian();
+    const {
+        enterAnon,
+        isPending,
+        isConfirming,
+        isConfirmed,
+        error: txError,
+        reset,
+    } = useEnterAsAnonymousCivilian();
 
     const [pickedSkin, setPickedSkin] = useState<PartnerSkin | null>(null);
     const [intentError, setIntentError] = useState<string | null>(null);
@@ -74,15 +80,14 @@ export function PartnerSkinsSection() {
                 },
             });
         } catch (err) {
-            // Intent recording is non-fatal — we still let the user enter,
-            // they just won't get the skin override on the narrator embed.
+            // Skin record is decorative — let the user enter anyway.
             setIntentError(err instanceof Error ? err.message : String(err));
         }
         enterAnon();
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             <div className="flex flex-wrap items-baseline gap-3 border-b border-cyan-900/40 pb-1">
                 <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-cyan-400">
                     Partner Skins
@@ -90,7 +95,7 @@ export function PartnerSkinsSection() {
                 <span className="font-mono text-[9px] text-cyan-700">外部</span>
                 <span className="text-[9px] tracking-wider text-cyan-300/60">
                     External NFTs you own. Use as cosmetic skin → enter as
-                    anonymous civilian (no AdrianZERO needed).
+                    anonymous civilian.
                 </span>
                 <span className="ml-auto rounded border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-cyan-300">
                     {skins.length} owned · {feeLabel}
@@ -99,29 +104,28 @@ export function PartnerSkinsSection() {
 
             {!budokaiOpen && (
                 <div className="rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-zinc-500">
-                    No Budokai open right now. Skin selection will reactivate
-                    once the next one is live.
+                    No Budokai open right now. Skins will reactivate once the
+                    next one is live.
                 </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 sm:gap-2 md:grid-cols-7 lg:grid-cols-9">
                 {skins.map((skin) => {
                     const id = `${skin.contract}-${skin.tokenId}`;
                     const isPicked =
                         pickedSkin?.contract === skin.contract &&
                         pickedSkin?.tokenId === skin.tokenId;
+                    const cardBorder = isPicked
+                        ? 'border-2 border-cyan-400 shadow-[0_0_16px_rgba(34,211,238,0.30)]'
+                        : 'border-2 border-dashed border-cyan-700/60';
                     return (
                         <button
                             key={id}
                             onClick={() => handlePick(skin)}
                             disabled={!budokaiOpen || busy}
-                            className={`group relative overflow-hidden rounded border bg-zinc-950 text-left transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
-                                isPicked
-                                    ? 'border-cyan-500 shadow-[0_0_20px_rgba(34,211,238,0.25)]'
-                                    : 'border-cyan-900/40 hover:border-cyan-500/60'
-                            }`}
+                            className={`group relative flex min-w-0 flex-col overflow-hidden rounded text-left transition-all duration-300 hover:scale-105 hover:z-10 disabled:cursor-not-allowed disabled:opacity-60 ${cardBorder}`}
                         >
-                            <div className="relative aspect-square w-full">
+                            <div className="relative aspect-square w-full overflow-hidden rounded-t bg-zinc-900">
                                 {skin.imageUrl ? (
                                     <img
                                         src={skin.imageUrl}
@@ -130,13 +134,23 @@ export function PartnerSkinsSection() {
                                         loading="lazy"
                                     />
                                 ) : (
-                                    <div className="grid h-full place-items-center bg-zinc-900 text-[10px] text-zinc-600">
-                                        no preview
+                                    <div className="grid h-full place-items-center bg-zinc-900 text-[8px] text-zinc-600">
+                                        no img
                                     </div>
                                 )}
-                                <span className="absolute right-1.5 top-1.5 rounded border border-cyan-500/40 bg-cyan-500/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-cyan-300">
-                                    {skin.collectionName ?? 'NFT'}
-                                </span>
+
+                                {/* Collection badge — top-left, mirrors SR badge position. */}
+                                <div className="absolute top-1 left-1 rounded border border-cyan-500/40 bg-black/70 px-1.5 py-0.5 backdrop-blur-sm">
+                                    <span className="text-[7px] font-mono font-bold uppercase tracking-wider text-cyan-400">
+                                        {skin.collectionName ?? 'NFT'}
+                                    </span>
+                                </div>
+
+                                {/* SKIN badge — top-right, mirrors MINE/CIVIL/IN slot. */}
+                                <div className="absolute top-1 right-1 rounded bg-cyan-500 px-1.5 py-0.5 text-[7px] font-bold uppercase text-black">
+                                    SKIN
+                                </div>
+
                                 {isPicked && busy && (
                                     <div className="absolute inset-0 grid place-items-center bg-black/60">
                                         <Loader2 className="h-5 w-5 animate-spin text-cyan-300" />
@@ -148,12 +162,9 @@ export function PartnerSkinsSection() {
                                     </div>
                                 )}
                             </div>
-                            <div className="px-2 py-1.5">
-                                <p className="truncate text-[11px] font-bold text-zinc-100">
+                            <div className="px-1 py-1.5">
+                                <p className="truncate text-[9px] font-bold text-cyan-300 transition-colors group-hover:text-white">
                                     {skin.name}
-                                </p>
-                                <p className="text-[9px] tracking-wider text-zinc-500">
-                                    {budokaiOpen ? `Enter as skin · ${feeLabel}` : 'Skin ready'}
                                 </p>
                             </div>
                         </button>
@@ -174,7 +185,7 @@ export function PartnerSkinsSection() {
 
             {isConfirmed && pickedSkin && (
                 <div className="flex items-center gap-2 rounded border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-300">
-                    <ExternalLink className="h-3.5 w-3.5" />
+                    <Sparkles className="h-3.5 w-3.5" />
                     Entered as <strong>{pickedSkin.name}</strong> — broadcast
                     will reflect this skin across every wired server.
                 </div>

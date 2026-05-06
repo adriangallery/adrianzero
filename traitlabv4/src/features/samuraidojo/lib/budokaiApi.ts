@@ -127,6 +127,32 @@ export async function fetchSkinsForWallet(
     );
 }
 
+export interface EntrantSkin {
+    tokenId: string;
+    name: string | null;
+    imageUrl: string | null;
+    contract: string | null;
+}
+
+export interface EntrantSkinsResponse {
+    ok: true;
+    budokaiId: string;
+    skins: EntrantSkin[];
+}
+
+/**
+ * Map of synthetic civilian tokenId → cosmetic skin for a Budokai.
+ * Frontend uses this to render the partner NFT image instead of the
+ * (non-existent) AdrianLAB render for IDs ≥ 1_000_001.
+ */
+export async function fetchEntrantSkins(
+    budokaiId: bigint | number | string,
+): Promise<EntrantSkinsResponse> {
+    return jsonFetch<EntrantSkinsResponse>(
+        `/api/budokai/entrant-skins/${budokaiId}`,
+    );
+}
+
 /**
  * Look up the prefill data for an existing intent. Used after navigating
  * back to the page (e.g. user closed and reopened the link) so we don't

@@ -31,6 +31,7 @@ import {PrizeShowcase} from './PrizeShowcase';
 import {MoviePrizeBanner} from './MoviePrizeBanner';
 import {BudokaiOnboarding} from './BudokaiOnboarding';
 import {PartnerSkinsSection} from './PartnerSkinsSection';
+import {useEntrantSkins, type EntrantSkinOverride} from '../hooks/useEntrantSkins';
 
 type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 
@@ -139,6 +140,15 @@ export function SamuraiDojoModule() {
     const civilianOwnedIds = myCivilianIds; // owned but not in roster
 
     const {previews: civilianPreviews} = useCivilianPreview(civilianOwnedIds);
+
+    // Cosmetic skin overrides for synthetic civilian tokenIds (≥ 1_000_001).
+    // The on-chain entries have no AdrianLAB render — without this map they
+    // show up as blank silhouettes. We poll the public skin map every 30s
+    // for the active Budokai.
+    const entrantSkins = useEntrantSkins(
+        currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
+        typeof slowPoll === 'number' ? slowPoll : 30_000,
+    );
 
     const myOwnedSet = useMemo(() => new Set([...samuraiOwnedIds, ...civilianOwnedIds]), [samuraiOwnedIds, civilianOwnedIds]);
     const samuraiOwnedSet = useMemo(() => new Set(samuraiOwnedIds), [samuraiOwnedIds]);
@@ -441,6 +451,7 @@ export function SamuraiDojoModule() {
                         states={states}
                         enteredSet={enteredSet}
                         myOwnedSet={myOwnedSet}
+                        skinOverrides={entrantSkins}
                         multiSelectMode={multiSelectMode}
                         multiSelectKind={multiSelectKind}
                         selectedIds={selectedIds}
@@ -457,6 +468,7 @@ export function SamuraiDojoModule() {
                         states={states}
                         enteredSet={enteredSet}
                         myOwnedSet={myOwnedSet}
+                        skinOverrides={entrantSkins}
                         onCardClick={handleCardClick}
                         multiSelectMode={multiSelectMode}
                         multiSelectKind={multiSelectKind}
@@ -491,6 +503,7 @@ export function SamuraiDojoModule() {
                                         isKnockedOut={state?.isKnockedOut ?? false}
                                         isMine={myOwnedSet.has(tokenId)}
                                         isSamurai={isSam}
+                                        skinOverride={entrantSkins.get(tokenId) ?? null}
                                         onClick={() => handleCardClick(tokenId)}
                                         multiSelectMode={multiSelectMode}
                                         multiSelectKind={multiSelectKind}
@@ -867,6 +880,7 @@ function MineSections({
     states,
     enteredSet,
     myOwnedSet,
+    skinOverrides,
     multiSelectMode,
     multiSelectKind,
     selectedIds,
@@ -886,6 +900,7 @@ function MineSections({
     states: Map<number, {senryoku: number; isKnockedOut: boolean; honor: number}>;
     enteredSet: Set<number>;
     myOwnedSet: Set<number>;
+    skinOverrides?: Map<number, EntrantSkinOverride>;
     multiSelectMode: boolean;
     multiSelectKind: 'enter' | 'revive';
     selectedIds: Set<number>;
@@ -919,7 +934,7 @@ function MineSections({
                     color="text-yellow-400"
                     count={allInIds.length}
                 >
-                    <CardGrid ids={allInIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                    <CardGrid ids={allInIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                 </SectionBlock>
             )}
 
@@ -939,12 +954,12 @@ function MineSections({
                             color="text-zinc-300"
                             count={samuraiReadyIds.length}
                         >
-                            <CardGrid ids={samuraiReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                            <CardGrid ids={samuraiReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                         </SectionBlock>
                     )}
                     {samuraiKoIds.length > 0 && (
                         <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu to re-enter." color="text-red-400" count={samuraiKoIds.length}>
-                            <CardGrid ids={samuraiKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                            <CardGrid ids={samuraiKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                         </SectionBlock>
                     )}
                 </div>
@@ -984,12 +999,12 @@ function MineSections({
                             color="text-fuchsia-300"
                             count={civilReadyIds.length}
                         >
-                            <CardGrid ids={civilReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                            <CardGrid ids={civilReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                         </SectionBlock>
                     )}
                     {civilKoIds.length > 0 && (
                         <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu (cost = SR × 10 ZERO)." color="text-red-400" count={civilKoIds.length}>
-                            <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                            <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                         </SectionBlock>
                     )}
                 </div>
@@ -1017,6 +1032,7 @@ function KoSections({
     states,
     enteredSet,
     myOwnedSet,
+    skinOverrides,
     onCardClick,
     multiSelectMode,
     multiSelectKind,
@@ -1030,6 +1046,7 @@ function KoSections({
     states: Map<number, {senryoku: number; isKnockedOut: boolean; honor: number}>;
     enteredSet: Set<number>;
     myOwnedSet: Set<number>;
+    skinOverrides?: Map<number, EntrantSkinOverride>;
     onCardClick: (tokenId: number) => void;
     multiSelectMode: boolean;
     multiSelectKind: 'enter' | 'revive';
@@ -1052,7 +1069,7 @@ function KoSections({
                 count={mineIds.length}
                 emptyMsg="None of yours are down — for now."
             >
-                <CardGrid ids={mineIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                <CardGrid ids={mineIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
             </SectionBlock>
 
             {civilKoIds.length > 0 && (
@@ -1063,7 +1080,7 @@ function KoSections({
                     color="text-fuchsia-400"
                     count={civilKoIds.length}
                 >
-                    <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                    <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                 </SectionBlock>
             )}
 
@@ -1075,7 +1092,7 @@ function KoSections({
                 count={communityIds.length}
                 emptyMsg="No community KO'd tokens."
             >
-                <CardGrid ids={communityIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} />
+                <CardGrid ids={communityIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
             </SectionBlock>
         </div>
     );
@@ -1125,6 +1142,7 @@ function CardGrid({
     myOwnedSet,
     samuraiOwnedSet,
     civilianPreviews,
+    skinOverrides,
     multiSelectMode,
     multiSelectKind,
     selectedIds,
@@ -1136,6 +1154,7 @@ function CardGrid({
     myOwnedSet: Set<number>;
     samuraiOwnedSet: Set<number>;
     civilianPreviews: Map<number, number>;
+    skinOverrides?: Map<number, EntrantSkinOverride>;
     multiSelectMode: boolean;
     multiSelectKind: 'enter' | 'revive';
     selectedIds: Set<number>;
@@ -1174,6 +1193,7 @@ function CardGrid({
                         isMine={isMine}
                         isSamurai={isSamurai}
                         isCivilianPreview={isPreview}
+                        skinOverride={skinOverrides?.get(tokenId) ?? null}
                         onClick={() => onCardClick(tokenId)}
                         multiSelectMode={multiSelectMode}
                         multiSelectKind={multiSelectKind}

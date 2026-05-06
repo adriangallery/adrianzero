@@ -13,6 +13,7 @@ interface SamuraiCardProps {
     honor?: number; // v6: persistent combat bonus from podium finishes. 0 on v4.
     isSamurai?: boolean; // v6: false = civilian (regular AdrianZERO entering with derived SR 1-15). Default true for back-compat.
     isCivilianPreview?: boolean; // v6: senryoku is a *preview* (token hasn't entered yet), shown grayed out
+    skinOverride?: {imageUrl: string; name: string} | null; // v10: cosmetic skin for synthetic civilian tokenIds (≥ 1_000_001)
 }
 
 function getSamuraiImageUrl(tokenId: number): string {
@@ -32,6 +33,7 @@ export const SamuraiCard = memo(function SamuraiCard({
     honor = 0,
     isSamurai = true,
     isCivilianPreview = false,
+    skinOverride = null,
 }: SamuraiCardProps) {
     // Border hierarchy (MINE tab visual fix):
     //   selected (multi-select)  → red solid + ring
@@ -63,10 +65,10 @@ export const SamuraiCard = memo(function SamuraiCard({
         >
             <div className="relative aspect-square w-full overflow-hidden rounded-t bg-zinc-900">
                 <img
-                    src={getSamuraiImageUrl(tokenId)}
-                    alt={`SamuraiZERO #${tokenId}`}
-                    className="h-full w-full object-contain"
-                    style={{imageRendering: 'pixelated'}}
+                    src={skinOverride?.imageUrl ?? getSamuraiImageUrl(tokenId)}
+                    alt={skinOverride?.name ?? `SamuraiZERO #${tokenId}`}
+                    className="h-full w-full object-cover"
+                    style={skinOverride ? undefined : {imageRendering: 'pixelated'}}
                     loading="lazy"
                 />
 
@@ -140,9 +142,9 @@ export const SamuraiCard = memo(function SamuraiCard({
 
             <div className="px-1 py-1.5">
                 <p className={`truncate text-[9px] font-bold transition-colors group-hover:text-white ${
-                    isSamurai ? 'text-zinc-300' : 'text-fuchsia-300'
+                    skinOverride ? 'text-cyan-300' : isSamurai ? 'text-zinc-300' : 'text-fuchsia-300'
                 }`}>
-                    #{tokenId}
+                    {skinOverride ? skinOverride.name : `#${tokenId}`}
                 </p>
             </div>
         </button>
