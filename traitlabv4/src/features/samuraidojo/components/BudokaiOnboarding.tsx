@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useAccount} from 'wagmi';
 import {useConnectModal} from '@rainbow-me/rainbowkit';
 import {Loader2, Sword, Wallet, Check, ExternalLink, Sparkles} from 'lucide-react';
@@ -8,6 +8,7 @@ import {MintSuccessModal} from '@/features/onboarding/components/MintSuccessModa
 import {BUDOKAI_STATUS} from '@/lib/web3/abi';
 import {useCurrentBudokaiId, useBudokaiInfo, useBudokaiEntries, dojoPollInterval} from '../hooks/useDojoContract';
 import {useBudokaiCounters} from '../hooks/useBudokaiCounters';
+import {useEnterAsAnonymousCivilian} from '../hooks/useDojoActions';
 
 const DISCORD_URL = 'https://discord.gg/wDsSreEDnf';
 
@@ -142,6 +143,112 @@ function LiveStrip() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* AnonymousEntryAction — v10 enterAsAnonymousCivilian button                  */
+/* No NFT required. Pays the active Budokai's entry fee in $ZERO and fights   */
+/* as a synthetic civilian (tokenId ≥ 1_000_001, derived 1-15 SR).            */
+/* -------------------------------------------------------------------------- */
+
+function AnonymousEntryAction() {
+    const {isConnected} = useAccount();
+    const {openConnectModal} = useConnectModal();
+    const {currentBudokaiId} = useCurrentBudokaiId();
+    const {info} = useBudokaiInfo(currentBudokaiId);
+    const {counters} = useBudokaiCounters(
+        currentBudokaiId ? BigInt(currentBudokaiId) : null,
+    );
+    const {enterAnon, isPending, isConfirming, isConfirmed, error, reset} =
+        useEnterAsAnonymousCivilian();
+
+    // Surface successful entries with a transient confirmation. The page
+    // separately auto-refetches so a fresh wallet swap to "I'm in" status
+    // happens within ~1 cycle.
+    const [justEntered, setJustEntered] = useState(false);
+    useEffect(() => {
+        if (isConfirmed) setJustEntered(true);
+    }, [isConfirmed]);
+
+    if (!info || !currentBudokaiId) {
+        return (
+            <div className="flex w-full items-center justify-center gap-2 rounded border border-zinc-800 bg-zinc-950 px-4 py-3 text-[11px] uppercase tracking-wider text-zinc-500">
+                <Sword className="h-4 w-4" />
+                Waiting for next Budokai…
+            </div>
+        );
+    }
+    if (info.status !== BUDOKAI_STATUS.Open) {
+        return (
+            <div className="flex w-full items-center justify-center gap-2 rounded border border-zinc-800 bg-zinc-950 px-4 py-3 text-[11px] uppercase tracking-wider text-zinc-500">
+                <Sword className="h-4 w-4" />
+                Budokai #{currentBudokaiId} not open
+            </div>
+        );
+    }
+
+    const isFree = counters?.freeEntry || counters?.entryFee === 0n;
+    const feeLabel = isFree
+        ? 'FREE entry'
+        : counters
+          ? `${Number(counters.entryFee / 10n ** 18n).toLocaleString()} ZERO entry`
+          : 'Entry fee';
+
+    if (justEntered) {
+        return (
+            <div className="flex w-full items-center justify-center gap-2 rounded border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-[12px] font-bold uppercase tracking-wider text-emerald-300">
+                <Sparkles className="h-4 w-4" />
+                You&apos;re in the dojo
+            </div>
+        );
+    }
+
+    const busy = isPending || isConfirming;
+    const handleClick = () => {
+        if (!isConnected) {
+            openConnectModal?.();
+            return;
+        }
+        if (busy) return;
+        reset();
+        enterAnon();
+    };
+
+    return (
+        <div className="space-y-1.5">
+            <button
+                onClick={handleClick}
+                disabled={busy}
+                className="flex w-full items-center justify-center gap-2 rounded border border-fuchsia-500/60 bg-gradient-to-r from-fuchsia-500/15 via-fuchsia-500/10 to-fuchsia-500/15 px-4 py-3 text-[12px] font-bold uppercase tracking-wider text-fuchsia-200 shadow-[0_0_20px_rgba(217,70,239,0.10)] transition-all hover:from-fuchsia-500/25 hover:to-fuchsia-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+                {busy ? (
+                    <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {isPending ? 'Confirm in wallet…' : 'Entering the dojo…'}
+                    </>
+                ) : !isConnected ? (
+                    <>
+                        <Wallet className="h-4 w-4" />
+                        Connect & enter — {feeLabel}
+                    </>
+                ) : (
+                    <>
+                        <Sword className="h-4 w-4" />
+                        Enter Budokai #{currentBudokaiId} — {feeLabel}
+                    </>
+                )}
+            </button>
+            <p className="text-[10px] tracking-wider text-zinc-500">
+                Anonymous civilian — no NFT needed. Mint SubZERO above to also get
+                revivability + persistent honor between Budokais.
+            </p>
+            {error && (
+                <p className="text-[10px] text-rose-400 break-words">
+                    {error.message.slice(0, 200)}
+                </p>
+            )}
+        </div>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
 /* StepLadder — three-step path with smart Mint button + Discord              */
 /* -------------------------------------------------------------------------- */
 
@@ -223,15 +330,9 @@ function StepLadder({isConnected, onAfterMint}: {isConnected: boolean; onAfterMi
             <Step
                 index={2}
                 title="Enter the next Budokai"
-                subtitle="Free entry as Civilian. Win $ZERO."
+                subtitle="No mint required. Fight as anonymous civilian. Win $ZERO."
                 done={false}
-                locked={!hasMinted}
-                action={
-                    <div className="flex w-full items-center justify-center gap-2 rounded border border-zinc-800 bg-zinc-950 px-4 py-3 text-[11px] uppercase tracking-wider text-zinc-500">
-                        <Sword className="h-4 w-4" />
-                        {hasMinted ? 'Unlocked — refreshing...' : 'Unlocks after mint'}
-                    </div>
-                }
+                action={<AnonymousEntryAction />}
             />
 
             <Step
