@@ -30,11 +30,12 @@ export function BudokaiOnboarding({onAfterMint}: {onAfterMint?: () => void}) {
             <Hero />
             <div className="mx-auto max-w-3xl space-y-6 px-4 pb-16 pt-6 sm:px-6">
                 <LiveStrip />
-                <StepLadder isConnected={isConnected} onAfterMint={onAfterMint} />
-                {/* Self-hides when wallet has no NFTs from registered partner
-                    collections. Shown here above HowItWorks so partner-only
-                    holders (no AdrianZERO) immediately see their skin. */}
+                {/* PartnerSkinsSection self-hides for wallets without NFTs
+                    from registered partner collections. When it renders, it
+                    sits ABOVE the StepLadder so a Doodles/Pudgy holder sees
+                    their roster first — they can fight without minting. */}
                 <PartnerSkinsSection />
+                <StepLadder isConnected={isConnected} onAfterMint={onAfterMint} />
                 <HowItWorks />
             </div>
         </div>
@@ -303,8 +304,8 @@ function StepLadder({isConnected, onAfterMint}: {isConnected: boolean; onAfterMi
         <div className="space-y-3">
             <Step
                 index={1}
-                title="Mint your SubZERO"
-                subtitle="Free fighter, yours forever."
+                title="(Optional) Mint a SubZERO"
+                subtitle="Free upgrade — adds revivability + persistent honor between Budokais. Skip if you just want to fight today."
                 done={hasMinted}
                 action={
                     <button
@@ -334,8 +335,8 @@ function StepLadder({isConnected, onAfterMint}: {isConnected: boolean; onAfterMi
 
             <Step
                 index={2}
-                title="Enter the next Budokai"
-                subtitle="No mint required. Fight as anonymous civilian. Win $ZERO."
+                title="Enter the Budokai"
+                subtitle="Pay the fee in $ZERO. Fight as anonymous civilian (no NFT needed) or pick a partner skin above. Win $ZERO."
                 done={false}
                 action={<AnonymousEntryAction />}
             />
