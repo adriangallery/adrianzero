@@ -2,7 +2,7 @@ import {useEffect, useMemo, useState} from 'react';
 import {useAccount} from 'wagmi';
 import {Loader2, Sparkles, AlertTriangle, X, ChevronDown, ChevronRight} from 'lucide-react';
 import {usePartnerSkins} from '../hooks/usePartnerSkins';
-import {useEnterAsAnonymousCivilian} from '../hooks/useDojoActions';
+import {useEnterWithPartnerNft} from '../hooks/useDojoActions';
 import {createWalletSkinIntent, type PartnerSkin} from '../lib/budokaiApi';
 import {useCurrentBudokaiId, useBudokaiInfo} from '../hooks/useDojoContract';
 import {useBudokaiCounters} from '../hooks/useBudokaiCounters';
@@ -50,13 +50,13 @@ export function PartnerSkinsSection() {
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
     );
     const {
-        enterAnon,
+        enterPartner,
         isPending,
         isConfirming,
         isConfirmed,
         error: txError,
         reset,
-    } = useEnterAsAnonymousCivilian();
+    } = useEnterWithPartnerNft();
 
     const [confirmingSkin, setConfirmingSkin] = useState<PartnerSkin | null>(null);
     const [pickedSkin, setPickedSkin] = useState<PartnerSkin | null>(null);
@@ -143,6 +143,10 @@ export function PartnerSkinsSection() {
         if (!skin || !wallet) return;
         setPickedSkin(skin);
         try {
+            // Off-chain skin metadata for the Discord narrator (image URL +
+            // display name). The on-chain synthetic id is now stable per
+            // (contract, tokenId) so the watcher can map the CivilianEntered
+            // event to this NFT permanently.
             await createWalletSkinIntent({
                 wallet,
                 representation: {
@@ -154,10 +158,10 @@ export function PartnerSkinsSection() {
                 },
             });
         } catch (err) {
-            // Skin record is decorative — keep going so user can still enter.
+            // Intent record is decorative — keep going so the user can still enter.
             setIntentError(err instanceof Error ? err.message : String(err));
         }
-        enterAnon();
+        enterPartner(skin.contract as `0x${string}`, skin.tokenId);
     }
 
     return (
@@ -409,14 +413,15 @@ function ConfirmModal({
 
                     <div className="space-y-1.5 rounded border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-[11px]">
                         <Row label="Cost" value={feeLabel} accent />
-                        <Row label="Slots" value="1 civilian per wallet · final" />
-                        <Row label="Skin lock" value="Locked once tx confirms" />
+                        <Row label="Wallet slot" value="1 partner NFT per wallet" />
+                        <Row label="Identity" value="Persistent — KO + honor stick to this NFT" />
                     </div>
 
                     <p className="text-[10px] leading-relaxed text-zinc-500">
-                        You&apos;ll sign one transaction. Once it confirms, the
-                        skin is locked for this Budokai — you can&apos;t swap to
-                        a different NFT until next Budokai.
+                        You&apos;ll sign one transaction. The on-chain fighter
+                        is bound to this NFT forever — KO, senryoku and honor
+                        carry across every Budokai. Sell the NFT and the buyer
+                        inherits its dojo reputation.
                     </p>
 
                     <div className="flex gap-2 pt-1">

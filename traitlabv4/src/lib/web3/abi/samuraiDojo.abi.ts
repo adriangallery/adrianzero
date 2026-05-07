@@ -40,6 +40,49 @@ export const SAMURAI_DOJO_ABI = [
         stateMutability: 'view',
         type: 'function',
     },
+    // v11: enter with a partner NFT (Doodle/Pudgy/CTS/...). Mints (or
+    // reuses) a stable synthetic id for the (contract, tokenId) pair so
+    // KO/honor/SR persist across Budokais.
+    {
+        inputs: [
+            {name: 'partnerContract', type: 'address'},
+            {name: 'nftTokenId', type: 'uint256'},
+        ],
+        name: 'enterWithPartnerNft',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [
+            {name: 'partnerContract', type: 'address'},
+            {name: 'nftTokenId', type: 'uint256'},
+        ],
+        name: 'getSyntheticForPartner',
+        outputs: [{name: '', type: 'uint256'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [
+            {name: 'budokaiId', type: 'uint256'},
+            {name: 'syntheticId', type: 'uint256'},
+        ],
+        name: 'getEntryOwner',
+        outputs: [{name: '', type: 'address'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [
+            {name: 'budokaiId', type: 'uint256'},
+            {name: 'wallet', type: 'address'},
+        ],
+        name: 'getPartnersByWallet',
+        outputs: [{name: '', type: 'uint32'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
     {
         inputs: [{name: 'tokenId', type: 'uint256'}],
         name: 'reviveSamurai',

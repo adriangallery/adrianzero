@@ -52,6 +52,33 @@ export function useEnterAsAnonymousCivilian() {
 }
 
 /**
+ * v11: Enter with a partner NFT (Doodle / Pudgy / CTS / …) as cosmetic
+ * skin AND persistent fighter identity. The on-chain synthetic id is
+ * stable per `(partnerContract, nftTokenId)` — KO state, senryoku and
+ * honor accumulate against the NFT, surviving Budokais and surviving
+ * NFT transfers (the buyer inherits the dojo reputation).
+ *
+ * Pays the same entry fee in $ZERO. Per-Budokai NFT lock means the
+ * first wallet to claim a given NFT in a given Budokai owns its slot
+ * for that tournament.
+ */
+export function useEnterWithPartnerNft() {
+    const {writeContract, data: hash, isPending, error, reset} = useWriteContract();
+    const {isLoading: isConfirming, isSuccess: isConfirmed} = useWaitForTransactionReceipt({hash});
+
+    const enterPartner = (partnerContract: `0x${string}`, nftTokenId: string) => {
+        writeContract({
+            address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+            abi: SAMURAI_DOJO_ABI,
+            functionName: 'enterWithPartnerNft',
+            args: [partnerContract, BigInt(nftTokenId)],
+        });
+    };
+
+    return {enterPartner, isPending, isConfirming, isConfirmed, error, txHash: hash, reset};
+}
+
+/**
  * Enter multiple samurai in a single transaction (one signature).
  */
 export function useEnterBudokaiBatch() {
