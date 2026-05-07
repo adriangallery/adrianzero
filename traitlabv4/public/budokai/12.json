@@ -1,0 +1,21 @@
+{
+  "id": 12,
+  "pool": "0",
+  "entryCount": 1,
+  "resolveBlock": 0,
+  "resolveTx": "",
+  "matches": [],
+  "senryoku": {},
+  "champion": 0,
+  "runnerUp": 0,
+  "semifinalists": [
+    0,
+    0
+  ],
+  "quarterfinalists": [
+    0,
+    0,
+    0,
+    0
+  ]
+}
