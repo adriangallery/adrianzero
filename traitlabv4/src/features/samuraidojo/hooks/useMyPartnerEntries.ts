@@ -12,6 +12,11 @@ export interface MyPartnerEntry {
     skin: PartnerSkin;
 }
 
+export interface MyPartnerFighter extends MyPartnerEntry {
+    isKnockedOut: boolean;
+    senryoku: number;
+}
+
 /**
  * v11: For each partner NFT the wallet owns, ask the contract whether
  * it's the active fighter for the given Budokai. Returns only NFTs that
@@ -89,4 +94,91 @@ export function useMyPartnerEntries(
         }
         return out;
     }, [entryOwnerReads.data, synthetics, wallet]);
+}
+
+/**
+ * v11: For every partner NFT the wallet owns, resolve its persistent
+ * synthetic id and read on-chain KO state + senryoku. Returns one entry
+ * per registered partner NFT that has ever been entered in any Budokai
+ * (synthetic id > 0). KO state is global to the synthetic — it carries
+ * across Budokais until someone Senzu-revives the fighter.
+ *
+ * Used by KoSections to surface "Your Partner Fighters · KO'd" so the
+ * holder can revive their NFT identity for the next tournament.
+ */
+export function useMyPartnerFighters(
+    skins: PartnerSkin[],
+    wallet: string | undefined,
+): MyPartnerFighter[] {
+    const enabled = skins.length > 0 && !!wallet;
+
+    const syntheticReads = useReadContracts({
+        allowFailure: true,
+        contracts: enabled
+            ? skins.map((s) => ({
+                  address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                  abi: SAMURAI_DOJO_ABI,
+                  functionName: 'getSyntheticForPartner',
+                  args: [s.contract as `0x${string}`, BigInt(s.tokenId)],
+                  chainId: base.id,
+              }))
+            : [],
+        query: {enabled, refetchInterval: 30_000, refetchOnWindowFocus: true},
+    });
+
+    const synthetics = useMemo(() => {
+        const out: {skin: PartnerSkin; syntheticId: bigint}[] = [];
+        if (!syntheticReads.data) return out;
+        for (let i = 0; i < skins.length; i++) {
+            const r = syntheticReads.data[i];
+            if (r?.status === 'success' && r.result && (r.result as bigint) > 0n) {
+                out.push({skin: skins[i], syntheticId: r.result as bigint});
+            }
+        }
+        return out;
+    }, [syntheticReads.data, skins]);
+
+    // Batch isKnockedOut + getSenryoku for every minted synthetic.
+    const stateReads = useReadContracts({
+        allowFailure: true,
+        contracts:
+            enabled && synthetics.length > 0
+                ? synthetics.flatMap((s) => [
+                      {
+                          address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                          abi: SAMURAI_DOJO_ABI,
+                          functionName: 'isKnockedOut',
+                          args: [s.syntheticId],
+                          chainId: base.id,
+                      } as const,
+                      {
+                          address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+                          abi: SAMURAI_DOJO_ABI,
+                          functionName: 'getSenryoku',
+                          args: [s.syntheticId],
+                          chainId: base.id,
+                      } as const,
+                  ])
+                : [],
+        query: {enabled: enabled && synthetics.length > 0, refetchInterval: 30_000},
+    });
+
+    return useMemo<MyPartnerFighter[]>(() => {
+        if (!stateReads.data) return [];
+        const out: MyPartnerFighter[] = [];
+        for (let i = 0; i < synthetics.length; i++) {
+            const koRes = stateReads.data[i * 2];
+            const srRes = stateReads.data[i * 2 + 1];
+            const isKnockedOut = koRes?.status === 'success' ? Boolean(koRes.result) : false;
+            const senryoku =
+                srRes?.status === 'success' ? Number(srRes.result as number | bigint) : 0;
+            out.push({
+                syntheticId: Number(synthetics[i].syntheticId),
+                skin: synthetics[i].skin,
+                isKnockedOut,
+                senryoku,
+            });
+        }
+        return out;
+    }, [stateReads.data, synthetics]);
 }

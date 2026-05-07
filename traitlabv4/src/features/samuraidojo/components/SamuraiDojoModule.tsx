@@ -33,7 +33,7 @@ import {BudokaiOnboarding} from './BudokaiOnboarding';
 import {PartnerSkinsSection} from './PartnerSkinsSection';
 import {useEntrantSkins, type EntrantSkinOverride} from '../hooks/useEntrantSkins';
 import {usePartnerSkins} from '../hooks/usePartnerSkins';
-import {useMyPartnerEntries} from '../hooks/useMyPartnerEntries';
+import {useMyPartnerEntries, useMyPartnerFighters} from '../hooks/useMyPartnerEntries';
 
 type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 
@@ -162,9 +162,11 @@ export function SamuraiDojoModule() {
         ownedPartnerSkins,
         address,
     );
+    const myPartnerFighters = useMyPartnerFighters(ownedPartnerSkins, address);
     // Merge any locally-known partner skin URLs into the entrantSkins map so
     // cards/modal hit the partner image even when the off-chain intent POST
-    // hasn't landed yet (e.g. user entered via direct contract call).
+    // hasn't landed yet (e.g. user entered via direct contract call). Also
+    // merge KO'd partners so the KO grid renders the right artwork.
     const entrantSkins = useMemo(() => {
         const merged = new Map(baseEntrantSkins);
         for (const e of myPartnerEntries) {
@@ -175,11 +177,23 @@ export function SamuraiDojoModule() {
                 });
             }
         }
+        for (const f of myPartnerFighters) {
+            if (!merged.has(f.syntheticId) && f.skin.imageUrl) {
+                merged.set(f.syntheticId, {
+                    imageUrl: f.skin.imageUrl,
+                    name: f.skin.name,
+                });
+            }
+        }
         return merged;
-    }, [baseEntrantSkins, myPartnerEntries]);
+    }, [baseEntrantSkins, myPartnerEntries, myPartnerFighters]);
     const myPartnerEntryIds = useMemo(
         () => myPartnerEntries.map((e) => e.syntheticId),
         [myPartnerEntries],
+    );
+    const myPartnerKoIds = useMemo(
+        () => myPartnerFighters.filter((f) => f.isKnockedOut).map((f) => f.syntheticId),
+        [myPartnerFighters],
     );
 
     const myOwnedSet = useMemo(
@@ -412,7 +426,7 @@ export function SamuraiDojoModule() {
                     isResolved={budokaiInfo?.status === BUDOKAI_STATUS.Resolved}
                     isOpen={budokaiInfo?.status === BUDOKAI_STATUS.Open}
                     readyCount={mineReadyIds.length + Math.min(civilReadyIds.length, civilSlotsAvail)}
-                    koCount={mineKoIds.length + civilKoIds.length}
+                    koCount={mineKoIds.length + civilKoIds.length + myPartnerKoIds.length}
                     multiSelectMode={multiSelectMode}
                     onEnterAll={() => {
                         if (filter === 'mine') {
@@ -500,6 +514,7 @@ export function SamuraiDojoModule() {
                         mineIds={koMineIds}
                         communityIds={koCommunityIds}
                         civilKoIds={civilKoIds}
+                        partnerKoIds={myPartnerKoIds}
                         civilianPreviews={civilianPreviews}
                         samuraiOwnedSet={samuraiOwnedSet}
                         states={states}
@@ -1090,6 +1105,7 @@ function KoSections({
     mineIds,
     communityIds,
     civilKoIds,
+    partnerKoIds = [],
     civilianPreviews,
     samuraiOwnedSet,
     states,
@@ -1105,6 +1121,7 @@ function KoSections({
     mineIds: number[];
     communityIds: number[];
     civilKoIds: number[];
+    partnerKoIds?: number[];
     civilianPreviews: Map<number, number>;
     samuraiOwnedSet: Set<number>;
     states: Map<number, {senryoku: number; isKnockedOut: boolean; honor: number}>;
@@ -1117,7 +1134,12 @@ function KoSections({
     multiSelectKind: 'enter' | 'revive';
     selectedIds: Set<number>;
 }) {
-    if (mineIds.length === 0 && communityIds.length === 0 && civilKoIds.length === 0) {
+    if (
+        mineIds.length === 0 &&
+        communityIds.length === 0 &&
+        civilKoIds.length === 0 &&
+        partnerKoIds.length === 0
+    ) {
         return (
             <div className="flex h-40 items-center justify-center rounded border border-dashed border-zinc-800 text-[11px] text-zinc-600">
                 No knocked-out warriors. The dojo rests.
@@ -1150,6 +1172,20 @@ function KoSections({
                     skinOverrides={skinOverrides}
                 >
                     <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} roster={roster} />
+                </SectionBlock>
+            )}
+
+            {partnerKoIds.length > 0 && (
+                <SectionBlock
+                    title="Your Partner Fighters"
+                    kanji="外部"
+                    sub="Partner-NFT fighters KO'd. Revive (SR × 10 ZERO) — honor + history travel with the NFT."
+                    color="text-cyan-400"
+                    count={partnerKoIds.length}
+                    previewIds={partnerKoIds}
+                    skinOverrides={skinOverrides}
+                >
+                    <CardGrid ids={partnerKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} roster={roster} />
                 </SectionBlock>
             )}
 
