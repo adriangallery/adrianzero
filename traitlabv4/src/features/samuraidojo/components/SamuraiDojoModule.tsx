@@ -2,7 +2,7 @@ import {useEffect, useMemo, useState} from 'react';
 import {useAccount, useReadContract} from 'wagmi';
 import {base} from 'wagmi/chains';
 import {useConnectModal} from '@rainbow-me/rainbowkit';
-import {Loader2, Sword, Eye, Wallet} from 'lucide-react';
+import {Loader2, Sword, Eye, Wallet, ChevronDown, ChevronRight} from 'lucide-react';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {SAMURAI_DOJO_ABI, BUDOKAI_STATUS} from '@/lib/web3/abi';
 import {useZeroBalance} from '@/features/zeromovies/hooks/useZeroBalance';
@@ -933,6 +933,8 @@ function MineSections({
                     sub="Committed. Awaiting the bracket."
                     color="text-yellow-400"
                     count={allInIds.length}
+                    previewIds={allInIds}
+                    skinOverrides={skinOverrides}
                 >
                     <CardGrid ids={allInIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                 </SectionBlock>
@@ -953,12 +955,14 @@ function MineSections({
                             sub="Available. Pay the fee and lock them in."
                             color="text-zinc-300"
                             count={samuraiReadyIds.length}
+                            previewIds={samuraiReadyIds}
+                            skinOverrides={skinOverrides}
                         >
                             <CardGrid ids={samuraiReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                         </SectionBlock>
                     )}
                     {samuraiKoIds.length > 0 && (
-                        <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu to re-enter." color="text-red-400" count={samuraiKoIds.length}>
+                        <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu to re-enter." color="text-red-400" count={samuraiKoIds.length} previewIds={samuraiKoIds} skinOverrides={skinOverrides}>
                             <CardGrid ids={samuraiKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                         </SectionBlock>
                     )}
@@ -998,12 +1002,14 @@ function MineSections({
                             sub="Pay the fee, derive SR 1–15, fight the odds."
                             color="text-fuchsia-300"
                             count={civilReadyIds.length}
+                            previewIds={civilReadyIds}
+                            skinOverrides={skinOverrides}
                         >
                             <CardGrid ids={civilReadyIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                         </SectionBlock>
                     )}
                     {civilKoIds.length > 0 && (
-                        <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu (cost = SR × 10 ZERO)." color="text-red-400" count={civilKoIds.length}>
+                        <SectionBlock title="Knocked Out" kanji="気絶" sub="Revive with Senzu (cost = SR × 10 ZERO)." color="text-red-400" count={civilKoIds.length} previewIds={civilKoIds} skinOverrides={skinOverrides}>
                             <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                         </SectionBlock>
                     )}
@@ -1068,6 +1074,8 @@ function KoSections({
                 color="text-red-400"
                 count={mineIds.length}
                 emptyMsg="None of yours are down — for now."
+                previewIds={mineIds}
+                skinOverrides={skinOverrides}
             >
                 <CardGrid ids={mineIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
             </SectionBlock>
@@ -1079,6 +1087,8 @@ function KoSections({
                     sub="Civilian KO'd. Revive cheap (SR × 10 ZERO) for the next Budokai."
                     color="text-fuchsia-400"
                     count={civilKoIds.length}
+                    previewIds={civilKoIds}
+                    skinOverrides={skinOverrides}
                 >
                     <CardGrid ids={civilKoIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
                 </SectionBlock>
@@ -1091,6 +1101,9 @@ function KoSections({
                 color="text-zinc-400"
                 count={communityIds.length}
                 emptyMsg="No community KO'd tokens."
+                previewIds={communityIds}
+                skinOverrides={skinOverrides}
+                collapseThreshold={9}
             >
                 <CardGrid ids={communityIds} states={states} enteredSet={enteredSet} myOwnedSet={myOwnedSet} multiSelectMode={multiSelectMode} multiSelectKind={multiSelectKind} selectedIds={selectedIds} onCardClick={onCardClick} samuraiOwnedSet={samuraiOwnedSet} civilianPreviews={civilianPreviews} skinOverrides={skinOverrides} />
             </SectionBlock>
@@ -1098,6 +1111,15 @@ function KoSections({
     );
 }
 
+/**
+ * SectionBlock — collapsible header + grid wrapper. Auto-collapses
+ * when `count > collapseThreshold` (12 by default = ~1 row on lg).
+ * When collapsed, renders 5 thumbnail previews next to the header so
+ * the user can still spot whether their roster is in there before
+ * deciding to expand. Preview thumbnails honor `skinOverrides` so a
+ * civilian entered with a partner skin (Doodle, Pudgy, …) shows the
+ * NFT artwork instead of the blank AdrianLAB silhouette.
+ */
 function SectionBlock({
     title,
     kanji,
@@ -1106,6 +1128,9 @@ function SectionBlock({
     count,
     emptyMsg,
     children,
+    previewIds = [],
+    skinOverrides,
+    collapseThreshold = 12,
 }: {
     title: string;
     kanji: string;
@@ -1114,23 +1139,75 @@ function SectionBlock({
     count: number;
     emptyMsg?: string;
     children: React.ReactNode;
+    previewIds?: number[];
+    skinOverrides?: Map<number, EntrantSkinOverride>;
+    collapseThreshold?: number;
 }) {
+    const [override, setOverride] = useState<boolean | null>(null);
+    const defaultExpanded = count <= collapseThreshold;
+    const expanded = override ?? defaultExpanded;
+
     return (
         <div>
-            <div className="mb-3 flex items-baseline gap-3">
-                <span className={`text-[11px] font-bold uppercase tracking-[0.3em] ${color}`}>{title}</span>
+            <button
+                type="button"
+                onClick={() => setOverride(!expanded)}
+                disabled={count === 0}
+                className="mb-2 flex w-full items-center gap-3 text-left transition-opacity hover:opacity-80 disabled:cursor-default disabled:hover:opacity-100"
+            >
+                {count > 0 ? (
+                    expanded ? (
+                        <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-zinc-500" />
+                    ) : (
+                        <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-zinc-500" />
+                    )
+                ) : (
+                    <span className="h-3.5 w-3.5 flex-shrink-0" />
+                )}
+                <span className={`text-[11px] font-bold uppercase tracking-[0.3em] ${color}`}>
+                    {title}
+                </span>
                 <span className="font-mono text-[10px] text-zinc-600">{kanji}</span>
                 <span className="text-[9px] tracking-wider text-zinc-600">{sub}</span>
                 <div className="h-px flex-1 bg-zinc-900" />
+                {!expanded && previewIds.length > 0 && (
+                    <span className="flex items-center gap-1">
+                        {previewIds.slice(0, 5).map((id) => {
+                            const override = skinOverrides?.get(id);
+                            const src =
+                                override?.imageUrl ??
+                                `https://adrianlab.vercel.app/api/render/${id}.png`;
+                            return (
+                                <img
+                                    key={id}
+                                    src={src}
+                                    alt=""
+                                    className="h-6 w-6 rounded border border-zinc-800 object-cover"
+                                    style={
+                                        override
+                                            ? undefined
+                                            : {imageRendering: 'pixelated'}
+                                    }
+                                    loading="lazy"
+                                />
+                            );
+                        })}
+                        {count > previewIds.length && (
+                            <span className="ml-1 font-mono text-[9px] text-zinc-500">
+                                +{count - previewIds.length}
+                            </span>
+                        )}
+                    </span>
+                )}
                 <span className="font-mono text-[9px] text-zinc-500">({count})</span>
-            </div>
+            </button>
             {count === 0 && emptyMsg ? (
                 <div className="flex h-20 items-center justify-center rounded border border-dashed border-zinc-900 text-[10px] text-zinc-700">
                     {emptyMsg}
                 </div>
-            ) : (
+            ) : expanded ? (
                 children
-            )}
+            ) : null}
         </div>
     );
 }
