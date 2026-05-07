@@ -32,6 +32,8 @@ import {MoviePrizeBanner} from './MoviePrizeBanner';
 import {BudokaiOnboarding} from './BudokaiOnboarding';
 import {PartnerSkinsSection} from './PartnerSkinsSection';
 import {useEntrantSkins, type EntrantSkinOverride} from '../hooks/useEntrantSkins';
+import {usePartnerSkins} from '../hooks/usePartnerSkins';
+import {useMyPartnerEntries} from '../hooks/useMyPartnerEntries';
 
 type FilterMode = 'entrants' | 'mine' | 'ko' | 'hall' | 'all';
 
@@ -145,12 +147,45 @@ export function SamuraiDojoModule() {
     // The on-chain entries have no AdrianLAB render — without this map they
     // show up as blank silhouettes. We poll the public skin map every 30s
     // for the active Budokai.
-    const entrantSkins = useEntrantSkins(
+    const baseEntrantSkins = useEntrantSkins(
         currentBudokaiId !== null ? BigInt(currentBudokaiId) : null,
         typeof slowPoll === 'number' ? slowPoll : 30_000,
     );
 
-    const myOwnedSet = useMemo(() => new Set([...samuraiOwnedIds, ...civilianOwnedIds]), [samuraiOwnedIds, civilianOwnedIds]);
+    // v11: discover the user's partner-NFT fighters in the active Budokai.
+    // The synthetic id is stable per (contract, tokenId), and getEntryOwner
+    // tells us whether the connected wallet locked that fighter for this
+    // tournament. Honor + KO + senryoku follow the synthetic across Budokais.
+    const {skins: ownedPartnerSkins} = usePartnerSkins(address?.toLowerCase());
+    const myPartnerEntries = useMyPartnerEntries(
+        currentBudokaiId,
+        ownedPartnerSkins,
+        address,
+    );
+    // Merge any locally-known partner skin URLs into the entrantSkins map so
+    // cards/modal hit the partner image even when the off-chain intent POST
+    // hasn't landed yet (e.g. user entered via direct contract call).
+    const entrantSkins = useMemo(() => {
+        const merged = new Map(baseEntrantSkins);
+        for (const e of myPartnerEntries) {
+            if (!merged.has(e.syntheticId) && e.skin.imageUrl) {
+                merged.set(e.syntheticId, {
+                    imageUrl: e.skin.imageUrl,
+                    name: e.skin.name,
+                });
+            }
+        }
+        return merged;
+    }, [baseEntrantSkins, myPartnerEntries]);
+    const myPartnerEntryIds = useMemo(
+        () => myPartnerEntries.map((e) => e.syntheticId),
+        [myPartnerEntries],
+    );
+
+    const myOwnedSet = useMemo(
+        () => new Set([...samuraiOwnedIds, ...civilianOwnedIds, ...myPartnerEntryIds]),
+        [samuraiOwnedIds, civilianOwnedIds, myPartnerEntryIds],
+    );
     const samuraiOwnedSet = useMemo(() => new Set(samuraiOwnedIds), [samuraiOwnedIds]);
     const civilianOwnedSet = useMemo(() => new Set(civilianOwnedIds), [civilianOwnedIds]);
     const enteredSet = useMemo(() => new Set(entries), [entries]);
@@ -453,11 +488,12 @@ export function SamuraiDojoModule() {
                         myOwnedSet={myOwnedSet}
                         skinOverrides={entrantSkins}
                         roster={roster}
+                        partnerEntryIds={myPartnerEntryIds}
                         multiSelectMode={multiSelectMode}
                         multiSelectKind={multiSelectKind}
                         selectedIds={selectedIds}
                         onCardClick={handleCardClick}
-                        ownedCount={myTokenIds.length + myCivilianIds.length}
+                        ownedCount={myTokenIds.length + myCivilianIds.length + myPartnerEntryIds.length}
                     />
                 ) : filter === 'ko' ? (
                     <KoSections
@@ -892,6 +928,7 @@ function MineSections({
     myOwnedSet,
     skinOverrides,
     roster,
+    partnerEntryIds = [],
     multiSelectMode,
     multiSelectKind,
     selectedIds,
@@ -913,13 +950,14 @@ function MineSections({
     myOwnedSet: Set<number>;
     skinOverrides?: Map<number, EntrantSkinOverride>;
     roster?: Set<number>;
+    partnerEntryIds?: number[];
     multiSelectMode: boolean;
     multiSelectKind: 'enter' | 'revive';
     selectedIds: Set<number>;
     onCardClick: (tokenId: number) => void;
     ownedCount: number;
 }) {
-    if (ownedCount === 0) {
+    if (ownedCount === 0 && partnerEntryIds.length === 0) {
         return (
             <div className="flex h-40 items-center justify-center rounded border border-dashed border-zinc-800 text-[11px] text-zinc-600">
                 You don&apos;t own any AdrianZERO.
@@ -933,7 +971,14 @@ function MineSections({
 
     // Combined "In the Dojo" — once a token is committed, the samurai/civilian distinction matters
     // less than "they're locked into the bracket". Card border still shows the type at a glance.
-    const allInIds = [...samuraiInIds, ...civilInIds].sort((a, b) => a - b);
+    // v11: include partner-NFT entries the user owns this Budokai (synthetic
+    // ids ≥ 1_000_001 with entryOwner === wallet) alongside samurai/civilian
+    // commits. They show under "In the Dojo" with the partner skin image.
+    const allInIds = [
+        ...samuraiInIds,
+        ...civilInIds,
+        ...partnerEntryIds,
+    ].sort((a, b) => a - b);
 
     return (
         <div className="space-y-8">
