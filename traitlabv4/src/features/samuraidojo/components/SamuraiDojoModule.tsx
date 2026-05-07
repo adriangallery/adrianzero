@@ -1015,10 +1015,10 @@ function MineSections({
             {/* SAMURAI section — only Ready + KO, since In the Dojo is shared above. */}
             {hasSamurai && (samuraiReadyIds.length + samuraiKoIds.length > 0) && (
                 <div className="space-y-6">
-                    <div className="flex items-baseline gap-3 border-b border-zinc-900 pb-1">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-yellow-500">Samurai</span>
-                        <span className="font-mono text-[9px] text-zinc-700">侍</span>
-                        <span className="text-[9px] tracking-wider text-zinc-700">Pre-loaded SR. Trained warriors.</span>
+                    <div className="flex items-baseline gap-3 border-b-2 border-yellow-900/40 pb-2">
+                        <span className="text-base md:text-lg font-bold uppercase tracking-[0.3em] text-yellow-500">Samurai</span>
+                        <span className="font-mono text-sm text-yellow-700/80">侍</span>
+                        <span className="text-[10px] tracking-wider text-zinc-500">Pre-loaded SR. Trained warriors.</span>
                     </div>
                     {samuraiReadyIds.length > 0 && (
                         <SectionBlock
@@ -1044,10 +1044,10 @@ function MineSections({
             {/* CIVILIAN section — only Ready + KO + warnings, since In the Dojo is shared above. */}
             {hasCivilians && (civilReadyIds.length + civilKoIds.length > 0) && (
                 <div className="space-y-6">
-                    <div className="flex flex-wrap items-baseline gap-3 border-b border-fuchsia-900/40 pb-1">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-fuchsia-400">Civilian</span>
-                        <span className="font-mono text-[9px] text-fuchsia-700">民</span>
-                        <span className="text-[9px] tracking-wider text-fuchsia-300/60">Regular AdrianZERO. Derived SR 1–15. Underdog mode. 1 per wallet.</span>
+                    <div className="flex flex-wrap items-baseline gap-3 border-b-2 border-fuchsia-900/40 pb-2">
+                        <span className="text-base md:text-lg font-bold uppercase tracking-[0.3em] text-fuchsia-400">Civilian</span>
+                        <span className="font-mono text-sm text-fuchsia-700">民</span>
+                        <span className="text-[10px] tracking-wider text-fuchsia-300/60">Regular AdrianZERO. Derived SR 1–15. Underdog mode. 1 per wallet.</span>
                         <div className="ml-auto rounded border border-fuchsia-500/40 bg-fuchsia-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-fuchsia-300">
                             {civilSlotsAvail > 0 ? 'civilian slot open' : 'civilian slot used'}
                         </div>

@@ -166,12 +166,12 @@ export function PartnerSkinsSection() {
 
     return (
         <div className="space-y-3">
-            <div className="flex flex-wrap items-baseline gap-3 border-b border-cyan-900/40 pb-1">
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-cyan-400">
+            <div className="flex flex-wrap items-baseline gap-3 border-b-2 border-cyan-900/40 pb-2">
+                <span className="text-base md:text-lg font-bold uppercase tracking-[0.3em] text-cyan-400">
                     Partner Skins
                 </span>
-                <span className="font-mono text-[9px] text-cyan-700">外部</span>
-                <span className="text-[9px] tracking-wider text-cyan-300/60">
+                <span className="font-mono text-sm text-cyan-700">外部</span>
+                <span className="text-[10px] tracking-wider text-cyan-300/60">
                     External NFTs you own. Use as cosmetic skin → enter as
                     anonymous civilian.
                 </span>
