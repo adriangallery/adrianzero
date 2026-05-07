@@ -1,6 +1,6 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useAccount} from 'wagmi';
-import {Loader2, Sparkles, AlertTriangle, X} from 'lucide-react';
+import {Loader2, Sparkles, AlertTriangle, X, ChevronDown, ChevronRight} from 'lucide-react';
 import {usePartnerSkins} from '../hooks/usePartnerSkins';
 import {useEnterAsAnonymousCivilian} from '../hooks/useDojoActions';
 import {createWalletSkinIntent, type PartnerSkin} from '../lib/budokaiApi';
@@ -61,6 +61,35 @@ export function PartnerSkinsSection() {
     const [confirmingSkin, setConfirmingSkin] = useState<PartnerSkin | null>(null);
     const [pickedSkin, setPickedSkin] = useState<PartnerSkin | null>(null);
     const [intentError, setIntentError] = useState<string | null>(null);
+
+    // Group skins by collection so a whale with 100 Doodles + 50 Pudgy
+    // sees two tidy headers instead of 150 cards landing all at once.
+    // Sorted: largest collection first (most likely the user's "main").
+    const groups = useMemo(() => {
+        const map = new Map<string, PartnerSkin[]>();
+        for (const skin of skins) {
+            const key = skin.collectionName ?? 'Other';
+            const arr = map.get(key);
+            if (arr) arr.push(skin);
+            else map.set(key, [skin]);
+        }
+        return Array.from(map.entries()).sort((a, b) => b[1].length - a[1].length);
+    }, [skins]);
+
+    // Per-collection expand/collapse override. `undefined` = default
+    // (auto-collapse when > COLLAPSE_THRESHOLD). User clicks the header
+    // to flip the override.
+    const COLLAPSE_THRESHOLD = 12;
+    const [expandedOverride, setExpandedOverride] = useState<Record<string, boolean>>({});
+    function isExpanded(name: string, count: number): boolean {
+        return expandedOverride[name] ?? count <= COLLAPSE_THRESHOLD;
+    }
+    function toggleGroup(name: string, count: number) {
+        setExpandedOverride((prev) => ({
+            ...prev,
+            [name]: !isExpanded(name, count),
+        }));
+    }
 
     // When a tx confirms, drop the modal so the success state is visible.
     useEffect(() => {
@@ -163,64 +192,111 @@ export function PartnerSkinsSection() {
                 </div>
             )}
 
-            <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-5 sm:gap-2 md:grid-cols-7 lg:grid-cols-9">
-                {skins.map((skin) => {
-                    const id = `${skin.contract}-${skin.tokenId}`;
-                    const isPicked =
-                        pickedSkin?.contract === skin.contract &&
-                        pickedSkin?.tokenId === skin.tokenId;
-                    const disabled = !budokaiOpen || busy || alreadyEntered;
-                    const cardBorder = isPicked
-                        ? 'border-2 border-cyan-400 shadow-[0_0_16px_rgba(34,211,238,0.30)]'
-                        : 'border-2 border-dashed border-cyan-700/60';
+            <div className="space-y-3">
+                {groups.map(([collectionName, items]) => {
+                    const expanded = isExpanded(collectionName, items.length);
+                    const previewItems = items.slice(0, 5);
                     return (
-                        <button
-                            key={id}
-                            onClick={() => openConfirm(skin)}
-                            disabled={disabled}
-                            className={`group relative flex min-w-0 flex-col overflow-hidden rounded text-left transition-all duration-300 hover:scale-105 hover:z-10 disabled:cursor-not-allowed disabled:opacity-50 ${cardBorder}`}
+                        <div
+                            key={collectionName}
+                            className="rounded border border-cyan-900/40 bg-zinc-950/40 overflow-hidden"
                         >
-                            <div className="relative aspect-square w-full overflow-hidden rounded-t bg-zinc-900">
-                                {skin.imageUrl ? (
-                                    <img
-                                        src={skin.imageUrl}
-                                        alt={skin.name}
-                                        className="h-full w-full object-cover"
-                                        loading="lazy"
-                                    />
+                            <button
+                                type="button"
+                                onClick={() => toggleGroup(collectionName, items.length)}
+                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-cyan-950/30"
+                            >
+                                {expanded ? (
+                                    <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-cyan-400" />
                                 ) : (
-                                    <div className="grid h-full place-items-center bg-zinc-900 text-[8px] text-zinc-600">
-                                        no img
+                                    <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-cyan-400" />
+                                )}
+                                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyan-300">
+                                    {collectionName}
+                                </span>
+                                <span className="rounded border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-cyan-300">
+                                    {items.length} owned
+                                </span>
+                                {!expanded && (
+                                    <div className="ml-auto flex items-center gap-1.5">
+                                        {previewItems.map((p) =>
+                                            p.imageUrl ? (
+                                                <img
+                                                    key={`${p.contract}-${p.tokenId}`}
+                                                    src={p.imageUrl}
+                                                    alt=""
+                                                    className="h-6 w-6 rounded border border-cyan-900/40 object-cover"
+                                                    loading="lazy"
+                                                />
+                                            ) : null,
+                                        )}
+                                        {items.length > previewItems.length && (
+                                            <span className="text-[9px] tracking-wider text-cyan-400/70">
+                                                +{items.length - previewItems.length}
+                                            </span>
+                                        )}
+                                        <span className="ml-1 text-[9px] uppercase tracking-wider text-cyan-400/70">
+                                            click to expand
+                                        </span>
                                     </div>
                                 )}
-
-                                <div className="absolute top-1 left-1 rounded border border-cyan-500/40 bg-black/70 px-1.5 py-0.5 backdrop-blur-sm">
-                                    <span className="text-[7px] font-mono font-bold uppercase tracking-wider text-cyan-400">
-                                        {skin.collectionName ?? 'NFT'}
-                                    </span>
+                            </button>
+                            {expanded && (
+                                <div className="grid grid-cols-4 gap-1.5 border-t border-cyan-900/40 bg-zinc-950/60 p-2 sm:grid-cols-5 sm:gap-2 md:grid-cols-7 lg:grid-cols-9">
+                                    {items.map((skin) => {
+                                        const id = `${skin.contract}-${skin.tokenId}`;
+                                        const isPicked =
+                                            pickedSkin?.contract === skin.contract &&
+                                            pickedSkin?.tokenId === skin.tokenId;
+                                        const disabled = !budokaiOpen || busy || alreadyEntered;
+                                        const cardBorder = isPicked
+                                            ? 'border-2 border-cyan-400 shadow-[0_0_16px_rgba(34,211,238,0.30)]'
+                                            : 'border-2 border-dashed border-cyan-700/60';
+                                        return (
+                                            <button
+                                                key={id}
+                                                onClick={() => openConfirm(skin)}
+                                                disabled={disabled}
+                                                className={`group relative flex min-w-0 flex-col overflow-hidden rounded text-left transition-all duration-300 hover:scale-105 hover:z-10 disabled:cursor-not-allowed disabled:opacity-50 ${cardBorder}`}
+                                            >
+                                                <div className="relative aspect-square w-full overflow-hidden rounded-t bg-zinc-900">
+                                                    {skin.imageUrl ? (
+                                                        <img
+                                                            src={skin.imageUrl}
+                                                            alt={skin.name}
+                                                            className="h-full w-full object-cover"
+                                                            loading="lazy"
+                                                        />
+                                                    ) : (
+                                                        <div className="grid h-full place-items-center bg-zinc-900 text-[8px] text-zinc-600">
+                                                            no img
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute top-1 right-1 rounded bg-cyan-500 px-1.5 py-0.5 text-[7px] font-bold uppercase text-black">
+                                                        SKIN
+                                                    </div>
+                                                    {isPicked && busy && (
+                                                        <div className="absolute inset-0 grid place-items-center bg-black/60">
+                                                            <Loader2 className="h-5 w-5 animate-spin text-cyan-300" />
+                                                        </div>
+                                                    )}
+                                                    {isPicked && isConfirmed && (
+                                                        <div className="absolute inset-0 grid place-items-center bg-emerald-500/20">
+                                                            <Sparkles className="h-6 w-6 text-emerald-300" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="px-1 py-1.5">
+                                                    <p className="truncate text-[9px] font-bold text-cyan-300 transition-colors group-hover:text-white">
+                                                        {skin.name}
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
-
-                                <div className="absolute top-1 right-1 rounded bg-cyan-500 px-1.5 py-0.5 text-[7px] font-bold uppercase text-black">
-                                    SKIN
-                                </div>
-
-                                {isPicked && busy && (
-                                    <div className="absolute inset-0 grid place-items-center bg-black/60">
-                                        <Loader2 className="h-5 w-5 animate-spin text-cyan-300" />
-                                    </div>
-                                )}
-                                {isPicked && isConfirmed && (
-                                    <div className="absolute inset-0 grid place-items-center bg-emerald-500/20">
-                                        <Sparkles className="h-6 w-6 text-emerald-300" />
-                                    </div>
-                                )}
-                            </div>
-                            <div className="px-1 py-1.5">
-                                <p className="truncate text-[9px] font-bold text-cyan-300 transition-colors group-hover:text-white">
-                                    {skin.name}
-                                </p>
-                            </div>
-                        </button>
+                            )}
+                        </div>
                     );
                 })}
             </div>
