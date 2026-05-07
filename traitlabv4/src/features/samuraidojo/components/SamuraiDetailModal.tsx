@@ -24,6 +24,7 @@ interface SamuraiDetailModalProps {
     isMine: boolean;
     budokaiInfo: BudokaiInfo | null;
     zeroBalance: number;
+    skinOverride?: {imageUrl: string; name: string} | null; // v10: cosmetic partner-NFT skin (Doodle/Pudgy/etc.) for synthetic civilians (≥ 1_000_001) — render the partner image + name instead of AdrianLAB
     open: boolean;
     onClose: () => void;
     onActionSuccess: () => void;
@@ -70,6 +71,7 @@ export function SamuraiDetailModal({
     isMine,
     budokaiInfo,
     zeroBalance,
+    skinOverride = null,
     open,
     onClose,
     onActionSuccess,
@@ -94,12 +96,16 @@ export function SamuraiDetailModal({
     const {enter, isPending: isEntering, isConfirming: isEnterConfirming, isConfirmed: isEnterConfirmed, error: enterError, reset: resetEnter} = useEnterBudokai();
     const {revive, isPending: isReviving, isConfirming: isReviveConfirming, isConfirmed: isReviveConfirmed, error: reviveError, reset: resetRevive} = useReviveSamurai();
 
-    // Load metadata when modal opens
+    // Load metadata when modal opens — skipped for synthetic civilians
+    // (≥ 1_000_001) and partner-skinned entries because AdrianLAB has no
+    // metadata for those tokenIds, the fetch would just 404.
     useEffect(() => {
         if (!open || !tokenId) return;
         setMeta(null);
+        if (skinOverride) return;
+        if (tokenId >= 1_000_001) return;
         fetchSamuraiMeta(tokenId).then(setMeta);
-    }, [open, tokenId]);
+    }, [open, tokenId, skinOverride]);
 
     // Fire success callback
     useEffect(() => {
@@ -175,10 +181,10 @@ export function SamuraiDetailModal({
                     {/* Image area — capped at ~40vh so the action panel below always stays in view. */}
                     <div className="relative shrink-0 max-h-[40vh] overflow-hidden">
                         <img
-                            src={getSamuraiImageUrl(tokenId)}
-                            alt={`SamuraiZERO #${tokenId}`}
-                            className={`mx-auto h-full max-h-[40vh] w-auto object-contain ${isKnockedOut ? 'opacity-50 saturate-0' : ''}`}
-                            style={{imageRendering: 'pixelated'}}
+                            src={skinOverride?.imageUrl ?? getSamuraiImageUrl(tokenId)}
+                            alt={skinOverride?.name ?? `SamuraiZERO #${tokenId}`}
+                            className={`mx-auto h-full max-h-[40vh] w-auto ${skinOverride ? 'object-cover' : 'object-contain'} ${isKnockedOut ? 'opacity-50 saturate-0' : ''}`}
+                            style={skinOverride ? undefined : {imageRendering: 'pixelated'}}
                         />
 
                         <Dialog.Close className="absolute right-3 top-3 rounded-full bg-black/60 p-1.5 text-zinc-400 backdrop-blur hover:text-white">
@@ -202,13 +208,18 @@ export function SamuraiDetailModal({
                     <div className="flex-1 space-y-4 overflow-y-auto p-5">
                         <div>
                             <h2 className="text-xl font-bold text-white">
-                                {/* Always prefer the AdrianLAB metadata name — civilians have official
-                                    names too (e.g. #148 "Adrian"). Fall back to the generic format
-                                    only when metadata is missing/loading. */}
-                                {meta?.name ?? (isSamurai ? `SamuraiZERO #${tokenId}` : `AdrianZERO #${tokenId}`)}
+                                {/* Skin override wins (v10 partner skin → show NFT name).
+                                    Otherwise prefer AdrianLAB metadata name — civilians have
+                                    official names too (e.g. #148 "Adrian"). Fall back to the
+                                    generic format only when metadata is missing/loading. */}
+                                {skinOverride?.name ?? meta?.name ?? (isSamurai ? `SamuraiZERO #${tokenId}` : `AdrianZERO #${tokenId}`)}
                             </h2>
                             <p className="mt-0.5 text-[10px] uppercase tracking-wider">
-                                {isSamurai ? (
+                                {skinOverride ? (
+                                    <span className="text-cyan-400">
+                                        Partner skin · 外部 · civilian #{tokenId}
+                                    </span>
+                                ) : isSamurai ? (
                                     <span className="text-zinc-500">{meta?.tier ?? '—'}</span>
                                 ) : (
                                     <span className="text-fuchsia-400">Civilian · 民 · derived SR 1–15</span>
@@ -244,11 +255,21 @@ export function SamuraiDetailModal({
                             )
                         )}
 
-                        {!isMine && (
+                        {!isMine && !skinOverride && (
                             <div className="rounded border border-zinc-700 bg-zinc-900 p-3 text-[10px] text-zinc-400">
                                 {isSamurai
                                     ? "You don't own this samurai. Buy it on OpenSea to enter it in the next Budokai."
                                     : "You don't own this AdrianZERO. Civilians can be bought on OpenSea — any AdrianZERO can fight."}
+                            </div>
+                        )}
+                        {skinOverride && (
+                            <div className="rounded border border-cyan-700/40 bg-cyan-950/20 p-3 text-[10px] text-cyan-200">
+                                <p className="font-bold uppercase tracking-wider text-cyan-300">Partner skin · 外部</p>
+                                <p className="mt-1 text-cyan-200/80">
+                                    Anonymous civilian entered with <strong>{skinOverride.name}</strong> as
+                                    cosmetic skin. The on-chain entry is the synthetic AdrianZERO #{tokenId},
+                                    derived senryoku 1–15. Skin shown across every wired Discord broadcast.
+                                </p>
                             </div>
                         )}
 

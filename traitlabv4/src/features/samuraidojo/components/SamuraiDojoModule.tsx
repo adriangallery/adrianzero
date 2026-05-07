@@ -651,6 +651,7 @@ export function SamuraiDojoModule() {
                 isMine={selectedTokenId ? myOwnedSet.has(selectedTokenId) : false}
                 budokaiInfo={budokaiInfo}
                 zeroBalance={zeroBalance}
+                skinOverride={selectedTokenId ? entrantSkins.get(selectedTokenId) ?? null : null}
                 open={isDetailOpen}
                 onClose={closeDetail}
                 onActionSuccess={handleRefresh}
