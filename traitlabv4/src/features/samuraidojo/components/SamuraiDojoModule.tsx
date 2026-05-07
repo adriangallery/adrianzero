@@ -799,20 +799,40 @@ function HeroBanner() {
             </div>
         );
     }
+    // Same hero image as the no-NFT onboarding view, with the BUDOKAI
+    // headline + tagline overlaid so ZERO holders also see the elevator
+    // pitch above the dojo. Image is dimmed to 70% so the text reads
+    // clearly on top.
     return (
         <div className="relative w-full overflow-hidden bg-black">
             <div className="mx-auto max-w-5xl">
                 <img
                     src="/images/budokai-hero.jpg"
                     alt="Budokai"
-                    className="block h-auto w-full"
+                    className="block h-auto w-full opacity-70"
                     style={{imageRendering: 'pixelated'}}
                     loading="eager"
                     fetchPriority="high"
                     onError={() => setFailed(true)}
                 />
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-black" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-black" />
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center px-4">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-fuchsia-500 sm:text-xs">
+                        On-chain tournament
+                    </p>
+                    <h1 className="mt-2 text-4xl font-black tracking-wider text-yellow-400 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-6xl md:text-7xl">
+                        BUDOKAI
+                    </h1>
+                    <p className="mt-3 text-sm font-bold tracking-wider text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] sm:text-base">
+                        Discord Rumble. On-chain.
+                    </p>
+                    <p className="mt-1 text-[11px] tracking-wider text-zinc-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] sm:text-xs">
+                        Last samurai standing wins the pot in $ZERO.
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }
