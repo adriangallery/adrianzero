@@ -31,6 +31,7 @@ import {PrizeShowcase} from './PrizeShowcase';
 import {MoviePrizeBanner} from './MoviePrizeBanner';
 import {BudokaiOnboarding} from './BudokaiOnboarding';
 import {PartnerSkinsSection} from './PartnerSkinsSection';
+import {SponsorBanner} from './SponsorBanner';
 import {useEntrantSkins, type EntrantSkinOverride} from '../hooks/useEntrantSkins';
 import {usePartnerSkins} from '../hooks/usePartnerSkins';
 import {useMyPartnerEntries, useMyPartnerFighters} from '../hooks/useMyPartnerEntries';
@@ -403,7 +404,10 @@ export function SamuraiDojoModule() {
             {/* Hero banner */}
             <HeroBanner />
 
-            <div className="mx-auto max-w-6xl px-4 pt-6 pb-6 sm:px-6">
+            <div className="mx-auto max-w-6xl px-4 pt-6 pb-6 sm:px-6 space-y-4">
+                {/* Sponsored Budokai banner — self-hides when no sponsor recorded. */}
+                <SponsorBanner budokaiId={currentBudokaiId} />
+
                 {/* v6: event tagline + theme + trophy + honor tier banner */}
                 {(budokaiTheme?.tagline || budokaiTrophy) && (
                     <EventBanner theme={budokaiTheme} trophy={budokaiTrophy} />

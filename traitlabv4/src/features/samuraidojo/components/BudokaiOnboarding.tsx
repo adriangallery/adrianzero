@@ -10,6 +10,7 @@ import {useCurrentBudokaiId, useBudokaiInfo, useBudokaiEntries, dojoPollInterval
 import {useBudokaiCounters} from '../hooks/useBudokaiCounters';
 import {useEnterAsAnonymousCivilian} from '../hooks/useDojoActions';
 import {PartnerSkinsSection} from './PartnerSkinsSection';
+import {SponsorBanner} from './SponsorBanner';
 
 const DISCORD_URL = 'https://discord.gg/wDsSreEDnf';
 
@@ -25,10 +26,13 @@ const DISCORD_URL = 'https://discord.gg/wDsSreEDnf';
 export function BudokaiOnboarding({onAfterMint}: {onAfterMint?: () => void}) {
     const {isConnected} = useAccount();
 
+    const {currentBudokaiId} = useCurrentBudokaiId();
+
     return (
         <div className="min-h-screen bg-black pt-20 sm:pt-24">
             <Hero />
             <div className="mx-auto max-w-3xl space-y-6 px-4 pb-16 pt-6 sm:px-6">
+                <SponsorBanner budokaiId={currentBudokaiId} />
                 <LiveStrip />
                 {/* PartnerSkinsSection self-hides for wallets without NFTs
                     from registered partner collections. When it renders, it
