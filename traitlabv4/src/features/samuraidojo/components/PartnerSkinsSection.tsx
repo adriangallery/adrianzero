@@ -150,7 +150,7 @@ export function PartnerSkinsSection() {
             await createWalletSkinIntent({
                 wallet,
                 representation: {
-                    chain: 'ethereum',
+                    chain: skin.chain,
                     contract: skin.contract,
                     tokenId: skin.tokenId,
                     name: skin.name,

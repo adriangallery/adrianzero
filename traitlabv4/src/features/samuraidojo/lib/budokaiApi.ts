@@ -32,6 +32,7 @@ export interface WalletFirstIntentRequest {
 }
 
 export interface PartnerSkin {
+    chain: 'ethereum' | 'base';
     contract: string;
     tokenId: string;
     name: string;
