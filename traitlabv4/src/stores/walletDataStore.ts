@@ -5,12 +5,23 @@
  */
 
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { createPublicClient, fallback, http, parseAbi } from 'viem';
 import { base } from 'viem/chains';
 import { alchemyClient } from '@/lib/api/alchemy/client';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { buildAlchemyRpcUrls } from '@/config/alchemy';
 import type { AdrianZeroToken, Trait, TraitCategory } from '@/types/nft.types';
+
+// Cache windows. Adrian Zeros are fairly stable per wallet (mints +
+// trades, no auto-rotation) so 30 min is generous. Traits/ERC1155 are
+// far more volatile — equip/unequip + mint/burn flows can change them
+// in seconds, so 5 min keeps them reasonably fresh while still
+// absorbing the typical "user clicks around the same page" pattern.
+const ZEROS_TTL_MS = 30 * 60 * 1000;
+const TRAITS_TTL_MS = 5 * 60 * 1000;
+// Bump on schema change to invalidate persisted state on prod users.
+const PERSIST_VERSION = 1;
 
 // Public Base RPC client for direct on-chain balance queries. We bypass Alchemy's
 // NFT API for ERC-1155 trait balances because it silently filters out a large
@@ -60,6 +71,15 @@ interface WalletDataState {
   rawERC1155Tokens: RawERC1155Token[];
   traitsMetadata: Record<string, TraitMetadata> | null;
 
+  // Cache timestamps — used by setConnectedAddress to skip re-fetch on
+  // reconnect, and by invalidate*() to force a refresh after writes.
+  // Wallet address recorded alongside each so we never serve cache
+  // belonging to a different wallet.
+  zerosFetchedAt: number | null;
+  zerosCachedFor: string | null;
+  traitsFetchedAt: number | null;
+  traitsCachedFor: string | null;
+
   // Loading states
   isLoadingZeros: boolean;
   isLoadingTraits: boolean;
@@ -79,18 +99,28 @@ interface WalletDataState {
   // Actions
   setConnectedAddress: (address: string | null) => void;
   loadTraitsMetadata: () => Promise<void>;
-  loadAllAdrianZeros: (address: string) => Promise<void>;
-  loadAllTraits: (address: string) => Promise<void>;
+  loadAllAdrianZeros: (address: string, options?: { force?: boolean }) => Promise<void>;
+  loadAllTraits: (address: string, options?: { force?: boolean }) => Promise<void>;
+  /** Bust cached AdrianZero data — call after any AdrianZero mint/transfer success. */
+  invalidateZeros: () => void;
+  /** Bust cached trait data — call after any equip/mint/burn/transfer of a trait. */
+  invalidateTraits: () => void;
   clearData: () => void;
   reset: () => void;
 }
 
-export const useWalletDataStore = create<WalletDataState>((set, get) => ({
+export const useWalletDataStore = create<WalletDataState>()(
+  persist(
+    (set, get) => ({
   // Initial state
   adrianZeros: [],
   traits: [],
   rawERC1155Tokens: [],
   traitsMetadata: null,
+  zerosFetchedAt: null,
+  zerosCachedFor: null,
+  traitsFetchedAt: null,
+  traitsCachedFor: null,
   isLoadingZeros: false,
   isLoadingTraits: false,
   isLoadingMetadata: false,
@@ -102,18 +132,39 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
 
   setConnectedAddress: (address) => {
     const current = get().connectedAddress;
-    if (current !== address) {
-      set({ connectedAddress: address });
-      if (address) {
-        // New address connected, reload all data
-        get().clearData();
-        get().loadAllAdrianZeros(address);
-        get().loadAllTraits(address);
-      } else {
-        // Disconnected
-        get().reset();
-      }
+    // Same wallet reconnect → skip the full reload. Each loader checks
+    // its own freshness, so if either slice is stale it will still
+    // re-fetch silently in the background. This single guard collapses
+    // the common "open multiple tabs / refresh / reconnect after a
+    // brief disconnect" loop from N×Alchemy fetches into 0.
+    if (current === address) {
+      return;
     }
+    set({ connectedAddress: address });
+    if (!address) {
+      get().reset();
+      return;
+    }
+    // Different wallet (or first connect) — drop any data tied to the
+    // previous wallet, then load. The loaders themselves will skip
+    // re-fetch when persisted data for the same wallet is still fresh.
+    if (current && current !== address) {
+      get().clearData();
+    }
+    void get().loadAllAdrianZeros(address);
+    void get().loadAllTraits(address);
+  },
+
+  invalidateZeros: () => {
+    set({ zerosFetchedAt: null, zerosCachedFor: null });
+    const addr = get().connectedAddress;
+    if (addr) void get().loadAllAdrianZeros(addr, { force: true });
+  },
+
+  invalidateTraits: () => {
+    set({ traitsFetchedAt: null, traitsCachedFor: null });
+    const addr = get().connectedAddress;
+    if (addr) void get().loadAllTraits(addr, { force: true });
   },
 
   loadTraitsMetadata: async () => {
@@ -165,7 +216,22 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
     }
   },
 
-  loadAllAdrianZeros: async (address) => {
+  loadAllAdrianZeros: async (address, options) => {
+    const force = options?.force === true;
+    if (!force) {
+      const { zerosFetchedAt, zerosCachedFor, adrianZeros } = get();
+      const lc = address.toLowerCase();
+      const fresh =
+        zerosFetchedAt !== null &&
+        zerosCachedFor === lc &&
+        Date.now() - zerosFetchedAt < ZEROS_TTL_MS;
+      if (fresh && adrianZeros.length >= 0) {
+        // Hit — persisted data still in TTL window for this wallet.
+        // Surface progress=100 so spinners disappear immediately.
+        set({ isLoadingZeros: false, zerosProgress: 100, zerosError: null });
+        return;
+      }
+    }
     set({ isLoadingZeros: true, zerosProgress: 0, zerosError: null });
 
     try {
@@ -216,6 +282,8 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
 
       set({
         adrianZeros: allTokens,
+        zerosFetchedAt: Date.now(),
+        zerosCachedFor: address.toLowerCase(),
         isLoadingZeros: false,
         zerosProgress: 100,
       });
@@ -228,7 +296,20 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
     }
   },
 
-  loadAllTraits: async (address) => {
+  loadAllTraits: async (address, options) => {
+    const force = options?.force === true;
+    if (!force) {
+      const { traitsFetchedAt, traitsCachedFor } = get();
+      const lc = address.toLowerCase();
+      const fresh =
+        traitsFetchedAt !== null &&
+        traitsCachedFor === lc &&
+        Date.now() - traitsFetchedAt < TRAITS_TTL_MS;
+      if (fresh) {
+        set({ isLoadingTraits: false, traitsProgress: 100, traitsError: null });
+        return;
+      }
+    }
     if (!get().traitsMetadata) {
       await get().loadTraitsMetadata();
     }
@@ -352,6 +433,8 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
       set({
         traits: allTraits,
         rawERC1155Tokens: allRawTokens,
+        traitsFetchedAt: Date.now(),
+        traitsCachedFor: address.toLowerCase(),
         isLoadingTraits: false,
         traitsProgress: 100,
       });
@@ -369,6 +452,10 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
       adrianZeros: [],
       traits: [],
       rawERC1155Tokens: [],
+      zerosFetchedAt: null,
+      zerosCachedFor: null,
+      traitsFetchedAt: null,
+      traitsCachedFor: null,
       zerosProgress: 0,
       traitsProgress: 0,
       zerosError: null,
@@ -382,6 +469,10 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
       traits: [],
       rawERC1155Tokens: [],
       traitsMetadata: null,
+      zerosFetchedAt: null,
+      zerosCachedFor: null,
+      traitsFetchedAt: null,
+      traitsCachedFor: null,
       isLoadingZeros: false,
       isLoadingTraits: false,
       isLoadingMetadata: false,
@@ -392,7 +483,28 @@ export const useWalletDataStore = create<WalletDataState>((set, get) => ({
       connectedAddress: null,
     });
   },
-}));
+}),
+    {
+      name: 'wallet-data-cache',
+      version: PERSIST_VERSION,
+      storage: createJSONStorage(() => localStorage),
+      // Only persist data + timestamps. Loading flags / errors / progress
+      // are session-state and would just confuse a fresh page open.
+      // traitsMetadata is reproducible from /data/traits.json so we skip
+      // it here to keep localStorage small.
+      partialize: (state) => ({
+        adrianZeros: state.adrianZeros,
+        traits: state.traits,
+        rawERC1155Tokens: state.rawERC1155Tokens,
+        zerosFetchedAt: state.zerosFetchedAt,
+        zerosCachedFor: state.zerosCachedFor,
+        traitsFetchedAt: state.traitsFetchedAt,
+        traitsCachedFor: state.traitsCachedFor,
+        connectedAddress: state.connectedAddress,
+      }),
+    },
+  ),
+);
 
 // Selectors for easy access
 export const selectAdrianZeros = (state: WalletDataState) => state.adrianZeros;
