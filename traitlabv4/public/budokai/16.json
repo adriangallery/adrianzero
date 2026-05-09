@@ -1,0 +1,216 @@
+{
+  "id": 16,
+  "pool": "1900000000000000000000",
+  "entryCount": 25,
+  "resolveBlock": 45735994,
+  "resolveTx": "0x2a5adc0a05ac9777db3ebc7e00f9f492a747870975850c3d876e4b4d6dc14ced",
+  "matches": [
+    {
+      "round": 1,
+      "tokenA": 512,
+      "tokenB": 588,
+      "winner": 588,
+      "kaioken": true
+    },
+    {
+      "round": 1,
+      "tokenA": 1062,
+      "tokenB": 634,
+      "winner": 1062,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 1000010,
+      "tokenB": 1000009,
+      "winner": 1000010,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 896,
+      "tokenB": 839,
+      "winner": 839,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 850,
+      "tokenB": 1105,
+      "winner": 850,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 875,
+      "tokenB": 705,
+      "winner": 705,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 584,
+      "tokenB": 557,
+      "winner": 557,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 848,
+      "tokenB": 1000008,
+      "winner": 1000008,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 561,
+      "tokenB": 829,
+      "winner": 829,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 891,
+      "tokenB": 878,
+      "winner": 878,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 899,
+      "tokenB": 588,
+      "winner": 899,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 1062,
+      "tokenB": 1186,
+      "winner": 1062,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 1000010,
+      "tokenB": 839,
+      "winner": 839,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 1064,
+      "tokenB": 850,
+      "winner": 1064,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 1189,
+      "tokenB": 705,
+      "winner": 1189,
+      "kaioken": true
+    },
+    {
+      "round": 2,
+      "tokenA": 936,
+      "tokenB": 557,
+      "winner": 936,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 1000008,
+      "tokenB": 829,
+      "winner": 1000008,
+      "kaioken": false
+    },
+    {
+      "round": 3,
+      "tokenA": 899,
+      "tokenB": 1062,
+      "winner": 899,
+      "kaioken": false
+    },
+    {
+      "round": 3,
+      "tokenA": 839,
+      "tokenB": 1064,
+      "winner": 1064,
+      "kaioken": false
+    },
+    {
+      "round": 3,
+      "tokenA": 1189,
+      "tokenB": 936,
+      "winner": 1189,
+      "kaioken": false
+    },
+    {
+      "round": 3,
+      "tokenA": 1000008,
+      "tokenB": 878,
+      "winner": 1000008,
+      "kaioken": true
+    },
+    {
+      "round": 4,
+      "tokenA": 899,
+      "tokenB": 1064,
+      "winner": 899,
+      "kaioken": false
+    },
+    {
+      "round": 4,
+      "tokenA": 1189,
+      "tokenB": 1000008,
+      "winner": 1189,
+      "kaioken": false
+    },
+    {
+      "round": 5,
+      "tokenA": 899,
+      "tokenB": 1189,
+      "winner": 1189,
+      "kaioken": false
+    }
+  ],
+  "senryoku": {
+    "512": 100,
+    "557": 56,
+    "561": 9,
+    "584": 52,
+    "588": 56,
+    "634": 96,
+    "705": 100,
+    "829": 88,
+    "839": 99,
+    "848": 96,
+    "850": 92,
+    "875": 48,
+    "878": 68,
+    "891": 96,
+    "896": 100,
+    "899": 92,
+    "936": 100,
+    "1062": 100,
+    "1064": 97,
+    "1105": 84,
+    "1186": 98,
+    "1189": 99,
+    "1000008": 12,
+    "1000009": 11,
+    "1000010": 4
+  },
+  "champion": 1189,
+  "runnerUp": 899,
+  "semifinalists": [
+    1064,
+    1000008
+  ],
+  "quarterfinalists": [
+    1062,
+    839,
+    936,
+    878
+  ]
+}
