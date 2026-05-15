@@ -11,8 +11,14 @@ import { AlertTriangle, Package } from 'lucide-react';
 import { usePacks } from '../hooks/usePacks';
 import { useOpenPack } from '../hooks/useOpenPack';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
-import { getFallbackImageUrl } from '@/features/shop/hooks/useShopItems';
 import type { Pack } from '@/types/nft.types';
+
+// AdrianLAB GitHub mirror — the only stable source for pack/floppy art.
+// (api/render returns a generic avatar; adrianzero.com/traitlab/ is dead
+// since the SPA repoint. labimages extension varies per id — gif OR png —
+// so we try both and only then fall back to the renderer.)
+const LABIMAGES_BASE =
+  'https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages';
 
 export function PacksModule({ embedded }: { embedded?: boolean } = {}) {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
@@ -289,8 +295,10 @@ function PackCard({ pack, onClick }: { pack: Pack; onClick: () => void }) {
     if (fromAlchemy) list.push(fromAlchemy);
     const id = Number(pack.packId);
     if (Number.isFinite(id)) {
+      list.push(`${LABIMAGES_BASE}/${id}.gif`);
+      list.push(`${LABIMAGES_BASE}/${id}.png`);
+      // Last resort: generic render (never blank) if no labimage exists.
       list.push(`https://adrianlab.vercel.app/api/render/${id}.png`);
-      list.push(getFallbackImageUrl(id));
     }
     return list;
   }, [pack.image, pack.packId]);

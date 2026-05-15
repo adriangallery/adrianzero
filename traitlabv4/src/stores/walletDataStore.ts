@@ -42,6 +42,15 @@ const BATCH_CHUNK_SIZE = 500;
 const STUDIO_TSHIT_MIN_ID = 30014;
 const STUDIO_TSHIT_MAX_ID = 35000;
 
+// Floppy / Action / Special pack id ranges (traitlabold pack-config.js
+// TOKEN_RANGES). These are NOT in traits.json, so they must be appended to
+// the balanceOfBatch query explicitly or owned packs never get read.
+const PACK_ID_RANGES: ReadonlyArray<readonly [number, number]> = [
+  [10000, 10019],
+  [15000, 15015],
+  [1123, 1123],
+];
+
 interface TraitMetadata {
   tokenId: string;
   name: string;
@@ -360,6 +369,22 @@ export const useWalletDataStore = create<WalletDataState>()(
         console.warn('Studio T-Shit range probe failed; skipping', err);
       }
 
+      // Append the floppy / pack id ranges so the user's owned packs are
+      // actually queried by balanceOfBatch. They aren't listed in
+      // traits.json, so without this they're never read and never appear
+      // in the Packs tab. Source of truth: traitlabold pack-config.js
+      // TOKEN_RANGES (floppy 10000-10019, action 15000-15015, special 1123).
+      const knownIds = new Set(allIds);
+      for (const [lo, hi] of PACK_ID_RANGES) {
+        for (let id = lo; id <= hi; id++) {
+          if (!knownIds.has(id)) {
+            allIds.push(id);
+            knownIds.add(id);
+          }
+        }
+      }
+      allIds.sort((a, b) => a - b);
+
       const allTraits: Trait[] = [];
       const allRawTokens: RawERC1155Token[] = [];
       const wallet = address as `0x${string}`;
@@ -387,10 +412,25 @@ export const useWalletDataStore = create<WalletDataState>()(
           if (balance === 0) continue;
 
           const tokenId = String(chunk[j]);
-          const metadata = allMetadata[tokenId];
-          if (!metadata) continue;
-
           const numericId = chunk[j];
+          const metadata = allMetadata[tokenId];
+
+          const isPackOrFloppy =
+            (numericId >= 10000 && numericId <= 10019) ||
+            (numericId >= 15000 && numericId <= 15015) ||
+            numericId === 1123;
+
+          if (!metadata) {
+            // Packs/floppies aren't in traits.json. Still surface them for
+            // the Packs tab (usePacks derives from rawERC1155Tokens), but
+            // don't fabricate a Trait entry — packs have their own tab and
+            // their image is built client-side from the id.
+            if (isPackOrFloppy) {
+              allRawTokens.push({ tokenId, balance: String(balance) });
+            }
+            continue;
+          }
+
           const isOgPunkReward = numericId >= 100001 && numericId <= 101003;
           const isStudioTshit = numericId >= STUDIO_TSHIT_MIN_ID && numericId <= STUDIO_TSHIT_MAX_ID;
           const githubSvgUrl = isOgPunkReward
