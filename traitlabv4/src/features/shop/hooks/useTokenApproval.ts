@@ -47,6 +47,7 @@ export function useTokenApproval(paymentToken: PaymentToken) {
     writeContract,
     isPending: isApproving,
     error: approveError,
+    reset: resetApprove,
   } = useWriteContract();
 
   // Wait for transaction
@@ -87,6 +88,7 @@ export function useTokenApproval(paymentToken: PaymentToken) {
     isConfirmed,
     approveError,
     refetchAllowance,
+    resetApprove,
     txHash: hash,
     tokenSymbol: paymentToken === 'ZERO' ? '$ZERO' : '$ADRIAN',
   };

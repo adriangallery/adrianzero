@@ -41,6 +41,7 @@ export function ShopCart() {
     approveError,
     txHash: approveTxHash,
     refetchAllowance,
+    resetApprove,
     tokenSymbol,
   } = useTokenApproval(paymentToken);
   const {
@@ -55,6 +56,8 @@ export function ShopCart() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
+  // True while a checkout that needed approval is waiting to auto-continue to purchase
+  const [pendingPurchase, setPendingPurchase] = useState(false);
 
   const cartTotal = getCartTotal();
   const cartCount = getCartItemCount();
@@ -65,13 +68,17 @@ export function ShopCart() {
   const hasInsufficientBalance = activeBalance ? cartTotal > activeBalance : false;
   const requiresApproval = cartTotal > BigInt(0) && needsApproval(cartTotal);
 
-  // Refetch allowance after approval confirmed
+  // After approval confirms: refetch allowance and AUTO-CONTINUE to the purchase
+  // (the on-chain allowance is already set once the receipt confirms, so the
+  // purchase tx will pass even if the cached allowance hasn't refetched yet).
   useEffect(() => {
-    if (isApprovalConfirmed) {
+    if (isApprovalConfirmed && pendingPurchase && cart.length > 0) {
+      setPendingPurchase(false);
       refetchAllowance();
-      setShowApproveModal(false);
+      batchPurchase(cart, paymentToken);
     }
-  }, [isApprovalConfirmed, refetchAllowance]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApprovalConfirmed, pendingPurchase]);
 
   // Clear cart after successful purchase
   useEffect(() => {
@@ -82,6 +89,8 @@ export function ShopCart() {
 
   const handleCheckout = () => {
     if (requiresApproval) {
+      resetPurchase();
+      setPendingPurchase(true);
       setShowApproveModal(true);
       return;
     }
@@ -90,6 +99,14 @@ export function ShopCart() {
 
   const handleApprove = () => {
     approve(cartTotal);
+  };
+
+  // Fully reset the checkout modal state (used by Cancel / Done)
+  const closeCheckout = () => {
+    setShowApproveModal(false);
+    setPendingPurchase(false);
+    resetApprove();
+    resetPurchase();
   };
 
   const isProcessing = isPurchasing || isPurchaseConfirming;
@@ -178,16 +195,22 @@ export function ShopCart() {
         )}
       </AnimatePresence>
 
-      {/* Approve Modal */}
+      {/* Checkout Modal (approve → purchase, single continuous flow) */}
       <ApproveModal
         isOpen={showApproveModal}
-        onClose={() => setShowApproveModal(false)}
+        onClose={closeCheckout}
         onApprove={handleApprove}
+        onPurchase={() => batchPurchase(cart, paymentToken)}
         isApproving={isApproving}
         isConfirming={isApprovalConfirming}
         isConfirmed={isApprovalConfirmed}
         error={approveError}
         txHash={approveTxHash}
+        purchasePending={isPurchasing}
+        purchaseConfirming={isPurchaseConfirming}
+        purchaseConfirmed={isPurchaseConfirmed}
+        purchaseError={purchaseError}
+        purchaseTxHash={purchaseTxHash}
         amount={totalFormatted}
         tokenSymbol={tokenSymbol}
       />
