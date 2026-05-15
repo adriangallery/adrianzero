@@ -1,0 +1,144 @@
+{
+  "id": 17,
+  "pool": "15940000000000000000000",
+  "entryCount": 16,
+  "resolveBlock": 46037688,
+  "resolveTx": "0x1418c1a64085a185527d77dc73b1864bfce46e766255dfb2625ac074e0b4d910",
+  "matches": [
+    {
+      "round": 1,
+      "tokenA": 634,
+      "tokenB": 560,
+      "winner": 634,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 565,
+      "tokenB": 1189,
+      "winner": 1189,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 886,
+      "tokenB": 148,
+      "winner": 886,
+      "kaioken": true
+    },
+    {
+      "round": 1,
+      "tokenA": 887,
+      "tokenB": 1000011,
+      "winner": 887,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 559,
+      "tokenB": 906,
+      "winner": 559,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 877,
+      "tokenB": 563,
+      "winner": 563,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 566,
+      "tokenB": 203,
+      "winner": 566,
+      "kaioken": false
+    },
+    {
+      "round": 1,
+      "tokenA": 1062,
+      "tokenB": 705,
+      "winner": 1062,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 634,
+      "tokenB": 1189,
+      "winner": 1189,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 886,
+      "tokenB": 887,
+      "winner": 886,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 559,
+      "tokenB": 563,
+      "winner": 559,
+      "kaioken": false
+    },
+    {
+      "round": 2,
+      "tokenA": 566,
+      "tokenB": 1062,
+      "winner": 566,
+      "kaioken": false
+    },
+    {
+      "round": 3,
+      "tokenA": 1189,
+      "tokenB": 886,
+      "winner": 1189,
+      "kaioken": true
+    },
+    {
+      "round": 3,
+      "tokenA": 559,
+      "tokenB": 566,
+      "winner": 559,
+      "kaioken": false
+    },
+    {
+      "round": 4,
+      "tokenA": 1189,
+      "tokenB": 559,
+      "winner": 1189,
+      "kaioken": false
+    }
+  ],
+  "senryoku": {
+    "148": 7,
+    "203": 15,
+    "559": 77,
+    "560": 56,
+    "563": 77,
+    "565": 65,
+    "566": 69,
+    "634": 96,
+    "705": 100,
+    "877": 80,
+    "886": 74,
+    "887": 74,
+    "906": 72,
+    "1062": 100,
+    "1189": 99,
+    "1000011": 1
+  },
+  "champion": 1189,
+  "runnerUp": 559,
+  "semifinalists": [
+    886,
+    566
+  ],
+  "quarterfinalists": [
+    634,
+    887,
+    563,
+    1062
+  ]
+}
