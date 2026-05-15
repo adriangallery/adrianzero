@@ -3,7 +3,7 @@
  * View and open Floppy Discs and Action Packs
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence } from 'framer-motion';
@@ -11,6 +11,7 @@ import { AlertTriangle, Package } from 'lucide-react';
 import { usePacks } from '../hooks/usePacks';
 import { useOpenPack } from '../hooks/useOpenPack';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
+import { getFallbackImageUrl } from '@/features/shop/hooks/useShopItems';
 import type { Pack } from '@/types/nft.types';
 
 export function PacksModule({ embedded }: { embedded?: boolean } = {}) {
@@ -275,10 +276,27 @@ export function PacksModule({ embedded }: { embedded?: boolean } = {}) {
 
 // Pack Card Component
 function PackCard({ pack, onClick }: { pack: Pack; onClick: () => void }) {
-  const imageUrl =
-    pack.image?.cachedUrl ||
-    pack.image?.thumbnailUrl ||
-    pack.image?.originalUrl;
+  // walletDataStore only fills tokenId+balance for ERC1155, so pack.image is
+  // almost always empty. Build the image from the asset id like the shop does.
+  // Primary = AdrianLAB renderer (works for floppy/action/special); fallbacks =
+  // GitHub labimages gif (matches the shop look for floppies), then the icon.
+  const candidates = useMemo(() => {
+    const list: string[] = [];
+    const fromAlchemy =
+      pack.image?.cachedUrl ||
+      pack.image?.thumbnailUrl ||
+      pack.image?.originalUrl;
+    if (fromAlchemy) list.push(fromAlchemy);
+    const id = Number(pack.packId);
+    if (Number.isFinite(id)) {
+      list.push(`https://adrianlab.vercel.app/api/render/${id}.png`);
+      list.push(getFallbackImageUrl(id));
+    }
+    return list;
+  }, [pack.image, pack.packId]);
+
+  const [srcIndex, setSrcIndex] = useState(0);
+  const imageUrl = candidates[srcIndex];
 
   return (
     <motion.div
@@ -293,6 +311,7 @@ function PackCard({ pack, onClick }: { pack: Pack; onClick: () => void }) {
             alt={pack.name}
             loading="lazy"
             className="w-full h-full object-cover"
+            onError={() => setSrcIndex((i) => i + 1)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
