@@ -21,7 +21,10 @@ import type { AdrianZeroToken, Trait, TraitCategory } from '@/types/nft.types';
 const ZEROS_TTL_MS = 30 * 60 * 1000;
 const TRAITS_TTL_MS = 5 * 60 * 1000;
 // Bump on schema change to invalidate persisted state on prod users.
-const PERSIST_VERSION = 1;
+// v2: rawERC1155Tokens now includes floppy/pack ranges (10000-10019,
+// 15000-15015, 1123) — old caches only held traits.json ids, so prod
+// users were stuck seeing 3 packs from the stale persisted snapshot.
+const PERSIST_VERSION = 2;
 
 // Public Base RPC client for direct on-chain balance queries. We bypass Alchemy's
 // NFT API for ERC-1155 trait balances because it silently filters out a large

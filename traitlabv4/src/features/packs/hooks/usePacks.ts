@@ -55,6 +55,42 @@ const PACK_METADATA: Record<string, { name: string; type: 'FLOPPY_DISC' | 'ACTIO
   '1123': { name: 'CensorPACK', type: 'SPECIAL', contract: 'ACTION_PACKS', special: true },
 };
 
+// Canonical display names — source of truth is AdrianLAB
+// public/labmetadata/floppy.json. PACK_METADATA names above are placeholders
+// ("Floppy 10000"); these are the real ones shown to the user.
+const CANONICAL_NAMES: Record<string, string> = {
+  '1123': 'CensorPack',
+  '10000': 'OG Floppy',
+  '10001': 'STARTER Floppy',
+  '10002': 'STARTER Floppy',
+  '10003': 'GLITCH Floppy',
+  '10004': 'GF Floppy',
+  '10005': 'GOLDEN Floppy',
+  '10007': 'NEON PACK',
+  '10008': 'OPTICAL PACK',
+  '10009': 'PUNKS Floppy',
+  '10010': 'Comrades USB',
+  '10011': 'BORED Adrian',
+  '10012': 'MUTANT Adrian',
+  '10013': 'Hello-WEN 25',
+  '10014': 'Blacklight Floppy',
+  '10015': 'X-Mas-Floppy',
+  '10016': 'HNY',
+  '10017': 'YEAR 1',
+  '10018': 'OG Reward',
+  '10019': 'Claw Mac Mini',
+};
+
+// Range classification (traitlabold pack-config.js TOKEN_RANGES) so an owned
+// in-range token is shown even if it's not in PACK_METADATA — the old code
+// silently dropped anything missing from that table.
+function classify(id: number): { type: Pack['type']; special: boolean } | null {
+  if (id === 1123) return { type: 'SPECIAL', special: true };
+  if (id >= 10000 && id <= 10019) return { type: 'FLOPPY_DISC', special: false };
+  if (id >= 15000 && id <= 15015) return { type: 'ACTION_PACK', special: false };
+  return null;
+}
+
 export function usePacks() {
   const { address } = useAccount();
   const rawERC1155Tokens = useWalletDataStore(state => state.rawERC1155Tokens);
@@ -71,19 +107,28 @@ export function usePacks() {
         const balance = parseInt(nft.balance || '0');
         if (balance === 0) return;
 
+        const id = Number(nft.tokenId);
+        const cls = classify(id);
+        if (!cls) return; // not a pack/floppy id range
+
         const packConfig = PACK_METADATA[nft.tokenId];
-        if (packConfig) {
-          packs.push({
-            packId: nft.tokenId,
-            name: packConfig.name,
-            type: packConfig.type,
-            contract: packConfig.contract,
-            balance,
-            metadata: nft.metadata,
-            image: nft.image,
-            special: packConfig.special,
-          });
-        }
+        const name =
+          CANONICAL_NAMES[nft.tokenId] ||
+          packConfig?.name ||
+          (cls.type === 'ACTION_PACK' ? `Action Pack #${id}` : `Floppy #${id}`);
+
+        packs.push({
+          packId: nft.tokenId,
+          name,
+          type: packConfig?.type ?? cls.type,
+          contract:
+            packConfig?.contract ??
+            (cls.type === 'ACTION_PACK' ? 'ACTION_PACKS' : 'OPENPACK_V4'),
+          balance,
+          metadata: nft.metadata,
+          image: nft.image,
+          special: packConfig?.special ?? cls.special,
+        });
       });
 
       return packs;
