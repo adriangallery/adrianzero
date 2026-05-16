@@ -25,5 +25,6 @@ export { MULTICALL3_ABI } from './multicall3.abi';
 export { ZERO_MOVIES_FACET_ABI } from './zeromoviesFacet.abi';
 export { ZERO_MOVIES_FACET_2_ABI } from './zeromoviesFacet2.abi';
 export { SAMURAI_MINT_FACET_ABI } from './samuraiMintFacet.abi';
+export { GUMBALL_MINT_FACET_ABI } from './gumballMintFacet.abi';
 export { SAMURAI_DOJO_ABI, BUDOKAI_STATUS, type BudokaiStatus } from './samuraiDojo.abi';
 export { MOVIE_AUCTION_FACET_ABI, AUCTION_STATUS } from './movieAuctionFacet.abi';

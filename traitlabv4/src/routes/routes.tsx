@@ -113,6 +113,12 @@ const AuctionModule = lazy(() =>
   }))
 );
 
+const GumballModule = lazy(() =>
+  import('@/features/gumball/components/GumballModule').then((m) => ({
+    default: m.GumballModule,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -136,6 +142,7 @@ export const routes: RouteObject[] = [
   { path: '/about', element: <WhatIsItModule /> },
 
   // ─── Link-only (not in menu) ─────────────────────────────────────────────
+  { path: '/gumball', element: <GumballModule /> },
   { path: '/explain-to-jb', element: <ExplainJBModule /> },
   { path: '/animations', element: <AnimationsModule /> },
   { path: '/budokai-replay-mockup', element: <BudokaiChronicleMockup /> },
