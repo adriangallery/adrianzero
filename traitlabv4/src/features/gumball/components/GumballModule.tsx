@@ -47,7 +47,7 @@ export function GumballModule() {
           Gumball<span className="text-pink-400">ZERO</span>
         </h1>
         <p className="text-sm text-white/60 mb-6">
-          Inserta $ZERO · recibe un AdrianZERO al azar. Serie cerrada de 100.
+          Insert $ZERO · get a random ZERO. Closed series of 100.
         </p>
 
         <div className="relative rounded-2xl border border-white/10 bg-black/40 p-5 shadow-2xl">
@@ -66,7 +66,7 @@ export function GumballModule() {
               </span>
             </span>
             <span>
-              Precio: <span className="text-white font-semibold">{priceLabel}</span>
+              Price: <span className="text-white font-semibold">{priceLabel}</span>
             </span>
           </div>
 
@@ -98,32 +98,32 @@ export function GumballModule() {
           <div className="mt-5 space-y-3">
             {notLive && (
               <div className="rounded-lg bg-amber-500/15 border border-amber-500/30 px-3 py-2 text-xs text-amber-300">
-                Próximamente — la máquina aún no está activa on-chain.
+                Coming soon — the machine isn't live on-chain yet.
               </div>
             )}
             {!notLive && config.paused && (
               <div className="rounded-lg bg-amber-500/15 border border-amber-500/30 px-3 py-2 text-xs text-amber-300">
-                En pausa. Vuelve pronto.
+                Paused. Check back soon.
               </div>
             )}
             {!notLive && soldOut && (
               <div className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white/70">
-                Sold out — los 100 ya se dispensaron.
+                Sold out — all 100 have been dispensed.
               </div>
             )}
 
             {isConfirmed ? (
               <div className="rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-3 py-3 text-sm text-emerald-300">
-                ¡Dispensado! 🎉 Revisa tu wallet o la sección{' '}
+                Dispensed! 🎉 Check your wallet or the{' '}
                 <a href="/mynfts" className="underline">
                   My NFTs
-                </a>
-                .
+                </a>{' '}
+                section.
               </div>
             ) : !isConnected ? (
               <div className="flex flex-col items-center gap-2">
                 <p className="text-xs text-white/50">
-                  Conecta tu wallet para tirar.
+                  Connect your wallet to pull.
                 </p>
                 <ConnectButton />
               </div>
@@ -134,8 +134,8 @@ export function GumballModule() {
                 className="w-full rounded-xl bg-pink-500 hover:bg-pink-400 disabled:opacity-40 disabled:cursor-not-allowed py-3 font-bold transition"
               >
                 {isApproving || isApprovalConfirming
-                  ? 'Aprobando…'
-                  : `Aprobar ${totalLabel}`}
+                  ? 'Approving…'
+                  : `Approve ${totalLabel}`}
               </button>
             ) : (
               <button
@@ -143,9 +143,7 @@ export function GumballModule() {
                 onClick={() => pull(qty)}
                 className="w-full rounded-xl bg-pink-500 hover:bg-pink-400 disabled:opacity-40 disabled:cursor-not-allowed py-3 font-bold transition"
               >
-                {isPending || isConfirming
-                  ? 'Tirando…'
-                  : `Tirar ×${qty}`}
+                {isPending || isConfirming ? 'Pulling…' : `Pull ×${qty}`}
               </button>
             )}
 
@@ -158,7 +156,7 @@ export function GumballModule() {
         </div>
 
         <p className="mt-6 text-[11px] text-white/30">
-          Pago 100% revenue · traits preasignados aleatorios · AdrianLAB by HalfxTiger
+          100% revenue · random pre-assigned traits · by HalfxTiger
         </p>
       </div>
     </div>
