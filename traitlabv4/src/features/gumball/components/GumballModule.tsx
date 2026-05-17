@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
+import { useWalletDataStore } from '@/stores/walletDataStore';
 import {
   useGumballConfig,
   useGumballApproval,
@@ -43,9 +44,14 @@ export function GumballModule() {
     if (isApprovalConfirmed) refetchAllowance();
   }, [isApprovalConfirmed, refetchAllowance]);
 
-  // After a successful pull, refresh allowance (it was spent down).
+  // After a successful pull, refresh allowance (it was spent down) AND
+  // invalidate the cached AdrianZERO list so the freshly-minted GumballZERO
+  // shows up in My NFTs (otherwise the per-wallet cache hides it until TTL).
   useEffect(() => {
-    if (isConfirmed) refetchAllowance();
+    if (isConfirmed) {
+      refetchAllowance();
+      useWalletDataStore.getState().invalidateZeros();
+    }
   }, [isConfirmed, refetchAllowance]);
 
   const totalCost = config.pricePerPull * BigInt(qty);
