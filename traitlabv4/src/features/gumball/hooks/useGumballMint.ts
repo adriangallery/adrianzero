@@ -81,7 +81,7 @@ export function useGumballApproval() {
     args: address
       ? [address, CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`]
       : undefined,
-    query: { enabled: !!address },
+    query: { enabled: !!address, staleTime: 0, refetchInterval: 8_000 },
   });
 
   const {

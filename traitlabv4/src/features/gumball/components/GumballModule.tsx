@@ -9,7 +9,7 @@
  * Until the facet is live on mainnet the page renders a "coming soon" state.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
@@ -24,12 +24,29 @@ const QTY_OPTIONS = [1, 3, 5, 10] as const;
 export function GumballModule() {
   const { isConnected } = useAccount();
   const { config, notLive } = useGumballConfig();
-  const { allowance, approveTokens, isApproving, isApprovalConfirming } =
-    useGumballApproval();
+  const {
+    allowance,
+    approveTokens,
+    isApproving,
+    isApprovalConfirming,
+    isApprovalConfirmed,
+    refetchAllowance,
+  } = useGumballApproval();
   const { pull, isPending, isConfirming, isConfirmed, error, reset } =
     useGumballPull();
 
   const [qty, setQty] = useState<number>(1);
+
+  // After the approve tx confirms, re-read allowance so the button flips
+  // from "Approve" to "Pull" without a manual refresh.
+  useEffect(() => {
+    if (isApprovalConfirmed) refetchAllowance();
+  }, [isApprovalConfirmed, refetchAllowance]);
+
+  // After a successful pull, refresh allowance (it was spent down).
+  useEffect(() => {
+    if (isConfirmed) refetchAllowance();
+  }, [isConfirmed, refetchAllowance]);
 
   const totalCost = config.pricePerPull * BigInt(qty);
   const needsApproval = allowance < totalCost;
