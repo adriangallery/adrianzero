@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useGalleryStore } from '../store/galleryStore';
 import type { NFTMetadata, NFTType } from '../types/gallery.types';
 
-const METADATA_API = 'https://adrianlab.vercel.app/api/v2/metadata';
+const METADATA_API = 'https://adrianlab.vercel.app/api/metadata';
 const CONCURRENT_FETCHES = 6;
 
 /** Derive NFT type from metadata attributes */

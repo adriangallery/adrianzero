@@ -7,7 +7,7 @@ import type { NFTMetadata, NFTType } from '../types/gallery.types';
 import { deriveNFTType } from '../hooks/useTokenMetadata';
 import { useEnsName } from '@/hooks/useEnsName';
 
-const METADATA_API = 'https://adrianlab.vercel.app/api/v2/metadata';
+const METADATA_API = 'https://adrianlab.vercel.app/api/metadata';
 const OPENSEA_BASE = `https://opensea.io/assets/base/${CONTRACT_ADDRESSES.ADRIAN_ZERO}`;
 
 const TYPE_COLORS: Record<NFTType, string> = {
