@@ -3,10 +3,10 @@
 // Discord ID + the zerobot wallet-link table.
 //
 // Public-API base: configurable via VITE_BUDOKAI_API_URL, defaults to
-// the production zerobot instance on Railway.
+// the self-hosted zerobot instance.
 
 const BASE_URL =
-    import.meta.env.VITE_BUDOKAI_API_URL ?? 'https://zerobot-production.up.railway.app';
+    import.meta.env.VITE_BUDOKAI_API_URL ?? 'https://zerobot.zerothetoken.com';
 
 export interface CreateIntentRequest {
     discordUserId: string;

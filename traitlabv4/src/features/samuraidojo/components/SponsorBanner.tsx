@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 
 const BASE_URL =
-    import.meta.env.VITE_BUDOKAI_API_URL ?? 'https://zerobot-production.up.railway.app';
+    import.meta.env.VITE_BUDOKAI_API_URL ?? 'https://zerobot.zerothetoken.com';
 
 interface Sponsor {
     budgetId?: string;
