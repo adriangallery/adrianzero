@@ -1,7 +1,15 @@
 {
   "version": 1,
-  "updatedAt": "2026-02-22T00:00:00Z",
+  "updatedAt": "2026-05-22T00:00:00Z",
   "drops": [
+    {
+      "id": 1181,
+      "title": "PIZZA DAY",
+      "short": "It's Pizza Day 🍕 Slap a fresh slice on your ZERO and grease up the timeline. Free mint, 24h only, 1 per wallet.",
+      "image": "https://raw.githubusercontent.com/adriangallery/adrianzero/main/shitdrop/images/1181.png",
+      "opensea": "https://opensea.io/es/item/base/0x90546848474fb3c9fda3fdad887969bb244e7e58/1181",
+      "date": "2026-05-22"
+    },
     {
       "id": 1174,
       "title": "ZeroPunch",
