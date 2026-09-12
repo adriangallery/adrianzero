@@ -69,3 +69,7 @@ build/
 
 # IMPORTANT: Keep data.json in the repository for persistent storage
 !builderbattle/data.json
+.vercel
+
+# Demo video mockup/recording tooling (moved out of traitlabv4/, own node_modules, 218 MB)
+_demo/
