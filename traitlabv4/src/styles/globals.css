@@ -1,6 +1,15 @@
 @config "../../tailwind.config.js";
 @import 'tailwindcss';
 
+/* @config carga tailwind.config.js, pero en v4 eso NO garantiza que su
+   `content` siga alimentando la detección automática de clases (visto en
+   preview: 0 utilidades generadas, solo preflight + nuestras clases
+   manuales). @source es la vía v4-nativa y explícita — funciona pase lo
+   que pase con la detección automática. Rutas relativas a este fichero
+   (src/styles/globals.css): ../../ = raíz de traitlabv4/. */
+@source "../../index.html";
+@source "../../src/**/*.{js,jsx,ts,tsx}";
+
 @layer base {
   :root {
     /* ── Legacy shadcn-style theme (HSL) — se conserva para no romper nada
