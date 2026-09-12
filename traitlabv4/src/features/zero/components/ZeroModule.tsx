@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { motion } from 'framer-motion';
-import { ArrowRight, DollarSign, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { DollarSign, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { DashboardPanel } from '@/features/dashboard/components/DashboardPanel';
 import { getGitHubImageUrl } from '@/config/images';
+import { Button, Card } from '@/ui';
+import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
+import { editRouteFor } from '@/lib/editRoute';
 import {
   SHOWCASE_GITHUB_PATH,
   SHOWCASE_GITHUB_RAW_BASE,
@@ -21,34 +24,29 @@ interface GitHubFile {
   type: string;
 }
 
-const traitEvolutionFrames = [
-  '/zero310-0.png',
-  '/zero310-1.png',
-  '/zero310-2.png',
-  '/zero310-3.png',
-  '/zero310-4.png',
-];
-
 const LIME = '#00ff00';
 
 export const ZeroModule: React.FC = () => {
   const { isConnected } = useAccount();
-  const [activeFrame, setActiveFrame] = useState(0);
+  const navigate = useNavigate();
   const [useFallbackFrame, setUseFallbackFrame] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const [showcaseNfts, setShowcaseNfts] = useState<ShowcaseNFT[]>(SHOWCASE_NFTS);
+
+  // F3.5: hero muestra el ZERO real de la wallet conectada, o #146 (mock de
+  // useAdrianZeroTokens) si no hay wallet — nunca los frames falsos de antes.
+  const { data: heroTokens } = useAdrianZeroTokens();
+  const heroToken = heroTokens[0];
+  const heroImageUrl = useFallbackFrame
+    ? getGitHubImageUrl('zeronaked.png')
+    : heroToken?.image?.cachedUrl || heroToken?.image?.originalUrl || heroToken?.metadata?.image || getGitHubImageUrl('zeronaked.png');
+
+  const primaryCta = isConnected
+    ? { label: 'Open TraitLab', to: editRouteFor(heroToken?.tokenId) }
+    : { label: 'Mint your ZERO', to: '/mint' };
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setActiveFrame((prev) => (prev + 1) % traitEvolutionFrames.length);
-    }, 1400);
-
-    return () => {
-      window.clearInterval(interval);
-    };
   }, []);
 
   useEffect(() => {
@@ -114,139 +112,105 @@ export const ZeroModule: React.FC = () => {
         `}
       </style>
 
-      <section className="relative z-[5] h-screen">
-        <div className="h-full overflow-hidden">
+      {/* F3.5 (13-sep): antes eran DOS secciones h-screen/min-h-screen
+          apiladas (vídeo de fondo primero, contenido real una pantalla más
+          abajo) — en móvil, si el vídeo no arrancaba a tiempo, el primer
+          píxel era una pantalla vacía. Ahora es UNA sección: el contenido
+          (título + CTA + render real del token) pinta siempre, de entrada;
+          el vídeo es una capa de fondo que hace fade-in solo cuando puede
+          reproducirse (onCanPlay) y nunca reserva su propia altura. */}
+      <section className="relative z-[5] min-h-[92vh] lg:min-h-screen overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-[#06080d]">
           <video
             src="/zero-firefly.mp4"
-            className="h-full w-full object-cover object-center scale-[1.14] sm:scale-100"
+            className={`h-full w-full object-cover object-center scale-[1.14] sm:scale-100 transition-opacity duration-700 ${
+              videoReady ? 'opacity-100' : 'opacity-0'
+            }`}
             autoPlay
             muted
             playsInline
+            onCanPlay={() => setVideoReady(true)}
           />
-          <div className="pointer-events-none absolute inset-0 bg-black/40" />
-          <div className="absolute bottom-8 left-4 right-4 sm:bottom-10 sm:left-6 sm:right-6 lg:left-8 lg:right-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: LIME }}>BE REAL | BE ZERO</p>
-            <h2 className="mt-2 text-4xl font-black leading-[0.92] sm:text-5xl md:text-6xl lg:text-7xl">
-              ART MEETS
-              <br />
-              BLOCKCHAIN
-            </h2>
-          </div>
+          <div className="pointer-events-none absolute inset-0 bg-black/50" />
         </div>
-      </section>
 
-      <div className="pointer-events-none absolute inset-0 z-[1]">
-        <div className="absolute -left-28 top-16 h-72 w-72 rounded-full bg-[#00d2ff]/25 blur-3xl" />
-        <div className="absolute right-[-140px] top-48 h-[24rem] w-[24rem] rounded-full bg-[#ff8a3d]/20 blur-3xl" />
-        <div className="absolute bottom-[-140px] left-1/3 h-[30rem] w-[30rem] rounded-full bg-[#22c55e]/20 blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.18]"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.25) 1px, transparent 0)',
-            backgroundSize: '26px 26px',
-          }}
-        />
-      </div>
+        <div className="pointer-events-none absolute inset-0 z-[1]">
+          <div className="absolute -left-28 top-16 h-72 w-72 rounded-full bg-[#00d2ff]/25 blur-3xl" />
+          <div className="absolute right-[-140px] top-48 h-[24rem] w-[24rem] rounded-full bg-[#ff8a3d]/20 blur-3xl" />
+          <div className="absolute bottom-[-140px] left-1/3 h-[30rem] w-[30rem] rounded-full bg-[#22c55e]/20 blur-3xl" />
+        </div>
 
-      <section className="relative z-[5] mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 pb-12 pt-24 sm:px-6 lg:px-8">
-        <div className="grid w-full items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#c6fff2] backdrop-blur"
-            >
-              <Sparkles className="h-4 w-4" />
-              Live on Base
-            </motion.div>
+        <div className="relative z-[5] mx-auto flex min-h-[92vh] lg:min-h-screen w-full max-w-7xl items-center px-4 pb-12 pt-8 sm:px-6 lg:px-8">
+          <div className="grid w-full items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#c6fff2] backdrop-blur"
+              >
+                <Sparkles className="h-4 w-4" />
+                Live on Base
+              </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-balance text-5xl font-black leading-[0.92] sm:text-6xl md:text-7xl lg:text-8xl"
-            >
-              YOUR NFT
-              <br />
+              <motion.h1
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                className="font-display text-balance text-3xl leading-[1.15] sm:text-4xl md:text-6xl lg:text-7xl"
+              >
+                YOUR NFT
+                <br />
                 <span className="bg-gradient-to-r from-[#00d2ff] via-[#55f7b7] to-[#ffb258] bg-clip-text text-transparent">
                   YOUR RULES
                 </span>
               </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 26 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="mt-6 max-w-2xl text-pretty text-base text-[#d8e2ff]/90 sm:text-lg md:text-xl"
-            >
-              Mint, customize, and evolve your AdrianZERO. Collect traits, open packs, and build a one-of-a-kind identity on Base.
-            </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 26 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="mt-5 max-w-2xl text-pretty text-base text-[#d8e2ff]/90 sm:text-lg"
+              >
+                Mint, customize, and evolve your AdrianZERO. Collect traits, open packs, and build a one-of-a-kind identity on Base.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="mt-8 flex flex-wrap items-center gap-3"
+              >
+                <Button variant="primary" size="lg" onClick={() => navigate(primaryCta.to)}>
+                  {primaryCta.label}
+                </Button>
+                <Button variant="secondary" size="lg" onClick={() => navigate('/buy')}>
+                  <DollarSign className="h-4 w-4" />
+                  Buy $ZERO
+                </Button>
+              </motion.div>
+            </div>
 
             <motion.div
-              initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="mt-10 flex flex-wrap items-center gap-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 80, damping: 14, delay: 0.2 }}
+              className="relative mx-auto w-full max-w-[420px]"
             >
-              <Link
-                to="/mint"
-                className="group inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-extrabold uppercase tracking-[0.14em] text-[#041106] transition-transform hover:scale-[1.03]"
-                style={{ background: LIME }}
-              >
-                Mint Your ZERO
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link
-                to="/buy"
-                className="group inline-flex items-center gap-2 rounded-xl border px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#00ff00] backdrop-blur transition-colors hover:bg-[#00ff00]/10"
-                style={{ borderColor: 'rgba(0,255,0,0.45)' }}
-              >
-                <DollarSign className="h-4 w-4" />
-                Buy $ZERO
-              </Link>
-              <Link
-                to="/gallery"
-                className="inline-flex items-center rounded-xl border bg-white/5 px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-white backdrop-blur transition-colors hover:bg-white/10"
-                style={{ borderColor: 'rgba(255,255,255,0.2)' }}
-              >
-                Explore Gallery
-              </Link>
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.88, rotate: -6 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 80, damping: 14, delay: 0.2 }}
-            className="relative mx-auto w-full max-w-[520px]"
-          >
-            <div className="absolute -inset-5 rounded-[2rem] bg-gradient-to-br from-[#00d2ff]/45 via-[#55f7b7]/35 to-[#ff8a3d]/40 blur-2xl" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/30 bg-[#0a1020]/85 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm">
-              <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.12em] text-[#9dc8ff]">
-                <span>Trait Evolution</span>
-                <span>ZERO #310</span>
-              </div>
-              <div className="relative">
+              <Card className="p-4 bg-[#0a1020]/90 backdrop-blur-sm">
+                <div className="mb-3 flex items-center justify-between text-[11px] font-ui uppercase tracking-[0.1em] text-mute">
+                  <span>{isConnected ? 'Your ZERO' : 'Preview'}</span>
+                  <span className="text-acc">#{heroToken?.tokenId ?? '146'}</span>
+                </div>
                 <img
-                  src={useFallbackFrame ? getGitHubImageUrl('zeronaked.png') : traitEvolutionFrames[activeFrame]}
-                  alt="ZERO #310 trait progression"
-                  className="aspect-square w-full rounded-2xl object-cover"
+                  src={heroImageUrl}
+                  alt={`AdrianZERO #${heroToken?.tokenId ?? '146'}`}
+                  className="aspect-square w-full rounded-[var(--r-lg)] object-cover bg-bg"
                   onError={() => setUseFallbackFrame(true)}
                 />
-
-                <div className="absolute inset-x-3 bottom-3 flex gap-1 rounded-lg bg-black/35 p-2 backdrop-blur">
-                  {traitEvolutionFrames.map((_, idx) => (
-                    <div
-                      key={`frame-step-${idx}`}
-                    className={`h-1.5 flex-1 rounded-full ${idx <= activeFrame ? 'bg-[#00ff00]' : 'bg-white/25'}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
+              </Card>
+            </motion.div>
+          </div>
         </div>
       </section>
 
