@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Loader2, X } from 'lucide-react';
 import { useAccount } from 'wagmi';
@@ -6,8 +7,11 @@ import { useMovie2Actions } from '../hooks/useMovie2Actions';
 import { useMovies2Catalog } from '../hooks/useMovies2Catalog';
 import { useGoldenEligibility } from '../hooks/useGoldenEligibility';
 import { useWalletRentalCap } from '../hooks/useWalletRentalCap';
+import { useZeroBalance } from '../hooks/useZeroBalance';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import { EnsName } from '@/components/shared/EnsName';
+import { Movie2ConfirmSheet, type Movie2ConfirmActionKind } from './Movie2ConfirmSheet';
+import { needsApproval } from '../lib/movie2ActionMath';
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 
@@ -29,9 +33,12 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
   const { address, isConnected } = useAccount();
   const { requireWallet } = useWalletPrompt();
   const { config } = useMovies2Catalog();
-  const { rent2, buy2, returnMovie2, upgradeRent2ToBuy, isPending, pendingAction } = useMovie2Actions();
+  const { rent2, buy2, returnMovie2, upgradeRent2ToBuy, isPending, pendingAction, allowanceWei } = useMovie2Actions();
   const { isEligible, ticketCount } = useGoldenEligibility();
   const rentalCap = useWalletRentalCap();
+  const { balanceRaw } = useZeroBalance();
+
+  const [confirmAction, setConfirmAction] = useState<Movie2ConfirmActionKind | null>(null);
 
   if (!movie || !rental) return null;
 
@@ -42,15 +49,46 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
   const isMinePermanent = rental.permanent && isMine;
   const isOthers = (rental.permanent || hasRenter) && !isMine;
   const isOverdue = rental.isOverdue;
+  const isPaused = config.paused;
 
   // On-chain: returnMovie2 is FREE at any time. Late fees only flow on
   // upgradeRent2ToBuy when the rent is overdue (`daysOverdue * 1k ZERO`).
+  // This is a client-side estimate for display only — the actual approve
+  // amount is computed on-chain-fresh inside useMovie2Actions.upgradeRent2ToBuy
+  // right before the tx, so a day-boundary race never under-approves.
   const lateFee = isMineRent && isOverdue ? rental.daysOverdue * config.lateFeePerDay : 0;
+  const upgradeCostWei = config.buyPriceWei - config.rentPriceWei + BigInt(lateFee) * 10n ** 18n;
   const upgradeCost = config.buyPrice - config.rentPrice + lateFee;
 
   const requireConnected = (fn: () => void) => () => {
     if (!isConnected) return requireWallet();
     fn();
+  };
+
+  const openConfirm = (action: Movie2ConfirmActionKind) => requireConnected(() => setConfirmAction(action))();
+
+  const confirmCostWei =
+    confirmAction === 'rent'
+      ? config.rentPriceWei
+      : confirmAction === 'buy'
+        ? config.buyPriceWei
+        : confirmAction === 'upgrade'
+          ? upgradeCostWei
+          : 0n; // return is always free
+
+  const handleConfirm = async () => {
+    if (!confirmAction) return;
+    try {
+      if (confirmAction === 'rent') await rent2(movie.id);
+      else if (confirmAction === 'buy') await buy2(movie.id);
+      else if (confirmAction === 'return') await returnMovie2(rental.tokenId);
+      else if (confirmAction === 'upgrade') await upgradeRent2ToBuy(rental.tokenId);
+      setConfirmAction(null);
+      onClose();
+    } catch {
+      // Error toast already raised by useMovie2Actions — keep the sheet open
+      // so the user can see the balance/allowance state and retry.
+    }
   };
 
   return (
@@ -140,6 +178,12 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
 
             {/* Action area */}
             <div className="space-y-2 px-4 py-4">
+              {isPaused && (
+                <div className="rounded border border-yellow-500/40 bg-yellow-950/20 px-3 py-2.5 text-center text-[10px] uppercase tracking-widest text-yellow-400">
+                  Opens soon — the videoclub is still paused
+                </div>
+              )}
+
               {/* AVAILABLE → rent | buy */}
               {isOnShelf && (
                 <>
@@ -153,25 +197,29 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                   )}
                   <ActionRow
                     label="Rent"
-                    sub={rentalCap.cap > 0 && !rentalCap.canRent
-                      ? 'Cap reached — return a tape first or buy permanently'
-                      : isConnected && rentalCap.cap > 0
-                        ? `${rentalCap.slotsLeft}/${rentalCap.cap} slots left · 7d grace, then 1k ZERO/day late fee`
-                        : '7d grace · after grace 1k ZERO/day late fee'}
-                    cost={`${config.rentPrice.toLocaleString()} $ZERO`}
+                    sub={
+                      isPaused
+                        ? 'Opens soon'
+                        : rentalCap.cap > 0 && !rentalCap.canRent
+                          ? 'Cap reached — return a tape first or buy permanently'
+                          : isConnected && rentalCap.cap > 0
+                            ? `${rentalCap.slotsLeft}/${rentalCap.cap} slots left · 7d grace, then 1k ZERO/day late fee`
+                            : '7d grace · after grace 1k ZERO/day late fee'
+                    }
+                    cost={isPaused ? 'Opens soon' : `${config.rentPrice.toLocaleString()} $ZERO`}
                     accent="sky"
                     busy={pendingAction === 'rent'}
-                    disabled={isPending || (isConnected && !rentalCap.canRent)}
-                    onClick={requireConnected(() => rent2(movie.id))}
+                    disabled={isPending || isPaused || (isConnected && !rentalCap.canRent)}
+                    onClick={() => openConfirm('rent')}
                   />
                   <ActionRow
                     label="Buy permanently"
-                    sub="No cap, no grace period, no late fees — yours forever"
-                    cost={`${config.buyPrice.toLocaleString()} $ZERO`}
+                    sub={isPaused ? 'Opens soon' : 'No cap, no grace period, no late fees — yours forever'}
+                    cost={isPaused ? 'Opens soon' : `${config.buyPrice.toLocaleString()} $ZERO`}
                     accent="yellow"
                     busy={pendingAction === 'buy'}
-                    disabled={isPending}
-                    onClick={requireConnected(() => buy2(movie.id))}
+                    disabled={isPending || isPaused}
+                    onClick={() => openConfirm('buy')}
                   />
                 </>
               )}
@@ -186,7 +234,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                     accent="emerald"
                     busy={pendingAction === 'return'}
                     disabled={isPending}
-                    onClick={requireConnected(() => returnMovie2(movie.id))}
+                    onClick={() => openConfirm('return')}
                   />
                   <ActionRow
                     label="Upgrade rent → Buy"
@@ -195,7 +243,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                     accent="yellow"
                     busy={pendingAction === 'upgrade'}
                     disabled={isPending}
-                    onClick={requireConnected(() => upgradeRent2ToBuy(movie.id))}
+                    onClick={() => openConfirm('upgrade')}
                   />
                   <div className="rounded border border-zinc-900 bg-zinc-950 p-2 text-[9px] text-zinc-500 space-y-1">
                     <div>
@@ -222,7 +270,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                     accent="emerald"
                     busy={pendingAction === 'return'}
                     disabled={isPending}
-                    onClick={requireConnected(() => returnMovie2(movie.id))}
+                    onClick={() => openConfirm('return')}
                   />
                   <ActionRow
                     label="Upgrade rent → Buy"
@@ -231,7 +279,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                     accent="yellow"
                     busy={pendingAction === 'upgrade'}
                     disabled={isPending}
-                    onClick={requireConnected(() => upgradeRent2ToBuy(movie.id))}
+                    onClick={() => openConfirm('upgrade')}
                   />
                   <div className="rounded border border-red-900/40 bg-red-950/20 p-2 text-[9px] text-red-300">
                     Late fees ({lateFee.toLocaleString()} $ZERO so far) only apply if you upgrade to buy. Returning the tape is always free.
@@ -271,6 +319,20 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
           </div>
         </Dialog.Content>
       </Dialog.Portal>
+
+      {confirmAction && (
+        <Movie2ConfirmSheet
+          open={!!confirmAction}
+          onOpenChange={(v) => !v && setConfirmAction(null)}
+          action={confirmAction}
+          movieName={movie.name}
+          costWei={confirmCostWei}
+          balanceWei={balanceRaw}
+          needsApproval={needsApproval(allowanceWei, confirmCostWei)}
+          isPending={isPending}
+          onConfirm={handleConfirm}
+        />
+      )}
     </Dialog.Root>
   );
 }

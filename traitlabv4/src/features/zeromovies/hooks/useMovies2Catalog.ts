@@ -4,7 +4,6 @@ import { base } from 'wagmi/chains';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZERO_MOVIES_FACET_2_ABI } from '@/lib/web3/abi';
 import { MOVIES_S2_MOCK } from '../data/movies2Mock';
-import { useMovies2Store } from '../store/movies2Store';
 import type { Movie2, Movie2RentalState } from '../types';
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
@@ -16,6 +15,13 @@ const DEFAULT_CONFIG = {
   gracePeriod: 7 * 86_400,
   lateFeePerDay: 1_000,
   paused: true,
+  unpauseAt: 0,
+  // Wei-precision twins of the display numbers above — used for allowance /
+  // approve amounts, where floating-point-safe bigints matter and the
+  // divided display numbers would lose precision.
+  rentPriceWei: 5_000n * 10n ** 18n,
+  buyPriceWei: 50_000n * 10n ** 18n,
+  lateFeePerDayWei: 1_000n * 10n ** 18n,
 };
 
 /**
@@ -34,8 +40,6 @@ const DEFAULT_CONFIG = {
  * silently drops a movie.
  */
 export function useMovies2Catalog() {
-  const overrides = useMovies2Store((s) => s.rentalOverrides);
-
   const {
     data: idsRaw,
     isLoading: idsLoading,
@@ -98,6 +102,10 @@ export function useMovies2Catalog() {
       gracePeriod: Number(tuple[7]),
       lateFeePerDay: Number(tuple[8] / 10n ** 18n),
       paused: tuple[3],
+      unpauseAt: Number(tuple[4]),
+      rentPriceWei: tuple[5],
+      buyPriceWei: tuple[6],
+      lateFeePerDayWei: tuple[8],
     };
   }, [configRaw]);
 
@@ -150,6 +158,7 @@ export function useMovies2Catalog() {
       ];
       const permanent = tuple[6];
       const renter = (tuple[7] as string) || ZERO_ADDR;
+      const tokenId = Number(tuple[8]);
       const rentedAt = Number(tuple[9]);
 
       let isOverdue = false;
@@ -162,12 +171,11 @@ export function useMovies2Catalog() {
         }
       }
 
-      const baseRental: Movie2RentalState = { permanent, renter, rentedAt, isOverdue, daysOverdue };
-      const ov = overrides[id];
-      map.set(id, ov ? { ...baseRental, ...ov } : baseRental);
+      const baseRental: Movie2RentalState = { permanent, renter, rentedAt, isOverdue, daysOverdue, tokenId };
+      map.set(id, baseRental);
     }
     return map;
-  }, [moviesRaw, ids, overrides, config.gracePeriod]);
+  }, [moviesRaw, ids, config.gracePeriod]);
 
   const onShelf = movies.filter((m) => {
     const r = rentalMap.get(m.id);
