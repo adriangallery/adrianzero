@@ -6,7 +6,7 @@ import { Sheet } from './Sheet';
 import { HomeIcon, GridIcon, FlaskIcon, BagIcon, MoreIcon } from './icons';
 import { useVisibleNavItems } from '@/components/layout/useVisibleNavItems';
 
-const PINNED_PATHS = new Set(['/zero', '/mynfts', '/shop']);
+const PINNED_PATHS = new Set(['/zero', '/mynfts', '/traitlab', '/shop']);
 
 interface TabDest {
   key: string;
@@ -29,14 +29,14 @@ const DESTS: TabDest[] = [
     to: '/mynfts',
     label: 'My NFTs',
     icon: (active) => <GridIcon size={22} className={active ? 'text-acc' : 'text-mute'} />,
-    isActive: (pathname, search) => pathname.startsWith('/mynfts') && !search.includes('tab=traits'),
+    isActive: (pathname) => pathname.startsWith('/mynfts'),
   },
   {
     key: 'traitlab',
-    to: '/mynfts?tab=traits',
+    to: '/traitlab',
     label: 'TraitLab',
     icon: (active) => <FlaskIcon size={22} className={active ? 'text-acc' : 'text-mute'} />,
-    isActive: (pathname, search) => pathname.startsWith('/mynfts') && search.includes('tab=traits'),
+    isActive: (pathname) => pathname.startsWith('/traitlab'),
   },
   {
     key: 'shop',

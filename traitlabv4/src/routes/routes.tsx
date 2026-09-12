@@ -125,6 +125,12 @@ const UiKitModule = lazy(() =>
   }))
 );
 
+const TraitLabModule = lazy(() =>
+  import('@/features/traitlab/components/TraitLabModule').then((m) => ({
+    default: m.TraitLabModule,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -135,6 +141,7 @@ export const routes: RouteObject[] = [
   { path: '/zero', element: <ZeroModule /> },
   { path: '/mint', element: <OnboardingModule /> },
   { path: '/mynfts', element: <MyNFTsModule /> },
+  { path: '/traitlab', element: <TraitLabModule /> },
   { path: '/shop', element: <ShopModule /> },
   { path: '/tshit', element: <TShitStudioModule /> },
   { path: '/buy', element: <BuyModule /> },
@@ -158,7 +165,7 @@ export const routes: RouteObject[] = [
   // ─── Redirects (backward compatibility) ──────────────────────────────────
   { path: '/dashboard', element: <Navigate to="/zero" replace /> },
   { path: '/adrianzero', element: <Navigate to="/mynfts" replace /> },
-  { path: '/traits', element: <Navigate to="/mynfts?tab=traits" replace /> },
+  { path: '/traits', element: <Navigate to="/traitlab" replace /> },
   { path: '/packs', element: <Navigate to="/mynfts?tab=packs" replace /> },
   { path: '/serum', element: <Navigate to="/mynfts?tab=serums" replace /> },
   { path: '/custom', element: <Navigate to="/mynfts?tab=customize" replace /> },

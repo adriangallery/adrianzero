@@ -5,19 +5,14 @@
  */
 
 import { Suspense, lazy, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { TabBar, type Tab } from './TabBar';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { AdrianZeroModule } from '@/features/adrianzero/components/AdrianZeroModule';
-import { Frame, Palette, Package, FlaskConical } from 'lucide-react';
+import { Frame, Package, FlaskConical } from 'lucide-react';
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton';
 
 // Lazy load all tabs except NFTs (needs onTokenSelected prop)
-const TraitsTab = lazy(() =>
-  import('@/features/traits/components/TraitsModule').then((m) => ({
-    default: m.TraitsModule,
-  }))
-);
 const PacksTab = lazy(() =>
   import('@/features/packs/components/PacksModule').then((m) => ({
     default: m.PacksModule,
@@ -44,12 +39,12 @@ const CraftTab = lazy(() =>
 // solo dejan de tener entrada visible en el segmentado.
 const TABS: Tab[] = [
   { id: 'nfts', label: 'NFTs', icon: <Frame className="h-4 w-4" /> },
-  { id: 'traits', label: 'Traits', icon: <Palette className="h-4 w-4" /> },
   { id: 'packs', label: 'Packs', icon: <Package className="h-4 w-4" /> },
   { id: 'serums', label: 'Serums', icon: <FlaskConical className="h-4 w-4" /> },
 ];
 
 export function MyNFTsModule() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'nfts';
   const selectedToken = useAdrianZeroStore((s) => s.selectedToken);
@@ -62,10 +57,12 @@ export function MyNFTsModule() {
     }
   }, [setSearchParams]);
 
-  // When user taps an NFT in the grid, auto-switch to Traits tab
+  // F4 (13-sep-2026): "Editar" un NFT ya no cambia de pestaña interna — va
+  // directo al editor TraitLab dedicado (`/traitlab`), que lee el token
+  // seleccionado en `adrianZeroStore` como hint inicial.
   const handleTokenSelected = useCallback(() => {
-    handleTabChange('traits');
-  }, [handleTabChange]);
+    navigate('/traitlab');
+  }, [navigate]);
 
   return (
     <div className="flex flex-col h-full">
@@ -104,7 +101,8 @@ export function MyNFTsModule() {
           {activeTab === 'nfts' && (
             <AdrianZeroModule embedded onTokenSelected={handleTokenSelected} />
           )}
-          {activeTab === 'traits' && <TraitsTab embedded />}
+          {/* Legado: /mynfts?tab=traits redirige al editor dedicado (F4). */}
+          {activeTab === 'traits' && <Navigate to="/traitlab" replace />}
           {activeTab === 'packs' && <PacksTab embedded />}
           {activeTab === 'serums' && <SerumsTab embedded />}
           {activeTab === 'customize' && <CustomizeTab embedded />}
