@@ -3,15 +3,17 @@
 
 /* @config carga tailwind.config.js, pero en v4 eso NO garantiza que su
    `content` siga alimentando la detección automática de clases (visto en
-   preview: 0 utilidades generadas — ni siquiera .flex, que no depende de
-   ningún theme — señal de que NINGÚN fichero se escaneó). Dos capas:
-   1) `source('../..')` fija explícitamente la raíz de traitlabv4/ como
-      base de la detección automática (doc: "helpful in monorepos"), por
-      si @config está descolocando el cwd que usa esa detección.
-   2) @source explícito por si además hace falta registrar rutas a mano
-      (sintaxis de directorio, sin glob de extensiones — no hay ejemplo
-      documentado de @source con `**/*.{ext}` y una prueba con esa forma
-      no coló ningún fichero: mismo CSS, byte a byte, con y sin ella).
+   preview: 0 utilidades generadas, ni siquiera .flex, que no depende de
+   ningún theme - señal de que ningún fichero se escaneó). Dos capas:
+   1) source('../..') fija explícitamente la raíz de traitlabv4 como base
+      de la detección automática (uso documentado: util en monorepos),
+      por si @config descoloca el cwd que usa esa detección.
+   2) @source explícito por si además hace falta registrar rutas a mano,
+      como ruta de directorio sin glob de extensiones - un intento previo
+      con un glob de doble asterisco y llaves de extensión no coló ningún
+      fichero (CSS idéntico, byte a byte, con y sin esa línea).
+   ATENCION al editar este comentario: no meter la secuencia que cierra
+   un comentario CSS dentro del propio texto, revienta el parser.
    Rutas relativas a este fichero (src/styles/globals.css). */
 @source "../../index.html";
 @source "../../src";
