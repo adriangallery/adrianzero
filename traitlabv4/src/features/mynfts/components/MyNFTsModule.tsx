@@ -9,7 +9,7 @@ import { useSearchParams } from 'react-router-dom';
 import { TabBar, type Tab } from './TabBar';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { AdrianZeroModule } from '@/features/adrianzero/components/AdrianZeroModule';
-import { Frame, Palette, Package, FlaskConical, Edit3, Hammer } from 'lucide-react';
+import { Frame, Palette, Package, FlaskConical } from 'lucide-react';
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton';
 
 // Lazy load all tabs except NFTs (needs onTokenSelected prop)
@@ -39,13 +39,14 @@ const CraftTab = lazy(() =>
   }))
 );
 
+// F3.5 (D17, 13-sep): segmento visible reducido a 4 destinos (patrón
+// MisNFTs.dc.html) — Customize/Craft siguen accesibles por ?tab= directo,
+// solo dejan de tener entrada visible en el segmentado.
 const TABS: Tab[] = [
   { id: 'nfts', label: 'NFTs', icon: <Frame className="h-4 w-4" /> },
   { id: 'traits', label: 'Traits', icon: <Palette className="h-4 w-4" /> },
   { id: 'packs', label: 'Packs', icon: <Package className="h-4 w-4" /> },
   { id: 'serums', label: 'Serums', icon: <FlaskConical className="h-4 w-4" /> },
-  { id: 'customize', label: 'Customize', icon: <Edit3 className="h-4 w-4" /> },
-  { id: 'craft', label: 'Craft', icon: <Hammer className="h-4 w-4" /> },
 ];
 
 export function MyNFTsModule() {
@@ -68,30 +69,37 @@ export function MyNFTsModule() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Selected NFT Banner */}
-      {selectedToken && activeTab !== 'nfts' && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 border-b border-border text-sm">
-          <img
-            src={selectedToken.image?.cachedUrl || selectedToken.image?.originalUrl || selectedToken.metadata?.image || ''}
-            alt={`ZERO #${selectedToken.tokenId}`}
-            className="h-8 w-8 rounded border border-border object-cover"
-          />
-          <span className="text-muted-foreground">Working on:</span>
-          <span className="font-bold text-[#00ff00]">ZERO #{selectedToken.tokenId}</span>
-          <button
-            onClick={() => handleTabChange('nfts')}
-            className="ml-auto text-xs text-muted-foreground hover:text-foreground underline"
-          >
-            Change
-          </button>
-        </div>
-      )}
+      {/* F3.5: banner "Working on" + segmentado pegados juntos como UN bloque
+          sticky opaco (antes el fondo era bg-card, roto/transparente sin
+          tailwind.config — se veían las tarjetas de la rejilla pasando por
+          debajo). z-20: por encima del contenido, por debajo del Header
+          (z-30) y de la Sheet/overlay (z-40+). */}
+      <div className="sticky top-0 z-20 bg-bg flex flex-col gap-2 pb-2">
+        {selectedToken && activeTab !== 'nfts' && (
+          <div className="flex items-center gap-2 px-4 pt-2 text-sm">
+            <img
+              src={selectedToken.image?.cachedUrl || selectedToken.image?.originalUrl || selectedToken.metadata?.image || ''}
+              alt={`ZERO #${selectedToken.tokenId}`}
+              className="h-8 w-8 rounded border-2 border-line object-cover flex-none"
+            />
+            <span className="text-mute">Working on:</span>
+            <span className="font-ui font-bold text-acc">ZERO #{selectedToken.tokenId}</span>
+            <button
+              onClick={() => handleTabChange('nfts')}
+              className="font-ui ml-auto text-[12px] text-mute hover:text-fg underline"
+            >
+              Change
+            </button>
+          </div>
+        )}
 
-      {/* Tab Bar */}
-      <TabBar tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
+        <div className="px-4">
+          <TabBar tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
+        </div>
+      </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-[calc(var(--tabbar-h)+16px)]">
         <Suspense fallback={<LoadingSkeleton />}>
           {activeTab === 'nfts' && (
             <AdrianZeroModule embedded onTokenSelected={handleTokenSelected} />

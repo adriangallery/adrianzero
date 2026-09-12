@@ -17,6 +17,9 @@ interface NFTGridProps {
   onTokenSelect?: (token: AdrianZeroToken) => void;
   onEndReached?: () => void;
   emptyMessage?: string;
+  /** F3.5: cuando se pasa, cada tarjeta pinta un botón "Edit" con este href
+   * (patrón MisNFTs.dc.html) en vez del grid denso de solo-imagen. */
+  getEditHref?: (token: AdrianZeroToken) => string;
 }
 
 export function NFTGrid({
@@ -25,12 +28,16 @@ export function NFTGrid({
   onTokenSelect,
   onEndReached,
   emptyMessage = 'No NFTs found',
+  getEditHref,
 }: NFTGridProps) {
   const isMobile = shouldOptimizeForTouch();
   const hasSelection = !!selectedTokenId;
+  // Con botón Edit visible (mynfts): 2 columnas con info+CTA, como la maqueta.
+  // Sin él (resto de usos): grid denso 3 col solo-imagen, sin cambios.
+  const showEditCard = !!getEditHref;
 
   // 3 cols on mobile for denser grid (compact mode), 4+ on desktop
-  const itemsPerRow = isMobile ? 3 : 4;
+  const itemsPerRow = showEditCard ? (isMobile ? 2 : 4) : isMobile ? 3 : 4;
 
   // Group tokens into rows for virtualization
   const rows = useMemo(() => {
@@ -65,7 +72,7 @@ export function NFTGrid({
         itemContent={(index) => {
           const row = rows[index];
           return (
-            <div className="grid grid-cols-3 gap-2 mb-2 px-1">
+            <div className={`grid gap-2 mb-2 px-1 ${showEditCard ? 'grid-cols-2' : 'grid-cols-3'}`}>
               {row.map((token) => (
                 <NFTCard
                   key={token.tokenId}
@@ -73,7 +80,8 @@ export function NFTGrid({
                   isSelected={token.tokenId === selectedTokenId}
                   hasSelection={hasSelection}
                   onClick={() => onTokenSelect?.(token)}
-                  compact={isMobile}
+                  compact={isMobile && !showEditCard}
+                  editHref={getEditHref?.(token)}
                 />
               ))}
             </div>
@@ -87,9 +95,11 @@ export function NFTGrid({
   return (
     <div
       className={`grid gap-2 sm:gap-3 ${
-        isMobile
-          ? 'grid-cols-3'
-          : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
+        showEditCard
+          ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+          : isMobile
+            ? 'grid-cols-3'
+            : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7'
       }`}
     >
       {tokens.map((token) => (
@@ -99,7 +109,8 @@ export function NFTGrid({
           isSelected={token.tokenId === selectedTokenId}
           hasSelection={hasSelection}
           onClick={() => onTokenSelect?.(token)}
-          compact={isMobile}
+          compact={isMobile && !showEditCard}
+          editHref={getEditHref?.(token)}
         />
       ))}
     </div>
