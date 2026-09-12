@@ -12,6 +12,8 @@ import { ToastContainer } from '../notifications/Toast';
 import { ZeroStyleChrome } from './ZeroStyleChrome';
 import { NAV_ITEMS } from './navigation';
 import { useWalletDataSync } from '@/hooks/useWalletDataSync';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { TabBar } from '@/ui/TabBar';
 
 const EXTRA_TITLES: Record<string, string> = {
   '/explain-to-jb': 'Explain to JB',
@@ -30,6 +32,9 @@ export function MainLayout() {
   useWalletDataSync();
 
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  // TabBar fija (F3/D11): solo <768px. 768–1023px sigue viendo el header +
+  // sidebar de siempre (rama isDesktop=false de abajo, sin TabBar).
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(min-width: 1024px)').matches;
@@ -99,7 +104,10 @@ export function MainLayout() {
         <Header onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
         {isZeroLanding ? (
-          <div className="flex-1 overflow-y-auto">
+          <div
+            className="flex-1 overflow-y-auto"
+            style={isMobile ? { paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' } : undefined}
+          >
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-16">
@@ -111,7 +119,7 @@ export function MainLayout() {
             </Suspense>
           </div>
         ) : (
-          <Container>
+          <Container tabBarInset={isMobile}>
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-16">
@@ -124,6 +132,9 @@ export function MainLayout() {
           </Container>
         )}
       </div>
+
+      {/* Tab bar inferior fija (<768px) */}
+      {isMobile && <TabBar />}
 
       {/* Toast Notifications */}
       <ToastContainer />

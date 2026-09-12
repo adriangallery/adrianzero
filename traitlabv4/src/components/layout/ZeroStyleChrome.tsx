@@ -125,7 +125,7 @@ export function ZeroStyleChrome() {
         <div className="pointer-events-auto flex items-center gap-2">
           <Link
             to="/buy"
-            className="inline-flex h-12 items-center gap-1.5 rounded-xl border border-[#00ff00]/40 bg-[#00ff00]/15 px-4 text-sm font-bold uppercase tracking-[0.1em] text-[#00ff00] shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur transition-colors hover:bg-[#00ff00]/25"
+            className="inline-flex h-12 items-center gap-1.5 rounded-xl border border-acc/40 bg-acc/15 px-4 text-sm font-bold uppercase tracking-[0.1em] text-acc shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur transition-colors hover:bg-acc/25"
           >
             <DollarSign className="h-4 w-4" />
             Buy $ZERO

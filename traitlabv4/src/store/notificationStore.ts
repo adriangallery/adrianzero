@@ -16,6 +16,8 @@ export interface Notification {
   timestamp: Date;
   read: boolean;
   autoDismiss?: boolean;
+  /** Hash de una tx relacionada; si viene, el Toast del sistema F3 añade "View on BaseScan". */
+  txHash?: string;
 }
 
 interface NotificationStore {
@@ -24,7 +26,8 @@ interface NotificationStore {
     type: NotificationType,
     title: string,
     message: string,
-    autoDismiss?: boolean
+    autoDismiss?: boolean,
+    txHash?: string
   ) => void;
   removeNotification: (id: string) => void;
   markAsRead: (id: string) => void;
@@ -38,7 +41,7 @@ export const useNotificationStore = create<NotificationStore>()(
     (set, get) => ({
       notifications: [],
 
-      addNotification: (type, title, message, autoDismiss = true) => {
+      addNotification: (type, title, message, autoDismiss = true, txHash) => {
         const notification: Notification = {
           id: Date.now().toString(),
           type,
@@ -47,6 +50,7 @@ export const useNotificationStore = create<NotificationStore>()(
           timestamp: new Date(),
           read: false,
           autoDismiss,
+          txHash,
         };
 
         set((state) => ({

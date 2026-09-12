@@ -10,20 +10,20 @@ export function useNotifications() {
   const addNotification = useNotificationStore((state) => state.addNotification);
 
   return {
-    success: (title: string, message: string, autoDismiss = true) => {
-      addNotification('success', title, message, autoDismiss);
+    success: (title: string, message: string, autoDismiss = true, txHash?: string) => {
+      addNotification('success', title, message, autoDismiss, txHash);
     },
-    error: (title: string, message: string, autoDismiss = true) => {
-      addNotification('error', title, message, autoDismiss);
+    error: (title: string, message: string, autoDismiss = true, txHash?: string) => {
+      addNotification('error', title, message, autoDismiss, txHash);
     },
-    info: (title: string, message: string, autoDismiss = true) => {
-      addNotification('info', title, message, autoDismiss);
+    info: (title: string, message: string, autoDismiss = true, txHash?: string) => {
+      addNotification('info', title, message, autoDismiss, txHash);
     },
-    warning: (title: string, message: string, autoDismiss = true) => {
-      addNotification('warning', title, message, autoDismiss);
+    warning: (title: string, message: string, autoDismiss = true, txHash?: string) => {
+      addNotification('warning', title, message, autoDismiss, txHash);
     },
-    custom: (type: NotificationType, title: string, message: string, autoDismiss = true) => {
-      addNotification(type, title, message, autoDismiss);
+    custom: (type: NotificationType, title: string, message: string, autoDismiss = true, txHash?: string) => {
+      addNotification(type, title, message, autoDismiss, txHash);
     },
   };
 }

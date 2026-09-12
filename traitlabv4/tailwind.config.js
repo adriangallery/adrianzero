@@ -1,4 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+// ⚠️ Este fichero NO se carga (Tailwind v4 no detecta tailwind.config.js
+// solo; hace falta @config en el CSS, y no lo hay). Ya era así en `main`
+// antes del rediseño F3 — comprobado contra el CSS real de producción
+// (.bg-primary{}/.bg-secondary{} = 0 también ahí). Los tokens D11
+// (bg-acc, text-mute, border-line…) están registrados vía @theme inline
+// en src/styles/globals.css, que sí funciona sin depender de este
+// fichero. No añadir @config sin re-verificar la detección de clases
+// contra el CSS servido — fue justo lo que rompió el build de esta rama.
 export default {
   content: [
     "./index.html",
@@ -44,6 +52,8 @@ export default {
       fontFamily: {
         sans: ['"Press Start 2P"', 'monospace'],
         mono: ['JetBrains Mono', 'monospace'],
+        display: ['"Press Start 2P"', '"Courier New"', 'monospace'],
+        body: ['"Space Grotesk"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       spacing: {
         '18': '4.5rem',
