@@ -40,12 +40,29 @@ export const MOVIES_S2_MOCK: Movie2[] = [
 ];
 
 /**
+ * True while a movie's cover should stay hidden behind the "???" tile.
+ * `isMystery` is a static catalog flag that stays `true` forever (even after
+ * the movie is revealed) — the thing that actually gates the cover is
+ * `revealed`, which flips on-chain the first time the movie is rented or
+ * bought. Callers must pass BOTH, never `isMystery` alone, or a revealed
+ * movie's poster resolves to `_mystery.svg` forever (2026-09-13 bug: the
+ * S2 tab passed only `m.isMystery` to `getS2PosterUrl`, so all 11 mystery
+ * cards would have stayed blank the moment they got revealed).
+ */
+export function isMovie2Hidden(movie: { isMystery: boolean; revealed: boolean }): boolean {
+  return movie.isMystery && !movie.revealed;
+}
+
+/**
  * Resolve cover URL. Animated movies use the GIF; everything else uses the
  * AdrianLAB pixel SVG. AdrianLAB is the source of truth — same path the
  * compositor reads, so what you see here matches the on-chain render.
+ *
+ * @param isHidden Result of `isMovie2Hidden(movie)` — NOT the raw `isMystery`
+ *   flag. See that function's docstring for why the distinction matters.
  */
-export function getS2PosterUrl(movieId: number, isMystery: boolean): string {
-  if (isMystery) return '/images/zeromovies2/_mystery.svg';
+export function getS2PosterUrl(movieId: number, isHidden: boolean): string {
+  if (isHidden) return '/images/zeromovies2/_mystery.svg';
   const m = MOVIES_S2_MOCK.find((x) => x.id === movieId);
   const base = 'https://adrianlab.vercel.app/labimages/zeromovies2';
   if (m?.hasAnimation) return `${base}/animated/${movieId}.gif`;

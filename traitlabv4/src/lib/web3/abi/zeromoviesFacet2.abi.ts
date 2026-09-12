@@ -123,6 +123,25 @@ export const ZERO_MOVIES_FACET_2_ABI = [
         stateMutability: 'view',
         type: 'function',
     },
+    {
+        inputs: [{name: 'user', type: 'address'}],
+        name: 'isGolden2Claimed',
+        outputs: [{name: '', type: 'bool'}],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    // ─── Writes: Golden Mint (Merkle-gated, one-shot per wallet) ───
+    {
+        inputs: [
+            {name: 'proof', type: 'bytes32[]'},
+            {name: 'ticketCount', type: 'uint256'},
+            {name: 'crossSeasonWeight', type: 'uint256'},
+        ],
+        name: 'claimGoldenMint',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
     // ─── Errors (decoded by wagmi on revert) ───
     {
         inputs: [{name: 'cap', type: 'uint256'}],
@@ -147,6 +166,56 @@ export const ZERO_MOVIES_FACET_2_ABI = [
     {
         inputs: [{name: 'movieId', type: 'uint256'}],
         name: 'MoviePermanentlyOwned',
+        type: 'error',
+    },
+    {
+        inputs: [{name: 'movieId', type: 'uint256'}],
+        name: 'MovieNotFound',
+        type: 'error',
+    },
+    {
+        inputs: [{name: 'movieId', type: 'uint256'}],
+        name: 'MovieNotActive',
+        type: 'error',
+    },
+    {
+        inputs: [],
+        name: 'ReservedForGoldenClaim',
+        type: 'error',
+    },
+    {
+        inputs: [],
+        name: 'MintFailed',
+        type: 'error',
+    },
+    {
+        inputs: [{name: 'tokenId', type: 'uint256'}],
+        name: 'TokenNotMintedHere',
+        type: 'error',
+    },
+    {
+        inputs: [{name: 'tokenId', type: 'uint256'}],
+        name: 'NotRenter',
+        type: 'error',
+    },
+    {
+        inputs: [],
+        name: 'AlreadyClaimedGolden',
+        type: 'error',
+    },
+    {
+        inputs: [],
+        name: 'ClaimWindowClosed',
+        type: 'error',
+    },
+    {
+        inputs: [],
+        name: 'InvalidProof',
+        type: 'error',
+    },
+    {
+        inputs: [],
+        name: 'NoMoviesAvailableForGolden',
         type: 'error',
     },
 ] as const;

@@ -46,6 +46,12 @@ export interface Movie2RentalState {
   rentedAt: number;
   isOverdue: boolean;
   daysOverdue: number;
+  /**
+   * On-chain AdrianLabCore tokenId for this movie (0 = never minted yet).
+   * `returnMovie2` / `upgradeRent2ToBuy` are keyed by tokenId, NOT movieId —
+   * callers must read this field, never `movie.id`, when building those tx args.
+   */
+  tokenId: number;
 }
 
 /** A single S1 holder's eligibility row from the Merkle snapshot. */

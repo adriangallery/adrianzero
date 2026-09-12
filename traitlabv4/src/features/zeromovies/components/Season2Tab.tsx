@@ -4,14 +4,13 @@ import { useMovie2Actions } from '../hooks/useMovie2Actions';
 import { Movie2Card } from './Movie2Card';
 import { Movie2DetailModal } from './Movie2DetailModal';
 import { S2GoldenClaimBanner } from './S2GoldenClaimBanner';
-import { S2SuccessToast } from './S2SuccessToast';
-import { getS2PosterUrl } from '../data/movies2Mock';
+import { getS2PosterUrl, isMovie2Hidden } from '../data/movies2Mock';
 import { useMovies2Store } from '../store/movies2Store';
 
 export function Season2Tab() {
   const { movies, rentalMap, onShelf, config, isMock } = useMovies2Catalog();
-  const { snapshotMeta } = useGoldenEligibility();
-  const { selectedMovieId, isDetailOpen, selectMovie, closeDetail, goldenClaimed } = useMovies2Store();
+  const { snapshotMeta, alreadyClaimed } = useGoldenEligibility();
+  const { selectedMovieId, isDetailOpen, selectMovie, closeDetail } = useMovies2Store();
   const { claimGoldenMint, isPending, pendingAction } = useMovie2Actions();
 
   const selectedMovie = movies.find((m) => m.id === selectedMovieId) ?? null;
@@ -62,8 +61,8 @@ export function Season2Tab() {
       )}
 
       <S2GoldenClaimBanner
-        unpauseAt={Math.floor(Date.now() / 1000) - 60}
-        alreadyClaimed={goldenClaimed}
+        unpauseAt={config.unpauseAt > 0 ? config.unpauseAt : undefined}
+        alreadyClaimed={alreadyClaimed}
         onClaim={claimGoldenMint}
         isClaiming={pendingAction === 'claimGolden'}
         isClaimDisabled={isPending}
@@ -90,7 +89,7 @@ export function Season2Tab() {
             <Movie2Card
               key={m.id}
               movie={m}
-              posterUrl={getS2PosterUrl(m.id, m.isMystery)}
+              posterUrl={getS2PosterUrl(m.id, isMovie2Hidden(m))}
               rental={rental}
               onClick={() => selectMovie(m.id)}
             />
@@ -123,11 +122,10 @@ export function Season2Tab() {
       <Movie2DetailModal
         movie={selectedMovie}
         rental={selectedRental}
-        posterUrl={selectedMovie ? getS2PosterUrl(selectedMovie.id, selectedMovie.isMystery) : ''}
+        posterUrl={selectedMovie ? getS2PosterUrl(selectedMovie.id, isMovie2Hidden(selectedMovie)) : ''}
         open={isDetailOpen}
         onClose={closeDetail}
       />
-      <S2SuccessToast />
     </>
   );
 }
