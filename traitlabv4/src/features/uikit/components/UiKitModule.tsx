@@ -28,7 +28,7 @@ const DEMO_TX_HASH_PLACEHOLDER = '0x-demo-tx-hash-para-preview-en-ui-kit';
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="font-display text-[13px] text-acc">{title}</h2>
+      <h2 className="font-ui text-[15px] font-bold text-acc">{title}</h2>
       {children}
     </section>
   );
@@ -111,17 +111,33 @@ export function UiKitModule() {
         </div>
       </Section>
 
-      <Section title="Tipografía">
-        <div className="flex flex-col gap-2">
-          <div className="font-display text-acc" style={{ fontSize: 'var(--fs-h1)' }}>
-            Press Start 2P · h1
+      <Section title="Tipografía (D17, 13-sep-2026)">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <div className="text-[11px] text-mute">--font-display · Press Start 2P · wordmark y h1 de portada, dosis pequeñas</div>
+            <div className="font-display text-acc" style={{ fontSize: 'var(--fs-h1)' }}>
+              ZERO
+            </div>
           </div>
-          <div className="font-display text-fg" style={{ fontSize: 'var(--fs-h2)' }}>
-            Press Start 2P · h2
+
+          <div className="flex flex-col gap-1.5">
+            <div className="text-[11px] text-mute">--font-ui · Pixelify Sans · botones, chips, badges, etiquetas, números/precios, h2/h3, TabBar</div>
+            <div className="font-ui text-fg" style={{ fontSize: 'var(--fs-h2)' }}>
+              TraitLab · 11.61 ZERO
+            </div>
+            <div className="font-ui text-[15px] text-fg">Open TraitLab — botón, tamaño mínimo 15px</div>
+            <div className="font-ui text-[12px] text-mute">Etiqueta · badge · tab — tamaño mínimo 12px</div>
           </div>
-          <div style={{ fontSize: 'var(--fs-body)' }}>Space Grotesk · body — texto normal de la app.</div>
-          <div className="text-mute" style={{ fontSize: 'var(--fs-small)' }}>
-            Space Grotesk · small — metadatos, ayudas, contadores.
+
+          <div className="flex flex-col gap-1.5">
+            <div className="text-[11px] text-mute">--font-body · Chakra Petch · párrafos, descripciones, inputs</div>
+            <p style={{ fontSize: 'var(--fs-body)' }}>
+              Aplica traits a tu AdrianZERO, ábrelos en TraitLab y compra packs nuevos en la Shop —
+              cuerpo de texto normal de la app, mínimo 15px.
+            </p>
+            <div className="text-mute" style={{ fontSize: 'var(--fs-small)' }}>
+              Chakra Petch · small — metadatos, ayudas, contadores.
+            </div>
           </div>
         </div>
       </Section>

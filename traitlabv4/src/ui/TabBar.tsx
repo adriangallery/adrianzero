@@ -85,7 +85,7 @@ export function TabBar({ embedded = false }: TabBarProps) {
               aria-current={active ? 'page' : undefined}
             >
               {dest.icon(active)}
-              <span className={cn('text-[10px] leading-none', active ? 'text-acc font-bold' : 'text-mute')}>
+              <span className={cn('font-ui text-[12px] leading-none', active ? 'text-acc font-bold' : 'text-mute')}>
                 {dest.label}
               </span>
             </Link>
@@ -100,7 +100,7 @@ export function TabBar({ embedded = false }: TabBarProps) {
           aria-expanded={moreOpen}
         >
           <MoreIcon size={22} className={isMoreActive ? 'text-acc' : 'text-mute'} />
-          <span className={cn('text-[10px] leading-none', isMoreActive ? 'text-acc font-bold' : 'text-mute')}>
+          <span className={cn('font-ui text-[12px] leading-none', isMoreActive ? 'text-acc font-bold' : 'text-mute')}>
             More
           </span>
         </button>

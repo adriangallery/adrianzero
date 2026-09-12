@@ -46,7 +46,7 @@ export function Sheet({ open, onOpenChange, title, children, maxHeight = '80vh',
             </div>
             {title ? (
               <div className="flex-none flex items-center justify-between px-4 pb-2">
-                <Dialog.Title className="font-display text-[11px] text-fg">{title}</Dialog.Title>
+                <Dialog.Title className="font-ui text-[13px] font-bold text-fg">{title}</Dialog.Title>
                 <Dialog.Close asChild>
                   <button
                     type="button"
