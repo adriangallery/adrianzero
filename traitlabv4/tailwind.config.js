@@ -54,11 +54,9 @@ export default {
         bad: 'var(--bad)',
         ok: 'var(--ok)',
       },
-      borderRadius: {
-        'r-sm': 'var(--r-sm)',
-        'r-md': 'var(--r-md)',
-        'r-lg': 'var(--r-lg)',
-      },
+      /* Radios del sistema F3: se usan como rounded-[var(--r-sm|md|lg)] para
+         no pisar la escala rounded-sm/md/lg por defecto que ya usa el resto
+         de la app (F4–F8 migrarán módulo a módulo). */
       fontFamily: {
         sans: ['"Press Start 2P"', 'monospace'],
         mono: ['JetBrains Mono', 'monospace'],

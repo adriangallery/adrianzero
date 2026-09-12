@@ -119,6 +119,12 @@ const GumballModule = lazy(() =>
   }))
 );
 
+const UiKitModule = lazy(() =>
+  import('@/features/uikit/components/UiKitModule').then((m) => ({
+    default: m.UiKitModule,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -143,6 +149,8 @@ export const routes: RouteObject[] = [
 
   // ─── Link-only (not in menu) ─────────────────────────────────────────────
   { path: '/gumball', element: <GumballModule /> },
+  // Sistema de diseño F3 (D11) — oculta, solo para revisión de Adrián.
+  { path: '/ui-kit', element: <UiKitModule /> },
   { path: '/explain-to-jb', element: <ExplainJBModule /> },
   { path: '/animations', element: <AnimationsModule /> },
   { path: '/budokai-replay-mockup', element: <BudokaiChronicleMockup /> },
