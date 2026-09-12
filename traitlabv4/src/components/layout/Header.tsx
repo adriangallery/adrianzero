@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { DollarSign } from 'lucide-react';
 import { ConnectButton } from '../wallet/ConnectButton';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { usePageTitle } from '@/hooks/usePageTitle';
+import { useSectionTitle } from '@/hooks/useSectionTitle';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface HeaderProps {
@@ -15,17 +15,17 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const { prefix, accent } = usePageTitle();
+  const sectionTitle = useSectionTitle();
   // <768px: la TabBar cubre la navegación (incluida su hoja "More"), así
   // que el menú hamburguesa y la campana sobran — el header se reduce a
   // marca + wallet. 768–1023px (tablet): mantiene el header actual.
   const isCompact = useMediaQuery('(max-width: 767px)');
 
   return (
-    <header className="sticky top-0 z-30 bg-card border-b border-border">
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Left: Mobile menu + Logo */}
-        <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-30 h-[var(--header-h)] bg-bg border-b-2 border-line">
+      <div className="flex items-center justify-between h-full px-4">
+        {/* Left: Mobile menu + wordmark único "ZERO" + sección actual */}
+        <div className="flex items-center gap-4 min-w-0">
           {!isCompact && (
             <button
               onClick={onMenuClick}
@@ -42,7 +42,12 @@ export function Header({ onMenuClick }: HeaderProps) {
             </button>
           )}
 
-          <h1 className="text-lg font-bold text-foreground lg:hidden font-adrian">{prefix}<span className="text-acc">{accent}</span></h1>
+          {/* F3.5 (D17): un solo wordmark en toda la app — antes cada página
+              llevaba su propio wordmark ("TraitLAB"/"TraitSHOP"/"MyNFTs"). */}
+          <div className="flex items-center gap-2.5 min-w-0 lg:hidden">
+            <span className="font-display text-[13px] text-acc flex-none">ZERO</span>
+            <span className="font-ui text-[13px] text-mute truncate">{sectionTitle}</span>
+          </div>
         </div>
 
         {/* Right: Actions */}
