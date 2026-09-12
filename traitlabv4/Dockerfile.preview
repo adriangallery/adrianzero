@@ -1,0 +1,60 @@
+# Preview build de feat/az-f3-design-system para el mini (Vercel bloqueado,
+# F3 del PLAN_ADRIANZERO_2026-09.md). A diferencia de Dockerfile.mini (que
+# solo copia un dist/ construido en local), este SÍ construye — el portátil
+# de Adrian es de 8GB y nunca ejecuta npm/vite/tsc localmente (regla dura del
+# workspace); el build ocurre aquí, en el mini, en `dokku ps:rebuild`/push.
+#
+# App dokku: adrianzero-preview → https://adrianzero-preview.zerothetoken.com
+# NUNCA usar para adrianzero.com de producción (esa la sirve Vercel, D1).
+
+FROM node:22-alpine AS build
+WORKDIR /app
+
+# VITE_* usadas por el bundle (grep import.meta.env.VITE_ en src/); vacías por
+# defecto — degradan a RPC público / defaults del código, igual que en
+# adventure.zerothetoken.com. Si `adrianzero` (dokku) llegase a tener alguna
+# configurada, se pasan a `docker build --build-arg` desde el deploy, nunca
+# hardcodeadas aquí.
+ARG VITE_ALCHEMY_API_KEY=""
+ARG VITE_ALCHEMY_API_KEYS=""
+ARG VITE_ALCHEMY_API_KEY_FALLBACK=""
+ARG VITE_ALCHEMY_ENS_KEY=""
+ARG VITE_API_BASE_URL=""
+ARG VITE_BUDOKAI_API_URL=""
+ARG VITE_HOOK_ADDRESS=""
+ARG VITE_INFURA_API_KEY=""
+ARG VITE_POOL_ADDRESS=""
+ARG VITE_SWAP_DIAMOND_ADDRESS=""
+ARG VITE_SWAP_ROUTER_ADDRESS=""
+ARG VITE_V4_QUOTER_ADDRESS=""
+ARG VITE_VERCEL_API_URL="https://adrianlab.vercel.app"
+ARG VITE_WALLETCONNECT_PROJECT_ID=""
+ARG VITE_WETH_ADDRESS=""
+
+ENV VITE_ALCHEMY_API_KEY=$VITE_ALCHEMY_API_KEY \
+    VITE_ALCHEMY_API_KEYS=$VITE_ALCHEMY_API_KEYS \
+    VITE_ALCHEMY_API_KEY_FALLBACK=$VITE_ALCHEMY_API_KEY_FALLBACK \
+    VITE_ALCHEMY_ENS_KEY=$VITE_ALCHEMY_ENS_KEY \
+    VITE_API_BASE_URL=$VITE_API_BASE_URL \
+    VITE_BUDOKAI_API_URL=$VITE_BUDOKAI_API_URL \
+    VITE_HOOK_ADDRESS=$VITE_HOOK_ADDRESS \
+    VITE_INFURA_API_KEY=$VITE_INFURA_API_KEY \
+    VITE_POOL_ADDRESS=$VITE_POOL_ADDRESS \
+    VITE_SWAP_DIAMOND_ADDRESS=$VITE_SWAP_DIAMOND_ADDRESS \
+    VITE_SWAP_ROUTER_ADDRESS=$VITE_SWAP_ROUTER_ADDRESS \
+    VITE_V4_QUOTER_ADDRESS=$VITE_V4_QUOTER_ADDRESS \
+    VITE_VERCEL_API_URL=$VITE_VERCEL_API_URL \
+    VITE_WALLETCONNECT_PROJECT_ID=$VITE_WALLETCONNECT_PROJECT_ID \
+    VITE_WETH_ADDRESS=$VITE_WETH_ADDRESS
+
+# Contexto de build = raíz del repo (dokku manda todo el árbol); nos movemos
+# al subdirectorio real de la app.
+COPY traitlabv4/package.json traitlabv4/package-lock.json* ./
+RUN npm ci --legacy-peer-deps
+COPY traitlabv4/ ./
+RUN npm run build
+
+FROM nginx:alpine AS runtime
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY traitlabv4/nginx.preview.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
