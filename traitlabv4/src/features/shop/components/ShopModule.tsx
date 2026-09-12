@@ -61,26 +61,28 @@ export function ShopModule() {
   }
 
   return (
-    <div className="flex h-full">
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+    <div className="flex h-full min-w-0">
+      {/* Main Content — sin padding propio en móvil: el Container ya da
+          16px (F3.5: el p-4 de aquí lo doblaba, y el flex sin min-w-0
+          dejaba que el contenido empujara la página fuera del viewport). */}
+      <div className="flex-1 min-w-0 overflow-y-auto lg:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Shop</h1>
-            <p className="text-muted-foreground mt-1">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            <h1 className="font-ui text-xl font-bold text-fg">Shop</h1>
+            <p className="text-mute text-[13px] mt-0.5 truncate-2">
               Purchase traits, floppies, and serums with $ZERO or $ADRIAN
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 flex-none">
             {/* Balances */}
             <div className="hidden sm:block text-right">
-              <p className="text-sm text-muted-foreground">Your Balances</p>
-              <p className="font-bold text-accent text-sm">
+              <p className="text-[13px] text-mute">Your Balances</p>
+              <p className="font-ui font-bold text-acc text-sm">
                 {zeroFormatted.toLocaleString()} $ZERO
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-mute">
                 {adrianFormatted.toLocaleString()} $ADRIAN
               </p>
             </div>
@@ -89,7 +91,7 @@ export function ShopModule() {
             <button
               onClick={() => refetch()}
               disabled={isLoading}
-              className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              className="p-2 rounded-lg hover:bg-panel text-mute hover:text-fg transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
@@ -98,7 +100,7 @@ export function ShopModule() {
 
         {/* Error State */}
         {error && (
-          <div className="p-4 rounded-lg bg-destructive/10 text-destructive mb-6">
+          <div className="p-4 rounded-[var(--r-md)] border-2 border-bad bg-bad/10 text-bad mb-4 text-sm">
             Failed to load shop items. Please try again.
           </div>
         )}
@@ -115,7 +117,7 @@ export function ShopModule() {
         />
 
         {/* Items Grid */}
-        <div className="mt-6">
+        <div className="mt-4 pb-[calc(var(--tabbar-h)+80px)]">
           <ShopItemGrid
             items={getCurrentItems()}
             isLoading={isLoading}
@@ -124,7 +126,7 @@ export function ShopModule() {
         </div>
       </div>
 
-      {/* Cart Sidebar */}
+      {/* Cart Sidebar (desktop) / ActionBar flotante (móvil, dentro de ShopCart) */}
       <ShopCart />
     </div>
   );
