@@ -19,8 +19,8 @@ import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore'
 import { useTraitsByCategory } from '@/features/traits/hooks/useTraits';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
 import { humanError } from '@/lib/web3/humanError';
-import { useTraitlabStore, selectTraitlabChanges } from '../store/traitlabStore';
-import { effectiveTraitIds, planSignatures } from '../lib/changes';
+import { useTraitlabStore } from '../store/traitlabStore';
+import { computeChanges, effectiveTraitIds, planSignatures } from '../lib/changes';
 import { computeTraitCardState } from '../lib/traitCardState';
 import { getLastUsedTokenId, setLastUsedTokenId } from '../lib/tokenHistory';
 import { useEquippedTraits } from '../hooks/useEquippedTraits';
@@ -58,7 +58,16 @@ export function TraitLabModule() {
   const removeEquippedAction = useTraitlabStore((s) => s.removeEquipped);
   const undo = useTraitlabStore((s) => s.undo);
   const clearSelections = useTraitlabStore((s) => s.clearSelections);
-  const changes = useTraitlabStore(selectTraitlabChanges);
+  // BUG (React #185, hallado en revisión visual 13-sep): `useTraitlabStore(selectTraitlabChanges)`
+  // pasaba por `useSyncExternalStoreWithSelector`, que compara el resultado del selector con
+  // Object.is — pero `computeChanges` construye un objeto/arrays NUEVOS en cada llamada, así que
+  // la comparación SIEMPRE daba "cambió", incluso con `equipped`/`selections` sin tocar (vacíos
+  // incluso, sin wallet). Eso disparaba un re-render → nueva instantánea → otro re-render sin fin
+  // ("Maximum update depth exceeded"). Fix: leer los campos crudos del store (ya estables, son
+  // referencias directas que solo cambian cuando una acción los reemplaza) y derivar `changes`
+  // con `useMemo` en React, no dentro del selector de zustand. Ver
+  // `__tests__/traitlabSelectorStability.test.ts` para el test de regresión.
+  const changes = useMemo(() => computeChanges(equipped, selections), [equipped, selections]);
 
   const [tokenSheetOpen, setTokenSheetOpen] = useState(!selectedTokenId);
   const [activeCategory, setActiveCategory] = useState<string>('');
