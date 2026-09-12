@@ -143,3 +143,49 @@ export function WalletIcon({ size, ...props }: IconProps) {
     </svg>
   );
 }
+
+export function SearchIcon({ size, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+}
+
+export function UndoIcon({ size, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+      <path d="M3 3v5h5" />
+    </svg>
+  );
+}
+
+export function ShareIcon({ size, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.6 13.5 15.4 17.5M15.4 6.5 8.6 10.5" />
+    </svg>
+  );
+}
+
+export function LockIcon({ size, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <rect x="4" y="10" width="16" height="10" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
+export function PlusIcon({ size, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
