@@ -8,7 +8,10 @@ import { parseClaimError } from '@/lib/web3/utils/batchReads';
  * positive — before falling back to the generic wallet/ERC20 parser shared
  * with the rest of the app (`parseClaimError`, `lib/web3/utils/batchReads.ts`).
  */
-const CUSTOM_ERROR_MESSAGES: Record<string, string> = {
+// Exported (not just module-private) so the test suite can assert full
+// coverage — every key here gets its own dedicated test instead of trusting
+// a hand-picked subset to still represent the whole map as it grows.
+export const CUSTOM_ERROR_MESSAGES: Record<string, string> = {
   RentalCapReached: "You've reached your S1+S2 rental cap — return a tape first or buy permanently.",
   HasOverdueRental: 'You have an overdue rental — return or upgrade it before renting another tape.',
   Paused: 'The videoclub is paused right now.',

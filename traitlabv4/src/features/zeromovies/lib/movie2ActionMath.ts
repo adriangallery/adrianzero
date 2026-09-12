@@ -25,6 +25,31 @@ export function computeUpgradeTotalWei(buyPriceWei: bigint, rentPriceWei: bigint
 }
 
 /**
+ * Approval amount for `upgradeRent2ToBuy` — the exact total PLUS one extra
+ * day's late fee as a finite buffer.
+ *
+ * Why: `ensureAllowance` reads `getMovie2RentalInfo` and approves the exact
+ * `lateFeeOwed` at that moment, but there's a real gap between that read and
+ * the `upgradeRent2ToBuy` tx actually landing (user reviews the confirm
+ * sheet, wallet popup, block time). If a day boundary (`gracePeriod` +
+ * N*1 day) is crossed in that gap, the contract's own `elapsed/1 days` calc
+ * bumps `daysOverdue` by one and charges more than what was approved —
+ * `LibERC20._spendAllowance` reverts with `ERC20InsufficientAllowance`
+ * instead of silently overspending, so the user's tx fails for a reason
+ * they can't see in the UI.
+ *
+ * Approving `exactTotalWei + lateFeePerDayWei` absorbs exactly one such
+ * crossing without granting unlimited/infinite allowance — `_spendAllowance`
+ * only ever pulls what the contract actually computes, so any unused buffer
+ * just stays as leftover allowance for next time. If MORE than one day
+ * boundary is crossed (multi-day delay signing a wallet popup), the tx can
+ * still revert — that's an explicit, narrow tradeoff over infinite approval.
+ */
+export function computeUpgradeApprovalWei(exactTotalWei: bigint, lateFeePerDayWei: bigint): bigint {
+  return exactTotalWei + lateFeePerDayWei;
+}
+
+/**
  * Golden Mint can only fire once eligibility has actually resolved — a
  * ticketCount of 0 or an empty proof would revert on-chain (`InvalidProof`)
  * every time, so gate it client-side instead of burning a signature on a

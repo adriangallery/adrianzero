@@ -9,7 +9,12 @@ import { useMovies2Catalog } from './useMovies2Catalog';
 import { useGoldenEligibility } from './useGoldenEligibility';
 import { useWalletRentalCap } from './useWalletRentalCap';
 import { parseMovie2Error } from '../lib/parseMovie2Error';
-import { needsApproval as computeNeedsApproval, computeUpgradeTotalWei, canClaimGolden } from '../lib/movie2ActionMath';
+import {
+  needsApproval as computeNeedsApproval,
+  computeUpgradeTotalWei,
+  computeUpgradeApprovalWei,
+  canClaimGolden,
+} from '../lib/movie2ActionMath';
 
 const DIAMOND = CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`;
 
@@ -194,7 +199,10 @@ export function useMovie2Actions() {
           })) as readonly [bigint, bigint, string, boolean, boolean, bigint, bigint];
           const lateFeeOwed = info[6];
           const total = computeUpgradeTotalWei(config.buyPriceWei, config.rentPriceWei, lateFeeOwed);
-          await ensureAllowance(total);
+          // Approve total + 1 extra day's late fee (finite buffer, not
+          // infinite) — absorbs one day-boundary crossing between this read
+          // and the tx landing. See computeUpgradeApprovalWei's docstring.
+          await ensureAllowance(computeUpgradeApprovalWei(total, config.lateFeePerDayWei));
           return writeContractAsync({
             address: DIAMOND,
             abi: ZERO_MOVIES_FACET_2_ABI,

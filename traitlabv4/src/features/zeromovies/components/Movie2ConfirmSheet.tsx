@@ -28,6 +28,15 @@ interface Movie2ConfirmSheetProps {
   balanceWei: bigint;
   /** True when an approve tx is needed before the main action (2 signatures total). */
   needsApproval: boolean;
+  /**
+   * `upgrade` only: the contract's `lateFeePerDay`, in wei — passed when the
+   * rental is overdue (there's an accruing late fee that can tick up again
+   * before the tx lands). When set, shows a warning that the final cost can
+   * rise by this much if a day boundary passes between confirming here and
+   * the tx actually landing (approve is padded by exactly this amount —
+   * see `computeUpgradeApprovalWei` — but only for ONE such crossing).
+   */
+  upgradeLateFeePerDayWei?: bigint;
   isPending: boolean;
   onConfirm: () => void;
 }
@@ -51,6 +60,7 @@ export function Movie2ConfirmSheet({
   costWei,
   balanceWei,
   needsApproval,
+  upgradeLateFeePerDayWei,
   isPending,
   onConfirm,
 }: Movie2ConfirmSheetProps) {
@@ -58,6 +68,7 @@ export function Movie2ConfirmSheet({
   const balanceAfter = balanceWei - costWei;
   const insufficientBalance = !isFree && balanceAfter < 0n;
   const signatures = isFree ? 1 : needsApproval ? 2 : 1;
+  const showLateFeeWarning = action === 'upgrade' && !!upgradeLateFeePerDayWei && upgradeLateFeePerDayWei > 0n;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title={movieName}>
@@ -82,6 +93,13 @@ export function Movie2ConfirmSheet({
             </span>
           </div>
         </div>
+
+        {showLateFeeWarning && (
+          <div className="flex items-center gap-2 rounded-[var(--r-md)] border-2 border-warn px-3 py-2.5 text-fg">
+            This tape is overdue — the price above can rise by up to {fmt(upgradeLateFeePerDayWei!)} $ZERO
+            if a day boundary passes before you sign (the approval already covers one extra day).
+          </div>
+        )}
 
         <Button
           variant="primary"
