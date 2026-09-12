@@ -1,0 +1,10 @@
+# adrianzero.com on mini/Dokku. The Vite dist/ is built LOCALLY (never on the
+# mini — 2011 hardware) and shipped inside the deploy context; this image only
+# copies files, so the mini's docker build stays trivial.
+FROM node:24-alpine
+WORKDIR /app
+COPY dist ./dist
+COPY server.mjs ./
+ENV NODE_ENV=production
+EXPOSE 5000
+CMD ["node", "server.mjs"]
