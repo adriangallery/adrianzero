@@ -28,6 +28,8 @@ export const getAlchemyApiKeys = (): string[] => {
   return Array.from(new Set(rawKeys.filter(isValidAlchemyKey)));
 };
 
+let warnedMissingInfuraKey = false;
+
 /** Build RPC URLs with Alchemy keys + fallback providers */
 export const buildAlchemyRpcUrls = (): string[] => {
   const urls: string[] = [];
@@ -37,9 +39,16 @@ export const buildAlchemyRpcUrls = (): string[] => {
     urls.push(`https://base-mainnet.g.alchemy.com/v2/${alchemyKey}`);
   });
 
-  // Priority 2: Infura (good rate limits)
-  const infuraKey = import.meta.env.VITE_INFURA_API_KEY || 'cc0c8013b1e044dcba79d4f7ec3b2ba1';
-  urls.push(`https://base-mainnet.infura.io/v3/${infuraKey}`);
+  // Priority 2: Infura (good rate limits). No hardcoded fallback key — if
+  // VITE_INFURA_API_KEY is missing, this endpoint is simply left out of the
+  // fallback chain (public RPCs below still cover it).
+  const infuraKey = import.meta.env.VITE_INFURA_API_KEY;
+  if (infuraKey) {
+    urls.push(`https://base-mainnet.infura.io/v3/${infuraKey}`);
+  } else if (!warnedMissingInfuraKey) {
+    warnedMissingInfuraKey = true;
+    console.warn('[alchemy] VITE_INFURA_API_KEY not set — Infura RPC fallback disabled');
+  }
 
   // Priority 3+: Public endpoints (fallbacks, strict rate limits)
   urls.push(
