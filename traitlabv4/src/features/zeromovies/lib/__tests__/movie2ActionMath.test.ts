@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { needsApproval, computeUpgradeTotalWei, canClaimGolden } from '../movie2ActionMath';
+import {
+  needsApproval,
+  computeUpgradeTotalWei,
+  computeUpgradeApprovalWei,
+  canClaimGolden,
+} from '../movie2ActionMath';
 
 const ZERO = 0n;
 const ONE_ZERO = 10n ** 18n;
@@ -32,6 +37,31 @@ describe('computeUpgradeTotalWei', () => {
   it('adds the exact on-chain late fee owed on top of the diff', () => {
     const lateFeeOwed = 3_000n * ONE_ZERO; // e.g. 3 days overdue * 1k ZERO/day
     expect(computeUpgradeTotalWei(buyPriceWei, rentPriceWei, lateFeeOwed)).toBe(48_000n * ONE_ZERO);
+  });
+});
+
+describe('computeUpgradeApprovalWei', () => {
+  const rentPriceWei = 5_000n * ONE_ZERO;
+  const buyPriceWei = 50_000n * ONE_ZERO;
+  const lateFeePerDayWei = 1_000n * ONE_ZERO;
+
+  it('pads the exact total by exactly one day of late fee (the day-boundary race buffer)', () => {
+    const exactTotal = computeUpgradeTotalWei(buyPriceWei, rentPriceWei, ZERO); // 45,000 ZERO
+    // Regression for the day-boundary allowance race (M3c, coordinator
+    // 2026-09-13): approving the EXACT total read from a stale
+    // getMovie2RentalInfo can undershoot if a day boundary passes before
+    // the tx lands — the contract then charges one more day's late fee
+    // than what was approved, and _spendAllowance reverts instead of
+    // silently overspending. The fix pads the approval by ONE extra day
+    // (finite, not infinite) so that single-day race is absorbed.
+    expect(computeUpgradeApprovalWei(exactTotal, lateFeePerDayWei)).toBe(exactTotal + 1_000n * ONE_ZERO);
+    expect(computeUpgradeApprovalWei(exactTotal, lateFeePerDayWei)).toBe(46_000n * ONE_ZERO);
+  });
+
+  it('still pads by one day even when the exact total already includes accrued late fees', () => {
+    const lateFeeOwed = 3_000n * ONE_ZERO; // already 3 days overdue
+    const exactTotal = computeUpgradeTotalWei(buyPriceWei, rentPriceWei, lateFeeOwed); // 48,000 ZERO
+    expect(computeUpgradeApprovalWei(exactTotal, lateFeePerDayWei)).toBe(49_000n * ONE_ZERO);
   });
 });
 

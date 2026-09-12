@@ -329,6 +329,9 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
           costWei={confirmCostWei}
           balanceWei={balanceRaw}
           needsApproval={needsApproval(allowanceWei, confirmCostWei)}
+          upgradeLateFeePerDayWei={
+            confirmAction === 'upgrade' && isOverdue ? config.lateFeePerDayWei : undefined
+          }
           isPending={isPending}
           onConfirm={handleConfirm}
         />
