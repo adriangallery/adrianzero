@@ -1,4 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+// ⚠️ Este fichero NO se carga (Tailwind v4 no detecta tailwind.config.js
+// solo; hace falta @config en el CSS, y no lo hay). Ya era así en `main`
+// antes del rediseño F3 — comprobado contra el CSS real de producción
+// (.bg-primary{}/.bg-secondary{} = 0 también ahí). Los tokens D11
+// (bg-acc, text-mute, border-line…) están registrados vía @theme inline
+// en src/styles/globals.css, que sí funciona sin depender de este
+// fichero. No añadir @config sin re-verificar la detección de clases
+// contra el CSS servido — fue justo lo que rompió el build de esta rama.
 export default {
   content: [
     "./index.html",
@@ -40,23 +48,7 @@ export default {
         },
         success: 'hsl(var(--success))',
         destructive: 'hsl(var(--destructive))',
-
-        /* Sistema de diseño F3 (D11) — bg-acc, text-mute, border-line, etc. */
-        bg: 'var(--bg)',
-        panel: 'var(--panel)',
-        line: 'var(--line)',
-        fg: 'var(--fg)',
-        mute: 'var(--mute)',
-        acc: 'var(--acc)',
-        'acc-fg': 'var(--acc-fg)',
-        acc2: 'var(--acc2)',
-        warn: 'var(--warn)',
-        bad: 'var(--bad)',
-        ok: 'var(--ok)',
       },
-      /* Radios del sistema F3: se usan como rounded-[var(--r-sm|md|lg)] para
-         no pisar la escala rounded-sm/md/lg por defecto que ya usa el resto
-         de la app (F4–F8 migrarán módulo a módulo). */
       fontFamily: {
         sans: ['"Press Start 2P"', 'monospace'],
         mono: ['JetBrains Mono', 'monospace'],
