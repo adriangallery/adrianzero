@@ -53,7 +53,7 @@ export function Sidebar({
           {/* Header - Fixed */}
           <div className="flex-shrink-0 p-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-foreground font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h2>
+              <h2 className="text-xl font-bold text-foreground font-adrian">{prefix}<span className="text-acc">{accent}</span></h2>
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-muted rounded-lg"
@@ -75,7 +75,7 @@ export function Sidebar({
                     isActive(item.path)
                       ? 'bg-primary text-primary-foreground'
                       : item.highlight
-                      ? 'bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30'
+                      ? 'bg-acc/10 text-acc hover:bg-acc/20 border border-acc/30'
                       : 'text-foreground hover:bg-muted'
                   }
                 `;
@@ -117,7 +117,7 @@ export function Sidebar({
     <aside className="hidden lg:flex w-64 flex-col bg-card/95 backdrop-blur-sm border-r border-border h-screen">
       {/* Header - Fixed */}
       <div className="flex-shrink-0 p-4 border-b border-border">
-        <h2 className="text-xl font-bold text-foreground font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h2>
+        <h2 className="text-xl font-bold text-foreground font-adrian">{prefix}<span className="text-acc">{accent}</span></h2>
       </div>
 
       {/* Navigation - Scrollable */}
@@ -130,7 +130,7 @@ export function Sidebar({
                 isActive(item.path)
                   ? 'bg-primary text-primary-foreground'
                   : item.highlight
-                  ? 'bg-[#00ff00]/10 text-[#00ff00] hover:bg-[#00ff00]/20 border border-[#00ff00]/30'
+                  ? 'bg-acc/10 text-acc hover:bg-acc/20 border border-acc/30'
                   : 'text-foreground hover:bg-muted'
               }
             `;

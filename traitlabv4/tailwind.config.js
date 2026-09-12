@@ -40,10 +40,30 @@ export default {
         },
         success: 'hsl(var(--success))',
         destructive: 'hsl(var(--destructive))',
+
+        /* Sistema de diseño F3 (D11) — bg-acc, text-mute, border-line, etc. */
+        bg: 'var(--bg)',
+        panel: 'var(--panel)',
+        line: 'var(--line)',
+        fg: 'var(--fg)',
+        mute: 'var(--mute)',
+        acc: 'var(--acc)',
+        'acc-fg': 'var(--acc-fg)',
+        acc2: 'var(--acc2)',
+        warn: 'var(--warn)',
+        bad: 'var(--bad)',
+        ok: 'var(--ok)',
+      },
+      borderRadius: {
+        'r-sm': 'var(--r-sm)',
+        'r-md': 'var(--r-md)',
+        'r-lg': 'var(--r-lg)',
       },
       fontFamily: {
         sans: ['"Press Start 2P"', 'monospace'],
         mono: ['JetBrains Mono', 'monospace'],
+        display: ['"Press Start 2P"', '"Courier New"', 'monospace'],
+        body: ['"Space Grotesk"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       spacing: {
         '18': '4.5rem',

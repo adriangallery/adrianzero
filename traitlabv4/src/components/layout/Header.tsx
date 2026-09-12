@@ -35,7 +35,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </svg>
           </button>
 
-          <h1 className="text-lg font-bold text-foreground lg:hidden font-adrian">{prefix}<span className="text-[#00ff00]">{accent}</span></h1>
+          <h1 className="text-lg font-bold text-foreground lg:hidden font-adrian">{prefix}<span className="text-acc">{accent}</span></h1>
         </div>
 
         {/* Right: Actions */}
@@ -43,7 +43,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           {/* Buy $ZERO */}
           <Link
             to="/buy"
-            className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#00ff00] text-black text-sm font-bold hover:bg-[#00dd00] transition-colors"
+            className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-acc text-acc-fg text-sm font-bold hover:opacity-90 transition-opacity"
           >
             <DollarSign className="h-4 w-4" />
             <span>Buy $ZERO</span>

@@ -1,7 +1,10 @@
+@config "../../tailwind.config.js";
 @import 'tailwindcss';
 
 @layer base {
   :root {
+    /* ── Legacy shadcn-style theme (HSL) — se conserva para no romper nada
+       hasta que F4–F8 migren el resto de módulos ── */
     --background: 220 13% 15%;        /* #1f2228 - Dark main background */
     --foreground: 220 13% 95%;        /* #f0f1f3 - Light text */
     --card: 220 13% 18%;              /* #262930 - Cards lighter than background */
@@ -15,15 +18,57 @@
     --accent-foreground: 220 13% 95%; /* #f0f1f3 - White text on accent */
     --success: 142 71% 45%;           /* #22c55e - Green for success */
     --destructive: 0 84% 60%;         /* #ef4444 - Red for errors */
+
+    /* ── Sistema de diseño F3 (D11, 12-sep-2026) — tokens del rediseño
+       mobile-first. Hex directo (no HSL) para casar con las maquetas. ── */
+    --bg: #1a1d22;
+    --panel: #22262d;
+    --line: #2f353e;
+    --fg: #eef1f4;
+    --mute: #97a1ad;
+    --acc: #00ff00;
+    --acc-fg: #04120a;
+    --acc2: #ff66cc;
+    --warn: #f8e848;
+    --bad: #ef4444;
+    --ok: #22c55e;
+
+    /* Espaciado base-4 */
+    --s1: 4px;
+    --s2: 8px;
+    --s3: 12px;
+    --s4: 16px;
+    --s5: 20px;
+    --s6: 24px;
+    --s7: 32px;
+    --s8: 40px;
+    --s9: 48px;
+
+    /* Radios */
+    --r-sm: 8px;
+    --r-md: 10px;
+    --r-lg: 14px;
+
+    /* Escala tipográfica fluida (patrón cubistsouls-web) */
+    --fs-h1: clamp(1.5rem, 4vw + 0.5rem, 2.25rem);
+    --fs-h2: clamp(1.15rem, 2.4vw + 0.6rem, 1.5rem);
+    --fs-body: clamp(0.95rem, 0.4vw + 0.85rem, 1.05rem);
+    --fs-small: clamp(0.78rem, 0.3vw + 0.7rem, 0.85rem);
   }
 
   body {
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    font-size: var(--fs-body);
     font-feature-settings: "rlig" 1, "calt" 1;
     line-height: 1.6;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+  }
+
+  /* Titulares del sistema de diseño F3: SOLO aquí, nunca en cuerpo de texto */
+  .font-display {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
   }
 }
 
