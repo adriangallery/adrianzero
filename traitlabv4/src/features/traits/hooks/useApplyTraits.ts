@@ -8,6 +8,7 @@ import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ADRIAN_LAB_ABI, TRAITS_EXTENSIONS_ABI } from '@/lib/web3/abi';
 import { useNotifications } from '@/hooks/useNotifications';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 
 interface ApplyTraitsParams {
   tokenId: string;
@@ -78,7 +79,11 @@ export function useApplyTraits() {
     },
     onError: (error) => {
       console.error('Error applying traits:', error);
-      notifications.error('Failed to Apply Traits', 'Please try again', false);
+      if (isUserRejection(error)) {
+        notifications.info('Cancelled', 'Transaction cancelled', false);
+        return;
+      }
+      notifications.error('Failed to Apply Traits', humanError(error), false);
     },
   });
 

@@ -8,6 +8,7 @@ import { useWriteContract, usePublicClient } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { CRAFTING_ABI } from '@/lib/web3/abi';
 import { useNotifications } from '@/hooks/useNotifications';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 
 interface CraftParams {
   recipeId: string;
@@ -88,7 +89,11 @@ export function useCraftTrait() {
     },
     onError: (error) => {
       console.error('Error crafting trait:', error);
-      notifications.error('Crafting Failed', 'Could not craft trait. Please check you have the required ingredients.', false);
+      if (isUserRejection(error)) {
+        notifications.info('Cancelled', 'Transaction cancelled', false);
+        return;
+      }
+      notifications.error('Crafting Failed', humanError(error), false);
     },
   });
 

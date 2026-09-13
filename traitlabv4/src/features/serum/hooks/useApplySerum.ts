@@ -10,6 +10,7 @@ import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { SERUM_ABI } from '@/lib/web3/abi';
 import { useNotifications } from '@/hooks/useNotifications';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 
 interface ApplySerumParams {
   tokenId: string;
@@ -51,7 +52,11 @@ export function useApplySerum() {
     },
     onError: (error) => {
       console.error('Error applying serum:', error);
-      notifications.error('Failed to Apply Serum', 'Please try again', false);
+      if (isUserRejection(error)) {
+        notifications.info('Cancelled', 'Transaction cancelled', false);
+        return;
+      }
+      notifications.error('Failed to Apply Serum', humanError(error), false);
     },
   });
 

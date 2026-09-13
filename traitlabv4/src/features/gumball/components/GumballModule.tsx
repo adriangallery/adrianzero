@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 import { useWalletDataStore } from '@/stores/walletDataStore';
 import {
   useGumballConfig,
@@ -170,9 +171,9 @@ export function GumballModule() {
               </button>
             )}
 
-            {error && (
+            {error && !isUserRejection(error) && (
               <p className="text-xs text-red-400 break-words">
-                {error.message.slice(0, 140)}
+                {humanError(error)}
               </p>
             )}
           </div>

@@ -8,6 +8,7 @@ import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ZOOM_TOGGLE_ABI, ERC20_ABI } from '@/lib/web3/abi';
 import { useNotifications } from '@/hooks/useNotifications';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 import { formatEther, parseEther } from 'viem';
 
 // Toggle IDs (corrected from traitlabold)
@@ -150,7 +151,11 @@ export function useSetToggle() {
     },
     onError: (error) => {
       console.error('Error setting toggle:', error);
-      notifications.error('Failed to Apply Effect', 'Could not apply visual effect. Please try again.');
+      if (isUserRejection(error)) {
+        notifications.info('Cancelled', 'Transaction cancelled');
+        return;
+      }
+      notifications.error('Failed to Apply Effect', humanError(error));
     },
   });
 
@@ -276,10 +281,11 @@ export function useSetBananaToggle() {
     },
     onError: (error) => {
       console.error('Error setting banana toggle:', error);
-      notifications.error(
-        'Banana Mode Failed',
-        'Could not apply banana effect. Please check you have enough ADRIAN tokens.'
-      );
+      if (isUserRejection(error)) {
+        notifications.info('Cancelled', 'Transaction cancelled');
+        return;
+      }
+      notifications.error('Banana Mode Failed', humanError(error));
     },
   });
 
