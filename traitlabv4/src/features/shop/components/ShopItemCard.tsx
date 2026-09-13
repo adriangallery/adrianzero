@@ -101,11 +101,11 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
         ${!canAddToCart ? 'opacity-60' : 'cursor-pointer'}
       `}
     >
-      {/* Image — fondo un punto más claro que la tarjeta (bg-bg, no bg-panel)
-          para que un trait de arte oscuro (p.ej. "Dark Mode") no desaparezca
-          contra el fondo: no era 404/CORS (200, PNG real 600x600), solo bajo
-          contraste con el panel. */}
-      <div className="aspect-square relative bg-bg">
+      {/* Image — bg-line (F3.6: bg-bg era tan oscuro como el panel, no
+          arreglaba nada) para que un trait de arte oscuro (p.ej. "Dark
+          Mode") no desaparezca: no era 404/CORS (200, PNG real 600x600),
+          solo bajo contraste. */}
+      <div className="aspect-square relative bg-line">
         <img
           src={item.imageUrl}
           alt={item.name}

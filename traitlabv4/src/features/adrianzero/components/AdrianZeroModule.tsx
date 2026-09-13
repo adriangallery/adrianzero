@@ -398,7 +398,7 @@ export function AdrianZeroModule({ embedded, onTokenSelected }: { embedded?: boo
     return (
       <div className="flex flex-col h-full -mx-4 -mt-6">
         {/* ─── Sticky top section ─── */}
-        <div className="sticky top-0 z-20 bg-background border-b border-border">
+        <div className="sticky top-0 z-20 bg-bg border-b border-border">
           {/* Row 1: Back + Preview + NFT nav */}
           <div className="flex items-center gap-2 px-3 pt-2 pb-1">
             <button onClick={handleClearNFTSelection} className="p-1 -ml-1">

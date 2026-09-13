@@ -1,10 +1,13 @@
 /**
  * TraitCard Component
  * Displays an individual trait with selection state
- * F3.5 (13-sep-2026): pasado al sistema de diseño (Card/Badge/CheckIcon) —
- * antes usaba bg-card/ring-primary/bg-primary, clases sin CSS real porque
- * tailwind.config.js no se carga en v4 sin @config (bug previo, no de esta
- * rama) — la tarjeta era literalmente transparente, sin "feeling de app".
+ * F3.5 (13-sep-2026): pasado al sistema de diseño (Card, Badge, CheckIcon).
+ * Las clases legacy que traía antes (fondo de tarjeta y borde de selección,
+ * tomados del theme de shadcn nunca cargado en Tailwind v4 sin @config) no
+ * tenían CSS real — la tarjeta era literalmente transparente, sin "feeling
+ * de app". F3.6 (13-sep): el tile de imagen pasó de bg-bg a bg-line — bg-bg
+ * es tan oscuro como el panel, así que un trait de arte oscuro seguía
+ * perdiéndose.
  */
 import { Palette } from 'lucide-react';
 import { Card, Badge, CheckIcon } from '@/ui';
@@ -46,8 +49,10 @@ export function TraitCard({
         isSelected ? 'border-acc shadow-[0_0_16px_rgba(0,255,0,0.2)]' : 'hover:border-mute'
       )}
     >
-      {/* Image */}
-      <div className="aspect-square relative bg-bg">
+      {/* Image — bg-line (no bg-bg): un trait de arte oscuro (p.ej. "Blood-Shirt")
+          se pierde contra el bg/panel, que son casi el mismo negro; bg-line
+          es el primer tono realmente más claro de la paleta. */}
+      <div className="aspect-square relative bg-line">
         {imageUrl ? (
           <img
             src={imageUrl}

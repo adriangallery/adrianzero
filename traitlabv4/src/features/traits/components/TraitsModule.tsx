@@ -136,7 +136,7 @@ export function TraitsModule({ embedded }: { embedded?: boolean } = {}) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <AlertTriangle className="h-16 w-16 mb-4 text-yellow-500" />
-        <h2 className="text-xl font-semibold text-foreground">Error Loading Traits</h2>
+        <h2 className="font-ui text-xl font-semibold text-foreground">Error Loading Traits</h2>
         <p className="text-muted-foreground mt-2">
           {error instanceof Error ? error.message : 'Failed to load traits'}
         </p>
@@ -151,7 +151,7 @@ export function TraitsModule({ embedded }: { embedded?: boolean } = {}) {
       return (
         <div className="flex flex-col h-full">
           {/* Sticky top: NFT preview + categories */}
-          <div className="sticky top-0 z-20 bg-background border-b border-border">
+          <div className="sticky top-0 z-20 bg-bg border-b border-border">
             {/* Preview row */}
             <div className="flex items-center gap-2 px-3 pt-2 pb-1">
               {/* NFT preview image */}
@@ -395,7 +395,7 @@ export function TraitsModule({ embedded }: { embedded?: boolean } = {}) {
       {/* Category Tabs + Traits Grid (standalone + embedded-no-token) */}
       {(!embedded || !selectedToken) && (
         <>
-          <div className="sticky top-0 z-10 bg-background -mx-4 px-4 pb-2">
+          <div className="sticky top-0 z-10 bg-bg -mx-4 px-4 pb-2">
             <TraitCategories categories={categories} traitsByCategory={traitsByCategory} activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
           </div>
           <div className="flex-1 overflow-y-auto pb-4">
