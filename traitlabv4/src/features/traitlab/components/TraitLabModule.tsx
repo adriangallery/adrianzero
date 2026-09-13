@@ -71,6 +71,8 @@ export function TraitLabModule() {
   const [tokenSheetOpen, setTokenSheetOpen] = useState(!selectedTokenId);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [comparing, setComparing] = useState(false);
+  const [isPreviewOutOfView, setIsPreviewOutOfView] = useState(false);
+  const previewWrapRef = useRef<HTMLDivElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewStatus, setPreviewStatus] = useState<PreviewStatus>('idle');
   const [resultOpen, setResultOpen] = useState(false);
@@ -168,6 +170,39 @@ export function TraitLabModule() {
 
   const baseImageUrl = selectedTokenId ? `https://adrianlab.vercel.app/api/render/${selectedTokenId}.png` : '';
   const displayedUrl = comparing ? baseImageUrl : previewUrl ?? baseImageUrl;
+
+  // ─── Mini-preview sticky (feedback de Adrián 13-sep, producción): al
+  // hacer scroll el preview grande se iba del todo y se perdía la
+  // referencia del ZERO. Un IntersectionObserver sobre el envoltorio del
+  // preview grande decide cuándo mostrar la miniatura junto a los chips.
+  // Revisión del crítico: con threshold 0 solo aparecía cuando el preview
+  // desaparecía del TODO — con pocos traits (2 backgrounds, poco scroll
+  // posible) nunca llegaba a irse del todo y la miniatura no aparecía
+  // nunca. Con threshold 0.4 (invertido: se muestra cuando queda MENOS
+  // del 40% visible) aparece con mucho menos scroll.
+  useEffect(() => {
+    const el = previewWrapRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setIsPreviewOutOfView(false);
+      return;
+    }
+    const headerH =
+      Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 56;
+    // Adrián (13-sep, iPhone): «en el viejo el pfp se hacía más pequeño y se
+    // mantenía visible en todo momento» → la miniatura entra en cuanto el
+    // preview grande empieza a quedar tapado por el header (ratio < 0.95,
+    // margen para subpíxeles), no cuando ya se ha ido casi del todo.
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsPreviewOutOfView(entry.intersectionRatio < 0.95),
+      { rootMargin: `-${headerH}px 0px 0px 0px`, threshold: [0, 0.25, 0.5, 0.75, 0.95, 1] }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [selectedTokenId]);
+
+  const scrollToPreview = useCallback(() => {
+    previewWrapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   // ─── Selección de traits ──────────────────────────────────────────────
   const handleSelectTrait = useCallback(
@@ -275,7 +310,7 @@ export function TraitLabModule() {
               ~34dvh y deja al menos una fila de tarjetas visible sin scroll
               (revisión visual 13-sep: el h-[300px] fijo se comía toda la
               pantalla en móviles reales). */}
-          <div className="px-4">
+          <div className="px-4" ref={previewWrapRef} style={{ scrollMarginTop: 8 }}>
             <div
               className="relative mx-auto select-none overflow-hidden rounded-[var(--r-lg)] border-2 border-line bg-panel"
               style={{
@@ -322,17 +357,62 @@ export function TraitLabModule() {
           {/* Categorías: sticky bajo el header (--header-h) para que, al
               hacer scroll de página, no se vayan detrás de las tarjetas —
               antes vivían dentro de un contenedor con scroll propio que
-              dejaba la rejilla sin altura real (revisión visual 13-sep). */}
-          <div className="sticky z-10 bg-bg" style={{ top: 'var(--header-h)' }}>
-            {isLoadingTraits ? (
-              <div className="flex gap-2 px-4 pb-2.5 pt-3.5">
-                <Skeleton className="h-[38px] w-24" />
-                <Skeleton className="h-[38px] w-20" />
-                <Skeleton className="h-[38px] w-24" />
-              </div>
-            ) : (
-              <CategoryChips categories={categories} active={activeCategory} onSelect={setActiveCategory} />
-            )}
+              dejaba la rejilla sin altura real (revisión visual 13-sep).
+              Revisión del crítico: la mini-preview vive FUERA de la fila
+              con scroll de las chips (era su primer hijo antes y se
+              desplazaba con ellas) — aquí es una hermana fija a la
+              izquierda, en su propio `flex items-center`. */}
+          {/* top-0, NO var(--header-h): en <1024px el Header está FUERA del
+              contenedor con scroll (MainLayout: header + div.flex-1.overflow-y-auto
+              como hermanos), así que el borde superior del scroller ya es el
+              borde inferior del header. Con top: --header-h el sticky se
+              quedaba 56px más abajo y asomaban tarjetas entre header y chips
+              (captura de Adrián en el iPhone, 13-sep). */}
+          <div className="sticky top-0 z-10 flex items-center border-b-2 border-line bg-bg pl-4">
+            {displayedUrl ? (
+              <button
+                type="button"
+                onClick={scrollToPreview}
+                aria-label="Back to preview"
+                aria-hidden={!isPreviewOutOfView}
+                tabIndex={isPreviewOutOfView ? 0 : -1}
+                data-testid="traitlab-mini-preview"
+                className="relative flex-none overflow-hidden rounded-[8px] border-2 border-line bg-panel transition-[width,opacity] duration-150"
+                style={{
+                  width: isPreviewOutOfView ? 64 : 0,
+                  height: 64,
+                  opacity: isPreviewOutOfView ? 1 : 0,
+                }}
+              >
+                {/* Misma URL que el preview grande (displayedUrl) — el
+                    navegador la sirve de su propia caché HTTP, sin
+                    disparar una petición nueva. object-contain (no
+                    object-cover): no recortar el render. */}
+                <img src={displayedUrl} alt="" className="h-full w-full object-contain" />
+                {changes.count > 0 ? (
+                  <span className="absolute right-0.5 top-0.5 min-w-[18px] rounded-full border border-acc bg-bg px-1 text-center font-ui text-[10px] leading-4 text-acc">
+                    {changes.count}
+                  </span>
+                ) : null}
+              </button>
+            ) : null}
+
+            <div className="min-w-0 flex-1">
+              {isLoadingTraits ? (
+                <div className="flex gap-2 px-4 pb-2.5 pt-3.5">
+                  <Skeleton className="h-[38px] w-24" />
+                  <Skeleton className="h-[38px] w-20" />
+                  <Skeleton className="h-[38px] w-24" />
+                </div>
+              ) : (
+                <CategoryChips
+                  categories={categories}
+                  active={activeCategory}
+                  onSelect={setActiveCategory}
+                  leftPaddingClassName={displayedUrl && isPreviewOutOfView ? 'pl-2' : 'pl-0'}
+                />
+              )}
+            </div>
           </div>
 
           {/* Grid de traits: flujo normal de página (el scroll lo hace el

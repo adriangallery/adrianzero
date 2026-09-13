@@ -14,9 +14,21 @@ export interface CategoryChipsProps {
   categories: { name: string; count: number }[];
   active: string;
   onSelect: (category: string) => void;
+  /**
+   * Padding izquierdo de la fila con scroll. Por defecto `px-4` (16px);
+   * `TraitLabModule` lo reduce a 0 cuando antepone la mini-preview FUERA
+   * de este scroller (revisión del crítico 13-sep: la miniatura no debe
+   * desplazarse con las chips) para no doblar el hueco entre ambas.
+   */
+  leftPaddingClassName?: string;
 }
 
-export function CategoryChips({ categories, active, onSelect }: CategoryChipsProps) {
+export function CategoryChips({
+  categories,
+  active,
+  onSelect,
+  leftPaddingClassName = 'pl-4',
+}: CategoryChipsProps) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -33,7 +45,10 @@ export function CategoryChips({ categories, active, onSelect }: CategoryChipsPro
 
   return (
     <>
-      <div className="scroll flex gap-2 overflow-x-auto px-4 pb-2.5 pt-3.5" style={{ scrollbarWidth: 'none' }}>
+      <div
+        className={`scroll flex items-center gap-2 overflow-x-auto pr-4 pb-2.5 pt-3.5 ${leftPaddingClassName}`}
+        style={{ scrollbarWidth: 'none' }}
+      >
         {visible.map((cat) => (
           <Chip key={cat.name} selected={active === cat.name} count={cat.count} onClick={() => onSelect(cat.name)}>
             {cat.name}
