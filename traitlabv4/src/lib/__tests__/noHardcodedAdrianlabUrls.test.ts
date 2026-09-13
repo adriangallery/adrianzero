@@ -40,7 +40,8 @@ function walk(dir: string, files: string[] = []): string[] {
 }
 
 describe('no hardcoded AdrianLAB URLs outside src/lib/adrianlab.ts', () => {
-  const files = walk(SRC_ROOT).filter((f) => f !== ALLOWED_FILE && f !== THIS_FILE);
+  // Los tests pueden citar el dominio (p. ej. adrianlabBase.test.ts) — no son código de producción.
+  const files = walk(SRC_ROOT).filter((f) => f !== ALLOWED_FILE && f !== THIS_FILE && !f.includes('__tests__'));
   const offenders: string[] = [];
 
   for (const file of files) {
