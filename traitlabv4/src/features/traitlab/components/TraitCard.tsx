@@ -52,7 +52,10 @@ export function TraitCard({ trait, state, onSelect, equippedHint }: TraitCardPro
         </span>
       ) : null}
 
-      <div className="aspect-square w-full overflow-hidden rounded-[var(--r-md)] bg-bg">
+      {/* F3.6 (13-sep): tile bg-line, no bg-bg — bg-bg es tan oscuro como
+          bg-panel y un trait de arte oscuro (Blood-Shirt, Dark Mode) se
+          perdía en el fondo. */}
+      <div className="aspect-square w-full overflow-hidden rounded-[var(--r-md)] bg-line">
         {imageUrl ? (
           <img src={imageUrl} alt={trait.name} loading="lazy" className="h-full w-full object-cover" />
         ) : null}

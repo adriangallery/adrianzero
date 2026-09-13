@@ -24,6 +24,7 @@ import { useWalletDataStore } from '@/stores/walletDataStore';
 import { useNotifications } from '@/hooks/useNotifications';
 import { planSignatures, type TraitlabChanges } from '../lib/changes';
 import { usePendingTxStore } from '../store/pendingTxStore';
+import { canApplyQueryPrefix } from './useCanApplyTraits';
 
 export interface ApplyResult {
   tokenId: string;
@@ -113,6 +114,10 @@ export function useApplyTraitlabChanges(tokenId: string | null) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adrianzero-tokens'] });
       queryClient.invalidateQueries({ queryKey: ['traits'] });
+      // Aplicar puede cambiar qué es "available" para otros traits de la
+      // misma categoría — la caché de checkTrait (useCanApplyTraits) no
+      // debe servir un "locked"/"allowed" de antes del apply.
+      queryClient.invalidateQueries({ queryKey: canApplyQueryPrefix });
       invalidateTraits();
     },
     onError: (error) => {
