@@ -22,12 +22,23 @@
  * que el resto del repo evita builds/RPC pesados en cada push).
  *
  * Uso:
- *   RPC_URL=https://tu-rpc-con-clave node scripts/packs-registry-seed.mjs
+ *   node scripts/packs-registry-seed.mjs
  *
- * Sin RPC_URL usa el RPC público de Base (mainnet.base.org, limitado a
- * 2000 bloques por `eth_getLogs`) — funciona, pero de un seed viejo puede
- * tardar mucho si ha pasado mucho tiempo; con un RPC de verdad (Alchemy,
- * igual que `config/alchemy.ts`) es cuestión de segundos.
+ * **NUNCA le pases un RPC de Alchemy/Infura** (`RPC_URL=...`) pensando
+ * que irá más rápido: medido en producción (13-sep) que para
+ * `eth_getLogs` Alchemy responde `-32600 "up to a 10 block range"` en
+ * esta cuenta/plan — muy por debajo incluso de lo que el chunking
+ * adaptativo intentaba, y el escaneo termina reventando o tardando una
+ * eternidad a golpes de 10 bloques. `mainnet.base.org` (el RPC público de
+ * Base, por defecto, sin clave) SÍ soporta hasta 2000 bloques por llamada
+ * (medido) — es lo que usa `logScan.ts` en el navegador y lo que usa este
+ * script. Con el seed incremental (~25-30 peticiones desde el
+ * `lastScannedBlock` anterior) tarda segundos de todas formas; no hace
+ * falta una clave para esto.
+ *
+ * `RPC_URL` sigue siendo overrideable (por si algún día hay un endpoint
+ * mejor verificado para rangos grandes), pero el default y lo recomendado
+ * es SIEMPRE el público.
  */
 
 import { createPublicClient, http, parseAbiItem } from 'viem';
@@ -40,8 +51,18 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = join(HERE, '../src/features/packs/data/registry.seed.json');
 
 const RPC_URL = process.env.RPC_URL || 'https://mainnet.base.org';
-const PUBLIC_RPC_CHUNK = 2000; // límite duro conocido de mainnet.base.org
-const DEFAULT_CHUNK = RPC_URL.includes('mainnet.base.org') ? PUBLIC_RPC_CHUNK : 200_000;
+if (/alchemy|infura/i.test(RPC_URL)) {
+  console.warn(
+    `⚠️  RPC_URL parece ser Alchemy/Infura (${RPC_URL}). eth_getLogs con esos proveedores puede estar limitado a rangos ` +
+      `mucho más pequeños de lo esperado (medido: -32600 "up to a 10 block range" en Alchemy, 13-sep). ` +
+      `Se recomienda dejar RPC_URL sin definir para usar el público (mainnet.base.org, 2000 bloques/llamada).`
+  );
+}
+// Mismos valores que `logScan.ts` (DEFAULT_CHUNK_BLOCKS/MIN_CHUNK_BLOCKS)
+// — el límite medido del RPC público, con caída defensiva si algún día
+// cambia. NO se asume un límite mayor solo porque `RPC_URL` tenga clave:
+// esa suposición fue exactamente el bug que este fix corrige.
+const DEFAULT_CHUNK = 2_000;
 const MIN_CHUNK = 500;
 
 // Mismos bloques de deploy que `packRegistry.ts#DEPLOY_BLOCK` — solo se
@@ -69,7 +90,13 @@ const SOURCES = [
 
 function looksLikeRangeLimitError(err) {
   const msg = String(err?.message ?? err ?? '').toLowerCase();
-  return msg.includes('range') || msg.includes('limit') || msg.includes('block span') || msg.includes('too many');
+  return (
+    msg.includes('range') ||
+    msg.includes('limit') ||
+    msg.includes('block span') ||
+    msg.includes('too many') ||
+    msg.includes('-32600')
+  );
 }
 
 async function scanIds(client, { address, event, fromBlock }, toBlockLatest) {
@@ -85,11 +112,11 @@ async function scanIds(client, { address, event, fromBlock }, toBlockLatest) {
         if (typeof log.args?.packId === 'bigint') ids.add(log.args.packId.toString());
       }
       from = to + 1n;
-      if (chunk < DEFAULT_CHUNK) chunk = Math.min(DEFAULT_CHUNK, chunk * 2);
+      if (chunk < DEFAULT_CHUNK) chunk = DEFAULT_CHUNK;
       process.stdout.write(`.`);
     } catch (err) {
       if (!looksLikeRangeLimitError(err) || chunk <= MIN_CHUNK) throw err;
-      chunk = Math.max(MIN_CHUNK, Math.floor(chunk / 4));
+      chunk = MIN_CHUNK;
     }
   }
   return ids;
