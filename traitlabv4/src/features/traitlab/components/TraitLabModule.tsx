@@ -32,6 +32,19 @@ import { TraitCard, GetMoreInShopCard } from './TraitCard';
 import { ApplyResultSheet } from './ApplyResultSheet';
 import type { Trait } from '@/types/nft.types';
 
+/**
+ * Offset del sticky de chips (y del rootMargin de la miniatura): lo que cubre
+ * el preview por arriba. <1024px: nada dentro del scroller (el Header está
+ * fuera, en MainLayout) → 0. ≥1024px: /traitlab va sin Header pero con la
+ * barra flotante de ZeroStyleChrome (fixed top-4 + h-12 = 64px) que taparía
+ * miniatura y chips si el sticky se pegara al borde del viewport.
+ */
+const DESKTOP_CHROME_PX = 64;
+function STICKY_TOP_PX(): number {
+  if (typeof window === 'undefined') return 0;
+  return window.matchMedia('(min-width: 1024px)').matches ? DESKTOP_CHROME_PX : 0;
+}
+
 const PREVIEW_DEBOUNCE_MS = 400;
 const PREVIEW_TIMEOUT_MS = 8000;
 
@@ -186,15 +199,24 @@ export function TraitLabModule() {
       setIsPreviewOutOfView(false);
       return;
     }
-    const headerH =
-      Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 56;
+    // Lo que tapa el preview por arriba: en <1024px el Header (--header-h,
+    // fuera del scroller); en ≥1024px no hay Header sino la barra flotante
+    // de ZeroStyleChrome (top-4 + h-12 = 64px) — revisión del crítico 13-sep.
+    const coverTop = STICKY_TOP_PX();
     // Adrián (13-sep, iPhone): «en el viejo el pfp se hacía más pequeño y se
     // mantenía visible en todo momento» → la miniatura entra en cuanto el
-    // preview grande empieza a quedar tapado por el header (ratio < 0.95,
-    // margen para subpíxeles), no cuando ya se ha ido casi del todo.
+    // preview grande empieza a quedar tapado (ratio < 0.9) y sale cuando
+    // vuelve a estar prácticamente entero (≥ 0.98): histéresis para que el
+    // rebote/momentum de iOS no la monte y desmonte varias veces en el límite.
+    let shown = false;
     const observer = new IntersectionObserver(
-      ([entry]) => setIsPreviewOutOfView(entry.intersectionRatio < 0.95),
-      { rootMargin: `-${headerH}px 0px 0px 0px`, threshold: [0, 0.25, 0.5, 0.75, 0.95, 1] }
+      ([entry]) => {
+        const r = entry.intersectionRatio;
+        if (!shown && r < 0.9) shown = true;
+        else if (shown && r >= 0.98) shown = false;
+        setIsPreviewOutOfView(shown);
+      },
+      { rootMargin: `-${coverTop}px 0px 0px 0px`, threshold: [0, 0.25, 0.5, 0.75, 0.9, 0.98, 1] }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -368,7 +390,10 @@ export function TraitLabModule() {
               borde inferior del header. Con top: --header-h el sticky se
               quedaba 56px más abajo y asomaban tarjetas entre header y chips
               (captura de Adrián en el iPhone, 13-sep). */}
-          <div className="sticky top-0 z-10 flex items-center border-b-2 border-line bg-bg pl-4">
+          <div
+            className="sticky z-10 flex items-center border-b-2 border-line bg-bg pl-4"
+            style={{ top: 'var(--traitlab-sticky-top, 0px)' }}
+          >
             {displayedUrl ? (
               <button
                 type="button"

@@ -103,6 +103,17 @@
        referencia --tabbar-h, en vez de numeros magicos repetidos. */
     --header-h: 56px;
     --tabbar-h: 64px;
+    /* Offset del sticky de chips de TraitLab: en <1024px el Header queda
+       FUERA del scroller (MainLayout), así que dentro de él el sticky va a 0;
+       en ≥1024px /traitlab no lleva Header pero sí la barra flotante de
+       ZeroStyleChrome (top-4 + h-12 = 64px) que taparía la miniatura y los
+       chips si el sticky se pegara al borde del viewport (crítico 13-sep). */
+    --traitlab-sticky-top: 0px;
+  }
+  @media (min-width: 1024px) {
+    :root {
+      --traitlab-sticky-top: 64px;
+    }
   }
 
   /* F3.5: red de seguridad mobile-first — Shop se salía por la izquierda a
