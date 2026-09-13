@@ -1,9 +1,14 @@
 /**
  * TraitCard Component
  * Displays an individual trait with selection state
+ * F3.5 (13-sep-2026): pasado al sistema de diseño (Card/Badge/CheckIcon) —
+ * antes usaba bg-card/ring-primary/bg-primary, clases sin CSS real porque
+ * tailwind.config.js no se carga en v4 sin @config (bug previo, no de esta
+ * rama) — la tarjeta era literalmente transparente, sin "feeling de app".
  */
-
 import { Palette } from 'lucide-react';
+import { Card, Badge, CheckIcon } from '@/ui';
+import { cn } from '@/ui/cn';
 import type { Trait } from '@/types/nft.types';
 
 interface TraitCardProps {
@@ -12,6 +17,13 @@ interface TraitCardProps {
   onClick?: () => void;
   showBalance?: boolean;
 }
+
+const RARITY_TONE = {
+  common: 'mute',
+  rare: 'acc',
+  epic: 'acc',
+  legendary: 'warn',
+} as const;
 
 export function TraitCard({
   trait,
@@ -25,31 +37,17 @@ export function TraitCard({
     trait.image?.originalUrl ||
     trait.metadata?.image;
 
-  const rarityColors = {
-    common: 'bg-gray-500',
-    rare: 'bg-blue-500',
-    epic: 'bg-purple-500',
-    legendary: 'bg-yellow-500',
-  };
-
-  const rarityColor = trait.rarity ? rarityColors[trait.rarity] : 'bg-gray-500';
-
   return (
-    <div
+    <Card
       onClick={onClick}
-      className={`
-        relative rounded-lg overflow-hidden cursor-pointer
-        transition-all duration-200 touch-target active:scale-95
-        ${
-          isSelected
-            ? 'ring-2 ring-primary shadow-lg'
-            : 'hover:shadow-md hover:ring-1 hover:ring-border'
-        }
-        bg-card
-      `}
+      className={cn(
+        'relative rounded-[12px] overflow-hidden cursor-pointer flex flex-col',
+        'transition-all duration-200 touch-target active:scale-95',
+        isSelected ? 'border-acc shadow-[0_0_16px_rgba(0,255,0,0.2)]' : 'hover:border-mute'
+      )}
     >
       {/* Image */}
-      <div className="aspect-square relative bg-muted">
+      <div className="aspect-square relative bg-bg">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -69,58 +67,44 @@ export function TraitCard({
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+          <div className="w-full h-full flex items-center justify-center text-mute">
             <Palette className="h-8 w-8 sm:h-12 sm:w-12" />
           </div>
         )}
 
         {/* Balance Badge */}
         {showBalance && trait.balance > 1 && (
-          <div className="absolute top-1 right-1 sm:top-2 sm:right-2 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-accent/90 rounded text-[10px] sm:text-xs font-medium text-white">
-            x{trait.balance}
-          </div>
+          <Badge tone="acc" className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-bg">
+            ×{trait.balance}
+          </Badge>
         )}
 
         {/* Rarity Badge */}
         {trait.rarity && (
-          <div
-            className={`absolute top-1 left-1 sm:top-2 sm:left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 ${rarityColor} rounded text-[10px] sm:text-xs font-medium text-white`}
-          >
+          <Badge tone={RARITY_TONE[trait.rarity]} className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-bg capitalize">
             {trait.rarity}
-          </div>
+          </Badge>
         )}
 
-        {/* Selection Indicator */}
+        {/* Selection Indicator — check en círculo, borde --acc en la tarjeta */}
         {isSelected && (
-          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary flex items-center justify-center">
-              <svg
-                className="w-5 h-5 sm:w-8 sm:h-8 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+          <div className="absolute inset-0 bg-acc/10 flex items-center justify-center">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-acc flex items-center justify-center shadow-lg">
+              <CheckIcon size={18} className="text-acc-fg" />
             </div>
           </div>
         )}
       </div>
 
-      {/* Info — compact on small screens */}
-      <div className="p-1.5 sm:p-2">
-        <h3 className="font-medium truncate text-foreground text-[10px] sm:text-xs">
+      {/* Info — nombre en 2 líneas, sin truncar a 1 */}
+      <div className="p-2 flex flex-col gap-0.5">
+        <h3 className="font-ui font-medium text-fg text-[11px] sm:text-xs leading-tight line-clamp-2 min-h-[2.4em]">
           {trait.name}
         </h3>
-        <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 capitalize hidden sm:block">
+        <p className="text-[10px] text-mute capitalize hidden sm:block">
           {trait.category.toLowerCase().replace('_', ' ')}
         </p>
       </div>
-    </div>
+    </Card>
   );
 }

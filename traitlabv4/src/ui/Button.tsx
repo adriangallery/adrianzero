@@ -23,8 +23,9 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  md: 'h-11 px-4 text-sm rounded-[var(--r-md)]',
-  lg: 'h-12 px-5 text-[15px] rounded-[var(--r-md)]',
+  // D17: botones 15-16px mínimo (antes text-sm=14px, por debajo del mínimo)
+  md: 'h-11 px-4 text-[15px] rounded-[var(--r-md)]',
+  lg: 'h-12 px-5 text-[16px] rounded-[var(--r-md)]',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -49,7 +50,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-bold transition-colors',
+        'font-ui inline-flex items-center justify-center gap-2 font-bold transition-colors',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],

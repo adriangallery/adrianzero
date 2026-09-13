@@ -63,7 +63,7 @@ function ToastItem({ notification, onDismiss }: { notification: Notification; on
           <ToneIcon type={notification.type} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-fg">{notification.title}</p>
+          <p className="font-ui text-sm font-bold text-fg">{notification.title}</p>
           <p className="text-[13px] text-mute mt-0.5">{notification.message}</p>
           {notification.txHash ? (
             <a

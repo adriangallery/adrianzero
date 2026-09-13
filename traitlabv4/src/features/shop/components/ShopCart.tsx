@@ -13,6 +13,7 @@ import { useTokenApproval } from '../hooks/useTokenApproval';
 import { useShopPurchase } from '../hooks/useShopPurchase';
 import { ApproveModal } from './ApproveModal';
 import { BLOCK_EXPLORER_URL } from '@/config/contracts';
+import { ActionBar, Button } from '@/ui';
 
 // Helper to format price
 function formatPrice(price: bigint): string {
@@ -113,19 +114,23 @@ export function ShopCart() {
 
   return (
     <>
-      {/* Cart Button (Mobile FAB) — large, high contrast */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 lg:hidden flex items-center gap-2 px-5 py-4 rounded-2xl bg-primary text-primary-foreground shadow-[0_4px_20px_rgba(0,0,0,0.5)] border-2 border-primary-foreground/20 text-base font-bold"
-      >
-        <ShoppingCart className="h-6 w-6" />
-        {cartCount > 0 && (
-          <span className="bg-white text-black rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">{cartCount}</span>
-        )}
-      </button>
+      {/* F3.5: el carrito ya no es un FAB suelto que tapaba la TabBar — es
+          una ActionBar del sistema, fija JUSTO encima de ella (bottom-16),
+          y solo aparece cuando hay algo que pagar. */}
+      {cartCount > 0 && (
+        <div className="lg:hidden">
+          <ActionBar
+            primary={
+              <Button variant="primary" size="lg" full onClick={() => setIsOpen(true)}>
+                Checkout · {cartCount} {cartCount === 1 ? 'item' : 'items'} · {totalFormatted} {paymentToken === 'ZERO' ? '$ZERO' : '$ADRIAN'}
+              </Button>
+            }
+          />
+        </div>
+      )}
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-80 border-l border-border bg-card/50 p-4 overflow-y-auto">
+      <div className="hidden lg:block w-80 border-l-2 border-line bg-panel p-4 overflow-y-auto">
         <CartContent
           cart={cart}
           cartCount={cartCount}

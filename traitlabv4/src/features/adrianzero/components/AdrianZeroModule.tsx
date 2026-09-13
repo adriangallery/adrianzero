@@ -25,6 +25,7 @@ import { useWalletDataStore } from '@/stores/walletDataStore';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from '@/components/common/Pagination';
 import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
+import { editRouteFor } from '@/lib/editRoute';
 import type { TraitCategory, Trait } from '@/types/nft.types';
 
 export function AdrianZeroModule({ embedded, onTokenSelected }: { embedded?: boolean; onTokenSelected?: () => void } = {}) {
@@ -368,6 +369,7 @@ export function AdrianZeroModule({ embedded, onTokenSelected }: { embedded?: boo
                 selectedTokenId={embedded ? selectedNFT?.tokenId ?? null : null}
                 onTokenSelect={handleTokenSelect}
                 emptyMessage="No AdrianZERO NFTs found in your wallet"
+                getEditHref={embedded ? (token) => editRouteFor(token.tokenId) : undefined}
               />
             )}
 

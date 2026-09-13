@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { type ShopItem } from '../hooks/useShopItems';
 import { getFallbackImageUrl } from '../hooks/useShopItems';
 import { useShopStore } from '../store/shopStore';
+import { Badge } from '@/ui';
 
 interface ShopItemCardProps {
   item: ShopItem;
@@ -95,13 +96,16 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
         }
       }}
       className={`
-        relative rounded-xl border border-border bg-card overflow-hidden
-        transition-all hover:border-primary/50 hover:shadow-lg
+        relative rounded-[12px] border-2 border-line bg-panel overflow-hidden
+        transition-all hover:border-mute
         ${!canAddToCart ? 'opacity-60' : 'cursor-pointer'}
       `}
     >
-      {/* Image */}
-      <div className="aspect-square relative bg-muted">
+      {/* Image — fondo un punto más claro que la tarjeta (bg-bg, no bg-panel)
+          para que un trait de arte oscuro (p.ej. "Dark Mode") no desaparezca
+          contra el fondo: no era 404/CORS (200, PNG real 600x600), solo bajo
+          contraste con el panel. */}
+      <div className="aspect-square relative bg-bg">
         <img
           src={item.imageUrl}
           alt={item.name}
@@ -117,50 +121,50 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
 
         {/* Free badge */}
         {hasFreeAvailable && (
-          <div className="absolute top-1 left-1 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-success text-white text-[10px] font-bold">
+          <Badge tone="ok" className="absolute top-1.5 left-1.5 bg-bg">
             <Gift className="h-3 w-3" />
             {item.freeRemaining} FREE
-          </div>
+          </Badge>
         )}
 
         {/* Sold out banner */}
         {isSoldOut && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <div className="w-full bg-red-600 py-2 text-center rotate-0">
-              <span className="text-white font-black text-sm tracking-widest uppercase">SOLD OUT</span>
+          <div className="absolute inset-0 bg-bg/80 flex items-center justify-center">
+            <div className="w-full bg-bad py-2 text-center">
+              <span className="font-ui text-acc-fg font-bold text-xs tracking-widest uppercase">SOLD OUT</span>
             </div>
           </div>
         )}
 
         {/* Quantity in cart */}
         {quantityInCart > 0 && (
-          <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">
+          <div className="font-ui absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-acc flex items-center justify-center text-acc-fg font-bold text-xs">
             {quantityInCart}
           </div>
         )}
       </div>
 
       {/* Info */}
-      <div className="p-3 space-y-2">
+      <div className="p-3 flex flex-col gap-2">
         {/* Name */}
-        <p className="text-[11px] font-medium text-foreground line-clamp-2 leading-tight min-h-[2.2em]">
+        <p className="font-ui text-[12px] font-medium text-fg line-clamp-2 leading-tight min-h-[2.2em]">
           {item.name}
         </p>
 
-        {/* Price — show active token price, secondary in smaller text */}
+        {/* Price — $ZERO grande en Pixelify, el equivalente en $ADRIAN chico y mute */}
         <div>
           {tokenAccepted ? (
-            <div className="text-[11px] font-bold text-accent">
-              {priceFormatted} {tokenSymbol}
+            <div className="font-ui text-[15px] font-bold text-acc">
+              {priceFormatted} <span className="text-[11px] font-normal">{tokenSymbol}</span>
             </div>
           ) : (
-            <div className="text-[10px] text-muted-foreground italic">
+            <div className="text-[11px] text-mute italic">
               Not available with {tokenSymbol}
             </div>
           )}
           {/* Show the other price if both exist */}
           {item.priceZero > BigInt(0) && item.priceAdrian > BigInt(0) && (
-            <div className="text-[9px] text-muted-foreground">
+            <div className="text-[11px] text-mute">
               {paymentToken === 'ZERO'
                 ? `or ${formatPrice(item.priceAdrian)} $ADRIAN`
                 : `or ${formatPrice(item.priceZero)} $ZERO`
@@ -170,29 +174,29 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
         </div>
 
         {/* Availability */}
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-[11px] text-mute">
           {isSoldOut ? 'Sold out' : `${remaining} left`}
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+        {/* Actions — stepper con altura mínima 44px (tamaño md del sistema) */}
+        <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
           {quantityInCart > 0 ? (
             <>
               <button
                 onClick={handleRemove}
-                className="flex-1 flex items-center justify-center py-1.5 rounded-md bg-muted hover:bg-muted/80 text-foreground transition-colors"
+                className="flex-1 h-11 flex items-center justify-center rounded-[var(--r-md)] border-2 border-line text-fg hover:border-mute transition-colors"
               >
-                <Minus className="h-3 w-3" />
+                <Minus className="h-4 w-4" />
               </button>
-              <span className="flex items-center justify-center px-2 text-sm font-bold text-foreground">
+              <span className="font-ui flex items-center justify-center px-2 min-w-[28px] text-[15px] font-bold text-fg">
                 {quantityInCart}
               </span>
               <button
                 onClick={handleAdd}
                 disabled={isSoldOut}
-                className="flex-1 flex items-center justify-center py-1.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground transition-colors disabled:opacity-50"
+                className="flex-1 h-11 flex items-center justify-center rounded-[var(--r-md)] bg-acc text-acc-fg hover:opacity-90 transition-colors disabled:opacity-50"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-4 w-4" />
               </button>
             </>
           ) : (
@@ -200,20 +204,20 @@ export function ShopItemCard({ item }: ShopItemCardProps) {
               {hasFreeAvailable && (
                 <button
                   onClick={handleAddFree}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md bg-success hover:bg-success/90 text-white text-xs font-medium transition-colors"
+                  className="font-ui flex-1 h-11 flex items-center justify-center gap-1 rounded-[var(--r-md)] bg-ok text-acc-fg text-[13px] font-bold transition-colors"
                 >
-                  <Gift className="h-3 w-3" />
+                  <Gift className="h-3.5 w-3.5" />
                   Free
                 </button>
               )}
               <button
                 onClick={handleAdd}
                 disabled={!canAddToCart}
-                className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium transition-colors disabled:opacity-50 ${
+                className={`font-ui flex-1 h-11 flex items-center justify-center gap-1 rounded-[var(--r-md)] bg-acc text-acc-fg text-[13px] font-bold transition-colors disabled:opacity-50 ${
                   hasFreeAvailable ? '' : 'w-full'
                 }`}
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-3.5 w-3.5" />
                 Add
               </button>
             </>

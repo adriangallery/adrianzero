@@ -20,7 +20,7 @@ export function Badge({ tone = 'mute', className, ...props }: BadgeProps) {
     <span
       data-testid="ui-badge"
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium',
+        'font-ui inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-medium',
         TONE_CLASSES[tone],
         className
       )}

@@ -1,9 +1,13 @@
 /**
- * TabBar Component
- * Horizontal scrollable tab bar — mobile-first design
+ * TabBar Component (My NFTs)
+ * F3.5 (13-sep, D17): segmented control de 4 destinos (patrón MisNFTs.dc.html)
+ * en vez de la fila de 6 pestañas con scroll horizontal — Customize/Craft
+ * siguen accesibles por URL directa (?tab=customize|craft), solo dejan de
+ * tener entrada visible en el segmento.
  */
 
 import type { ReactNode } from 'react';
+import { cn } from '@/ui/cn';
 
 export interface Tab {
   id: string;
@@ -19,29 +23,28 @@ interface TabBarProps {
 
 export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
   return (
-    <div className="border-b border-border bg-card sticky top-0 z-10">
-      <div className="flex overflow-x-auto no-scrollbar px-3 py-2 gap-1.5">
-        {tabs.map((tab) => {
-          const isActive = tab.id === activeTab;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={`
-                flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
-                whitespace-nowrap flex-shrink-0 transition-colors
-                ${isActive
-                  ? 'bg-[#00ff00] text-black font-bold'
-                  : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
-                }
-              `}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+    <div
+      data-testid="mynfts-segmented-tabs"
+      className="flex gap-1.5 border-2 border-line rounded-[var(--r-lg)] p-1 bg-bg"
+    >
+      {tabs.map((tab) => {
+        const isActive = tab.id === activeTab;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => onTabChange(tab.id)}
+            aria-pressed={isActive}
+            className={cn(
+              'font-ui flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-[var(--r-md)] text-[13px] transition-colors',
+              isActive ? 'bg-line text-fg font-bold' : 'text-mute hover:text-fg'
+            )}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

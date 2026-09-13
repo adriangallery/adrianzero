@@ -25,7 +25,7 @@ const tabs: { id: ShopTab; label: string; icon: React.ReactNode }[] = [
 
 export function ShopTabs({ activeTab, onTabChange, counts }: ShopTabsProps) {
   return (
-    <div className="flex gap-2 border-b border-border pb-2">
+    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
       {tabs.map((tab) => {
         const count = counts[tab.id];
         const isActive = activeTab === tab.id;
@@ -34,27 +34,15 @@ export function ShopTabs({ activeTab, onTabChange, counts }: ShopTabsProps) {
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`
-              flex items-center gap-2 px-4 py-2 rounded-t-lg font-medium transition-colors
-              ${
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }
-            `}
+            className={`font-ui flex-none flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2.5 rounded-full text-[13px] transition-colors ${
+              isActive
+                ? 'bg-acc text-acc-fg font-bold'
+                : 'border-2 border-line text-fg hover:border-mute'
+            }`}
           >
             {tab.icon}
             <span>{tab.label}</span>
-            {count > 0 && (
-              <span
-                className={`
-                  px-2 py-0.5 rounded-full text-xs
-                  ${isActive ? 'bg-white/20' : 'bg-muted'}
-                `}
-              >
-                {count}
-              </span>
-            )}
+            {count > 0 && <span className="opacity-80">· {count}</span>}
           </button>
         );
       })}

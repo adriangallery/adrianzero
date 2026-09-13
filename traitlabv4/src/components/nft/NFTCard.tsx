@@ -4,6 +4,7 @@
  * V4.6: More dramatic selection, compact mode for 3-col mobile, dim when sibling selected
  */
 
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Frame } from 'lucide-react';
 import type { AdrianZeroToken } from '@/types/nft.types';
@@ -17,6 +18,9 @@ interface NFTCardProps {
   showBadge?: boolean;
   /** Compact mode: image-only, no info section (for dense grids) */
   compact?: boolean;
+  /** F3.5: si se pasa (y compact=false), pinta un botón "Edit" en el pie
+   * que navega ahí en vez de solo seleccionar la tarjeta (patrón MisNFTs.dc.html). */
+  editHref?: string;
 }
 
 export function NFTCard({
@@ -26,6 +30,7 @@ export function NFTCard({
   onClick,
   showBadge = true,
   compact = false,
+  editHref,
 }: NFTCardProps) {
   const imageUrl =
     token.image?.cachedUrl ||
@@ -44,14 +49,15 @@ export function NFTCard({
         relative rounded-lg overflow-hidden cursor-pointer
         touch-target
         transition-all duration-200
+        border-2
         ${
           isSelected
-            ? 'ring-2 ring-[#00ff00] shadow-lg shadow-[#00ff00]/20 scale-[1.02] z-10'
+            ? 'border-acc shadow-lg shadow-[#00ff00]/20 scale-[1.02] z-10'
             : hasSelection
-              ? 'opacity-50 hover:opacity-80 hover:ring-1 hover:ring-border'
-              : 'hover:shadow-md hover:ring-1 hover:ring-border'
+              ? 'border-line opacity-50 hover:opacity-80'
+              : 'border-line hover:border-mute'
         }
-        bg-card
+        bg-panel
       `}
     >
       {/* Image */}
@@ -81,7 +87,7 @@ export function NFTCard({
 
         {/* Token ID Badge */}
         {showBadge && !compact && (
-          <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded-md text-xs font-medium" style={{ color: '#00ff00' }}>
+          <div className="font-ui absolute top-2 right-2 px-2 py-1 bg-bg/90 border border-line rounded-md text-xs font-medium text-acc">
             #{token.tokenId}
           </div>
         )}
@@ -117,13 +123,24 @@ export function NFTCard({
 
       {/* Info — hidden in compact mode */}
       {!compact && (
-        <div className="p-2 sm:p-3">
-          <h3 className="font-medium truncate text-foreground text-xs sm:text-sm">{displayName}</h3>
-          {hasTraits && (
-            <p className="text-[10px] sm:text-xs text-[#00ff00]/70 mt-0.5">
-              {token.appliedTraits!.length} traits
-            </p>
-          )}
+        <div className="p-2 sm:p-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-ui font-medium truncate text-fg text-xs sm:text-sm">{displayName}</h3>
+            {hasTraits && (
+              <span className="font-ui text-[10px] sm:text-xs text-acc/80 flex-none">
+                {token.appliedTraits!.length} traits
+              </span>
+            )}
+          </div>
+          {editHref ? (
+            <Link
+              to={editHref}
+              onClick={(e) => e.stopPropagation()}
+              className="font-ui h-9 rounded-[var(--r-md)] bg-acc text-acc-fg text-[13px] font-bold flex items-center justify-center"
+            >
+              Edit
+            </Link>
+          ) : null}
         </div>
       )}
     </motion.div>
