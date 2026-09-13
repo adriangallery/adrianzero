@@ -5,7 +5,7 @@
  *   toolbar on the left, canvas centered, properties (colors / text / stickers
  *   / mint) docked on the right.
  */
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useAccount } from 'wagmi';
 import { Shirt } from 'lucide-react';
 import { Canvas } from './Canvas';
@@ -15,6 +15,7 @@ import { TextTool } from './TextTool';
 import { StickerLibrary } from './StickerLibrary';
 import { MintFlow } from './MintFlow';
 import { MintBar } from './MintBar';
+import { MobileMintBar } from './MobileMintBar';
 import { PendingStampControls } from './PendingStampControls';
 import { TshirtColorPicker } from './TshirtColorPicker';
 import { MobileToolbar, type MobileSheet } from './MobileToolbar';
@@ -38,7 +39,20 @@ export function TShitStudioModule() {
   }, [loadFromPixels]);
 
   return (
-    <div className="mx-auto max-w-7xl px-2 py-3 lg:px-4 lg:py-6 space-y-4">
+    <div
+      className="mx-auto max-w-7xl px-2 py-3 lg:px-4 lg:py-6 space-y-4"
+      style={
+        {
+          // Local chrome tokens for the mobile fixed stack (bug fix 13-sep):
+          // TabBar (--tabbar-h, global) < MobileMintBar (--tshit-actionbar-h)
+          // < MobileToolbar (--tshit-toolbar-h) — each references the one
+          // below it instead of a magic number, so this is the only place
+          // that needs updating if either bar's height changes.
+          '--tshit-actionbar-h': '56px',
+          '--tshit-toolbar-h': '104px',
+        } as CSSProperties
+      }
+    >
       <header className="px-1 lg:px-0">
         <div className="flex items-center gap-2">
           <Shirt className="h-5 w-5 lg:h-6 lg:w-6 text-emerald-400" />
@@ -97,16 +111,27 @@ export function TShitStudioModule() {
       {pendingStamp && (
         <div
           className="fixed inset-x-2 z-30 lg:hidden"
-          style={{ bottom: 'calc(120px + env(safe-area-inset-bottom, 0px))' }}
+          style={{
+            bottom:
+              'calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + var(--tshit-actionbar-h) + var(--tshit-toolbar-h) + 8px)',
+          }}
         >
           <PendingStampControls variant="mobile" />
         </div>
       )}
 
-      {/* Mobile: sticky bottom toolbar */}
-      <MobileToolbar
-        onOpenSheet={setActiveSheet}
+      {/* Mobile: paint toolbar, fixed above the MobileMintBar (which is
+          itself fixed above the TabBar) — see bug fix note in
+          MobileToolbar.tsx: this used to collide with the TabBar. */}
+      <MobileToolbar onOpenSheet={setActiveSheet} />
+
+      {/* Mobile: always-visible mint call to action, fixed just above the
+          TabBar. Bug fix (13-sep): previously the only mint entry point on
+          mobile was a button buried in MobileToolbar that rendered hidden
+          underneath the TabBar (same fixed box, same z-index). */}
+      <MobileMintBar
         isConnected={isConnected}
+        onOpenMintSheet={() => setActiveSheet('mint')}
       />
 
       {/* Mobile: sheets */}
@@ -153,8 +178,18 @@ export function TShitStudioModule() {
         )}
       </BottomSheet>
 
-      {/* Spacer so the canvas/aside don't sit under the fixed mobile toolbar */}
-      <div className="h-[110px] lg:hidden" aria-hidden />
+      {/* Spacer so the canvas/aside don't sit under the fixed mobile chrome
+          stack (toolbar + mint bar + TabBar). Deliberately a padding-bottom
+          derived from the actual chrome tokens, never a `calc(100vh - N)`
+          guess. */}
+      <div
+        className="lg:hidden"
+        style={{
+          height:
+            'calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + var(--tshit-actionbar-h) + var(--tshit-toolbar-h) + 16px)',
+        }}
+        aria-hidden
+      />
     </div>
   );
 }

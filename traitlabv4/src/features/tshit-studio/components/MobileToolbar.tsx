@@ -9,7 +9,6 @@ import {
   Shirt,
   Grid3x3,
   Trash2,
-  Flame,
 } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
 import type { Tool } from '../types/tshit.types';
@@ -27,10 +26,9 @@ export type MobileSheet = 'color' | 'stickers' | 'tshirt' | 'mint' | null;
 
 interface Props {
   onOpenSheet: (sheet: MobileSheet) => void;
-  isConnected: boolean;
 }
 
-export function MobileToolbar({ onOpenSheet, isConnected }: Props) {
+export function MobileToolbar({ onOpenSheet }: Props) {
   const tool = useTShitStore(s => s.tool);
   const setTool = useTShitStore(s => s.setTool);
   const color = useTShitStore(s => s.color);
@@ -46,8 +44,16 @@ export function MobileToolbar({ onOpenSheet, isConnected }: Props) {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-30 lg:hidden border-t border-zinc-800 bg-zinc-950/95 backdrop-blur"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="fixed inset-x-0 z-20 lg:hidden border-t border-zinc-800 bg-zinc-950/95 backdrop-blur"
+      style={{
+        // Stack above the MobileMintBar (56px) which itself sits above the
+        // TabBar (--tabbar-h) + its safe-area padding. Bug fix (13-sep): this
+        // used to be `bottom: 0`, the exact same box as the global TabBar
+        // (`fixed inset-x-0 bottom-0 z-30`) — same position, same z-index —
+        // so this toolbar's bottom row (which held the mint button) painted
+        // underneath the TabBar and was unreachable.
+        bottom: 'calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + var(--tshit-actionbar-h, 56px))',
+      }}
     >
       {/* Row 1: paint tools + color + size + history */}
       <div className="flex items-center gap-1.5 px-2 pt-2 pb-1.5 overflow-x-auto">
@@ -114,7 +120,9 @@ export function MobileToolbar({ onOpenSheet, isConnected }: Props) {
         </button>
       </div>
 
-      {/* Row 2: sheet triggers + mint (icons only, mint stays labeled) */}
+      {/* Row 2: sheet triggers (icons only). Mint moved to its own
+          always-visible MobileMintBar above the TabBar — see bug fix note
+          on the container above. */}
       <div className="flex items-center gap-1.5 px-2 pb-2">
         <button
           onClick={() => onOpenSheet('stickers')}
@@ -152,16 +160,6 @@ export function MobileToolbar({ onOpenSheet, isConnected }: Props) {
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-rose-800 bg-rose-950/40 text-rose-300"
         >
           <Trash2 className="h-4 w-4" />
-        </button>
-
-        <button
-          onClick={() => onOpenSheet('mint')}
-          disabled={!isConnected}
-          aria-label="Mint"
-          className="ml-auto flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded bg-emerald-600 px-3 text-xs font-bold uppercase tracking-wide text-white disabled:opacity-40"
-        >
-          <Flame className="h-4 w-4" />
-          <span className="truncate">{isConnected ? 'Mint' : 'Connect'}</span>
         </button>
       </div>
     </div>
