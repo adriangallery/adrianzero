@@ -17,6 +17,8 @@ import {
 } from '../data/showcase-nfts';
 import { STATS_DATA, UTILITY_CARDS } from '../data/sample-traits';
 import { TraitLabPreviewSection } from './TraitLabPreviewSection';
+import { MobileHome } from './MobileHome';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { ShowcaseNFT } from '../types/zero.types';
 
 interface GitHubFile {
@@ -27,6 +29,15 @@ interface GitHubFile {
 const LIME = '#00ff00';
 
 export const ZeroModule: React.FC = () => {
+  // F8 Home (13-sep): en <768px la Home es MobileHome (maqueta Home.dc.html:
+  // tu ZERO + una acción, una novedad, cuatro destinos). El escritorio
+  // conserva la portada con vídeo y marquesina de abajo.
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  if (isMobile) return <MobileHome />;
+  return <DesktopHome />;
+};
+
+const DesktopHome: React.FC = () => {
   const { isConnected } = useAccount();
   const navigate = useNavigate();
   const [useFallbackFrame, setUseFallbackFrame] = useState(false);
