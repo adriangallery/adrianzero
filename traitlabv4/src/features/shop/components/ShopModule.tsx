@@ -50,7 +50,7 @@ export function ShopModule() {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">
+        <h2 className="font-ui text-xl font-semibold text-foreground">
           Wallet Not Connected
         </h2>
         <p className="text-muted-foreground mt-2">
