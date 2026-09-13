@@ -28,6 +28,9 @@ export interface PurchaseSheetProps {
   item: ShopItem | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Tras una compra confirmada: refrescar el catálogo (freeRemaining,
+   *  userPurchases, sold) para no ofrecer un «FREE» ya gastado — crítico 13-sep. */
+  onPurchased?: () => void;
 }
 
 type Step = 'idle' | 'approving' | 'buying' | 'done';
@@ -45,7 +48,7 @@ function afterPurchasePath(item: ShopItem): { label: string; to: string } {
   return { label: 'Equip it in TraitLab', to: '/traitlab' };
 }
 
-export function PurchaseSheet({ item, open, onOpenChange }: PurchaseSheetProps) {
+export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: PurchaseSheetProps) {
   const navigate = useNavigate();
   const notifications = useNotifications();
   const { isConnected } = useAccount();
@@ -103,6 +106,7 @@ export function PurchaseSheet({ item, open, onOpenChange }: PurchaseSheetProps) 
     if (step === 'buying' && purchase.isConfirmed) {
       setStep('done');
       refetchBalances();
+      onPurchased?.();
       notifications.success('Purchase confirmed', item ? `${qty} × ${item.name}` : '', true, purchase.txHash);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

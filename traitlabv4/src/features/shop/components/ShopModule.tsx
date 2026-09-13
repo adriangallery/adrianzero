@@ -95,7 +95,7 @@ export function ShopModule() {
         <ShopItemGrid items={byTab[activeTab]} isLoading={isLoading} emptyMessage={EMPTY[activeTab]} onSelect={openItem} />
       </div>
 
-      <PurchaseSheet item={selected} open={sheetOpen} onOpenChange={setSheetOpen} />
+      <PurchaseSheet item={selected} open={sheetOpen} onOpenChange={setSheetOpen} onPurchased={() => refetch()} />
     </div>
   );
 }
