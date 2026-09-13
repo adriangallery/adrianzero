@@ -15,7 +15,7 @@
  */
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { useTShitStore } from '../store/tshitStore';
-import { isPaintable } from '../lib/tshirtMask';
+import { CANVAS_HEIGHT, CANVAS_WIDTH, isPaintable } from '../lib/tshirtMask';
 import { clampScale, type ViewportState } from './useCanvasViewport';
 
 interface Args {
@@ -39,12 +39,47 @@ export interface CursorPreview {
 }
 
 /**
- * On touch, paint at a fixed screen-pixel offset above the finger so the
- * fingertip doesn't cover the cells being drawn. Tuned to ~50 CSS px which is
- * roughly half a fingertip — large enough to clear, small enough to feel
- * connected to the touch.
+ * On touch, paint at a screen-pixel offset above the finger so the fingertip
+ * doesn't cover the cells being drawn.
+ *
+ * BUG (13-sep hotfix): this used to be a FIXED 52 CSS px regardless of the
+ * canvas' rendered cell size. `Canvas` auto-shrinks `pixelSize` on narrow
+ * phones (~2 at 390px vs the 4 this was tuned against), so the same 52px
+ * offset that was ~13 cells at pixelSize=4 became ~26 cells — over 1/6th of
+ * the 148-cell canvas — at pixelSize=2. That's what made painting feel wildly
+ * offset on mobile ("tocar casi fuera de la camiseta para pintar dentro").
+ * Expressing it as a cell count scaled by the current `pixelSize` keeps the
+ * finger clearance proportional to how small the canvas is actually
+ * rendered, clamped so it never vanishes nor re-grows past the original feel.
  */
-const TOUCH_OFFSET_CSS_PX = 52;
+const TOUCH_OFFSET_CELLS = 13; // 52px / 4 (the pixelSize this was originally tuned at)
+const TOUCH_OFFSET_MIN_PX = 16;
+const TOUCH_OFFSET_MAX_PX = 52;
+
+function touchOffsetPxFor(pixelSize: number): number {
+  const px = TOUCH_OFFSET_CELLS * pixelSize;
+  return Math.min(TOUCH_OFFSET_MAX_PX, Math.max(TOUCH_OFFSET_MIN_PX, px));
+}
+
+/**
+ * Pure client-coords → grid-cell mapping, decoupled from `pixelSize`/scale
+ * assumptions: it uses the ACTUAL rendered rect against the logical grid
+ * size, so it self-corrects for any CSS scaling, border insets, or transform
+ * the element ends up with — instead of trusting that `rect.width` equals
+ * `pixelSize * gridWidth` exactly. Exported for unit testing.
+ */
+export function pointToCell(
+  clientX: number,
+  clientY: number,
+  rect: { left: number; top: number; width: number; height: number },
+  gridWidth: number,
+  gridHeight: number
+): { x: number; y: number } | null {
+  if (rect.width <= 0 || rect.height <= 0) return null;
+  const x = Math.floor(((clientX - rect.left) * gridWidth) / rect.width);
+  const y = Math.floor(((clientY - rect.top) * gridHeight) / rect.height);
+  return { x, y };
+}
 
 export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setViewport }: Args) {
   const activePointerId = useRef<number | null>(null);
@@ -82,26 +117,25 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
 
   const [cursorPreview, setCursorPreview] = useState<CursorPreview | null>(null);
 
-  // Convert client (x,y) to canvas cell coords.
-  // When a viewport is active, getBoundingClientRect() already reflects the
-  // applied scale/translate (the rect is the post-transform box), so we just
-  // divide by pixelSize * scale to land on the correct cell.
-  // `withTouchOffset` shifts the cell upward by ~50 CSS px so a touch finger
-  // doesn't cover the painted area.
+  // Convert client (x,y) to canvas cell coords. `getBoundingClientRect()` is
+  // read FRESH on every call (never cached), so this stays correct across
+  // scroll/sticky/resize — and because it maps by the RATIO of the rendered
+  // rect to the logical grid (CANVAS_WIDTH/CANVAS_HEIGHT) rather than
+  // trusting `pixelSize` to equal `rect.width / gridWidth` exactly, it also
+  // absorbs the current viewport transform (scale/translate already show up
+  // in the rect) without needing a separate `/ scale` division.
+  // `withTouchOffset` shifts the cell upward so a touch finger doesn't cover
+  // the painted area — scaled to the current `pixelSize` (see
+  // `touchOffsetPxFor`) so it stays proportional on the auto-shrunk mobile
+  // canvas instead of the fixed-px offset that used to blow out to ~26 cells.
   const cellFromClient = useCallback(
     (clientX: number, clientY: number, withTouchOffset = false) => {
       if (!canvasEl) return null;
       const rect = canvasEl.getBoundingClientRect();
-      const scale = viewportRef?.current.scale ?? 1;
-      let projY = clientY;
-      if (withTouchOffset) {
-        projY = clientY - TOUCH_OFFSET_CSS_PX;
-      }
-      const cx = Math.floor((clientX - rect.left) / pixelSize / scale);
-      const cy = Math.floor((projY - rect.top) / pixelSize / scale);
-      return { x: cx, y: cy };
+      const projY = withTouchOffset ? clientY - touchOffsetPxFor(pixelSize) : clientY;
+      return pointToCell(clientX, projY, rect, CANVAS_WIDTH, CANVAS_HEIGHT);
     },
-    [canvasEl, pixelSize, viewportRef]
+    [canvasEl, pixelSize]
   );
 
   const stamp = useCallback(
