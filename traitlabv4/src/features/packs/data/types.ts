@@ -54,6 +54,12 @@ export interface OwnedPack {
   /** Contrato que puede abrirlo hoy — resuelto en vivo, null si ninguno de los 3 lo tiene configurado. */
   openContract: PackOpenContractName | null;
   openContractAddress: `0x${string}` | null;
+  /**
+   * false mientras el registro (rutas de apertura) aún no ha cargado o ha
+   * fallado: en ese caso `openContract` null NO significa «no se puede
+   * abrir» — `useOpenPack` resuelve la ruta en vivo al abrir.
+   */
+  routeKnown: boolean;
 }
 
 /** Resultado de abrir un pack: lo obtenido, decodificado del evento real del receipt. */
