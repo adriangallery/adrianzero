@@ -1,133 +1,101 @@
 /**
- * ShopModule Component
- * Main shop page with tabs, grid, and cart — dual-token support
+ * Shop (F8, maqueta Shop.dc.html): el catálogo se ve SIN wallet (antes la
+ * página entera era «Wallet Not Connected»); la wallet solo hace falta al
+ * comprar, y se pide desde la hoja de compra. Saldo arriba a la derecha,
+ * chips de categoría, rejilla, hoja de compra por ítem.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAccount } from 'wagmi';
-import { Unplug, RefreshCw } from 'lucide-react';
-import { useShopItems } from '../hooks/useShopItems';
+import { RefreshCw } from 'lucide-react';
+import { useShopItems, type ShopItem } from '../hooks/useShopItems';
 import { useTokenBalance } from '../hooks/useTokenBalance';
+import { formatTokenAmount } from '../lib/format';
 import { ShopTabs, type ShopTab } from './ShopTabs';
 import { ShopItemGrid } from './ShopItemGrid';
-import { ShopCart } from './ShopCart';
+import { PurchaseSheet } from './PurchaseSheet';
+
+const EMPTY: Record<ShopTab, string> = {
+  floppies: 'No packs on sale right now',
+  traits: 'No traits on sale right now',
+  serums: 'No serums on sale right now',
+};
+
+function isShopTab(v: string | null): v is ShopTab {
+  return v === 'floppies' || v === 'traits' || v === 'serums';
+}
 
 export function ShopModule() {
   const { isConnected } = useAccount();
-  const [activeTab, setActiveTab] = useState<ShopTab>('traits');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<ShopTab>(isShopTab(tabParam) ? tabParam : 'floppies');
+  const [selected, setSelected] = useState<ShopItem | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  const { items, traits, floppies, serums, isLoading, error, refetch } = useShopItems();
-  const { zeroFormatted, adrianFormatted } = useTokenBalance();
+  const { traits, floppies, serums, isLoading, error, refetch } = useShopItems();
+  const { zeroBalance } = useTokenBalance();
 
-  // Get items for current tab
-  const getCurrentItems = () => {
-    switch (activeTab) {
-      case 'traits':
-        return traits;
-      case 'floppies':
-        return floppies;
-      case 'serums':
-        return serums;
-      default:
-        return items;
-    }
+  const byTab: Record<ShopTab, ShopItem[]> = useMemo(
+    () => ({ floppies, traits, serums }),
+    [floppies, traits, serums]
+  );
+
+  const changeTab = (tab: ShopTab) => {
+    setActiveTab(tab);
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', tab);
+    setSearchParams(next, { replace: true });
   };
 
-  const getEmptyMessage = () => {
-    switch (activeTab) {
-      case 'traits':
-        return 'No traits available';
-      case 'floppies':
-        return 'No floppies available';
-      case 'serums':
-        return 'No serums available';
-      default:
-        return 'No items available';
-    }
+  const openItem = (item: ShopItem) => {
+    setSelected(item);
+    setSheetOpen(true);
   };
-
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
-        <h2 className="font-ui text-xl font-semibold text-foreground">
-          Wallet Not Connected
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          Please connect your wallet to browse the shop
-        </p>
-      </div>
-    );
-  }
 
   return (
-    <div className="flex h-full min-w-0">
-      {/* Main Content — sin padding propio en móvil: el Container ya da
-          16px (F3.5: el p-4 de aquí lo doblaba, y el flex sin min-w-0
-          dejaba que el contenido empujara la página fuera del viewport). */}
-      <div className="flex-1 min-w-0 overflow-y-auto lg:p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="min-w-0">
-            <h1 className="font-ui text-xl font-bold text-fg">Shop</h1>
-            <p className="text-mute text-[13px] mt-0.5 truncate-2">
-              Purchase traits, floppies, and serums with $ZERO or $ADRIAN
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 flex-none">
-            {/* Balances */}
-            <div className="hidden sm:block text-right">
-              <p className="text-[13px] text-mute">Your Balances</p>
-              <p className="font-ui font-bold text-acc text-sm">
-                {zeroFormatted.toLocaleString()} $ZERO
-              </p>
-              <p className="text-xs text-mute">
-                {adrianFormatted.toLocaleString()} $ADRIAN
-              </p>
-            </div>
-
-            {/* Refresh */}
-            <button
-              onClick={() => refetch()}
-              disabled={isLoading}
-              className="p-2 rounded-lg hover:bg-panel text-mute hover:text-fg transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Error State */}
-        {error && (
-          <div className="p-4 rounded-[var(--r-md)] border-2 border-bad bg-bad/10 text-bad mb-4 text-sm">
-            Failed to load shop items. Please try again.
-          </div>
-        )}
-
-        {/* Tabs */}
-        <ShopTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          counts={{
-            traits: traits.length,
-            floppies: floppies.length,
-            serums: serums.length,
-          }}
-        />
-
-        {/* Items Grid */}
-        <div className="mt-4 pb-[calc(var(--tabbar-h)+80px)]">
-          <ShopItemGrid
-            items={getCurrentItems()}
-            isLoading={isLoading}
-            emptyMessage={getEmptyMessage()}
-          />
+    <div className="flex min-w-0 flex-col gap-3 lg:px-2">
+      {/* Cabecera: título + saldo */}
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-ui text-[15px] font-bold text-fg">Shop</h1>
+        <div className="flex items-center gap-2">
+          {isConnected && zeroBalance !== undefined ? (
+            <span className="rounded-full border-2 border-line px-3 py-1.5 text-[13px] text-fg" data-testid="shop-balance">
+              <span className="font-ui font-bold text-acc">{formatTokenAmount(zeroBalance)}</span> ZERO
+            </span>
+          ) : (
+            <span className="text-[13px] text-mute">Browse freely · connect to buy</span>
+          )}
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isLoading}
+            aria-label="Refresh"
+            className="grid h-9 w-9 place-items-center rounded-full text-mute hover:bg-panel hover:text-fg disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
 
-      {/* Cart Sidebar (desktop) / ActionBar flotante (móvil, dentro de ShopCart) */}
-      <ShopCart />
+      {error ? (
+        <div className="rounded-[var(--r-md)] border-2 border-bad bg-bad/10 p-3 text-[14px] text-bad">
+          Could not load the shop. Pull to refresh or try again in a moment.
+        </div>
+      ) : null}
+
+      <ShopTabs
+        activeTab={activeTab}
+        onTabChange={changeTab}
+        counts={{ floppies: floppies.length, traits: traits.length, serums: serums.length }}
+      />
+
+      <div className="pb-4">
+        <ShopItemGrid items={byTab[activeTab]} isLoading={isLoading} emptyMessage={EMPTY[activeTab]} onSelect={openItem} />
+      </div>
+
+      <PurchaseSheet item={selected} open={sheetOpen} onOpenChange={setSheetOpen} />
     </div>
   );
 }
