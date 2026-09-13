@@ -9,6 +9,7 @@ import { ClaimButton } from './ClaimButton';
 import { useClaimReward } from '../hooks/useClaimReward';
 import { useNotificationStore } from '@/store/notificationStore';
 import { getClaimStatusKey } from '../hooks/useClaimStatus';
+import { isUserRejection } from '@/lib/web3/humanError';
 import type { Campaign } from '../types/rewards.types';
 
 interface CampaignCardProps {
@@ -70,7 +71,11 @@ export function CampaignCard({ campaign, userPunks, claimStatus }: CampaignCardP
             );
             setSelectedPunks([]);
           },
-          onError: () => {
+          onError: (err) => {
+            if (isUserRejection(err)) {
+              addNotification('info', 'Cancelled', 'Transaction cancelled');
+              return;
+            }
             addNotification('error', 'Claim Failed', errorMessage || 'Failed to claim rewards.');
           },
         }
