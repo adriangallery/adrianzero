@@ -25,7 +25,7 @@ const FLOPPY_DISCS_ADDRESS = '0x56b3fcc1417f269138cb7eba1272e8ccfee8ffc8' as con
 const OPENPACK_V4_ADDRESS = '0x238083148f4fbf4232efe16261e7aa87ce787022' as const;
 const UNRELATED_ADDRESS = '0x000000000000000000000000000000000000bad' as const;
 
-function makeLog(address: `0x${string}`, topics: readonly `0x${string}`[], data: `0x${string}`): TransactionReceipt['logs'][number] {
+function makeLog(address: `0x${string}`, topics: `0x${string}`[], data: `0x${string}`): TransactionReceipt['logs'][number] {
   return {
     address,
     topics,
@@ -36,7 +36,7 @@ function makeLog(address: `0x${string}`, topics: readonly `0x${string}`[], data:
     removed: false,
     transactionHash: '0x02',
     transactionIndex: 0,
-  } as TransactionReceipt['logs'][number];
+  } as unknown as TransactionReceipt['logs'][number];
 }
 
 // PackOpened real: tx de apertura del pack 10010 en AdrianFloppyDiscs,
