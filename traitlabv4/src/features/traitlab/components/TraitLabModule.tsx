@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccount } from 'wagmi';
-import { Button, ActionBar, Skeleton, Badge, UndoIcon } from '@/ui';
+import { Button, ActionBar, Skeleton, Badge, UndoIcon, WalletSheet } from '@/ui';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -75,6 +75,7 @@ export function TraitLabModule() {
   const [previewStatus, setPreviewStatus] = useState<PreviewStatus>('idle');
   const [resultOpen, setResultOpen] = useState(false);
   const [lastTxHash, setLastTxHash] = useState<string | null>(null);
+  const [walletSheetOpen, setWalletSheetOpen] = useState(false);
 
   const { isLoading: isLoadingEquipped } = useEquippedTraits(selectedTokenId);
   const { checkTrait } = useCanApplyTraits(selectedTokenId);
@@ -171,7 +172,12 @@ export function TraitLabModule() {
   // ─── Selección de traits ──────────────────────────────────────────────
   const handleSelectTrait = useCallback(
     async (trait: Trait) => {
-      if (!requireWallet('customize your ZERO')) return;
+      // Menos fricción que el toast "Wallet Required" (revisión visual
+      // 13-sep): tocar un trait sin wallet abre directo la hoja de conectar.
+      if (!isConnected) {
+        setWalletSheetOpen(true);
+        return;
+      }
       const category = trait.category;
       const current = selections[category] ?? equipped[category];
 
@@ -187,7 +193,7 @@ export function TraitLabModule() {
       }
       selectTraitAction(category, trait.tokenId);
     },
-    [requireWallet, selections, equipped, selectTraitAction, checkTrait, notifications]
+    [isConnected, selections, equipped, selectTraitAction, checkTrait, notifications]
   );
 
   // ─── Aplicar cambios ──────────────────────────────────────────────────
@@ -223,7 +229,7 @@ export function TraitLabModule() {
   const noToken = !selectedTokenId;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex flex-col">
       {/* Cabecera: token + cambiar */}
       <div className="flex items-center justify-between gap-3 px-4 pb-2.5 pt-3.5">
         <button
@@ -259,20 +265,31 @@ export function TraitLabModule() {
       </div>
 
       {noToken ? (
-        <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-mute">
+        <div className="flex min-h-[50dvh] items-center justify-center px-6 text-center text-sm text-mute">
           Choose a ZERO to start customizing it.
         </div>
       ) : (
         <>
-          {/* Preview */}
-          <div
-            className="relative mx-4 h-[300px] select-none overflow-hidden rounded-[var(--r-lg)] border-2 border-line bg-panel"
-            onPointerDown={() => setComparing(true)}
-            onPointerUp={() => setComparing(false)}
-            onPointerLeave={() => setComparing(false)}
-            onPointerCancel={() => setComparing(false)}
-            data-testid="traitlab-preview"
-          >
+          {/* Preview: cuadrado responsive, nunca vh (barra de Safari) — en un
+              viewport bajo (≈664px con las barras del navegador) arranca en
+              ~34dvh y deja al menos una fila de tarjetas visible sin scroll
+              (revisión visual 13-sep: el h-[300px] fijo se comía toda la
+              pantalla en móviles reales). */}
+          <div className="px-4">
+            <div
+              className="relative mx-auto select-none overflow-hidden rounded-[var(--r-lg)] border-2 border-line bg-panel"
+              style={{
+                width: 'min(calc(100vw - 32px), 34dvh)',
+                height: 'min(calc(100vw - 32px), 34dvh)',
+                minWidth: 160,
+                minHeight: 160,
+              }}
+              onPointerDown={() => setComparing(true)}
+              onPointerUp={() => setComparing(false)}
+              onPointerLeave={() => setComparing(false)}
+              onPointerCancel={() => setComparing(false)}
+              data-testid="traitlab-preview"
+            >
             {previewStatus === 'loading' ? (
               <Skeleton className="h-full w-full" />
             ) : displayedUrl ? (
@@ -299,24 +316,33 @@ export function TraitLabModule() {
                 {changes.count} change{changes.count === 1 ? '' : 's'}
               </Badge>
             ) : null}
+            </div>
           </div>
 
-          {/* Categorías */}
-          {isLoadingTraits ? (
-            <div className="flex gap-2 px-4 pb-2.5 pt-3.5">
-              <Skeleton className="h-[38px] w-24" />
-              <Skeleton className="h-[38px] w-20" />
-              <Skeleton className="h-[38px] w-24" />
-            </div>
-          ) : (
-            <CategoryChips categories={categories} active={activeCategory} onSelect={setActiveCategory} />
-          )}
+          {/* Categorías: sticky bajo el header (--header-h) para que, al
+              hacer scroll de página, no se vayan detrás de las tarjetas —
+              antes vivían dentro de un contenedor con scroll propio que
+              dejaba la rejilla sin altura real (revisión visual 13-sep). */}
+          <div className="sticky z-10 bg-bg" style={{ top: 'var(--header-h)' }}>
+            {isLoadingTraits ? (
+              <div className="flex gap-2 px-4 pb-2.5 pt-3.5">
+                <Skeleton className="h-[38px] w-24" />
+                <Skeleton className="h-[38px] w-20" />
+                <Skeleton className="h-[38px] w-24" />
+              </div>
+            ) : (
+              <CategoryChips categories={categories} active={activeCategory} onSelect={setActiveCategory} />
+            )}
+          </div>
 
-          {/* Grid de traits. padding-bottom = --tabbar-h (F3.5) + altura real
-              de la ActionBar (48px de botón + 10px/12px de padding vertical
-              = 70px) + 16px de aire, para que la última fila no quede
+          {/* Grid de traits: flujo normal de página (el scroll lo hace el
+              contenedor de MainLayout, no un flex-1/overflow-y-auto propio
+              que dejaba la rejilla sin altura real — revisión visual
+              13-sep). padding-bottom = --tabbar-h (F3.5) + altura real de la
+              ActionBar (48px de botón + 10px/12px de padding vertical =
+              70px) + 16px de aire, para que la última fila no quede
               cortada bajo la barra fija. */}
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(var(--tabbar-h)+86px)]">
+          <div className="px-4 pb-[calc(var(--tabbar-h)+86px)]">
             {isLoadingTraits || isLoadingEquipped ? (
               <div className="grid grid-cols-3 gap-2.5">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -412,6 +438,8 @@ export function TraitLabModule() {
           txHash={lastTxHash}
         />
       ) : null}
+
+      <WalletSheet open={walletSheetOpen} onOpenChange={setWalletSheetOpen} />
     </div>
   );
 }
