@@ -46,4 +46,57 @@ describe('pointToCell (pointer → grid cell mapping)', () => {
     const cell = pointToCell(actualRenderedWidth / 2, actualRenderedWidth / 2, rect, gridWidth, gridWidth);
     expect(cell).toEqual({ x: 74, y: 74 });
   });
+
+  // Bounds checks (critic review, round 4): the touch paint offset can push
+  // a point above the canvas' top edge, and Pointer Capture keeps delivering
+  // move/up events to the canvas element even once the finger has dragged
+  // past its bottom/sides mid-stroke — both are normal occurrences, not
+  // theoretical edge cases, and must map to `null` (don't paint) rather than
+  // an out-of-grid `{x,y}` that a naive caller could use as if valid.
+
+  it('returns null when clientY is above the rect (touch offset pushed above the top edge)', () => {
+    const rect = { left: 0, top: 100, width: 300, height: 300 };
+    // 40px above rect.top — e.g. a touch near row 0 with the finger-clearance offset applied.
+    expect(pointToCell(150, 60, rect, 64, 64)).toBeNull();
+  });
+
+  it('returns null when clientY is below the rect (pointer capture dragged past the bottom edge)', () => {
+    const rect = { left: 0, top: 0, width: 300, height: 300 };
+    // Past rect.bottom (300) — finger dragged off the canvas onto the toolbar below, still captured.
+    expect(pointToCell(150, 340, rect, 64, 64)).toBeNull();
+  });
+
+  it('returns null when clientX is left/right of the rect (pointer capture dragged past a side)', () => {
+    const rect = { left: 50, top: 50, width: 300, height: 300 };
+    expect(pointToCell(20, 150, rect, 64, 64)).toBeNull(); // left of rect.left
+    expect(pointToCell(400, 150, rect, 64, 64)).toBeNull(); // right of rect.right
+  });
+
+  it('returns null exactly at the far edges (clientX/Y === rect.right/bottom, one past the last cell)', () => {
+    const rect = { left: 0, top: 0, width: 300, height: 300 };
+    // At the exact bottom-right corner the ratio lands exactly on gridWidth/gridHeight,
+    // one cell past the last valid index (gridWidth-1) — must reject, not clamp.
+    expect(pointToCell(300, 300, rect, 64, 64)).toBeNull();
+    // One CSS px inside is still the last valid cell.
+    expect(pointToCell(299.9, 299.9, rect, 64, 64)).toEqual({ x: 63, y: 63 });
+  });
+
+  it('maps a non-square rect against a non-square grid independently per axis', () => {
+    // 300x150 rect for a 64x32 grid — x and y each use their OWN ratio
+    // (gridWidth/rect.width vs gridHeight/rect.height), not a single shared scale.
+    const rect = { left: 0, top: 0, width: 300, height: 150 };
+    expect(pointToCell(150, 75, rect, 64, 32)).toEqual({ x: 32, y: 16 }); // center
+    expect(pointToCell(0, 0, rect, 64, 32)).toEqual({ x: 0, y: 0 }); // top-left
+    expect(pointToCell(299, 149, rect, 64, 32)).toEqual({ x: 63, y: 31 }); // bottom-right-ish, still in bounds
+    expect(pointToCell(300, 150, rect, 64, 32)).toBeNull(); // exactly at the far corner → out
+  });
+
+  it('maps a non-square rect against a SQUARE grid (width and height scale differently)', () => {
+    // A 400x200 rect (2:1) mapped onto a 148x148 square grid: the same
+    // client-space displacement means a different cell displacement on each
+    // axis, since horizontal and vertical scale factors differ.
+    const rect = { left: 0, top: 0, width: 400, height: 200 };
+    // 40px right → 40/400*148 ≈ 14.8 → floor 14. 40px down → 40/200*148 ≈ 29.6 → floor 29.
+    expect(pointToCell(40, 40, rect, 148, 148)).toEqual({ x: 14, y: 29 });
+  });
 });

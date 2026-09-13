@@ -22,6 +22,12 @@
  * of visible canvas between this bar and the TabBar on devices with a
  * non-zero safe area. Also, its own height is now measured for real instead
  * of trusting a hardcoded `56px` guess.
+ *
+ * FIX (critic review, round 4): colors used to be raw `bg-zinc-950/95` /
+ * `border-zinc-800` (+ `backdrop-blur`) instead of the F3.5/D11 design-system
+ * tokens (`bg-bg`, `border-line`) that `TabBar` itself uses right below —
+ * two visually different "black bars" stacked directly on top of each other.
+ * `bg-bg` is fully opaque, so `backdrop-blur` was a no-op behind it anyway.
  */
 import { Flame } from 'lucide-react';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
@@ -50,13 +56,13 @@ export function MobileMintBar({ isConnected, onOpenMintSheet }: Props) {
   return (
     <div
       ref={barRef}
-      className="fixed inset-x-0 z-20 lg:hidden border-t border-zinc-800 bg-zinc-950/95 backdrop-blur"
+      className="fixed inset-x-0 z-20 lg:hidden border-t border-line bg-bg"
       style={{ bottom: 'var(--tabbar-h)' }}
     >
       <button
         type="button"
         onClick={() => (isConnected ? onOpenMintSheet() : openConnectModal?.())}
-        className="flex h-14 w-full items-center justify-center gap-2 px-4 text-sm font-bold uppercase tracking-wide text-white active:bg-zinc-900"
+        className="flex h-14 w-full items-center justify-center gap-2 px-4 text-sm font-bold uppercase tracking-wide text-fg active:bg-line"
       >
         <Flame className="h-4 w-4 text-emerald-400" aria-hidden />
         <span className="truncate">{label}</span>

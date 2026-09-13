@@ -67,6 +67,23 @@ function touchOffsetPxFor(pixelSize: number): number {
  * size, so it self-corrects for any CSS scaling, border insets, or transform
  * the element ends up with — instead of trusting that `rect.width` equals
  * `pixelSize * gridWidth` exactly. Exported for unit testing.
+ *
+ * BUG (13-sep hotfix, round 4 — critic review): this used to return
+ * whatever `{x,y}` the arithmetic produced, with no bounds check. Two real
+ * callers can land outside `[0, gridWidth-1] x [0, gridHeight-1]`:
+ *  - the touch paint offset (`touchOffsetPxFor`) subtracts CSS px from
+ *    `clientY` before this runs, so a touch near the TOP edge of the canvas
+ *    can produce `y < 0`;
+ *  - Pointer Capture (`setPointerCapture`) keeps delivering move/up events
+ *    to the canvas element even once the finger has dragged BELOW or beside
+ *    it, so `clientY > rect.bottom` (or `clientX` past left/right) is a
+ *    normal occurrence mid-drag, not just a theoretical edge case.
+ * Both used to silently produce an out-of-grid cell that callers then used
+ * as if valid (e.g. the picker's `getAllPixels().find(...)`, or the stamp
+ * hit-test) instead of the intended "no paintable point here" signal.
+ * `stamp()` happened to be protected by its own `isPaintable` check, but
+ * nothing else was — returning `null` outside the grid makes it correct by
+ * construction for every caller, not by accident for one.
  */
 export function pointToCell(
   clientX: number,
@@ -78,6 +95,7 @@ export function pointToCell(
   if (rect.width <= 0 || rect.height <= 0) return null;
   const x = Math.floor(((clientX - rect.left) * gridWidth) / rect.width);
   const y = Math.floor(((clientY - rect.top) * gridHeight) / rect.height);
+  if (x < 0 || y < 0 || x >= gridWidth || y >= gridHeight) return null;
   return { x, y };
 }
 
@@ -254,7 +272,12 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
       // physically lands, not at the offset position.
       const rawCell = cellFromClient(e.clientX, e.clientY, false);
       if (!rawCell) return;
-      const cell = isTouch ? cellFromClient(e.clientX, e.clientY, true)! : rawCell;
+      // The touch-offset cell CAN be null even when rawCell isn't — e.g. a
+      // touch near the canvas' top edge, where subtracting the offset lands
+      // above y=0. Don't paint that frame; still arm the drag so painting
+      // resumes cleanly once the finger moves somewhere the offset cell is
+      // back in bounds (see onMove's "resume after a gap" branch below).
+      const cell = isTouch ? cellFromClient(e.clientX, e.clientY, true) : rawCell;
       activePointerId.current = e.pointerId;
       canvasEl.setPointerCapture?.(e.pointerId);
       e.preventDefault();
@@ -275,6 +298,14 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
 
       dragModeRef.current = 'paint';
       stampGrabOffsetRef.current = null;
+
+      if (!cell) {
+        setCursorPreview(null);
+        beginStroke();
+        lastCellRef.current = null;
+        return;
+      }
+
       setCursorPreview({ x: cell.x, y: cell.y, pointerType: e.pointerType as CursorPreview['pointerType'] });
 
       if (tool === 'picker') {
@@ -311,9 +342,13 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
       }
 
       if (activePointerId.current !== e.pointerId) return;
+      // `rawCell` can be null mid-drag too: Pointer Capture keeps delivering
+      // move events to the canvas even after the finger drags past its
+      // edges (below it, onto the toolbar, etc.) — that's expected while a
+      // stroke or a stamp-drag is in progress, just nothing to do this frame.
       const rawCell = cellFromClient(e.clientX, e.clientY, false);
       if (!rawCell) return;
-      const cell = isTouch ? cellFromClient(e.clientX, e.clientY, true)! : rawCell;
+      const cell = isTouch ? cellFromClient(e.clientX, e.clientY, true) : rawCell;
 
       if (dragModeRef.current === 'stamp') {
         const grab = stampGrabOffsetRef.current;
@@ -322,9 +357,27 @@ export function useCanvasInteraction({ canvasEl, pixelSize, viewportRef, setView
         return;
       }
 
+      if (!cell) {
+        // Touch offset pushed this frame's paint point out of the grid
+        // (e.g. near the top edge). Clear the last cell instead of leaving
+        // it stale, so we don't draw a spurious line across the gap once
+        // the finger moves somewhere back in bounds.
+        setCursorPreview(null);
+        lastCellRef.current = null;
+        return;
+      }
+
       setCursorPreview({ x: cell.x, y: cell.y, pointerType: e.pointerType as CursorPreview['pointerType'] });
 
-      if (!lastCellRef.current) return;
+      if (!lastCellRef.current) {
+        // Resuming after a gap (the previous frame(s) were out of bounds, or
+        // this is the very first move after an out-of-bounds down) — stamp
+        // this cell directly instead of drawing a line from a stale/absent
+        // last point.
+        stamp(cell.x, cell.y);
+        lastCellRef.current = cell;
+        return;
+      }
       if (cell.x === lastCellRef.current.x && cell.y === lastCellRef.current.y) return;
       drawLine(lastCellRef.current, cell);
       lastCellRef.current = cell;
