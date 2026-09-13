@@ -13,6 +13,10 @@ export const PACK_IMAGE_FALLBACK = (packId: bigint | string | number) =>
 export const TRAIT_IMAGE = (traitId: bigint | string | number) =>
   `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${traitId}.svg`;
 
+/** Fallback para ids sin SVG en traitlabv3 (Studio 30014+, PUNK REWARDS 100001+): el PNG renderizado de AdrianLAB. */
+export const TRAIT_IMAGE_FALLBACK = (traitId: bigint | string | number) =>
+  `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/rendered-images/${traitId}.png`;
+
 export interface PackDisplay {
   name: string;
   image: string;

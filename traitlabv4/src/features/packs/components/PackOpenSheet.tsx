@@ -16,7 +16,7 @@ import { isUserRejection } from '@/lib/web3/humanError';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useOpenPack } from '../data/useOpenPack';
 import type { OpenPackResult, OwnedPack } from '../data/types';
-import { TRAIT_IMAGE, traitSubtitle, type PackDisplay } from '../lib/packDisplay';
+import { TRAIT_IMAGE, TRAIT_IMAGE_FALLBACK, traitSubtitle, type PackDisplay } from '../lib/packDisplay';
 
 export interface PackOpenSheetProps {
   pack: OwnedPack | null;
@@ -128,7 +128,16 @@ export function PackOpenSheet({ pack, display, open, onOpenChange, equipTokenId 
                   }`}
                 >
                   <div className="h-[72px] w-[72px] overflow-hidden rounded-[8px] bg-line">
-                    <img src={TRAIT_IMAGE(id)} alt="" className="h-full w-full object-contain" loading="lazy" />
+                    <img
+                      src={TRAIT_IMAGE(id)}
+                      alt=""
+                      className="h-full w-full object-contain"
+                      loading="lazy"
+                      onError={(e) => {
+                        const fb = TRAIT_IMAGE_FALLBACK(id);
+                        if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                      }}
+                    />
                   </div>
                   <p className="font-ui text-[12px] font-bold leading-tight text-fg line-clamp-2">
                     {meta?.name ?? `#${id.toString()}`}
