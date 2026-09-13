@@ -50,3 +50,24 @@ export function useEquippedTraits(tokenId: string | null) {
 
   return { appliedTraitIds, isLoading, error, refetch };
 }
+
+/**
+ * Variante de SOLO LECTURA para fuera del editor (Home móvil F8): misma
+ * llamada on-chain, sin el efecto que escribe en `traitlabStore` — solo
+ * TraitLab debe escribir en su store (revisión del crítico 13-sep: si la
+ * Home escribía `equipped` de A mientras `selectedTokenId` era B, el store
+ * quedaba incoherente y cualquier consumidor externo leería `changes` falsos).
+ */
+export function useEquippedTraitIds(tokenId: string | null) {
+  const { data, isLoading, error } = useReadContract({
+    address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
+    abi: TRAITS_EXTENSIONS_ABI,
+    functionName: 'getAllEquippedTraits',
+    args: tokenId ? [BigInt(tokenId)] : undefined,
+    query: { enabled: Boolean(tokenId), staleTime: 30_000 },
+  });
+  const appliedTraitIds = data
+    ? ((data as readonly [readonly string[], readonly bigint[]])[1] ?? []).map((id) => id.toString())
+    : [];
+  return { appliedTraitIds, isLoading, error };
+}

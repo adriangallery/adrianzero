@@ -13,7 +13,7 @@ import { ChevronRight, DollarSign, Gamepad2, ShoppingBag, Sword } from 'lucide-r
 import { Button, WalletSheet } from '@/ui';
 import { getGitHubImageUrl } from '@/config/images';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
-import { useEquippedTraits } from '@/features/traitlab/hooks/useEquippedTraits';
+import { useEquippedTraitIds } from '@/features/traitlab/hooks/useEquippedTraits';
 import { getLastUsedTokenId } from '@/features/traitlab/lib/tokenHistory';
 import { editRouteFor } from '@/lib/editRoute';
 import { NOW } from '../data/now';
@@ -37,7 +37,7 @@ export function MobileHome() {
     ? tokens.find((t) => t.tokenId === last) ?? tokens[0]
     : undefined;
   const heroId = heroToken?.tokenId ?? null;
-  const { appliedTraitIds } = useEquippedTraits(heroId);
+  const { appliedTraitIds } = useEquippedTraitIds(heroId);
   const equippedCount = appliedTraitIds.filter((id) => id !== '0').length;
 
   const heroImage =
