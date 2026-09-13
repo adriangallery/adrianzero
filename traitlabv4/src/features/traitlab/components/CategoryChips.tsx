@@ -6,7 +6,6 @@
  */
 
 import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import { Chip, Sheet, SearchIcon } from '@/ui';
 
 const VISIBLE_LIMIT = 7;
@@ -16,15 +15,20 @@ export interface CategoryChipsProps {
   active: string;
   onSelect: (category: string) => void;
   /**
-   * Elemento fijo antes de las chips, dentro de la misma fila con scroll
-   * (patrón app estándar: mini-preview a la izquierda de las categorías,
-   * ver `TraitLabModule.tsx`). Comparte el `px-4` de la fila para no
-   * duplicar padding.
+   * Padding izquierdo de la fila con scroll. Por defecto `px-4` (16px);
+   * `TraitLabModule` lo reduce a 0 cuando antepone la mini-preview FUERA
+   * de este scroller (revisión del crítico 13-sep: la miniatura no debe
+   * desplazarse con las chips) para no doblar el hueco entre ambas.
    */
-  leading?: ReactNode;
+  leftPaddingClassName?: string;
 }
 
-export function CategoryChips({ categories, active, onSelect, leading }: CategoryChipsProps) {
+export function CategoryChips({
+  categories,
+  active,
+  onSelect,
+  leftPaddingClassName = 'pl-4',
+}: CategoryChipsProps) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -41,8 +45,10 @@ export function CategoryChips({ categories, active, onSelect, leading }: Categor
 
   return (
     <>
-      <div className="scroll flex items-center gap-2 overflow-x-auto px-4 pb-2.5 pt-3.5" style={{ scrollbarWidth: 'none' }}>
-        {leading}
+      <div
+        className={`scroll flex items-center gap-2 overflow-x-auto pr-4 pb-2.5 pt-3.5 ${leftPaddingClassName}`}
+        style={{ scrollbarWidth: 'none' }}
+      >
         {visible.map((cat) => (
           <Chip key={cat.name} selected={active === cat.name} count={cat.count} onClick={() => onSelect(cat.name)}>
             {cat.name}

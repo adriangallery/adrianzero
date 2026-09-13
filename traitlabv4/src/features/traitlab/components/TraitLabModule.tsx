@@ -174,9 +174,12 @@ export function TraitLabModule() {
   // ─── Mini-preview sticky (feedback de Adrián 13-sep, producción): al
   // hacer scroll el preview grande se iba del todo y se perdía la
   // referencia del ZERO. Un IntersectionObserver sobre el envoltorio del
-  // preview grande decide cuándo mostrar la miniatura junto a los chips —
-  // solo cuando ha salido por detrás del header sticky (--header-h), no
-  // apenas se roza el borde del viewport.
+  // preview grande decide cuándo mostrar la miniatura junto a los chips.
+  // Revisión del crítico: con threshold 0 solo aparecía cuando el preview
+  // desaparecía del TODO — con pocos traits (2 backgrounds, poco scroll
+  // posible) nunca llegaba a irse del todo y la miniatura no aparecía
+  // nunca. Con threshold 0.4 (invertido: se muestra cuando queda MENOS
+  // del 40% visible) aparece con mucho menos scroll.
   useEffect(() => {
     const el = previewWrapRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') {
@@ -186,8 +189,8 @@ export function TraitLabModule() {
     const headerH =
       Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 56;
     const observer = new IntersectionObserver(
-      ([entry]) => setIsPreviewOutOfView(!entry.isIntersecting),
-      { rootMargin: `-${headerH}px 0px 0px 0px`, threshold: 0 }
+      ([entry]) => setIsPreviewOutOfView(entry.intersectionRatio < 0.4),
+      { rootMargin: `-${headerH}px 0px 0px 0px`, threshold: [0, 0.4, 1] }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -350,44 +353,51 @@ export function TraitLabModule() {
           {/* Categorías: sticky bajo el header (--header-h) para que, al
               hacer scroll de página, no se vayan detrás de las tarjetas —
               antes vivían dentro de un contenedor con scroll propio que
-              dejaba la rejilla sin altura real (revisión visual 13-sep). */}
-          <div className="sticky z-10 bg-bg" style={{ top: 'var(--header-h)' }}>
-            {isLoadingTraits ? (
-              <div className="flex gap-2 px-4 pb-2.5 pt-3.5">
-                <Skeleton className="h-[38px] w-24" />
-                <Skeleton className="h-[38px] w-20" />
-                <Skeleton className="h-[38px] w-24" />
-              </div>
-            ) : (
-              <CategoryChips
-                categories={categories}
-                active={activeCategory}
-                onSelect={setActiveCategory}
-                leading={
-                  displayedUrl ? (
-                    <button
-                      type="button"
-                      onClick={scrollToPreview}
-                      aria-label="Back to preview"
-                      aria-hidden={!isPreviewOutOfView}
-                      tabIndex={isPreviewOutOfView ? 0 : -1}
-                      data-testid="traitlab-mini-preview"
-                      className="flex-none overflow-hidden rounded-[8px] border-2 border-line transition-[width,opacity] duration-150"
-                      style={{
-                        width: isPreviewOutOfView ? 56 : 0,
-                        height: 56,
-                        opacity: isPreviewOutOfView ? 1 : 0,
-                      }}
-                    >
-                      {/* Misma URL que el preview grande (displayedUrl) — el
-                          navegador la sirve de su propia caché HTTP, sin
-                          disparar una petición nueva. */}
-                      <img src={displayedUrl} alt="" className="h-full w-full object-cover" />
-                    </button>
-                  ) : undefined
-                }
-              />
-            )}
+              dejaba la rejilla sin altura real (revisión visual 13-sep).
+              Revisión del crítico: la mini-preview vive FUERA de la fila
+              con scroll de las chips (era su primer hijo antes y se
+              desplazaba con ellas) — aquí es una hermana fija a la
+              izquierda, en su propio `flex items-center`. */}
+          <div className="sticky z-10 flex items-center gap-2 bg-bg" style={{ top: 'var(--header-h)' }}>
+            {displayedUrl ? (
+              <button
+                type="button"
+                onClick={scrollToPreview}
+                aria-label="Back to preview"
+                aria-hidden={!isPreviewOutOfView}
+                tabIndex={isPreviewOutOfView ? 0 : -1}
+                data-testid="traitlab-mini-preview"
+                className="ml-4 flex-none overflow-hidden rounded-[8px] border-2 border-line transition-[width,opacity] duration-150"
+                style={{
+                  width: isPreviewOutOfView ? 56 : 0,
+                  height: 56,
+                  opacity: isPreviewOutOfView ? 1 : 0,
+                }}
+              >
+                {/* Misma URL que el preview grande (displayedUrl) — el
+                    navegador la sirve de su propia caché HTTP, sin
+                    disparar una petición nueva. object-contain (no
+                    object-cover): no recortar el render. */}
+                <img src={displayedUrl} alt="" className="h-full w-full object-contain" />
+              </button>
+            ) : null}
+
+            <div className="min-w-0 flex-1">
+              {isLoadingTraits ? (
+                <div className="flex gap-2 px-4 pb-2.5 pt-3.5">
+                  <Skeleton className="h-[38px] w-24" />
+                  <Skeleton className="h-[38px] w-20" />
+                  <Skeleton className="h-[38px] w-24" />
+                </div>
+              ) : (
+                <CategoryChips
+                  categories={categories}
+                  active={activeCategory}
+                  onSelect={setActiveCategory}
+                  leftPaddingClassName={displayedUrl ? 'pl-2' : 'pl-4'}
+                />
+              )}
+            </div>
           </div>
 
           {/* Grid de traits: flujo normal de página (el scroll lo hace el
