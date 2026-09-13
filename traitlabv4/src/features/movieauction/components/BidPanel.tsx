@@ -10,6 +10,7 @@ import {
     useSettleAuction,
     useZeroAllowanceForAuction,
 } from '../hooks/useAuctionActions';
+import {humanError, isUserRejection} from '@/lib/web3/humanError';
 
 interface BidPanelProps {
     auction: AuctionState;
@@ -174,12 +175,14 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
                         Place bid
                     </button>
                 )}
-                {approveError && (
+                {approveError && !isUserRejection(approveError) && (
                     <p className="text-[10px] text-red-400">
-                        Approve failed: {approveError.message?.split('\n')[0]}
+                        Approve failed: {humanError(approveError)}
                     </p>
                 )}
-                {bidError && <p className="text-[10px] text-red-400">{bidError.message?.split('\n')[0]}</p>}
+                {bidError && !isUserRejection(bidError) && (
+                    <p className="text-[10px] text-red-400">{humanError(bidError)}</p>
+                )}
             </div>
         </div>
     );

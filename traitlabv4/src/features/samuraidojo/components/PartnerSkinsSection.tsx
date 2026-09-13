@@ -9,6 +9,7 @@ import {useBudokaiCounters} from '../hooks/useBudokaiCounters';
 import {useWalletEntryCount} from '../hooks/useWalletEntryCount';
 import {useEntrantSkins} from '../hooks/useEntrantSkins';
 import {BUDOKAI_STATUS} from '@/lib/web3/abi';
+import {humanError, isUserRejection} from '@/lib/web3/humanError';
 
 /**
  * Lists the partner-collection NFTs owned by the connected wallet
@@ -305,13 +306,11 @@ export function PartnerSkinsSection() {
                 })}
             </div>
 
-            {(intentError || txError) && (
+            {(intentError || (txError && !isUserRejection(txError))) && (
                 <div className="rounded border border-rose-500/30 bg-rose-950/20 px-3 py-2 text-[10px] text-rose-300">
                     {intentError && <p>Skin record failed: {intentError}</p>}
-                    {txError && (
-                        <p className="mt-1 break-words">
-                            Tx error: {txError.message.slice(0, 200)}
-                        </p>
+                    {txError && !isUserRejection(txError) && (
+                        <p className="mt-1 break-words">{humanError(txError)}</p>
                     )}
                 </div>
             )}

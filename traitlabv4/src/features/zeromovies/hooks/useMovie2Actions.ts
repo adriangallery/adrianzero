@@ -9,6 +9,7 @@ import { useMovies2Catalog } from './useMovies2Catalog';
 import { useGoldenEligibility } from './useGoldenEligibility';
 import { useWalletRentalCap } from './useWalletRentalCap';
 import { parseMovie2Error } from '../lib/parseMovie2Error';
+import { isUserRejection } from '@/lib/web3/humanError';
 import {
   needsApproval as computeNeedsApproval,
   computeUpgradeTotalWei,
@@ -122,6 +123,10 @@ export function useMovie2Actions() {
         const copy = SUCCESS_COPY[name];
         addNotification('success', copy.title, copy.message, true, hash);
       } catch (err) {
+        if (isUserRejection(err)) {
+          addNotification('info', 'Cancelled', 'Transaction cancelled');
+          throw err;
+        }
         const message = parseMovie2Error(err);
         addNotification('error', 'Transaction failed', message);
         throw err;

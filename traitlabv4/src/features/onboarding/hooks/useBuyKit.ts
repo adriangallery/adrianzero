@@ -8,6 +8,7 @@ import { useWriteContract, usePublicClient } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { KIT_SALE_ABI } from '@/lib/web3/abi';
 import { useNotifications } from '@/hooks/useNotifications';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 
 interface BuyKitParams {
   kitId: number;
@@ -74,15 +75,12 @@ export function useBuyKit() {
     onError: (error: Error) => {
       console.error('[useBuyKit] Error:', error);
 
-      // Parse common error messages
-      let message = 'Transaction failed. Please try again.';
-      if (error.message.includes('User rejected') || error.message.includes('user rejected')) {
-        message = 'Transaction was cancelled';
-      } else if (error.message.includes('insufficient funds')) {
-        message = 'Insufficient ETH balance';
+      if (isUserRejection(error)) {
+        notifications.info('Cancelled', 'Transaction cancelled', false);
+        return;
       }
 
-      notifications.error('Mint Failed', message, false);
+      notifications.error('Mint Failed', humanError(error), false);
     },
   });
 }

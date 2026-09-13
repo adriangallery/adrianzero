@@ -4,6 +4,7 @@ import { ConnectButton } from '@/components/wallet/ConnectButton';
 import { useShitdrop } from '../hooks/useShitdrop';
 import { useCurrentDrop } from '../hooks/useDropsData';
 import { useCountdown } from '../hooks/useCountdown';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 
 export function CurrentDrop() {
   const { isConnected } = useAccount();
@@ -184,14 +185,10 @@ export function CurrentDrop() {
                     </div>
                   )}
 
-                  {mintError && (
+                  {mintError && !isUserRejection(mintError) && (
                     <div className="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 p-4 text-destructive">
                       <XCircle className="h-5 w-5 flex-shrink-0" />
-                      <span className="text-sm">
-                        {mintError instanceof Error
-                          ? mintError.message
-                          : 'Mint failed'}
-                      </span>
+                      <span className="text-sm">{humanError(mintError)}</span>
                     </div>
                   )}
                 </>

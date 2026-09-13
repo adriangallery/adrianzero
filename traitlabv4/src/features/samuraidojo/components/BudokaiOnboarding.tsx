@@ -11,6 +11,7 @@ import {useBudokaiCounters} from '../hooks/useBudokaiCounters';
 import {useEnterAsAnonymousCivilian} from '../hooks/useDojoActions';
 import {PartnerSkinsSection} from './PartnerSkinsSection';
 import {SponsorBanner} from './SponsorBanner';
+import {humanError, isUserRejection} from '@/lib/web3/humanError';
 
 const DISCORD_URL = 'https://discord.gg/wDsSreEDnf';
 
@@ -249,9 +250,9 @@ function AnonymousEntryAction() {
                 Anonymous civilian — no NFT needed. Mint SubZERO above to also get
                 revivability + persistent honor between Budokais.
             </p>
-            {error && (
+            {error && !isUserRejection(error) && (
                 <p className="text-[10px] text-rose-400 break-words">
-                    {error.message.slice(0, 200)}
+                    {humanError(error)}
                 </p>
             )}
         </div>
