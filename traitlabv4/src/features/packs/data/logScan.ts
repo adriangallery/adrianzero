@@ -77,15 +77,19 @@ function getDedicatedLogsClient(): LogsClient {
   return dedicatedLogsClient;
 }
 
-/** Subconjunto de PublicClient que este módulo necesita — así los tests pueden inyectar un fake sin depender del tipo completo de viem. */
+/**
+ * Subconjunto de PublicClient que este módulo necesita — así los tests
+ * pueden inyectar un fake sin depender del tipo completo de viem. El
+ * retorno de `getLogs` se deja como `readonly unknown[]` (no el `Log[]`
+ * tipado de viem): el `args` real de viem es
+ * `readonly unknown[] | Record<string, unknown>` según el ABI del evento
+ * (posicional vs. con nombre) — declararlo aquí como objeto estricto
+ * rompía la asignación de un `PublicClient` real a este tipo. Se lee de
+ * forma defensiva en `scanPackIds` en vez de confiar en un tipo exacto.
+ */
 export interface LogsClient {
   getBlockNumber: () => Promise<bigint>;
-  getLogs: (params: {
-    address: Address;
-    event: AbiEvent;
-    fromBlock: bigint;
-    toBlock: bigint;
-  }) => Promise<readonly { args?: Record<string, unknown> }[]>;
+  getLogs: (params: { address: Address; event: AbiEvent; fromBlock: bigint; toBlock: bigint }) => Promise<readonly unknown[]>;
 }
 
 interface ScanCacheEntry {
@@ -193,7 +197,8 @@ export async function scanPackIds(params: ScanPackIdsParams): Promise<Set<bigint
     try {
       const logs = await client.getLogs({ address, event, fromBlock: from, toBlock: to });
       for (const log of logs) {
-        const value = log.args?.[packIdArg];
+        const args = (log as { args?: unknown }).args;
+        const value = args && typeof args === 'object' && !Array.isArray(args) ? (args as Record<string, unknown>)[packIdArg] : undefined;
         if (typeof value === 'bigint') ids.add(value);
       }
       scannedUpTo = to;
