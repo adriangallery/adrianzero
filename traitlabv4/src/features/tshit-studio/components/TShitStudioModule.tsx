@@ -5,7 +5,7 @@
  *   toolbar on the left, canvas centered, properties (colors / text / stickers
  *   / mint) docked on the right.
  */
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useAccount } from 'wagmi';
 import { Shirt } from 'lucide-react';
 import { Canvas } from './Canvas';
@@ -38,21 +38,14 @@ export function TShitStudioModule() {
     }
   }, [loadFromPixels]);
 
+  // Mobile fixed chrome stack, bottom to top: TabBar (global --tabbar-h) <
+  // MobileMintBar (--tshit-actionbar-h) < MobileToolbar (--tshit-toolbar-h).
+  // Both local tokens are LIVE-MEASURED by those components themselves
+  // (useMeasuredHeightVar, set on <html>) rather than hardcoded here — the
+  // `, 56px` / `, 104px` below are only the pre-mount fallback used for the
+  // one frame before their ResizeObserver runs.
   return (
-    <div
-      className="mx-auto max-w-7xl px-2 py-3 lg:px-4 lg:py-6 space-y-4"
-      style={
-        {
-          // Local chrome tokens for the mobile fixed stack (bug fix 13-sep):
-          // TabBar (--tabbar-h, global) < MobileMintBar (--tshit-actionbar-h)
-          // < MobileToolbar (--tshit-toolbar-h) — each references the one
-          // below it instead of a magic number, so this is the only place
-          // that needs updating if either bar's height changes.
-          '--tshit-actionbar-h': '56px',
-          '--tshit-toolbar-h': '104px',
-        } as CSSProperties
-      }
-    >
+    <div className="mx-auto max-w-7xl px-2 py-3 lg:px-4 lg:py-6 space-y-4">
       <header className="px-1 lg:px-0">
         <div className="flex items-center gap-2">
           <Shirt className="h-5 w-5 lg:h-6 lg:w-6 text-emerald-400" />
@@ -63,7 +56,7 @@ export function TShitStudioModule() {
       {/* ============== DESKTOP WORKSPACE ============== */}
       <div
         className="hidden lg:flex flex-col rounded-xl border border-zinc-800 bg-zinc-950/60 overflow-hidden shadow-lg shadow-black/30"
-        style={{ height: 'min(820px, calc(100vh - 180px))', minHeight: 680 }}
+        style={{ height: 'min(820px, calc(100dvh - 180px))', minHeight: 680 }}
       >
         {/* Top row: tools | canvas | properties */}
         <div className="flex flex-1 min-h-0">
@@ -113,7 +106,7 @@ export function TShitStudioModule() {
           className="fixed inset-x-2 z-30 lg:hidden"
           style={{
             bottom:
-              'calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + var(--tshit-actionbar-h) + var(--tshit-toolbar-h) + 8px)',
+              'calc(var(--tabbar-h) + var(--tshit-actionbar-h, 56px) + var(--tshit-toolbar-h, 104px) + 8px)',
           }}
         >
           <PendingStampControls variant="mobile" />
@@ -186,7 +179,7 @@ export function TShitStudioModule() {
         className="lg:hidden"
         style={{
           height:
-            'calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + var(--tshit-actionbar-h) + var(--tshit-toolbar-h) + 16px)',
+            'calc(var(--tabbar-h) + var(--tshit-actionbar-h, 56px) + var(--tshit-toolbar-h, 104px) + 16px)',
         }}
         aria-hidden
       />

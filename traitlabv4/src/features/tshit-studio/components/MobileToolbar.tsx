@@ -11,6 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useTShitStore } from '../store/tshitStore';
+import { useMeasuredHeightVar } from '../hooks/useMeasuredHeightVar';
 import type { Tool } from '../types/tshit.types';
 
 const TOOLS: { id: Tool; icon: typeof Brush; label: string }[] = [
@@ -41,18 +42,24 @@ export function MobileToolbar({ onOpenSheet }: Props) {
   const toggleGrid = useTShitStore(s => s.toggleGrid);
   const layers = useTShitStore(s => s.layers);
   const redoStack = useTShitStore(s => s.redoStack);
+  const toolbarRef = useMeasuredHeightVar<HTMLDivElement>('--tshit-toolbar-h');
 
   return (
     <div
+      ref={toolbarRef}
       className="fixed inset-x-0 z-20 lg:hidden border-t border-zinc-800 bg-zinc-950/95 backdrop-blur"
       style={{
-        // Stack above the MobileMintBar (56px) which itself sits above the
-        // TabBar (--tabbar-h) + its safe-area padding. Bug fix (13-sep): this
-        // used to be `bottom: 0`, the exact same box as the global TabBar
-        // (`fixed inset-x-0 bottom-0 z-30`) — same position, same z-index —
-        // so this toolbar's bottom row (which held the mint button) painted
-        // underneath the TabBar and was unreachable.
-        bottom: 'calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + var(--tshit-actionbar-h, 56px))',
+        // Stack right above MobileMintBar, which sits right above the
+        // TabBar. Bug fix (13-sep): this used to be `bottom: 0`, the exact
+        // same box as the global TabBar (`fixed inset-x-0 bottom-0 z-30`) —
+        // same position, same z-index — so this toolbar's bottom row (which
+        // held the mint button) painted underneath the TabBar and was
+        // unreachable.
+        // Bug fix (round 2): this also used to add
+        // `env(safe-area-inset-bottom, 0px)` a second time — TabBar already
+        // absorbs it inside its own fixed height, see useMeasuredHeightVar's
+        // doc comment — which left a visible gap above the mint bar.
+        bottom: 'calc(var(--tabbar-h) + var(--tshit-actionbar-h, 56px))',
       }}
     >
       {/* Row 1: paint tools + color + size + history */}
