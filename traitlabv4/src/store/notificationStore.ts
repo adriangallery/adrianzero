@@ -42,6 +42,18 @@ export const useNotificationStore = create<NotificationStore>()(
       notifications: [],
 
       addNotification: (type, title, message, autoDismiss = true, txHash) => {
+        // Sin dedupe (13-sep-2026, feedback de Adrián desde el iPhone en
+        // producción): tocar varias veces una tarjeta bloqueada apilaba el
+        // mismo toast "Not allowed" una y otra vez, tapando la ActionBar.
+        // Mientras el mensaje siga visible (= siga en el array; cada
+        // ToastItem se autoelimina al expirar su propio timeout de abajo),
+        // un duplicado exacto (mismo type+title+message) no se vuelve a
+        // encolar — el que ya está en pantalla sigue su curso normal.
+        const alreadyVisible = get().notifications.some(
+          (n) => n.type === type && n.title === title && n.message === message
+        );
+        if (alreadyVisible) return;
+
         const notification: Notification = {
           id: Date.now().toString(),
           type,
