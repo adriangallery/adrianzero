@@ -188,9 +188,13 @@ export function TraitLabModule() {
     }
     const headerH =
       Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 56;
+    // Adrián (13-sep, iPhone): «en el viejo el pfp se hacía más pequeño y se
+    // mantenía visible en todo momento» → la miniatura entra en cuanto el
+    // preview grande empieza a quedar tapado por el header (ratio < 0.95,
+    // margen para subpíxeles), no cuando ya se ha ido casi del todo.
     const observer = new IntersectionObserver(
-      ([entry]) => setIsPreviewOutOfView(entry.intersectionRatio < 0.4),
-      { rootMargin: `-${headerH}px 0px 0px 0px`, threshold: [0, 0.4, 1] }
+      ([entry]) => setIsPreviewOutOfView(entry.intersectionRatio < 0.95),
+      { rootMargin: `-${headerH}px 0px 0px 0px`, threshold: [0, 0.25, 0.5, 0.75, 0.95, 1] }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -306,7 +310,7 @@ export function TraitLabModule() {
               ~34dvh y deja al menos una fila de tarjetas visible sin scroll
               (revisión visual 13-sep: el h-[300px] fijo se comía toda la
               pantalla en móviles reales). */}
-          <div className="px-4" ref={previewWrapRef} style={{ scrollMarginTop: 'var(--header-h)' }}>
+          <div className="px-4" ref={previewWrapRef} style={{ scrollMarginTop: 8 }}>
             <div
               className="relative mx-auto select-none overflow-hidden rounded-[var(--r-lg)] border-2 border-line bg-panel"
               style={{
@@ -358,7 +362,13 @@ export function TraitLabModule() {
               con scroll de las chips (era su primer hijo antes y se
               desplazaba con ellas) — aquí es una hermana fija a la
               izquierda, en su propio `flex items-center`. */}
-          <div className="sticky z-10 flex items-center gap-2 bg-bg" style={{ top: 'var(--header-h)' }}>
+          {/* top-0, NO var(--header-h): en <1024px el Header está FUERA del
+              contenedor con scroll (MainLayout: header + div.flex-1.overflow-y-auto
+              como hermanos), así que el borde superior del scroller ya es el
+              borde inferior del header. Con top: --header-h el sticky se
+              quedaba 56px más abajo y asomaban tarjetas entre header y chips
+              (captura de Adrián en el iPhone, 13-sep). */}
+          <div className="sticky top-0 z-10 flex items-center border-b-2 border-line bg-bg pl-4">
             {displayedUrl ? (
               <button
                 type="button"
@@ -367,10 +377,10 @@ export function TraitLabModule() {
                 aria-hidden={!isPreviewOutOfView}
                 tabIndex={isPreviewOutOfView ? 0 : -1}
                 data-testid="traitlab-mini-preview"
-                className="ml-4 flex-none overflow-hidden rounded-[8px] border-2 border-line transition-[width,opacity] duration-150"
+                className="relative flex-none overflow-hidden rounded-[8px] border-2 border-line bg-panel transition-[width,opacity] duration-150"
                 style={{
-                  width: isPreviewOutOfView ? 56 : 0,
-                  height: 56,
+                  width: isPreviewOutOfView ? 64 : 0,
+                  height: 64,
                   opacity: isPreviewOutOfView ? 1 : 0,
                 }}
               >
@@ -379,6 +389,11 @@ export function TraitLabModule() {
                     disparar una petición nueva. object-contain (no
                     object-cover): no recortar el render. */}
                 <img src={displayedUrl} alt="" className="h-full w-full object-contain" />
+                {changes.count > 0 ? (
+                  <span className="absolute right-0.5 top-0.5 min-w-[18px] rounded-full border border-acc bg-bg px-1 text-center font-ui text-[10px] leading-4 text-acc">
+                    {changes.count}
+                  </span>
+                ) : null}
               </button>
             ) : null}
 
@@ -394,7 +409,7 @@ export function TraitLabModule() {
                   categories={categories}
                   active={activeCategory}
                   onSelect={setActiveCategory}
-                  leftPaddingClassName={displayedUrl ? 'pl-2' : 'pl-4'}
+                  leftPaddingClassName={displayedUrl && isPreviewOutOfView ? 'pl-2' : 'pl-0'}
                 />
               )}
             </div>
