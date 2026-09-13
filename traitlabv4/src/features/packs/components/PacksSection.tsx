@@ -56,7 +56,7 @@ export function PacksSection({ embedded = false }: { embedded?: boolean }) {
             {!isConnected ? 'Open packs, get traits, equip them.' : isLoading ? 'Checking your packs…' : totalPacks === 0 ? 'No unopened packs' : `${totalPacks} unopened`}
           </p>
         </div>
-        <Link to="/shop?tab=floppies" className="font-ui inline-flex items-center gap-1 rounded-full border-2 border-line px-3.5 py-2 text-[13px] text-fg hover:border-mute">
+        <Link to="/shop?tab=floppies" className="font-ui inline-flex flex-none items-center gap-1 whitespace-nowrap rounded-full border-2 border-line px-3.5 py-2 text-[13px] text-fg hover:border-mute">
           Get packs <ChevronRight className="h-4 w-4 text-acc" />
         </Link>
       </div>
