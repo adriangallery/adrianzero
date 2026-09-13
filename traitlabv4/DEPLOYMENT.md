@@ -28,7 +28,8 @@ traitlabv4 está en el repo **adriangallery/adrianzero** como subcarpeta. Los pu
 4. **Variables de entorno** (Settings → Environment Variables). Añade estas para **Production** (y opcionalmente Preview):
    - `VITE_ALCHEMY_API_KEY` = (tu clave Alchemy).
    - `VITE_WALLETCONNECT_PROJECT_ID` = (tu WalletConnect Project ID).
-   - `VITE_VERCEL_API_URL` = `https://adrianlab.vercel.app/api` (o la URL de tu API).
+   - `VITE_VERCEL_API_URL` = opcional; solo si quieres apuntar a un origen distinto del de por defecto (`https://adrianlab.vercel.app`). Ponla como origen puro, **sin** `/api` al final — el cliente (`src/lib/adrianlab.ts`) añade `/api/render`, `/api/metadata`, `/labimages`, etc. por su cuenta.
+   - `VITE_INFURA_API_KEY` = opcional (RPC de respaldo tras Alchemy). Si no se pone, ese RPC simplemente se salta — no hay clave por defecto en el código (H4, 12-sep-2026; antes había una hardcodeada y expuesta en el historial público de GitHub).
 
 5. **Deploy**: Guarda y lanza el deploy. Vercel hará el build y te dará la URL.
 
@@ -83,7 +84,8 @@ Required environment variables for production:
 ```
 VITE_ALCHEMY_API_KEY=<your_key>
 VITE_WALLETCONNECT_PROJECT_ID=<your_id>
-VITE_VERCEL_API_URL=https://adrianlab.vercel.app/api
+# Optional — bare origin, no trailing /api (defaults to https://adrianlab.vercel.app)
+VITE_VERCEL_API_URL=
 ```
 
 ## Deployment Options
