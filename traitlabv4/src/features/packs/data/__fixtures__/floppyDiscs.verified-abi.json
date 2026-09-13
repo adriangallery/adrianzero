@@ -1,0 +1,1084 @@
+{
+  "contract": "AdrianFloppyDiscs",
+  "address": "0x56b3fcc1417f269138cb7eba1272e8ccfee8ffc8",
+  "chain": "base-mainnet",
+  "source": "https://base.blockscout.com/api/v2/smart-contracts/0x56b3fcc1417f269138cb7eba1272e8ccfee8ffc8",
+  "capturedAt": "2026-09-13",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_traitsCore",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_treasuryWallet",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "freeUsed",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "paidUsed",
+          "type": "uint256"
+        }
+      ],
+      "name": "AllowlistPurchase",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "freeAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "paidPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "PackAllowlistConfigured",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "assetsCount",
+          "type": "uint256"
+        }
+      ],
+      "name": "PackAssetsSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "publicPrice",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "maxSupply",
+          "type": "uint256"
+        }
+      ],
+      "name": "PackConfigured",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "assetIds",
+          "type": "uint256[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "amounts",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "PackOpened",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "useAllowlist",
+          "type": "bool"
+        }
+      ],
+      "name": "PackPurchased",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "hasPublicSale",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "hasAllowlist",
+          "type": "bool"
+        }
+      ],
+      "name": "PackSaleFlagsUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newTreasuryWallet",
+          "type": "address"
+        }
+      ],
+      "name": "TreasuryWalletUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "WalletAddedToAllowlist",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "WalletRemovedFromAllowlist",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address[]",
+          "name": "wallets",
+          "type": "address[]"
+        }
+      ],
+      "name": "addMultipleToAllowlist",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "addWalletToAllowlist",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "allowlistFreeClaimed",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "allowlistPaidClaimed",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        }
+      ],
+      "name": "canOpenPack",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "canOpen",
+          "type": "bool"
+        },
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "useAllowlist",
+          "type": "bool"
+        }
+      ],
+      "name": "canPurchasePack",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "canPurchase",
+          "type": "bool"
+        },
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPackAssets",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPackAssetsCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPackConfig",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "publicPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxSupply",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minted",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "itemsPerPack",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxPerWallet",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "endTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "allowlistFreeAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "allowlistPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "hasPublicSale",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "hasAllowlist",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct PackConfig",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTreasuryWallet",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUserAllowlistStatus",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "freeClaimed",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "paidClaimed",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "freeRemaining",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalAllowed",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "inAllowlist",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "isInAllowlist",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        }
+      ],
+      "name": "openPack",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "packAssets",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "packConfigs",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "publicPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minted",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "itemsPerPack",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPerWallet",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "endTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "allowlistFreeAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "allowlistPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "hasPublicSale",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "hasAllowlist",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "paymentToken",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        }
+      ],
+      "name": "previewPackContents",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "previewAssets",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "useAllowlist",
+          "type": "bool"
+        }
+      ],
+      "name": "purchasePack",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "name": "removeWalletFromAllowlist",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "freeAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "paidPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "setPackAllowlistConfig",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "assetIds",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "itemsPerPack",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "publicPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPerWallet",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "endTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "hasPublicSale",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "hasAllowlist",
+          "type": "bool"
+        }
+      ],
+      "name": "setPackConfig",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "assetIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "setPackContents",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "packId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "hasPublicSale",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "hasAllowlist",
+          "type": "bool"
+        }
+      ],
+      "name": "setPackSaleFlags",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newTreasuryWallet",
+          "type": "address"
+        }
+      ],
+      "name": "setTreasuryWallet",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "simpleAllowlist",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "traitsCore",
+      "outputs": [
+        {
+          "internalType": "contract IAdrianTraitsCore",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "treasuryWallet",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

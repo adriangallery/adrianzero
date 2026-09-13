@@ -1,0 +1,1143 @@
+{
+  "contract": "AdrianFloppyETH",
+  "address": "0x9165753093ba640b34d8111cb9c9d1325799d251",
+  "chain": "base-mainnet",
+  "source": "https://base.blockscout.com/api/v2/smart-contracts/0x9165753093ba640b34d8111cb9c9d1325799d251",
+  "capturedAt": "2026-09-13",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_traitsCore",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_treasury",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "BatchNotActive",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ETHPaymentDisabled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ExceedsPerTx",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ExceedsPerWallet",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ExceedsSupply",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientETH",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidBatch",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidQuantity",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidTreasury",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MintPausedErr",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAuthorizedExtension",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OutsideWindow",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TokenPaymentDisabled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TokenTransferFailed",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newToken",
+          "type": "address"
+        }
+      ],
+      "name": "AdrianTokenUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "BatchActivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "floppyTokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "priceWei",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "priceToken",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "maxSupply",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "BatchCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "BatchDeactivated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "BatchUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "paused",
+          "type": "bool"
+        }
+      ],
+      "name": "MintPaused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "totalPaidWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "MintedETH",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "totalPaidToken",
+          "type": "uint256"
+        }
+      ],
+      "name": "MintedToken",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newTraitsCore",
+          "type": "address"
+        }
+      ],
+      "name": "TraitsCoreUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newTreasury",
+          "type": "address"
+        }
+      ],
+      "name": "TreasuryWalletUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "adrianToken",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "batchCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "batches",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "floppyTokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "priceWei",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "priceToken",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minted",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "endTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPerWallet",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPerTx",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name_",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "floppyTokenId_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "priceWei_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "priceToken_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxSupply_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTime_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "endTime_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPerWallet_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPerTx_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "makeActive_",
+          "type": "bool"
+        }
+      ],
+      "name": "createBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        }
+      ],
+      "name": "emergencyWithdrawETH",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "fromId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "toId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getActiveBatchIds",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "ids",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBatchInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "floppyTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "priceWei",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "priceToken",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxSupply",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minted",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "endTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxPerWallet",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxPerTx",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct AdrianFloppyETH.Batch",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBatchSummary",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "floppyTokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "priceWei",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "priceToken",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "endTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minted",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "remaining",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPerWallet",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxPerTx",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getEffectiveRemaining",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchRemaining",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "hasCoreData",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "coreTotalSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "coreMaxSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "coreRemaining",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "effectiveRemaining",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getUserAllowanceLeft",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "left",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        }
+      ],
+      "name": "mint",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "mintPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        }
+      ],
+      "name": "mintWithToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "mintedPerWallet",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "nextBatchId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "quantity",
+          "type": "uint256"
+        }
+      ],
+      "name": "ownerMintTo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newToken",
+          "type": "address"
+        }
+      ],
+      "name": "setAdrianToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        }
+      ],
+      "name": "setBatchActive",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newMaxPerWallet",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newMaxPerTx",
+          "type": "uint256"
+        }
+      ],
+      "name": "setBatchLimits",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newMaxSupply",
+          "type": "uint256"
+        }
+      ],
+      "name": "setBatchMaxSupply",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newPriceWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "setBatchPriceETH",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newPriceToken",
+          "type": "uint256"
+        }
+      ],
+      "name": "setBatchPriceToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newPriceWei",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newPriceToken",
+          "type": "uint256"
+        }
+      ],
+      "name": "setBatchPrices",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "batchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newStart",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newEnd",
+          "type": "uint256"
+        }
+      ],
+      "name": "setBatchWindow",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "ids",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        }
+      ],
+      "name": "setBatchesActive",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bool",
+          "name": "paused",
+          "type": "bool"
+        }
+      ],
+      "name": "setMintPaused",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newTraitsCore",
+          "type": "address"
+        }
+      ],
+      "name": "setTraitsCore",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newTreasury",
+          "type": "address"
+        }
+      ],
+      "name": "setTreasuryWallet",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "traitsCore",
+      "outputs": [
+        {
+          "internalType": "contract IAdrianTraitsCore",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "treasuryWallet",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ]
+}
