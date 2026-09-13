@@ -18,6 +18,7 @@ import {
 } from 'wagmi';
 import { decodeEventLog } from 'viem';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 import { ERC20_ABI } from '@/lib/web3/abi';
 import { TSHIT_FACET_ABI } from '../lib/abi';
 import { buildDesignSvg, designSvgBytes, MAX_DESIGN_SVG_BYTES } from '../lib/svgExport';
@@ -57,6 +58,17 @@ export function useTShitMint() {
     abi: TSHIT_FACET_ABI,
     functionName: 'tshitRegisteredRemaining',
     query: { refetchInterval: 60_000, staleTime: 30_000 },
+  });
+
+  // Saldo de $ZERO — 13-sep: Adrián intentó mintear con 330 ZERO (precio
+  // 1 000) y la tx «no funcionó» sin explicación; el wallet fallaba al
+  // estimar. Se comprueba antes de subir nada y se enseña cuánto falta.
+  const { data: zeroBalance, refetch: refetchBalance } = useReadContract({
+    address: DIAMOND,
+    abi: ERC20_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address, staleTime: 15_000, refetchOnWindowFocus: true },
   });
 
   // Allowance check
@@ -127,6 +139,15 @@ export function useTShitMint() {
         return;
       }
       const price = (mintPrice as bigint | undefined) ?? 1000n * 10n ** 18n;
+      const balance = ((await refetchBalance()).data as bigint | undefined) ?? (zeroBalance as bigint | undefined) ?? 0n;
+      if (balance < price) {
+        const short = Number((price - balance) / 10n ** 18n);
+        setStatus({
+          phase: 'error',
+          error: `You're short ${short.toLocaleString()} $ZERO: the mint costs ${Number(price / 10n ** 18n).toLocaleString()} and you have ${Number(balance / 10n ** 18n).toLocaleString()}. Buy $ZERO with ETH in one step and come back.`,
+        });
+        return;
+      }
       // Auto-commit any unconfirmed stamp the user is still dragging — without
       // this the pending pixels would be discarded silently when we read
       // getAllPixels() below.
@@ -202,11 +223,14 @@ export function useTShitMint() {
         setStatus({ phase: 'awaiting-mint-confirm', txHash: mintTx, designUrl: url });
         setPendingTxHash(mintTx);
       } catch (e) {
-        const msg = e instanceof Error ? e.message : 'Mint failed';
-        setStatus({ phase: 'error', error: msg });
+        if (isUserRejection(e)) {
+          setStatus({ phase: 'idle' });
+          return;
+        }
+        setStatus({ phase: 'error', error: humanError(e) });
       }
     },
-    [address, allowance, isActive, mintPrice, refetchAllowance, registeredRemaining, upload, writeContractAsync]
+    [address, allowance, isActive, mintPrice, refetchAllowance, refetchBalance, zeroBalance, registeredRemaining, upload, writeContractAsync]
   );
 
   const reset = useCallback((opts?: { clearCanvas?: boolean }) => {
@@ -222,6 +246,7 @@ export function useTShitMint() {
     mint,
     reset,
     mintPrice: (mintPrice as bigint | undefined) ?? 1000n * 10n ** 18n,
+    zeroBalance: (zeroBalance as bigint | undefined) ?? null,
     isActive: isActive === true,
     registeredRemaining: Number((registeredRemaining as bigint | undefined) ?? 0n),
     refetchRemaining,

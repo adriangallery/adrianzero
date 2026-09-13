@@ -39,19 +39,19 @@ export function useApplyTraitlabChanges(tokenId: string | null) {
   const invalidateTraits = useWalletDataStore((s) => s.invalidateTraits);
   const notifications = useNotifications();
   const pendingTx = usePendingTxStore();
-  const [needsApproval, setNeedsApproval] = useState(true);
+  // 13-sep-2026 (evidencia on-chain): `AdrianTraitsExtensions` es una
+  // extensión AUTORIZADA en TraitsCore (`authorizedExtensions(EX) = true`) y
+  // `applyTraitMultiple` se estima/simula bien desde una wallet con
+  // `isApprovedForAll = false` (0x51e7…bD25, token 365, trait 30015: 160 688
+  // gas). La firma de `setApprovalForAll` que pedíamos era innecesaria — y
+  // era la que MetaMask/Blockaid enseñaba como «Withdrawal request». Por
+  // defecto 1 firma; solo si la simulación revierte por aprobación se añade.
+  const [needsApproval, setNeedsApproval] = useState(false);
 
   const checkApproval = useCallback(async () => {
-    if (!address || !publicClient) return true;
-    const isApproved = (await publicClient.readContract({
-      address: CONTRACT_ADDRESSES.ADRIAN_LAB as `0x${string}`,
-      abi: ADRIAN_LAB_ABI,
-      functionName: 'isApprovedForAll',
-      args: [address, CONTRACT_ADDRESSES.TRAITS_EXTENSIONS],
-    })) as boolean;
-    setNeedsApproval(!isApproved);
-    return !isApproved;
-  }, [address, publicClient]);
+    // La aprobación se decide con la simulación real en `mutationFn`.
+    return needsApproval;
+  }, [needsApproval]);
 
   const mutation = useMutation({
     mutationFn: async (changes: TraitlabChanges): Promise<ApplyResult> => {
@@ -65,15 +65,24 @@ export function useApplyTraitlabChanges(tokenId: string | null) {
       // Guardián final: simula la llamada real desde la cuenta conectada.
       // Si algo la revertiría (regla de exclusividad, no ser el owner del
       // token, trait sin stock…), lo sabemos ANTES de pedir ninguna firma.
-      await publicClient.simulateContract({
-        account: address,
-        address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
-        abi: TRAITS_EXTENSIONS_ABI,
-        functionName: 'applyTraitMultiple',
-        args: [BigInt(tokenId), changes.toApply.map((id) => BigInt(id))],
-      });
-
-      const approvalNeeded = await checkApproval();
+      let approvalNeeded = false;
+      try {
+        await publicClient.simulateContract({
+          account: address,
+          address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
+          abi: TRAITS_EXTENSIONS_ABI,
+          functionName: 'applyTraitMultiple',
+          args: [BigInt(tokenId), changes.toApply.map((id) => BigInt(id))],
+        });
+      } catch (error) {
+        // Solo si el contrato exige la aprobación ERC-1155 (no debería:
+        // extensión autorizada) añadimos esa firma; cualquier otro revert
+        // es un motivo real y se enseña con humanError.
+        const msg = error instanceof Error ? error.message : String(error);
+        if (!/approv/i.test(msg)) throw error;
+        approvalNeeded = true;
+      }
+      setNeedsApproval(approvalNeeded);
       const plan = planSignatures(changes, approvalNeeded);
 
       pendingTx.start(tokenId, plan.signatureCount);

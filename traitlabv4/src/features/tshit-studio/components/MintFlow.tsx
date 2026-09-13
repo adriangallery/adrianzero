@@ -4,6 +4,7 @@
  * BaseScan + OpenSea on success.
  */
 import { Loader2, CheckCircle2, AlertTriangle, Flame } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useTShitMint } from '../hooks/useTShitMint';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 
@@ -22,9 +23,11 @@ const PHASE_LABEL: Record<string, string> = {
 };
 
 export function MintFlow() {
-  const { status, mint, reset, mintPrice, isActive, registeredRemaining } = useTShitMint();
+  const { status, mint, reset, mintPrice, zeroBalance, isActive, registeredRemaining } = useTShitMint();
 
   const priceWhole = Number(mintPrice / 10n ** 18n);
+  const balanceWhole = zeroBalance === null ? null : Number(zeroBalance / 10n ** 18n);
+  const shortBy = zeroBalance !== null && zeroBalance < mintPrice ? Number((mintPrice - zeroBalance) / 10n ** 18n) : 0;
   const noSlots = isActive && registeredRemaining === 0;
   const lowSlots = isActive && registeredRemaining > 0 && registeredRemaining <= 10;
 
@@ -41,6 +44,20 @@ export function MintFlow() {
           {priceWhole.toLocaleString()} $ZERO <Flame className="inline w-3.5 h-3.5 ml-1 mb-0.5" />
         </span>
       </div>
+      {balanceWhole !== null && (
+        <div className="flex items-center justify-between text-xs text-zinc-400">
+          <span className="uppercase tracking-wide">Your $ZERO</span>
+          <span className={`font-mono ${shortBy > 0 ? 'text-amber-300' : 'text-zinc-300'}`}>{balanceWhole.toLocaleString()}</span>
+        </div>
+      )}
+      {shortBy > 0 && (
+        <div className="text-xs text-amber-200 border border-amber-800/60 bg-amber-950/20 rounded p-2 space-y-2">
+          <div>You're short {shortBy.toLocaleString()} $ZERO for this mint.</div>
+          <Link to="/buy" className="block w-full rounded border border-amber-500/60 py-2 text-center font-bold text-amber-200 hover:bg-amber-900/30">
+            Buy $ZERO with ETH in one step
+          </Link>
+        </div>
+      )}
       {isActive && (
         <div className="flex items-center justify-between text-xs text-zinc-400">
           <span className="uppercase tracking-wide">Slots open</span>
@@ -66,7 +83,7 @@ export function MintFlow() {
       )}
       <button
         onClick={() => mint()}
-        disabled={busy || !isActive || noSlots}
+        disabled={busy || !isActive || noSlots || shortBy > 0}
         className="w-full py-3 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-2"
       >
         {busy && <Loader2 className="w-4 h-4 animate-spin" />}
