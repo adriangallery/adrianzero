@@ -39,7 +39,7 @@ export type ToggleParam =
   | 'banana';
 
 /** `/api/render/{tokenId}` o `/api/render/{tokenId}.png` (sin querystring). */
-export function renderUrl(tokenId: string | number, ext: '.png' | '' = '.png'): string {
+export function renderUrl(tokenId: string | number | bigint, ext: '.png' | '' = '.png'): string {
   return adrianlabUrl(`/api/render/${tokenId}${ext}`);
 }
 
@@ -70,12 +70,12 @@ export function renderCustomExternalUrl(
 }
 
 /** `/api/render/lambo/{tokenId}?lambo={color}`. */
-export function renderLamboUrl(tokenId: string | number, color: string): string {
+export function renderLamboUrl(tokenId: string | number | bigint, color: string): string {
   return adrianlabUrl(`/api/render/lambo/${tokenId}?lambo=${color}`);
 }
 
 /** `/api/metadata/{tokenId}`. */
-export function metadataUrl(tokenId: string | number): string {
+export function metadataUrl(tokenId: string | number | bigint): string {
   return adrianlabUrl(`/api/metadata/${tokenId}`);
 }
 
