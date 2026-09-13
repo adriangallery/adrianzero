@@ -1,4 +1,5 @@
 import type { ShowcaseNFT } from '../types/zero.types';
+import { renderUrl } from '@/lib/adrianlab';
 
 export const SHOWCASE_GITHUB_REPO = 'adriangallery/AdrianLAB';
 export const SHOWCASE_GITHUB_REF = 'd05193bc1dbc1c577c051656111a3c07281ba019';
@@ -8,7 +9,7 @@ export const SHOWCASE_GITHUB_RAW_BASE =
 
 const toFallbackNft = (tokenId: string): ShowcaseNFT => ({
   tokenId,
-  imageUrl: `https://adrianlab.vercel.app/api/render/${tokenId}.png`,
+  imageUrl: renderUrl(tokenId),
 });
 
 export const SHOWCASE_NFTS: ShowcaseNFT[] = [
