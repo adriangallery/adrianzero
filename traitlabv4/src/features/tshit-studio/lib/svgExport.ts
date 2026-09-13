@@ -7,7 +7,11 @@
  *  - First layer: the T-shirt template, embedded as a base64 PNG via <image>
  *    (the original 2860-rect SVG is ~140KB; the rasterised PNG is ~1.4KB →
  *    keeps us under the 64KB upload cap)
- *  - Second layer: a <g> with one <rect width="N" height="1"> per painted run
+ *  - Second layer: a <g id="design"> with ONE <path> per colour; each painted
+ *    horizontal run is a subpath `M{x} {y}h{len}v1h-{len}z` (~14 bytes vs
+ *    ~40 for a <rect/>). 13-sep: Adrián's dense scribble (thousands of
+ *    1-pixel runs, shading splits colours into many fills) hit the uploader's
+ *    64KB cap with the rect encoding → "Upload failed (413)".
  *  - shape-rendering="crispEdges" so it stays pixel-perfect on the renderer
  */
 import type { Pixel } from '../types/tshit.types';
@@ -29,6 +33,16 @@ interface BuildArgs {
 }
 
 const TEMPLATE_DATA_URI = `data:image/png;base64,${(templatePng as { b64: string }).b64}`;
+
+/**
+ * Tope del uploader (`api/tshit/upload.ts`, mismo número). Se comprueba en
+ * el cliente ANTES de subir para dar un mensaje humano en vez de un 413.
+ */
+export const MAX_DESIGN_SVG_BYTES = 200 * 1024;
+
+export function designSvgBytes(svg: string): number {
+  return new TextEncoder().encode(svg).length;
+}
 
 export function buildDesignSvg({ pixels, title, tshirtBaseColor, paintable }: BuildArgs): string {
 
@@ -84,12 +98,10 @@ export function buildDesignSvg({ pixels, title, tshirtBaseColor, paintable }: Bu
       ) {
         len++;
       }
-      parts.push(
-        `<rect x="${start.x}" y="${start.y}" width="${len}" height="1"/>`
-      );
+      parts.push(`M${start.x} ${start.y}h${len}v1h-${len}z`);
       i += len;
     }
-    rectsByColor.push(`<g fill="${color}">${parts.join('')}</g>`);
+    rectsByColor.push(`<path fill="${color}" d="${parts.join('')}"/>`);
   }
 
   const titleEl = title

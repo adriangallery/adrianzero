@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildDesignSvg } from '../lib/svgExport';
+import { buildDesignSvg, designSvgBytes, MAX_DESIGN_SVG_BYTES } from '../lib/svgExport';
 
 describe('buildDesignSvg', () => {
   it('produces a valid <svg> with the baked PNG template embedded', () => {
@@ -30,7 +30,7 @@ describe('buildDesignSvg', () => {
         { x: 2, y: 0, color: '#00ff00' },
       ],
     });
-    expect((out.match(/<g fill="/g) ?? []).length).toBe(2);
+    expect((out.match(/<path fill="/g) ?? []).length).toBe(2);
   });
 
   it('merges horizontally adjacent same-color cells into one rect', () => {
@@ -43,7 +43,7 @@ describe('buildDesignSvg', () => {
         { x: 62, y: 130, color: '#abcdef' },
       ],
     });
-    expect(out).toContain('<rect x="60" y="130" width="3" height="1"/>');
+    expect(out).toContain('M60 130h3v1h-3z');
   });
 
   it('does not merge across rows', () => {
@@ -53,8 +53,29 @@ describe('buildDesignSvg', () => {
         { x: 60, y: 131, color: '#abcdef' },
       ],
     });
-    expect(out).toContain('<rect x="60" y="130" width="1" height="1"/>');
-    expect(out).toContain('<rect x="60" y="131" width="1" height="1"/>');
+    expect(out).toContain('M60 130h1v1h-1z');
+    expect(out).toContain('M60 131h1v1h-1z');
+  });
+
+  it('un garabato denso (caso real 13-sep: miles de runs de 1 px y 6 colores) cabe en el tope del uploader', () => {
+    // Pseudoaleatorio determinista: ~4 000 píxeles sueltos en la zona de la camiseta.
+    let seed = 42;
+    const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+    const colors = ['#ff0080', '#00a0ff', '#ffe600', '#ffffff', '#000000', '#00ff00'];
+    const seen = new Set<string>();
+    const pixels = [];
+    while (pixels.length < 4000) {
+      const x = 25 + Math.floor(rnd() * 100);
+      const y = 95 + Math.floor(rnd() * 50);
+      const k = `${x},${y}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      pixels.push({ x, y, color: colors[Math.floor(rnd() * colors.length)] });
+    }
+    const out = buildDesignSvg({ pixels });
+    expect(designSvgBytes(out)).toBeLessThan(MAX_DESIGN_SVG_BYTES);
+    // y con margen: la codificación por paths debe dejarlo por debajo del antiguo tope de 64KB
+    expect(designSvgBytes(out)).toBeLessThan(64 * 1024);
   });
 
   it('embeds escaped title when provided', () => {

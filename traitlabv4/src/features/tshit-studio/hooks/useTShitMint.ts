@@ -20,7 +20,7 @@ import { decodeEventLog } from 'viem';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ERC20_ABI } from '@/lib/web3/abi';
 import { TSHIT_FACET_ABI } from '../lib/abi';
-import { buildDesignSvg } from '../lib/svgExport';
+import { buildDesignSvg, designSvgBytes, MAX_DESIGN_SVG_BYTES } from '../lib/svgExport';
 import { isPaintable } from '../lib/tshirtMask';
 import { useUploadDesign } from './useUploadDesign';
 import { useTShitStore } from '../store/tshitStore';
@@ -148,6 +148,15 @@ export function useTShitMint() {
           tshirtBaseColor,
           paintable: tshirtBaseColor ? isPaintable : undefined,
         });
+
+        const bytes = designSvgBytes(svg);
+        if (bytes > MAX_DESIGN_SVG_BYTES) {
+          setStatus({
+            phase: 'error',
+            error: `Your design is too detailed to upload (${Math.round(bytes / 1024)} KB of ${Math.round(MAX_DESIGN_SVG_BYTES / 1024)} KB). Try a bigger brush, fewer colours, or the fill bucket.`,
+          });
+          return;
+        }
 
         // ─── 2. Upload ───
         setStatus({ phase: 'uploading' });
