@@ -6,6 +6,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Chip, Sheet, SearchIcon } from '@/ui';
 
 const VISIBLE_LIMIT = 7;
@@ -14,9 +15,16 @@ export interface CategoryChipsProps {
   categories: { name: string; count: number }[];
   active: string;
   onSelect: (category: string) => void;
+  /**
+   * Elemento fijo antes de las chips, dentro de la misma fila con scroll
+   * (patrón app estándar: mini-preview a la izquierda de las categorías,
+   * ver `TraitLabModule.tsx`). Comparte el `px-4` de la fila para no
+   * duplicar padding.
+   */
+  leading?: ReactNode;
 }
 
-export function CategoryChips({ categories, active, onSelect }: CategoryChipsProps) {
+export function CategoryChips({ categories, active, onSelect, leading }: CategoryChipsProps) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -33,7 +41,8 @@ export function CategoryChips({ categories, active, onSelect }: CategoryChipsPro
 
   return (
     <>
-      <div className="scroll flex gap-2 overflow-x-auto px-4 pb-2.5 pt-3.5" style={{ scrollbarWidth: 'none' }}>
+      <div className="scroll flex items-center gap-2 overflow-x-auto px-4 pb-2.5 pt-3.5" style={{ scrollbarWidth: 'none' }}>
+        {leading}
         {visible.map((cat) => (
           <Chip key={cat.name} selected={active === cat.name} count={cat.count} onClick={() => onSelect(cat.name)}>
             {cat.name}

@@ -71,6 +71,8 @@ export function TraitLabModule() {
   const [tokenSheetOpen, setTokenSheetOpen] = useState(!selectedTokenId);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [comparing, setComparing] = useState(false);
+  const [isPreviewOutOfView, setIsPreviewOutOfView] = useState(false);
+  const previewWrapRef = useRef<HTMLDivElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewStatus, setPreviewStatus] = useState<PreviewStatus>('idle');
   const [resultOpen, setResultOpen] = useState(false);
@@ -168,6 +170,32 @@ export function TraitLabModule() {
 
   const baseImageUrl = selectedTokenId ? `https://adrianlab.vercel.app/api/render/${selectedTokenId}.png` : '';
   const displayedUrl = comparing ? baseImageUrl : previewUrl ?? baseImageUrl;
+
+  // ─── Mini-preview sticky (feedback de Adrián 13-sep, producción): al
+  // hacer scroll el preview grande se iba del todo y se perdía la
+  // referencia del ZERO. Un IntersectionObserver sobre el envoltorio del
+  // preview grande decide cuándo mostrar la miniatura junto a los chips —
+  // solo cuando ha salido por detrás del header sticky (--header-h), no
+  // apenas se roza el borde del viewport.
+  useEffect(() => {
+    const el = previewWrapRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setIsPreviewOutOfView(false);
+      return;
+    }
+    const headerH =
+      Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 56;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsPreviewOutOfView(!entry.isIntersecting),
+      { rootMargin: `-${headerH}px 0px 0px 0px`, threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [selectedTokenId]);
+
+  const scrollToPreview = useCallback(() => {
+    previewWrapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   // ─── Selección de traits ──────────────────────────────────────────────
   const handleSelectTrait = useCallback(
@@ -275,7 +303,7 @@ export function TraitLabModule() {
               ~34dvh y deja al menos una fila de tarjetas visible sin scroll
               (revisión visual 13-sep: el h-[300px] fijo se comía toda la
               pantalla en móviles reales). */}
-          <div className="px-4">
+          <div className="px-4" ref={previewWrapRef} style={{ scrollMarginTop: 'var(--header-h)' }}>
             <div
               className="relative mx-auto select-none overflow-hidden rounded-[var(--r-lg)] border-2 border-line bg-panel"
               style={{
@@ -331,7 +359,34 @@ export function TraitLabModule() {
                 <Skeleton className="h-[38px] w-24" />
               </div>
             ) : (
-              <CategoryChips categories={categories} active={activeCategory} onSelect={setActiveCategory} />
+              <CategoryChips
+                categories={categories}
+                active={activeCategory}
+                onSelect={setActiveCategory}
+                leading={
+                  displayedUrl ? (
+                    <button
+                      type="button"
+                      onClick={scrollToPreview}
+                      aria-label="Back to preview"
+                      aria-hidden={!isPreviewOutOfView}
+                      tabIndex={isPreviewOutOfView ? 0 : -1}
+                      data-testid="traitlab-mini-preview"
+                      className="flex-none overflow-hidden rounded-[8px] border-2 border-line transition-[width,opacity] duration-150"
+                      style={{
+                        width: isPreviewOutOfView ? 56 : 0,
+                        height: 56,
+                        opacity: isPreviewOutOfView ? 1 : 0,
+                      }}
+                    >
+                      {/* Misma URL que el preview grande (displayedUrl) — el
+                          navegador la sirve de su propia caché HTTP, sin
+                          disparar una petición nueva. */}
+                      <img src={displayedUrl} alt="" className="h-full w-full object-cover" />
+                    </button>
+                  ) : undefined
+                }
+              />
             )}
           </div>
 
