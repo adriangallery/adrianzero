@@ -1,6 +1,7 @@
 /**
- * Descubrimiento de packIds vía logs on-chain, con chunking adaptativo y
- * caché incremental en localStorage.
+ * Descubrimiento de packIds vía logs on-chain, con chunking adaptativo,
+ * caché incremental en localStorage, un RPC dedicado para `eth_getLogs`
+ * y un tope de peticiones por sesión.
  *
  * Por qué esto y no una lista de IDs a mano: `FloppyDiscs`/`OpenPack v4`/
  * `ActionPacks` no exponen ningún `packCount()`/`nextPackId()` — la única
@@ -11,14 +12,26 @@
  * desincronizó del contrato real (`PACKS_FLOPPIES_MISMATCH_REPORT.md`:
  * 10014/10018 nunca se añadieron a la lista y no se podían abrir).
  *
- * El coste real: los contratos de packs llevan ~15-17M de bloques de vida
- * en Base. `eth_getLogs` en el RPC público de Base (`mainnet.base.org`,
- * uno de los fallbacks de `RPC_URLS`) limita el rango a 2000 bloques por
- * llamada; Alchemy (el proveedor primario configurado en
- * `config/alchemy.ts`) acepta rangos mucho mayores. Por eso el escaneo:
- *  1. Arranca con un `chunk` grande (`DEFAULT_CHUNK_BLOCKS`) y lo REDUCE a
- *     la mitad (con suelo `MIN_CHUNK_BLOCKS`) si el proveedor rechaza el
- *     rango — funciona tanto con Alchemy como con el fallback público.
+ * **RPC dedicado, nunca Alchemy (fix 13-sep, hallazgo del crítico en
+ * producción):** el `publicClient` de wagmi (`config/wagmi.ts`) es
+ * `fallback([alchemy…, infura?, mainnet.base.org, …], { rank: false })` —
+ * en producción, con `VITE_ALCHEMY_API_KEYS` puesta, CADA `eth_getLogs`
+ * va primero a Alchemy, que para esta cuenta/plan responde
+ * `-32600 "up to a 10 block range"` — muy por debajo de los 2000 bloques
+ * que este módulo asumía, y por debajo incluso de `MIN_CHUNK_BLOCKS`
+ * (500), así que el chunking adaptativo terminaba agotando su suelo y
+ * lanzando en vez de progresar. El RPC público de Base
+ * (`mainnet.base.org`) sí soporta hasta 2000 bloques por `eth_getLogs`
+ * (medido). Por eso `scanPackIds` usa SIEMPRE un cliente propio contra
+ * ese RPC para `getLogs`/`getBlockNumber` — nunca el `publicClient` de
+ * wagmi ni Alchemy — y el resto de lecturas de `packRegistry.ts`
+ * (multicall, `readContract`) siguen yendo por wagmi/Alchemy sin cambios,
+ * porque esas sí soportan su rango normal.
+ *
+ * El escaneo:
+ *  1. Arranca con un `chunk` de `DEFAULT_CHUNK_BLOCKS` (2000, el límite
+ *     medido del RPC público) y lo BAJA a `MIN_CHUNK_BLOCKS` (500) si el
+ *     proveedor rechaza el rango — defensivo, por si ese límite cambia.
  *  2. Cachea en `localStorage` el último bloque escaneado + los IDs
  *     encontrados hasta ahora, por contrato+evento+chain — la próxima
  *     carga solo escanea los bloques nuevos, no repite el historial.
@@ -27,19 +40,57 @@
  *     `scripts/packs-registry-seed.mjs`) en vez del bloque de deploy —
  *     así la PRIMERA visita de cada usuario (sin `localStorage` aún)
  *     tampoco escanea los ~17,7 M de bloques completos, solo lo que haya
- *     pasado desde que se generó el seed. Sin seed, funciona igual pero
- *     esa primera visita es lenta y puede dar 429 con el RPC público —
- *     ver el README de este directorio para regenerarlo.
+ *     pasado desde que se generó el seed (con el seed al día y trozos de
+ *     2000 bloques, del orden de 25-30 peticiones).
+ *  4. **Tope de peticiones por sesión** (`maxRequestsPerScan`, 60 por
+ *     defecto): si el rango pendiente es inusualmente grande (seed
+ *     desactualizado, o el navegador nunca llegó a `localStorage`), el
+ *     escaneo se para al llegar al tope, guarda el progreso real
+ *     (`lastScannedBlock` = hasta donde de verdad llegó, NUNCA el bloque
+ *     más reciente de la cadena si no se escaneó hasta ahí) y la próxima
+ *     carga continúa desde ese punto — nunca bloquea la pestaña ni
+ *     dispara un aluvión de peticiones sin fin.
  *
- * Si esto se vuelve un problema de rendimiento o de cuota de RPC en
- * producción, la solución de fondo es un indexer/subgraph — fuera de
- * alcance de esta capa de datos (ver informe del worker F5 en el PR).
+ * Si esto se vuelve un problema de rendimiento en producción, la solución
+ * de fondo es un indexer/subgraph — fuera de alcance de esta capa de
+ * datos (ver informe del worker F5 en el PR).
  */
 
-import type { AbiEvent, Address, PublicClient } from 'viem';
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+import type { AbiEvent, Address } from 'viem';
 
-export const DEFAULT_CHUNK_BLOCKS = 200_000;
+export const DEFAULT_CHUNK_BLOCKS = 2_000;
 export const MIN_CHUNK_BLOCKS = 500;
+export const DEFAULT_MAX_REQUESTS_PER_SCAN = 60;
+
+/** RPC público de Base — límite medido de 2000 bloques por `eth_getLogs`, sin clave, nunca Alchemy. */
+const LOGS_RPC_URL = 'https://mainnet.base.org';
+
+let dedicatedLogsClient: LogsClient | null = null;
+
+/** Cliente viem dedicado solo a `getLogs`/`getBlockNumber` de este escaneo. Singleton perezoso. */
+function getDedicatedLogsClient(): LogsClient {
+  if (!dedicatedLogsClient) {
+    dedicatedLogsClient = createPublicClient({ chain: base, transport: http(LOGS_RPC_URL) });
+  }
+  return dedicatedLogsClient;
+}
+
+/**
+ * Subconjunto de PublicClient que este módulo necesita — así los tests
+ * pueden inyectar un fake sin depender del tipo completo de viem. El
+ * retorno de `getLogs` se deja como `readonly unknown[]` (no el `Log[]`
+ * tipado de viem): el `args` real de viem es
+ * `readonly unknown[] | Record<string, unknown>` según el ABI del evento
+ * (posicional vs. con nombre) — declararlo aquí como objeto estricto
+ * rompía la asignación de un `PublicClient` real a este tipo. Se lee de
+ * forma defensiva en `scanPackIds` en vez de confiar en un tipo exacto.
+ */
+export interface LogsClient {
+  getBlockNumber: () => Promise<bigint>;
+  getLogs: (params: { address: Address; event: AbiEvent; fromBlock: bigint; toBlock: bigint }) => Promise<readonly unknown[]>;
+}
 
 interface ScanCacheEntry {
   lastBlock: string; // bigint serializado
@@ -78,7 +129,8 @@ function looksLikeRangeLimitError(err: unknown): boolean {
     msg.includes('block span') ||
     msg.includes('query returned more than') ||
     msg.includes('limit') ||
-    msg.includes('too many')
+    msg.includes('too many') ||
+    msg.includes('-32600')
   );
 }
 
@@ -88,7 +140,6 @@ export interface RegistrySeed {
 }
 
 export interface ScanPackIdsParams {
-  client: PublicClient;
   address: Address;
   event: AbiEvent;
   /** Nombre del argumento packId dentro del evento (p.ej. "packId"). */
@@ -100,45 +151,68 @@ export interface ScanPackIdsParams {
   useCache?: boolean;
   /** Punto de partida versionado en el repo (`registry.seed.json`) — evita escanear desde `fromBlock` en la primera visita de cada navegador. */
   seed?: RegistrySeed;
+  /** Tope de peticiones `eth_getLogs` por llamada — protege contra un rango pendiente enorme (seed viejo, sin localStorage). Por defecto `DEFAULT_MAX_REQUESTS_PER_SCAN`. */
+  maxRequests?: number;
+  /** Solo para tests — inyecta un cliente falso en vez del RPC dedicado real. NUNCA se usa en producción (siempre el RPC público dedicado, nunca el `publicClient` de wagmi/Alchemy). */
+  logsClient?: LogsClient;
 }
 
-/** Escanea `PackConfigured`-like events y devuelve el set de packIds vistos, con caché incremental. */
+/** Escanea `PackConfigured`-like events y devuelve el set de packIds vistos, con caché incremental y tope de peticiones por llamada. */
 export async function scanPackIds(params: ScanPackIdsParams): Promise<Set<bigint>> {
-  const { client, address, event, packIdArg, chainId, useCache = true, seed } = params;
+  const {
+    address,
+    event,
+    packIdArg,
+    chainId,
+    useCache = true,
+    seed,
+    maxRequests = DEFAULT_MAX_REQUESTS_PER_SCAN,
+  } = params;
+  const client = params.logsClient ?? getDedicatedLogsClient();
   const key = cacheKey(chainId, address, event.name ?? 'event');
   const cachedFromStorage = useCache ? loadCache(key) : null;
 
   // Prioridad: localStorage (ya tiene lo que este navegador escaneó) >
   // seed del repo (ya tiene lo que se escaneó offline hasta su
   // `generatedAt`) > bloque de deploy (primera vez sin nada de lo anterior).
-  const base: ScanCacheEntry | null =
+  // (Nombrado `resumePoint`, no `base`, para no tapar el `base` de
+  // `viem/chains` importado arriba.)
+  const resumePoint: ScanCacheEntry | null =
     cachedFromStorage ?? (seed ? { lastBlock: seed.lastScannedBlock.toString(), ids: seed.ids.map(String) } : null);
 
-  const ids = new Set<bigint>(base ? base.ids.map((s) => BigInt(s)) : []);
-  let from = base ? BigInt(base.lastBlock) + 1n : params.fromBlock;
+  const ids = new Set<bigint>(resumePoint ? resumePoint.ids.map((s) => BigInt(s)) : []);
+  let from = resumePoint ? BigInt(resumePoint.lastBlock) + 1n : params.fromBlock;
+  // Hasta dónde se ha escaneado de verdad — arranca un bloque por debajo
+  // de `from` (nada nuevo todavía); si el tope de peticiones corta el
+  // escaneo a medias, esto es lo que se guarda, NUNCA `latest` sin más.
+  let scannedUpTo = from - 1n;
 
   const latest = await client.getBlockNumber();
   let chunk = DEFAULT_CHUNK_BLOCKS;
+  let requests = 0;
 
-  while (from <= latest) {
+  while (from <= latest && requests < maxRequests) {
     const to = from + BigInt(chunk) > latest ? latest : from + BigInt(chunk);
+    requests += 1;
     try {
       const logs = await client.getLogs({ address, event, fromBlock: from, toBlock: to });
       for (const log of logs) {
-        const value = (log as { args?: Record<string, unknown> }).args?.[packIdArg];
+        const args = (log as { args?: unknown }).args;
+        const value = args && typeof args === 'object' && !Array.isArray(args) ? (args as Record<string, unknown>)[packIdArg] : undefined;
         if (typeof value === 'bigint') ids.add(value);
       }
+      scannedUpTo = to;
       from = to + 1n;
-      if (chunk < DEFAULT_CHUNK_BLOCKS) chunk = Math.min(DEFAULT_CHUNK_BLOCKS, chunk * 2);
+      if (chunk < DEFAULT_CHUNK_BLOCKS) chunk = DEFAULT_CHUNK_BLOCKS;
     } catch (err) {
       if (!looksLikeRangeLimitError(err) || chunk <= MIN_CHUNK_BLOCKS) throw err;
-      chunk = Math.max(MIN_CHUNK_BLOCKS, Math.floor(chunk / 4));
-      // no avanzamos `from`: reintenta el mismo tramo con un chunk menor
+      chunk = MIN_CHUNK_BLOCKS;
+      // no avanzamos `from`: reintenta el mismo tramo con el chunk mínimo
     }
   }
 
   if (useCache) {
-    saveCache(key, { lastBlock: latest.toString(), ids: Array.from(ids, (id) => id.toString()) });
+    saveCache(key, { lastBlock: scannedUpTo.toString(), ids: Array.from(ids, (id) => id.toString()) });
   }
   return ids;
 }

@@ -22,7 +22,7 @@ import { createHash } from 'node:crypto';
  * AdrianLAB never resolves it. Downside: a few MB of dead blobs over time.
  * Acceptable tradeoff to keep mint UX as a single signature.
  */
-const MAX_BYTES = 64 * 1024; // 64KB hard cap (V1 SVGs are ~5KB)
+const MAX_BYTES = 200 * 1024; // 200KB hard cap — mismo valor que MAX_DESIGN_SVG_BYTES en src/features/tshit-studio/lib/svgExport.ts (13-sep: un garabato denso superaba los 64KB con la codificación por rects)
 const ALLOWED_PREFIX = '<svg';
 const FORBIDDEN_PATTERNS = [
   /<script\b/i,
@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (typeof svg !== 'string' || svg.length === 0) {
       return res.status(400).json({ error: 'Missing or invalid svg' });
     }
-    if (svg.length > MAX_BYTES) {
+    if (Buffer.byteLength(svg, 'utf8') > MAX_BYTES) {
       return res.status(413).json({ error: `SVG exceeds ${MAX_BYTES} bytes` });
     }
     if (!svg.trimStart().startsWith(ALLOWED_PREFIX)) {

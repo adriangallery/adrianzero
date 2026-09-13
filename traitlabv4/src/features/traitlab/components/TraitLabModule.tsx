@@ -272,7 +272,9 @@ export function TraitLabModule() {
   const plan = planSignatures(changes, applyMutation.needsApproval);
 
   useEffect(() => {
-    if (selectedTokenId && isConnected) applyMutation.checkApproval();
+    // (13-sep) la aprobación ya no se lee por adelantado: 1 firma por defecto,
+    // la simulación real decide si hace falta una segunda.
+    if (selectedTokenId && isConnected) void applyMutation.checkApproval();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTokenId, isConnected]);
 

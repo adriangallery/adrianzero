@@ -20,6 +20,11 @@ import type { OwnedPack } from '../data/types';
 import { packDisplay, PACK_IMAGE_FALLBACK, type PackDisplay } from '../lib/packDisplay';
 import { PackOpenSheet } from './PackOpenSheet';
 
+/** Abrible salvo que el registro haya confirmado que ningún contrato lo tiene configurado. */
+function canOpen(p: OwnedPack): boolean {
+  return !!p.openContract || !p.routeKnown;
+}
+
 export function PacksSection({ embedded = false }: { embedded?: boolean }) {
   const { address, isConnected } = useAccount();
   const { data: owned, isLoading, error, refetch } = useMyPacks(address);
@@ -34,7 +39,7 @@ export function PacksSection({ embedded = false }: { embedded?: boolean }) {
     () =>
       owned
         .map((p) => ({ pack: p, display: packDisplay(p.packId, catalog.data, traitsMetadata) }))
-        .sort((a, b) => (a.pack.openContract ? 0 : 1) - (b.pack.openContract ? 0 : 1) || a.display.name.localeCompare(b.display.name)),
+        .sort((a, b) => (canOpen(a.pack) ? 0 : 1) - (canOpen(b.pack) ? 0 : 1) || a.display.name.localeCompare(b.display.name)),
     [owned, catalog.data, traitsMetadata]
   );
 
@@ -109,13 +114,13 @@ export function PacksSection({ embedded = false }: { embedded?: boolean }) {
                 <p className="font-ui text-[14px] font-bold text-fg truncate">{display.name}</p>
                 <p className="text-[12px] text-mute">
                   ×{pack.balance.toString()}
-                  {pack.openContract ? '' : ' · not openable yet'}
+                  {canOpen(pack) ? '' : ' · not openable yet'}
                 </p>
               </div>
               <Button
                 size="md"
-                variant={pack.openContract ? 'primary' : 'secondary'}
-                disabled={!pack.openContract}
+                variant={canOpen(pack) ? 'primary' : 'secondary'}
+                disabled={!canOpen(pack)}
                 onClick={() => { setSelected(pack); setSheetOpen(true); }}
               >
                 Open

@@ -93,13 +93,13 @@ export function PackOpenSheet({ pack, display, open, onOpenChange, equipTokenId 
             size="lg"
             full
             loading={busy}
-            disabled={busy || !pack.openContract}
+            disabled={busy || (pack.routeKnown && !pack.openContract)}
             onClick={handleOpen}
             trailing={!busy ? '1 signature · Base' : undefined}
           >
             {busy ? (openPack.isPending ? 'Confirm in your wallet…' : 'Opening…') : 'Open 1 pack'}
           </Button>
-          {!pack.openContract ? (
+          {pack.routeKnown && !pack.openContract ? (
             <p className="text-[13px] text-warn">This pack has no contract configured to open it yet.</p>
           ) : null}
         </div>

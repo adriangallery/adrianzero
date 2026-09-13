@@ -112,7 +112,6 @@ function priceListFrom(priceWei: bigint, priceToken: bigint, tokenAddress: Addre
 
 async function buildFloppyDiscsCatalog(client: PublicClient, chainId: number): Promise<{ catalog: CatalogPack[]; ids: bigint[] }> {
   const ids = await scanPackIds({
-    client,
     address: FLOPPY_DISCS_ADDRESS,
     event: FLOPPY_DISCS_PACK_CONFIGURED,
     packIdArg: 'packId',
@@ -246,7 +245,6 @@ async function buildOpenOnlyRoutes(
 
   const [openpackIds, actionPackIds] = await Promise.all([
     scanPackIds({
-      client,
       address: OPENPACK_V4_ADDRESS,
       event: OPENPACK_V4_PACK_CONFIGURED,
       packIdArg: 'packId',
@@ -255,7 +253,6 @@ async function buildOpenOnlyRoutes(
       seed: seedFor('OPENPACK_V4'),
     }),
     scanPackIds({
-      client,
       address: ACTION_PACKS_ADDRESS,
       event: ACTION_PACKS_PACK_CONFIGURED,
       packIdArg: 'packId',
