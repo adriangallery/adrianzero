@@ -22,6 +22,7 @@ import {
   useAdrianMint,
 } from '../hooks/useAdrianMint';
 import { getGitHubImageUrl, IMAGE_PATHS } from '@/config/images';
+import { renderUrl } from '@/lib/adrianlab';
 
 export function AdvancedMintsSection() {
   const { hasAdrianZero, isLoading: isCheckingOwnership } = useHasAdrianZero();
@@ -92,7 +93,7 @@ export function AdvancedMintsSection() {
           type="adrianWithAdrian"
           title="AdrianZERO"
           subtitle="Mint with $ZERO"
-          imageUrl="https://adrianlab.vercel.app/api/render/1"
+          imageUrl={renderUrl(1, '')}
           price={adrianBatch?.price}
           minted={Number(adrianSupply.totalMinted)}
           maxSupply={Number(adrianSupply.totalSupply)}

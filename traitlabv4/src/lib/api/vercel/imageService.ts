@@ -1,12 +1,28 @@
 /**
  * Vercel Image Service
  * Generates combined NFT + traits preview images
+ *
+ * F9 (13-sep-2026): las URLs se construyen con el cliente único de AdrianLAB
+ * (`@/lib/adrianlab`) en vez del dominio de AdrianLAB escrito a mano — mismo
+ * comportamiento en producción, base configurable por `VITE_VERCEL_API_URL`.
  */
+
+import { renderCustomExternalUrl, renderWithParamsUrl, renderLamboUrl, type ToggleParam } from '@/lib/adrianlab';
 
 interface GenerateImageParams {
   tokenId: string;
   traitIds: string[];
 }
+
+/** Legacy numeric toggle IDs used by this service's callers. */
+const TOGGLE_ID_TO_PARAM: Record<number, ToggleParam> = {
+  1: 'closeup',
+  2: 'shadow',
+  3: 'glow',
+  4: 'bn',
+  11: 'blackout',
+  12: 'banana',
+};
 
 export class VercelImageService {
   private cache: Map<string, string>;
@@ -26,10 +42,7 @@ export class VercelImageService {
       return this.cache.get(cacheKey)!;
     }
 
-    // v3 pattern: /api/render/custom-external/{tokenId}?trait={id1}&trait={id2}
-    const baseUrl = 'https://adrianlab.vercel.app/api/render/custom-external';
-    const traitParams = traitIds.map(id => `trait=${id}`).join('&');
-    const url = `${baseUrl}/${tokenId}${traitParams ? '?' + traitParams : ''}`;
+    const url = renderCustomExternalUrl(tokenId, traitIds);
 
     this.cache.set(cacheKey, url);
 
@@ -55,37 +68,20 @@ export class VercelImageService {
    * @returns URL for NFT with toggle(s) applied
    */
   generateToggleImageUrl(tokenId: string, toggleIds: number | number[]): string {
-    const baseUrl = 'https://adrianlab.vercel.app/api/render';
-
-    // Map toggle IDs to URL parameter names
-    const toggleMap: Record<number, string> = {
-      1: 'closeup',   // Closeup/Zoom
-      2: 'shadow',    // Shadow Mode
-      3: 'glow',      // Glow Mode
-      4: 'bn',        // Black & White
-      11: 'blackout', // Blackout
-      12: 'banana',   // Banana Mode
-    };
-
     // Convert to array if single value
     const ids = Array.isArray(toggleIds) ? toggleIds : [toggleIds];
 
     // Filter out 0 (None)
     const activeIds = ids.filter(id => id !== 0);
 
-    if (activeIds.length === 0) {
-      // No toggle - just the base image
-      return `${baseUrl}/${tokenId}.png`;
-    }
+    const params: Partial<Record<ToggleParam, boolean>> = Object.fromEntries(
+      activeIds
+        .map(id => TOGGLE_ID_TO_PARAM[id])
+        .filter((param): param is ToggleParam => param !== undefined)
+        .map(param => [param, true] as const)
+    );
 
-    // Build URL with multiple toggle parameters
-    const params = activeIds
-      .map(id => toggleMap[id])
-      .filter((param): param is string => param !== undefined)
-      .map(param => `${param}=true`)
-      .join('&');
-
-    return `${baseUrl}/${tokenId}.png${params ? '?' + params : ''}`;
+    return renderWithParamsUrl(tokenId, params);
   }
 
   /**
@@ -95,8 +91,7 @@ export class VercelImageService {
    * @returns URL for LAMBO variant
    */
   generateLamboImageUrl(tokenId: string, color: string): string {
-    const baseUrl = 'https://adrianlab.vercel.app/api/render/lambo';
-    return `${baseUrl}/${tokenId}?lambo=${color}`;
+    return renderLamboUrl(tokenId, color);
   }
 
   /**

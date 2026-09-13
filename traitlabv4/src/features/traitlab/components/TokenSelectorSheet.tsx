@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sheet, Button, SearchIcon } from '@/ui';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { getLastUsedTokenId } from '../lib/tokenHistory';
+import { renderUrl } from '@/lib/adrianlab';
 
 export interface TokenSelectorSheetProps {
   open: boolean;
@@ -68,7 +69,7 @@ export function TokenSelectorSheet({ open, onOpenChange, onSelect }: TokenSelect
                 className="flex flex-col items-center gap-1.5 rounded-[var(--r-lg)] border-2 border-line bg-panel p-2 hover:border-mute"
               >
                 <img
-                  src={token.image?.cachedUrl || token.image?.originalUrl || `https://adrianlab.vercel.app/api/render/${token.tokenId}.png`}
+                  src={token.image?.cachedUrl || token.image?.originalUrl || renderUrl(token.tokenId)}
                   alt={`ZERO #${token.tokenId}`}
                   loading="lazy"
                   className="aspect-square w-full rounded-[var(--r-md)] bg-bg object-cover"

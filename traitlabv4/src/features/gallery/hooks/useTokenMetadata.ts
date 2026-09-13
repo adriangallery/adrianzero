@@ -6,8 +6,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useGalleryStore } from '../store/galleryStore';
 import type { NFTMetadata, NFTType } from '../types/gallery.types';
+import { metadataUrl, renderUrl } from '@/lib/adrianlab';
 
-const METADATA_API = 'https://adrianlab.vercel.app/api/metadata';
 const CONCURRENT_FETCHES = 6;
 
 /** Derive NFT type from metadata attributes */
@@ -36,7 +36,7 @@ export function useTokenMetadata(visibleTokenIds: number[]) {
       inflightRef.current.add(tokenId);
 
       try {
-        const res = await fetch(`${METADATA_API}/${tokenId}`);
+        const res = await fetch(metadataUrl(tokenId));
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data: NFTMetadata = await res.json();
         setMetadata(tokenId, data);
@@ -44,7 +44,7 @@ export function useTokenMetadata(visibleTokenIds: number[]) {
         // Store a minimal fallback so we don't retry endlessly
         setMetadata(tokenId, {
           name: `AdrianZero #${tokenId}`,
-          image: `https://adrianlab.vercel.app/api/render/${tokenId}.png`,
+          image: renderUrl(tokenId),
           attributes: [],
         });
         if (import.meta.env.DEV) console.warn(`Metadata fetch failed for #${tokenId}:`, err);

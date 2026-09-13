@@ -12,6 +12,7 @@ import { alchemyClient } from '@/lib/api/alchemy/client';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { buildAlchemyRpcUrls } from '@/config/alchemy';
 import type { AdrianZeroToken, Trait, TraitCategory } from '@/types/nft.types';
+import { renderUrl, labImageUrl } from '@/lib/adrianlab';
 
 // Cache windows. Adrian Zeros are fairly stable per wallet (mints +
 // trades, no auto-rotation) so 30 min is generous. Traits/ERC1155 are
@@ -259,7 +260,7 @@ export const useWalletDataStore = create<WalletDataState>()(
 
         // Transform to our type
         const tokens: AdrianZeroToken[] = response.ownedNfts.map((nft) => {
-          const vercelImageUrl = `https://adrianlab.vercel.app/api/render/${nft.tokenId}`;
+          const vercelImageUrl = renderUrl(nft.tokenId, '');
           const alchemyFallback = nft.image?.cachedUrl || nft.image?.originalUrl;
 
           return {
@@ -439,12 +440,12 @@ export const useWalletDataStore = create<WalletDataState>()(
           const githubSvgUrl = isOgPunkReward
             ? `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/ogpunks/${tokenId}.svg`
             : isStudioTshit
-            ? `https://adrianlab.vercel.app/api/render/${tokenId}.png`
+            ? renderUrl(tokenId)
             : `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${tokenId}.svg`;
           const labimagesSvgUrl = isOgPunkReward
-            ? `https://adrianlab.vercel.app/labimages/ogpunks/${tokenId}.svg`
+            ? labImageUrl(`ogpunks/${tokenId}.svg`)
             : isStudioTshit
-            ? `https://adrianlab.vercel.app/api/render/${tokenId}.png`
+            ? renderUrl(tokenId)
             : `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${tokenId}.svg`;
 
           allTraits.push({

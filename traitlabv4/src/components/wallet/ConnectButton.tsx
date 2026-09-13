@@ -1,6 +1,7 @@
 import { ConnectButton as RainbowConnectButton } from '@rainbow-me/rainbowkit';
+import { renderUrl } from '@/lib/adrianlab';
 
-const ADRIANZERO_PROFILE_FALLBACK = 'https://adrianlab.vercel.app/api/render/146.png';
+const ADRIANZERO_PROFILE_FALLBACK = renderUrl(146);
 
 export function ConnectButton() {
   return (
