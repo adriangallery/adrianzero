@@ -70,29 +70,8 @@ export async function batchContractReads<T = any>(
 
 /**
  * Parse common claim errors into user-friendly messages
+ * @deprecated usar `humanError` de `@/lib/web3/humanError` (F4, 13-sep-2026) — se
+ * mantiene este re-export para no romper los imports existentes de `parseClaimError`.
  */
-export function parseClaimError(error: Error): string {
-  const msg = error.message.toLowerCase();
-
-  if (msg.includes('user rejected') || msg.includes('user denied')) {
-    return 'Transaction cancelled';
-  }
-  if (msg.includes('already claimed')) {
-    return 'Already claimed for this punk';
-  }
-  if (msg.includes('not token owner') || msg.includes('not owner')) {
-    return 'You must own this punk';
-  }
-  if (msg.includes('campaign not active') || msg.includes('not active')) {
-    return 'Campaign expired or not started';
-  }
-  if (msg.includes('429') || msg.includes('rate limit')) {
-    return 'Too many requests, please wait';
-  }
-  if (msg.includes('insufficient funds') || msg.includes('insufficient balance')) {
-    return 'Insufficient funds for gas';
-  }
-
-  return 'Transaction failed. Please try again.';
-}
+export { humanError as parseClaimError } from '../humanError';
 

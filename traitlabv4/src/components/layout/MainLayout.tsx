@@ -14,6 +14,7 @@ import { NAV_ITEMS } from './navigation';
 import { useWalletDataSync } from '@/hooks/useWalletDataSync';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { TabBar } from '@/ui/TabBar';
+import { PendingApplyBanner } from '@/features/traitlab/components/PendingApplyBanner';
 
 const EXTRA_TITLES: Record<string, string> = {
   '/explain-to-jb': 'Explain to JB',
@@ -40,7 +41,9 @@ export function MainLayout() {
     return window.matchMedia('(min-width: 1024px)').matches;
   });
   const location = useLocation();
-  const isZeroLanding = location.pathname.startsWith('/zero');
+  // /traitlab (F4) necesita el mismo full-bleed que /zero: header + preview +
+  // ActionBar fijos ocupando el viewport entero, sin el padding de Container.
+  const isZeroLanding = location.pathname.startsWith('/zero') || location.pathname.startsWith('/traitlab');
 
   useEffect(() => {
     document.title = `ZERO - ${getPageTitle(location.pathname)}`;
@@ -86,6 +89,7 @@ export function MainLayout() {
         </Suspense>
 
         <ToastContainer />
+        <PendingApplyBanner />
       </div>
     );
   }
@@ -138,6 +142,7 @@ export function MainLayout() {
 
       {/* Toast Notifications */}
       <ToastContainer />
+      <PendingApplyBanner />
     </div>
   );
 }
