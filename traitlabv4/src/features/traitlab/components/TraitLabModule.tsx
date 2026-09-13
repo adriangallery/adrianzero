@@ -17,6 +17,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { useTraitsByCategory } from '@/features/traits/hooks/useTraits';
+import { isEquippableCategory, isEquippableTrait } from '../lib/equippable';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
 import { humanError } from '@/lib/web3/humanError';
 import { useTraitlabStore } from '../store/traitlabStore';
@@ -117,12 +118,25 @@ export function TraitLabModule() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Solo lo equipable: el inventario ERC-1155 trae también floppies (packs),
+  // serums y logros, que el contrato rechaza («Cannot equip this asset
+  // type»). Los packs van a su propia sección (F5). Ver lib/equippable.ts.
+  const equippableByCategory = useMemo(() => {
+    const out: Record<string, Trait[]> = {};
+    for (const [name, list] of Object.entries(traitsByCategory)) {
+      if (!isEquippableCategory(name)) continue;
+      const kept = list.filter(isEquippableTrait);
+      if (kept.length > 0) out[name] = kept;
+    }
+    return out;
+  }, [traitsByCategory]);
+
   const categories = useMemo(
     () =>
-      Object.keys(traitsByCategory)
+      Object.keys(equippableByCategory)
         .sort()
-        .map((name) => ({ name, count: traitsByCategory[name].length })),
-    [traitsByCategory]
+        .map((name) => ({ name, count: equippableByCategory[name].length })),
+    [equippableByCategory]
   );
 
   useEffect(() => {
@@ -282,7 +296,7 @@ export function TraitLabModule() {
     }
   }, [requireWallet, changes, notifications, applyMutation, clearSelections]);
 
-  const gridTraits = activeCategory ? traitsByCategory[activeCategory] ?? [] : [];
+  const gridTraits = activeCategory ? equippableByCategory[activeCategory] ?? [] : [];
   const noToken = !selectedTokenId;
 
   return (
