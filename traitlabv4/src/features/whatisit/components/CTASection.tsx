@@ -30,9 +30,9 @@ const ctaButtons = [
 
 export function CTASection() {
   return (
-    <div className="rounded-lg border border-border bg-card p-8 text-center">
-      <h2 className="mb-4 text-3xl font-bold text-foreground">Ready to Dive In?</h2>
-      <p className="mb-8 text-muted-foreground">
+    <div className="rounded-lg border border-line bg-panel p-8 text-center">
+      <h2 className="mb-4 text-3xl font-bold text-fg">Ready to Dive In?</h2>
+      <p className="mb-8 text-mute">
         Join the ecosystem and start building your AdrianZERO
       </p>
 
@@ -45,8 +45,8 @@ export function CTASection() {
             rel={button.url.startsWith('http') ? 'noopener noreferrer' : undefined}
             className={`inline-flex items-center gap-2 rounded-lg px-6 py-3 font-bold transition-all ${
               button.primary
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                : 'border border-border bg-card text-foreground hover:border-primary'
+                ? 'bg-acc text-acc-fg hover:opacity-90'
+                : 'border border-line bg-panel text-fg hover:border-acc'
             }`}
           >
             {button.label}

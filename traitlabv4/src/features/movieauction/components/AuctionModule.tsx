@@ -39,7 +39,7 @@ export function AuctionModule() {
     if (isLoading) {
         return (
             <div className="flex min-h-[40vh] items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-mute" />
             </div>
         );
     }
@@ -51,13 +51,13 @@ export function AuctionModule() {
         return (
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
                 <div className="text-center">
-                    <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-purple-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-purple-400">
                         ZEROmovies S2 · Pre-launch Auction
                     </span>
                     <h1 className="mt-1 text-2xl font-bold tracking-wider text-yellow-400 sm:text-3xl">
                         {reserved?.name ?? 'Coming soon'}
                     </h1>
-                    <p className="mt-2 text-[11px] uppercase tracking-widest text-zinc-500">
+                    <p className="mt-2 text-[11px] uppercase tracking-widest text-mute">
                         Auction date · TBD
                     </p>
                 </div>
@@ -65,7 +65,7 @@ export function AuctionModule() {
                 <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
                     {reserved && stillUrl && gifUrl ? (
                         <div className="relative w-full max-w-xs shrink-0">
-                            <div className="group relative overflow-hidden rounded border-2 border-purple-500/40 bg-zinc-950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
+                            <div className="group relative overflow-hidden rounded border-2 border-purple-500/40 bg-panel950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
                                 <MovieCover
                                     stillUrl={stillUrl}
                                     gifUrl={gifUrl}
@@ -75,17 +75,17 @@ export function AuctionModule() {
                                     eager
                                 />
                                 {reserved.hasAnimation && (
-                                    <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black transition-opacity group-hover:opacity-0 pointer-coarse:opacity-100">
+                                    <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider text-black transition-opacity group-hover:opacity-0 pointer-coarse:opacity-100">
                                         Animated · GIF
                                     </div>
                                 )}
-                                <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/80 to-transparent px-2 pt-6 pb-2 pointer-events-none">
-                                    <span className="rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">
+                                <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-bg/80 to-transparent px-2 pt-6 pb-2 pointer-events-none">
+                                    <span className="rounded bg-purple-500 px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider text-black">
                                         Reserved · Auction
                                     </span>
                                 </div>
                             </div>
-                            <p className="mt-2 text-center text-[10px] text-zinc-500">
+                            <p className="mt-2 text-center text-[13px] text-mute">
                                 Movie ID #{reserved.id} · 1/1 ZEROmovies S2 cover
                                 {reserved.hasAnimation && (
                                     <span className="ml-1 hidden pointer-fine:inline text-purple-400/70">· hover to play</span>
@@ -93,16 +93,16 @@ export function AuctionModule() {
                             </p>
                         </div>
                     ) : (
-                        <Film className="h-12 w-12 text-zinc-700" />
+                        <Film className="h-12 w-12 text-mute" />
                     )}
 
                     <div className="flex-1 space-y-3">
-                        <div className="rounded border border-zinc-800 bg-zinc-950/60 p-3">
-                            <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-500">What's coming</span>
-                            <p className="mt-1 text-[11px] leading-relaxed text-zinc-300">
+                        <div className="rounded border border-line bg-panel950 p-3">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-mute">What's coming</span>
+                            <p className="mt-1 text-[11px] leading-relaxed text-fg">
                                 A 48-hour English auction in <span className="font-bold text-yellow-400">$ZERO</span> for
                                 the only animated cover in S2. Bids start at{' '}
-                                <span className="font-bold text-white">5,000 ZERO</span>, +5% min increment, with anti-snipe
+                                <span className="font-bold text-fg">5,000 ZERO</span>, +5% min increment, with anti-snipe
                                 extensions on bids placed in the last 5 minutes.
                             </p>
                         </div>
@@ -113,7 +113,7 @@ export function AuctionModule() {
                             <Stat label="Split" value="50/30/20" sub="burn / FF / S1 pool" />
                         </div>
 
-                        <div className="rounded border border-purple-500/30 bg-purple-950/20 p-3 text-[10px] leading-relaxed text-purple-200">
+                        <div className="rounded border border-purple-500/30 bg-purple-950/20 p-3 text-[13px] leading-relaxed text-purple-200">
                             Watch the Discord and X feed for the start time announcement. The
                             countdown lights up here the moment the auction goes live.
                         </div>
@@ -130,7 +130,7 @@ export function AuctionModule() {
         <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
             {/* Header */}
             <div className="mb-4 text-center sm:mb-6">
-                <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-purple-400">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-purple-400">
                     ZEROmovies S2 · Pre-launch Auction
                 </span>
                 <h1 className="mt-1 text-2xl font-bold tracking-wider text-yellow-400 sm:text-3xl">
@@ -141,14 +141,14 @@ export function AuctionModule() {
             {/* Outbid refund banner */}
             {isConnected && outbidBalance > 0n && (
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded border border-amber-500/40 bg-amber-950/30 px-3 py-2">
-                    <p className="text-[10px] text-amber-200">
+                    <p className="text-[13px] text-amber-200">
                         You've been outbid on a previous bid.
                         {' '}<span className="font-bold">{Number(formatUnits(outbidBalance, 18)).toLocaleString()} ZERO</span> waiting for you.
                     </p>
                     <button
                         onClick={withdraw}
                         disabled={isWithdrawPending || isWithdrawConfirming}
-                        className="inline-flex items-center gap-1 rounded bg-amber-500 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-black hover:bg-amber-400 disabled:opacity-50"
+                        className="inline-flex items-center gap-1 rounded bg-amber-500 px-2 py-1 text-[13px] font-bold uppercase tracking-wider text-black hover:bg-amber-400 disabled:opacity-50"
                     >
                         {(isWithdrawPending || isWithdrawConfirming) && <Loader2 className="h-3 w-3 animate-spin" />}
                         Withdraw
@@ -159,7 +159,7 @@ export function AuctionModule() {
             <div className="grid gap-4 md:grid-cols-2">
                 {/* Movie cover */}
                 <div className="flex flex-col items-center">
-                    <div className="group relative w-full max-w-sm overflow-hidden rounded border-2 border-yellow-500/40 bg-zinc-950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
+                    <div className="group relative w-full max-w-sm overflow-hidden rounded border-2 border-yellow-500/40 bg-panel950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
                         <MovieCover
                             stillUrl={auction.posterStillUrl}
                             gifUrl={auction.posterUrl}
@@ -169,12 +169,12 @@ export function AuctionModule() {
                             eager
                         />
                         {auction.hasAnimation && (
-                            <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black transition-opacity group-hover:opacity-0 pointer-coarse:opacity-100">
+                            <div className="absolute top-2 right-2 rounded bg-purple-500 px-2 py-0.5 text-[12px] font-bold uppercase tracking-wider text-black transition-opacity group-hover:opacity-0 pointer-coarse:opacity-100">
                                 Animated · GIF
                             </div>
                         )}
                     </div>
-                    <p className="mt-3 text-center text-[10px] text-zinc-500">
+                    <p className="mt-3 text-center text-[13px] text-mute">
                         Movie ID #{auction.movieId} · 1/1 ZEROmovies S2 cover
                         {auction.hasAnimation && (
                             <span className="ml-1 hidden pointer-fine:inline text-purple-400/70">· hover to play</span>
@@ -186,18 +186,18 @@ export function AuctionModule() {
                 <div className="flex flex-col gap-3">
                     <CountdownTimer secondsLeft={auction.secondsLeft} />
 
-                    <div className="rounded border border-zinc-800 bg-zinc-950/60 p-3">
-                        <span className="text-[8px] uppercase tracking-[0.3em] text-zinc-500">Top bid</span>
+                    <div className="rounded border border-line bg-panel950 p-3">
+                        <span className="text-[11px] uppercase tracking-wider text-mute">Top bid</span>
                         {hasBid ? (
                             <>
                                 <p className="font-mono text-2xl font-bold text-yellow-400">
                                     {Number(formatUnits(topBid, 18)).toLocaleString()}
-                                    <span className="ml-1 text-[10px] text-zinc-500">ZERO</span>
+                                    <span className="ml-1 text-[13px] text-mute">ZERO</span>
                                 </p>
-                                <p className="text-[10px] font-mono text-zinc-400">
+                                <p className="text-[13px] font-mono text-mute">
                                     by {topBidder.slice(0, 6)}…{topBidder.slice(-4)}
                                     {auction.youAreTopBidder && (
-                                        <span className="ml-2 rounded bg-yellow-400 px-1.5 py-0.5 text-[8px] font-bold text-black">
+                                        <span className="ml-2 rounded bg-yellow-400 px-1.5 py-0.5 text-[11px] font-bold text-black">
                                             YOU
                                         </span>
                                     )}
@@ -205,10 +205,10 @@ export function AuctionModule() {
                             </>
                         ) : (
                             <>
-                                <p className="font-mono text-2xl font-bold text-zinc-500">
+                                <p className="font-mono text-2xl font-bold text-mute">
                                     No bids yet
                                 </p>
-                                <p className="text-[10px] text-zinc-600">
+                                <p className="text-[13px] text-mute">
                                     Starting at {Number(formatUnits(auction.startPrice, 18)).toLocaleString()} ZERO
                                 </p>
                             </>
@@ -227,10 +227,10 @@ export function AuctionModule() {
             </div>
 
             {/* Storytelling blurb */}
-            <div className="mt-4 rounded border border-zinc-800 bg-zinc-950/40 p-3 text-[10px] leading-relaxed text-zinc-400">
+            <div className="mt-4 rounded border border-line bg-panel950 p-3 text-[13px] leading-relaxed text-mute">
                 <div className="mb-1 flex items-center gap-2">
                     <Trophy className="h-3.5 w-3.5 text-yellow-400" />
-                    <span className="font-bold uppercase tracking-[0.3em] text-yellow-400">Why this auction matters</span>
+                    <span className="font-bold uppercase tracking-wider text-yellow-400">Why this auction matters</span>
                 </div>
                 <p>
                     This is the only ZEROmovies S2 cover that ships <span className="font-bold text-purple-300">animated</span> — the
@@ -246,10 +246,10 @@ export function AuctionModule() {
 
 function Stat({label, value, sub}: {label: string; value: string; sub: string}) {
     return (
-        <div className="flex flex-col rounded border border-zinc-800 bg-zinc-950/60 p-2.5">
-            <span className="text-[8px] uppercase tracking-[0.3em] text-zinc-500">{label}</span>
-            <span className="mt-1 text-base font-mono font-bold text-white">{value}</span>
-            <span className="text-[8px] text-zinc-600">{sub}</span>
+        <div className="flex flex-col rounded border border-line bg-panel950 p-2.5">
+            <span className="text-[11px] uppercase tracking-wider text-mute">{label}</span>
+            <span className="mt-1 text-base font-mono font-bold text-fg">{value}</span>
+            <span className="text-[11px] text-mute">{sub}</span>
         </div>
     );
 }

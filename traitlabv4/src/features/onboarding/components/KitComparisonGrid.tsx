@@ -56,13 +56,13 @@ export function KitComparisonGrid({
     <div className="space-y-6">
       {/* Mobile Toggle */}
       <div className="flex justify-center md:hidden">
-        <div className="inline-flex rounded-full border-2 border-success bg-background p-1">
+        <div className="inline-flex rounded-full border-2 border-ok bg-bg p-1">
           <button
             onClick={() => setActiveTab('free')}
             className={`rounded-full px-6 py-2 text-sm font-bold transition-all ${
               activeTab === 'free'
-                ? 'bg-success text-black'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-ok text-black'
+                : 'text-mute hover:text-fg'
             }`}
           >
             FREE Kit
@@ -71,8 +71,8 @@ export function KitComparisonGrid({
             onClick={() => setActiveTab('paid')}
             className={`rounded-full px-6 py-2 text-sm font-bold transition-all ${
               activeTab === 'paid'
-                ? 'bg-accent text-black'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-acc2 text-black'
+                : 'text-mute hover:text-fg'
             }`}
           >
             Premium Kit

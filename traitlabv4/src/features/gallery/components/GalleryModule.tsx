@@ -12,14 +12,14 @@ const FILTER_OPTIONS: Array<NFTType | 'All'> = ['All', 'Gen0', 'SamuraiZERO', 'S
 
 const FILTER_COLORS: Record<string, string> = {
   All: 'bg-white text-black',
-  Gen0: 'bg-zinc-600 text-zinc-100',
+  Gen0: 'bg-line600 text-fg',
   SamuraiZERO: 'bg-red-700 text-red-100',
-  SubZERO: 'bg-blue-700 text-blue-100',
+  SubZERO: 'bg-acc text-acc',
   ZEROmovies: 'bg-red-600 text-red-100',
   GenZERO: 'bg-pink-600 text-pink-100',
 };
 
-const FILTER_INACTIVE = 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700';
+const FILTER_INACTIVE = 'bg-line800 text-mute hover:bg-line700';
 
 function getColumnCount(width: number): number {
   if (width >= 1280) return 8;
@@ -125,11 +125,11 @@ export function GalleryModule() {
   // --- Loading state ---
   if (isLoadingSupply) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-black">
+      <div className="flex min-h-[60dvh] w-full items-center justify-center bg-bg">
         <div className="text-center">
           <div className="mb-4 h-14 w-14 animate-spin rounded-full border-4 border-red-500 border-t-transparent mx-auto" />
-          <div className="text-lg font-semibold text-white">Loading Collection...</div>
-          <div className="mt-2 text-xs text-zinc-500">Reading AdrianZERO contract</div>
+          <div className="text-lg font-semibold text-fg">Loading Collection...</div>
+          <div className="mt-2 text-xs text-mute">Reading AdrianZERO contract</div>
         </div>
       </div>
     );
@@ -139,14 +139,14 @@ export function GalleryModule() {
   if (error) {
     const shortMessage = error.message?.split('\n')[0]?.slice(0, 120) || 'Failed to load collection';
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-black">
+      <div className="flex min-h-[60dvh] w-full items-center justify-center bg-bg">
         <div className="max-w-md text-center">
           <div className="text-5xl mb-4">!!!</div>
-          <div className="text-lg font-semibold text-white">Failed to Load</div>
-          <div className="mt-2 text-xs text-zinc-500">{shortMessage}</div>
+          <div className="text-lg font-semibold text-fg">Failed to Load</div>
+          <div className="mt-2 text-xs text-mute">{shortMessage}</div>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700"
+            className="mt-4 rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-fg hover:bg-red-700"
           >
             Retry
           </button>
@@ -156,13 +156,13 @@ export function GalleryModule() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full bg-black">
+    <div className="flex flex-col min-h-[60dvh] w-full bg-bg">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-zinc-800 bg-black/90 backdrop-blur-sm px-4 py-3">
+      <div className="flex-shrink-0 border-b border-line bg-bg/90 backdrop-blur-sm px-4 py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-lg font-bold text-white">AdrianZERO Collection</h1>
-            <p className="text-[10px] text-zinc-500">
+            <h1 className="text-lg font-bold text-fg">AdrianZERO Collection</h1>
+            <p className="text-[13px] text-mute">
               {loadedCount} / {totalSupply} loaded
               {isLoadingPage && ' — loading...'}
             </p>
@@ -174,7 +174,7 @@ export function GalleryModule() {
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`rounded px-2 py-0.5 text-[9px] font-bold transition-colors ${
+                className={`rounded px-2 py-0.5 text-[12px] font-bold transition-colors ${
                   activeFilter === f ? FILTER_COLORS[f] : FILTER_INACTIVE
                 }`}
               >
@@ -249,7 +249,7 @@ export function GalleryModule() {
 
         {/* All loaded */}
         {!hasMore && loadedCount > 0 && (
-          <div className="py-6 text-center text-xs text-zinc-600">
+          <div className="py-6 text-center text-xs text-mute">
             All {totalSupply} NFTs loaded
           </div>
         )}

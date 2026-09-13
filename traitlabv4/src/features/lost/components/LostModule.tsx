@@ -16,10 +16,10 @@ export function LostModule() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-[60dvh] items-center justify-center">
         <div className="text-center">
           <div className="mb-4 text-4xl">⏳</div>
-          <p className="text-muted-foreground">Loading timeline...</p>
+          <p className="text-mute">Loading timeline...</p>
         </div>
       </div>
     );

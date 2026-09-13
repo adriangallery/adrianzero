@@ -40,10 +40,10 @@ export function CurrentDrop() {
     return (
       <div className="text-center py-12">
         <div className="text-4xl mb-4">📭</div>
-        <div className="text-xl font-semibold text-foreground mb-2">
+        <div className="text-xl font-semibold text-fg mb-2">
           No Active Drop
         </div>
-        <div className="text-muted-foreground">
+        <div className="text-mute">
           Check back soon for the next drop
         </div>
       </div>
@@ -57,34 +57,34 @@ export function CurrentDrop() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold text-foreground mb-2">
+        <h2 className="text-3xl font-bold text-fg mb-2">
           Current Drop
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-mute">
           Weekly-ish drops — whenever the artist is inspired
         </p>
       </div>
 
       {/* Main Card */}
-      <div className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-xl">
+      <div className="overflow-hidden rounded-2xl border-2 border-line bg-panel shadow-xl">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Image Section */}
-          <div className="relative bg-muted p-8">
+          <div className="relative bg-line p-8">
             <img
               src={currentDrop.image}
               alt={currentDrop.title}
-              className="w-full max-w-md mx-auto rounded-lg border-3 border-accent shadow-2xl"
+              className="w-full max-w-md mx-auto rounded-lg border-3 border-acc2 shadow-2xl"
             />
 
             {/* Badges */}
             <div className="mt-6 flex flex-wrap gap-2 justify-center">
-              <span className="rounded-full bg-success/10 border border-success/30 px-4 py-2 text-sm font-semibold text-success">
+              <span className="rounded-full bg-ok/10 border border-ok/30 px-4 py-2 text-sm font-semibold text-ok">
                 FREE
               </span>
-              <span className="rounded-full bg-primary/10 border border-primary/30 px-4 py-2 text-sm font-semibold text-primary">
+              <span className="rounded-full bg-acc/10 border border-acc/30 px-4 py-2 text-sm font-semibold text-acc">
                 1 per wallet
               </span>
-              <span className="rounded-full bg-accent/10 border border-accent/30 px-4 py-2 text-sm font-semibold text-accent">
+              <span className="rounded-full bg-acc2/10 border border-acc2/30 px-4 py-2 text-sm font-semibold text-acc2">
                 Base
               </span>
             </div>
@@ -94,20 +94,20 @@ export function CurrentDrop() {
           <div className="flex flex-col justify-between p-8">
             {/* Title & Description */}
             <div className="space-y-4">
-              <h3 className="text-3xl font-bold text-accent">
+              <h3 className="text-3xl font-bold text-acc2">
                 {currentDrop.title}
               </h3>
-              <p className="text-lg text-foreground leading-relaxed">
+              <p className="text-lg text-fg leading-relaxed">
                 {currentDrop.short}
               </p>
 
               {/* Status Info */}
-              <div className="space-y-3 rounded-lg bg-muted p-4">
+              <div className="space-y-3 rounded-lg bg-line p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Status:</span>
+                  <span className="text-mute">Status:</span>
                   <span
                     className={`font-semibold ${
-                      isActive ? 'text-success' : 'text-destructive'
+                      isActive ? 'text-ok' : 'text-bad'
                     }`}
                   >
                     {isActive ? 'Active' : 'Inactive'}
@@ -116,8 +116,8 @@ export function CurrentDrop() {
 
                 {isConnected && (
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">You minted:</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="text-mute">You minted:</span>
+                    <span className="font-semibold text-fg">
                       {userMinted} / {maxPerWallet}
                     </span>
                   </div>
@@ -125,19 +125,19 @@ export function CurrentDrop() {
 
                 {config && (
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Token ID:</span>
-                    <span className="font-mono text-sm font-semibold text-foreground">
+                    <span className="text-mute">Token ID:</span>
+                    <span className="font-mono text-sm font-semibold text-fg">
                       #{config.tokenId.toString()}
                     </span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground flex items-center gap-2">
+                  <span className="text-mute flex items-center gap-2">
                     <Clock className="h-4 w-4" />
                     {countdown.label}:
                   </span>
-                  <span className="font-semibold text-foreground">
+                  <span className="font-semibold text-fg">
                     {countdown.timeRemaining}
                   </span>
                 </div>
@@ -157,8 +157,8 @@ export function CurrentDrop() {
                     disabled={!canMint || isMinting}
                     className={`w-full rounded-lg px-6 py-4 text-lg font-bold transition-all ${
                       canMint && !isMinting
-                        ? 'bg-lime-500 text-black hover:bg-lime-400 hover:shadow-lg hover:shadow-lime-500/25'
-                        : 'bg-muted text-muted-foreground cursor-not-allowed'
+                        ? 'bg-ok text-black hover:bg-ok hover:shadow-lg hover:shadow-lime-500/25'
+                        : 'bg-line text-mute cursor-not-allowed'
                     }`}
                   >
                     {isMinting ? (
@@ -177,7 +177,7 @@ export function CurrentDrop() {
 
                   {/* Status Messages */}
                   {mintSuccess && (
-                    <div className="flex items-center gap-2 rounded-lg bg-success/10 border border-success/30 p-4 text-success">
+                    <div className="flex items-center gap-2 rounded-lg bg-ok/10 border border-ok/30 p-4 text-ok">
                       <CheckCircle className="h-5 w-5 flex-shrink-0" />
                       <span className="font-semibold">
                         Success! You minted ShitDROP.
@@ -186,7 +186,7 @@ export function CurrentDrop() {
                   )}
 
                   {mintError && !isUserRejection(mintError) && (
-                    <div className="flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/30 p-4 text-destructive">
+                    <div className="flex items-center gap-2 rounded-lg bg-bad/10 border border-bad/30 p-4 text-bad">
                       <XCircle className="h-5 w-5 flex-shrink-0" />
                       <span className="text-sm">{humanError(mintError)}</span>
                     </div>
@@ -199,7 +199,7 @@ export function CurrentDrop() {
                 href={currentDrop.opensea}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-6 py-3 font-medium text-foreground transition-colors hover:bg-muted"
+                className="flex items-center justify-center gap-2 rounded-lg border border-line bg-panel px-6 py-3 font-medium text-fg transition-colors hover:bg-line"
               >
                 View on OpenSea
                 <ExternalLink className="h-4 w-4" />

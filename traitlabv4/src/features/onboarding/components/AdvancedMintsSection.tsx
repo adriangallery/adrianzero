@@ -52,14 +52,14 @@ export function AdvancedMintsSection() {
     <div className="mt-12 space-y-6">
       {/* Section Header */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-2 text-accent">
+        <div className="inline-flex items-center gap-2 rounded-full bg-acc2/10 px-4 py-2 text-acc2">
           <Sparkles className="h-4 w-4" />
           <span className="text-sm font-medium">Exclusive for AdrianZERO Holders</span>
         </div>
-        <h2 className="mt-4 text-2xl font-bold text-foreground md:text-3xl">
+        <h2 className="mt-4 text-2xl font-bold text-fg md:text-3xl">
           Expand Your <span className="text-[#00ff00]">Collection</span>
         </h2>
-        <p className="mt-2 text-muted-foreground">
+        <p className="mt-2 text-mute">
           Mint more NFTs using your $ZERO tokens
         </p>
       </div>

@@ -8,7 +8,7 @@ export function PreviousDrops() {
     return (
       <div className="text-center py-12">
         <div className="text-4xl mb-4">📦</div>
-        <div className="text-muted-foreground">No previous drops yet</div>
+        <div className="text-mute">No previous drops yet</div>
       </div>
     );
   }
@@ -16,8 +16,8 @@ export function PreviousDrops() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Previous Drops</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-2xl font-bold text-fg mb-2">Previous Drops</h2>
+        <p className="text-mute">
           Check out our past drops — some may still be available on OpenSea
         </p>
       </div>

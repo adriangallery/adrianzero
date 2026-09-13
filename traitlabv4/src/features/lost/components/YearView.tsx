@@ -22,7 +22,7 @@ export function YearView({ events, year }: YearViewProps) {
 
   if (events.length === 0) {
     return (
-      <div className="py-12 text-center text-muted-foreground">
+      <div className="py-12 text-center text-mute">
         No events found for {year}.
       </div>
     );
@@ -32,8 +32,8 @@ export function YearView({ events, year }: YearViewProps) {
     <div className="space-y-6">
       {eventsByMonth.map((group) => (
         <div key={group.month}>
-          <h3 className="mb-4 text-xl font-bold text-foreground">
-            {group.month} <span className="text-sm text-muted-foreground">({group.events.length} events)</span>
+          <h3 className="mb-4 text-xl font-bold text-fg">
+            {group.month} <span className="text-sm text-mute">({group.events.length} events)</span>
           </h3>
           <div className="space-y-3">
             {group.events.map((event, index) => (

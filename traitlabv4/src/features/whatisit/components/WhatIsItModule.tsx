@@ -30,12 +30,12 @@ export function WhatIsItModule() {
 
       {/* Numbers Section */}
       <div className="mb-12">
-        <h2 className="mb-6 text-3xl font-bold text-foreground">
+        <h2 className="mb-6 text-3xl font-bold text-fg">
           <span className="mr-2">📊</span>
           Numbers So Far
         </h2>
         <NumbersGrid />
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-4 text-center text-sm text-mute">
           Events → multiple 1/1s, games, ShitDROPs, BuilderBattles
         </p>
       </div>
@@ -44,8 +44,8 @@ export function WhatIsItModule() {
       <CTASection />
 
       {/* Footer */}
-      <div className="mt-12 border-t border-border pt-8 text-center">
-        <p className="text-muted-foreground">
+      <div className="mt-12 border-t border-line pt-8 text-center">
+        <p className="text-mute">
           Built with chaos and pixels
         </p>
         <p className="mt-4 text-lg font-bold text-[#00ff00]">

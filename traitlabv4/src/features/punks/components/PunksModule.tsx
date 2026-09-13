@@ -35,7 +35,7 @@ export function PunksModule() {
       </h1>
 
       {/* Tab Bar */}
-      <div className="flex gap-2 border-b border-border pb-2">
+      <div className="flex gap-2 border-b border-line pb-2">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -43,7 +43,7 @@ export function PunksModule() {
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               activeTab === tab.id
                 ? 'bg-[#00ff00] text-black font-bold'
-                : 'bg-muted text-muted-foreground hover:text-foreground'
+                : 'bg-line text-mute hover:text-fg'
             }`}
           >
             {tab.label}

@@ -105,7 +105,7 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="shimmer w-16 h-16 rounded-full mb-4" />
-        <p className="text-muted-foreground">Loading recipes...</p>
+        <p className="text-mute">Loading recipes...</p>
       </div>
     );
   }
@@ -115,8 +115,8 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
       {/* Header */}
       {!embedded && (
         <div>
-          <h1 className="text-xl font-bold text-foreground">Crafting</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl font-bold text-fg">Crafting</h1>
+          <p className="text-mute mt-1">
             Select a recipe, choose traits to burn, and craft new items
           </p>
         </div>
@@ -142,17 +142,17 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
 
         {/* Left Column: Recipes */}
         <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">
+        <h2 className="text-xl font-semibold text-fg">
           Available Recipes
         </h2>
 
           {recipes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <FlaskConical className="h-16 w-16 mb-4 text-muted-foreground" />
-              <p className="text-lg font-medium text-foreground">
+              <FlaskConical className="h-16 w-16 mb-4 text-mute" />
+              <p className="text-lg font-medium text-fg">
                 No recipes available
               </p>
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-sm text-mute mt-2">
                 Check back later for crafting recipes
               </p>
             </div>
@@ -170,23 +170,23 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
                       setSelectedRecipe(recipe);
                       setSelectedTraitIds(new Set());
                     }}
-                    className={`p-4 bg-card border-2 rounded-lg text-left transition-all w-full ${
+                    className={`p-4 bg-panel border-2 rounded-lg text-left transition-all w-full ${
                       isSelected
-                        ? 'border-primary ring-2 ring-primary/20'
-                        : 'border-border hover:border-primary/50'
+                        ? 'border-acc ring-2 ring-acc/20'
+                        : 'border-line hover:border-acc/50'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-foreground">
+                      <h3 className="font-semibold text-fg">
                         Recipe #{recipe.recipeId}
                       </h3>
-                      <span className="text-xs px-2 py-1 bg-muted rounded-full">
+                      <span className="text-xs px-2 py-1 bg-line rounded-full">
                         {recipe.type}
                       </span>
                     </div>
 
                     {/* Requirements */}
-                    <div className="text-sm text-muted-foreground mb-3">
+                    <div className="text-sm text-mute mb-3">
                       {recipe.type === 'ANY' ? (
                         <span>Burn any {recipe.burnTotal} traits</span>
                       ) : (
@@ -195,9 +195,9 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
                     </div>
 
                     {/* Output with Image */}
-                    <div className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3 p-2 bg-line/50 rounded-lg">
                       {/* Output trait image */}
-                      <div className="w-12 h-12 rounded bg-muted flex-shrink-0 overflow-hidden">
+                      <div className="w-12 h-12 rounded bg-line flex-shrink-0 overflow-hidden">
                         {outputImageUrl ? (
                           <img
                             src={outputImageUrl}
@@ -207,21 +207,21 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Sparkles className="h-6 w-6 text-success" />
+                            <Sparkles className="h-6 w-6 text-ok" />
                           </div>
                         )}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-muted-foreground">Creates:</p>
-                        <p className="font-medium text-foreground text-sm truncate">
+                        <p className="text-[13px] text-mute">Creates:</p>
+                        <p className="font-medium text-fg text-sm truncate">
                           {getTraitName(recipe.outputTrait)}
                         </p>
                       </div>
                     </div>
 
                     {isSelected && (
-                      <div className="mt-3 flex items-center gap-1 text-xs text-primary">
+                      <div className="mt-3 flex items-center gap-1 text-xs text-acc">
                         <Check className="h-3 w-3" />
                         <span>Selected - Choose traits below</span>
                       </div>
@@ -238,33 +238,33 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
           {selectedRecipe ? (
             <>
               {/* Recipe Requirements */}
-              <div className="p-4 bg-card border border-border rounded-lg">
-                <h3 className="font-semibold text-foreground mb-3">
+              <div className="p-4 bg-panel border border-line rounded-lg">
+                <h3 className="font-semibold text-fg mb-3">
                   Recipe Requirements
                 </h3>
 
                 {selectedRecipe.type === 'ANY' ? (
                   <div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-mute">
                       Select any {selectedRecipe.burnTotal} traits to burn:
                     </p>
                     <div className="mt-2 flex items-center gap-2">
-                      <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+                      <div className="flex-1 bg-line rounded-full h-2 overflow-hidden">
                         <div
-                          className="bg-primary h-full transition-all"
+                          className="bg-acc h-full transition-all"
                           style={{
                             width: `${Math.min(100, (selectedTraitIds.size / (selectedRecipe.burnTotal || 1)) * 100)}%`
                           }}
                         />
                       </div>
-                      <span className="text-sm font-medium text-foreground">
+                      <span className="text-sm font-medium text-fg">
                         {selectedTraitIds.size}/{selectedRecipe.burnTotal}
                       </span>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Required traits:</p>
+                    <p className="text-sm text-mute">Required traits:</p>
                     {selectedRecipe.inputTraits.map((traitId, index) => {
                       const trait = getTrait(traitId);
                       const isSelected = selectedTraitIds.has(traitId);
@@ -274,11 +274,11 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
                         <div
                           key={`req-${index}`}
                           className={`flex items-center gap-2 text-sm ${
-                            isSelected ? 'text-success' : hasIt ? 'text-foreground' : 'text-destructive'
+                            isSelected ? 'text-ok' : hasIt ? 'text-fg' : 'text-bad'
                           }`}
                         >
                           {isSelected ? (
-                            <Check className="h-4 w-4 text-success" />
+                            <Check className="h-4 w-4 text-ok" />
                           ) : (
                             <Flame className="h-4 w-4" />
                           )}
@@ -291,11 +291,11 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
                 )}
 
                 {/* Output Preview */}
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-sm text-muted-foreground mb-2">Will create:</p>
+                <div className="mt-4 pt-4 border-t border-line">
+                  <p className="text-sm text-mute mb-2">Will create:</p>
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-success" />
-                    <span className="font-semibold text-foreground">
+                    <Sparkles className="h-5 w-5 text-ok" />
+                    <span className="font-semibold text-fg">
                       {getTraitName(selectedRecipe.outputTrait)}
                     </span>
                   </div>
@@ -306,7 +306,7 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
               <button
                 onClick={handleCraft}
                 disabled={craftTrait.isPending || !canCraftWithSelection()}
-                className="w-full touch-target px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full touch-target px-4 py-3 bg-acc text-acc-fg rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {craftTrait.isPending ? (
                   <>
@@ -326,13 +326,13 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
               {/* Trait Selection Grid */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-foreground">
+                  <h3 className="font-semibold text-fg">
                     Select Traits to Burn
                   </h3>
                   {selectedTraitIds.size > 0 && (
                     <button
                       onClick={() => setSelectedTraitIds(new Set())}
-                      className="text-xs text-destructive hover:underline"
+                      className="text-xs text-bad hover:underline"
                     >
                       Clear ({selectedTraitIds.size})
                     </button>
@@ -340,9 +340,9 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
                 </div>
 
                 {traits.length === 0 ? (
-                  <div className="p-8 bg-muted rounded-lg text-center">
-                    <Frame className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
+                  <div className="p-8 bg-line rounded-lg text-center">
+                    <Frame className="h-12 w-12 mx-auto mb-2 text-mute" />
+                    <p className="text-sm text-mute">
                       No traits found in your wallet
                     </p>
                   </div>
@@ -359,9 +359,9 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
                           onClick={() => toggleTraitSelection(trait.tokenId)}
                           className={`relative aspect-square rounded-lg overflow-hidden transition-all ${
                             isSelected
-                              ? 'ring-2 ring-primary shadow-lg'
+                              ? 'ring-2 ring-acc shadow-lg'
                               : 'hover:ring-1 hover:ring-border hover:shadow-md'
-                          } bg-muted`}
+                          } bg-line`}
                         >
                           {imageUrl ? (
                             <img
@@ -378,36 +378,36 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <Frame className="h-6 w-6 text-muted-foreground" />
+                              <Frame className="h-6 w-6 text-mute" />
                             </div>
                           )}
 
                           {/* Required badge */}
                           {isRequired && (
-                            <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-yellow-500/90 rounded text-[10px] font-medium text-white">
+                            <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-yellow-500/90 rounded text-[13px] font-medium text-fg">
                               Required
                             </div>
                           )}
 
                           {/* Balance badge */}
                           {trait.balance && Number(trait.balance) > 1 && (
-                            <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-accent/90 rounded text-[10px] font-medium" style={{ color: '#00ff00' }}>
+                            <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-acc2/90 rounded text-[13px] font-medium" style={{ color: '#00ff00' }}>
                               ×{trait.balance}
                             </div>
                           )}
 
                           {/* Selection indicator */}
                           {isSelected && (
-                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                                <Check className="w-5 h-5 text-white" />
+                            <div className="absolute inset-0 bg-acc/20 flex items-center justify-center">
+                              <div className="w-8 h-8 rounded-full bg-acc flex items-center justify-center">
+                                <Check className="w-5 h-5 text-fg" />
                               </div>
                             </div>
                           )}
 
                           {/* Name overlay */}
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-1">
-                            <p className="text-[10px] text-white truncate">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-bg/80 to-transparent p-1">
+                            <p className="text-[13px] text-fg truncate">
                               {trait.name || `#${trait.tokenId}`}
                             </p>
                           </div>
@@ -419,12 +419,12 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
               </div>
             </>
           ) : (
-            <div className="p-12 bg-muted rounded-lg text-center">
-              <FlaskConical className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-medium text-foreground mb-2">
+            <div className="p-12 bg-line rounded-lg text-center">
+              <FlaskConical className="h-16 w-16 mx-auto mb-4 text-mute" />
+              <p className="text-lg font-medium text-fg mb-2">
                 Select a Recipe
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-mute">
                 Choose a recipe from the left to start crafting
               </p>
             </div>
@@ -433,9 +433,9 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
       </div>
 
       {/* Info */}
-      <div className="p-4 bg-muted rounded-lg mt-6">
-        <h3 className="font-semibold text-foreground">How Crafting Works</h3>
-        <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+      <div className="p-4 bg-line rounded-lg mt-6">
+        <h3 className="font-semibold text-fg">How Crafting Works</h3>
+        <ul className="mt-2 space-y-2 text-sm text-mute">
           <li>• Select a recipe from the available options</li>
           <li>• Choose traits to burn from your collection (they show with images)</li>
           <li>• Selected traits will be permanently destroyed</li>

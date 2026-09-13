@@ -194,20 +194,20 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-3xl max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950 p-0 shadow-2xl focus:outline-none">
-          <Dialog.Close className="absolute right-3 top-3 z-10 rounded-full bg-black/60 p-1.5 text-white hover:bg-red-600 transition-colors">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-bg/80 backdrop-blur-sm" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-3xl max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-line bg-panel950 p-0 shadow-2xl focus:outline-none">
+          <Dialog.Close className="absolute right-3 top-3 z-10 rounded-full bg-bg/60 p-1.5 text-fg hover:bg-red-600 transition-colors">
             <X className="h-4 w-4" />
           </Dialog.Close>
 
           <div className="flex flex-col sm:flex-row">
             {/* Poster / Mystery — left side on desktop */}
-            <div className="relative w-full sm:w-[280px] sm:min-w-[280px] overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none bg-zinc-900">
+            <div className="relative w-full sm:w-[280px] sm:min-w-[280px] overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none bg-panel900">
               <div className="aspect-square sm:aspect-auto sm:h-full">
                 {isMystery ? (
-                  <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-950">
+                  <div className="flex h-full w-full flex-col items-center justify-center bg-panel950">
                     <span className="text-6xl font-black italic text-red-600 sm:text-8xl">X</span>
-                    <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-zinc-500">Restricted</span>
+                    <span className="mt-2 text-[13px] uppercase tracking-wider text-mute">Restricted</span>
                   </div>
                 ) : (
                   <img src={posterUrl} alt={movie.name} className="h-full w-full object-contain" style={{ imageRendering: 'pixelated' }} />
@@ -217,7 +217,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
 
             {/* Content — right side on desktop */}
             <div className="flex-1 space-y-3 p-5 sm:overflow-y-auto sm:max-h-[80vh]">
-            <Dialog.Title className="text-lg font-bold text-white">
+            <Dialog.Title className="text-lg font-bold text-fg">
               {isMystery ? 'Mystery Movie' : movie.name}
             </Dialog.Title>
 
@@ -225,9 +225,9 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 wallet is overdue. The two paths below the banner already exist
                 via Return / Buy buttons, but become much clearer here. */}
             {isYours && !isPermanent && isOverdue && (
-              <div className="rounded-md border-2 border-red-600 bg-red-900/20 p-3 text-[10px]">
+              <div className="rounded-md border-2 border-red-600 bg-red-900/20 p-3 text-[13px]">
                 <div className="flex items-center gap-2">
-                  <span className="rotate-[-6deg] rounded border border-red-500 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-red-400">
+                  <span className="rotate-[-6deg] rounded border border-red-500 px-1.5 py-0.5 text-[12px] font-black uppercase tracking-widest text-red-400">
                     OVERDUE
                   </span>
                   <span className="font-bold text-red-300">
@@ -237,9 +237,9 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     Late fee: <span className="font-bold">{accumulatedLateFee.toLocaleString()} $ZERO</span>
                   </span>
                 </div>
-                <ul className="mt-2 space-y-1 text-zinc-400">
+                <ul className="mt-2 space-y-1 text-mute">
                   <li>
-                    <span className="text-emerald-400 font-bold">Return now</span> — you get your full {depositFormatted.toLocaleString()} $ZERO deposit back. No late fee charged on return.
+                    <span className="text-ok font-bold">Return now</span> — you get your full {depositFormatted.toLocaleString()} $ZERO deposit back. No late fee charged on return.
                   </li>
                   <li>
                     <span className="text-yellow-400 font-bold">Upgrade to permanent</span> — pay the buy price; the {accumulatedLateFee.toLocaleString()} $ZERO late fee is already included below ({dynamicBuyPriceFormatted.toLocaleString()} $ZERO total).
@@ -250,23 +250,23 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
 
             {/* Status + Stats */}
             {isYours && !isPermanent && !isOverdue && (
-              <div className="flex items-center gap-2 text-[10px] text-zinc-400">
-                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="flex items-center gap-2 text-[13px] text-mute">
+                <span className="h-2 w-2 rounded-full bg-ok animate-pulse" />
                 Rented {daysSinceRent} day{daysSinceRent !== 1 ? 's' : ''} ago
                 {depositFormatted > 0 && <span>· {depositFormatted.toLocaleString()} $ZERO deposit</span>}
                 {graceDays - daysSinceRent > 0 && (
-                  <span className="text-zinc-500">· {graceDays - daysSinceRent}d before late fees</span>
+                  <span className="text-mute">· {graceDays - daysSinceRent}d before late fees</span>
                 )}
               </div>
             )}
             {isYours && !isPermanent && isOverdue && (
-              <div className="flex items-center gap-2 text-[10px] text-red-400">
+              <div className="flex items-center gap-2 text-[13px] text-red-400">
                 <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
                 Tape held {daysSinceRent} day{daysSinceRent !== 1 ? 's' : ''} · {feePerDay.toLocaleString()} $ZERO/day accruing
               </div>
             )}
             {isYours && isPermanent && (
-              <div className="flex items-center gap-2 text-[10px] text-yellow-400">
+              <div className="flex items-center gap-2 text-[13px] text-yellow-400">
                 <span className="h-2 w-2 rounded-full bg-yellow-400" />
                 Yours forever · Earning rewards
               </div>
@@ -274,29 +274,29 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
 
             {/* Movie stats bar — visible to everyone */}
             {rentalStatus && (
-              <div className="flex items-center justify-around rounded-lg bg-zinc-900/50 px-3 py-2">
+              <div className="flex items-center justify-around rounded-lg bg-panel900 px-3 py-2">
                 <div className="text-center">
-                  <p className="text-sm font-bold text-white">{displayRentCount}</p>
-                  <p className="text-[8px] text-zinc-500">Rented</p>
+                  <p className="text-sm font-bold text-fg">{displayRentCount}</p>
+                  <p className="text-[11px] text-mute">Rented</p>
                 </div>
-                <div className="h-6 w-px bg-zinc-800" />
+                <div className="h-6 w-px bg-line800" />
                 <div className="text-center">
-                  <p className={`text-sm font-bold ${isYours ? 'text-yellow-400' : isPermanent ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                  <p className={`text-sm font-bold ${isYours ? 'text-yellow-400' : isPermanent ? 'text-mute' : 'text-mute'}`}>
                     {isYours ? 'Yours' : isPermanent ? 'Taken' : 'Available'}
                   </p>
-                  <p className="text-[8px] text-zinc-500">Status</p>
+                  <p className="text-[11px] text-mute">Status</p>
                 </div>
-                <div className="h-6 w-px bg-zinc-800" />
+                <div className="h-6 w-px bg-line800" />
                 <div className="text-center">
                   {isPermanent ? (
                     <>
                       <p className="text-sm font-bold text-yellow-400">Earning</p>
-                      <p className="text-[8px] text-zinc-500">Rewards</p>
+                      <p className="text-[11px] text-mute">Rewards</p>
                     </>
                   ) : (
                     <>
-                      <p className="text-sm font-bold text-zinc-600">—</p>
-                      <p className="text-[8px] text-zinc-500">No rewards</p>
+                      <p className="text-sm font-bold text-mute">—</p>
+                      <p className="text-[11px] text-mute">No rewards</p>
                     </>
                   )}
                 </div>
@@ -307,9 +307,9 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             {isAvailable && !isPermanent && (
               <>
                 {/* Balance */}
-                <div className="rounded-lg bg-zinc-900 px-3 py-2 text-center">
-                  <span className="text-[10px] text-zinc-500">Your Balance: </span>
-                  <span className={`text-sm font-bold ${hasEnoughForRent ? 'text-green-400' : 'text-red-400'}`}>
+                <div className="rounded-lg bg-panel900 px-3 py-2 text-center">
+                  <span className="text-[13px] text-mute">Your Balance: </span>
+                  <span className={`text-sm font-bold ${hasEnoughForRent ? 'text-ok' : 'text-red-400'}`}>
                     {balance.toLocaleString(undefined, { maximumFractionDigits: 0 })} $ZERO
                   </span>
                 </div>
@@ -317,16 +317,16 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 {/* Two options side by side */}
                 <div className="grid grid-cols-2 gap-2">
                   {/* RENT option */}
-                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
-                    <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Rent</p>
-                    <p className="text-lg font-bold text-white">{priceFormatted.toLocaleString()}</p>
-                    <p className="text-[8px] text-zinc-500">$ZERO · 50% refundable</p>
-                    <p className="mt-1 text-[7px] text-zinc-600">Return anytime · No rewards</p>
+                  <div className="rounded-lg border border-line bg-panel900 p-3">
+                    <p className="text-[13px] font-bold text-red-400 uppercase tracking-wider">Rent</p>
+                    <p className="text-lg font-bold text-fg">{priceFormatted.toLocaleString()}</p>
+                    <p className="text-[11px] text-mute">$ZERO · 50% refundable</p>
+                    <p className="mt-1 text-[7px] text-mute">Return anytime · No rewards</p>
                     <button onClick={handleRent} disabled={isLoading || !hasEnoughForRent || !isConnected}
-                      className={`mt-2 w-full rounded py-2 text-[10px] font-bold transition-all ${
-                        isLoading ? 'bg-zinc-700 text-zinc-400'
-                        : !hasEnoughForRent || !isConnected ? 'bg-zinc-800 text-zinc-600'
-                        : 'bg-red-600 text-white hover:bg-red-500'
+                      className={`mt-2 w-full rounded py-2 text-[13px] font-bold transition-all ${
+                        isLoading ? 'bg-line700 text-mute'
+                        : !hasEnoughForRent || !isConnected ? 'bg-line800 text-mute'
+                        : 'bg-red-600 text-fg hover:bg-red-500'
                       }`}>
                       {isPending || isConfirming
                         ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /></span>
@@ -336,14 +336,14 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
 
                   {/* BUY option */}
                   <div className="rounded-lg border border-yellow-600/30 bg-yellow-900/10 p-3">
-                    <p className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Buy Forever</p>
-                    <p className="text-lg font-bold text-white">{baseBuyPriceFormatted.toLocaleString()}</p>
-                    <p className="text-[8px] text-zinc-500">$ZERO · 80% burned</p>
+                    <p className="text-[13px] font-bold text-yellow-400 uppercase tracking-wider">Buy Forever</p>
+                    <p className="text-lg font-bold text-fg">{baseBuyPriceFormatted.toLocaleString()}</p>
+                    <p className="text-[11px] text-mute">$ZERO · 80% burned</p>
                     <p className="mt-1 text-[7px] text-yellow-600">Yours forever · Earns rewards</p>
                     <button onClick={handleBuy} disabled={isLoading || !hasEnoughForBuy || !isConnected}
-                      className={`mt-2 w-full rounded py-2 text-[10px] font-bold transition-all ${
-                        isLoading ? 'bg-zinc-700 text-zinc-400'
-                        : !hasEnoughForBuy || !isConnected ? 'bg-zinc-800 text-zinc-600'
+                      className={`mt-2 w-full rounded py-2 text-[13px] font-bold transition-all ${
+                        isLoading ? 'bg-line700 text-mute'
+                        : !hasEnoughForBuy || !isConnected ? 'bg-line800 text-mute'
                         : 'bg-yellow-600 text-black hover:bg-yellow-500'
                       }`}>
                       {isBuyPending || isBuyConfirming
@@ -354,7 +354,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                 </div>
 
                 {(error || buyError) && <p className="text-center text-xs text-red-400">{((error || buyError) as Error).message?.slice(0, 100)}</p>}
-                <p className="text-center text-[10px] text-zinc-600">No approval needed · Single transaction</p>
+                <p className="text-center text-[13px] text-mute">No approval needed · Single transaction</p>
               </>
             )}
 
@@ -365,21 +365,21 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                   {isOverdue ? (
                     <>
                       <p className="text-xs font-bold text-red-400">Held Overdue · {daysOverdue}d past grace</p>
-                      <p className="mt-1 text-[10px] text-zinc-500">
+                      <p className="mt-1 text-[13px] text-mute">
                         The renter has accrued {accumulatedLateFee.toLocaleString()} $ZERO in late fees. Your offer pressures them to accept and unlock the tape.
                       </p>
                     </>
                   ) : (
                     <>
                       <p className="text-xs font-bold text-amber-400">Currently Rented</p>
-                      <p className="mt-1 text-[10px] text-zinc-500">Make an offer — the renter can accept and flip it to you</p>
+                      <p className="mt-1 text-[13px] text-mute">Make an offer — the renter can accept and flip it to you</p>
                     </>
                   )}
                 </div>
 
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
+                <div className="rounded-lg border border-line bg-panel900 p-3">
                   {hasOffer && (
-                    <p className="text-[9px] text-zinc-500 mb-2">
+                    <p className="text-[12px] text-mute mb-2">
                       Current offer: <span className="text-yellow-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
                       {isMyOffer && ' (yours)'}
                     </p>
@@ -389,32 +389,32 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                       <button
                         onClick={() => cancelOffer(movie.id)}
                         disabled={isCancelOfferPending || isCancelOfferConfirming}
-                        className="w-full rounded bg-zinc-800 py-2 text-[10px] font-bold text-red-400 hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                        className="w-full rounded bg-line800 py-2 text-[13px] font-bold text-red-400 hover:bg-line700 disabled:opacity-50 transition-colors"
                       >
                         {isCancelOfferPending || isCancelOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : 'WITHDRAW OFFER'}
                       </button>
-                      <p className="mt-1 text-[8px] text-zinc-700">Cancel your offer and unlock your $ZERO.</p>
+                      <p className="mt-1 text-[11px] text-mute">Cancel your offer and unlock your $ZERO.</p>
                     </>
                   ) : (
                     <>
-                      <p className="text-[10px] text-zinc-400 mb-2">Make an offer</p>
+                      <p className="text-[13px] text-mute mb-2">Make an offer</p>
                       <div className="flex gap-2">
                         <input
                           type="number"
                           value={offerInput}
                           onChange={(e) => setOfferInput(e.target.value)}
                           placeholder="$ZERO amount"
-                          className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
+                          className="flex-1 rounded border border-line bg-panel950 px-3 py-2 text-[13px] text-fg placeholder:text-mute focus:border-yellow-600 focus:outline-none"
                         />
                         <button
                           onClick={() => { if (!requireWallet('offer')) return; if (Number(offerInput) > 0) { makeIndOffer(movie.id, Number(offerInput)); setOfferInput(''); } }}
                           disabled={isIndOfferPending || isIndOfferConfirming || !offerInput || Number(offerInput) <= 0}
-                          className="rounded bg-yellow-600 px-3 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                          className="rounded bg-yellow-600 px-3 py-2 text-[13px] font-bold text-black hover:bg-yellow-500 disabled:bg-line800 disabled:text-mute transition-colors"
                         >
                           {isIndOfferPending || isIndOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
                         </button>
                       </div>
-                      <p className="mt-1 text-[8px] text-zinc-700">$ZERO locked. Must outbid current offer. If the renter accepts, it flips to you.</p>
+                      <p className="mt-1 text-[11px] text-mute">$ZERO locked. Must outbid current offer. If the renter accepts, it flips to you.</p>
                     </>
                   )}
                 </div>
@@ -429,7 +429,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                   <button
                     onClick={() => buyListing(movie.id)}
                     disabled={isBuyListingPending || isBuyListingConfirming || balance < currentListingPrice}
-                    className="w-full rounded-lg bg-red-600 py-3 text-sm font-bold text-white hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                    className="w-full rounded-lg bg-red-600 py-3 text-sm font-bold text-fg hover:bg-red-500 disabled:bg-line800 disabled:text-mute transition-colors"
                   >
                     {isBuyListingPending || isBuyListingConfirming
                       ? <Loader2 className="h-4 w-4 animate-spin mx-auto" />
@@ -437,9 +437,9 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                   </button>
                 )}
 
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
+                <div className="rounded-lg border border-line bg-panel900 p-3">
                   {hasOffer && (
-                    <p className="text-[9px] text-zinc-500 mb-2">
+                    <p className="text-[12px] text-mute mb-2">
                       Current offer: <span className="text-yellow-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
                       {isMyOffer && ' (yours)'}
                     </p>
@@ -449,32 +449,32 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                       <button
                         onClick={() => cancelOffer(movie.id)}
                         disabled={isCancelOfferPending || isCancelOfferConfirming}
-                        className="w-full rounded bg-zinc-800 py-2 text-[10px] font-bold text-red-400 hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                        className="w-full rounded bg-line800 py-2 text-[13px] font-bold text-red-400 hover:bg-line700 disabled:opacity-50 transition-colors"
                       >
                         {isCancelOfferPending || isCancelOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : 'WITHDRAW OFFER'}
                       </button>
-                      <p className="mt-1 text-[8px] text-zinc-700">Cancel your offer and unlock your $ZERO.</p>
+                      <p className="mt-1 text-[11px] text-mute">Cancel your offer and unlock your $ZERO.</p>
                     </>
                   ) : (
                     <>
-                      <p className="text-[10px] text-zinc-400 mb-2">Make an offer</p>
+                      <p className="text-[13px] text-mute mb-2">Make an offer</p>
                       <div className="flex gap-2">
                         <input
                           type="number"
                           value={offerInput}
                           onChange={(e) => setOfferInput(e.target.value)}
                           placeholder="$ZERO amount"
-                          className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
+                          className="flex-1 rounded border border-line bg-panel950 px-3 py-2 text-[13px] text-fg placeholder:text-mute focus:border-yellow-600 focus:outline-none"
                         />
                         <button
                           onClick={() => { if (Number(offerInput) > 0) { makeIndOffer(movie.id, Number(offerInput)); setOfferInput(''); } }}
                           disabled={isIndOfferPending || isIndOfferConfirming || !offerInput || Number(offerInput) <= 0}
-                          className="rounded bg-yellow-600 px-3 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                          className="rounded bg-yellow-600 px-3 py-2 text-[13px] font-bold text-black hover:bg-yellow-500 disabled:bg-line800 disabled:text-mute transition-colors"
                         >
                           {isIndOfferPending || isIndOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
                         </button>
                       </div>
-                      <p className="mt-1 text-[8px] text-zinc-700">$ZERO locked. Must outbid current offer. Owner decides.</p>
+                      <p className="mt-1 text-[11px] text-mute">$ZERO locked. Must outbid current offer. Owner decides.</p>
                     </>
                   )}
                 </div>
@@ -489,8 +489,8 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                   onClick={() => { if (!requireWallet('upgrade')) return; upgrade(movie.id); }}
                   disabled={isLoading || !hasEnoughForBuy}
                   className={`w-full rounded-lg py-2.5 text-[11px] font-bold transition-all ${
-                    isLoading ? 'bg-zinc-700 text-zinc-400'
-                    : !hasEnoughForBuy ? 'bg-zinc-800 text-zinc-600'
+                    isLoading ? 'bg-line700 text-mute'
+                    : !hasEnoughForBuy ? 'bg-line800 text-mute'
                     : 'bg-yellow-600 text-black hover:bg-yellow-500'
                   }`}
                 >
@@ -499,12 +499,12 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                     : `Buy Forever · ${dynamicBuyPriceFormatted.toLocaleString()} $ZERO${hasLateFee ? ' (incl. late fee)' : ''}`}
                 </button>
 
-                <div className="relative py-1"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-800"/></div><div className="relative flex justify-center"><span className="bg-zinc-950 px-2 text-[8px] text-zinc-600">or</span></div></div>
+                <div className="relative py-1"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-line"/></div><div className="relative flex justify-center"><span className="bg-panel950 px-2 text-[11px] text-mute">or</span></div></div>
 
                 {/* Step 1: Approve (if needed) */}
                 {!nftApproved && (
                   <button onClick={() => approveNft()} disabled={isLoading}
-                    className="w-full rounded-lg border border-zinc-600 bg-zinc-800 py-2.5 text-[11px] font-bold text-zinc-200 hover:bg-zinc-700 transition-colors disabled:opacity-50">
+                    className="w-full rounded-lg border border-line bg-line800 py-2.5 text-[11px] font-bold text-fg hover:bg-line700 transition-colors disabled:opacity-50">
                     {isApprovePending || isApproveConfirming
                       ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Step 1: Approving...</span>
                       : 'Step 1: Approve NFT Transfer'}
@@ -516,8 +516,8 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                   <button onClick={handleReturn} disabled={isLoading || !nftApproved}
                     className={`flex-1 rounded-lg border py-2.5 text-[11px] font-bold transition-colors disabled:opacity-50 ${
                       nftApproved
-                        ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800'
-                        : 'border-zinc-800 bg-zinc-950 text-zinc-600 cursor-not-allowed'
+                        ? 'border-line bg-panel900 text-fg hover:bg-line800'
+                        : 'border-line bg-panel950 text-mute cursor-not-allowed'
                     }`}>
                     {isReturnPending || isReturnConfirming
                       ? <span className="flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Returning...</span>
@@ -536,24 +536,24 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
 
                 {/* Accept offer as renter (flip to bidder) */}
                 {hasOffer && isBidderSomeoneElse && (
-                  <div className="rounded-lg border border-green-800/30 bg-green-900/10 p-3">
-                    <p className="text-[10px] text-zinc-400 mb-1">Offer on this movie</p>
+                  <div className="rounded-lg border border-ok/30 bg-ok/10 p-3">
+                    <p className="text-[13px] text-mute mb-1">Offer on this movie</p>
                     <div className="flex items-center justify-between mb-2">
                       <div>
-                        <span className="text-sm font-bold text-green-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
-                        <span className="ml-2 text-[9px] text-zinc-500">from <EnsName address={bestOfferBidder} className="text-emerald-400 text-[9px]" /></span>
+                        <span className="text-sm font-bold text-ok">{bestOfferAmount.toLocaleString()} $ZERO</span>
+                        <span className="ml-2 text-[12px] text-mute">from <EnsName address={bestOfferBidder} className="text-ok text-[12px]" /></span>
                       </div>
                     </div>
-                    <p className="text-[8px] text-zinc-500 mb-2">
+                    <p className="text-[11px] text-mute mb-2">
                       Accept → auto-buys ({dynamicBuyPriceFormatted.toLocaleString()} $ZERO) + you get {Math.max(0, bestOfferAmount - dynamicBuyPriceFormatted).toLocaleString()} profit
                     </p>
                     <button
                       onClick={() => acceptAsRenter(movie.id)}
                       disabled={isRenterAcceptPending || isRenterAcceptConfirming || bestOfferAmount < dynamicBuyPriceFormatted}
-                      className={`w-full rounded py-2 text-[10px] font-bold transition-colors ${
+                      className={`w-full rounded py-2 text-[13px] font-bold transition-colors ${
                         bestOfferAmount >= dynamicBuyPriceFormatted
-                          ? 'bg-green-600 text-white hover:bg-green-500'
-                          : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                          ? 'bg-ok text-fg hover:bg-ok'
+                          : 'bg-line800 text-mute cursor-not-allowed'
                       }`}
                     >
                       {isRenterAcceptPending || isRenterAcceptConfirming
@@ -571,52 +571,52 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
             {isYours && isPermanent && (
               <div className="space-y-2">
                 {isListed ? (
-                  <div className="rounded-lg border border-green-800/30 bg-green-900/10 p-3">
-                    <p className="text-[10px] text-green-400 mb-2">Listed for <span className="font-bold">{currentListingPrice.toLocaleString()} $ZERO</span></p>
+                  <div className="rounded-lg border border-ok/30 bg-ok/10 p-3">
+                    <p className="text-[13px] text-ok mb-2">Listed for <span className="font-bold">{currentListingPrice.toLocaleString()} $ZERO</span></p>
                     <button
                       onClick={() => delist(movie.id)}
                       disabled={isDelistPending || isDelistConfirming}
-                      className="w-full rounded py-2 text-[10px] font-bold border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-colors"
+                      className="w-full rounded py-2 text-[13px] font-bold border border-line text-fg hover:bg-line800 transition-colors"
                     >
                       {isDelistPending || isDelistConfirming ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : 'Remove Listing'}
                     </button>
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
-                    <p className="text-[10px] text-zinc-400 mb-2">List for sale on the marketplace</p>
+                  <div className="rounded-lg border border-line bg-panel900 p-3">
+                    <p className="text-[13px] text-mute mb-2">List for sale on the marketplace</p>
                     <div className="flex gap-2">
                       <input
                         type="number"
                         value={listPrice}
                         onChange={(e) => setListPrice(e.target.value)}
                         placeholder="Price in $ZERO"
-                        className="flex-1 rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-[10px] text-white placeholder:text-zinc-700 focus:border-yellow-600 focus:outline-none"
+                        className="flex-1 rounded border border-line bg-panel950 px-3 py-2 text-[13px] text-fg placeholder:text-mute focus:border-yellow-600 focus:outline-none"
                       />
                       <button
                         onClick={() => { if (!nftApproved) { approveNft(); } else if (Number(listPrice) > 0) { list(movie.id, Number(listPrice)); } }}
                         disabled={isListPending || isListConfirming || isApprovePending || isApproveConfirming || (!nftApproved ? false : !listPrice || Number(listPrice) <= 0)}
-                        className="rounded bg-yellow-600 px-4 py-2 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                        className="rounded bg-yellow-600 px-4 py-2 text-[13px] font-bold text-black hover:bg-yellow-500 disabled:bg-line800 disabled:text-mute transition-colors"
                       >
                         {isApprovePending || isApproveConfirming ? 'APPROVING...' : isListPending || isListConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : !nftApproved ? 'APPROVE' : 'LIST'}
                       </button>
                     </div>
-                    <p className="mt-1 text-[8px] text-zinc-700">5% fee on sale (burned). Buyer must approve NFT transfer.</p>
+                    <p className="mt-1 text-[11px] text-mute">5% fee on sale (burned). Buyer must approve NFT transfer.</p>
                   </div>
                 )}
 
                 {/* Accept best offer (only if bidder is someone else) */}
                 {hasOffer && isBidderSomeoneElse && (
                   <div className="rounded-lg border border-yellow-800/30 bg-yellow-900/10 p-3">
-                    <p className="text-[10px] text-zinc-400 mb-1">Best offer</p>
+                    <p className="text-[13px] text-mute mb-1">Best offer</p>
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="text-sm font-bold text-yellow-400">{bestOfferAmount.toLocaleString()} $ZERO</span>
-                        <span className="ml-2 text-[9px] text-zinc-500">from <EnsName address={bestOfferBidder} className="text-emerald-400 text-[9px]" /></span>
+                        <span className="ml-2 text-[12px] text-mute">from <EnsName address={bestOfferBidder} className="text-ok text-[12px]" /></span>
                       </div>
                       <button
                         onClick={() => { if (!nftApproved) { approveNft(); } else { acceptOffer(movie.id); } }}
                         disabled={isAcceptPending || isAcceptConfirming || isApprovePending || isApproveConfirming}
-                        className="rounded bg-yellow-600 px-3 py-1.5 text-[10px] font-bold text-black hover:bg-yellow-500 disabled:opacity-50 transition-colors"
+                        className="rounded bg-yellow-600 px-3 py-1.5 text-[13px] font-bold text-black hover:bg-yellow-500 disabled:opacity-50 transition-colors"
                       >
                         {isApprovePending || isApproveConfirming
                           ? <Loader2 className="h-3 w-3 animate-spin" />
@@ -625,26 +625,26 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                           : !nftApproved ? 'APPROVE & ACCEPT' : 'ACCEPT'}
                       </button>
                     </div>
-                    <p className="mt-1 text-[8px] text-zinc-700">{!nftApproved ? 'Requires NFT approval first · ' : ''}5% fee: 3% burned + 2% to holders</p>
+                    <p className="mt-1 text-[11px] text-mute">{!nftApproved ? 'Requires NFT approval first · ' : ''}5% fee: 3% burned + 2% to holders</p>
                   </div>
                 )}
                 {/* Your own offer */}
                 {isMyOffer && (
-                  <p className="text-[9px] text-zinc-500">Your offer: {bestOfferAmount.toLocaleString()} $ZERO</p>
+                  <p className="text-[12px] text-mute">Your offer: {bestOfferAmount.toLocaleString()} $ZERO</p>
                 )}
 
                 {/* Collection offers you can accept */}
                 {collectionOffers.length > 0 && (
-                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-3">
-                    <p className="text-[10px] text-zinc-400 mb-2">Collection offers</p>
+                  <div className="rounded-lg border border-line bg-panel900 p-3">
+                    <p className="text-[13px] text-mute mb-2">Collection offers</p>
                     <div className="space-y-1">
                       {collectionOffers.map((co, i) => (
-                        <div key={i} className="flex items-center justify-between text-[10px]">
-                          <span className="text-zinc-500"><EnsName address={co.bidder} className="text-emerald-400" /> · <span className="text-yellow-400">{co.amountFormatted.toLocaleString()} $ZERO</span></span>
+                        <div key={i} className="flex items-center justify-between text-[13px]">
+                          <span className="text-mute"><EnsName address={co.bidder} className="text-ok" /> · <span className="text-yellow-400">{co.amountFormatted.toLocaleString()} $ZERO</span></span>
                           <button
                             onClick={() => { if (!nftApproved) { approveNft(); } else { acceptColOffer(movie.id, i); } }}
                             disabled={isAcceptColPending || isAcceptColConfirming || isApprovePending || isApproveConfirming}
-                            className="rounded bg-yellow-600 px-2 py-0.5 text-[8px] font-bold text-black hover:bg-yellow-500 disabled:opacity-50"
+                            className="rounded bg-yellow-600 px-2 py-0.5 text-[11px] font-bold text-black hover:bg-yellow-500 disabled:opacity-50"
                           >
                             {isApprovePending || isApproveConfirming ? '...' : !nftApproved ? 'APPROVE' : 'ACCEPT'}
                           </button>

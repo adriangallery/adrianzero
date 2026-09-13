@@ -11,9 +11,9 @@ const ACTION_LABEL: Record<Movie2ConfirmActionKind, string> = {
 };
 
 const ACTION_ACCENT: Record<Movie2ConfirmActionKind, string> = {
-  rent: 'bg-sky-500 text-black hover:bg-sky-400',
+  rent: 'bg-acc text-black hover:bg-acc',
   buy: 'bg-yellow-500 text-black hover:bg-yellow-400',
-  return: 'bg-emerald-500 text-black hover:bg-emerald-400',
+  return: 'bg-ok text-black hover:bg-ok',
   upgrade: 'bg-yellow-500 text-black hover:bg-yellow-400',
 };
 

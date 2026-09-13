@@ -13,7 +13,7 @@ interface EventsGridProps {
 export function EventsGrid({ events }: EventsGridProps) {
   if (events.length === 0) {
     return (
-      <div className="py-12 text-center text-muted-foreground">
+      <div className="py-12 text-center text-mute">
         No events found for this selection.
       </div>
     );

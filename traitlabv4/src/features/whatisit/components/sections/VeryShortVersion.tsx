@@ -13,7 +13,7 @@ export function VeryShortVersion() {
             <strong className="text-[#00ff00]">$ADRIAN</strong> powers everything
           </p>
           <p>
-            <strong className="text-cyan-400">AdrianPunks</strong> = OG collection
+            <strong className="text-acc">AdrianPunks</strong> = OG collection
           </p>
           <p>
             <strong className="text-purple-400">AdrianZERO</strong> = dynamic avatars
@@ -24,7 +24,7 @@ export function VeryShortVersion() {
         </div>
 
         <div className="flex items-center justify-center rounded-lg border-2 border-[#00ff00]/30 bg-[#00ff00]/5 p-8">
-          <p className="text-center text-lg text-muted-foreground">
+          <p className="text-center text-lg text-mute">
             Mint NFTs, collect traits, customize avatars, build your story 🌱
           </p>
         </div>

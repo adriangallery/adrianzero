@@ -23,14 +23,14 @@ export function Season2Tab() {
     <>
       <div className="mb-6 text-center">
         <h2 className="text-2xl font-bold tracking-wider text-yellow-500 sm:text-3xl">ZEROmovies II</h2>
-        <p className="text-[9px] tracking-[0.3em] text-zinc-600 sm:text-[10px]">
+        <p className="text-[12px] tracking-wider text-mute sm:text-[13px]">
           THE RETURN OF THE PIXEL · 24 MOVIES
         </p>
       </div>
 
       {/* Mock-mode warning banner — visible only while the live facet isn't deployed */}
       {isMock && (
-        <div className="mb-4 rounded border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-center text-[9px] uppercase tracking-widest text-zinc-500">
+        <div className="mb-4 rounded border border-line bg-panel950 px-3 py-2 text-center text-[12px] uppercase tracking-widest text-mute">
           Preview · Catalog and rental state are mock data — replace once the on-chain facet ships
         </div>
       )}
@@ -39,22 +39,22 @@ export function Season2Tab() {
           + Premiere Budokai. Disappears once both are minted (permanentlyOwned). */}
       {movies.some((m) => m.reservedFor && !rentalMap.get(m.id)?.permanent) && (
         <div className="mb-4 grid gap-2 sm:grid-cols-2">
-          <a href="/auction" className="block rounded border border-purple-500/50 bg-gradient-to-br from-purple-950/40 to-zinc-950/40 px-3 py-2 transition hover:border-purple-400 hover:from-purple-900/50">
+          <a href="/auction" className="block rounded border border-purple-500/50 bg-gradient-to-br from-purple-950/40 to-panel px-3 py-2 transition hover:border-purple-400 hover:from-purple-900/50">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-purple-400">Live Auction</span>
-              <span className="text-[8px] uppercase tracking-wider text-purple-300">→</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-purple-400">Live Auction</span>
+              <span className="text-[11px] uppercase tracking-wider text-purple-300">→</span>
             </div>
-            <p className="mt-1 text-[10px] text-zinc-300">
-              <span className="text-white">Major Dutch Schaefer</span> (animated GIF) — bid in $ZERO
+            <p className="mt-1 text-[13px] text-fg">
+              <span className="text-fg">Major Dutch Schaefer</span> (animated GIF) — bid in $ZERO
             </p>
           </a>
-          <a href="/dojo" className="block rounded border border-amber-500/50 bg-gradient-to-br from-amber-950/40 to-zinc-950/40 px-3 py-2 transition hover:border-amber-400 hover:from-amber-900/50">
+          <a href="/dojo" className="block rounded border border-amber-500/50 bg-gradient-to-br from-amber-950/40 to-panel px-3 py-2 transition hover:border-amber-400 hover:from-amber-900/50">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-amber-400">Premiere Budokai</span>
-              <span className="text-[8px] uppercase tracking-wider text-amber-300">→</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">Premiere Budokai</span>
+              <span className="text-[11px] uppercase tracking-wider text-amber-300">→</span>
             </div>
-            <p className="mt-1 text-[10px] text-zinc-300">
-              <span className="text-white">Bruce Lee</span> goes to the champion of the next Budokai
+            <p className="mt-1 text-[13px] text-fg">
+              <span className="text-fg">Bruce Lee</span> goes to the champion of the next Budokai
             </p>
           </a>
         </div>
@@ -69,15 +69,15 @@ export function Season2Tab() {
       />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:text-[10px]">
-          <span>On shelf: <span className="text-white">{onShelf.length}/{movies.length}</span></span>
+        <div className="flex flex-wrap gap-3 text-[12px] uppercase tracking-wider text-mute sm:text-[13px]">
+          <span>On shelf: <span className="text-fg">{onShelf.length}/{movies.length}</span></span>
           <span>Permanent: <span className="text-yellow-400">{permanentCount}</span></span>
           <span>Overdue: <span className="text-red-400">{overdueCount}</span></span>
           <span>Rent: <span className="text-red-400">{config.rentPrice.toLocaleString()}</span></span>
           <span>Buy: <span className="text-yellow-400">{config.buyPrice.toLocaleString()}</span></span>
           {config.paused && <span className="animate-pulse text-yellow-400">SOON</span>}
         </div>
-        <span className="text-[9px] uppercase tracking-widest text-zinc-600">
+        <span className="text-[12px] uppercase tracking-widest text-mute">
           Snapshot {new Date(snapshotMeta.takenAt).toLocaleDateString()} · {snapshotMeta.totalEligibleHolders} holders · {snapshotMeta.totalTickets} tickets
         </span>
       </div>
@@ -99,19 +99,19 @@ export function Season2Tab() {
 
       {/* Cross-season + late-fee mechanic explainer (preview copy) */}
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
-        <div className="rounded border border-zinc-800 bg-zinc-950/40 p-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-yellow-500">Asymmetric tokenomics</h3>
-          <p className="mt-1 text-[10px] leading-relaxed text-zinc-400">
-            Every S2 transaction routes <span className="text-white">50% burn</span> ·{' '}
+        <div className="rounded border border-line bg-panel950 p-3">
+          <h3 className="text-[13px] font-bold uppercase tracking-wider text-yellow-500">Asymmetric tokenomics</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-mute">
+            Every S2 transaction routes <span className="text-fg">50% burn</span> ·{' '}
             <span className="text-yellow-400">20% to S1 permanent holders</span> · 30% to FiftyFifty.
             S1 keeps earning from S2 forever. S2 itself has no holder rewards.
           </p>
         </div>
-        <div className="rounded border border-zinc-800 bg-zinc-950/40 p-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-500">Return-the-tape</h3>
-          <p className="mt-1 text-[10px] leading-relaxed text-zinc-400">
+        <div className="rounded border border-line bg-panel950 p-3">
+          <h3 className="text-[13px] font-bold uppercase tracking-wider text-red-500">Return-the-tape</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-mute">
             7-day grace, then the NFT shows <span className="text-red-400">OVERDUE</span> on every
-            marketplace. <span className="text-emerald-400">Returning the tape is always free</span> — the rent
+            marketplace. <span className="text-ok">Returning the tape is always free</span> — the rent
             itself is non-refundable, but you can drop it back on the shelf any time.
             Late fees (<span className="text-red-400">1k ZERO/day</span>) only apply if you upgrade
             an overdue rent into a permanent buy, never on a plain return.

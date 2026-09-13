@@ -1,58 +1,66 @@
+/**
+ * ZEROmovies (F8, 13-sep): el videoclub sobre el sistema de diseño. Sin
+ * `min-h-screen bg-black pt-20` propios (ya hay header + TabBar), pestañas
+ * de temporada como chips del sistema conservando el acento de cada
+ * temporada (rojo S1, amarillo S2), y el marketplace común debajo.
+ */
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Season1Tab } from './Season1Tab';
 import { Season2Tab } from './Season2Tab';
 import { MultiSeasonMarketplace } from './MultiSeasonMarketplace';
 
 type SeasonTab = 's1' | 's2';
 
+const SEASONS: { id: SeasonTab; label: string; sub: string; active: string }[] = [
+  { id: 's1', label: 'Season 1', sub: 'Trilogy Part One', active: 'bg-red-600 text-fg border-red-600' },
+  { id: 's2', label: 'Season 2', sub: 'The Return of the Pixel', active: 'bg-yellow-500 text-black border-yellow-500' },
+];
+
 export function ZEROmoviesModule() {
-  const [active, setActive] = useState<SeasonTab>('s1');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const fromUrl = searchParams.get('season');
+  const [active, setActive] = useState<SeasonTab>(fromUrl === 's2' ? 's2' : 's1');
+
+  const select = (id: SeasonTab) => {
+    setActive(id);
+    const next = new URLSearchParams(searchParams);
+    next.set('season', id);
+    setSearchParams(next, { replace: true });
+  };
 
   return (
-    <div className="min-h-screen bg-black">
-      <div className="mx-auto max-w-6xl px-4 pt-20 pb-8 sm:px-6 sm:pt-24">
-        {/* Top-level season tabs (catalog) */}
-        <div className="mb-6 flex justify-center gap-1 border-b border-zinc-800">
-          <TabButton active={active === 's1'} onClick={() => setActive('s1')} label="Season 1" sub="Trilogy Part One" accent="red" />
-          <TabButton
-            active={active === 's2'}
-            onClick={() => setActive('s2')}
-            label="Season 2"
-            sub="The Return of the Pixel"
-            accent="yellow"
-          />
+    <div className="min-w-0 bg-bg">
+      <div className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
+        {/* Temporadas: segmentado con la identidad de cada una */}
+        <div className="mb-5 grid grid-cols-2 gap-2" role="tablist" aria-label="Season">
+          {SEASONS.map((s) => {
+            const isActive = active === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => select(s.id)}
+                className={`flex flex-col items-center rounded-[var(--r-md)] border-2 px-3 py-2.5 transition-colors ${
+                  isActive ? s.active : 'border-line bg-panel text-mute hover:border-mute'
+                }`}
+              >
+                <span className="font-ui text-[14px] font-bold">{s.label}</span>
+                <span className="text-[11px] uppercase tracking-wider opacity-80">{s.sub}</span>
+              </button>
+            );
+          })}
         </div>
 
         {active === 's1' ? <Season1Tab /> : <Season2Tab />}
       </div>
 
-      {/* One marketplace for the whole trilogy — visible whatever season is active */}
+      {/* Un marketplace para toda la trilogía, sea cual sea la temporada activa */}
       <MultiSeasonMarketplace />
 
       <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
     </div>
-  );
-}
-
-interface TabButtonProps {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  sub: string;
-  accent: 'red' | 'yellow';
-}
-
-function TabButton({ active, onClick, label, sub, accent }: TabButtonProps) {
-  const accentBorder = accent === 'red' ? 'border-red-600' : 'border-yellow-500';
-  const accentText = accent === 'red' ? 'text-red-500' : 'text-yellow-400';
-  return (
-    <button
-      onClick={onClick}
-      className={`relative px-5 pb-2 pt-1 transition-colors ${active ? accentText : 'text-zinc-600 hover:text-zinc-400'}`}
-    >
-      <div className="text-sm font-bold tracking-wider">{label}</div>
-      <div className="text-[8px] uppercase tracking-[0.25em] opacity-80">{sub}</div>
-      {active && <div className={`absolute -bottom-px left-0 right-0 h-[2px] ${accentBorder} bg-current`} />}
-    </button>
   );
 }

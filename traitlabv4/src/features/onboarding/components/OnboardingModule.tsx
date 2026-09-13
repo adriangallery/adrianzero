@@ -114,13 +114,13 @@ export function OnboardingModule() {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       {/* Hero Section */}
       <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
+        <h1 className="mb-4 text-4xl font-bold text-fg md:text-5xl">
           Choose Your <span className="text-[#00ff00]">ZERO</span>
         </h1>
-        <p className="mb-2 text-xl text-muted-foreground">
+        <p className="mb-2 text-xl text-mute">
           Free vs Premium
         </p>
-        <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
+        <p className="mx-auto max-w-2xl text-sm text-mute">
           Start with SubZERO for free or get the full AdrianZERO experience with complete trait compatibility.
         </p>
       </div>
@@ -148,8 +148,8 @@ export function OnboardingModule() {
       {/* Loading State */}
       {isLoadingKits ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <Loader2 className="mb-4 h-12 w-12 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading kit information...</p>
+          <Loader2 className="mb-4 h-12 w-12 animate-spin text-acc" />
+          <p className="text-mute">Loading kit information...</p>
         </div>
       ) : (
         /* Kit Comparison Grid */

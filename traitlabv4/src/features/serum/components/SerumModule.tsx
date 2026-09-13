@@ -70,11 +70,11 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
   if (!isConnected && !embedded) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Unplug className="h-16 w-16 mb-4 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">
+        <Unplug className="h-16 w-16 mb-4 text-mute" />
+        <h2 className="text-xl font-semibold text-fg">
           Wallet Not Connected
         </h2>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-mute mt-2">
           Please connect your wallet to use serums
         </p>
       </div>
@@ -85,7 +85,7 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="shimmer w-16 h-16 rounded-full mb-4" />
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-mute">Loading...</p>
       </div>
     );
   }
@@ -95,8 +95,8 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
       {/* Header */}
       {!embedded && (
         <div>
-          <h1 className="text-xl font-bold text-foreground">Serum</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl font-bold text-fg">Serum</h1>
+          <p className="text-mute mt-1">
             Apply serums to your AdrianZERO NFTs
           </p>
         </div>
@@ -105,9 +105,9 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
       {/* No Serums */}
       {serums.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <FlaskConical className="h-16 w-16 mb-4 text-muted-foreground" />
-          <p className="text-lg font-medium text-foreground">No serums found</p>
-          <p className="text-sm text-muted-foreground mt-2">
+          <FlaskConical className="h-16 w-16 mb-4 text-mute" />
+          <p className="text-lg font-medium text-fg">No serums found</p>
+          <p className="text-sm text-mute mt-2">
             You don't have any serums in your wallet
           </p>
         </div>
@@ -120,27 +120,27 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
           {embedded ? (
             <div className="space-y-4">
               {selectedNFT ? (
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 p-3 bg-line/50 rounded-lg">
                   <img
                     src={selectedNFT.image?.cachedUrl || selectedNFT.image?.originalUrl || selectedNFT.metadata?.image || ''}
                     alt={`ZERO #${selectedNFT.tokenId}`}
-                    className="h-10 w-10 rounded border border-border"
+                    className="h-10 w-10 rounded border border-line"
                   />
                   <span className="text-sm font-medium">ZERO #{selectedNFT.tokenId}</span>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm text-mute p-3 bg-line/50 rounded-lg">
                   Select an NFT in the NFTs tab first
                 </p>
               )}
             </div>
           ) : (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">
+              <h2 className="text-xl font-semibold text-fg">
                 1. Select NFT
               </h2>
               {nfts.length === 0 ? (
-                <p className="text-muted-foreground">No NFTs found</p>
+                <p className="text-mute">No NFTs found</p>
               ) : (
                 <NFTGrid
                   tokens={nfts}
@@ -159,7 +159,7 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
 
           {/* Select Serum */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-foreground">
+            <h2 className="text-xl font-semibold text-fg">
               2. Select Serum
             </h2>
             <div className="grid grid-cols-2 gap-3 p-1">
@@ -187,7 +187,7 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
           <button
             onClick={handleApplySerum}
             disabled={applySerum.isPending}
-            className="touch-target px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="touch-target px-8 py-3 bg-acc text-acc-fg rounded-lg font-medium text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {applySerum.isPending ? 'Applying...' : 'Apply Serum'}
           </button>
@@ -219,13 +219,13 @@ function SelectableCard({
         relative rounded-lg overflow-hidden cursor-pointer transition-all
         ${
           isSelected
-            ? 'ring-2 ring-primary shadow-lg'
+            ? 'ring-2 ring-acc shadow-lg'
             : 'hover:shadow-md hover:ring-1 hover:ring-border'
         }
-        bg-card
+        bg-panel
       `}
     >
-      <div className="aspect-square relative bg-muted">
+      <div className="aspect-square relative bg-line">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -234,21 +234,21 @@ function SelectableCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <FlaskConical className="h-12 w-12 text-muted-foreground" />
+            <FlaskConical className="h-12 w-12 text-mute" />
           </div>
         )}
 
         {badge && (
-          <div className="absolute top-2 right-2 px-2 py-1 bg-accent/90 rounded-md text-xs font-medium text-white">
+          <div className="absolute top-2 right-2 px-2 py-1 bg-acc2/90 rounded-md text-xs font-medium text-fg">
             {badge}
           </div>
         )}
 
         {isSelected && (
-          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+          <div className="absolute inset-0 bg-acc/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-acc flex items-center justify-center">
               <svg
-                className="w-6 h-6 text-white"
+                className="w-6 h-6 text-fg"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -266,7 +266,7 @@ function SelectableCard({
       </div>
 
       <div className="p-2">
-        <p className="text-sm font-medium truncate text-foreground">{label}</p>
+        <p className="text-sm font-medium truncate text-fg">{label}</p>
       </div>
     </motion.div>
   );

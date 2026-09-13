@@ -14,12 +14,12 @@ export function LostSelectors() {
   return (
     <div className="mb-8 space-y-6">
       {/* Weeks Slider */}
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-lg border border-line bg-panel p-6">
         <div className="mb-4 flex items-center justify-between">
-          <label className="text-sm font-medium text-foreground">
+          <label className="text-sm font-medium text-fg">
             Last {selectedWeeks} week{selectedWeeks > 1 ? 's' : ''}
           </label>
-          <span className="text-sm text-muted-foreground">{events.length} events</span>
+          <span className="text-sm text-mute">{events.length} events</span>
         </div>
         <input
           type="range"
@@ -30,7 +30,7 @@ export function LostSelectors() {
           className={styles.slider}
           disabled={selectedYear !== null}
         />
-        <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+        <div className="mt-2 flex justify-between text-xs text-mute">
           <span>1 week</span>
           <span>52 weeks</span>
         </div>
@@ -42,8 +42,8 @@ export function LostSelectors() {
           onClick={() => setSelectedYear('2025')}
           className={`rounded-lg border px-6 py-3 font-medium transition-all ${
             selectedYear === '2025'
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-card text-foreground hover:border-primary'
+              ? 'border-acc bg-acc text-acc-fg'
+              : 'border-line bg-panel text-fg hover:border-acc'
           }`}
         >
           2025
@@ -52,8 +52,8 @@ export function LostSelectors() {
           onClick={() => setSelectedYear('2026')}
           className={`rounded-lg border px-6 py-3 font-medium transition-all ${
             selectedYear === '2026'
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-card text-foreground hover:border-primary'
+              ? 'border-acc bg-acc text-acc-fg'
+              : 'border-line bg-panel text-fg hover:border-acc'
           }`}
         >
           2026
@@ -62,8 +62,8 @@ export function LostSelectors() {
           onClick={() => setSelectedYear('all')}
           className={`rounded-lg border px-6 py-3 font-medium transition-all ${
             selectedYear === 'all'
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-card text-foreground hover:border-primary'
+              ? 'border-acc bg-acc text-acc-fg'
+              : 'border-line bg-panel text-fg hover:border-acc'
           }`}
         >
           All Years
@@ -71,7 +71,7 @@ export function LostSelectors() {
         {selectedYear && (
           <button
             onClick={() => setSelectedYear(null)}
-            className="rounded-lg border border-border bg-card px-6 py-3 font-medium text-foreground transition-all hover:border-destructive hover:text-destructive"
+            className="rounded-lg border border-line bg-panel px-6 py-3 font-medium text-fg transition-all hover:border-bad hover:text-bad"
           >
             Clear
           </button>

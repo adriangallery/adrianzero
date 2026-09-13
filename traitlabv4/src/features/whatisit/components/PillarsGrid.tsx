@@ -48,12 +48,12 @@ export function PillarsGrid() {
         <button
           key={pillar.anchor}
           onClick={() => handleClick(pillar.anchor)}
-          className="group rounded-lg border border-border bg-card p-6 text-left transition-all hover:scale-105 hover:border-primary hover:shadow-lg hover:shadow-primary/20"
+          className="group rounded-lg border border-line bg-panel p-6 text-left transition-all hover:scale-105 hover:border-acc hover:shadow-lg hover:shadow-primary/20"
         >
           <div className="mb-3 text-4xl">{pillar.emoji}</div>
-          <h3 className="mb-1 text-xl font-bold text-foreground">{pillar.title}</h3>
-          <p className="mb-2 text-sm text-primary">{pillar.subtitle}</p>
-          <p className="text-sm text-muted-foreground">{pillar.description}</p>
+          <h3 className="mb-1 text-xl font-bold text-fg">{pillar.title}</h3>
+          <p className="mb-2 text-sm text-acc">{pillar.subtitle}</p>
+          <p className="text-sm text-mute">{pillar.description}</p>
         </button>
       ))}
     </div>

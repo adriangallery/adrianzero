@@ -19,10 +19,10 @@ export function CountdownTimer({secondsLeft, extendedRecently}: CountdownTimerPr
 
     return (
         <div className="flex flex-col items-center gap-1">
-            <span className="text-[8px] uppercase tracking-[0.3em] text-zinc-500">
+            <span className="text-[11px] uppercase tracking-wider text-mute">
                 {isEnded ? 'Ended' : 'Time left'}
             </span>
-            <div className={`flex items-center gap-1 font-mono tabular-nums ${isEnded ? 'text-zinc-600' : inSnipeWindow ? 'text-red-400' : 'text-yellow-400'}`}>
+            <div className={`flex items-center gap-1 font-mono tabular-nums ${isEnded ? 'text-mute' : inSnipeWindow ? 'text-red-400' : 'text-yellow-400'}`}>
                 {days > 0 && (
                     <>
                         <Block label="D" value={pad(days)} />
@@ -36,12 +36,12 @@ export function CountdownTimer({secondsLeft, extendedRecently}: CountdownTimerPr
                 <Block label="S" value={pad(seconds)} />
             </div>
             {extendedRecently && !isEnded && (
-                <span className="animate-pulse rounded bg-purple-500/20 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-purple-300">
+                <span className="animate-pulse rounded bg-purple-500/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-purple-300">
                     Anti-snipe · +5 min added
                 </span>
             )}
             {inSnipeWindow && !isEnded && !extendedRecently && (
-                <span className="text-[8px] uppercase tracking-wider text-red-400/80">
+                <span className="text-[11px] uppercase tracking-wider text-red-400/80">
                     Bid in last 5 min extends auction
                 </span>
             )}
@@ -53,11 +53,11 @@ function Block({label, value}: {label: string; value: string}) {
     return (
         <div className="flex flex-col items-center">
             <span className="text-2xl font-bold leading-none sm:text-3xl">{value}</span>
-            <span className="text-[7px] uppercase tracking-wider text-zinc-600">{label}</span>
+            <span className="text-[7px] uppercase tracking-wider text-mute">{label}</span>
         </div>
     );
 }
 
 function Colon() {
-    return <span className="text-2xl font-bold leading-none text-zinc-700 sm:text-3xl">:</span>;
+    return <span className="text-2xl font-bold leading-none text-mute sm:text-3xl">:</span>;
 }
