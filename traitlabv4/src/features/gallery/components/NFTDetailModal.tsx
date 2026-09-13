@@ -6,8 +6,8 @@ import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import type { NFTMetadata, NFTType } from '../types/gallery.types';
 import { deriveNFTType } from '../hooks/useTokenMetadata';
 import { useEnsName } from '@/hooks/useEnsName';
+import { metadataUrl, renderUrl } from '@/lib/adrianlab';
 
-const METADATA_API = 'https://adrianlab.vercel.app/api/metadata';
 const OPENSEA_BASE = `https://opensea.io/assets/base/${CONTRACT_ADDRESSES.ADRIAN_ZERO}`;
 
 const TYPE_COLORS: Record<NFTType, string> = {
@@ -45,7 +45,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
     let cancelled = false;
     setIsLoadingMeta(true);
 
-    fetch(`${METADATA_API}/${selectedTokenId}`)
+    fetch(metadataUrl(selectedTokenId))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -59,7 +59,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
         if (cancelled) return;
         const fallback: NFTMetadata = {
           name: `AdrianZero #${selectedTokenId}`,
-          image: `https://adrianlab.vercel.app/api/render/${selectedTokenId}.png`,
+          image: renderUrl(selectedTokenId),
           attributes: [],
         };
         setLocalMeta(fallback);
@@ -97,7 +97,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
 
   const owner = ownerAddress ?? '—';
   const nftType = localMeta ? deriveNFTType(localMeta) : 'Unknown';
-  const imageUrl = `https://adrianlab.vercel.app/api/render/${selectedTokenId}.png`;
+  const imageUrl = renderUrl(selectedTokenId);
 
   return (
     <AnimatePresence>

@@ -12,6 +12,7 @@ import { useClaimStatus } from '../hooks/useClaimStatus';
 import { useClaimBatch } from '../hooks/useClaimBatch';
 import { useOGClaimStore } from '../store/ogclaimStore';
 import { useNotificationStore } from '@/store/notificationStore';
+import { isUserRejection } from '@/lib/web3/humanError';
 import { StatsSection } from './StatsSection';
 import { EligibilityChecker } from './EligibilityChecker';
 import { PunksGrid } from './PunksGrid';
@@ -49,7 +50,11 @@ export function OGClaimModule({ embedded }: { embedded?: boolean } = {}) {
           );
           clearSelection();
         },
-        onError: () => {
+        onError: (err) => {
+          if (isUserRejection(err)) {
+            addNotification('info', 'Cancelled', 'Transaction cancelled');
+            return;
+          }
           addNotification('error', 'Batch Claim Failed', errorMessage || 'Failed to claim traits');
         },
       }

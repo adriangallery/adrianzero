@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usePublicClient, useWriteContract } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { OGCLAIM_ABI } from '@/lib/web3/abi';
-import { parseClaimError } from '@/lib/web3/utils/batchReads';
+import { humanError } from '@/lib/web3/humanError';
 
 interface ClaimSingleParams {
   punkId: number;
@@ -49,6 +49,6 @@ export function useClaimSingle() {
     isSuccess: claimMutation.isSuccess,
     isError: claimMutation.isError,
     error: claimMutation.error,
-    errorMessage: claimMutation.error ? parseClaimError(claimMutation.error as Error) : null,
+    errorMessage: claimMutation.error ? humanError(claimMutation.error) : null,
   };
 }

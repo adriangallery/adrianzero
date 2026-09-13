@@ -1,5 +1,6 @@
 import {memo} from 'react';
 
+import { renderUrl } from '@/lib/adrianlab';
 interface SamuraiCardProps {
     tokenId: number;
     senryoku: number;
@@ -17,7 +18,7 @@ interface SamuraiCardProps {
 }
 
 function getSamuraiImageUrl(tokenId: number): string {
-    return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+    return renderUrl(tokenId);
 }
 
 export const SamuraiCard = memo(function SamuraiCard({

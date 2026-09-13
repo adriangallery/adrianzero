@@ -10,6 +10,7 @@
 import { useAccount } from 'wagmi';
 import { useWalletDataStore, selectAdrianZeros } from '@/stores/walletDataStore';
 import type { AdrianZeroToken } from '@/types/nft.types';
+import { renderUrl } from '@/lib/adrianlab';
 
 const MOCK_TOKEN: AdrianZeroToken = {
   tokenId: '146',
@@ -18,11 +19,11 @@ const MOCK_TOKEN: AdrianZeroToken = {
   metadata: {
     name: 'AdrianZERO #146',
     description: 'AdrianZERO Collection',
-    image: 'https://adrianlab.vercel.app/api/render/146',
+    image: renderUrl(146, ''),
   },
   image: {
-    cachedUrl: 'https://adrianlab.vercel.app/api/render/146',
-    originalUrl: 'https://adrianlab.vercel.app/api/render/146',
+    cachedUrl: renderUrl(146, ''),
+    originalUrl: renderUrl(146, ''),
   },
   tokenUri: '',
 };

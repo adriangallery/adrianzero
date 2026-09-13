@@ -1,4 +1,6 @@
 import {Trophy, Medal, Award, Swords} from 'lucide-react';
+
+import { renderUrl } from '@/lib/adrianlab';
 import {useReadContract} from 'wagmi';
 import {base} from 'wagmi/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
@@ -21,7 +23,7 @@ interface ChampionsHallProps {
 }
 
 function getSamuraiImageUrl(tokenId: number): string {
-    return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+    return renderUrl(tokenId);
 }
 
 // Trophy boundary: ids 1..3 are Golden (maxSupply 3 on AdrianTraitsCore).

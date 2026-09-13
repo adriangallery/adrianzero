@@ -19,6 +19,7 @@ import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore'
 import { useTraitsByCategory } from '@/features/traits/hooks/useTraits';
 import { isEquippableCategory, isEquippableTrait } from '../lib/equippable';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
+import { renderUrl } from '@/lib/adrianlab';
 import { humanError } from '@/lib/web3/humanError';
 import { useTraitlabStore } from '../store/traitlabStore';
 import { computeChanges, planSignatures } from '../lib/changes';
@@ -167,7 +168,7 @@ export function TraitLabModule() {
     const seq = ++previewSeq.current;
     if (changes.toApply.length === 0) {
       setPreviewStatus('ready');
-      setPreviewUrl(`https://adrianlab.vercel.app/api/render/${selectedTokenId}.png`);
+      setPreviewUrl(renderUrl(selectedTokenId));
       return;
     }
     setPreviewStatus('loading');
@@ -195,7 +196,7 @@ export function TraitLabModule() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTokenId, toApplyKey]);
 
-  const baseImageUrl = selectedTokenId ? `https://adrianlab.vercel.app/api/render/${selectedTokenId}.png` : '';
+  const baseImageUrl = selectedTokenId ? renderUrl(selectedTokenId) : '';
   const displayedUrl = comparing ? baseImageUrl : previewUrl ?? baseImageUrl;
 
   // ─── Mini-preview sticky (feedback de Adrián 13-sep, producción): al
@@ -313,7 +314,7 @@ export function TraitLabModule() {
         >
           {selectedTokenId ? (
             <img
-              src={`https://adrianlab.vercel.app/api/render/${selectedTokenId}.png`}
+              src={renderUrl(selectedTokenId)}
               alt=""
               className="h-9 w-9 flex-none rounded-[var(--r-md)] border-2 border-line bg-panel object-cover"
             />

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isMovie2Hidden, getS2PosterUrl } from '../movies2Mock';
+import { labImageUrl } from '@/lib/adrianlab';
 
 describe('isMovie2Hidden', () => {
   it('is hidden only while isMystery is true AND not yet revealed', () => {
@@ -24,7 +25,7 @@ describe('getS2PosterUrl', () => {
   });
 
   it('resolves to the real AdrianLAB SVG once not hidden', () => {
-    expect(getS2PosterUrl(27, false)).toBe('https://adrianlab.vercel.app/labimages/zeromovies2/27.svg');
+    expect(getS2PosterUrl(27, false)).toBe(labImageUrl('zeromovies2/27.svg'));
   });
 
   it('resolves a revealed movie to its real poster, not the mystery placeholder', () => {
@@ -35,11 +36,11 @@ describe('getS2PosterUrl', () => {
     const revealedMysteryMovie = { id: 30, isMystery: true, revealed: true };
     const hidden = isMovie2Hidden(revealedMysteryMovie);
     expect(getS2PosterUrl(revealedMysteryMovie.id, hidden)).toBe(
-      'https://adrianlab.vercel.app/labimages/zeromovies2/30.svg'
+      labImageUrl('zeromovies2/30.svg')
     );
   });
 
   it('resolves the animated GIF for movies flagged hasAnimation', () => {
-    expect(getS2PosterUrl(42, false)).toBe('https://adrianlab.vercel.app/labimages/zeromovies2/animated/42.gif');
+    expect(getS2PosterUrl(42, false)).toBe(labImageUrl('zeromovies2/animated/42.gif'));
   });
 });

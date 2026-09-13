@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { useWaitForTransactionReceipt } from 'wagmi';
 import type { Hash } from 'viem';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 
 interface TxButtonProps {
   label: string;
@@ -29,9 +30,8 @@ export function TxButton({ label, pendingLabel, onClick, disabled }: TxButtonPro
       const txHash = await onClick();
       if (txHash) setHash(txHash);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (!msg.includes('User rejected') && !msg.includes('User denied')) {
-        setError(msg.length > 120 ? msg.slice(0, 120) + '...' : msg);
+      if (!isUserRejection(err)) {
+        setError(humanError(err));
       }
     } finally {
       setIsPending(false);

@@ -7,10 +7,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useWriteContract } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ADRIAN_ZERO_ABI } from '@/lib/web3/abi';
+import { useNotifications } from '@/hooks/useNotifications';
+import { humanError, isUserRejection } from '@/lib/web3/humanError';
 
 export function useActivateToken() {
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
+  const notifications = useNotifications();
 
   const mutation = useMutation({
     mutationFn: async (tokenId: string) => {
@@ -30,6 +33,11 @@ export function useActivateToken() {
     },
     onError: (error) => {
       console.error('Error activating token:', error);
+      if (isUserRejection(error)) {
+        notifications.info('Cancelled', 'Transaction cancelled');
+        return;
+      }
+      notifications.error('Activation Failed', humanError(error));
     },
   });
 
@@ -39,6 +47,7 @@ export function useActivateToken() {
 export function useRefreshMetadata() {
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
+  const notifications = useNotifications();
 
   const mutation = useMutation({
     mutationFn: async (tokenId: string) => {
@@ -58,6 +67,11 @@ export function useRefreshMetadata() {
     },
     onError: (error) => {
       console.error('Error refreshing metadata:', error);
+      if (isUserRejection(error)) {
+        notifications.info('Cancelled', 'Transaction cancelled');
+        return;
+      }
+      notifications.error('Refresh Failed', humanError(error));
     },
   });
 

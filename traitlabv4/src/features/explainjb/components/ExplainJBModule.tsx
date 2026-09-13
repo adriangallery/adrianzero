@@ -4,9 +4,10 @@
  */
 
 import { IMAGES, getGitHubImageUrl } from '@/config/images';
+import { renderUrl } from '@/lib/adrianlab';
 
 // Live AdrianLAB render — shows real ZEROs on-demand
-const LAB = (id: number) => `https://adrianlab.vercel.app/api/render/${id}`;
+const LAB = (id: number) => renderUrl(id, '');
 
 // Small tech-callout for deeper notes
 function Geek({ children }: { children: React.ReactNode }) {

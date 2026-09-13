@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { renderUrl } from '@/lib/adrianlab';
 import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Package } from 'lucide-react';
@@ -298,7 +299,7 @@ function PackCard({ pack, onClick }: { pack: Pack; onClick: () => void }) {
       list.push(`${LABIMAGES_BASE}/${id}.gif`);
       list.push(`${LABIMAGES_BASE}/${id}.png`);
       // Last resort: generic render (never blank) if no labimage exists.
-      list.push(`https://adrianlab.vercel.app/api/render/${id}.png`);
+      list.push(renderUrl(id));
     }
     return list;
   }, [pack.image, pack.packId]);

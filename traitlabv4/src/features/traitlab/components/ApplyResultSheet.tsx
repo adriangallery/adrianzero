@@ -8,6 +8,7 @@
 import { Sheet, Button, ShareIcon, ExternalLinkIcon } from '@/ui';
 import { getTxExplorerUrl } from '@/config/contracts';
 import { useNotifications } from '@/hooks/useNotifications';
+import { renderUrl as adrianlabRenderUrl } from '@/lib/adrianlab';
 
 export interface ApplyResultSheetProps {
   open: boolean;
@@ -18,7 +19,7 @@ export interface ApplyResultSheetProps {
 
 export function ApplyResultSheet({ open, onOpenChange, tokenId, txHash }: ApplyResultSheetProps) {
   const notifications = useNotifications();
-  const renderUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+  const renderUrl = adrianlabRenderUrl(tokenId);
   const pageUrl = `https://adrianzero.com/traitlab?token=${tokenId}`;
   const shareText = `I just customized my AdrianZERO #${tokenId} in TraitLab`;
 

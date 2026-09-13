@@ -11,6 +11,7 @@ import { useCustomNames } from '@/features/adrianzero/hooks/useCustomNames';
 import { useRenameToken, useNamePrice } from '../hooks/useRename';
 import { useTokenToggle, useSetToggle, useSetBananaToggle, useTogglePrice, AVAILABLE_TOGGLES, TOGGLE_MODES } from '../hooks/useToggles';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
+import { renderUrl, renderWithParamsUrl, type ToggleParam } from '@/lib/adrianlab';
 import { NFTGrid } from '@/components/nft/NFTGrid';
 import { shouldOptimizeForTouch } from '@/lib/web3/utils/walletDetection';
 import { useAutoInfiniteLoading } from '@/hooks/useAutoInfiniteLoading';
@@ -112,8 +113,8 @@ export function CustomModule({ embedded }: { embedded?: boolean } = {}) {
   };
 
   // Map toggle IDs to URL parameter names
-  const getToggleParam = (toggleId: number): string | null => {
-    const toggleMap: Record<number, string> = {
+  const getToggleParam = (toggleId: number): ToggleParam | null => {
+    const toggleMap: Record<number, ToggleParam> = {
       1: 'closeup',   // Closeup/Zoom
       2: 'shadow',    // Shadow Mode
       3: 'glow',      // Glow Mode
@@ -127,24 +128,22 @@ export function CustomModule({ embedded }: { embedded?: boolean } = {}) {
   const updatePreview = (toggles: Set<number>) => {
     if (!selectedToken) return;
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://adrianlab.vercel.app';
-
     if (toggles.size === 0 || toggles.has(0)) {
       // No toggles - just the base image
-      setPreviewUrl(`${baseUrl}/api/render/${selectedToken.tokenId}.png`);
+      setPreviewUrl(renderUrl(selectedToken.tokenId));
       setShowPreview(true);
       return;
     }
 
     // Build URL with multiple toggle parameters
-    const params = Array.from(toggles)
-      .map(id => getToggleParam(id))
-      .filter((param): param is string => param !== null)
-      .map(param => `${param}=true`)
-      .join('&');
+    const params: Partial<Record<ToggleParam, boolean>> = Object.fromEntries(
+      Array.from(toggles)
+        .map((id) => getToggleParam(id))
+        .filter((param): param is ToggleParam => param !== null)
+        .map((param) => [param, true] as const)
+    );
 
-    const url = `${baseUrl}/api/render/${selectedToken.tokenId}.png${params ? '?' + params : ''}`;
-    setPreviewUrl(url);
+    setPreviewUrl(renderWithParamsUrl(selectedToken.tokenId, params));
     setShowPreview(true);
   };
 

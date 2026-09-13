@@ -9,6 +9,7 @@ import { useAccount } from 'wagmi';
 import { getGitHubImageUrl } from '@/config/images';
 import { useHasAdrianZero } from '@/features/onboarding/hooks/useHasAdrianZero';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
+import { renderUrl } from '@/lib/adrianlab';
 
 const LIME = '#00ff00';
 const DEMO_TOKEN_ID = '146';
@@ -105,7 +106,7 @@ export const TraitLabPreviewSection = memo(function TraitLabPreviewSection() {
 
   const previewImageUrl = useMemo(() => {
     if (selectedTraitIds.length === 0) {
-      return `https://adrianlab.vercel.app/api/render/${DEMO_TOKEN_ID}`;
+      return renderUrl(DEMO_TOKEN_ID, '');
     }
 
     return vercelImageService.generateCombinedImageUrl({

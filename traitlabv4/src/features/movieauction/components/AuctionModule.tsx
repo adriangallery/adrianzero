@@ -8,6 +8,7 @@ import {CountdownTimer} from './CountdownTimer';
 import {BidPanel} from './BidPanel';
 import {MovieCover} from './MovieCover';
 import {MOVIES_S2_MOCK} from '@/features/zeromovies/data/movies2Mock';
+import {labImageUrl} from '@/lib/adrianlab';
 
 /**
  * Pre-launch placeholder. Until the owner calls `createAuction(42, ...)`, the
@@ -16,7 +17,7 @@ import {MOVIES_S2_MOCK} from '@/features/zeromovies/data/movies2Mock';
  * page isn't a blank "no auction" message.
  */
 const RESERVED_AUCTION_MOVIE = MOVIES_S2_MOCK.find((m) => m.reservedFor === 'auction');
-const ADRIAN_LAB_BASE = 'https://adrianlab.vercel.app/labimages/zeromovies2';
+const ADRIAN_LAB_BASE = labImageUrl('zeromovies2');
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 

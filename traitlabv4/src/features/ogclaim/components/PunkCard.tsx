@@ -7,6 +7,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useOGClaimStore } from '../store/ogclaimStore';
 import { useClaimSingle } from '../hooks/useClaimSingle';
 import { useNotificationStore } from '@/store/notificationStore';
+import { isUserRejection } from '@/lib/web3/humanError';
 
 interface PunkCardProps {
   punkId: number;
@@ -28,7 +29,11 @@ export function PunkCard({ punkId, isClaimed }: PunkCardProps) {
         onSuccess: () => {
           addNotification('success', 'Claimed!', `Successfully claimed trait #${traitId}`);
         },
-        onError: () => {
+        onError: (err) => {
+          if (isUserRejection(err)) {
+            addNotification('info', 'Cancelled', 'Transaction cancelled');
+            return;
+          }
           addNotification('error', 'Claim Failed', errorMessage || 'Failed to claim trait');
         },
       }

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { NFTTransformer } from '../NFTTransformer';
 import { getGitHubImageUrl } from '@/config/images';
+import { renderUrl } from '@/lib/adrianlab';
 
 export const TraitTransformSection: React.FC = () => {
   return (
@@ -29,7 +30,7 @@ export const TraitTransformSection: React.FC = () => {
         {/* Transformer Component */}
         <NFTTransformer
           baseImageUrl={getGitHubImageUrl('zeronaked.png')}
-          transformedImageUrl="https://adrianlab.vercel.app/api/render/1.png"
+          transformedImageUrl={renderUrl(1)}
           traitNames={['Laser Eyes', 'Gold Grill', 'Crown']}
         />
       </div>

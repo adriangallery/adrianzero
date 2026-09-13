@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { renderUrl, renderCustomExternalUrl } from '@/lib/adrianlab';
 
 interface SelectedTraits {
   [category: string]: string | null;
@@ -34,9 +35,9 @@ export const useTraitSelection = () => {
     (baseTokenId: string): string => {
       const traitIds = getSelectedTraitIds();
       if (traitIds.length === 0) {
-        return `https://adrianlab.vercel.app/api/render/${baseTokenId}.png`;
+        return renderUrl(baseTokenId);
       }
-      return `https://adrianlab.vercel.app/api/render/custom-external/${baseTokenId}?trait=${traitIds.join(',')}`;
+      return renderCustomExternalUrl(baseTokenId, traitIds);
     },
     [getSelectedTraitIds]
   );

@@ -1,4 +1,5 @@
 import type { Movie2 } from '../types';
+import { labImageUrl } from '@/lib/adrianlab';
 
 /**
  * ZEROmovies S2 — "Return of the Pixel"
@@ -64,7 +65,7 @@ export function isMovie2Hidden(movie: { isMystery: boolean; revealed: boolean })
 export function getS2PosterUrl(movieId: number, isHidden: boolean): string {
   if (isHidden) return '/images/zeromovies2/_mystery.svg';
   const m = MOVIES_S2_MOCK.find((x) => x.id === movieId);
-  const base = 'https://adrianlab.vercel.app/labimages/zeromovies2';
+  const base = labImageUrl('zeromovies2');
   if (m?.hasAnimation) return `${base}/animated/${movieId}.gif`;
   return `${base}/${movieId}.svg`;
 }

@@ -1,4 +1,6 @@
 import {useEffect, useState} from 'react';
+
+import { renderUrl, metadataUrl } from '@/lib/adrianlab';
 import {useAccount} from 'wagmi';
 import * as Dialog from '@radix-ui/react-dialog';
 import {X, Loader2, Sword, Sparkles, Zap} from 'lucide-react';
@@ -31,12 +33,12 @@ interface SamuraiDetailModalProps {
 }
 
 function getSamuraiImageUrl(tokenId: number): string {
-    return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+    return renderUrl(tokenId);
 }
 
 async function fetchSamuraiMeta(tokenId: number): Promise<Samurai | null> {
     try {
-        const res = await fetch(`https://adrianlab.vercel.app/api/metadata/${tokenId}`);
+        const res = await fetch(metadataUrl(tokenId));
         if (!res.ok) return null;
         const data = await res.json();
         const attrs: Array<{trait_type: string; value: string | number}> = data.attributes ?? [];

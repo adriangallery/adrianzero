@@ -14,6 +14,7 @@ import {useEffect, useMemo, useState} from 'react';
 import {Flame, Trophy, Zap} from 'lucide-react';
 import {useReadContracts} from 'wagmi';
 import {base} from 'wagmi/chains';
+import {renderUrl, metadataUrl} from '@/lib/adrianlab';
 import {createPublicClient, http, parseAbiItem} from 'viem';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {buildAlchemyRpcUrls} from '@/config/alchemy';
@@ -38,7 +39,7 @@ function honorReasonLabel(reason: number): string {
     return 'Awarded';
 }
 
-const SAMURAI_IMG = (id: number) => `https://adrianlab.vercel.app/api/render/${id}.png`;
+const SAMURAI_IMG = (id: number) => renderUrl(id);
 
 interface ChronicleData {
     id: number;
@@ -506,7 +507,7 @@ export function BudokaiChronicle({budokaiId, standalone = true}: BudokaiChronicl
             await Promise.all(
                 Array.from(podium).map(async (tokenId) => {
                     try {
-                        const res = await fetch(`https://adrianlab.vercel.app/api/metadata/${tokenId}`, {cache: 'force-cache'});
+                        const res = await fetch(metadataUrl(tokenId), {cache: 'force-cache'});
                         if (!res.ok) return;
                         const meta = await res.json();
                         const raw = String(meta?.name ?? '');

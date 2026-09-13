@@ -6,6 +6,7 @@ import { useGalleryStore } from '../store/galleryStore';
 import { NFTCard } from './NFTCard';
 import { NFTDetailModal } from './NFTDetailModal';
 import type { NFTType } from '../types/gallery.types';
+import { renderUrl } from '@/lib/adrianlab';
 
 const FILTER_OPTIONS: Array<NFTType | 'All'> = ['All', 'Gen0', 'SamuraiZERO', 'SubZERO', 'ZEROmovies', 'GenZERO'];
 
@@ -218,7 +219,7 @@ export function GalleryModule() {
                     const meta = metadataCache.get(tokenId);
                     const name = meta?.name ?? `AdrianZero #${tokenId}`;
                     const type = meta ? deriveNFTType(meta) : 'Unknown';
-                    const imageUrl = `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+                    const imageUrl = renderUrl(tokenId);
                     const owner = owners.get(tokenId) ?? '';
 
                     return (

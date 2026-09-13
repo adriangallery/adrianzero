@@ -4,8 +4,7 @@
  */
 
 import { useState } from 'react';
-
-const VERCEL_API_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://adrianlab.vercel.app/api';
+import { adrianlabUrl } from '@/lib/adrianlab';
 
 export const LAMBO_COLORS = [
   { id: 'blue', name: 'Blue', hex: '#0066CC' },
@@ -34,7 +33,7 @@ export function useLambo() {
     const validatedColor = validateColor(color);
     // Capitalize first letter for Lambo_Variant format
     const capitalizedColor = validatedColor.charAt(0).toUpperCase() + validatedColor.slice(1);
-    return `${VERCEL_API_URL}/render/lambo/${tokenId}?lambo=Lambo_Variant_${capitalizedColor}`;
+    return adrianlabUrl(`/api/render/lambo/${tokenId}?lambo=Lambo_Variant_${capitalizedColor}`);
   };
 
   // Validate that URL returns an image
