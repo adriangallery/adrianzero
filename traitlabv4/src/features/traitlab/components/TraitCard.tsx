@@ -16,13 +16,19 @@ export interface TraitCardProps {
   trait: Trait;
   state: TraitCardState;
   onSelect: (trait: Trait) => void;
+  /**
+   * Tooltip corto para una tarjeta equipada — el contrato no soporta
+   * desequipar (13-sep-2026), así que aquí se explica que la única forma
+   * de cambiarla es aplicar otro trait de la misma categoría encima.
+   */
+  equippedHint?: string;
 }
 
 function traitImageUrl(trait: Trait): string | undefined {
   return trait.image?.cachedUrl || trait.image?.thumbnailUrl || trait.image?.originalUrl || trait.metadata?.image;
 }
 
-export function TraitCard({ trait, state, onSelect }: TraitCardProps) {
+export function TraitCard({ trait, state, onSelect, equippedHint }: TraitCardProps) {
   const imageUrl = traitImageUrl(trait);
   const locked = state.kind === 'locked';
 
@@ -31,6 +37,7 @@ export function TraitCard({ trait, state, onSelect }: TraitCardProps) {
       type="button"
       data-testid="traitlab-trait-card"
       data-state={state.kind}
+      title={state.kind === 'equipped' ? equippedHint : undefined}
       onClick={() => !locked && onSelect(trait)}
       disabled={locked}
       className={cn(

@@ -35,15 +35,6 @@ describe('traitlabStore', () => {
     expect(useTraitlabStore.getState().selections.HAIR).toBeUndefined();
   });
 
-  it('removeEquipped marca la quita y volver a tocar la deshace', () => {
-    const { removeEquipped } = useTraitlabStore.getState();
-    useTraitlabStore.setState({ equipped: { HAIR: '444' } });
-    removeEquipped('HAIR');
-    expect(useTraitlabStore.getState().selections.HAIR).toBeNull();
-    removeEquipped('HAIR');
-    expect(useTraitlabStore.getState().selections.HAIR).toBeUndefined();
-  });
-
   it('undo deshace el último cambio de selección', () => {
     const { selectTrait, undo } = useTraitlabStore.getState();
     selectTrait('HAIR', '444');
@@ -63,7 +54,6 @@ describe('traitlabStore', () => {
     useTraitlabStore.setState({ equipped: { HAIR: '444' }, selections: { HAIR: '700', EYES: '10' } });
     expect(selectTraitlabChanges(useTraitlabStore.getState())).toEqual({
       toApply: ['700', '10'],
-      toRemove: [],
       count: 2,
     });
   });

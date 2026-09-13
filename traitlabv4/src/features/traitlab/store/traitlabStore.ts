@@ -5,10 +5,11 @@
  * (`lib/tokenHistory.ts`, localStorage aparte).
  *
  * Modelo: `equipped[category]` = lo que hay puesto on-chain (se rellena al
- * abrir un token con `getAppliedTraits`); `selections[category]` = lo que
- * el usuario quiere (ver `lib/changes.ts` para el significado de
- * undefined/null/traitId). `history` es una pila de snapshots de
- * `selections` para el botón deshacer del ActionBar.
+ * abrir un token con `getAllEquippedTraits`); `selections[category]` = lo
+ * que el usuario quiere (ver `lib/changes.ts` para el significado de
+ * undefined/traitId — no hay "quitar": el contrato no lo soporta, 13-sep).
+ * `history` es una pila de snapshots de `selections` para el botón
+ * deshacer del ActionBar.
  */
 
 import { create } from 'zustand';
@@ -20,15 +21,13 @@ interface TraitlabState {
   equipped: CategoryEquipped;
   selections: CategorySelections;
   history: CategorySelections[];
-  /** IDs de trait cuyo `canApplyTraits` ya se comprobó y falló — cacheado por id, ver useAppliedTraits. */
+  /** IDs de trait cuyo `canUserAccessTrait`/`isTraitAvailable` ya se comprobó y falló — cacheado por id, ver useCanApplyTraits. */
   lockedReasons: Record<string, string>;
 
   setSelectedToken: (tokenId: string | null) => void;
   setEquipped: (equipped: CategoryEquipped) => void;
   /** Selecciona un trait en su categoría (o lo deselecciona si ya estaba elegido). */
   selectTrait: (category: string, traitId: string) => void;
-  /** Marca la quita provisional del trait equipado de una categoría. */
-  removeEquipped: (category: string) => void;
   undo: () => void;
   clearSelections: () => void;
   setLockedReason: (traitId: string, reason: string | null) => void;
@@ -63,13 +62,6 @@ export const useTraitlabStore = create<TraitlabState>((set, get) => ({
       next[category] = traitId;
     }
 
-    set({ selections: next, history: [...history, snapshot(selections)] });
-  },
-
-  removeEquipped: (category) => {
-    const { selections, history } = get();
-    const next = snapshot(selections);
-    next[category] = next[category] === null ? undefined : null;
     set({ selections: next, history: [...history, snapshot(selections)] });
   },
 

@@ -1,9 +1,12 @@
 /**
  * Orquesta la ejecución del plan de firmas de `lib/changes.ts#planSignatures`:
- * approval (si falta) → un `removeTrait` por cada quita → un
- * `applyTraitMultiple` con todas las altas. Publica el progreso en
- * `pendingTxStore` (sobrevive al cambio de pestaña) y usa `humanError` para
- * los mensajes de fallo (deliverable F4 #6/#7).
+ * approval (si falta) → un único `applyTraitMultiple` con todas las altas.
+ * Antes de pedir la primera firma, `simulateContract` corre la llamada
+ * real contra el nodo desde la cuenta conectada — es el guardián de
+ * verdad (exclusividad, ownership, supply…) ahora que el contrato no
+ * expone un `canApplyTraits` con motivo (13-sep-2026, ver
+ * `useCanApplyTraits.ts`); su revert pasa por `humanError`. Publica el
+ * progreso en `pendingTxStore` (sobrevive al cambio de pestaña) — F4 #6/#7.
  *
  * Tras el éxito invalida TANTO React Query como `walletDataStore`
  * (`invalidateTraits`) — recon §8.9: la app original solo invalidaba
@@ -54,12 +57,23 @@ export function useApplyTraitlabChanges(tokenId: string | null) {
       if (!address || !publicClient || !tokenId) {
         throw new Error('Wallet not connected');
       }
+      if (changes.toApply.length === 0) {
+        throw new Error('No changes to apply');
+      }
+
+      // Guardián final: simula la llamada real desde la cuenta conectada.
+      // Si algo la revertiría (regla de exclusividad, no ser el owner del
+      // token, trait sin stock…), lo sabemos ANTES de pedir ninguna firma.
+      await publicClient.simulateContract({
+        account: address,
+        address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
+        abi: TRAITS_EXTENSIONS_ABI,
+        functionName: 'applyTraitMultiple',
+        args: [BigInt(tokenId), changes.toApply.map((id) => BigInt(id))],
+      });
 
       const approvalNeeded = await checkApproval();
       const plan = planSignatures(changes, approvalNeeded);
-      if (plan.steps.length === 0) {
-        throw new Error('No changes to apply');
-      }
 
       pendingTx.start(tokenId, plan.signatureCount);
       let lastHash: `0x${string}` | null = null;
@@ -75,15 +89,6 @@ export function useApplyTraitlabChanges(tokenId: string | null) {
               abi: ADRIAN_LAB_ABI,
               functionName: 'setApprovalForAll',
               args: [CONTRACT_ADDRESSES.TRAITS_EXTENSIONS, true],
-            });
-            await publicClient.waitForTransactionReceipt({ hash });
-            lastHash = hash;
-          } else if (step.type === 'remove') {
-            const hash = await writeContractAsync({
-              address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
-              abi: TRAITS_EXTENSIONS_ABI,
-              functionName: 'removeTrait',
-              args: [BigInt(tokenId), BigInt(step.traitId)],
             });
             await publicClient.waitForTransactionReceipt({ hash });
             lastHash = hash;

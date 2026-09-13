@@ -5,7 +5,6 @@ const base = {
   balance: 1,
   isEquipped: false,
   isSelected: false,
-  isPendingRemoval: false,
   lockedReason: null,
 };
 
@@ -34,11 +33,5 @@ describe('computeTraitCardState', () => {
     expect(
       computeTraitCardState({ ...base, isEquipped: true, isSelected: true, lockedReason: 'Solo Gen 2' })
     ).toEqual({ kind: 'locked', reason: 'Solo Gen 2' });
-  });
-
-  it('pending removal: equipado que se acaba de quitar vuelve a owned', () => {
-    expect(
-      computeTraitCardState({ ...base, isEquipped: true, isPendingRemoval: true, balance: 0 })
-    ).toEqual({ kind: 'owned', count: 1 });
   });
 });

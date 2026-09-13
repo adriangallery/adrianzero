@@ -1,11 +1,18 @@
 /**
- * Valida reglas del contrato con `canApplyTraits` ANTES de firmar —
- * deliverable F4 #3. Se llama en dos momentos: (a) al tocar una tarjeta,
- * para saber si esa combinación provisional es válida y, si no, cachear el
- * motivo en `traitlabStore.lockedReasons` (así la tarjeta pasa a
- * "bloqueado" tras el primer toque, recon §8: no hay forma barata de
- * precalcular el bloqueo de TODO el inventario sin miles de reads); y (b)
- * justo antes de pedir la primera firma del plan, como último guardián.
+ * Valida un trait ANTES de firmar — deliverable F4 #3.
+ *
+ * ⚠️ 13-sep-2026: el ABI original llamaba a `canApplyTraits(user, tokenId,
+ * traitIds[]) returns (bool, string reason)` — no existe en el bytecode
+ * desplegado. Las funciones reales son booleanas y sin motivo:
+ * `canUserAccessTrait(address, tokenId, traitId) returns (bool)` (¿puede
+ * este usuario aplicar este trait a este token?) e
+ * `isTraitAvailable(tokenId, traitId) returns (bool)` (¿sigue disponible
+ * la regla/categoría?). Como no devuelven un porqué, el motivo que se
+ * cachea es nuestro (genérico mejor que inventar texto del contrato), y el
+ * guardián de verdad para errores concretos (exclusividad, supply,
+ * ownership) es `simulateContract` de `applyTraitMultiple` justo antes de
+ * firmar (`useApplyTraitlabChanges`), cuyo revert real pasa por
+ * `humanError`.
  */
 
 import { useCallback } from 'react';
@@ -21,44 +28,42 @@ export function useCanApplyTraits(tokenId: string | null) {
 
   /** Comprueba un candidato a trait id contra las reglas del contrato para este token. */
   const checkTrait = useCallback(
-    async (traitId: string, finalTraitIds: string[]): Promise<{ can: boolean; reason: string }> => {
+    async (traitId: string): Promise<{ can: boolean; reason: string }> => {
       if (!publicClient || !address || !tokenId) return { can: true, reason: '' };
       try {
-        const [can, reason] = (await publicClient.readContract({
-          address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
-          abi: TRAITS_EXTENSIONS_ABI,
-          functionName: 'canApplyTraits',
-          args: [address, BigInt(tokenId), finalTraitIds.map((id) => BigInt(id))],
-        })) as [boolean, string];
-        setLockedReason(traitId, can ? null : reason || 'Not allowed for this token');
-        return { can, reason };
+        const [canAccess, isAvailable] = await Promise.all([
+          publicClient.readContract({
+            address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
+            abi: TRAITS_EXTENSIONS_ABI,
+            functionName: 'canUserAccessTrait',
+            args: [address, BigInt(tokenId), BigInt(traitId)],
+          }) as Promise<boolean>,
+          publicClient.readContract({
+            address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
+            abi: TRAITS_EXTENSIONS_ABI,
+            functionName: 'isTraitAvailable',
+            args: [BigInt(tokenId), BigInt(traitId)],
+          }) as Promise<boolean>,
+        ]);
+
+        if (!canAccess) {
+          setLockedReason(traitId, "You don't have access to this trait");
+          return { can: false, reason: "You don't have access to this trait" };
+        }
+        if (!isAvailable) {
+          setLockedReason(traitId, 'Not available for this token right now');
+          return { can: false, reason: 'Not available for this token right now' };
+        }
+        setLockedReason(traitId, null);
+        return { can: true, reason: '' };
       } catch {
         // Un fallo de lectura no debe bloquear la UI — el guardián final sigue
-        // siendo el propio `canApplyTraits` justo antes de firmar.
+        // siendo `simulateContract` justo antes de firmar.
         return { can: true, reason: '' };
       }
     },
     [publicClient, address, tokenId, setLockedReason]
   );
 
-  /** Guardián final justo antes de la primera firma, sobre el conjunto completo de IDs deseados. */
-  const checkFinal = useCallback(
-    async (finalTraitIds: string[]): Promise<{ can: boolean; reason: string }> => {
-      if (!publicClient || !address || !tokenId || finalTraitIds.length === 0) return { can: true, reason: '' };
-      try {
-        const [can, reason] = (await publicClient.readContract({
-          address: CONTRACT_ADDRESSES.TRAITS_EXTENSIONS as `0x${string}`,
-          abi: TRAITS_EXTENSIONS_ABI,
-          functionName: 'canApplyTraits',
-          args: [address, BigInt(tokenId), finalTraitIds.map((id) => BigInt(id))],
-        })) as [boolean, string];
-        return { can, reason };
-      } catch {
-        return { can: true, reason: '' };
-      }
-    },
-    [publicClient, address, tokenId]
-  );
-
-  return { checkTrait, checkFinal };
+  return { checkTrait };
 }

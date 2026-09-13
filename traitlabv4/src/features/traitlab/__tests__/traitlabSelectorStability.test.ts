@@ -50,7 +50,6 @@ describe('estabilidad de selectores de traitlabStore (regresión React #185)', (
     expect(a).not.toBe(b);
     expect(b).not.toBe(c);
     expect(a.toApply).not.toBe(b.toApply);
-    expect(a.toRemove).not.toBe(b.toRemove);
 
     // El contenido sí es equivalente — por eso el bug no lo cazan los tests
     // de valor (`toEqual`) de traitlabStore.test.ts; hace falta uno de identidad.
@@ -58,7 +57,7 @@ describe('estabilidad de selectores de traitlabStore (regresión React #185)', (
     expect(b).toEqual(c);
 
     // Reproduce sin wallet / sin token: con estado vacío el bug igual disparaba,
-    // porque {toApply:[],toRemove:[],count:0} también es una instancia nueva cada vez.
+    // porque {toApply:[],count:0} también es una instancia nueva cada vez.
     expect(state.equipped).toEqual({});
     expect(state.selections).toEqual({});
   });

@@ -20,7 +20,7 @@ import { useTraitsByCategory } from '@/features/traits/hooks/useTraits';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
 import { humanError } from '@/lib/web3/humanError';
 import { useTraitlabStore } from '../store/traitlabStore';
-import { computeChanges, effectiveTraitIds, planSignatures } from '../lib/changes';
+import { computeChanges, planSignatures } from '../lib/changes';
 import { computeTraitCardState } from '../lib/traitCardState';
 import { getLastUsedTokenId, setLastUsedTokenId } from '../lib/tokenHistory';
 import { useEquippedTraits } from '../hooks/useEquippedTraits';
@@ -55,7 +55,6 @@ export function TraitLabModule() {
   const lockedReasons = useTraitlabStore((s) => s.lockedReasons);
   const setSelectedToken = useTraitlabStore((s) => s.setSelectedToken);
   const selectTraitAction = useTraitlabStore((s) => s.selectTrait);
-  const removeEquippedAction = useTraitlabStore((s) => s.removeEquipped);
   const undo = useTraitlabStore((s) => s.undo);
   const clearSelections = useTraitlabStore((s) => s.clearSelections);
   // BUG (React #185, hallado en revisión visual 13-sep): `useTraitlabStore(selectTraitlabChanges)`
@@ -78,7 +77,7 @@ export function TraitLabModule() {
   const [lastTxHash, setLastTxHash] = useState<string | null>(null);
 
   const { isLoading: isLoadingEquipped } = useEquippedTraits(selectedTokenId);
-  const { checkTrait, checkFinal } = useCanApplyTraits(selectedTokenId);
+  const { checkTrait } = useCanApplyTraits(selectedTokenId);
   const applyMutation = useApplyTraitlabChanges(selectedTokenId);
   const { data: traitsByCategory = {}, isLoading: isLoadingTraits } = useTraitsByCategory();
 
@@ -181,8 +180,7 @@ export function TraitLabModule() {
         return;
       }
 
-      const candidate = effectiveTraitIds(equipped, { ...selections, [category]: trait.tokenId });
-      const { can, reason } = await checkTrait(trait.tokenId, candidate);
+      const { can, reason } = await checkTrait(trait.tokenId);
       if (!can) {
         notifications.warning('Not allowed', reason || 'This trait cannot be applied to this token', true);
         return;
@@ -190,14 +188,6 @@ export function TraitLabModule() {
       selectTraitAction(category, trait.tokenId);
     },
     [requireWallet, selections, equipped, selectTraitAction, checkTrait, notifications]
-  );
-
-  const handleRemoveEquipped = useCallback(
-    (category: string) => {
-      if (!requireWallet('customize your ZERO')) return;
-      removeEquippedAction(category);
-    },
-    [requireWallet, removeEquippedAction]
   );
 
   // ─── Aplicar cambios ──────────────────────────────────────────────────
@@ -212,13 +202,10 @@ export function TraitLabModule() {
     if (!requireWallet('apply your changes')) return;
     if (changes.count === 0) return;
 
-    const finalIds = effectiveTraitIds(equipped, selections);
-    const { can, reason } = await checkFinal(finalIds);
-    if (!can) {
-      notifications.error('Could not apply', reason || 'This combination is not allowed', false);
-      return;
-    }
-
+    // El guardián de verdad (simulateContract de applyTraitMultiple) vive
+    // dentro de useApplyTraitlabChanges — el contrato no expone un
+    // canApplyTraits con motivo (13-sep-2026), así que revertir es la única
+    // forma fiable de saber "por qué no" para una combinación completa.
     try {
       const result = await applyMutation.mutateAsync(changes);
       clearSelections();
@@ -230,7 +217,7 @@ export function TraitLabModule() {
       // registramos aquí por si algún día se quiere telemetría adicional.
       void humanError(error);
     }
-  }, [requireWallet, changes, equipped, selections, checkFinal, notifications, applyMutation, clearSelections]);
+  }, [requireWallet, changes, notifications, applyMutation, clearSelections]);
 
   const gridTraits = activeCategory ? traitsByCategory[activeCategory] ?? [] : [];
   const noToken = !selectedTokenId;
@@ -342,27 +329,22 @@ export function TraitLabModule() {
                   const isEquipped = equipped[category] === trait.tokenId;
                   const desired = selections[category];
                   const isSelected = (desired ?? equipped[category]) === trait.tokenId;
-                  const isPendingRemoval = desired === null && isEquipped;
                   const state = computeTraitCardState({
                     balance: trait.balance,
                     isEquipped,
                     isSelected,
-                    isPendingRemoval,
                     lockedReason: lockedReasons[trait.tokenId] ?? null,
                   });
                   return (
                     <div key={trait.tokenId} className="flex flex-col">
-                      <TraitCard trait={trait} state={state} onSelect={handleSelectTrait} />
-                      {isEquipped && !isPendingRemoval ? (
-                        <button
-                          type="button"
-                          data-testid="traitlab-remove-equipped"
-                          onClick={() => handleRemoveEquipped(category)}
-                          className="mt-1 self-center text-[11px] text-mute underline hover:text-fg"
-                        >
-                          Remove
-                        </button>
-                      ) : null}
+                      <TraitCard
+                        trait={trait}
+                        state={state}
+                        onSelect={handleSelectTrait}
+                        // El contrato no soporta desequipar (13-sep-2026) — se
+                        // sustituye aplicando otro trait de la misma categoría.
+                        equippedHint={isEquipped ? "Can't remove — apply another trait here to replace it" : undefined}
+                      />
                     </div>
                   );
                 })}
