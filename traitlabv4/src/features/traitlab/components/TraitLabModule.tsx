@@ -312,8 +312,11 @@ export function TraitLabModule() {
             <CategoryChips categories={categories} active={activeCategory} onSelect={setActiveCategory} />
           )}
 
-          {/* Grid de traits */}
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-32">
+          {/* Grid de traits. padding-bottom = --tabbar-h (F3.5) + altura real
+              de la ActionBar (48px de botón + 10px/12px de padding vertical
+              = 70px) + 16px de aire, para que la última fila no quede
+              cortada bajo la barra fija. */}
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(var(--tabbar-h)+86px)]">
             {isLoadingTraits || isLoadingEquipped ? (
               <div className="grid grid-cols-3 gap-2.5">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -376,7 +379,10 @@ export function TraitLabModule() {
                 loading={applyMutation.isPending}
                 onClick={handleApply}
                 trailing={
-                  plan.signatureCount > 0
+                  // Solo con cambios reales: needsApproval empieza en true por
+                  // defecto (antes de leer isApprovedForAll), así que sin esto
+                  // "Apply 0 changes" salía con "1 signature" pegado.
+                  changes.count > 0 && plan.signatureCount > 0
                     ? `${plan.signatureCount} signature${plan.signatureCount === 1 ? '' : 's'} · Base`
                     : undefined
                 }
