@@ -4,6 +4,7 @@ import {base} from 'wagmi/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
 import {MOVIE_AUCTION_FACET_ABI, AUCTION_STATUS} from '@/lib/web3/abi';
 import {MOVIES_S2_MOCK} from '@/features/zeromovies/data/movies2Mock';
+import {labImageUrl} from '@/lib/adrianlab';
 
 export interface AuctionState {
     auctionId: bigint;
@@ -28,7 +29,7 @@ export interface AuctionState {
 }
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
-const ADRIAN_LAB_BASE = 'https://adrianlab.vercel.app/labimages/zeromovies2';
+const ADRIAN_LAB_BASE = labImageUrl('zeromovies2');
 
 function resolveMovieMeta(movieId: number) {
     const entry = MOVIES_S2_MOCK.find((m) => m.id === movieId);

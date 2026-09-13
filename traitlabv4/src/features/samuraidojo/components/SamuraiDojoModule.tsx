@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react';
 import {useAccount, useReadContract} from 'wagmi';
 import {base} from 'wagmi/chains';
+import {renderUrl} from '@/lib/adrianlab';
 import {useConnectModal} from '@rainbow-me/rainbowkit';
 import {Loader2, Sword, Eye, Wallet, ChevronDown, ChevronRight} from 'lucide-react';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
@@ -1295,7 +1296,7 @@ function SectionBlock({
                             const override = skinOverrides?.get(id);
                             const src =
                                 override?.imageUrl ??
-                                `https://adrianlab.vercel.app/api/render/${id}.png`;
+                                renderUrl(id);
                             return (
                                 <img
                                     key={id}

@@ -1,4 +1,6 @@
 import {useMemo} from 'react';
+
+import { labImageUrl } from '@/lib/adrianlab';
 import {useReadContract} from 'wagmi';
 import {base} from 'wagmi/chains';
 import {CONTRACT_ADDRESSES} from '@/config/contracts';
@@ -55,7 +57,7 @@ function matchMoviePrize(prize: ExtraPrize): MoviePrizeMatch | null {
         };
     }
 
-    const base = 'https://adrianlab.vercel.app/labimages/zeromovies2';
+    const base = labImageUrl('zeromovies2');
     const posterUrl = candidate.hasAnimation
         ? `${base}/animated/${candidate.id}.gif`
         : `${base}/${candidate.id}.svg`;

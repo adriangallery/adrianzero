@@ -1,4 +1,6 @@
 import {useState} from 'react';
+
+import { renderUrl } from '@/lib/adrianlab';
 import {Flame, Award} from 'lucide-react';
 import {useTopSamurai, type TopSamurai} from '../hooks/useTopSamurai';
 
@@ -6,7 +8,7 @@ const DEFAULT_LIMIT = 10;
 const EXPANDED_LIMIT = 25;
 
 function getSamuraiImageUrl(tokenId: number): string {
-    return `https://adrianlab.vercel.app/api/render/${tokenId}.png`;
+    return renderUrl(tokenId);
 }
 
 function rankBadge(rank: number): {label: string; color: string} {

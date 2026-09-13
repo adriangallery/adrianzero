@@ -1,4 +1,6 @@
 import {useState} from 'react';
+
+import { renderUrl } from '@/lib/adrianlab';
 import {Trophy, Zap, Flame, Clock, ChevronDown, ScrollText} from 'lucide-react';
 import {TROPHY_TYPE, type TrophyType} from '../hooks/useBudokaiTrophy';
 
@@ -30,7 +32,7 @@ interface TrophyVariant {
 function trophyImageUrl(trophyType: TrophyType | undefined, trophyTraitId: bigint | undefined): string {
     if (trophyType === TROPHY_TYPE.MetalShuriken) return '/images/metal-shuriken.png';
     if (trophyType === TROPHY_TYPE.Custom && trophyTraitId && trophyTraitId > 0n) {
-        return `https://adrianlab.vercel.app/api/render/${trophyTraitId}.png`;
+        return renderUrl(trophyTraitId);
     }
     // Default: Golden (covers GoldenShuriken, None, and any unknown future variant).
     return '/images/golden-shuriken.png';
@@ -236,7 +238,7 @@ export function PrizeShowcase({trophyType, trophyTraitId}: PrizeShowcaseProps) {
                         <TrophyHierarchyChip
                             active={trophyType === TROPHY_TYPE.Custom}
                             img={trophyType === TROPHY_TYPE.Custom && trophyTraitId && trophyTraitId > 0n
-                                ? `https://adrianlab.vercel.app/api/render/${trophyTraitId}.png`
+                                ? renderUrl(trophyTraitId)
                                 : '/images/golden-shuriken.png'}
                             name="Custom"
                             sub="Special edition"
