@@ -1,51 +1,43 @@
 /**
- * ShopTabs Component
- * Tab navigation for shop categories
+ * Pestañas de la Shop como chips del sistema (F8, maqueta Shop.dc.html):
+ * Packs · Traits · Serums · Studio. Studio no es un filtro: lleva al
+ * T-Shit Studio.
  */
 
-import { Palette, Disc, FlaskConical } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Chip } from '@/ui';
 
-export type ShopTab = 'traits' | 'floppies' | 'serums';
+export type ShopTab = 'floppies' | 'traits' | 'serums';
 
 interface ShopTabsProps {
   activeTab: ShopTab;
   onTabChange: (tab: ShopTab) => void;
-  counts: {
-    traits: number;
-    floppies: number;
-    serums: number;
-  };
+  counts: Record<ShopTab, number>;
 }
 
-const tabs: { id: ShopTab; label: string; icon: React.ReactNode }[] = [
-  { id: 'traits', label: 'Traits', icon: <Palette className="h-4 w-4" /> },
-  { id: 'floppies', label: 'Packs', icon: <Disc className="h-4 w-4" /> },
-  { id: 'serums', label: 'Serums', icon: <FlaskConical className="h-4 w-4" /> },
+const TABS: { id: ShopTab; label: string }[] = [
+  { id: 'floppies', label: 'Packs' },
+  { id: 'traits', label: 'Traits' },
+  { id: 'serums', label: 'Serums' },
 ];
 
 export function ShopTabs({ activeTab, onTabChange, counts }: ShopTabsProps) {
+  const navigate = useNavigate();
   return (
-    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-      {tabs.map((tab) => {
-        const count = counts[tab.id];
-        const isActive = activeTab === tab.id;
-
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
-            className={`font-ui flex-none flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2.5 rounded-full text-[13px] transition-colors ${
-              isActive
-                ? 'bg-acc text-acc-fg font-bold'
-                : 'border-2 border-line text-fg hover:border-mute'
-            }`}
-          >
-            {tab.icon}
-            <span>{tab.label}</span>
-            {count > 0 && <span className="opacity-80">· {count}</span>}
-          </button>
-        );
-      })}
+    <div className="scroll -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth: 'none' }} role="tablist">
+      {TABS.map((tab) => (
+        <Chip
+          key={tab.id}
+          role="tab"
+          aria-selected={activeTab === tab.id}
+          selected={activeTab === tab.id}
+          count={counts[tab.id] > 0 ? counts[tab.id] : undefined}
+          onClick={() => onTabChange(tab.id)}
+        >
+          {tab.label}
+        </Chip>
+      ))}
+      <Chip onClick={() => navigate('/tshit')}>Studio ›</Chip>
     </div>
   );
 }

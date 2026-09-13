@@ -7,7 +7,7 @@
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { SHOP_FACET_ABI } from '@/lib/web3/abi';
-import type { CartItem, PaymentToken } from '../store/shopStore';
+import type { PurchaseRequest as CartItem, PaymentToken } from '../types';
 
 // Maps to ShopFacet.PaymentToken enum: ZERO=0, ADRIAN=1
 const PAYMENT_TOKEN_MAP: Record<PaymentToken, number> = {

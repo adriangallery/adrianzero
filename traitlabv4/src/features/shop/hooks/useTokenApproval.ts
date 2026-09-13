@@ -9,7 +9,7 @@
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { ERC20_ABI } from '@/lib/web3/abi';
-import type { PaymentToken } from '../store/shopStore';
+import type { PaymentToken } from '../types';
 
 const MAX_UINT256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 
