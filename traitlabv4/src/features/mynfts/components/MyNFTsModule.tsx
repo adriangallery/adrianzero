@@ -13,9 +13,11 @@ import { Frame, Package, FlaskConical } from 'lucide-react';
 import { LoadingSkeleton } from '@/components/common/LoadingSkeleton';
 
 // Lazy load all tabs except NFTs (needs onTokenSelected prop)
+// F5 (13-sep): la pestaña Packs es la sección nueva (abrir + reveal), la
+// misma que /packs.
 const PacksTab = lazy(() =>
-  import('@/features/packs/components/PacksModule').then((m) => ({
-    default: m.PacksModule,
+  import('@/features/packs/components/PacksSection').then((m) => ({
+    default: m.PacksSection,
   }))
 );
 const SerumsTab = lazy(() =>

@@ -71,6 +71,12 @@ const ShitdropModule = lazy(() =>
   }))
 );
 
+const PacksSection = lazy(() =>
+  import('@/features/packs/components/PacksSection').then((m) => ({
+    default: m.PacksSection,
+  }))
+);
+
 const TShitStudioModule = lazy(() =>
   import('@/features/tshit-studio/components/TShitStudioModule').then((m) => ({
     default: m.TShitStudioModule,
@@ -166,7 +172,7 @@ export const routes: RouteObject[] = [
   { path: '/dashboard', element: <Navigate to="/zero" replace /> },
   { path: '/adrianzero', element: <Navigate to="/mynfts" replace /> },
   { path: '/traits', element: <Navigate to="/traitlab" replace /> },
-  { path: '/packs', element: <Navigate to="/mynfts?tab=packs" replace /> },
+  { path: '/packs', element: <PacksSection /> },
   { path: '/serum', element: <Navigate to="/mynfts?tab=serums" replace /> },
   { path: '/custom', element: <Navigate to="/mynfts?tab=customize" replace /> },
   { path: '/lambo', element: <Navigate to="/mynfts?tab=customize" replace /> },

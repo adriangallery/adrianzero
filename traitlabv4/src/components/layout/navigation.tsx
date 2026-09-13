@@ -14,8 +14,7 @@ import {
   Shirt,
   ShoppingBag,
   Sword,
-  Zap,
-} from 'lucide-react';
+  Zap, Package } from 'lucide-react';
 
 export interface NavItem {
   path: string;
@@ -33,6 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/zero', label: 'Home', icon: <Zap className="h-5 w-5" /> },
   { path: '/mint', label: 'Mint', icon: <Rocket className="h-5 w-5" /> },
   { path: '/mynfts', label: 'My NFTs', icon: <Frame className="h-5 w-5" />, requiresConnection: true },
+  { path: '/packs', label: 'Packs', icon: <Package className="h-5 w-5" />, requiresConnection: true },
   { path: '/traitlab', label: 'TraitLab', icon: <FlaskConical className="h-5 w-5" />, requiresConnection: true },
   { path: '/shop', label: 'Shop', icon: <ShoppingBag className="h-5 w-5" /> },
   { path: '/tshit', label: 'Studio', icon: <Shirt className="h-5 w-5" /> },
