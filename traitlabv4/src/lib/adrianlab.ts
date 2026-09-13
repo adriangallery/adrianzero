@@ -9,15 +9,20 @@
  * aparecer ese literal fuera de este fichero.
  */
 
-/** Base URL de AdrianLAB. `VITE_VERCEL_API_URL` no está definida hoy en el
- *  proyecto Vercel `adrianzero` — el fallback reproduce el comportamiento
- *  actual en producción. Si se define, debe ser la base SIN `/api` final
- *  (p.ej. `https://adrianlab.vercel.app` o un dominio propio). */
+/** Base URL de AdrianLAB. ⚠️ En el proyecto Vercel `adrianzero` la variable
+ *  `VITE_VERCEL_API_URL` SÍ existe y vale `https://adrianlab.vercel.app/api`
+ *  (crítico 13-sep, `vercel env pull`): el cliente acepta la base con o sin
+ *  `/api` final y lo recorta, porque cada helper ya añade su `/api/...`.
+ *  Sin la variable, el fallback reproduce producción. */
 const DEFAULT_ADRIANLAB_BASE_URL = 'https://adrianlab.vercel.app';
 
-export const ADRIANLAB_BASE_URL = (
-  import.meta.env.VITE_VERCEL_API_URL || DEFAULT_ADRIANLAB_BASE_URL
-).replace(/\/+$/, '');
+/** Normaliza la base: sin barras finales y sin un `/api` final (lo añaden los paths). */
+export function normalizeAdrianlabBase(raw: string | undefined | null): string {
+  const v = (raw && raw.trim()) || DEFAULT_ADRIANLAB_BASE_URL;
+  return v.replace(/\/+$/, '').replace(/\/api$/i, '').replace(/\/+$/, '');
+}
+
+export const ADRIANLAB_BASE_URL = normalizeAdrianlabBase(import.meta.env.VITE_VERCEL_API_URL);
 
 /** Construye una URL absoluta de AdrianLAB a partir de un path relativo. */
 export function adrianlabUrl(path: string): string {
