@@ -44,63 +44,138 @@ export function TShitStudioModule() {
   // (useMeasuredHeightVar, set on <html>) rather than hardcoded here — the
   // `, 56px` / `, 104px` below are only the pre-mount fallback used for the
   // one frame before their ResizeObserver runs.
+  //
+  // BUG (13-sep hotfix, round 3): the mobile fixed bars (pending-stamp panel,
+  // MobileToolbar, MobileMintBar) used to live as direct children of the
+  // `space-y-4` div below. Tailwind's `space-y-4` puts a real `margin` on
+  // every non-edge direct child via a plain CSS selector — it doesn't check
+  // `position`, so it landed on these `fixed` elements too. For a
+  // `position: fixed` box with `bottom` set, the CSS box-position algorithm
+  // places the MARGIN box's bottom edge at `bottom` from the containing
+  // block, so a stray `margin-bottom: 16px` shifted the visible (border)
+  // box's bottom edge up by 16px — exactly the gap seen between
+  // MobileMintBar and the TabBar. Moving them outside the `space-y-4`
+  // container (as siblings, in this top-level fragment) removes the margin
+  // entirely instead of fighting it with an override that the next unrelated
+  // child reordering could silently reintroduce.
   return (
-    <div className="mx-auto max-w-7xl px-2 py-3 lg:px-4 lg:py-6 space-y-4">
-      <header className="px-1 lg:px-0">
-        <div className="flex items-center gap-2">
-          <Shirt className="h-5 w-5 lg:h-6 lg:w-6 text-emerald-400" />
-          <h1 className="text-lg lg:text-3xl font-bold text-white">T-Shit Studio</h1>
-        </div>
-      </header>
-
-      {/* ============== DESKTOP WORKSPACE ============== */}
-      <div
-        className="hidden lg:flex flex-col rounded-xl border border-zinc-800 bg-zinc-950/60 overflow-hidden shadow-lg shadow-black/30"
-        style={{ height: 'min(820px, calc(100dvh - 180px))', minHeight: 680 }}
-      >
-        {/* Top row: tools | canvas | properties */}
-        <div className="flex flex-1 min-h-0">
-          {/* Left: vertical icon toolbar */}
-          <div className="w-16 shrink-0 border-r border-zinc-800 bg-zinc-900/50">
-            <Toolbar />
+    <>
+      <div className="mx-auto max-w-7xl px-2 py-3 lg:px-4 lg:py-6 space-y-4">
+        <header className="px-1 lg:px-0">
+          <div className="flex items-center gap-2">
+            <Shirt className="h-5 w-5 lg:h-6 lg:w-6 text-emerald-400" />
+            <h1 className="text-lg lg:text-3xl font-bold text-white">T-Shit Studio</h1>
           </div>
+        </header>
 
-          {/* Center: canvas workspace (darker neutral background, like Photoshop) */}
-          <div className="relative flex-1 flex items-center justify-center bg-zinc-950 p-6 overflow-auto">
-            <Canvas pixelSize={4} />
-            {/* Pending stamp controls float over the canvas — they're contextual
-                to a placed sticker/text and shouldn't push the right panel around. */}
-            {pendingStamp && (
-              <div className="absolute top-4 right-4 w-[280px]">
-                <div className="rounded-lg border border-emerald-500/40 bg-zinc-950/95 p-3 shadow-xl backdrop-blur">
-                  <PendingStampControls />
+        {/* ============== DESKTOP WORKSPACE ============== */}
+        <div
+          className="hidden lg:flex flex-col rounded-xl border border-zinc-800 bg-zinc-950/60 overflow-hidden shadow-lg shadow-black/30"
+          style={{ height: 'min(820px, calc(100dvh - 180px))', minHeight: 680 }}
+        >
+          {/* Top row: tools | canvas | properties */}
+          <div className="flex flex-1 min-h-0">
+            {/* Left: vertical icon toolbar */}
+            <div className="w-16 shrink-0 border-r border-zinc-800 bg-zinc-900/50">
+              <Toolbar />
+            </div>
+
+            {/* Center: canvas workspace (darker neutral background, like Photoshop) */}
+            <div className="relative flex-1 flex items-center justify-center bg-zinc-950 p-6 overflow-auto">
+              <Canvas pixelSize={4} />
+              {/* Pending stamp controls float over the canvas — they're contextual
+                  to a placed sticker/text and shouldn't push the right panel around. */}
+              {pendingStamp && (
+                <div className="absolute top-4 right-4 w-[280px]">
+                  <div className="rounded-lg border border-emerald-500/40 bg-zinc-950/95 p-3 shadow-xl backdrop-blur">
+                    <PendingStampControls />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+
+            {/* Right: properties panel */}
+            <aside className="w-[340px] shrink-0 border-l border-zinc-800 bg-zinc-900/50 overflow-y-auto">
+              <PropertiesPanel />
+            </aside>
           </div>
 
-          {/* Right: properties panel */}
-          <aside className="w-[340px] shrink-0 border-l border-zinc-800 bg-zinc-900/50 overflow-y-auto">
-            <PropertiesPanel />
-          </aside>
+          {/* Bottom: persistent mint bar (always visible, spans full workspace) */}
+          <MintBar isConnected={isConnected} />
         </div>
 
-        {/* Bottom: persistent mint bar (always visible, spans full workspace) */}
-        <MintBar isConnected={isConnected} />
+        {/* Description sits below the workspace as a small caption */}
+        <p className="hidden lg:block text-xs text-zinc-500 px-1">
+          Design a 1/1 pixel-art T-shirt trait. 1000 $ZERO per mint, fully burned.
+          Each design lives forever on the AdrianTraitsCore ERC1155.
+        </p>
+
+        {/* ============== MOBILE LAYOUT ============== */}
+        <div className="lg:hidden">
+          <Canvas pixelSize={4} />
+        </div>
+
+        {/* Mobile: sheets */}
+        <BottomSheet
+          open={activeSheet === 'color'}
+          onOpenChange={open => setActiveSheet(open ? 'color' : null)}
+          title="Color"
+        >
+          <ColorPalette />
+        </BottomSheet>
+
+        <BottomSheet
+          open={activeSheet === 'stickers'}
+          onOpenChange={open => setActiveSheet(open ? 'stickers' : null)}
+          title="Stickers & Text"
+        >
+          <div className="space-y-5">
+            <TextTool />
+            <hr className="border-zinc-800" />
+            <StickerLibrary />
+          </div>
+        </BottomSheet>
+
+        <BottomSheet
+          open={activeSheet === 'tshirt'}
+          onOpenChange={open => setActiveSheet(open ? 'tshirt' : null)}
+          title="T-shirt color"
+        >
+          <TshirtColorPicker />
+        </BottomSheet>
+
+        <BottomSheet
+          open={activeSheet === 'mint'}
+          onOpenChange={open => setActiveSheet(open ? 'mint' : null)}
+          title="Mint"
+          maxHeight="85vh"
+        >
+          {isConnected ? (
+            <MintFlow />
+          ) : (
+            <div className="rounded border border-zinc-800 py-3 text-center text-sm text-zinc-400">
+              Connect a wallet to mint your design.
+            </div>
+          )}
+        </BottomSheet>
+
+        {/* Spacer so the canvas/aside don't sit under the fixed mobile chrome
+            stack (toolbar + mint bar + TabBar). Deliberately a padding-bottom
+            derived from the actual chrome tokens, never a `calc(100vh - N)`
+            guess. */}
+        <div
+          className="lg:hidden"
+          style={{
+            height:
+              'calc(var(--tabbar-h) + var(--tshit-actionbar-h, 56px) + var(--tshit-toolbar-h, 104px) + 16px)',
+          }}
+          aria-hidden
+        />
       </div>
 
-      {/* Description sits below the workspace as a small caption */}
-      <p className="hidden lg:block text-xs text-zinc-500 px-1">
-        Design a 1/1 pixel-art T-shirt trait. 1000 $ZERO per mint, fully burned.
-        Each design lives forever on the AdrianTraitsCore ERC1155.
-      </p>
-
-      {/* ============== MOBILE LAYOUT ============== */}
-      <div className="lg:hidden">
-        <Canvas pixelSize={4} />
-      </div>
-
-      {/* Mobile: floating pending-stamp panel (sits above the toolbar) */}
+      {/* Mobile: floating pending-stamp panel (sits above the toolbar).
+          Deliberately OUTSIDE the `space-y-4` div above — see the bug-fix
+          note near the top of this component. */}
       {pendingStamp && (
         <div
           className="fixed inset-x-2 z-30 lg:hidden"
@@ -126,64 +201,7 @@ export function TShitStudioModule() {
         isConnected={isConnected}
         onOpenMintSheet={() => setActiveSheet('mint')}
       />
-
-      {/* Mobile: sheets */}
-      <BottomSheet
-        open={activeSheet === 'color'}
-        onOpenChange={open => setActiveSheet(open ? 'color' : null)}
-        title="Color"
-      >
-        <ColorPalette />
-      </BottomSheet>
-
-      <BottomSheet
-        open={activeSheet === 'stickers'}
-        onOpenChange={open => setActiveSheet(open ? 'stickers' : null)}
-        title="Stickers & Text"
-      >
-        <div className="space-y-5">
-          <TextTool />
-          <hr className="border-zinc-800" />
-          <StickerLibrary />
-        </div>
-      </BottomSheet>
-
-      <BottomSheet
-        open={activeSheet === 'tshirt'}
-        onOpenChange={open => setActiveSheet(open ? 'tshirt' : null)}
-        title="T-shirt color"
-      >
-        <TshirtColorPicker />
-      </BottomSheet>
-
-      <BottomSheet
-        open={activeSheet === 'mint'}
-        onOpenChange={open => setActiveSheet(open ? 'mint' : null)}
-        title="Mint"
-        maxHeight="85vh"
-      >
-        {isConnected ? (
-          <MintFlow />
-        ) : (
-          <div className="rounded border border-zinc-800 py-3 text-center text-sm text-zinc-400">
-            Connect a wallet to mint your design.
-          </div>
-        )}
-      </BottomSheet>
-
-      {/* Spacer so the canvas/aside don't sit under the fixed mobile chrome
-          stack (toolbar + mint bar + TabBar). Deliberately a padding-bottom
-          derived from the actual chrome tokens, never a `calc(100vh - N)`
-          guess. */}
-      <div
-        className="lg:hidden"
-        style={{
-          height:
-            'calc(var(--tabbar-h) + var(--tshit-actionbar-h, 56px) + var(--tshit-toolbar-h, 104px) + 16px)',
-        }}
-        aria-hidden
-      />
-    </div>
+    </>
   );
 }
 
