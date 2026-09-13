@@ -29,14 +29,16 @@ import {
   OPENPACK_V4_DATA_ABI,
   ACTION_PACKS_DATA_ABI,
 } from './packsData.abi';
-import { scanPackIds } from './logScan';
+import { scanPackIds, type RegistrySeed } from './logScan';
 import type { CatalogPack, PackOpenContractName, PackPrice } from './types';
+import registrySeedJson from './registry.seed.json';
 
 // Bloques de deploy verificados en Blockscout (creation_transaction →
 // block_number), 13-sep-2026. Esto NO es una lista de packIds: es metadata
 // del contrato (desde qué bloque puede existir el evento), como el
 // `startBlock` de un subgraph — sin esto habría que escanear desde el
-// génesis de Base.
+// génesis de Base. Solo se usa si no hay ni `localStorage` ni seed (ver
+// abajo) para ese contrato.
 const DEPLOY_BLOCK = {
   FLOPPY_DISCS: 33_621_569n,
   FLOPPY_ETH: 34_334_689n,
@@ -44,6 +46,32 @@ const DEPLOY_BLOCK = {
   OPENPACK_V4: 35_892_762n,
   ACTION_PACKS: 33_500_427n,
 } as const;
+
+// Seed versionado en el repo (`registry.seed.json`, generado con
+// `scripts/packs-registry-seed.mjs` — ver README de este directorio) para
+// que la primera visita de cada navegador no tenga que escanear desde
+// `DEPLOY_BLOCK` (~17,7 M de bloques). `logScan.ts` lo usa solo si
+// `localStorage` no tiene ya algo más reciente.
+interface RegistrySeedSource {
+  address: string;
+  lastScannedBlock: string;
+  packIds: string[];
+}
+interface RegistrySeedFile {
+  generatedAt: string;
+  chainId: number;
+  sources: Record<'FLOPPY_DISCS' | 'OPENPACK_V4' | 'ACTION_PACKS', RegistrySeedSource>;
+}
+const REGISTRY_SEED = registrySeedJson as RegistrySeedFile;
+
+function seedFor(key: keyof RegistrySeedFile['sources']): RegistrySeed | undefined {
+  const source = REGISTRY_SEED.sources[key];
+  if (!source) return undefined;
+  return {
+    lastScannedBlock: BigInt(source.lastScannedBlock),
+    ids: source.packIds.map((id) => BigInt(id)),
+  };
+}
 
 const FLOPPY_DISCS_ADDRESS = CONTRACT_ADDRESSES.ADRIAN_FLOPPY_DISCS as Address;
 const FLOPPY_ETH_ADDRESS = CONTRACT_ADDRESSES.ADRIAN_FLOPPY_ETH as Address;
@@ -90,6 +118,7 @@ async function buildFloppyDiscsCatalog(client: PublicClient, chainId: number): P
     packIdArg: 'packId',
     fromBlock: DEPLOY_BLOCK.FLOPPY_DISCS,
     chainId,
+    seed: seedFor('FLOPPY_DISCS'),
   });
   const idList = Array.from(ids);
   if (idList.length === 0) return { catalog: [], ids: [] };
@@ -223,6 +252,7 @@ async function buildOpenOnlyRoutes(
       packIdArg: 'packId',
       fromBlock: DEPLOY_BLOCK.OPENPACK_V4,
       chainId,
+      seed: seedFor('OPENPACK_V4'),
     }),
     scanPackIds({
       client,
@@ -231,6 +261,7 @@ async function buildOpenOnlyRoutes(
       packIdArg: 'packId',
       fromBlock: DEPLOY_BLOCK.ACTION_PACKS,
       chainId,
+      seed: seedFor('ACTION_PACKS'),
     }),
   ]);
 

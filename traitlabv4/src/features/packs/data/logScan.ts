@@ -22,6 +22,14 @@
  *  2. Cachea en `localStorage` el último bloque escaneado + los IDs
  *     encontrados hasta ahora, por contrato+evento+chain — la próxima
  *     carga solo escanea los bloques nuevos, no repite el historial.
+ *  3. Parte de un **seed versionado en el repo**
+ *     (`registry.seed.json`, generado con
+ *     `scripts/packs-registry-seed.mjs`) en vez del bloque de deploy —
+ *     así la PRIMERA visita de cada usuario (sin `localStorage` aún)
+ *     tampoco escanea los ~17,7 M de bloques completos, solo lo que haya
+ *     pasado desde que se generó el seed. Sin seed, funciona igual pero
+ *     esa primera visita es lenta y puede dar 429 con el RPC público —
+ *     ver el README de este directorio para regenerarlo.
  *
  * Si esto se vuelve un problema de rendimiento o de cuota de RPC en
  * producción, la solución de fondo es un indexer/subgraph — fuera de
@@ -74,27 +82,40 @@ function looksLikeRangeLimitError(err: unknown): boolean {
   );
 }
 
+export interface RegistrySeed {
+  lastScannedBlock: bigint;
+  ids: readonly bigint[];
+}
+
 export interface ScanPackIdsParams {
   client: PublicClient;
   address: Address;
   event: AbiEvent;
   /** Nombre del argumento packId dentro del evento (p.ej. "packId"). */
   packIdArg: string;
-  /** Primer bloque en el que el contrato pudo emitir el evento (bloque de deploy verificado en Blockscout). */
+  /** Primer bloque en el que el contrato pudo emitir el evento (bloque de deploy verificado en Blockscout) — solo se usa si no hay ni caché de localStorage ni `seed`. */
   fromBlock: bigint;
   chainId: number;
   /** Desactiva localStorage (tests). */
   useCache?: boolean;
+  /** Punto de partida versionado en el repo (`registry.seed.json`) — evita escanear desde `fromBlock` en la primera visita de cada navegador. */
+  seed?: RegistrySeed;
 }
 
 /** Escanea `PackConfigured`-like events y devuelve el set de packIds vistos, con caché incremental. */
 export async function scanPackIds(params: ScanPackIdsParams): Promise<Set<bigint>> {
-  const { client, address, event, packIdArg, chainId, useCache = true } = params;
+  const { client, address, event, packIdArg, chainId, useCache = true, seed } = params;
   const key = cacheKey(chainId, address, event.name ?? 'event');
-  const cached = useCache ? loadCache(key) : null;
+  const cachedFromStorage = useCache ? loadCache(key) : null;
 
-  const ids = new Set<bigint>(cached ? cached.ids.map((s) => BigInt(s)) : []);
-  let from = cached ? BigInt(cached.lastBlock) + 1n : params.fromBlock;
+  // Prioridad: localStorage (ya tiene lo que este navegador escaneó) >
+  // seed del repo (ya tiene lo que se escaneó offline hasta su
+  // `generatedAt`) > bloque de deploy (primera vez sin nada de lo anterior).
+  const base: ScanCacheEntry | null =
+    cachedFromStorage ?? (seed ? { lastBlock: seed.lastScannedBlock.toString(), ids: seed.ids.map(String) } : null);
+
+  const ids = new Set<bigint>(base ? base.ids.map((s) => BigInt(s)) : []);
+  let from = base ? BigInt(base.lastBlock) + 1n : params.fromBlock;
 
   const latest = await client.getBlockNumber();
   let chunk = DEFAULT_CHUNK_BLOCKS;

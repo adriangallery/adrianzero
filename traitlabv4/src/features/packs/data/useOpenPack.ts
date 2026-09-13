@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
-import { parseEventLogs } from 'viem';
 import { ADRIAN_FLOPPY_DISCS_DATA_ABI, OPENPACK_V4_DATA_ABI, ACTION_PACKS_DATA_ABI } from './packsData.abi';
 import { humanError } from '@/lib/web3/humanError';
 import { resolvePackOpenContract } from './packRegistry';
+import { decodeOpenPackEvent } from './decodeOpenPackEvent';
+import { useWalletDataStore } from '@/stores/walletDataStore';
 import type { OpenPackResult } from './types';
 
 export interface OpenPackParams {
@@ -31,6 +32,7 @@ export function useOpenPack() {
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
   const queryClient = useQueryClient();
+  const invalidateWalletTraits = useWalletDataStore((s) => s.invalidateTraits);
 
   const mutation = useMutation<OpenPackResult, Error, OpenPackParams>({
     mutationFn: async ({ packId, quantity = 1n }) => {
@@ -111,29 +113,23 @@ export function useOpenPack() {
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
 
-      if (route.contract === 'OPENPACK_V4') {
-        const [event] = parseEventLogs({
-          abi: OPENPACK_V4_DATA_ABI,
-          eventName: 'PacksOpened',
-          logs: receipt.logs,
-        });
-        const rewards = (event?.args as { rewards?: readonly bigint[] } | undefined)?.rewards ?? [];
-        return { txHash, packId, traitIds: [...rewards], amounts: null };
-      }
-
-      if (route.contract === 'ACTION_PACKS') {
-        const [event] = parseEventLogs({ abi: ACTION_PACKS_DATA_ABI, eventName: 'PackOpened', logs: receipt.logs });
-        const args = event?.args as { assetIds?: readonly bigint[]; amounts?: readonly bigint[] } | undefined;
-        return { txHash, packId, traitIds: [...(args?.assetIds ?? [])], amounts: args?.amounts ? [...args.amounts] : null };
-      }
-
-      const [event] = parseEventLogs({ abi: ADRIAN_FLOPPY_DISCS_DATA_ABI, eventName: 'PackOpened', logs: receipt.logs });
-      const args = event?.args as { assetIds?: readonly bigint[]; amounts?: readonly bigint[] } | undefined;
-      return { txHash, packId, traitIds: [...(args?.assetIds ?? [])], amounts: args?.amounts ? [...args.amounts] : null };
+      return decodeOpenPackEvent({
+        contract: route.contract,
+        contractAddress: route.address,
+        txHash,
+        packId,
+        logs: receipt.logs,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['packs-owned'] });
       queryClient.invalidateQueries({ queryKey: ['traits'] });
+      // El inventario que lee TraitLab (TraitsModule/MyNFTsModule) sale de
+      // `walletDataStore`, no de React Query — tiene su propio TTL de 5 min
+      // (recon §8.9, mismo motivo que `useApplyTraitlabChanges.ts` invalida
+      // esto además de React Query). Sin esto, tras abrir un pack "Equip
+      // now" llevaría a TraitLab sin ver el trait recién obtenido.
+      invalidateWalletTraits();
     },
   });
 
