@@ -12,9 +12,20 @@ completo; este README cubre solo el mantenimiento del seed.
 de verdad es leer el evento `PackConfigured` que cada
 `setPackConfig`/`configurePack` emite (`logScan.ts`). Esos contratos
 llevan ~17,7 M de bloques de vida en Base — escanear desde su bloque de
-deploy en la primera visita de cada navegador es lento y el RPC público
-(`mainnet.base.org`, uno de los fallbacks de `RPC_URLS`) limita
-`eth_getLogs` a 2000 bloques por llamada, lo que puede dar 429.
+deploy en la primera visita de cada navegador es lento.
+
+**RPC dedicado, nunca Alchemy (fix 13-sep, hallazgo del crítico en
+producción):** `logScan.ts` usa SIEMPRE un cliente propio contra el RPC
+público de Base (`mainnet.base.org`, sin clave) para `eth_getLogs` —
+nunca el `publicClient` de wagmi. En producción ese `publicClient` es
+`fallback([alchemy…, infura?, mainnet.base.org, …])`, y Alchemy respondía
+`-32600 "up to a 10 block range"` a `eth_getLogs` para esta cuenta/plan —
+muy por debajo de lo que se asumía (2000, el límite medido del RPC
+público) y por debajo incluso del suelo de troceo, así que el escaneo
+reventaba en vez de progresar. El resto de lecturas de `packRegistry.ts`
+(multicall, `readContract`) siguen yendo por wagmi/Alchemy sin cambios —
+esas sí soportan su rango normal, el problema era específico de
+`eth_getLogs`.
 
 `registry.seed.json` es el resultado de ESE escaneo largo, hecho una vez
 offline y commiteado. `logScan.ts` lo usa como punto de partida (si
@@ -47,24 +58,29 @@ previo. No es urgente, pero conviene mantenerlo fresco de vez en cuando.
 
 ```bash
 cd traitlabv4
-RPC_URL=https://tu-rpc-con-clave node scripts/packs-registry-seed.mjs
+node scripts/packs-registry-seed.mjs
 ```
 
-- **Usa un RPC con clave (Alchemy, el mismo patrón que `config/alchemy.ts`)**,
-  no el público — sin él, `RPC_URL` cae por defecto a
-  `https://mainnet.base.org` (funciona, pero trocea a 2000 bloques y puede
-  tardar si ha pasado mucho tiempo desde el último seed).
+- **NO le pases un `RPC_URL` de Alchemy/Infura** pensando que va más
+  rápido — es justo el bug que este fix corrige (ver arriba). El default,
+  sin `RPC_URL`, ya es el correcto: `mainnet.base.org`, sin clave, 2000
+  bloques por llamada. El script avisa por consola si `RPC_URL` parece
+  Alchemy/Infura.
 - El script es incremental: si `registry.seed.json` ya existe, solo
-  escanea desde su `lastScannedBlock` + 1, no repite el historial.
+  escanea desde su `lastScannedBlock` + 1, no repite el historial — con
+  el seed al día son ~25-30 peticiones, segundos.
 - Commitea el `registry.seed.json` resultante junto con el cambio que
   motivó la regeneración (o suelto, si es solo mantenimiento).
 - **No se ejecuta en CI** — es un paso manual, deliberadamente (mismo
   criterio que el resto del repo: nada de escaneos largos de RPC en cada
   push).
 
-Esta vez (13-sep-2026) se generó sin `node_modules` instalado en el
-worktree (regla del plan: nada de `npm install`/build en el portátil de
-8 GB) reproduciendo la misma lógica de escaneo contra la API REST de
-Blockscout en lugar de `eth_getLogs` directo — mismo resultado, sin
-depender del RPC. Las próximas regeneraciones deberían usar el script de
-verdad (`scripts/packs-registry-seed.mjs`) con un RPC real.
+Tanto la generación inicial (13-sep) como esta actualización (13-sep,
+mismo día, fix del RPC dedicado) se hicieron sin `node_modules` instalado
+en el worktree (regla del plan: nada de `npm install`/build en el
+portátil de 8 GB), reproduciendo la misma lógica de escaneo contra la API
+REST de Blockscout en lugar de `eth_getLogs` directo — mismo resultado
+(mismos `packIds`, confirmado sin cambios desde la primera generación),
+solo `lastScannedBlock`/`generatedAt` puestos al día. Las próximas
+regeneraciones deberían usar el script de verdad
+(`scripts/packs-registry-seed.mjs`) con `node_modules` instalado.

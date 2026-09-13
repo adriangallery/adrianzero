@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-13T15:30:00.000Z",
+  "generatedAt": "2026-09-13T18:02:11.000Z",
   "chainId": 8453,
   "sources": {
     "FLOPPY_DISCS": {
       "address": "0x56b3fcc1417f269138cb7eba1272e8ccfee8ffc8",
-      "lastScannedBlock": "51258605",
+      "lastScannedBlock": "51266578",
       "packIds": [
         "10005",
         "10010"
@@ -12,7 +12,7 @@
     },
     "OPENPACK_V4": {
       "address": "0x238083148f4fbf4232efe16261e7aa87ce787022",
-      "lastScannedBlock": "51258605",
+      "lastScannedBlock": "51266578",
       "packIds": [
         "10000",
         "10001",
@@ -31,7 +31,7 @@
     },
     "ACTION_PACKS": {
       "address": "0xa7e2ae50e7f15d220cd3f61728e52d0e6e1b2e36",
-      "lastScannedBlock": "51258605",
+      "lastScannedBlock": "51266578",
       "packIds": [
         "1123",
         "10002",
