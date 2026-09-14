@@ -141,7 +141,7 @@ export function NFTTraitSelector({ nft, isOpen, onClose }: NFTTraitSelectorProps
                       #{nft.tokenId}
                     </span>
                   </div>
-                  <Dialog.Close className="p-2 hover:bg-muted rounded-lg transition-colors">
+                  <Dialog.Close aria-label="Close" className="p-2 hover:bg-muted rounded-lg transition-colors">
                     <X className="h-5 w-5" />
                   </Dialog.Close>
                 </div>

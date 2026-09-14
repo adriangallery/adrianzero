@@ -32,7 +32,11 @@
     <!-- D17 (13-sep-2026): Press Start 2P = display (wordmark/h1, dosis pequeñas);
          Pixelify Sans = UI (botones, chips, badges, números, h2/h3, TabBar);
          Chakra Petch = body (párrafos, inputs). Fuera Space Grotesk/JetBrains Mono. -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- F11: la hoja de Google Fonts bloqueaba el primer pintado ~770 ms en móvil. Se carga sin
+         bloquear (media=print → all al cargar); display=swap ya pinta con la fuente de reserva. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
     <title>AdrianZERO — your NFT, your rules</title>
   </head>
   <body>

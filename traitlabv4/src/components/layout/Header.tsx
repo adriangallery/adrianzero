@@ -29,6 +29,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           {!isCompact && (
             <button
               onClick={onMenuClick}
+              aria-label="Open menu"
               className="lg:hidden p-2 hover:bg-muted rounded-lg"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
