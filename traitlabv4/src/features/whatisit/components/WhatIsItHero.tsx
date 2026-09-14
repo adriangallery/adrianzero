@@ -26,7 +26,7 @@ export function WhatIsItHero() {
       </h1>
 
       {/* Subtitle */}
-      <p className="mb-4 text-xl text-muted-foreground">
+      <p className="mb-4 text-xl text-mute">
         A living, evolving NFT ecosystem built on Base
       </p>
 
@@ -34,7 +34,7 @@ export function WhatIsItHero() {
       <DaysBuilding />
 
       {/* Artist Credit */}
-      <p className="mt-6 text-sm text-muted-foreground italic">
+      <p className="mt-6 text-sm text-mute italic">
         Art by HalfXTiger
       </p>
     </div>

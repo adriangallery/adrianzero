@@ -305,7 +305,10 @@ export function TraitLabModule() {
   return (
     <div className="flex flex-col">
       {/* Cabecera: token + cambiar */}
-      <div className="flex items-center justify-between gap-3 px-4 pb-2.5 pt-3.5">
+      {/* lg:pt-20: en escritorio /traitlab no lleva Header sino la barra
+          flotante de ZeroStyleChrome (top-4 + h-12 = 64px) que tapaba esta
+          fila (grabación 13-sep: «Change token» debajo del botón MENU). */}
+      <div className="flex items-center justify-between gap-3 px-4 pb-2.5 pt-3.5 lg:pt-20">
         <button
           type="button"
           data-testid="traitlab-change-token"
@@ -339,7 +342,7 @@ export function TraitLabModule() {
       </div>
 
       {noToken ? (
-        <div className="flex min-h-[50dvh] items-center justify-center px-6 text-center text-sm text-mute">
+        <div className="flex min-h-[50dvh] items-center justify-center px-6 text-center text-sm text-mute lg:pt-16">
           Choose a ZERO to start customizing it.
         </div>
       ) : (

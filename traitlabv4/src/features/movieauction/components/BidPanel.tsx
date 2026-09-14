@@ -53,7 +53,7 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
 
     if (!isConnected || !address) {
         return (
-            <div className="rounded border border-zinc-800 bg-zinc-950/60 p-4 text-center text-[10px] uppercase tracking-widest text-zinc-500">
+            <div className="rounded border border-line bg-panel p-4 text-center text-[13px] uppercase tracking-widest text-mute">
                 Connect wallet to bid
             </div>
         );
@@ -65,22 +65,22 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
 
     if (isEnded) {
         return (
-            <div className="rounded border border-zinc-800 bg-zinc-950/60 p-4 text-center">
-                <p className="text-[10px] uppercase tracking-widest text-zinc-500">Auction ended</p>
+            <div className="rounded border border-line bg-panel p-4 text-center">
+                <p className="text-[13px] uppercase tracking-widest text-mute">Auction ended</p>
                 {noBids ? (
-                    <p className="mt-1 text-[10px] text-zinc-600">No bids — ready to be cancelled by the owner.</p>
+                    <p className="mt-1 text-[13px] text-mute">No bids — ready to be cancelled by the owner.</p>
                 ) : (
                     <>
-                        <p className="mt-1 text-sm text-white">
+                        <p className="mt-1 text-sm text-fg">
                             Winner: <span className={winnerHere ? 'text-yellow-400' : ''}>{auction.topBidder.slice(0, 6)}…{auction.topBidder.slice(-4)}</span>
-                            {winnerHere && <span className="ml-2 rounded bg-yellow-400 px-1.5 py-0.5 text-[8px] font-bold text-black">YOU</span>}
+                            {winnerHere && <span className="ml-2 rounded bg-yellow-400 px-1.5 py-0.5 text-[11px] font-bold text-black">YOU</span>}
                         </p>
-                        <p className="mt-1 text-xs text-zinc-400">at {Number(formatUnits(auction.topBid, 18)).toLocaleString()} ZERO</p>
+                        <p className="mt-1 text-xs text-mute">at {Number(formatUnits(auction.topBid, 18)).toLocaleString()} ZERO</p>
                         {auction.statusCode === 1 && (
                             <button
                                 onClick={() => settle(auction.auctionId)}
                                 disabled={isSettlePending || isSettleConfirming}
-                                className="mt-3 inline-flex items-center gap-1 rounded border border-yellow-500 bg-yellow-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-yellow-400 hover:bg-yellow-500/20 disabled:opacity-50"
+                                className="mt-3 inline-flex items-center gap-1 rounded border border-yellow-500 bg-yellow-500/10 px-3 py-1.5 text-[13px] font-bold uppercase tracking-wider text-yellow-400 hover:bg-yellow-500/20 disabled:opacity-50"
                             >
                                 {(isSettlePending || isSettleConfirming) && <Loader2 className="h-3 w-3 animate-spin" />}
                                 Settle auction → mint movie to winner
@@ -105,24 +105,24 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
     const canBid = !parseErr && !tooLow && !balanceShort && !needsApproval;
 
     return (
-        <div className="rounded border border-zinc-800 bg-zinc-950/60 p-4">
+        <div className="rounded border border-line bg-panel p-4">
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                 <div>
-                    <span className="text-[8px] uppercase tracking-[0.3em] text-zinc-500">Min next bid</span>
+                    <span className="text-[11px] uppercase tracking-wider text-mute">Min next bid</span>
                     <p className="font-mono text-lg font-bold text-yellow-400">
-                        {minNextZ.toLocaleString(undefined, {maximumFractionDigits: 2})} <span className="text-[10px] text-zinc-500">ZERO</span>
+                        {minNextZ.toLocaleString(undefined, {maximumFractionDigits: 2})} <span className="text-[13px] text-mute">ZERO</span>
                     </p>
                 </div>
                 <div className="text-right">
-                    <span className="text-[8px] uppercase tracking-[0.3em] text-zinc-500">Your balance</span>
-                    <p className="text-[11px] font-mono text-zinc-300">
+                    <span className="text-[11px] uppercase tracking-wider text-mute">Your balance</span>
+                    <p className="text-[11px] font-mono text-fg">
                         {Number(formatUnits(zeroBalance, 18)).toLocaleString()} ZERO
                     </p>
                 </div>
             </div>
 
             <label className="block">
-                <span className="text-[8px] uppercase tracking-widest text-zinc-500">Bid amount (ZERO)</span>
+                <span className="text-[11px] uppercase tracking-widest text-mute">Bid amount (ZERO)</span>
                 <div className="mt-1 flex items-center gap-2">
                     <input
                         type="number"
@@ -131,20 +131,20 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
                         onChange={(e) => setBidInput(e.target.value)}
                         min={minNextZ}
                         step={Math.max(1, Math.floor(minNextZ / 100))}
-                        className="w-full rounded border border-zinc-800 bg-black px-3 py-2 text-base text-white outline-none focus:border-yellow-500"
+                        className="w-full rounded border border-line bg-bg px-3 py-2 text-base text-fg outline-none focus:border-yellow-500"
                     />
                     <button
                         onClick={() => setBidInput(minNextZ.toString())}
-                        className="shrink-0 rounded border border-zinc-700 px-2 py-2 text-[9px] uppercase tracking-wider text-zinc-400 hover:border-zinc-500"
+                        className="shrink-0 rounded border border-line px-2 py-2 text-[12px] uppercase tracking-wider text-mute hover:border-line"
                     >
                         Min
                     </button>
                 </div>
             </label>
 
-            {parseErr && <p className="mt-2 text-[10px] text-red-400">{parseErr}</p>}
-            {tooLow && !parseErr && <p className="mt-2 text-[10px] text-red-400">Below minimum next bid</p>}
-            {balanceShort && <p className="mt-2 text-[10px] text-red-400">Insufficient $ZERO balance</p>}
+            {parseErr && <p className="mt-2 text-[13px] text-red-400">{parseErr}</p>}
+            {tooLow && !parseErr && <p className="mt-2 text-[13px] text-red-400">Below minimum next bid</p>}
+            {balanceShort && <p className="mt-2 text-[13px] text-red-400">Insufficient $ZERO balance</p>}
 
             <div className="mt-3 flex flex-col gap-2">
                 {needsApproval ? (
@@ -160,7 +160,7 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
                                 : `Approve ${Number(formatUnits(bidAmountWei, 18)).toLocaleString()} ZERO`}
                         </button>
                         {isApproveConfirmed && (
-                            <p className="text-center text-[10px] text-zinc-500">
+                            <p className="text-center text-[13px] text-mute">
                                 Tx confirmed. Waiting for the RPC to reflect the new allowance — this auto-updates in a few seconds.
                             </p>
                         )}
@@ -176,12 +176,12 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
                     </button>
                 )}
                 {approveError && !isUserRejection(approveError) && (
-                    <p className="text-[10px] text-red-400">
+                    <p className="text-[13px] text-red-400">
                         Approve failed: {humanError(approveError)}
                     </p>
                 )}
                 {bidError && !isUserRejection(bidError) && (
-                    <p className="text-[10px] text-red-400">{humanError(bidError)}</p>
+                    <p className="text-[13px] text-red-400">{humanError(bidError)}</p>
                 )}
             </div>
         </div>

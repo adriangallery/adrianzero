@@ -11,12 +11,12 @@ import { metadataUrl, renderUrl } from '@/lib/adrianlab';
 const OPENSEA_BASE = `https://opensea.io/assets/base/${CONTRACT_ADDRESSES.ADRIAN_ZERO}`;
 
 const TYPE_COLORS: Record<NFTType, string> = {
-  Gen0: 'bg-zinc-600 text-zinc-200',
+  Gen0: 'bg-line text-fg',
   SamuraiZERO: 'bg-red-700 text-red-100',
-  SubZERO: 'bg-blue-700 text-blue-100',
+  SubZERO: 'bg-acc text-acc',
   ZEROmovies: 'bg-red-600 text-red-100',
   GenZERO: 'bg-pink-600 text-pink-100',
-  Unknown: 'bg-gray-700 text-gray-300',
+  Unknown: 'bg-line text-fg',
 };
 
 interface NFTDetailModalProps {
@@ -109,7 +109,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeModal}
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md"
+            className="fixed inset-0 z-50 bg-bg/90 backdrop-blur-md"
           />
 
           {/* Modal */}
@@ -119,20 +119,20 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-zinc-900/95 shadow-2xl backdrop-blur-xl"
+              className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-panel shadow-2xl backdrop-blur-xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close */}
               <button
                 onClick={closeModal}
-                className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 hover:scale-110 transition-all"
+                className="absolute right-3 top-3 z-10 rounded-full bg-bg/50 p-2 text-fg hover:bg-bg/70 hover:scale-110 transition-all"
               >
                 <X className="h-5 w-5" />
               </button>
 
               <div className="flex flex-col md:flex-row">
                 {/* Image */}
-                <div className="relative flex-shrink-0 flex items-center justify-center bg-black p-4 md:p-6 md:w-1/2">
+                <div className="relative flex-shrink-0 flex items-center justify-center bg-bg p-4 md:p-6 md:w-1/2">
                   <img
                     src={imageUrl}
                     alt={localMeta?.name ?? `#${selectedTokenId}`}
@@ -144,13 +144,13 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                   <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-3">
                     <button
                       onClick={goToPrevious}
-                      className="rounded-full bg-black/70 p-2 text-white hover:bg-black/90 hover:scale-110 transition-all"
+                      className="rounded-full bg-bg/70 p-2 text-fg hover:bg-bg/90 hover:scale-110 transition-all"
                     >
                       <ChevronLeft className="h-5 w-5" />
                     </button>
                     <button
                       onClick={goToNext}
-                      className="rounded-full bg-black/70 p-2 text-white hover:bg-black/90 hover:scale-110 transition-all"
+                      className="rounded-full bg-bg/70 p-2 text-fg hover:bg-bg/90 hover:scale-110 transition-all"
                     >
                       <ChevronRight className="h-5 w-5" />
                     </button>
@@ -167,49 +167,49 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                     <>
                       {/* Name + badge */}
                       <div className="flex items-start gap-2 mb-1">
-                        <h2 className="text-2xl font-bold text-white">
+                        <h2 className="text-2xl font-bold text-fg">
                           {localMeta?.name ?? `AdrianZero #${selectedTokenId}`}
                         </h2>
                       </div>
 
                       <div className="flex items-center gap-2 mb-4">
-                        <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${TYPE_COLORS[nftType]}`}>
+                        <span className={`rounded px-2 py-0.5 text-[13px] font-bold ${TYPE_COLORS[nftType]}`}>
                           {nftType}
                         </span>
-                        <span className="font-mono text-xs text-zinc-500">
+                        <span className="font-mono text-xs text-mute">
                           Token #{selectedTokenId}
                         </span>
                       </div>
 
                       {/* Owner */}
-                      <div className="mb-4 rounded-lg bg-zinc-800/50 p-3">
-                        <div className="text-[10px] font-medium uppercase text-zinc-500 mb-1">Owner</div>
+                      <div className="mb-4 rounded-lg bg-line p-3">
+                        <div className="text-[13px] font-medium uppercase text-mute mb-1">Owner</div>
                         {ensName ? (
                           <div>
-                            <span className="text-sm font-semibold text-emerald-400">{ensName}</span>
-                            <div className="font-mono text-[10px] text-zinc-500 mt-0.5 break-all">{owner}</div>
+                            <span className="text-sm font-semibold text-ok">{ensName}</span>
+                            <div className="font-mono text-[13px] text-mute mt-0.5 break-all">{owner}</div>
                           </div>
                         ) : (
-                          <div className="font-mono text-xs text-zinc-300 break-all">{owner}</div>
+                          <div className="font-mono text-xs text-fg break-all">{owner}</div>
                         )}
                       </div>
 
                       {/* Description */}
                       {localMeta?.description && (
-                        <p className="mb-4 text-sm text-zinc-400">{localMeta.description}</p>
+                        <p className="mb-4 text-sm text-mute">{localMeta.description}</p>
                       )}
 
                       {/* Attributes */}
                       {localMeta?.attributes && localMeta.attributes.length > 0 && (
                         <div className="mb-4">
-                          <h3 className="mb-2 text-sm font-semibold text-white">Attributes</h3>
+                          <h3 className="mb-2 text-sm font-semibold text-fg">Attributes</h3>
                           <div className="grid grid-cols-2 gap-2">
                             {localMeta.attributes.map((attr, i) => (
-                              <div key={i} className="rounded-lg bg-zinc-800/50 p-2.5">
-                                <div className="text-[9px] font-medium uppercase text-zinc-500">
+                              <div key={i} className="rounded-lg bg-line p-2.5">
+                                <div className="text-[12px] font-medium uppercase text-mute">
                                   {attr.trait_type}
                                 </div>
-                                <div className="mt-0.5 text-xs font-semibold text-white">
+                                <div className="mt-0.5 text-xs font-semibold text-fg">
                                   {attr.value}
                                 </div>
                               </div>
@@ -224,7 +224,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                           href={`${OPENSEA_BASE}/${selectedTokenId}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                          className="flex items-center justify-center gap-2 rounded-lg bg-acc px-4 py-2.5 text-sm font-medium text-acc-fg hover:opacity-90 transition-colors"
                         >
                           View on OpenSea
                           <ExternalLink className="h-3.5 w-3.5" />
@@ -233,7 +233,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                           href={imageUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
+                          className="flex items-center justify-center gap-2 rounded-lg border border-line bg-line px-4 py-2.5 text-sm font-medium text-fg hover:bg-line transition-colors"
                         >
                           Full Image
                           <ExternalLink className="h-3.5 w-3.5" />

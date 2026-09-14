@@ -39,7 +39,7 @@ export function MintSuccessModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+                className="fixed inset-0 z-50 bg-bg/80 backdrop-blur-sm"
               />
             </Dialog.Overlay>
 
@@ -48,22 +48,22 @@ export function MintSuccessModal({
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 border-success bg-background p-8 shadow-2xl"
+                className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 border-ok bg-bg p-8 shadow-2xl"
               >
                 {/* Close Button */}
-                <Dialog.Close className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+                <Dialog.Close className="absolute right-4 top-4 rounded-full p-2 text-mute transition-colors hover:bg-line hover:text-fg">
                   <X className="h-5 w-5" />
                 </Dialog.Close>
 
                 {/* Content */}
                 <div className="text-center">
                   {/* Title */}
-                  <Dialog.Title className="mb-4 text-3xl font-bold text-success">
+                  <Dialog.Title className="mb-4 text-3xl font-bold text-ok">
                     {title}
                   </Dialog.Title>
 
                   {/* Message */}
-                  <Dialog.Description className="mb-8 text-muted-foreground">
+                  <Dialog.Description className="mb-8 text-mute">
                     {message}
                   </Dialog.Description>
 
@@ -72,7 +72,7 @@ export function MintSuccessModal({
                     <Link
                       to="/custom"
                       onClick={onClose}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-success px-6 py-3 font-bold text-black transition-all hover:bg-success/90"
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-ok px-6 py-3 font-bold text-black transition-all hover:bg-ok/90"
                     >
                       <Sparkles className="h-5 w-5" />
                       Customize in TraitLAB
@@ -81,7 +81,7 @@ export function MintSuccessModal({
                     <Link
                       to="/traits"
                       onClick={onClose}
-                      className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-success bg-transparent px-6 py-3 font-bold text-success transition-all hover:bg-success/10"
+                      className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-ok bg-transparent px-6 py-3 font-bold text-ok transition-all hover:bg-ok/10"
                     >
                       <ShoppingBag className="h-5 w-5" />
                       Browse Traits
@@ -90,11 +90,11 @@ export function MintSuccessModal({
 
                   {/* Cross-sell suggestion */}
                   {kitType && (
-                    <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4">
-                      <p className="text-sm text-muted-foreground">
+                    <div className="mt-6 rounded-lg border border-line bg-line/50 p-4">
+                      <p className="text-sm text-mute">
                         {isFree ? (
                           <>
-                            <span className="font-bold text-accent">
+                            <span className="font-bold text-acc2">
                               Want Normal Eyes?
                             </span>{' '}
                             Get the full AdrianZERO experience with proper eye
@@ -102,7 +102,7 @@ export function MintSuccessModal({
                           </>
                         ) : (
                           <>
-                            <span className="font-bold text-success">
+                            <span className="font-bold text-ok">
                               Want a FREE One Too?
                             </span>{' '}
                             Complete your collection with the quirky SubZERO!

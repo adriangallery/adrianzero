@@ -143,10 +143,10 @@ export function BuyModule() {
     <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">
+        <h1 className="text-2xl font-bold text-fg">
           Buy <span className="text-[#00ff00]">$ZERO</span>
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-mute mt-1">
           Trade $ZERO on Uniswap V4. Tax-free transfers, swap tax fuels the deflationary loop.
         </p>
       </div>
@@ -160,8 +160,8 @@ export function BuyModule() {
       </div>
 
       {/* Tax breakdown */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground px-1">
-        <span className="font-medium text-foreground">Tax Split:</span>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-mute px-1">
+        <span className="font-medium text-fg">Tax Split:</span>
         {[
           ['80%', 'Floor Engine'],
           ['10%', 'Burn'],
@@ -170,7 +170,7 @@ export function BuyModule() {
           ['2%', 'Treasury'],
         ].map(([pct, label]) => (
           <span key={label}>
-            <span className="text-foreground">{pct}</span> {label}
+            <span className="text-fg">{pct}</span> {label}
           </span>
         ))}
       </div>
@@ -178,7 +178,7 @@ export function BuyModule() {
       {/* Chart + Swap */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* GeckoTerminal Chart */}
-        <div className="bg-card border border-border rounded-xl overflow-hidden min-h-[400px]">
+        <div className="bg-panel border border-line rounded-xl overflow-hidden min-h-[400px]">
           {POOL_ADDRESS ? (
             <iframe
               title="GeckoTerminal Chart"
@@ -189,30 +189,30 @@ export function BuyModule() {
             />
           ) : (
             <div className="flex items-center justify-center h-full p-8">
-              <p className="text-muted-foreground text-center">Chart available after pool launch</p>
+              <p className="text-mute text-center">Chart available after pool launch</p>
             </div>
           )}
         </div>
 
         {/* Swap Panel */}
-        <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="bg-panel border border-line rounded-xl p-5 space-y-4">
           {!routerReady ? (
             <div className="text-center py-8">
-              <p className="text-lg font-bold text-foreground mb-2">SWAP NOT AVAILABLE</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-lg font-bold text-fg mb-2">SWAP NOT AVAILABLE</p>
+              <p className="text-sm text-mute">
                 The SwapRouter contract has not been deployed yet. Configure VITE_SWAP_ROUTER_ADDRESS to enable swaps.
               </p>
             </div>
           ) : address ? (
             <>
               {/* Direction Toggle */}
-              <div className="flex rounded-xl overflow-hidden border border-border">
+              <div className="flex rounded-xl overflow-hidden border border-line">
                 <button
                   onClick={() => { setDirection('buy'); setAmount(''); setQuote(null); }}
                   className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
                     direction === 'buy'
                       ? 'bg-[#00ff00] text-black'
-                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                      : 'bg-line text-mute hover:text-fg'
                   }`}
                 >
                   BUY $ZERO
@@ -222,7 +222,7 @@ export function BuyModule() {
                   className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
                     direction === 'sell'
                       ? 'bg-[#00ff00] text-black'
-                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                      : 'bg-line text-mute hover:text-fg'
                   }`}
                 >
                   SELL $ZERO
@@ -231,7 +231,7 @@ export function BuyModule() {
 
               {/* Amount Input */}
               <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                <label className="text-xs text-mute uppercase tracking-wider">
                   {direction === 'buy' ? 'ETH Amount' : '$ZERO Amount'}
                 </label>
                 <input
@@ -239,9 +239,9 @@ export function BuyModule() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.0"
-                  className="w-full mt-2 px-4 py-3 bg-muted rounded-xl text-foreground text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#00ff00]/50"
+                  className="w-full mt-2 px-4 py-3 bg-line rounded-xl text-fg text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#00ff00]/50"
                 />
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-mute mt-2">
                   {quoteLoading
                     ? 'Fetching quote...'
                     : quote
@@ -305,21 +305,21 @@ export function BuyModule() {
               )}
 
               {/* Info */}
-              <div className="border-t border-border pt-3 space-y-1">
-                <p className="text-xs text-muted-foreground">
+              <div className="border-t border-line pt-3 space-y-1">
+                <p className="text-xs text-mute">
                   {direction === 'buy'
                     ? 'No approval needed -- send ETH directly.'
                     : 'Requires ZERO approval before first sell.'}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-mute">
                   Tax is deducted by the V4 hook automatically. Slippage: {SLIPPAGE_BPS / 100}%.
                 </p>
               </div>
             </>
           ) : (
             <div className="text-center py-8">
-              <p className="text-lg font-bold text-foreground mb-2">CONNECT WALLET</p>
-              <p className="text-sm text-muted-foreground">Connect your wallet to swap</p>
+              <p className="text-lg font-bold text-fg mb-2">CONNECT WALLET</p>
+              <p className="text-sm text-mute">Connect your wallet to swap</p>
             </div>
           )}
         </div>
@@ -330,10 +330,10 @@ export function BuyModule() {
 
 function StatCard({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-3">
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
-      <p className="text-lg font-bold text-foreground leading-tight">{value}</p>
-      <p className="text-xs text-muted-foreground">{unit}</p>
+    <div className="bg-panel border border-line rounded-xl p-3">
+      <p className="text-[13px] text-mute uppercase tracking-wider">{label}</p>
+      <p className="text-lg font-bold text-fg leading-tight">{value}</p>
+      <p className="text-xs text-mute">{unit}</p>
     </div>
   );
 }

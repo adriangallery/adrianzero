@@ -65,16 +65,16 @@ export function GumballModule() {
   const totalLabel = `${formatEther(totalCost)} $ZERO`;
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-[#0a0a16] via-[#10101f] to-black text-white flex flex-col items-center px-4 py-10">
+    <div className="min-h-[60dvh] w-full bg-gradient-to-b from-[#0a0a16] via-[#10101f] to-bg text-fg flex flex-col items-center px-4 py-10">
       <div className="w-full max-w-md text-center">
         <h1 className="text-4xl font-extrabold tracking-tight mb-1">
           Gumball<span className="text-pink-400">ZERO</span>
         </h1>
-        <p className="text-sm text-white/60 mb-6">
+        <p className="text-sm text-fg/60 mb-6">
           Insert $ZERO · get a random ZERO. Closed series of 100.
         </p>
 
-        <div className="relative rounded-2xl border border-white/10 bg-black/40 p-5 shadow-2xl">
+        <div className="relative rounded-2xl border border-white/10 bg-bg/40 p-5 shadow-2xl">
           <img
             src="/gumball-machine.gif"
             alt="Gumball machine"
@@ -82,15 +82,15 @@ export function GumballModule() {
             draggable={false}
           />
 
-          <div className="mt-4 flex items-center justify-between text-xs text-white/60">
+          <div className="mt-4 flex items-center justify-between text-xs text-fg/60">
             <span>
               Stock:{' '}
-              <span className="text-white font-semibold">
+              <span className="text-fg font-semibold">
                 {config.poolRemaining.toString()} / {config.totalSeeded.toString()}
               </span>
             </span>
             <span>
-              Price: <span className="text-white font-semibold">{priceLabel}</span>
+              Price: <span className="text-fg font-semibold">{priceLabel}</span>
             </span>
           </div>
 
@@ -105,8 +105,8 @@ export function GumballModule() {
                 }}
                 className={`rounded-lg py-2 text-sm font-bold transition ${
                   qty === n
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10'
+                    ? 'bg-pink-500 text-fg'
+                    : 'bg-white/5 text-fg/70 hover:bg-white/10'
                 }`}
               >
                 {n}
@@ -114,8 +114,8 @@ export function GumballModule() {
             ))}
           </div>
 
-          <div className="mt-3 text-sm text-white/70">
-            Total: <span className="text-white font-semibold">{totalLabel}</span>
+          <div className="mt-3 text-sm text-fg/70">
+            Total: <span className="text-fg font-semibold">{totalLabel}</span>
           </div>
 
           {/* Status / actions */}
@@ -131,13 +131,13 @@ export function GumballModule() {
               </div>
             )}
             {!notLive && soldOut && (
-              <div className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white/70">
+              <div className="rounded-lg bg-white/10 px-3 py-2 text-xs text-fg/70">
                 Sold out — all 100 have been dispensed.
               </div>
             )}
 
             {isConfirmed ? (
-              <div className="rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-3 py-3 text-sm text-emerald-300">
+              <div className="rounded-lg bg-ok/15 border border-ok/30 px-3 py-3 text-sm text-ok">
                 Dispensed! 🎉 Check your wallet or the{' '}
                 <a href="/mynfts" className="underline">
                   My NFTs
@@ -146,7 +146,7 @@ export function GumballModule() {
               </div>
             ) : !isConnected ? (
               <div className="flex flex-col items-center gap-2">
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-fg/50">
                   Connect your wallet to pull.
                 </p>
                 <ConnectButton />
@@ -179,7 +179,7 @@ export function GumballModule() {
           </div>
         </div>
 
-        <p className="mt-6 text-[11px] text-white/30">
+        <p className="mt-6 text-[11px] text-fg/30">
           100% revenue · random pre-assigned traits · by HalfxTiger
         </p>
       </div>

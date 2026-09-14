@@ -22,11 +22,11 @@ export function NumbersGrid() {
       {stats.map((stat, index) => (
         <div
           key={index}
-          className="rounded-lg border border-border bg-card p-6 text-center transition-all hover:border-primary hover:shadow-lg"
+          className="rounded-lg border border-line bg-panel p-6 text-center transition-all hover:border-acc hover:shadow-lg"
         >
           <div className="mb-2 text-4xl">{stat.emoji}</div>
           <div className="mb-1 text-3xl font-bold text-[#00ff00]">{stat.value}</div>
-          <div className="text-sm text-muted-foreground">{stat.label}</div>
+          <div className="text-sm text-mute">{stat.label}</div>
         </div>
       ))}
     </div>

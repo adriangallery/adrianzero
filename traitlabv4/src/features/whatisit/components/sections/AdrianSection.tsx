@@ -19,31 +19,31 @@ export function AdrianSection() {
               style={{ imageRendering: 'pixelated' }}
             />
           </div>
-          <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-6 text-center">
-            <p className="mb-2 text-sm text-muted-foreground">ERC-20 on Base</p>
+          <div className="rounded-lg border border-acc/30 bg-acc/5 p-6 text-center">
+            <p className="mb-2 text-sm text-mute">ERC-20 on Base</p>
             <p className="text-lg font-bold text-[#00ff00]">Powers Everything</p>
           </div>
         </div>
 
         {/* Right: Use Cases */}
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-cyan-400">Use Cases</h3>
+          <h3 className="text-2xl font-bold text-acc">Use Cases</h3>
           <div className="space-y-3">
-            <div className="rounded-lg bg-muted/30 p-4">
+            <div className="rounded-lg bg-line/30 p-4">
               <span className="text-lg">🎨</span>
-              <span className="ml-2 text-foreground">Mint NFTs & Traits</span>
+              <span className="ml-2 text-fg">Mint NFTs & Traits</span>
             </div>
-            <div className="rounded-lg bg-muted/30 p-4">
+            <div className="rounded-lg bg-line/30 p-4">
               <span className="text-lg">🛒</span>
-              <span className="ml-2 text-foreground">Buy from TraitSHOP</span>
+              <span className="ml-2 text-fg">Buy from TraitSHOP</span>
             </div>
-            <div className="rounded-lg bg-muted/30 p-4">
+            <div className="rounded-lg bg-line/30 p-4">
               <span className="text-lg">💰</span>
-              <span className="ml-2 text-foreground">Marketplace & Auctions</span>
+              <span className="ml-2 text-fg">Marketplace & Auctions</span>
             </div>
-            <div className="rounded-lg bg-muted/30 p-4">
+            <div className="rounded-lg bg-line/30 p-4">
               <span className="text-lg">🎁</span>
-              <span className="ml-2 text-foreground">Rewards & Airdrops</span>
+              <span className="ml-2 text-fg">Rewards & Airdrops</span>
             </div>
           </div>
         </div>

@@ -64,11 +64,11 @@ export function AdvancedMintCard({
   const balanceFormatted = zeroFormatted;
   const hasAutoMintedRef = useRef(false);
 
-  const borderColor = type === 'samurai' ? 'border-pink-500' : 'border-cyan-500';
-  const accentColor = type === 'samurai' ? 'text-pink-500' : 'text-cyan-500';
+  const borderColor = type === 'samurai' ? 'border-pink-500' : 'border-acc';
+  const accentColor = type === 'samurai' ? 'text-pink-500' : 'text-acc';
   const buttonBg = type === 'samurai'
     ? 'bg-pink-500 hover:bg-pink-600'
-    : 'bg-cyan-500 hover:bg-cyan-600';
+    : 'bg-acc hover:bg-acc';
 
   const totalCost = price ? price * BigInt(quantity) : BigInt(0);
   const needsApproval = allowance < totalCost;
@@ -149,17 +149,17 @@ export function AdvancedMintCard({
 
   return (
     <div
-      className={`relative flex flex-col overflow-hidden rounded-2xl border-2 ${borderColor} bg-background/80 transition-all hover:shadow-lg`}
+      className={`relative flex flex-col overflow-hidden rounded-2xl border-2 ${borderColor} bg-bg/80 transition-all hover:shadow-lg`}
     >
       {/* Header */}
       <div className="p-4 pb-0">
         <h3 className={`text-xl font-bold ${accentColor}`}>{title}</h3>
-        <p className="text-sm text-muted-foreground italic">{subtitle}</p>
+        <p className="text-sm text-mute italic">{subtitle}</p>
       </div>
 
       {/* Image */}
       <div className="p-4">
-        <div className="aspect-square overflow-hidden rounded-xl bg-muted">
+        <div className="aspect-square overflow-hidden rounded-xl bg-line">
           <img
             src={imageUrl}
             alt={title}
@@ -172,15 +172,15 @@ export function AdvancedMintCard({
       <div className="flex-1 p-4 pt-0 space-y-3">
         {/* Supply */}
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Supply</span>
-          <span className="font-medium text-foreground">
+          <span className="text-mute">Supply</span>
+          <span className="font-medium text-fg">
             {isLoading ? '...' : `${minted.toLocaleString()} / ${maxSupply.toLocaleString()}`}
           </span>
         </div>
 
         {/* Price */}
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Price</span>
+          <span className="text-mute">Price</span>
           <span className={`font-bold ${accentColor}`}>
             {isLoading || !price ? '...' : `${formatToken(price)} $ZERO`}
           </span>
@@ -188,8 +188,8 @@ export function AdvancedMintCard({
 
         {/* Your Balance */}
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Your Balance</span>
-          <span className="font-medium text-foreground flex items-center gap-1">
+          <span className="text-mute">Your Balance</span>
+          <span className="font-medium text-fg flex items-center gap-1">
             <Coins className="h-3 w-3" />
             {balanceFormatted.toLocaleString()} $ZERO
           </span>
@@ -200,7 +200,7 @@ export function AdvancedMintCard({
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
             disabled={quantity <= 1 || isMinting}
-            className="p-2 rounded-lg bg-muted hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-lg bg-line hover:bg-line/80 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Minus className="h-4 w-4" />
           </button>
@@ -208,25 +208,25 @@ export function AdvancedMintCard({
           <button
             onClick={() => setQuantity(Math.min(10, quantity + 1))}
             disabled={quantity >= 10 || isMinting}
-            className="p-2 rounded-lg bg-muted hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded-lg bg-line hover:bg-line/80 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
 
         {/* Total */}
-        <div className="rounded-lg bg-muted/50 p-3 text-center">
+        <div className="rounded-lg bg-line/50 p-3 text-center">
           <div className={`text-2xl font-bold ${accentColor}`}>
             {price ? formatToken(totalCost) : '...'} $ZERO
           </div>
-          <div className="text-xs text-muted-foreground">Total Cost</div>
+          <div className="text-xs text-mute">Total Cost</div>
         </div>
 
         {/* Mint Button */}
         <button
           onClick={handleMint}
           disabled={isDisabled}
-          className={`w-full rounded-lg ${buttonBg} px-4 py-3 text-lg font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2`}
+          className={`w-full rounded-lg ${buttonBg} px-4 py-3 text-lg font-bold text-fg transition-all disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2`}
         >
           {(isMinting || isApproving || autoMintPending) && <Loader2 className="h-5 w-5 animate-spin" />}
           {getButtonText()}
@@ -234,7 +234,7 @@ export function AdvancedMintCard({
 
         {/* Success Message */}
         {isConfirmed && (
-          <p className="text-center text-sm text-success font-medium">
+          <p className="text-center text-sm text-ok font-medium">
             Successfully minted {quantity} {title}!
           </p>
         )}

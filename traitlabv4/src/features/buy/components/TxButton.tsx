@@ -47,9 +47,9 @@ export function TxButton({ label, pendingLabel, onClick, disabled }: TxButtonPro
         disabled={disabled || busy}
         className={`w-full px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all ${
           busy
-            ? 'bg-muted text-muted-foreground cursor-wait'
+            ? 'bg-line text-mute cursor-wait'
             : disabled
-            ? 'bg-muted/50 text-muted-foreground/50 cursor-not-allowed'
+            ? 'bg-line/50 text-mute/50 cursor-not-allowed'
             : 'bg-[#00ff00] text-black hover:bg-[#00dd00]'
         }`}
       >

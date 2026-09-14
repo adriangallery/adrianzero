@@ -23,7 +23,7 @@ export function Section({ id, title, emoji, children, className = '' }: SectionP
       className={`fade-in mb-20 ${className}`}
     >
       {title && (
-        <h2 className="mb-8 text-4xl font-bold text-foreground">
+        <h2 className="mb-8 text-4xl font-bold text-fg">
           {emoji && <span className="mr-3 text-5xl">{emoji}</span>}
           {title}
         </h2>

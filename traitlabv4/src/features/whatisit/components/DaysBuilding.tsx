@@ -9,7 +9,7 @@ export function DaysBuilding() {
   const days = useDaysBuilding();
 
   return (
-    <p className="text-lg text-muted-foreground">
+    <p className="text-lg text-mute">
       <strong className="text-2xl text-[#00ff00]">{days} days</strong> building $ADRIAN
     </p>
   );

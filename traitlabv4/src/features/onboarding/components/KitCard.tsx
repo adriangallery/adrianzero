@@ -73,13 +73,13 @@ export function KitCard({
   const features = isFree ? FREE_KIT_FEATURES : PAID_KIT_FEATURES;
   const contents = isFree ? FREE_KIT_CONTENTS : PAID_KIT_CONTENTS;
 
-  const borderColor = isFree ? 'border-success' : 'border-accent';
-  const badgeBg = isFree ? 'bg-success' : 'bg-accent';
-  const titleColor = isFree ? 'text-success' : 'text-accent';
-  const priceColor = isFree ? 'text-success' : 'text-accent';
+  const borderColor = isFree ? 'border-ok' : 'border-acc2';
+  const badgeBg = isFree ? 'bg-ok' : 'bg-acc2';
+  const titleColor = isFree ? 'text-ok' : 'text-acc2';
+  const priceColor = isFree ? 'text-ok' : 'text-acc2';
   const buttonBg = isFree
-    ? 'bg-success hover:bg-success/90'
-    : 'bg-accent hover:bg-accent/90';
+    ? 'bg-ok hover:bg-ok/90'
+    : 'bg-acc2 hover:bg-acc2/90';
 
   // Calculate price
   const pricePerKit = kitInfo?.priceInETH ?? BigInt(0);
@@ -136,7 +136,7 @@ export function KitCard({
 
   return (
     <div
-      className={`relative flex flex-col h-full overflow-hidden rounded-2xl border-2 ${borderColor} bg-background/80 transition-all hover:shadow-lg`}
+      className={`relative flex flex-col h-full overflow-hidden rounded-2xl border-2 ${borderColor} bg-bg/80 transition-all hover:shadow-lg`}
     >
       {/* Header: Title + Badge + Subtitle */}
       <div className="p-6 pb-0">
@@ -151,12 +151,12 @@ export function KitCard({
 
         {/* Badge - centered below title, not floating */}
         <div className="flex justify-center mb-4">
-          <span className={`inline-block rounded-full ${badgeBg} px-3 py-1 text-xs font-bold text-white`}>
+          <span className={`inline-block rounded-full ${badgeBg} px-3 py-1 text-xs font-bold text-fg`}>
             {isFree ? 'FREE' : 'PREMIUM'}
           </span>
         </div>
 
-        <p className="mb-6 text-center text-sm text-muted-foreground italic">
+        <p className="mb-6 text-center text-sm text-mute italic">
           {isFree ? 'Free & Quirky' : 'Full Experience'}
         </p>
       </div>
@@ -169,10 +169,10 @@ export function KitCard({
             <div key={index} className="flex items-center gap-3">
               <feature.icon
                 className={`h-5 w-5 flex-shrink-0 ${
-                  feature.positive ? 'text-[#00ff00]' : 'text-muted-foreground'
+                  feature.positive ? 'text-[#00ff00]' : 'text-mute'
                 }`}
               />
-              <span className="text-sm text-foreground">{feature.text}</span>
+              <span className="text-sm text-fg">{feature.text}</span>
             </div>
           ))}
         </div>
@@ -182,14 +182,14 @@ export function KitCard({
           {dynamicContents.map((item, index) => (
             <div
               key={index}
-              className="rounded-lg border border-border bg-muted/50 p-3 text-center transition-all hover:border-primary"
+              className="rounded-lg border border-line bg-line/50 p-3 text-center transition-all hover:border-acc"
             >
               <img
                 src={item.image}
                 alt={item.label}
                 className={`mx-auto mb-2 h-16 w-16 rounded-lg border-2 object-cover ${borderColor}`}
               />
-              <p className="text-xs text-muted-foreground">{renderContentLabel(item.label)}</p>
+              <p className="text-xs text-mute">{renderContentLabel(item.label)}</p>
             </div>
           ))}
         </div>
@@ -209,11 +209,11 @@ export function KitCard({
         )}
 
         {/* Price */}
-        <div className="rounded-lg bg-muted/50 p-4 text-center">
+        <div className="rounded-lg bg-line/50 p-4 text-center">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-muted-foreground">Loading price...</span>
+              <span className="text-mute">Loading price...</span>
             </div>
           ) : (
             <>
@@ -221,12 +221,12 @@ export function KitCard({
                 {isFree ? 'FREE' : `${priceEth.toFixed(4)} ETH`}
               </div>
               {!isFree && ethPrice && totalPrice > 0 && (
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div className="mt-1 text-sm text-mute">
                   ({formatUsdPrice(totalPrice, ethPrice)})
                 </div>
               )}
               {isFree && (
-                <div className="mt-1 text-sm text-muted-foreground">
+                <div className="mt-1 text-sm text-mute">
                   Limit: 1 per wallet
                 </div>
               )}

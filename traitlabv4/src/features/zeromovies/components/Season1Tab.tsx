@@ -59,24 +59,24 @@ export function Season1Tab() {
     <>
       <div className="mb-6 text-center">
         <h2 className="text-2xl font-bold tracking-wider text-red-600 sm:text-3xl">ZEROmovies</h2>
-        <p className="text-[9px] tracking-[0.3em] text-zinc-600 sm:text-[10px]">
+        <p className="text-[12px] tracking-wider text-mute sm:text-[13px]">
           PART ONE · A four-piece trilogy
         </p>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-3 text-[9px] uppercase tracking-wider text-zinc-500 sm:text-[10px]">
-          <span>Taken: <span className="text-white">{takenCount}/{movieCount}</span></span>
-          <span>Overdue: <span className={overdueCount > 0 ? 'text-red-400' : 'text-zinc-400'}>{overdueCount}</span></span>
+        <div className="flex flex-wrap gap-3 text-[12px] uppercase tracking-wider text-mute sm:text-[13px]">
+          <span>Taken: <span className="text-fg">{takenCount}/{movieCount}</span></span>
+          <span>Overdue: <span className={overdueCount > 0 ? 'text-red-400' : 'text-mute'}>{overdueCount}</span></span>
           <span>Rent: <span className="text-red-400">{priceFormatted.toLocaleString()}</span></span>
-          <span>Bal: <span className="text-green-400">{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span></span>
+          <span>Bal: <span className="text-ok">{balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span></span>
           {paused && <span className="animate-pulse text-yellow-400">SOON</span>}
         </div>
         {pendingRewards > 0 && (
           <button
             onClick={() => claim()}
             disabled={isClaimPending}
-            className="rounded-full border border-green-600/30 bg-green-900/20 px-3 py-1 text-[9px] font-bold text-green-400 hover:bg-green-900/40 transition-colors"
+            className="rounded-full border border-ok/30 bg-ok/20 px-3 py-1 text-[12px] font-bold text-ok hover:bg-ok/40 transition-colors"
           >
             {isClaimPending
               ? '...'
@@ -115,18 +115,18 @@ export function Season1Tab() {
       {/* Tokenomics + late-fee mechanic explainers — same layout as S2 so the
           two seasons read consistently */}
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
-        <div className="rounded border border-zinc-800 bg-zinc-950/40 p-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-500">Rental tokenomics</h3>
-          <p className="mt-1 text-[10px] leading-relaxed text-zinc-400">
-            Every rent splits as <span className="text-white">30% burn</span> ·{' '}
-            <span className="text-emerald-400">10% to permanent S1 holders</span> · 10% to revenue ·{' '}
-            <span className="text-sky-400">50% refundable deposit</span>.
+        <div className="rounded border border-line bg-panel p-3">
+          <h3 className="text-[13px] font-bold uppercase tracking-wider text-red-500">Rental tokenomics</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-mute">
+            Every rent splits as <span className="text-fg">30% burn</span> ·{' '}
+            <span className="text-ok">10% to permanent S1 holders</span> · 10% to revenue ·{' '}
+            <span className="text-acc">50% refundable deposit</span>.
             Buy permanently for 100k $ZERO (80% burn / 10% holders / 10% revenue).
           </p>
         </div>
-        <div className="rounded border border-zinc-800 bg-zinc-950/40 p-3">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-500">Return-the-tape</h3>
-          <p className="mt-1 text-[10px] leading-relaxed text-zinc-400">
+        <div className="rounded border border-line bg-panel p-3">
+          <h3 className="text-[13px] font-bold uppercase tracking-wider text-red-500">Return-the-tape</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-mute">
             {graceDays}-day grace, then{' '}
             <span className="text-red-400">{feePerDay.toLocaleString()} $ZERO/day late fee</span>{' '}
             until the renter returns or upgrades. The NFT itself shows OVERDUE on every marketplace.

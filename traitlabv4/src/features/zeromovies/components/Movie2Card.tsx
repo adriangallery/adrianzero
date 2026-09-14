@@ -12,7 +12,7 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 
 const ANGLE_ACCENT: Record<Movie2['angle'], string> = {
   cult: 'border-amber-500/30',
-  pixel: 'border-emerald-500/30',
+  pixel: 'border-ok/30',
   horror: 'border-fuchsia-700/30',
 };
 
@@ -44,7 +44,7 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
       className={`group relative flex min-w-0 flex-col overflow-hidden rounded transition-all duration-300 text-left
         ${isOthers ? 'cursor-pointer hover:opacity-90' : 'cursor-pointer hover:scale-105 hover:z-10'}
         ${isYoursPermanent ? 'border-2 border-yellow-400' : ''}
-        ${isYoursRental && !isOverdue ? 'border-2 border-sky-400' : ''}
+        ${isYoursRental && !isOverdue ? 'border-2 border-acc' : ''}
         ${isMineOverdue ? 'border-2 border-red-500 ring-2 ring-red-500/40' : ''}
         ${isOthersOverdue ? 'border border-red-900/60' : ''}
         ${isReservedAuction ? 'border-2 border-purple-500 ring-2 ring-purple-500/30' : ''}
@@ -52,10 +52,10 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
         ${!isYoursPermanent && !isYoursRental && !isOverdue && !isReservedAuction && !isReservedBudokai ? `border ${ANGLE_ACCENT[movie.angle]}` : ''}
       `}
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-t bg-zinc-900">
+      <div className="relative aspect-square w-full overflow-hidden rounded-t bg-panel">
         {movie.isMystery && !movie.revealed ? (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-black">
-            <span className="font-mono text-3xl font-bold text-zinc-700">???</span>
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-panel via-panel to-bg">
+            <span className="font-mono text-3xl font-bold text-mute">???</span>
           </div>
         ) : (
           <img
@@ -82,7 +82,7 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
             <span className="rotate-[-12deg] rounded border-2 border-red-400 bg-red-950/40 px-2 py-0.5 text-[11px] font-black uppercase tracking-widest text-red-200 shadow-lg shadow-red-500/40">
               OVERDUE
             </span>
-            <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-red-200">
+            <span className="mt-1 text-[12px] font-bold uppercase tracking-wider text-red-200">
               {rental.daysOverdue}d
             </span>
             <span className="mt-1 rounded bg-yellow-400 px-1.5 py-0.5 text-[7px] font-bold uppercase text-black">
@@ -94,7 +94,7 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
         {/* OTHERS OVERDUE — muted, info only */}
         {isOthersOverdue && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-950/20">
-            <span className="rotate-[-10deg] rounded border border-red-900 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-red-700/80">
+            <span className="rotate-[-10deg] rounded border border-red-900 px-1.5 py-0.5 text-[12px] font-black uppercase tracking-widest text-red-700/80">
               Overdue
             </span>
             <span className="mt-0.5 text-[7px] font-bold uppercase tracking-wider text-red-700/70">
@@ -108,12 +108,12 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
           <div className="absolute top-1 right-1 rounded bg-yellow-400 px-1.5 py-0.5 text-[7px] font-bold text-black">OWNED</div>
         )}
         {isYoursRental && !isOverdue && (
-          <div className="absolute top-1 right-1 rounded bg-sky-400 px-1.5 py-0.5 text-[7px] font-bold text-black">RENTING</div>
+          <div className="absolute top-1 right-1 rounded bg-acc px-1.5 py-0.5 text-[7px] font-bold text-black">RENTING</div>
         )}
         {/* Others rented (in grace) → amber, will return to shelf */}
         {isOthersRented && !isOverdue && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="rounded bg-amber-900/70 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-300">
+            <span className="rounded bg-amber-900/70 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-300">
               Rented
             </span>
           </div>
@@ -121,7 +121,7 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
         {/* Others permanent (gone forever) → slate */}
         {isOthersPermanent && !isOverdue && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="rounded bg-zinc-800/85 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-zinc-400">
+            <span className="rounded bg-line px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-mute">
               Taken
             </span>
           </div>
@@ -143,21 +143,21 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
         )}
         {/* Animated movie indicator — small badge in corner */}
         {movie.hasAnimation && !isReservedAuction && !isReservedBudokai && (
-          <div className="absolute top-1 left-1 rounded bg-purple-500/80 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wider text-white">
+          <div className="absolute top-1 left-1 rounded bg-purple-500/80 px-1 py-0.5 text-[6px] font-bold uppercase tracking-wider text-fg">
             GIF
           </div>
         )}
       </div>
 
       <div className="px-1 py-1.5">
-        <p className={`truncate text-[9px] font-bold transition-colors ${
+        <p className={`truncate text-[12px] font-bold transition-colors ${
           isMineOverdue
             ? 'text-red-300'
             : isOthersOverdue
               ? 'text-red-700/80'
               : isOthers
-                ? 'text-zinc-600'
-                : 'text-zinc-300 group-hover:text-white'
+                ? 'text-mute'
+                : 'text-fg group-hover:text-fg'
         }`}>
           {movie.name}
         </p>
