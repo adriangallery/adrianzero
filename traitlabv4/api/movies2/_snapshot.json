@@ -1,12 +1,12 @@
 {
   "chainId": 8453,
   "diamond": "0x542b2B96E9c944260722a86C2ee76166A8e3D0A0",
-  "snapshotTakenAt": "2026-04-28T14:40:17.770Z",
+  "snapshotTakenAt": "2026-09-14T10:11:49.733Z",
   "totals": {
     "holders": 4,
     "totalGoldenTickets": 4,
-    "totalCrossSeasonWeight": 18,
-    "merkleRoot": "0x9d40c926dbfae182b9d14102c20e79568ea5c1718e73123ce7da1540799c1406"
+    "totalCrossSeasonWeight": 19,
+    "merkleRoot": "0x2330d5660808296dfc9e6b3de1d9dfc834c497f3eb8243bd8362abed3386c6a9"
   },
   "wallets": [
     {
@@ -20,7 +20,7 @@
       "completedFranchises": [],
       "proof": [
         "0x79278d8c632fd7c057b096491f5ffe43efeadf12a187a24e13bbbf5aec6738ef",
-        "0x7319d29590baca341943ff9a6e07199103e22410aa9266ce64dca62b8bd8ca90"
+        "0xe182721dab12e30feace78510a9311bbaecbdf3f068a9237474705017f4065f9"
       ]
     },
     {
@@ -33,15 +33,16 @@
       "completedFranchises": [],
       "proof": [
         "0xd701645c655ab9878cdb36421c49f2146a3dceca43467e7f2f8189ae7a860048",
-        "0x7319d29590baca341943ff9a6e07199103e22410aa9266ce64dca62b8bd8ca90"
+        "0xe182721dab12e30feace78510a9311bbaecbdf3f068a9237474705017f4065f9"
       ]
     },
     {
       "address": "0x4943407105999e3E97EFA2035F5cbC64D72581C6",
       "ticketCount": 1,
-      "crossSeasonWeight": 5,
+      "crossSeasonWeight": 6,
       "ownedMovies": [
         1,
+        2,
         6,
         8,
         12,
@@ -71,7 +72,7 @@
       ],
       "completedFranchises": [],
       "proof": [
-        "0xe2bda2db24bf93b5290cdbcc4070cffbae2bce37b96678043a68bebb5f1daa30",
+        "0x30620d3d6ec74a2453f53e370f1e5f2c21bfef97c10e7c3902215cfd23106294",
         "0x225adc133b9e9d7784b5c62efc1948b0c8cb49bb283a7c107fd04720faca6210"
       ]
     }
