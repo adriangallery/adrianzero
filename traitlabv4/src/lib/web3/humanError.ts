@@ -72,6 +72,26 @@ export function humanError(error: unknown): string {
   if (msg.includes('user rejected') || msg.includes('user denied') || msg.includes('rejected the request')) {
     return 'Transaction cancelled';
   }
+  // AirdropFacet del Diamond (A4b-2): custom errors sin espacios, van antes que
+  // «already claimed» / «not active» para no caer en los mensajes de punks/campañas.
+  if (msg.includes('airdropnotactive')) {
+    return "The claim isn't open yet — check back soon";
+  }
+  if (msg.includes('alreadyclaimed')) {
+    return 'This wallet has already claimed';
+  }
+  if (msg.includes('invalidproof')) {
+    return "This wallet isn't on the claim list";
+  }
+  if (msg.includes('insufficientairdroppool')) {
+    return 'The claim pool is empty — tell the team';
+  }
+  if (msg.includes('exceedswalletlimit')) {
+    return 'This wallet already has the maximum for this item';
+  }
+  if (msg.includes('notallowlisted')) {
+    return 'This drop is for invited wallets only';
+  }
   if (msg.includes('already claimed')) {
     return 'Already claimed for this punk';
   }
