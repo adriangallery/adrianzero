@@ -17,7 +17,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'web3-vendor': ['ethers', 'wagmi', 'viem', '@rainbow-me/rainbowkit'],
+          'web3-vendor': ['wagmi', 'viem', '@rainbow-me/rainbowkit'],
           'ui-vendor': ['framer-motion'],
           'query-vendor': ['@tanstack/react-query'],
           'state-vendor': ['zustand', 'date-fns'],
@@ -31,7 +31,6 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
-      'ethers',
       'wagmi',
       '@rainbow-me/rainbowkit',
       '@wagmi/connectors',

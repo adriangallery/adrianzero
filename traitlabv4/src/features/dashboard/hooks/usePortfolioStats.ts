@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useTraits } from '@/features/traits/hooks/useTraits';
-import { usePacks } from '@/features/packs/hooks/usePacks';
+import { useMyPacks } from '@/features/packs/data/useMyPacks';
 
 export interface PortfolioStats {
   totalNFTs: number;
@@ -21,14 +21,16 @@ export function usePortfolioStats() {
   const { address } = useAccount();
   const { data: nfts = [], isLoading: nftsLoading } = useAdrianZeroTokens();
   const { data: traits = [], isLoading: traitsLoading } = useTraits();
-  const { data: packs = [], isLoading: packsLoading } = usePacks();
+  // F10 (14-sep): balances reales de la sección Packs nueva (el usePacks viejo
+  // derivaba de listas a mano y se retira).
+  const { data: packs, isLoading: packsLoading } = useMyPacks(address);
 
   const isLoading = nftsLoading || traitsLoading || packsLoading;
 
   const data = useMemo((): PortfolioStats => {
     const totalNFTs = nfts.length;
     const totalTraits = traits.reduce((sum, trait) => sum + trait.balance, 0);
-    const totalPacks = packs.reduce((sum, pack) => sum + pack.balance, 0);
+    const totalPacks = packs.reduce((sum, pack) => sum + Number(pack.balance), 0);
 
     // Count NFTs with traits applied
     const traitsAppliedCount = nfts.filter(

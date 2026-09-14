@@ -93,12 +93,12 @@ export interface PackRegistry {
   openRoutes: Map<string, { contract: PackOpenContractName; address: Address }>;
 }
 
-// Mismo mirror que `features/packs/components/PacksModule.tsx` (`LABIMAGES_BASE`)
+// Mismo mirror de imágenes que usaba el PacksModule viejo (`LABIMAGES_BASE`)
 // — la única fuente estable de arte de packs/floppies hoy (recon F0 §7): el
 // renderer `/api/render/<id>.png` devuelve un avatar genérico, no el arte
 // del pack. La extensión real (gif/png) varía por id; se deja como
 // candidato principal y el consumidor decide su propio fallback, igual que
-// hace `PacksModule.tsx` (no se toca esa UI, solo se replica la misma ruta).
+// hacía aquel módulo (retirado en F10; la UI actual es PacksSection).
 function packImageUrl(packId: bigint): string {
   return `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${packId}.gif`;
 }
