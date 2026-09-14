@@ -18,7 +18,7 @@ export interface OpenPackParams {
  * en vivo con `resolvePackOpenContract` (mismo criterio que
  * `packRegistry.ts`), no con una tabla `OPENPACK_V4_TOKENS`/
  * `ACTION_PACK_TOKENS` a mano (la causa raíz de
- * `PACKS_FLOPPIES_MISMATCH_REPORT.md`: 10014/10018 nunca se añadieron a
+ * `docs/history/PACKS_FLOPPIES_MISMATCH_REPORT.md`: 10014/10018 nunca se añadieron a
  * esa lista y no se podían abrir).
  *
  * Decodifica el evento REAL del receipt (`PackOpened` en

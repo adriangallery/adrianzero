@@ -9,7 +9,7 @@
  * `PackConfigured` que cada `setPackConfig`/`configurePack` emite. Eso es
  * justo lo que faltaba: `usePacks.ts`/`useOpenPack.ts` (v4 vieja) tenían un
  * `PACK_METADATA`/`OPENPACK_V4_TOKENS` mantenidos a mano que se
- * desincronizó del contrato real (`PACKS_FLOPPIES_MISMATCH_REPORT.md`:
+ * desincronizó del contrato real (`docs/history/PACKS_FLOPPIES_MISMATCH_REPORT.md`:
  * 10014/10018 nunca se añadieron a la lista y no se podían abrir).
  *
  * **RPC dedicado, nunca Alchemy (fix 13-sep, hallazgo del crítico en
