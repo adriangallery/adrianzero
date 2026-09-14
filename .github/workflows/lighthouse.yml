@@ -1,0 +1,58 @@
+# Lighthouse móvil de adrianzero.com (plan AdrianZERO F11, parte 2).
+# PageSpeed Insights sin clave agota la cuota diaria compartida y el portátil no puede
+# lanzar Chrome headless, así que la medición vive aquí. Objetivo del plan: ≥ 90 en
+# rendimiento y accesibilidad en Home y TraitLab.
+name: lighthouse
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Dominio a medir'
+        required: false
+        default: 'https://adrianzero.com'
+  schedule:
+    - cron: '17 6 * * 1' # lunes 06:17 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Lighthouse (móvil, rendimiento + accesibilidad)
+        env:
+          BASE: ${{ inputs.base_url || 'https://adrianzero.com' }}
+        run: |
+          npm install --no-save --no-audit --no-fund lighthouse@12 >/dev/null
+          mkdir -p reports
+          for path in / /traitlab; do
+            name=$(echo "$path" | tr '/' '_' | sed 's/^_$/home/;s/^_//')
+            npx lighthouse "$BASE$path" \
+              --only-categories=performance,accessibility \
+              --form-factor=mobile --screenEmulation.mobile \
+              --chrome-flags="--headless=new --no-sandbox" \
+              --output=json --output=html --output-path="reports/$name" --quiet
+          done
+          node -e '
+            const fs = require("fs");
+            const rows = [];
+            for (const f of fs.readdirSync("reports").filter((f) => f.endsWith(".report.json"))) {
+              const r = JSON.parse(fs.readFileSync("reports/" + f, "utf8"));
+              const a = r.audits;
+              rows.push(`| ${r.finalDisplayedUrl} | ${Math.round(r.categories.performance.score * 100)} | ${Math.round(r.categories.accessibility.score * 100)} | ${a["largest-contentful-paint"].displayValue} | ${a["total-blocking-time"].displayValue} | ${a["cumulative-layout-shift"].displayValue} |`);
+            }
+            const table = ["| URL | Rendimiento | Accesibilidad | LCP | TBT | CLS |", "|---|---|---|---|---|---|", ...rows].join("\n");
+            console.log(table);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, "## Lighthouse móvil\n\n" + table + "\n");
+          '
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: reports/
