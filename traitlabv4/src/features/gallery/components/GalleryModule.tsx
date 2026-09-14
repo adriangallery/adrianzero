@@ -155,8 +155,10 @@ export function GalleryModule() {
     );
   }
 
+  // Altura ACOTADA: el virtualizador necesita un contenedor de scroll con altura
+  // fija (antes h-screen). Header 56 + TabBar 64 + padding del Container 48 en
+  // móvil; en escritorio, barra flotante + padding.
   return (
-    {/* Altura ACOTADA: el virtualizador necesita un contenedor de scroll con altura fija (antes h-screen). Header 56 + TabBar 64 + padding del Container 48 en móvil; en escritorio la barra flotante + padding. */}
     <div className="flex h-[calc(100dvh-var(--header-h)-var(--tabbar-h)-3rem)] w-full flex-col bg-bg lg:h-[calc(100dvh-8rem)]">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-line bg-bg/90 backdrop-blur-sm px-4 py-3">
