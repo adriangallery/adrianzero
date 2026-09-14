@@ -4,9 +4,9 @@
   "installCommand": "npm install --legacy-peer-deps",
   "framework": "vite",
   "redirects": [
-    { "source": "/adventure", "destination": "https://adventure.zerothetoken.com/", "permanent": false },
-    { "source": "/adventure/", "destination": "https://adventure.zerothetoken.com/", "permanent": false },
-    { "source": "/adventure/:path+", "destination": "https://adventure.zerothetoken.com/:path+", "permanent": false }
+    { "source": "/adventure", "destination": "https://adventure.adrianzero.com/", "permanent": false },
+    { "source": "/adventure/", "destination": "https://adventure.adrianzero.com/", "permanent": false },
+    { "source": "/adventure/:path+", "destination": "https://adventure.adrianzero.com/:path+", "permanent": false }
   ],
   "rewrites": [
     { "source": "/shooter", "destination": "/shooter/index.html" },
