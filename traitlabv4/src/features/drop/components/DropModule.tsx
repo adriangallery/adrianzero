@@ -16,8 +16,8 @@ import { SHOP_FACET_ABI } from '@/lib/web3/abi';
 import { humanError, isUserRejection } from '@/lib/web3/humanError';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useShopPurchase } from '@/features/shop/hooks/useShopPurchase';
+import { adrianlabUrl } from '@/lib/adrianlab';
 
-const LAB = 'https://adrianlab.vercel.app';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const;
 
 interface ItemView {
@@ -62,7 +62,7 @@ export function DropModule() {
     enabled: valid,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const res = await fetch(`${LAB}/api/metadata/floppy/${assetId}.json`);
+      const res = await fetch(adrianlabUrl(`/api/metadata/floppy/${assetId}.json`));
       if (!res.ok) throw new Error(`metadata ${res.status}`);
       return (await res.json()) as LabMetadata;
     },
@@ -94,7 +94,7 @@ export function DropModule() {
   else view = 'buy';
 
   const name = meta.data?.name && !/^(TRAIT|FLOPPY) #/.test(meta.data.name) ? meta.data.name : `Trait #${assetId}`;
-  const image = `${LAB}/api/render/floppy/${assetId}.png`;
+  const image = adrianlabUrl(`/api/render/floppy/${assetId}.png`);
   const busy = purchase.isPending || (!!purchase.txHash && !purchase.isConfirmed && !purchase.error);
   const error = purchase.error && !isUserRejection(purchase.error) ? humanError(purchase.error) : null;
 
