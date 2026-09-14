@@ -1,0 +1,70 @@
+# Qué módulos pesan en cada chunk del bundle de adrianzero (F11). Solo a mano: el portátil no
+# puede construir y hace falta saber de dónde salen web3-vendor, core y metamask-sdk.
+name: bundle-stats
+
+on:
+  workflow_dispatch: {}
+  # workflow_dispatch solo funciona desde main: en PR se lanza al tocar este fichero
+  pull_request:
+    paths:
+      - '.github/workflows/bundle-stats.yml'
+      - 'traitlabv4/vite.config.ts'
+      - 'traitlabv4/src/config/**'
+      - 'traitlabv4/src/app/providers/WagmiProvider.tsx'
+
+permissions:
+  contents: read
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: traitlabv4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: traitlabv4/package-lock.json
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: Build con rollup-plugin-visualizer (raw-data)
+        run: npx --yes vite-bundle-visualizer@1 --template raw-data --output stats.json
+
+      - name: Módulos más pesados por chunk
+        run: |
+          node -e '
+            const d = JSON.parse(require("fs").readFileSync("stats.json", "utf8"));
+            const parts = d.nodeParts, metas = d.nodeMetas;
+            const byChunk = {};
+            for (const m of Object.values(metas)) {
+              for (const [chunk, uid] of Object.entries(m.moduleParts || {})) {
+                const p = parts[uid]; if (!p) continue;
+                (byChunk[chunk] ??= []).push([p.gzipLength || 0, p.renderedLength || 0, m.id]);
+              }
+            }
+            const lines = [];
+            const chunks = Object.entries(byChunk).map(([c, l]) => [c, l.reduce((a, x) => a + x[0], 0), l]).sort((a, b) => b[1] - a[1]);
+            for (const [chunk, total, list] of chunks.slice(0, 8)) {
+              lines.push(`### ${chunk} — ${(total / 1024).toFixed(0)} KB gz`);
+              const pkgs = {};
+              for (const [gz, , id] of list) {
+                const m = id.match(/node_modules\/((?:@[^/]+\/)?[^/]+)/);
+                const k = m ? m[1] : "(app) " + id.split("/src/")[1];
+                pkgs[k] = (pkgs[k] || 0) + gz;
+              }
+              for (const [k, gz] of Object.entries(pkgs).sort((a, b) => b[1] - a[1]).slice(0, 12)) lines.push(`- ${k}: ${(gz / 1024).toFixed(1)} KB gz`);
+            }
+            const out = lines.join("\n");
+            console.log(out);
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, "## Bundle por chunk\n\n" + out + "\n");
+          '
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-stats
+          path: traitlabv4/stats.json

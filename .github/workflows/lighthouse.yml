@@ -28,16 +28,24 @@ jobs:
       - name: Lighthouse (móvil, rendimiento + accesibilidad)
         env:
           BASE: ${{ inputs.base_url || 'https://adrianzero.com' }}
+          # Las previews de Vercel piden login: con este secreto (Protection Bypass for Automation)
+          # Lighthouse mide la página real y no la pantalla de acceso.
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           npm install --no-save --no-audit --no-fund lighthouse@12 >/dev/null
           mkdir -p reports
+          EXTRA=()
+          if [ -n "$BYPASS" ]; then
+            node -e 'require("fs").writeFileSync("headers.json", JSON.stringify({"x-vercel-protection-bypass": process.env.BYPASS, "x-vercel-set-bypass-cookie": "true"}))'
+            EXTRA=(--extra-headers=headers.json)
+          fi
           for path in / /traitlab; do
             name=$(echo "$path" | tr '/' '_' | sed 's/^_$/home/;s/^_//')
             npx lighthouse "$BASE$path" \
               --only-categories=performance,accessibility \
               --form-factor=mobile --screenEmulation.mobile \
               --chrome-flags="--headless=new --no-sandbox" \
-              --output=json --output=html --output-path="reports/$name" --quiet
+              --output=json --output=html --output-path="reports/$name" --quiet "${EXTRA[@]}"
           done
           node -e '
             const fs = require("fs");
@@ -45,6 +53,7 @@ jobs:
             for (const f of fs.readdirSync("reports").filter((f) => f.endsWith(".report.json"))) {
               const r = JSON.parse(fs.readFileSync("reports/" + f, "utf8"));
               const a = r.audits;
+              if (r.finalDisplayedUrl.includes("vercel.com/login")) throw new Error("Lighthouse midió la pantalla de login de Vercel: falta o no vale VERCEL_AUTOMATION_BYPASS_SECRET");
               rows.push(`| ${r.finalDisplayedUrl} | ${Math.round(r.categories.performance.score * 100)} | ${Math.round(r.categories.accessibility.score * 100)} | ${a["largest-contentful-paint"].displayValue} | ${a["total-blocking-time"].displayValue} | ${a["cumulative-layout-shift"].displayValue} |`);
             }
             const table = ["| URL | Rendimiento | Accesibilidad | LCP | TBT | CLS |", "|---|---|---|---|---|---|", ...rows].join("\n");

@@ -56,6 +56,7 @@ export function Sidebar({
               <h2 className="text-xl font-bold text-foreground font-adrian">{prefix}<span className="text-acc">{accent}</span></h2>
               <button
                 onClick={onClose}
+                aria-label="Close menu"
                 className="p-2 hover:bg-muted rounded-lg"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

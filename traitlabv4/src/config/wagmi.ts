@@ -1,7 +1,15 @@
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { connectorsForWallets } from '@rainbow-me/rainbowkit';
+import {
+  baseAccount,
+  metaMaskWallet,
+  rainbowWallet,
+  safeWallet,
+  walletConnectWallet,
+} from '@rainbow-me/rainbowkit/wallets';
 import { base, mainnet } from 'wagmi/chains';
-import { fallback, http } from 'wagmi';
+import { createConfig, fallback, http } from 'wagmi';
 import { buildAlchemyRpcUrls, buildEthMainnetRpcUrls } from './alchemy';
+import { withLazySetup } from './lazyConnectorSetup';
 
 // Build Base transport using Alchemy/Infura first, public RPCs as fallback.
 // Without this, wagmi's default http() lands on mainnet.base.org which rate-limits
@@ -21,9 +29,23 @@ const mainnetTransport = fallback(
   { rank: false },
 );
 
-export const config = getDefaultConfig({
-  appName: 'TraitLAB V4',
-  projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'YOUR_PROJECT_ID',
+// Misma lista de wallets que `getDefaultConfig` de RainbowKit 2.2.10; lo único que cambia es
+// que los SDK se descargan al usarlos y no al arrancar (ver lazyConnectorSetup.ts).
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: 'Popular',
+      wallets: [safeWallet, rainbowWallet, baseAccount, metaMaskWallet, walletConnectWallet],
+    },
+  ],
+  {
+    appName: 'TraitLAB V4',
+    projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'YOUR_PROJECT_ID',
+  },
+).map(withLazySetup);
+
+export const config = createConfig({
+  connectors,
   chains: [base, mainnet],
   transports: {
     [base.id]: baseTransport,

@@ -32,11 +32,44 @@
     <!-- D17 (13-sep-2026): Press Start 2P = display (wordmark/h1, dosis pequeñas);
          Pixelify Sans = UI (botones, chips, badges, números, h2/h3, TabBar);
          Chakra Petch = body (párrafos, inputs). Fuera Space Grotesk/JetBrains Mono. -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- F11: la hoja de Google Fonts bloqueaba el primer pintado ~770 ms en móvil. Se carga sin
+         bloquear (media=print → all al cargar); display=swap ya pinta con la fuente de reserva. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    <!-- F11: esqueleto estático del chrome móvil (header + TabBar) para que la página no quede en
+         blanco mientras se descarga y ejecuta el JS. React lo sustituye en su primer render
+         (createRoot vacía #root). Colores y medidas copiados de globals.css (--bg, --line, --acc,
+         --mute, --header-h 56px, TabBar h-16); ≥768px solo pinta el fondo. -->
+    <style>
+      html,body{margin:0;background:#1f2228}
+      #boot{position:fixed;inset:0;background:#1f2228;color:#97a1ad;font-family:'Chakra Petch',system-ui,-apple-system,sans-serif}
+      #boot header{box-sizing:border-box;height:56px;display:flex;align-items:center;gap:10px;padding:0 16px;background:#1a1d22;border-bottom:2px solid #2f353e}
+      #boot .wm{font-family:'Press Start 2P','Courier New',monospace;font-size:13px;color:#00ff00}
+      #boot .sec{font-family:'Pixelify Sans','Press Start 2P',monospace;font-size:13px}
+      #boot nav{box-sizing:border-box;position:fixed;left:0;right:0;bottom:0;height:64px;padding-bottom:env(safe-area-inset-bottom,0px);display:grid;grid-template-columns:repeat(5,1fr);align-items:center;background:#1a1d22;border-top:2px solid #2f353e}
+      #boot nav span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:'Pixelify Sans','Press Start 2P',monospace;font-size:12px;line-height:1}
+      #boot nav svg{width:22px;height:22px}
+      #boot nav .on{color:#00ff00;font-weight:700}
+      @media (min-width:768px){#boot header,#boot nav{display:none}}
+    </style>
     <title>AdrianZERO — your NFT, your rules</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div id="boot" aria-hidden="true"><header><span class="wm">ZERO</span><span class="sec"></span></header><nav><span data-p="/zero"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8v10H3z"/></svg>Home</span><span data-p="/mynfts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg>My NFTs</span><span data-p="/traitlab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6l4 9a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-9z"/><path d="M9 3h6"/></svg>TraitLab</span><span data-p="/shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-2 9H7z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M6 6 5 3H2"/></svg>Shop</span><span data-p=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</span></nav></div></div>
+    <script>
+      (function () {
+        var p = location.pathname === '/' ? '/zero' : location.pathname;
+        var tabs = document.querySelectorAll('#boot nav [data-p]');
+        for (var i = 0; i < tabs.length; i++) {
+          var t = tabs[i].getAttribute('data-p');
+          if (t && (p === t || p.indexOf(t + '/') === 0)) {
+            tabs[i].className = 'on';
+            document.querySelector('#boot .sec').textContent = tabs[i].textContent;
+          }
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
