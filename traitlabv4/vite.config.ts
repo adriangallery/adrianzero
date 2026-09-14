@@ -17,7 +17,9 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'web3-vendor': ['wagmi', 'viem', '@rainbow-me/rainbowkit'],
+          // Sin 'web3-vendor' (F11): forzar wagmi/viem/rainbowkit en un chunk metía también sus
+          // dependencias, incluidas las 689 cadenas de viem que solo usa @base-org/account (214 KB gz
+          // al arrancar). Sin forzarlo, Rollup deja cada módulo en el chunk de quien lo usa.
           'ui-vendor': ['framer-motion'],
           'query-vendor': ['@tanstack/react-query'],
           'state-vendor': ['zustand', 'date-fns'],
