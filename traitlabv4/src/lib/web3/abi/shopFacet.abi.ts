@@ -627,5 +627,25 @@ export const SHOP_FACET_ABI = [
       }
     ],
     "stateMutability": "view"
-  }
+  },
+  // Custom errors (ShopFacet.sol / LibShop.sol) para que viem decodifique el motivo del revert
+  {"type": "error", "name": "BpsTooHigh", "inputs": [{"name": "bps", "type": "uint16"}]},
+  {"type": "error", "name": "ExceedsTxLimit", "inputs": [{"name": "requested", "type": "uint256"}, {"name": "limit", "type": "uint256"}]},
+  {"type": "error", "name": "ExceedsWalletLimit", "inputs": [{"name": "assetId", "type": "uint256"}, {"name": "current", "type": "uint256"}, {"name": "limit", "type": "uint256"}]},
+  {"type": "error", "name": "InsufficientSupply", "inputs": [{"name": "assetId", "type": "uint256"}, {"name": "requested", "type": "uint256"}, {"name": "available", "type": "uint256"}]},
+  {"type": "error", "name": "InvalidAddress", "inputs": []},
+  {"type": "error", "name": "InvalidMerkleProof", "inputs": []},
+  {"type": "error", "name": "InvalidQuantity", "inputs": []},
+  {"type": "error", "name": "InvalidTiming", "inputs": []},
+  {"type": "error", "name": "ItemNotActive", "inputs": [{"name": "assetId", "type": "uint256"}]},
+  {"type": "error", "name": "ItemNotConfigured", "inputs": [{"name": "assetId", "type": "uint256"}]},
+  {"type": "error", "name": "NoFreeAllocation", "inputs": [{"name": "assetId", "type": "uint256"}, {"name": "wallet", "type": "address"}]},
+  {"type": "error", "name": "NotAllowlisted", "inputs": [{"name": "assetId", "type": "uint256"}, {"name": "wallet", "type": "address"}]},
+  {"type": "error", "name": "OutsideTimeWindow", "inputs": [{"name": "assetId", "type": "uint256"}]},
+  {"type": "error", "name": "ShopAlreadyInitialized", "inputs": []},
+  {"type": "error", "name": "ShopNotActive", "inputs": []},
+  {"type": "error", "name": "TokenNotAccepted", "inputs": [{"name": "assetId", "type": "uint256"}, {"name": "token", "type": "uint8"}]},
+  {"type": "error", "name": "TooManyItems", "inputs": [{"name": "count", "type": "uint256"}, {"name": "limit", "type": "uint256"}]},
+  {"type": "error", "name": "TooManyRequests", "inputs": [{"name": "count", "type": "uint256"}, {"name": "limit", "type": "uint256"}]},
+  {"type": "error", "name": "TooManyWallets", "inputs": [{"name": "count", "type": "uint256"}, {"name": "limit", "type": "uint256"}]}
 ] as const;
