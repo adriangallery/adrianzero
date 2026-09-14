@@ -27,4 +27,15 @@ export const SERUM_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  // F6 (14-sep): verificado en BaseScan → (string targetMutation, uint256 potency)
+  {
+    inputs: [{ internalType: 'uint256', name: 'serumId', type: 'uint256' }],
+    name: 'getSerumInfo',
+    outputs: [
+      { internalType: 'string', name: 'targetMutation', type: 'string' },
+      { internalType: 'uint256', name: 'potency', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
 ] as const;
