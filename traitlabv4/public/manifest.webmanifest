@@ -1,0 +1,23 @@
+{
+  "name": "AdrianZERO",
+  "short_name": "ZERO",
+  "description": "Your NFT, your rules. Mint, dress and evolve your AdrianZERO on Base: TraitLab, packs, shop, T-Shit Studio, ZEROmovies.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1d22",
+  "theme_color": "#1a1d22",
+  "lang": "en",
+  "categories": ["entertainment", "games"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "TraitLab", "url": "/traitlab", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Packs", "url": "/packs", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Shop", "url": "/shop", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
