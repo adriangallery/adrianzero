@@ -323,7 +323,7 @@ export async function buildPackRegistry(client: PublicClient, chainId: number): 
   // como ruta de apertura salvo que OpenPack v4/ActionPacks ya lo hagan
   // (algunos packIds migraron su apertura a un contrato más nuevo aunque
   // se sigan vendiendo desde FloppyDiscs — exactamente el caso que
-  // PACKS_FLOPPIES_MISMATCH_REPORT.md documentó mal enrutado a mano).
+  // docs/history/PACKS_FLOPPIES_MISMATCH_REPORT.md documentó mal enrutado a mano).
   const openRoutes = new Map(openRoutesFromOpenOnly);
   for (const id of floppyDiscs.ids) {
     const key = id.toString();

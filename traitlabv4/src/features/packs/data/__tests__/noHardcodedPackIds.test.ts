@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 /**
- * `PACKS_FLOPPIES_MISMATCH_REPORT.md` documenta el bug de origen: una
+ * `docs/history/PACKS_FLOPPIES_MISMATCH_REPORT.md` documenta el bug de origen: una
  * tabla a mano (`PACK_METADATA`/`OPENPACK_V4_TOKENS`/`ACTION_PACK_TOKENS`
  * en `features/packs/hooks/{usePacks,useOpenPack}.ts`, la carpeta VIEJA
  * que este worker no toca) que se desincronizó del contrato real: 10014 y
@@ -46,7 +46,7 @@ describe('el descubrimiento de packs no depende de listas de packId a mano', () 
   it.each(FILES_UNDER_TEST)('%s no declara un mapa id→metadata con claves de packId', (file) => {
     const src = readSource(file);
     const match = src.match(HARDCODED_PACK_ID_KEY);
-    expect(match, `${file} parece declarar un packId como clave literal: "${match?.[0]}" — eso es justo el patrón de PACK_METADATA que causó PACKS_FLOPPIES_MISMATCH_REPORT.md`).toBeNull();
+    expect(match, `${file} parece declarar un packId como clave literal: "${match?.[0]}" — eso es justo el patrón de PACK_METADATA que causó docs/history/PACKS_FLOPPIES_MISMATCH_REPORT.md`).toBeNull();
   });
 
   it.each(FILES_UNDER_TEST)('%s no declara un array de packIds a mano', (file) => {

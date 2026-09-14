@@ -1,5 +1,7 @@
 # TraitLAB V4
 
+> **Estado actual (sep-2026): [`STATUS.md`](./STATUS.md).** Este README describe el arranque de enero de 2026 (stack y cifras pueden estar desfasados); el histórico está en [`docs/history/`](./docs/history/).
+
 A complete rebuild of the AdrianZERO NFT management dApp with a mobile-first approach, modern tech stack, and professional UX/UI.
 
 ## 🎯 Project Overview

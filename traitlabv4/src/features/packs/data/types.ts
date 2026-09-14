@@ -3,7 +3,7 @@
  *
  * Todo lo que hay aquí se rellena leyendo el contrato en vivo — nada de
  * `PACK_METADATA`/listas id→nombre/contrato a mano (ese fue el origen de
- * `PACKS_FLOPPIES_MISMATCH_REPORT.md`: nombres y rutas de apertura que se
+ * `docs/history/PACKS_FLOPPIES_MISMATCH_REPORT.md`: nombres y rutas de apertura que se
  * desincronizaban del contrato real).
  */
 
