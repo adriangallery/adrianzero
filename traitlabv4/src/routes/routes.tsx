@@ -137,6 +137,18 @@ const TraitLabModule = lazy(() =>
   }))
 );
 
+const ClaimModule = lazy(() =>
+  import('@/features/airdrop/components/ClaimModule').then((m) => ({
+    default: m.ClaimModule,
+  }))
+);
+
+const DropModule = lazy(() =>
+  import('@/features/drop/components/DropModule').then((m) => ({
+    default: m.DropModule,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -162,6 +174,9 @@ export const routes: RouteObject[] = [
 
   // ─── Link-only (not in menu) ─────────────────────────────────────────────
   { path: '/gumball', element: <GumballModule /> },
+  // Airdrop Cubist Souls → $ZERO (A4b-2) y landings de drops del ShopFacet
+  { path: '/claim', element: <ClaimModule /> },
+  { path: '/drop/:assetId', element: <DropModule /> },
   // Sistema de diseño F3 (D11) — oculta, solo para revisión de Adrián.
   { path: '/ui-kit', element: <UiKitModule /> },
   { path: '/explain-to-jb', element: <ExplainJBModule /> },
