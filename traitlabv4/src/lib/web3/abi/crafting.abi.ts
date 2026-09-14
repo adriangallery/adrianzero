@@ -1,5 +1,13 @@
+/**
+ * ABI de AdrianCrafting `0x9ab651F50ac78A13a1612CCDDF5a074B2e570829`.
+ *
+ * ⚠️ 14-sep-2026 (F6, revisión on-chain): el ABI anterior declaraba
+ * `useSpecificRecipe`, `useAnyRecipe` y `canCraft`, que NO existen en el
+ * contrato verificado (BaseScan/Blockscout). El hook los llamaba primero y,
+ * al fallar, reintentaba con otra función: un rechazo en la wallet
+ * provocaba un segundo aviso. Solo quedan las funciones reales.
+ */
 export const CRAFTING_ABI = [
-  // Get specific recipe (returns multiple values, not a tuple)
   {
     inputs: [{ internalType: 'uint256', name: 'recipeId', type: 'uint256' }],
     name: 'getSpecificRecipe',
@@ -13,7 +21,6 @@ export const CRAFTING_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
-  // Get any recipe (returns multiple values, not a tuple)
   {
     inputs: [{ internalType: 'uint256', name: 'recipeId', type: 'uint256' }],
     name: 'getAnyRecipe',
@@ -24,14 +31,6 @@ export const CRAFTING_ABI = [
       { internalType: 'uint256', name: 'outAmount', type: 'uint256' },
     ],
     stateMutability: 'view',
-    type: 'function',
-  },
-  // Craft functions (try multiple variants as in traitlabold)
-  {
-    inputs: [{ internalType: 'uint256', name: 'recipeId', type: 'uint256' }],
-    name: 'useSpecificRecipe',
-    outputs: [],
-    stateMutability: 'nonpayable',
     type: 'function',
   },
   {
@@ -47,34 +46,9 @@ export const CRAFTING_ABI = [
       { internalType: 'uint256[]', name: 'burnIds', type: 'uint256[]' },
       { internalType: 'uint256[]', name: 'burnAmounts', type: 'uint256[]' },
     ],
-    name: 'useAnyRecipe',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { internalType: 'uint256', name: 'recipeId', type: 'uint256' },
-      { internalType: 'uint256[]', name: 'burnIds', type: 'uint256[]' },
-      { internalType: 'uint256[]', name: 'burnAmounts', type: 'uint256[]' },
-    ],
     name: 'craftAny',
     outputs: [],
     stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  // Can craft check
-  {
-    inputs: [
-      { internalType: 'address', name: 'user', type: 'address' },
-      { internalType: 'uint256', name: 'recipeId', type: 'uint256' },
-    ],
-    name: 'canCraft',
-    outputs: [
-      { internalType: 'bool', name: 'can', type: 'bool' },
-      { internalType: 'string', name: 'reason', type: 'string' },
-    ],
-    stateMutability: 'view',
     type: 'function',
   },
 ] as const;

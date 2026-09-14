@@ -31,6 +31,17 @@ export function useApplySerum() {
         throw new Error('Wallet not connected');
       }
 
+      // F6 (14-sep): simular antes de firmar — si revertiría (serum ya usado
+      // en este token, no eres el dueño, sin saldo…), el motivo real llega
+      // por humanError sin haber abierto la wallet.
+      await publicClient.simulateContract({
+        account: address,
+        address: CONTRACT_ADDRESSES.SERUM_MODULE as `0x${string}`,
+        abi: SERUM_ABI,
+        functionName: 'useSerum',
+        args: [BigInt(serumId), BigInt(tokenId), narrativeText],
+      });
+
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESSES.SERUM_MODULE as `0x${string}`,
         abi: SERUM_ABI,
@@ -52,10 +63,7 @@ export function useApplySerum() {
     },
     onError: (error) => {
       console.error('Error applying serum:', error);
-      if (isUserRejection(error)) {
-        notifications.info('Cancelled', 'Transaction cancelled', false);
-        return;
-      }
+      if (isUserRejection(error)) return;
       notifications.error('Failed to Apply Serum', humanError(error), false);
     },
   });

@@ -1,99 +1,62 @@
 /**
- * useCrafting Hook
- * Handles trait crafting with burning mechanism
+ * useCraftTrait — AdrianCrafting.
+ *
+ * ⚠️ 14-sep-2026 (F6): antes probaba `useAnyRecipe`/`useSpecificRecipe`
+ * (inexistentes en el contrato) y, ante CUALQUIER error — incluido que el
+ * usuario rechazara la firma —, reintentaba con `craftAny`/`craftSpecific`,
+ * lo que abría un segundo aviso de wallet. Ahora: una sola función real,
+ * simulada antes de firmar, y el motivo del revert con `humanError`.
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useWriteContract, usePublicClient } from 'wagmi';
+import { useAccount, useWriteContract, usePublicClient } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { CRAFTING_ABI } from '@/lib/web3/abi';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useWalletDataStore } from '@/stores/walletDataStore';
 import { humanError, isUserRejection } from '@/lib/web3/humanError';
 
 interface CraftParams {
   recipeId: string;
-  burnIds?: string[]; // For ANY recipes
+  burnIds?: string[]; // recetas ANY
 }
 
 export function useCraftTrait() {
   const queryClient = useQueryClient();
+  const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const notifications = useNotifications();
+  const invalidateTraits = useWalletDataStore((s) => s.invalidateTraits);
 
   const mutation = useMutation({
     mutationFn: async ({ recipeId, burnIds }: CraftParams) => {
-      if (!publicClient) {
-        throw new Error('Public client not available');
-      }
+      if (!publicClient || !address) throw new Error('Wallet not connected');
+      const contract = CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`;
 
-      let hash: `0x${string}`;
+      const request =
+        burnIds && burnIds.length > 0
+          ? ({
+              functionName: 'craftAny' as const,
+              args: [BigInt(recipeId), burnIds.map((id) => BigInt(id)), burnIds.map(() => 1n)] as const,
+            })
+          : ({ functionName: 'craftSpecific' as const, args: [BigInt(recipeId)] as const });
 
-      if (burnIds && burnIds.length > 0) {
-        // ANY recipe - try multiple function variants
-        const burnIdsBigInt = burnIds.map(id => BigInt(id));
-        const burnAmounts = burnIds.map(() => BigInt(1)); // Burn 1 of each
-
-        // Try useAnyRecipe first (as per traitlabold)
-        try {
-          hash = await writeContractAsync({
-            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-            abi: CRAFTING_ABI,
-            functionName: 'useAnyRecipe',
-            args: [BigInt(recipeId), burnIdsBigInt, burnAmounts],
-          });
-        } catch (error) {
-          if (import.meta.env.DEV) console.log('useAnyRecipe failed, trying craftAny:', error);
-          // Fallback to craftAny
-          hash = await writeContractAsync({
-            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-            abi: CRAFTING_ABI,
-            functionName: 'craftAny',
-            args: [BigInt(recipeId), burnIdsBigInt, burnAmounts],
-          });
-        }
-      } else {
-        // SPECIFIC recipe - try multiple function variants
-        try {
-          hash = await writeContractAsync({
-            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-            abi: CRAFTING_ABI,
-            functionName: 'useSpecificRecipe',
-            args: [BigInt(recipeId)],
-          });
-        } catch (error) {
-          if (import.meta.env.DEV) console.log('useSpecificRecipe failed, trying craftSpecific:', error);
-          // Fallback to craftSpecific
-          hash = await writeContractAsync({
-            address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-            abi: CRAFTING_ABI,
-            functionName: 'craftSpecific',
-            args: [BigInt(recipeId)],
-          });
-        }
-      }
-
-      if (import.meta.env.DEV) console.log('Craft transaction sent:', hash);
-
-      // Wait for confirmation
+      // Guardián: si revertiría (receta inactiva, faltan traits…), lo sabemos antes de firmar.
+      await publicClient.simulateContract({ account: address, address: contract, abi: CRAFTING_ABI, ...request } as never);
+      const hash = await writeContractAsync({ address: contract, abi: CRAFTING_ABI, ...request } as never);
       await publicClient.waitForTransactionReceipt({ hash });
-
       return hash;
     },
-    onSuccess: (hash) => {
-      if (import.meta.env.DEV) console.log('Trait crafted successfully:', hash);
-      notifications.success('Trait Crafted!', 'New trait has been added to your inventory', false);
-      // Invalidate queries to refresh traits and recipes
+    onSuccess: () => {
+      notifications.success('Trait crafted!', 'The new trait is in your inventory', false);
       queryClient.invalidateQueries({ queryKey: ['traits'] });
       queryClient.invalidateQueries({ queryKey: ['crafting-recipes'] });
+      invalidateTraits();
     },
     onError: (error) => {
-      console.error('Error crafting trait:', error);
-      if (isUserRejection(error)) {
-        notifications.info('Cancelled', 'Transaction cancelled', false);
-        return;
-      }
-      notifications.error('Crafting Failed', humanError(error), false);
+      if (isUserRejection(error)) return;
+      notifications.error('Crafting failed', humanError(error), false);
     },
   });
 
