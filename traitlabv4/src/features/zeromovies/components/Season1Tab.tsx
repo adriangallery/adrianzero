@@ -115,7 +115,7 @@ export function Season1Tab() {
       {/* Tokenomics + late-fee mechanic explainers — same layout as S2 so the
           two seasons read consistently */}
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
-        <div className="rounded border border-line bg-panel950 p-3">
+        <div className="rounded border border-line bg-panel p-3">
           <h3 className="text-[13px] font-bold uppercase tracking-wider text-red-500">Rental tokenomics</h3>
           <p className="mt-1 text-[13px] leading-relaxed text-mute">
             Every rent splits as <span className="text-fg">30% burn</span> ·{' '}
@@ -124,7 +124,7 @@ export function Season1Tab() {
             Buy permanently for 100k $ZERO (80% burn / 10% holders / 10% revenue).
           </p>
         </div>
-        <div className="rounded border border-line bg-panel950 p-3">
+        <div className="rounded border border-line bg-panel p-3">
           <h3 className="text-[13px] font-bold uppercase tracking-wider text-red-500">Return-the-tape</h3>
           <p className="mt-1 text-[13px] leading-relaxed text-mute">
             {graceDays}-day grace, then{' '}

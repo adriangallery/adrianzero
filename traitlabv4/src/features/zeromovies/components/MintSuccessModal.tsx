@@ -16,8 +16,8 @@ export function MintSuccessModal({ movieName }: MintSuccessModalProps) {
     <Dialog.Root open={isSuccessOpen} onOpenChange={(v) => !v && closeSuccess()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-bg/80 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-panel950 p-6 text-center shadow-2xl focus:outline-none">
-          <Dialog.Close className="absolute right-3 top-3 rounded-full bg-bg/60 p-1.5 text-fg hover:bg-line700">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-panel p-6 text-center shadow-2xl focus:outline-none">
+          <Dialog.Close className="absolute right-3 top-3 rounded-full bg-bg/60 p-1.5 text-fg hover:bg-line">
             <X className="h-4 w-4" />
           </Dialog.Close>
 

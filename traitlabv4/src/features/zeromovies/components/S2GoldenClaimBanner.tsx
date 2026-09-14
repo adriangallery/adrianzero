@@ -28,7 +28,7 @@ export function S2GoldenClaimBanner({
 
   if (!isConnected) {
     return (
-      <div className="mb-4 rounded border border-line bg-panel950 px-4 py-3 text-center text-[13px] uppercase tracking-widest text-mute">
+      <div className="mb-4 rounded border border-line bg-panel px-4 py-3 text-center text-[13px] uppercase tracking-widest text-mute">
         Connect wallet to check Golden Mint eligibility
       </div>
     );
@@ -36,7 +36,7 @@ export function S2GoldenClaimBanner({
 
   if (!isEligible) {
     return (
-      <div className="mb-4 rounded border border-line bg-panel950 px-4 py-3 text-center text-[13px] uppercase tracking-widest text-mute">
+      <div className="mb-4 rounded border border-line bg-panel px-4 py-3 text-center text-[13px] uppercase tracking-widest text-mute">
         This wallet was not a permanent S1 holder at the Budokai 1 close ({new Date(snapshotMeta.takenAt).toUTCString()}). No tickets to redeem.
       </div>
     );
@@ -63,7 +63,7 @@ export function S2GoldenClaimBanner({
 
         <div className="flex flex-col items-end">
           {alreadyClaimed ? (
-            <span className="rounded bg-line800 px-3 py-1 text-[12px] font-bold uppercase text-mute">Claimed</span>
+            <span className="rounded bg-line px-3 py-1 text-[12px] font-bold uppercase text-mute">Claimed</span>
           ) : !unpauseAt ? (
             <span className="rounded border border-yellow-500/30 px-3 py-1 text-[12px] font-bold uppercase text-yellow-400">
               Opens at unpause

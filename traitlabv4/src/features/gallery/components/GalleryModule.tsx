@@ -12,14 +12,14 @@ const FILTER_OPTIONS: Array<NFTType | 'All'> = ['All', 'Gen0', 'SamuraiZERO', 'S
 
 const FILTER_COLORS: Record<string, string> = {
   All: 'bg-white text-black',
-  Gen0: 'bg-line600 text-fg',
+  Gen0: 'bg-line text-fg',
   SamuraiZERO: 'bg-red-700 text-red-100',
   SubZERO: 'bg-acc text-acc',
   ZEROmovies: 'bg-red-600 text-red-100',
   GenZERO: 'bg-pink-600 text-pink-100',
 };
 
-const FILTER_INACTIVE = 'bg-line800 text-mute hover:bg-line700';
+const FILTER_INACTIVE = 'bg-line text-mute hover:bg-line';
 
 function getColumnCount(width: number): number {
   if (width >= 1280) return 8;

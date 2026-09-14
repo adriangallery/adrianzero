@@ -52,7 +52,7 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
         ${!isYoursPermanent && !isYoursRental && !isOverdue && !isReservedAuction && !isReservedBudokai ? `border ${ANGLE_ACCENT[movie.angle]}` : ''}
       `}
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-t bg-panel900">
+      <div className="relative aspect-square w-full overflow-hidden rounded-t bg-panel">
         {movie.isMystery && !movie.revealed ? (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-panel via-panel to-bg">
             <span className="font-mono text-3xl font-bold text-mute">???</span>
@@ -121,7 +121,7 @@ export function Movie2Card({ movie, posterUrl, rental, onClick }: Movie2CardProp
         {/* Others permanent (gone forever) → slate */}
         {isOthersPermanent && !isOverdue && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="rounded bg-line800 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-mute">
+            <span className="rounded bg-line px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-mute">
               Taken
             </span>
           </div>

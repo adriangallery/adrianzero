@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { NFTType } from '../types/gallery.types';
 
 interface NFTCardProps {
@@ -11,12 +11,12 @@ interface NFTCardProps {
 }
 
 const TYPE_COLORS: Record<NFTType, string> = {
-  Gen0: 'bg-line600 text-fg',
+  Gen0: 'bg-line text-fg',
   SamuraiZERO: 'bg-red-700 text-red-100',
-  SubZERO: 'bg-acc text-acc',
+  SubZERO: 'bg-acc text-acc-fg',
   ZEROmovies: 'bg-red-600 text-red-100',
   GenZERO: 'bg-pink-600 text-pink-100',
-  Unknown: 'bg-line700 text-fg',
+  Unknown: 'bg-line text-fg',
 };
 
 function truncateAddress(addr: string): string {
@@ -26,12 +26,17 @@ function truncateAddress(addr: string): string {
 
 export function NFTCard({ name, imageUrl, type, owner, onClick }: NFTCardProps) {
   const [loaded, setLoaded] = useState(false);
+  // Imagen ya en caché: el evento load puede ocurrir antes de que React
+  // enganche onLoad y la tarjeta se quedaba en opacity-0 (vista 14-sep).
+  const imgRef = useCallback((node: HTMLImageElement | null) => {
+    if (node && node.complete && node.naturalWidth > 0) setLoaded(true);
+  }, []);
   const [error, setError] = useState(false);
 
   return (
     <button
       onClick={onClick}
-      className="group relative flex flex-col rounded bg-panel900 transition-all duration-200 text-left overflow-hidden min-w-0 hover:scale-105 hover:z-10 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]"
+      className="group relative flex flex-col rounded bg-panel transition-all duration-200 text-left overflow-hidden min-w-0 hover:scale-105 hover:z-10 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]"
     >
       {/* Image */}
       <div className="relative aspect-square w-full overflow-hidden rounded-t bg-bg">
@@ -39,11 +44,12 @@ export function NFTCard({ name, imageUrl, type, owner, onClick }: NFTCardProps) 
           <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-panel via-panel to-panel" />
         )}
         {error ? (
-          <div className="flex h-full w-full items-center justify-center bg-panel900 text-mute text-xs">
+          <div className="flex h-full w-full items-center justify-center bg-panel text-mute text-xs">
             No image
           </div>
         ) : (
           <img
+            ref={imgRef}
             src={imageUrl}
             alt={name}
             className={`h-full w-full object-contain transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'}`}

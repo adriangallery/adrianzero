@@ -30,7 +30,7 @@ export function Season2Tab() {
 
       {/* Mock-mode warning banner — visible only while the live facet isn't deployed */}
       {isMock && (
-        <div className="mb-4 rounded border border-line bg-panel950 px-3 py-2 text-center text-[12px] uppercase tracking-widest text-mute">
+        <div className="mb-4 rounded border border-line bg-panel px-3 py-2 text-center text-[12px] uppercase tracking-widest text-mute">
           Preview · Catalog and rental state are mock data — replace once the on-chain facet ships
         </div>
       )}
@@ -99,7 +99,7 @@ export function Season2Tab() {
 
       {/* Cross-season + late-fee mechanic explainer (preview copy) */}
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
-        <div className="rounded border border-line bg-panel950 p-3">
+        <div className="rounded border border-line bg-panel p-3">
           <h3 className="text-[13px] font-bold uppercase tracking-wider text-yellow-500">Asymmetric tokenomics</h3>
           <p className="mt-1 text-[13px] leading-relaxed text-mute">
             Every S2 transaction routes <span className="text-fg">50% burn</span> ·{' '}
@@ -107,7 +107,7 @@ export function Season2Tab() {
             S1 keeps earning from S2 forever. S2 itself has no holder rewards.
           </p>
         </div>
-        <div className="rounded border border-line bg-panel950 p-3">
+        <div className="rounded border border-line bg-panel p-3">
           <h3 className="text-[13px] font-bold uppercase tracking-wider text-red-500">Return-the-tape</h3>
           <p className="mt-1 text-[13px] leading-relaxed text-mute">
             7-day grace, then the NFT shows <span className="text-red-400">OVERDUE</span> on every

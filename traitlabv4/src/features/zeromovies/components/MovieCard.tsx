@@ -57,7 +57,7 @@ export function MovieCard({
         ${isOthersOverdue ? 'border border-red-900/60' : ''}
       `}
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-t bg-panel900">
+      <div className="relative aspect-square w-full overflow-hidden rounded-t bg-panel">
         <img
           src={posterUrl}
           alt={movie.name}
@@ -126,7 +126,7 @@ export function MovieCard({
         {/* Others permanent (gone forever) → distinct slate tag */}
         {!isOverdue && isOthersPermanent && !isOnSale && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="rounded bg-line800 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-mute">
+            <span className="rounded bg-line px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-mute">
               Taken
             </span>
           </div>

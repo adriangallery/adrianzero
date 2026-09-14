@@ -71,7 +71,7 @@ export function MarketplaceSection() {
         {listings.length > 0 ? (
           <div className="space-y-2">
             {listings.map((l) => (
-              <div key={l.movieId} className="flex items-center justify-between rounded-lg border border-line bg-panel900 px-4 py-3">
+              <div key={l.movieId} className="flex items-center justify-between rounded-lg border border-line bg-panel px-4 py-3">
                 <div className="flex items-center gap-3">
                   <img
                     src={`/images/zeromovies/${l.movieId}.png`}
@@ -87,7 +87,7 @@ export function MarketplaceSection() {
                 <button
                   onClick={() => buy(l.movieId)}
                   disabled={isBuying || isBuyConfirming || balance < l.priceFormatted}
-                  className="rounded bg-red-600 px-4 py-1.5 text-[13px] font-bold text-fg hover:bg-red-500 disabled:bg-line800 disabled:text-mute transition-colors"
+                  className="rounded bg-red-600 px-4 py-1.5 text-[13px] font-bold text-fg hover:bg-red-500 disabled:bg-line disabled:text-mute transition-colors"
                 >
                   {isBuying || isBuyConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'BUY'}
                 </button>
@@ -110,7 +110,7 @@ export function MarketplaceSection() {
               return (
                 <div
                   key={row.kind === 'collection' ? `col-${row.index}` : `ind-${row.movieId}`}
-                  className="flex items-center justify-between rounded border border-line bg-panel950 px-3 py-2 text-[13px]"
+                  className="flex items-center justify-between rounded border border-line bg-panel px-3 py-2 text-[13px]"
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     {row.kind === 'individual' ? (
@@ -124,7 +124,7 @@ export function MarketplaceSection() {
                         <span className="truncate text-[12px] font-bold uppercase text-red-400">#{row.movieId} · {getMovieName(row.movieId)}</span>
                       </>
                     ) : (
-                      <span className="flex-shrink-0 rounded bg-line800 px-1.5 py-0.5 text-[11px] font-bold uppercase text-fg">Any Movie</span>
+                      <span className="flex-shrink-0 rounded bg-line px-1.5 py-0.5 text-[11px] font-bold uppercase text-fg">Any Movie</span>
                     )}
                     <span className="truncate text-mute"><EnsName address={row.bidder} className="text-ok" /></span>
                   </div>
@@ -156,12 +156,12 @@ export function MarketplaceSection() {
             value={colOfferAmount}
             onChange={(e) => setColOfferAmount(e.target.value)}
             placeholder="Amount in $ZERO · any movie"
-            className="flex-1 rounded border border-line bg-panel950 px-3 py-2 text-[13px] text-fg placeholder:text-mute focus:border-red-600 focus:outline-none"
+            className="flex-1 rounded border border-line bg-panel px-3 py-2 text-[13px] text-fg placeholder:text-mute focus:border-red-600 focus:outline-none"
           />
           <button
             onClick={handleCollectionOffer}
             disabled={isOffering || isOfferConfirming || !colOfferAmount || Number(colOfferAmount) <= 0}
-            className="rounded bg-line800 px-4 py-2 text-[13px] font-bold text-fg hover:bg-line700 disabled:text-mute transition-colors"
+            className="rounded bg-line px-4 py-2 text-[13px] font-bold text-fg hover:bg-line disabled:text-mute transition-colors"
           >
             {isOffering || isOfferConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : 'OFFER'}
           </button>

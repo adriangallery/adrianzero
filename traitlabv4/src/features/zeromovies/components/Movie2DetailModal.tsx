@@ -105,14 +105,14 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
             {/* Close */}
             <button
               onClick={onClose}
-              className="absolute right-2 top-2 z-20 rounded p-1 text-mute hover:bg-panel900 hover:text-fg"
+              className="absolute right-2 top-2 z-20 rounded p-1 text-mute hover:bg-panel hover:text-fg"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
             </button>
 
             {/* Poster */}
-            <div className="relative aspect-square w-full overflow-hidden bg-panel950">
+            <div className="relative aspect-square w-full overflow-hidden bg-panel">
               {movie.isMystery && !movie.revealed ? (
                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-panel via-panel to-bg">
                   <span className="font-mono text-6xl font-bold text-mute">???</span>
@@ -245,7 +245,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
                     disabled={isPending}
                     onClick={() => openConfirm('upgrade')}
                   />
-                  <div className="rounded border border-line bg-panel950 p-2 text-[12px] text-mute space-y-1">
+                  <div className="rounded border border-line bg-panel p-2 text-[12px] text-mute space-y-1">
                     <div>
                       Tape due back in <span className="text-fg">{Math.max(0, 7 - Math.floor((Date.now() / 1000 - rental.rentedAt) / 86_400))}d</span>.
                       After 7 days it shows <span className="text-red-400">OVERDUE</span> everywhere — return is always free.
@@ -300,7 +300,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
 
               {/* OTHERS' RENT/BUY — info only, no actions in S2 (no marketplace yet) */}
               {isOthers && (
-                <div className="rounded border border-line bg-panel950 p-3 text-center text-[13px] text-mute">
+                <div className="rounded border border-line bg-panel p-3 text-center text-[13px] text-mute">
                   {rental.permanent
                     ? 'This tape is permanently owned by another wallet.'
                     : isOverdue
@@ -312,7 +312,7 @@ export function Movie2DetailModal({ movie, posterUrl, rental, open, onClose }: M
 
             {/* Footer: golden hint when relevant */}
             {isEligible && ticketCount > 0 && (
-              <div className="border-t border-line bg-panel950 px-4 py-2 text-center text-[12px] uppercase tracking-widest text-yellow-500/80">
+              <div className="border-t border-line bg-panel px-4 py-2 text-center text-[12px] uppercase tracking-widest text-yellow-500/80">
                 You hold {ticketCount} Golden Ticket{ticketCount === 1 ? '' : 's'} — claim from the banner above
               </div>
             )}

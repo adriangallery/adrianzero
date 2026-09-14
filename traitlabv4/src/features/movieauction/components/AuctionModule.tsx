@@ -65,7 +65,7 @@ export function AuctionModule() {
                 <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
                     {reserved && stillUrl && gifUrl ? (
                         <div className="relative w-full max-w-xs shrink-0">
-                            <div className="group relative overflow-hidden rounded border-2 border-purple-500/40 bg-panel950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
+                            <div className="group relative overflow-hidden rounded border-2 border-purple-500/40 bg-panel shadow-[0_0_48px_rgba(168,85,247,0.20)]">
                                 <MovieCover
                                     stillUrl={stillUrl}
                                     gifUrl={gifUrl}
@@ -97,7 +97,7 @@ export function AuctionModule() {
                     )}
 
                     <div className="flex-1 space-y-3">
-                        <div className="rounded border border-line bg-panel950 p-3">
+                        <div className="rounded border border-line bg-panel p-3">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-mute">What's coming</span>
                             <p className="mt-1 text-[11px] leading-relaxed text-fg">
                                 A 48-hour English auction in <span className="font-bold text-yellow-400">$ZERO</span> for
@@ -159,7 +159,7 @@ export function AuctionModule() {
             <div className="grid gap-4 md:grid-cols-2">
                 {/* Movie cover */}
                 <div className="flex flex-col items-center">
-                    <div className="group relative w-full max-w-sm overflow-hidden rounded border-2 border-yellow-500/40 bg-panel950 shadow-[0_0_48px_rgba(168,85,247,0.20)]">
+                    <div className="group relative w-full max-w-sm overflow-hidden rounded border-2 border-yellow-500/40 bg-panel shadow-[0_0_48px_rgba(168,85,247,0.20)]">
                         <MovieCover
                             stillUrl={auction.posterStillUrl}
                             gifUrl={auction.posterUrl}
@@ -186,7 +186,7 @@ export function AuctionModule() {
                 <div className="flex flex-col gap-3">
                     <CountdownTimer secondsLeft={auction.secondsLeft} />
 
-                    <div className="rounded border border-line bg-panel950 p-3">
+                    <div className="rounded border border-line bg-panel p-3">
                         <span className="text-[11px] uppercase tracking-wider text-mute">Top bid</span>
                         {hasBid ? (
                             <>
@@ -227,7 +227,7 @@ export function AuctionModule() {
             </div>
 
             {/* Storytelling blurb */}
-            <div className="mt-4 rounded border border-line bg-panel950 p-3 text-[13px] leading-relaxed text-mute">
+            <div className="mt-4 rounded border border-line bg-panel p-3 text-[13px] leading-relaxed text-mute">
                 <div className="mb-1 flex items-center gap-2">
                     <Trophy className="h-3.5 w-3.5 text-yellow-400" />
                     <span className="font-bold uppercase tracking-wider text-yellow-400">Why this auction matters</span>
@@ -246,7 +246,7 @@ export function AuctionModule() {
 
 function Stat({label, value, sub}: {label: string; value: string; sub: string}) {
     return (
-        <div className="flex flex-col rounded border border-line bg-panel950 p-2.5">
+        <div className="flex flex-col rounded border border-line bg-panel p-2.5">
             <span className="text-[11px] uppercase tracking-wider text-mute">{label}</span>
             <span className="mt-1 text-base font-mono font-bold text-fg">{value}</span>
             <span className="text-[11px] text-mute">{sub}</span>

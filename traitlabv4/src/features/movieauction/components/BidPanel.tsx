@@ -53,7 +53,7 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
 
     if (!isConnected || !address) {
         return (
-            <div className="rounded border border-line bg-panel950 p-4 text-center text-[13px] uppercase tracking-widest text-mute">
+            <div className="rounded border border-line bg-panel p-4 text-center text-[13px] uppercase tracking-widest text-mute">
                 Connect wallet to bid
             </div>
         );
@@ -65,7 +65,7 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
 
     if (isEnded) {
         return (
-            <div className="rounded border border-line bg-panel950 p-4 text-center">
+            <div className="rounded border border-line bg-panel p-4 text-center">
                 <p className="text-[13px] uppercase tracking-widest text-mute">Auction ended</p>
                 {noBids ? (
                     <p className="mt-1 text-[13px] text-mute">No bids — ready to be cancelled by the owner.</p>
@@ -105,7 +105,7 @@ export function BidPanel({auction, onAfterAction}: BidPanelProps) {
     const canBid = !parseErr && !tooLow && !balanceShort && !needsApproval;
 
     return (
-        <div className="rounded border border-line bg-panel950 p-4">
+        <div className="rounded border border-line bg-panel p-4">
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                 <div>
                     <span className="text-[11px] uppercase tracking-wider text-mute">Min next bid</span>

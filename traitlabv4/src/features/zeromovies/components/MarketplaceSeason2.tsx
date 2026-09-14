@@ -57,7 +57,7 @@ export function MarketplaceSeason2() {
       </div>
 
       <div className="mb-2 flex items-center gap-2 text-[12px] uppercase tracking-wider text-mute">
-        <span className="rounded bg-panel900 px-1.5 py-0.5 text-yellow-400">S2</span>
+        <span className="rounded bg-panel px-1.5 py-0.5 text-yellow-400">S2</span>
         <span>Trading floor · proposed 5% fee · 3% burn + 2% to S1 (cross-season)</span>
       </div>
 
@@ -70,11 +70,11 @@ export function MarketplaceSeason2() {
             return (
               <div
                 key={l.movieId}
-                className="flex items-center justify-between rounded-lg border border-line bg-panel900 px-4 py-3 opacity-90"
+                className="flex items-center justify-between rounded-lg border border-line bg-panel px-4 py-3 opacity-90"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {mystery ? (
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded bg-panel950 font-mono text-sm font-bold text-mute">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded bg-panel font-mono text-sm font-bold text-mute">
                       ???
                     </div>
                   ) : (
@@ -98,7 +98,7 @@ export function MarketplaceSeason2() {
                 </div>
                 <button
                   disabled
-                  className="rounded bg-line800 px-4 py-1.5 text-[13px] font-bold text-mute disabled:cursor-not-allowed"
+                  className="rounded bg-line px-4 py-1.5 text-[13px] font-bold text-mute disabled:cursor-not-allowed"
                   title="Live once the S2 marketplace facet ships"
                 >
                   BUY
@@ -120,17 +120,17 @@ export function MarketplaceSeason2() {
             return (
               <div
                 key={`${idx}-${row.bidder}`}
-                className="flex items-center justify-between rounded border border-line bg-panel950 px-3 py-2 text-[13px] opacity-90"
+                className="flex items-center justify-between rounded border border-line bg-panel px-3 py-2 text-[13px] opacity-90"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   {isCollection ? (
-                    <span className="flex-shrink-0 rounded bg-line800 px-1.5 py-0.5 text-[11px] font-bold uppercase text-fg">
+                    <span className="flex-shrink-0 rounded bg-line px-1.5 py-0.5 text-[11px] font-bold uppercase text-fg">
                       Any S2 Movie
                     </span>
                   ) : (
                     <>
                       {isMystery(row.movieId!) ? (
-                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-panel950 font-mono text-[12px] font-bold text-mute">
+                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-panel font-mono text-[12px] font-bold text-mute">
                           ???
                         </div>
                       ) : (
@@ -178,11 +178,11 @@ export function MarketplaceSeason2() {
             onChange={(e) => setColOfferAmount(e.target.value)}
             placeholder="Amount in $ZERO · any S2 movie"
             disabled
-            className="flex-1 rounded border border-line bg-panel950 px-3 py-2 text-[13px] text-fg placeholder:text-mute focus:border-yellow-600 focus:outline-none disabled:opacity-50"
+            className="flex-1 rounded border border-line bg-panel px-3 py-2 text-[13px] text-fg placeholder:text-mute focus:border-yellow-600 focus:outline-none disabled:opacity-50"
           />
           <button
             disabled
-            className="rounded bg-line800 px-4 py-2 text-[13px] font-bold text-mute disabled:cursor-not-allowed"
+            className="rounded bg-line px-4 py-2 text-[13px] font-bold text-mute disabled:cursor-not-allowed"
             title="Live once the S2 marketplace facet ships"
           >
             <Loader2 className="hidden h-3 w-3 animate-spin" />

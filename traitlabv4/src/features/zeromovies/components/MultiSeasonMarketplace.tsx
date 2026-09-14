@@ -101,7 +101,7 @@ function SeasonSubTab({ meta, active, onClick }: SeasonSubTabProps) {
 function PlaceholderPanel({ meta }: { meta: SeasonMeta }) {
   const accent = ACCENTS[meta.accent];
   return (
-    <div className="rounded-lg border border-dashed border-line bg-panel950 p-8 text-center">
+    <div className="rounded-lg border border-dashed border-line bg-panel p-8 text-center">
       <div className={`mx-auto mb-3 inline-flex items-center gap-2 rounded-full border ${accent.tag} px-3 py-0.5 text-[11px] font-bold uppercase tracking-widest`}>
         <Lock className="h-3 w-3" />
         {meta.status === 'soon' ? 'Coming soon' : 'Unannounced'}

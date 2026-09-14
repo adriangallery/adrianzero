@@ -11,12 +11,12 @@ import { metadataUrl, renderUrl } from '@/lib/adrianlab';
 const OPENSEA_BASE = `https://opensea.io/assets/base/${CONTRACT_ADDRESSES.ADRIAN_ZERO}`;
 
 const TYPE_COLORS: Record<NFTType, string> = {
-  Gen0: 'bg-line600 text-fg',
+  Gen0: 'bg-line text-fg',
   SamuraiZERO: 'bg-red-700 text-red-100',
   SubZERO: 'bg-acc text-acc',
   ZEROmovies: 'bg-red-600 text-red-100',
   GenZERO: 'bg-pink-600 text-pink-100',
-  Unknown: 'bg-line700 text-fg',
+  Unknown: 'bg-line text-fg',
 };
 
 interface NFTDetailModalProps {
@@ -119,7 +119,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-panel900 shadow-2xl backdrop-blur-xl"
+              className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-panel shadow-2xl backdrop-blur-xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close */}
@@ -182,7 +182,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                       </div>
 
                       {/* Owner */}
-                      <div className="mb-4 rounded-lg bg-line800 p-3">
+                      <div className="mb-4 rounded-lg bg-line p-3">
                         <div className="text-[13px] font-medium uppercase text-mute mb-1">Owner</div>
                         {ensName ? (
                           <div>
@@ -205,7 +205,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                           <h3 className="mb-2 text-sm font-semibold text-fg">Attributes</h3>
                           <div className="grid grid-cols-2 gap-2">
                             {localMeta.attributes.map((attr, i) => (
-                              <div key={i} className="rounded-lg bg-line800 p-2.5">
+                              <div key={i} className="rounded-lg bg-line p-2.5">
                                 <div className="text-[12px] font-medium uppercase text-mute">
                                   {attr.trait_type}
                                 </div>
@@ -233,7 +233,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                           href={imageUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 rounded-lg border border-line bg-line800 px-4 py-2.5 text-sm font-medium text-fg hover:bg-line800 transition-colors"
+                          className="flex items-center justify-center gap-2 rounded-lg border border-line bg-line px-4 py-2.5 text-sm font-medium text-fg hover:bg-line transition-colors"
                         >
                           Full Image
                           <ExternalLink className="h-3.5 w-3.5" />
