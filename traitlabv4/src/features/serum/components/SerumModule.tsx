@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Unplug, FlaskConical } from 'lucide-react';
 import { useSerums } from '../hooks/useSerums';
 import { useApplySerum } from '../hooks/useApplySerum';
+import { SerumConfirmSheet } from './SerumConfirmSheet';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { NFTGrid } from '@/components/nft/NFTGrid';
@@ -24,6 +25,7 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
   const selectedNFT = embedded ? (storeToken as AdrianZeroToken | null) : localSelectedNFT;
   const setSelectedNFT = embedded ? () => {} : setLocalSelectedNFT;
   const [selectedSerum, setSelectedSerum] = useState<Serum | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const isTouchDevice = shouldOptimizeForTouch();
 
   // Load data
@@ -60,10 +62,12 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
         serumId: selectedSerum.tokenId,
       });
 
+      setConfirmOpen(false);
       setSelectedNFT(null);
       setSelectedSerum(null);
-    } catch (error) {
-      console.error('Failed to apply serum:', error);
+    } catch {
+      // El toast con el motivo real ya lo muestra useApplySerum (humanError);
+      // la hoja se queda abierta para reintentar o cancelar.
     }
   };
 
@@ -185,14 +189,23 @@ export function SerumModule({ embedded }: { embedded?: boolean } = {}) {
       {selectedNFT && selectedSerum && (
         <div className="flex justify-center pt-6">
           <button
-            onClick={handleApplySerum}
+            onClick={() => setConfirmOpen(true)}
             disabled={applySerum.isPending}
             className="touch-target px-8 py-3 bg-acc text-acc-fg rounded-lg font-medium text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {applySerum.isPending ? 'Applying...' : 'Apply Serum'}
+            Review and use serum
           </button>
         </div>
       )}
+
+      <SerumConfirmSheet
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        token={selectedNFT}
+        serum={selectedSerum}
+        pending={applySerum.isPending}
+        onConfirm={handleApplySerum}
+      />
     </div>
   );
 }
@@ -220,7 +233,7 @@ function SelectableCard({
         ${
           isSelected
             ? 'ring-2 ring-acc shadow-lg'
-            : 'hover:shadow-md hover:ring-1 hover:ring-border'
+            : 'hover:shadow-md hover:ring-1 hover:ring-line'
         }
         bg-panel
       `}
@@ -248,7 +261,7 @@ function SelectableCard({
           <div className="absolute inset-0 bg-acc/10 flex items-center justify-center">
             <div className="w-10 h-10 rounded-full bg-acc flex items-center justify-center">
               <svg
-                className="w-6 h-6 text-fg"
+                className="w-6 h-6 text-acc-fg"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
