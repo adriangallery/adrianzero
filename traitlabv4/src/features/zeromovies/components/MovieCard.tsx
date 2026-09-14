@@ -111,7 +111,7 @@ export function MovieCard({
           </div>
         )}
         {!isOverdue && isOnSale && (
-          <div className="absolute bottom-1 left-1 rounded bg-ok px-1.5 py-0.5 text-[7px] font-bold text-fg">
+          <div className="absolute bottom-1 left-1 rounded bg-ok px-1.5 py-0.5 text-[11px] font-bold text-acc-fg">
             ON SALE
           </div>
         )}

@@ -384,7 +384,7 @@ export function CraftingModule({ embedded }: { embedded?: boolean } = {}) {
 
                           {/* Required badge */}
                           {isRequired && (
-                            <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-yellow-500/90 rounded text-[13px] font-medium text-fg">
+                            <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-yellow-500/90 rounded text-[13px] font-medium text-black">
                               Required
                             </div>
                           )}

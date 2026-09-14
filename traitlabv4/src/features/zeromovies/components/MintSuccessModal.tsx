@@ -66,7 +66,7 @@ export function MintSuccessModal({ movieName }: MintSuccessModalProps) {
           <button
             onClick={closeSuccess}
             className={`w-full rounded-lg py-2.5 text-sm font-bold transition-colors ${
-              isReturn ? 'bg-ok text-fg hover:bg-ok'
+              isReturn ? 'bg-ok text-acc-fg hover:opacity-90'
                 : isBuy ? 'bg-yellow-600 text-black hover:bg-yellow-500'
                 : 'bg-red-600 text-fg hover:bg-red-500'
             }`}

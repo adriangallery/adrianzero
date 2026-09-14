@@ -224,7 +224,7 @@ export function NFTDetailModal({ owners }: NFTDetailModalProps) {
                           href={`${OPENSEA_BASE}/${selectedTokenId}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 rounded-lg bg-acc px-4 py-2.5 text-sm font-medium text-fg hover:bg-acc transition-colors"
+                          className="flex items-center justify-center gap-2 rounded-lg bg-acc px-4 py-2.5 text-sm font-medium text-acc-fg hover:opacity-90 transition-colors"
                         >
                           View on OpenSea
                           <ExternalLink className="h-3.5 w-3.5" />

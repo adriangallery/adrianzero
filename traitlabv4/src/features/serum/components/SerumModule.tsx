@@ -239,7 +239,7 @@ function SelectableCard({
         )}
 
         {badge && (
-          <div className="absolute top-2 right-2 px-2 py-1 bg-acc2/90 rounded-md text-xs font-medium text-fg">
+          <div className="absolute top-2 right-2 px-2 py-1 bg-acc2/90 rounded-md text-xs font-medium text-acc-fg">
             {badge}
           </div>
         )}

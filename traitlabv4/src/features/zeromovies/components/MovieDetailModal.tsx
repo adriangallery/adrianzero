@@ -552,7 +552,7 @@ export function MovieDetailModal({ movie, posterUrl, open, onClose, onMintSucces
                       disabled={isRenterAcceptPending || isRenterAcceptConfirming || bestOfferAmount < dynamicBuyPriceFormatted}
                       className={`w-full rounded py-2 text-[13px] font-bold transition-colors ${
                         bestOfferAmount >= dynamicBuyPriceFormatted
-                          ? 'bg-ok text-fg hover:bg-ok'
+                          ? 'bg-ok text-acc-fg hover:opacity-90'
                           : 'bg-line800 text-mute cursor-not-allowed'
                       }`}
                     >

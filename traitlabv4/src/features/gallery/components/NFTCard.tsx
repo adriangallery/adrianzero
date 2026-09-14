@@ -55,7 +55,7 @@ export function NFTCard({ name, imageUrl, type, owner, onClick }: NFTCardProps) 
         )}
 
         {/* Type badge */}
-        <div className={`absolute top-1 right-1 rounded px-1.5 py-0.5 text-[7px] font-bold ${TYPE_COLORS[type]}`}>
+        <div className={`absolute top-1 right-1 rounded px-1.5 py-0.5 text-[11px] font-bold ${TYPE_COLORS[type]}`}>
           {type === 'Unknown' ? '???' : type}
         </div>
       </div>
@@ -65,7 +65,7 @@ export function NFTCard({ name, imageUrl, type, owner, onClick }: NFTCardProps) 
         <p className="truncate text-[12px] font-bold text-fg group-hover:text-fg transition-colors">
           {name}
         </p>
-        <p className="truncate text-[7px] font-mono text-mute group-hover:text-mute transition-colors">
+        <p className="truncate text-[11px] font-mono text-mute group-hover:text-fg transition-colors">
           {truncateAddress(owner)}
         </p>
       </div>
