@@ -16,6 +16,7 @@ import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
+import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
 import { useTraitsByCategory } from '@/features/traits/hooks/useTraits';
 import { isEquippableCategory, isEquippableTrait } from '../lib/equippable';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
@@ -25,6 +26,7 @@ import { useTraitlabStore } from '../store/traitlabStore';
 import { computeChanges, planSignatures } from '../lib/changes';
 import { computeTraitCardState } from '../lib/traitCardState';
 import { getLastUsedTokenId, setLastUsedTokenId } from '../lib/tokenHistory';
+import { resolveOwnedSelection } from '../lib/ownedSelection';
 import { useEquippedTraits } from '../hooks/useEquippedTraits';
 import { useCanApplyTraits } from '../hooks/useCanApplyTraits';
 import { useApplyTraitlabChanges } from '../hooks/useApplyTraitlabChanges';
@@ -98,6 +100,7 @@ export function TraitLabModule() {
   const { checkTrait } = useCanApplyTraits(selectedTokenId);
   const applyMutation = useApplyTraitlabChanges(selectedTokenId);
   const { data: traitsByCategory = {}, isLoading: isLoadingTraits } = useTraitsByCategory();
+  const { data: ownedTokens = [], isLoading: isLoadingOwned } = useAdrianZeroTokens();
 
   // Resolución del token inicial: ?token= de la URL > hint de Mis NFTs > último usado > hoja de elegir.
   useEffect(() => {
@@ -118,6 +121,21 @@ export function TraitLabModule() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Al conectar, pasar a los ZEROs propios en vez del de ejemplo o del último usado en este
+  // navegador (feedback de Adrián 14-sep). Ver lib/ownedSelection.ts.
+  const ownedKey = ownedTokens.map((t) => t.tokenId).join(',');
+  useEffect(() => {
+    if (!isConnected || isLoadingOwned) return;
+    const action = resolveOwnedSelection(selectedTokenId, ownedTokens.map((t) => t.tokenId));
+    if (action.kind === 'select') {
+      handleTokenSelect(action.tokenId);
+    } else if (action.kind === 'choose') {
+      setSelectedToken(null);
+      setTokenSheetOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, isLoadingOwned, ownedKey]);
 
   // Solo lo equipable: el inventario ERC-1155 trae también floppies (packs),
   // serums y logros, que el contrato rechaza («Cannot equip this asset
