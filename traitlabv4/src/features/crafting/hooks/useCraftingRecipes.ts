@@ -9,6 +9,7 @@ import { usePublicClient, useAccount } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { CRAFTING_ABI } from '@/lib/web3/abi';
 import type { CraftingRecipe } from '@/types/nft.types';
+import { humanError } from '@/lib/web3/humanError';
 
 // Recipe IDs to check (based on traitlabold logic)
 const RECIPE_IDS = [1, 2, 3, 4, 5];
@@ -87,26 +88,10 @@ export function useCraftingRecipes() {
         }
       }
 
-      // Batch canCraft checks for all active recipes
-      if (address && recipes.length > 0) {
-        const canCraftCalls = recipes.map((recipe) => ({
-          address: contractAddress,
-          abi: CRAFTING_ABI,
-          functionName: 'canCraft' as const,
-          args: [address, BigInt(recipe.recipeId)],
-        }));
-
-        const canCraftResults = await publicClient.multicall({
-          contracts: canCraftCalls,
-          allowFailure: true,
-        });
-
-        canCraftResults.forEach((result, index) => {
-          if (result.status === 'success' && result.result) {
-            recipes[index].isEligible = (result.result as [boolean, string])[0];
-          }
-        });
-      }
+      // (14-sep F6) `canCraft` no existe en el contrato: la elegibilidad se
+      // calcula en el cliente con el inventario (CraftingModule) y el
+      // guardián final es la simulación de craftSpecific/craftAny.
+      void address;
 
       return recipes;
     },
@@ -116,7 +101,8 @@ export function useCraftingRecipes() {
   });
 }
 
-// Hook to check if user can craft a specific recipe
+// Hook para comprobar si el usuario puede fabricar una receta concreta:
+// simula `craftSpecific` desde su cuenta (el contrato no expone `canCraft`).
 export function useCanCraft(recipeId: string) {
   const publicClient = usePublicClient();
   const { address } = useAccount();
@@ -124,20 +110,21 @@ export function useCanCraft(recipeId: string) {
   return useQuery({
     queryKey: ['can-craft', address, recipeId],
     queryFn: async () => {
-      if (!publicClient || !address) {
-        return { canCraft: false, reason: 'Wallet not connected' };
+      if (!publicClient || !address) return { canCraft: false, reason: 'Wallet not connected' };
+      try {
+        await publicClient.simulateContract({
+          account: address,
+          address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING as `0x${string}`,
+          abi: CRAFTING_ABI,
+          functionName: 'craftSpecific',
+          args: [BigInt(recipeId)],
+        });
+        return { canCraft: true, reason: '' };
+      } catch (error) {
+        return { canCraft: false, reason: humanError(error) };
       }
-
-      const [canCraft, reason] = (await publicClient.readContract({
-        address: CONTRACT_ADDRESSES.ADRIAN_CRAFTING,
-        abi: CRAFTING_ABI,
-        functionName: 'canCraft',
-        args: [address, BigInt(recipeId)],
-      })) as [boolean, string];
-
-      return { canCraft, reason };
     },
     enabled: !!publicClient && !!address && !!recipeId,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60,
   });
 }
