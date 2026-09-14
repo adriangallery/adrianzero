@@ -31,7 +31,7 @@ export function ClaimModule() {
     setError(null);
     try {
       const hash = await airdrop.claim();
-      notifications.success('ZERO claimed', amount ? `${amount} ZERO` : '', true, hash);
+      notifications.success('ZERO claimed', amount ? `${amount} ZERO · Freed Soul on its way` : 'Freed Soul on its way', true, hash);
     } catch (e) {
       if (!isUserRejection(e)) setError(humanError(e));
     }
@@ -50,6 +50,21 @@ export function ClaimModule() {
           Use the same wallet that holds your Souls.
         </p>
       </header>
+
+      {/* Recompensa exclusiva junto al ZERO (decisión de Adrián 14-sep): trait GEAR nuevo, 161 unidades */}
+      <Card className="flex items-center gap-4 p-4" data-testid="claim-freed-soul">
+        <img
+          src="/images/claim/freed-soul.png"
+          alt="Freed Soul trait"
+          className="h-20 w-20 flex-none rounded-[var(--r-md)] bg-bg object-contain [image-rendering:pixelated]"
+        />
+        <div className="min-w-0">
+          <p className="font-ui text-[15px] font-bold text-fg">+ Freed Soul trait</p>
+          <p className="text-[13px] leading-relaxed text-mute">
+            A framed Cubist Soul for your ZERO. Only 161 exist, one per claim. It lands in your wallet a few minutes after you claim.
+          </p>
+        </div>
+      </Card>
 
       {view === 'disconnected' && (
         <Card className="flex flex-col items-center gap-3 p-6 text-center">
@@ -125,7 +140,8 @@ export function ClaimModule() {
           )}
           {view === 'claimed' && (
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button size="lg" full onClick={() => navigate('/shop')}>Spend it in the Shop</Button>
+              <Button size="lg" full onClick={() => navigate('/traitlab')}>Equip your Freed Soul</Button>
+              <Button size="lg" variant="secondary" full onClick={() => navigate('/shop')}>Spend it in the Shop</Button>
               <Button size="lg" variant="secondary" full onClick={() => navigate('/mint')}>Get a ZERO</Button>
             </div>
           )}
