@@ -93,7 +93,9 @@ export function DropModule() {
   else if (data.freeRemaining > 0n) view = 'free';
   else view = 'buy';
 
-  const name = meta.data?.name && !/^(TRAIT|FLOPPY) #/.test(meta.data.name) ? meta.data.name : `Trait #${assetId}`;
+  // AdrianLAB responde 200 con «TRAIT #id» y la descripción genérica si el id aún no está en su metadata
+  const hasRealMetadata = !!meta.data?.name && !/^(TRAIT|FLOPPY) #/.test(meta.data.name);
+  const name = hasRealMetadata ? (meta.data?.name as string) : `Trait #${assetId}`;
   const image = adrianlabUrl(`/api/render/floppy/${assetId}.png`);
   const busy = purchase.isPending || (!!purchase.txHash && !purchase.isConfirmed && !purchase.error);
   const error = purchase.error && !isUserRejection(purchase.error) ? humanError(purchase.error) : null;
@@ -107,7 +109,7 @@ export function DropModule() {
           <Gift className="h-3.5 w-3.5" /> Drop
         </Badge>
         {meta.isLoading ? <Skeleton className="h-7 w-2/3" /> : <h1 className="font-ui text-[24px] font-bold leading-tight text-fg">{name}</h1>}
-        {meta.data?.description && <p className="text-[14px] leading-relaxed text-mute">{meta.data.description}</p>}
+        {hasRealMetadata && meta.data?.description && <p className="text-[14px] leading-relaxed text-mute">{meta.data.description}</p>}
       </header>
 
       <Card className="overflow-hidden">
