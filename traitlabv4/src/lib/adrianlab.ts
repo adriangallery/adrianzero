@@ -14,7 +14,8 @@
  *  (crítico 13-sep, `vercel env pull`): el cliente acepta la base con o sin
  *  `/api` final y lo recorta, porque cada helper ya añade su `/api/...`.
  *  Sin la variable, el fallback reproduce producción. */
-const DEFAULT_ADRIANLAB_BASE_URL = 'https://adrianlab.vercel.app';
+// Mudanza de ZERO al mini (15-sep-2026): AdrianLAB se sirve desde el mini con dominio propio.
+const DEFAULT_ADRIANLAB_BASE_URL = 'https://lab.adrianzero.com';
 
 /** Normaliza la base: sin barras finales y sin un `/api` final (lo añaden los paths). */
 export function normalizeAdrianlabBase(raw: string | undefined | null): string {
