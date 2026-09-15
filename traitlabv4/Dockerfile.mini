@@ -1,0 +1,21 @@
+# adrianzero.com en el mini (mudanza de ZERO al mini, fase 1).
+# Se construye en GitHub Actions (.github/workflows/build-mini-image.yml) y el mini solo
+# descarga la imagen: nunca se compila en el mini. Las VITE_* llegan en .env.production,
+# que el workflow escribe desde el secret ADRIANZERO_VITE_ENV antes del build.
+FROM node:22-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --legacy-peer-deps
+COPY . .
+RUN npm run build
+
+FROM node:22-alpine
+WORKDIR /app
+ENV NODE_ENV=production PORT=5000
+COPY --from=build /app/dist ./dist
+COPY server.mjs ./
+COPY api/movies2/_snapshot.json ./api/movies2/_snapshot.json
+ARG GIT_SHA=unknown
+ENV GIT_SHA=$GIT_SHA
+EXPOSE 5000
+CMD ["node", "server.mjs"]
