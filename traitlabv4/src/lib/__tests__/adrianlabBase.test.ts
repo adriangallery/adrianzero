@@ -12,8 +12,8 @@ describe('normalizeAdrianlabBase', () => {
     expect(normalizeAdrianlabBase('https://lab.adrianzero.com')).toBe('https://lab.adrianzero.com');
   });
   it('sin variable → fallback de producción', () => {
-    expect(normalizeAdrianlabBase(undefined)).toBe('https://adrianlab.vercel.app');
-    expect(normalizeAdrianlabBase('  ')).toBe('https://adrianlab.vercel.app');
+    expect(normalizeAdrianlabBase(undefined)).toBe('https://lab.adrianzero.com');
+    expect(normalizeAdrianlabBase('  ')).toBe('https://lab.adrianzero.com');
   });
   it('adrianlabUrl nunca produce /api/api', () => {
     expect(adrianlabUrl('/api/render/146')).not.toContain('/api/api');
