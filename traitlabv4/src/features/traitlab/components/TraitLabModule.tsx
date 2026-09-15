@@ -26,7 +26,7 @@ import { useTraitlabStore } from '../store/traitlabStore';
 import { computeChanges, planSignatures } from '../lib/changes';
 import { computeTraitCardState } from '../lib/traitCardState';
 import { getLastUsedTokenId, setLastUsedTokenId } from '../lib/tokenHistory';
-import { resolveOwnedSelection } from '../lib/ownedSelection';
+import { resolveOwnedSelection, shouldResolveOwnedSelection } from '../lib/ownedSelection';
 import { useEquippedTraits } from '../hooks/useEquippedTraits';
 import { useCanApplyTraits } from '../hooks/useCanApplyTraits';
 import { useApplyTraitlabChanges } from '../hooks/useApplyTraitlabChanges';
@@ -35,6 +35,7 @@ import { CategoryChips } from './CategoryChips';
 import { TraitCard, GetMoreInShopCard } from './TraitCard';
 import { ApplyResultSheet } from './ApplyResultSheet';
 import type { Trait } from '@/types/nft.types';
+import { useWalletDataStore } from '@/stores/walletDataStore';
 
 /**
  * Offset del sticky de chips (y del rootMargin de la miniatura): lo que cubre
@@ -57,7 +58,7 @@ type PreviewStatus = 'idle' | 'loading' | 'ready' | 'error' | 'timeout';
 export function TraitLabModule() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const { requireWallet } = useWalletPrompt();
   const notifications = useNotifications();
   // El TabBar inferior fijo solo existe <768px (MainLayout) — sin ella, el
@@ -101,6 +102,11 @@ export function TraitLabModule() {
   const applyMutation = useApplyTraitlabChanges(selectedTokenId);
   const { data: traitsByCategory = {}, isLoading: isLoadingTraits } = useTraitsByCategory();
   const { data: ownedTokens = [], isLoading: isLoadingOwned } = useAdrianZeroTokens();
+  // Para saber cuándo la lista de ZEROs de ESTA wallet ya llegó (y no es el [] de antes de cargar).
+  const zerosCachedFor = useWalletDataStore((s) => s.zerosCachedFor);
+  const zerosFetchedAt = useWalletDataStore((s) => s.zerosFetchedAt);
+  const ownedResolvedForRef = useRef<string | null>(null);
+  const userPickedTokenRef = useRef(false);
 
   // Resolución del token inicial: ?token= de la URL > hint de Mis NFTs > último usado > hoja de elegir.
   useEffect(() => {
@@ -126,7 +132,22 @@ export function TraitLabModule() {
   // navegador (feedback de Adrián 14-sep). Ver lib/ownedSelection.ts.
   const ownedKey = ownedTokens.map((t) => t.tokenId).join(',');
   useEffect(() => {
-    if (!isConnected || isLoadingOwned) return;
+    const current = isConnected ? address ?? null : null;
+    if (ownedResolvedForRef.current && ownedResolvedForRef.current.toLowerCase() !== (current ?? '').toLowerCase()) {
+      // Cambio de wallet o desconexión: la próxima wallet vuelve a decidir
+      ownedResolvedForRef.current = null;
+      userPickedTokenRef.current = false;
+    }
+    const ready = shouldResolveOwnedSelection({
+      address: current,
+      isLoading: isLoadingOwned,
+      cachedFor: zerosCachedFor,
+      fetchedAt: zerosFetchedAt,
+      resolvedFor: ownedResolvedForRef.current,
+      userPicked: userPickedTokenRef.current,
+    });
+    if (!ready) return;
+    ownedResolvedForRef.current = current;
     const action = resolveOwnedSelection(selectedTokenId, ownedTokens.map((t) => t.tokenId));
     if (action.kind === 'select') {
       handleTokenSelect(action.tokenId);
@@ -135,7 +156,7 @@ export function TraitLabModule() {
       setTokenSheetOpen(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, isLoadingOwned, ownedKey]);
+  }, [isConnected, address, isLoadingOwned, ownedKey, zerosCachedFor, zerosFetchedAt]);
 
   // Solo lo equipable: el inventario ERC-1155 trae también floppies (packs),
   // serums y logros, que el contrato rechaza («Cannot equip this asset
@@ -570,7 +591,10 @@ export function TraitLabModule() {
           setTokenSheetOpen(open);
           if (!open && !selectedTokenId) navigate('/mynfts');
         }}
-        onSelect={handleTokenSelect}
+        onSelect={(tokenId) => {
+          userPickedTokenRef.current = true;
+          handleTokenSelect(tokenId);
+        }}
       />
 
       {lastTxHash && selectedTokenId ? (
