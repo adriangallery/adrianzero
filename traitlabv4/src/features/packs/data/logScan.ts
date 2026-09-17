@@ -177,8 +177,14 @@ export async function scanPackIds(params: ScanPackIdsParams): Promise<Set<bigint
   // `generatedAt`) > bloque de deploy (primera vez sin nada de lo anterior).
   // (Nombrado `resumePoint`, no `base`, para no tapar el `base` de
   // `viem/chains` importado arriba.)
+  // Si el seed del repo va MÁS adelantado que la caché de este navegador (seed regenerado tras un
+  // lanzamiento), se parte del seed y se suman los ids de la caché: si no, un navegador con caché vieja
+  // tarda varias visitas (tope de peticiones por escaneo) en ver un pack nuevo. 17-sep-2026, pack 10020.
+  const seedEntry: ScanCacheEntry | null = seed ? { lastBlock: seed.lastScannedBlock.toString(), ids: seed.ids.map(String) } : null;
   const resumePoint: ScanCacheEntry | null =
-    cachedFromStorage ?? (seed ? { lastBlock: seed.lastScannedBlock.toString(), ids: seed.ids.map(String) } : null);
+    cachedFromStorage && seedEntry && BigInt(seedEntry.lastBlock) > BigInt(cachedFromStorage.lastBlock)
+      ? { lastBlock: seedEntry.lastBlock, ids: Array.from(new Set([...seedEntry.ids, ...cachedFromStorage.ids])) }
+      : cachedFromStorage ?? seedEntry;
 
   const ids = new Set<bigint>(resumePoint ? resumePoint.ids.map((s) => BigInt(s)) : []);
   let from = resumePoint ? BigInt(resumePoint.lastBlock) + 1n : params.fromBlock;

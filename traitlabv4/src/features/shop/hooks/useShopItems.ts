@@ -68,7 +68,8 @@ const ACHIEVEMENT_IMAGES: Record<number, string> = {
 // Fallback image URL based on asset type (exported for onError fallback in components)
 export function getFallbackImageUrl(assetId: number): string {
   if (assetId >= FLOPPY_RANGE.min && assetId <= FLOPPY_RANGE.max) {
-    return `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${assetId}.gif`;
+    // El render sirve el formato real (.gif o .png) de cada floppy. 17-sep-2026.
+    return `https://lab.adrianzero.com/api/render/floppy/${assetId}.png`;
   }
   if (ACHIEVEMENT_IMAGES[assetId]) {
     return `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/achievements/${ACHIEVEMENT_IMAGES[assetId]}.png`;
@@ -115,6 +116,11 @@ const ITEM_NAMES: Record<number, string> = {
   10013: 'Hello-WEN 25',
   10014: 'Blacklight Floppy',
   10015: 'X-Mas-Floppy',
+  10016: 'HNY',
+  10017: 'YEAR 1',
+  10018: 'OG Reward',
+  10019: 'Claw Mac Mini',
+  10020: 'PROMPTED',
   // Achievements (ZEROadventure II badges)
   20001: 'Breaking & Entering',
   20002: 'The Receptionist',
