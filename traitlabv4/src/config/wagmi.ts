@@ -44,6 +44,25 @@ const connectors = connectorsForWallets(
   },
 ).map(withLazySetup);
 
+// Todo el ecosistema vive en Base. Si la wallet está en otra red (p. ej. Ethereum), wagmi movía TODAS
+// las lecturas sin `chainId` a esa red: el Diamond no existe allí y la tienda salía vacía o con error
+// (17-sep-2026). `syncConnectedChain: false` deja el chainId de la app fijo en Base; la red de la wallet
+// solo importa al firmar, y de eso se encarga `WrongNetworkBanner`.
+const WAGMI_STORE_KEY = 'wagmi.store';
+try {
+  // Un chainId de Ethereum persistido de sesiones anteriores seguiría ganando al rehidratar.
+  const raw = localStorage.getItem(WAGMI_STORE_KEY);
+  if (raw) {
+    const persisted = JSON.parse(raw);
+    if (persisted?.state && persisted.state.chainId !== base.id) {
+      persisted.state.chainId = base.id;
+      localStorage.setItem(WAGMI_STORE_KEY, JSON.stringify(persisted));
+    }
+  }
+} catch {
+  // Sin localStorage o con JSON roto: wagmi arranca en la primera cadena (Base).
+}
+
 export const config = createConfig({
   connectors,
   chains: [base, mainnet],
@@ -51,5 +70,6 @@ export const config = createConfig({
     [base.id]: baseTransport,
     [mainnet.id]: mainnetTransport,
   },
+  syncConnectedChain: false,
   ssr: false,
 });

@@ -4,7 +4,7 @@
  * Allows users to select and mint SubZERO (FREE) or AdrianZERO (PAID) kits
  */
 
-import { useChainId, useSwitchChain } from 'wagmi';
+import { useAccount, useSwitchChain } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { KitComparisonGrid } from './KitComparisonGrid';
@@ -25,7 +25,8 @@ import { CHAIN_ID } from '@/config/contracts';
 
 export function OnboardingModule() {
   const { isConnected } = useWalletPrompt();
-  const chainId = useChainId();
+  // useChainId() ya siempre es Base (syncConnectedChain: false): la red real es la de la wallet
+  const { chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const { openConnectModal } = useConnectModal();
 
