@@ -19,6 +19,7 @@
  * los dos) — ver `__fixtures__/*.verified-abi.json`.
  */
 
+import { PACK_IMAGE } from '../lib/packDisplay';
 import { getAbiItem } from 'viem';
 import type { AbiEvent, Address, PublicClient } from 'viem';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
@@ -100,9 +101,8 @@ export interface PackRegistry {
 // candidato principal y el consumidor decide su propio fallback, igual que
 // hacía aquel módulo (retirado en F10; la UI actual es PacksSection).
 function packImageUrl(packId: bigint): string {
-  // El render de AdrianLAB sirve el formato real de cada pack (.gif o .png): labimages/<id>.gif daba
-  // imagen rota para los packs en PNG (10019, 1123). 17-sep-2026.
-  return `https://lab.adrianzero.com/api/render/floppy/${packId}.png`;
+  // Arte original del pack; los que son PNG (10019, 1123) caen a PACK_IMAGE_FALLBACK en el onError.
+  return PACK_IMAGE(packId);
 }
 
 function priceListFrom(priceWei: bigint, priceToken: bigint, tokenAddress: Address): PackPrice[] {

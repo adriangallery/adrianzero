@@ -68,8 +68,9 @@ const ACHIEVEMENT_IMAGES: Record<number, string> = {
 // Fallback image URL based on asset type (exported for onError fallback in components)
 export function getFallbackImageUrl(assetId: number): string {
   if (assetId >= FLOPPY_RANGE.min && assetId <= FLOPPY_RANGE.max) {
-    // El render sirve el formato real (.gif o .png) de cada floppy. 17-sep-2026.
-    return `https://lab.adrianzero.com/api/render/floppy/${assetId}.png`;
+    // Arte original: <id>.gif por defecto (getDefaultImageUrl) y, si falla, <id>.png (10019, 1123).
+    // NO /api/render/floppy: da la tarjeta de OpenSea, no el floppy. 17-sep-2026.
+    return `https://lab.adrianzero.com/labimages/${assetId}.png`;
   }
   if (ACHIEVEMENT_IMAGES[assetId]) {
     return `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/achievements/${ACHIEVEMENT_IMAGES[assetId]}.png`;
@@ -88,6 +89,9 @@ function getGitHubImageUrl(assetId: number): string | null {
 }
 
 function getDefaultImageUrl(assetId: number): string {
+  if (assetId >= FLOPPY_RANGE.min && assetId <= FLOPPY_RANGE.max) {
+    return `https://lab.adrianzero.com/labimages/${assetId}.gif`;
+  }
   return getGitHubImageUrl(assetId) ?? getFallbackImageUrl(assetId);
 }
 
