@@ -2,16 +2,22 @@
  * Nombre e imagen de un pack para la UI (F5): primero el catálogo on-chain
  * (`usePackCatalog`, que trae nombre/imagen de AdrianLAB cuando existe),
  * después el metadata de la wallet (`traitsMetadata`, floppy.json), y si no
- * hay nada, un fallback honesto con el id. La imagen cae al render de AdrianLAB
- * (`/api/render/floppy/<id>.png`), que sirve el GIF o el PNG que tenga cada pack.
+ * hay nada, un fallback honesto con el id. La imagen es el arte original del pack en
+ * `labimages/` de AdrianLAB: primero `<id>.gif` y, si no existe, `<id>.png` (10019, 1123).
+ * NO usar `/api/render/floppy/<id>.png`: devuelve la tarjeta de OpenSea con marco ZEROLAB,
+ * no el arte del floppy (17-sep-2026, Adrián).
  */
 import type { CatalogPack } from '../data/types';
 
-export const PACK_IMAGE_FALLBACK = (packId: bigint | string | number) =>
-  `https://lab.adrianzero.com/api/render/floppy/${packId}.png`;
+const LAB_IMAGES = 'https://lab.adrianzero.com/labimages';
 
-export const TRAIT_IMAGE = (traitId: bigint | string | number) =>
-  `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${traitId}.svg`;
+export const PACK_IMAGE = (packId: bigint | string | number) => `${LAB_IMAGES}/${packId}.gif`;
+
+export const PACK_IMAGE_FALLBACK = (packId: bigint | string | number) => `${LAB_IMAGES}/${packId}.png`;
+
+/** Mismo SVG que usa la rejilla de TraitLab; lo escribe `launch-items.mjs` para cada trait nuevo
+ *  (la copia vieja de traitlabv3 no tenía los traits posteriores, p. ej. PROMPTED 1184–1193). */
+export const TRAIT_IMAGE = (traitId: bigint | string | number) => `${LAB_IMAGES}/${traitId}.svg`;
 
 /** Fallback para ids sin SVG en traitlabv3 (Studio 30014+, PUNK REWARDS 100001+): el PNG renderizado de AdrianLAB. */
 export const TRAIT_IMAGE_FALLBACK = (traitId: bigint | string | number) =>
@@ -34,7 +40,7 @@ export function packDisplay(
     metadata?.[key]?.name ??
     fromCatalog?.name ??
     `Pack #${key}`;
-  const image = fromCatalog?.image ?? PACK_IMAGE_FALLBACK(key);
+  const image = fromCatalog?.image ?? PACK_IMAGE(key);
   return { name, image };
 }
 

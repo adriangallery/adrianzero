@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { packDisplay, traitSubtitle, PACK_IMAGE_FALLBACK } from '../lib/packDisplay';
+import { packDisplay, traitSubtitle, PACK_IMAGE } from '../lib/packDisplay';
 import type { CatalogPack } from '../data/types';
 
 const cat = (packId: bigint, name: string, image: string | null = null): CatalogPack => ({
@@ -24,7 +24,7 @@ describe('packDisplay', () => {
   it('si el catálogo solo tiene un nombre genérico, usa el metadata de la wallet', () => {
     const d = packDisplay(10001n, [cat(10001n, 'Pack #10001')], { '10001': { name: 'STARTER Floppy' } });
     expect(d.name).toBe('STARTER Floppy');
-    expect(d.image).toBe(PACK_IMAGE_FALLBACK('10001'));
+    expect(d.image).toBe(PACK_IMAGE('10001'));
   });
   it('sin nada, fallback honesto con el id', () => {
     expect(packDisplay(15003n, [], null).name).toBe('Pack #15003');
