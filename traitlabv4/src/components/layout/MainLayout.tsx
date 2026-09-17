@@ -15,6 +15,7 @@ import { useWalletDataSync } from '@/hooks/useWalletDataSync';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { TabBar } from '@/ui/TabBar';
 import { PendingApplyBanner } from '@/features/traitlab/components/PendingApplyBanner';
+import { WrongNetworkBanner } from '@/components/wallet/WrongNetworkBanner';
 
 const EXTRA_TITLES: Record<string, string> = {
   '/explain-to-jb': 'Explain to JB',
@@ -90,6 +91,7 @@ export function MainLayout() {
 
         <ToastContainer />
         <PendingApplyBanner />
+        <WrongNetworkBanner />
       </div>
     );
   }
@@ -143,6 +145,7 @@ export function MainLayout() {
       {/* Toast Notifications */}
       <ToastContainer />
       <PendingApplyBanner />
+      <WrongNetworkBanner />
     </div>
   );
 }
