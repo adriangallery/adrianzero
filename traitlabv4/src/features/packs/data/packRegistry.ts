@@ -100,7 +100,9 @@ export interface PackRegistry {
 // candidato principal y el consumidor decide su propio fallback, igual que
 // hacía aquel módulo (retirado en F10; la UI actual es PacksSection).
 function packImageUrl(packId: bigint): string {
-  return `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${packId}.gif`;
+  // El render de AdrianLAB sirve el formato real de cada pack (.gif o .png): labimages/<id>.gif daba
+  // imagen rota para los packs en PNG (10019, 1123). 17-sep-2026.
+  return `https://lab.adrianzero.com/api/render/floppy/${packId}.png`;
 }
 
 function priceListFrom(priceWei: bigint, priceToken: bigint, tokenAddress: Address): PackPrice[] {

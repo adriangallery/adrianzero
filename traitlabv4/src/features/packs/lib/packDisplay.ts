@@ -2,13 +2,13 @@
  * Nombre e imagen de un pack para la UI (F5): primero el catálogo on-chain
  * (`usePackCatalog`, que trae nombre/imagen de AdrianLAB cuando existe),
  * después el metadata de la wallet (`traitsMetadata`, floppy.json), y si no
- * hay nada, un fallback honesto con el id. La imagen cae al GIF de
- * `public/labimages/<id>.gif` de AdrianLAB, que es donde viven los packs.
+ * hay nada, un fallback honesto con el id. La imagen cae al render de AdrianLAB
+ * (`/api/render/floppy/<id>.png`), que sirve el GIF o el PNG que tenga cada pack.
  */
 import type { CatalogPack } from '../data/types';
 
 export const PACK_IMAGE_FALLBACK = (packId: bigint | string | number) =>
-  `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${packId}.gif`;
+  `https://lab.adrianzero.com/api/render/floppy/${packId}.png`;
 
 export const TRAIT_IMAGE = (traitId: bigint | string | number) =>
   `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${traitId}.svg`;
