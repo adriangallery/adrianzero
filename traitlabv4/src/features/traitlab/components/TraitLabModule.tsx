@@ -11,13 +11,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccount } from 'wagmi';
-import { Button, ActionBar, Skeleton, Badge, UndoIcon, WalletSheet } from '@/ui';
+import { Button, ActionBar, Skeleton, Badge, UndoIcon, DownloadIcon, WalletSheet } from '@/ui';
 import { useWalletPrompt } from '@/hooks/useWalletPrompt';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAdrianZeroStore } from '@/features/adrianzero/store/adrianZeroStore';
 import { useAdrianZeroTokens } from '@/features/adrianzero/hooks/useAdrianZeroTokens';
-import { useTraitsByCategory } from '@/features/traits/hooks/useTraits';
+import { useTraits } from '@/features/traits/hooks/useTraits';
 import { isEquippableCategory, isEquippableTrait } from '../lib/equippable';
 import { vercelImageService } from '@/lib/api/vercel/imageService';
 import { renderUrl } from '@/lib/adrianlab';
@@ -30,6 +30,7 @@ import { resolveOwnedSelection, shouldResolveOwnedSelection } from '../lib/owned
 import { useEquippedTraits } from '../hooks/useEquippedTraits';
 import { useCanApplyTraits } from '../hooks/useCanApplyTraits';
 import { useApplyTraitlabChanges } from '../hooks/useApplyTraitlabChanges';
+import { isUnlimitedWallet, mergeFullCatalog, prefetchRender, downloadRender } from '../lib/unlimited';
 import { TokenSelectorSheet } from './TokenSelectorSheet';
 import { CategoryChips } from './CategoryChips';
 import { TraitCard, GetMoreInShopCard } from './TraitCard';
@@ -100,7 +101,23 @@ export function TraitLabModule() {
   const { isLoading: isLoadingEquipped } = useEquippedTraits(selectedTokenId);
   const { checkTrait } = useCanApplyTraits(selectedTokenId);
   const applyMutation = useApplyTraitlabChanges(selectedTokenId);
-  const { data: traitsByCategory = {}, isLoading: isLoadingTraits } = useTraitsByCategory();
+  // Modo ilimitado (Adrián y el artista, `lib/unlimited.ts`): catálogo completo para diseñar
+  // y botón de descarga del render con los cambios. Para el resto, solo lo que tiene la wallet.
+  const unlimited = isConnected && isUnlimitedWallet(address);
+  const { data: ownedTraits = [], isLoading: isLoadingTraits } = useTraits();
+  const traitsMetadata = useWalletDataStore((s) => s.traitsMetadata);
+  const traitsByCategory = useMemo(() => {
+    const list = unlimited ? mergeFullCatalog(ownedTraits, traitsMetadata) : ownedTraits;
+    const out: Record<string, Trait[]> = {};
+    for (const t of list) (out[t.category] ??= []).push(t);
+    if (unlimited) {
+      // Primero los que tiene (se pueden aplicar), luego el resto por número.
+      for (const arr of Object.values(out)) {
+        arr.sort((a, b) => Number(b.balance > 0) - Number(a.balance > 0) || Number(a.tokenId) - Number(b.tokenId));
+      }
+    }
+    return out;
+  }, [unlimited, ownedTraits, traitsMetadata]);
   const { data: ownedTokens = [], isLoading: isLoadingOwned } = useAdrianZeroTokens();
   // Para saber cuándo la lista de ZEROs de ESTA wallet ya llegó (y no es el [] de antes de cargar).
   const zerosCachedFor = useWalletDataStore((s) => s.zerosCachedFor);
@@ -237,6 +254,18 @@ export function TraitLabModule() {
 
   const baseImageUrl = selectedTokenId ? renderUrl(selectedTokenId) : '';
   const displayedUrl = comparing ? baseImageUrl : previewUrl ?? baseImageUrl;
+  // Lo que se descarga es SIEMPRE el preview con los cambios, nunca el original de «Hold to compare».
+  const designUrl = previewUrl ?? baseImageUrl;
+
+  useEffect(() => {
+    if (unlimited && previewStatus === 'ready' && designUrl) prefetchRender(designUrl);
+  }, [unlimited, previewStatus, designUrl]);
+
+  const handleDownload = useCallback(() => {
+    if (!designUrl || !selectedTokenId) return;
+    const suffix = changes.toApply.length > 0 ? `-${changes.toApply.slice().sort().join('-')}` : '';
+    void downloadRender(designUrl, `zero-${selectedTokenId}${suffix}.png`);
+  }, [designUrl, selectedTokenId, changes.toApply]);
 
   // ─── Mini-preview sticky (feedback de Adrián 13-sep, producción): al
   // hacer scroll el preview grande se iba del todo y se perdía la
@@ -297,6 +326,10 @@ export function TraitLabModule() {
         return;
       }
 
+      if (unlimited && trait.balance === 0) {
+        selectTraitAction(category, trait.tokenId);
+        return;
+      }
       const { can, reason } = await checkTrait(trait.tokenId);
       if (!can) {
         notifications.warning('Not allowed', reason || 'This trait cannot be applied to this token', true);
@@ -304,11 +337,13 @@ export function TraitLabModule() {
       }
       selectTraitAction(category, trait.tokenId);
     },
-    [isConnected, selections, equipped, selectTraitAction, checkTrait, notifications]
+    [isConnected, unlimited, selections, equipped, selectTraitAction, checkTrait, notifications]
   );
 
   // ─── Aplicar cambios ──────────────────────────────────────────────────
   const plan = planSignatures(changes, applyMutation.needsApproval);
+  const ownedIds = useMemo(() => new Set(ownedTraits.map((t) => t.tokenId)), [ownedTraits]);
+  const designOnly = unlimited && changes.toApply.some((id) => !ownedIds.has(id));
 
   useEffect(() => {
     // (13-sep) la aprobación ya no se lee por adelantado: 1 firma por defecto,
@@ -427,6 +462,19 @@ export function TraitLabModule() {
             <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-[var(--r-md)] border border-line bg-bg/85 px-2 py-1.5 text-[11px] text-mute">
               Hold to compare
             </span>
+            {unlimited && previewStatus === 'ready' ? (
+              // Fuera del «Hold to compare»: sin stopPropagation, pulsar aquí mostraría el original.
+              <button
+                type="button"
+                aria-label="Download image"
+                data-testid="traitlab-download"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={handleDownload}
+                className="absolute left-3 top-3 grid h-9 w-9 place-items-center rounded-[var(--r-md)] border border-line bg-bg/85 text-fg"
+              >
+                <DownloadIcon size={18} />
+              </button>
+            ) : null}
             {changes.count > 0 ? (
               <Badge tone="acc" className="absolute right-3 top-3 !rounded-full !border-acc">
                 {changes.count} change{changes.count === 1 ? '' : 's'}
@@ -562,6 +610,12 @@ export function TraitLabModule() {
               </button>
             }
             primary={
+              designOnly ? (
+                // Hay traits que la wallet no tiene: no se pueden aplicar on-chain, solo descargar.
+                <Button full size="lg" onClick={handleDownload} disabled={previewStatus !== 'ready'} trailing="design only" data-testid="traitlab-download-primary">
+                  Download image
+                </Button>
+              ) : (
               <Button
                 full
                 size="lg"
@@ -580,6 +634,7 @@ export function TraitLabModule() {
               >
                 Apply {changes.count} change{changes.count === 1 ? '' : 's'}
               </Button>
+              )
             }
           />
         </>

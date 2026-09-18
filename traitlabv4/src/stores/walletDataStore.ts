@@ -46,6 +46,35 @@ const BATCH_CHUNK_SIZE = 500;
 const STUDIO_TSHIT_MIN_ID = 30014;
 const STUDIO_TSHIT_MAX_ID = 35000;
 
+/**
+ * URLs de imagen de un trait (principal, respaldo y miniatura). Compartido con el modo
+ * ilimitado de TraitLab, que pinta traits que la wallet no posee (`features/traitlab/lib/unlimited.ts`).
+ */
+export function traitImageFor(tokenId: string): NonNullable<Trait['image']> {
+  const numericId = Number(tokenId);
+  const isOgPunkReward = numericId >= 100001 && numericId <= 101003;
+  const isStudioTshit = numericId >= STUDIO_TSHIT_MIN_ID && numericId <= STUDIO_TSHIT_MAX_ID;
+  // 15-sep-2026: la carpeta traitlabv3/assets/traits del repo adrianzero es una foto antigua y no tiene
+  // los traits lanzados después (1124, 1181, 1182, 1183 Freed Soul…) → imagen rota en TraitLab. La fuente
+  // viva es AdrianLAB (el lanzamiento sube ahí cada SVG), así que va primero y GitHub queda de respaldo.
+  const githubSvgUrl = isOgPunkReward
+    ? `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/ogpunks/${tokenId}.svg`
+    : isStudioTshit
+    ? renderUrl(tokenId)
+    : labImageUrl(`${tokenId}.svg`);
+  const labimagesSvgUrl = isOgPunkReward
+    ? labImageUrl(`ogpunks/${tokenId}.svg`)
+    : isStudioTshit
+    ? renderUrl(tokenId)
+    : `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${tokenId}.svg`;
+  const legacyTraitSvgUrl = `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${tokenId}.svg`;
+  return {
+    cachedUrl: githubSvgUrl,
+    originalUrl: labimagesSvgUrl,
+    thumbnailUrl: isOgPunkReward || isStudioTshit ? labimagesSvgUrl : legacyTraitSvgUrl,
+  };
+}
+
 // Floppy / Action / Special pack id ranges (traitlabold pack-config.js
 // TOKEN_RANGES). These are NOT in traits.json, so they must be appended to
 // the balanceOfBatch query explicitly or owned packs never get read.
@@ -435,22 +464,7 @@ export const useWalletDataStore = create<WalletDataState>()(
             continue;
           }
 
-          const isOgPunkReward = numericId >= 100001 && numericId <= 101003;
-          const isStudioTshit = numericId >= STUDIO_TSHIT_MIN_ID && numericId <= STUDIO_TSHIT_MAX_ID;
-          // 15-sep-2026: la carpeta traitlabv3/assets/traits del repo adrianzero es una foto antigua y no tiene
-          // los traits lanzados después (1124, 1181, 1182, 1183 Freed Soul…) → imagen rota en TraitLab. La fuente
-          // viva es AdrianLAB (el lanzamiento sube ahí cada SVG), así que va primero y GitHub queda de respaldo.
-          const githubSvgUrl = isOgPunkReward
-            ? `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/ogpunks/${tokenId}.svg`
-            : isStudioTshit
-            ? renderUrl(tokenId)
-            : labImageUrl(`${tokenId}.svg`);
-          const labimagesSvgUrl = isOgPunkReward
-            ? labImageUrl(`ogpunks/${tokenId}.svg`)
-            : isStudioTshit
-            ? renderUrl(tokenId)
-            : `https://raw.githubusercontent.com/adriangallery/AdrianLAB/main/public/labimages/${tokenId}.svg`;
-          const legacyTraitSvgUrl = `https://raw.githubusercontent.com/adriangallery/adrianzero/main/traitlabv3/assets/traits/${tokenId}.svg`;
+          const image = traitImageFor(tokenId);
 
           allTraits.push({
             tokenId,
@@ -460,11 +474,7 @@ export const useWalletDataStore = create<WalletDataState>()(
             maxSupply: metadata.maxSupply,
             balance,
             rarity: metadata.rarity,
-            image: {
-              cachedUrl: githubSvgUrl,
-              originalUrl: labimagesSvgUrl,
-              thumbnailUrl: isOgPunkReward || isStudioTshit ? labimagesSvgUrl : legacyTraitSvgUrl,
-            },
+            image,
           } as Trait);
 
           allRawTokens.push({
