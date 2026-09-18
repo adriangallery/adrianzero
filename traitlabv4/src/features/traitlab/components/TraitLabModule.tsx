@@ -30,7 +30,7 @@ import { resolveOwnedSelection, shouldResolveOwnedSelection } from '../lib/owned
 import { useEquippedTraits } from '../hooks/useEquippedTraits';
 import { useCanApplyTraits } from '../hooks/useCanApplyTraits';
 import { useApplyTraitlabChanges } from '../hooks/useApplyTraitlabChanges';
-import { isUnlimitedWallet, mergeFullCatalog, prefetchRender, downloadRender } from '../lib/unlimited';
+import { isUnlimitedWallet, mergeFullCatalog, prefetchRender, downloadRender, designRenderUrl, BASE_SKINS } from '../lib/unlimited';
 import { TokenSelectorSheet } from './TokenSelectorSheet';
 import { CategoryChips } from './CategoryChips';
 import { TraitCard, GetMoreInShopCard } from './TraitCard';
@@ -97,6 +97,9 @@ export function TraitLabModule() {
   const [resultOpen, setResultOpen] = useState(false);
   const [lastTxHash, setLastTxHash] = useState<string | null>(null);
   const [walletSheetOpen, setWalletSheetOpen] = useState(false);
+  // Piel base de prueba (modo ilimitado): null = la del token.
+  const [baseSkin, setBaseSkin] = useState<number | null>(null);
+  useEffect(() => setBaseSkin(null), [selectedTokenId]);
 
   const { isLoading: isLoadingEquipped } = useEquippedTraits(selectedTokenId);
   const { checkTrait } = useCanApplyTraits(selectedTokenId);
@@ -222,13 +225,15 @@ export function TraitLabModule() {
   const runPreview = useCallback(() => {
     if (!selectedTokenId) return;
     const seq = ++previewSeq.current;
-    if (changes.toApply.length === 0) {
+    if (changes.toApply.length === 0 && !baseSkin) {
       setPreviewStatus('ready');
       setPreviewUrl(renderUrl(selectedTokenId));
       return;
     }
     setPreviewStatus('loading');
-    const url = vercelImageService.generateCombinedImageUrl({ tokenId: selectedTokenId, traitIds: changes.toApply });
+    const url = unlimited
+      ? designRenderUrl(selectedTokenId, changes.toApply, baseSkin)
+      : vercelImageService.generateCombinedImageUrl({ tokenId: selectedTokenId, traitIds: changes.toApply });
     const timeout = setTimeout(() => {
       if (previewSeq.current === seq) setPreviewStatus('timeout');
     }, PREVIEW_TIMEOUT_MS);
@@ -243,14 +248,14 @@ export function TraitLabModule() {
         setPreviewStatus('error');
       }
     });
-  }, [selectedTokenId, changes.toApply]);
+  }, [selectedTokenId, changes.toApply, unlimited, baseSkin]);
 
   useEffect(() => {
     if (!selectedTokenId) return;
     const t = setTimeout(runPreview, PREVIEW_DEBOUNCE_MS);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTokenId, toApplyKey]);
+  }, [selectedTokenId, toApplyKey, baseSkin]);
 
   const baseImageUrl = selectedTokenId ? renderUrl(selectedTokenId) : '';
   const displayedUrl = comparing ? baseImageUrl : previewUrl ?? baseImageUrl;
@@ -263,9 +268,10 @@ export function TraitLabModule() {
 
   const handleDownload = useCallback(() => {
     if (!designUrl || !selectedTokenId) return;
-    const suffix = changes.toApply.length > 0 ? `-${changes.toApply.slice().sort().join('-')}` : '';
+    const parts = [...changes.toApply.slice().sort(), ...(baseSkin ? [`skin${baseSkin}`] : [])];
+    const suffix = parts.length > 0 ? `-${parts.join('-')}` : '';
     void downloadRender(designUrl, `zero-${selectedTokenId}${suffix}.png`);
-  }, [designUrl, selectedTokenId, changes.toApply]);
+  }, [designUrl, selectedTokenId, changes.toApply, baseSkin]);
 
   // ─── Mini-preview sticky (feedback de Adrián 13-sep, producción): al
   // hacer scroll el preview grande se iba del todo y se perdía la
@@ -343,7 +349,10 @@ export function TraitLabModule() {
   // ─── Aplicar cambios ──────────────────────────────────────────────────
   const plan = planSignatures(changes, applyMutation.needsApproval);
   const ownedIds = useMemo(() => new Set(ownedTraits.map((t) => t.tokenId)), [ownedTraits]);
-  const designOnly = unlimited && changes.toApply.some((id) => !ownedIds.has(id));
+  // Solo diseño (no se puede aplicar on-chain): trait que no tiene, otra piel base o un ZERO ajeno.
+  const tokenOwned = ownedTokens.some((t) => t.tokenId === selectedTokenId);
+  const designOnly =
+    unlimited && (baseSkin !== null || !tokenOwned || changes.toApply.some((id) => !ownedIds.has(id)));
 
   useEffect(() => {
     // (13-sep) la aprobación ya no se lee por adelantado: 1 firma por defecto,
@@ -482,6 +491,23 @@ export function TraitLabModule() {
             ) : null}
             </div>
           </div>
+
+          {unlimited ? (
+            <div className="flex gap-1.5 overflow-x-auto px-4 pt-3" data-testid="traitlab-base-skins">
+              {[{ id: null as number | null, label: 'Own skin' }, ...BASE_SKINS].map((s) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  onClick={() => setBaseSkin(s.id)}
+                  className={`flex-none rounded-full border-2 px-3 py-1.5 text-[12px] ${
+                    baseSkin === s.id ? 'border-acc text-acc' : 'border-line text-mute'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           {/* Categorías: sticky bajo el header (--header-h) para que, al
               hacer scroll de página, no se vayan detrás de las tarjetas —
@@ -641,6 +667,7 @@ export function TraitLabModule() {
       )}
 
       <TokenSelectorSheet
+        allowAnyToken={unlimited}
         open={tokenSheetOpen}
         onOpenChange={(open) => {
           setTokenSheetOpen(open);

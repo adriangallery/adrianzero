@@ -15,9 +15,11 @@ export interface TokenSelectorSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (tokenId: string) => void;
+  /** Modo ilimitado de TraitLab: buscar por número deja elegir cualquier ZERO, no solo los propios. */
+  allowAnyToken?: boolean;
 }
 
-export function TokenSelectorSheet({ open, onOpenChange, onSelect }: TokenSelectorSheetProps) {
+export function TokenSelectorSheet({ open, onOpenChange, onSelect, allowAnyToken = false }: TokenSelectorSheetProps) {
   const navigate = useNavigate();
   const { data: tokens = [], isLoading } = useAdrianZeroTokens();
   const [query, setQuery] = useState('');
@@ -37,9 +39,16 @@ export function TokenSelectorSheet({ open, onOpenChange, onSelect }: TokenSelect
     return sorted.filter((t) => t.tokenId.includes(q));
   }, [sorted, query]);
 
+  const anyTokenId = useMemo(() => {
+    const q = query.trim();
+    if (!allowAnyToken || !/^\d{1,5}$/.test(q) || Number(q) === 0) return null;
+    const id = String(Number(q));
+    return tokens.some((t) => t.tokenId === id) ? null : id;
+  }, [allowAnyToken, query, tokens]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Choose a ZERO">
-      {tokens.length === 0 && !isLoading ? (
+      {tokens.length === 0 && !isLoading && !allowAnyToken ? (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <p className="text-sm text-mute">You don't own any AdrianZERO yet.</p>
           <Button onClick={() => navigate('/mint')}>Mint your first ZERO</Button>
@@ -53,7 +62,7 @@ export function TokenSelectorSheet({ open, onOpenChange, onSelect }: TokenSelect
               inputMode="numeric"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by number"
+              placeholder={allowAnyToken ? 'Any ZERO by number' : 'Search by number'}
               className="w-full bg-transparent text-[14px] text-fg placeholder:text-mute focus:outline-none"
               data-testid="traitlab-token-search"
             />
@@ -77,7 +86,24 @@ export function TokenSelectorSheet({ open, onOpenChange, onSelect }: TokenSelect
                 <span className="text-[12px] font-medium">#{token.tokenId}</span>
               </button>
             ))}
-            {filtered.length === 0 ? (
+            {anyTokenId ? (
+              <button
+                key={`any-${anyTokenId}`}
+                type="button"
+                data-testid="traitlab-token-any"
+                onClick={() => onSelect(anyTokenId)}
+                className="flex flex-col items-center gap-1.5 rounded-[var(--r-lg)] border-2 border-dashed border-line bg-panel p-2 hover:border-mute"
+              >
+                <img
+                  src={renderUrl(anyTokenId)}
+                  alt={`ZERO #${anyTokenId}`}
+                  loading="lazy"
+                  className="aspect-square w-full rounded-[var(--r-md)] bg-bg object-cover"
+                />
+                <span className="text-[12px] font-medium">#{anyTokenId} · design</span>
+              </button>
+            ) : null}
+            {filtered.length === 0 && !anyTokenId ? (
               <p className="col-span-3 py-6 text-center text-sm text-mute">No ZERO matches "{query}".</p>
             ) : null}
           </div>
