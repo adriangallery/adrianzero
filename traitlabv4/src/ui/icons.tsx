@@ -173,6 +173,16 @@ export function ShareIcon({ size, ...props }: IconProps) {
   );
 }
 
+export function DownloadIcon({ size, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M12 4v11" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 20h14" />
+    </svg>
+  );
+}
+
 export function LockIcon({ size, ...props }: IconProps) {
   return (
     <svg {...base(size)} {...props}>
