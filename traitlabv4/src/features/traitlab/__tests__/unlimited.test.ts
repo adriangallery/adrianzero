@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isUnlimitedWallet, mergeFullCatalog } from '../lib/unlimited';
+import { designRenderUrl, isUnlimitedWallet, mergeFullCatalog } from '../lib/unlimited';
 import type { Trait } from '@/types/nft.types';
 
 describe('TraitLab ilimitado', () => {
@@ -28,5 +28,11 @@ describe('TraitLab ilimitado', () => {
   it('sin catálogo cargado devuelve lo que tiene la wallet', () => {
     const owned = [{ tokenId: '1', balance: 1 }] as Trait[];
     expect(mergeFullCatalog(owned, null)).toBe(owned);
+  });
+
+  it('el preview de diseño lleva los traits ordenados y la piel base si la hay', () => {
+    expect(designRenderUrl('146', ['390', '1052'], null)).toMatch(/custom-external\/146\?trait=1052&trait=390$/);
+    expect(designRenderUrl('146', ['1052'], 2)).toMatch(/\?trait=1052&baseskin=2$/);
+    expect(designRenderUrl('146', [], 4)).toMatch(/custom-external\/146\?baseskin=4$/);
   });
 });

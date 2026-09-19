@@ -8,6 +8,7 @@
  */
 
 import { traitImageFor } from '@/stores/walletDataStore';
+import { renderCustomExternalUrl } from '@/lib/adrianlab';
 import type { Trait } from '@/types/nft.types';
 
 const UNLIMITED_WALLETS = new Set([
@@ -18,6 +19,22 @@ const UNLIMITED_WALLETS = new Set([
 
 export function isUnlimitedWallet(address: string | null | undefined): boolean {
   return !!address && UNLIMITED_WALLETS.has(address.toLowerCase());
+}
+
+/** Pieles base que el render sabe pintar (`?baseskin=N` en custom-external de AdrianLAB). */
+export const BASE_SKINS = [
+  { id: 1, label: 'Medium' },
+  { id: 2, label: 'Dark' },
+  { id: 3, label: 'Alien' },
+  { id: 4, label: 'Albino' },
+  { id: 5, label: 'Light' },
+] as const;
+
+/** URL del preview de diseño: traits + piel base opcional (solo modo ilimitado). */
+export function designRenderUrl(tokenId: string, traitIds: string[], baseSkin: number | null): string {
+  const url = renderCustomExternalUrl(tokenId, [...traitIds].sort());
+  if (!baseSkin) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}baseskin=${baseSkin}`;
 }
 
 interface CatalogEntry {
