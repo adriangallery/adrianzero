@@ -50,6 +50,30 @@ function Segmented<T extends string>({
   );
 }
 
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [head, b64] = dataUrl.split(',');
+  if (!b64 || !head.includes('image/png')) throw new Error('empty canvas export');
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: 'image/png' });
+}
+
+function canShareFile(file: File): boolean {
+  try {
+    return typeof navigator.canShare === 'function' && typeof navigator.share === 'function' && navigator.canShare({ files: [file] });
+  } catch {
+    return false;
+  }
+}
+
+function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  // iPadOS se presenta como Mac: se distingue por la pantalla táctil.
+  return /iPhone|iPad|iPod|Android|Mobi/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+}
+
 export function GridModule() {
   const [params, setParams] = useSearchParams();
   const format = (params.get('format') as GridFormat) in FORMATS ? (params.get('format') as GridFormat) : 'x';
@@ -70,6 +94,9 @@ export function GridModule() {
   const [usedIds, setUsedIds] = useState<number[]>([]);
   const [titleDraft, setTitleDraft] = useState(title);
   const [idsDraft, setIdsDraft] = useState(idsParam);
+  const pngRef = useRef<{ key: string; blob: Blob } | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const update = useCallback(
     (patch: Record<string, string | null>) => {
@@ -108,10 +135,22 @@ export function GridModule() {
     chooseIds(opts, stale)
       .then(async (ids) => {
         if (stale() || !canvasRef.current) return;
-        await drawGrid(canvasRef.current, opts, ids);
+        const canvas = canvasRef.current;
+        await drawGrid(canvas, opts, ids);
         if (stale()) return;
         setUsedIds(ids);
         setDoneKey(key);
+        setSaveError(null);
+        pngRef.current = null;
+        try {
+          canvas.toBlob((blob) => {
+            if (!stale() && blob) pngRef.current = { key, blob };
+          }, 'image/png');
+        } catch (e) {
+          // Canvas «sucio» (alguna imagen sin CORS): se avisa ya, no al pulsar.
+          console.error('[grid] canvas export blocked', e);
+          setSaveError('Your browser blocked the image export. Hit Shuffle and try again.');
+        }
       })
       .catch(() => {
         if (stale()) return;
@@ -120,35 +159,95 @@ export function GridModule() {
   }, [key, format, theme, title, seed, idsParam]);
 
   const fileName = `zero-grid-${format}-${seed}.png`;
-  const toBlob = () =>
-    new Promise<Blob | null>((resolve) => canvasRef.current?.toBlob(resolve, 'image/png') ?? resolve(null));
 
-  const download = async () => {
-    const blob = await toBlob();
-    if (!blob) return;
-    const url = URL.createObjectURL(blob);
+  // El PNG se prepara al terminar de dibujar (ver efecto de arriba) para que el clic
+  // descargue o comparta SIN esperas: tras un await Safari/iOS pierde el «gesto del
+  // usuario» e ignora la descarga o la hoja de compartir.
+  const fileFromCanvas = (): File => {
+    const ready = pngRef.current;
+    if (ready && ready.key === key) return new File([ready.blob], fileName, { type: 'image/png' });
+    const canvas = canvasRef.current;
+    if (!canvas) throw new Error('no canvas');
+    return new File([dataUrlToBlob(canvas.toDataURL('image/png'))], fileName, { type: 'image/png' });
+  };
+
+  const fail = (e: unknown) => {
+    console.error('[grid] export failed', e);
+    setSaveError(
+      e instanceof DOMException && e.name === 'SecurityError'
+        ? 'Your browser blocked the image export. Hit Shuffle and try again.'
+        : 'Could not create the PNG. Try again or use another browser.'
+    );
+  };
+
+  const download = () => {
+    setSaveError(null);
+    let file: File;
+    try {
+      file = fileFromCanvas();
+    } catch (e) {
+      fail(e);
+      return;
+    }
+    if (isMobileDevice()) {
+      // Móvil: hoja de compartir con el archivo («Guardar imagen»); si no la hay
+      // (navegadores dentro de apps, iOS antiguos), vista para mantener pulsado.
+      if (canShareFile(file)) {
+        navigator.share({ files: [file] }).catch((e: unknown) => {
+          if (e instanceof DOMException && e.name === 'AbortError') return; // cancelado
+          showPreview(file);
+        });
+      } else {
+        showPreview(file);
+      }
+      return;
+    }
+    const url = URL.createObjectURL(file);
     const a = document.createElement('a');
     a.href = url;
     a.download = fileName;
+    a.rel = 'noopener';
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
   };
 
-  const canShareFiles =
-    typeof navigator !== 'undefined' &&
-    typeof navigator.canShare === 'function' &&
-    navigator.canShare({ files: [new File([new Blob()], 'x.png', { type: 'image/png' })] });
+  const canShareFiles = typeof navigator !== 'undefined' && canShareFile(new File([new Blob()], 'x.png', { type: 'image/png' }));
 
-  const share = async () => {
-    const blob = await toBlob();
-    if (!blob) return;
+  const share = () => {
+    setSaveError(null);
+    let file: File;
     try {
-      await navigator.share({ files: [new File([blob], fileName, { type: 'image/png' })] });
-    } catch {
-      /* cancelado */
+      file = fileFromCanvas();
+    } catch (e) {
+      fail(e);
+      return;
     }
+    navigator.share({ files: [file] }).catch((e: unknown) => {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+      showPreview(file);
+    });
+  };
+
+  // Vista a tamaño completo para «mantener pulsado → Guardar imagen». Data URL antes
+  // que blob: (los navegadores dentro de apps no siempre guardan blob:).
+  function showPreview(file: File) {
+    try {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        setPreviewUrl(canvas.toDataURL('image/png'));
+        return;
+      }
+    } catch {
+      /* se usa el blob */
+    }
+    setPreviewUrl(URL.createObjectURL(file));
+  }
+
+  const closePreview = () => {
+    if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
   };
 
   const f = FORMATS[format];
@@ -204,6 +303,34 @@ export function GridModule() {
           </Button>
         )}
       </div>
+
+      {saveError && (
+        <p role="alert" className="font-ui rounded-[var(--r-md)] border-2 border-[#ff5a5a] px-3 py-2 text-sm text-fg">
+          {saveError}
+        </p>
+      )}
+
+      {previewUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Save image"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-black/90 p-4"
+          onClick={closePreview}
+        >
+          <p className="font-ui text-center text-base font-bold text-[#EDFF00]">Long-press to save</p>
+          <img
+            src={previewUrl}
+            alt={fileName}
+            className="max-h-[75vh] w-auto max-w-full rounded-[var(--r-md)] border-2 border-line"
+            style={{ WebkitTouchCallout: 'default' }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <Button size="lg" variant="secondary" onClick={closePreview}>
+            Close
+          </Button>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Segmented
