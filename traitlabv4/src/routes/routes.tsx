@@ -149,6 +149,12 @@ const DropModule = lazy(() =>
   }))
 );
 
+const GridModule = lazy(() =>
+  import('@/features/grid/components/GridModule').then((m) => ({
+    default: m.GridModule,
+  }))
+);
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const routes: RouteObject[] = [
@@ -177,6 +183,8 @@ export const routes: RouteObject[] = [
   // Airdrop Cubist Souls → $ZERO (A4b-2) y landings de drops del ShopFacet
   { path: '/claim', element: <ClaimModule /> },
   { path: '/drop/:assetId', element: <DropModule /> },
+  // Generador de grids de ZERO para redes (15-oct-2026)
+  { path: '/grid', element: <GridModule /> },
   // Sistema de diseño F3 (D11) — oculta, solo para revisión de Adrián.
   { path: '/ui-kit', element: <UiKitModule /> },
   { path: '/explain-to-jb', element: <ExplainJBModule /> },
