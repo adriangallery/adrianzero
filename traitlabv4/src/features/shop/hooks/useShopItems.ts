@@ -125,6 +125,7 @@ const ITEM_NAMES: Record<number, string> = {
   10018: 'OG Reward',
   10019: 'Claw Mac Mini',
   10020: 'PROMPTED',
+  10021: 'FREE TIER',
   // Achievements (ZEROadventure II badges)
   20001: 'Breaking & Entering',
   20002: 'The Receptionist',

@@ -56,6 +56,8 @@ export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: Purchas
 
   const bothPrices = !!item && isPriceConfigured(item.priceZero) && isPriceConfigured(item.priceAdrian);
   const defaultToken: PaymentToken = item && !isPriceConfigured(item.priceZero) && isPriceConfigured(item.priceAdrian) ? 'ADRIAN' : 'ZERO';
+  // Ítem solo gratis (sin precio en ningún token, con cupo gratis por wallet): FREE TIER, 17-oct-2026
+  const freeOnly = !!item && !isPriceConfigured(item.priceZero) && !isPriceConfigured(item.priceAdrian) && item.freePerWallet > 0;
   const [paymentToken, setPaymentToken] = useState<PaymentToken>(defaultToken);
   const [qty, setQty] = useState(1);
   const [useFree, setUseFree] = useState(false);
@@ -70,7 +72,7 @@ export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: Purchas
     if (!open) return;
     setPaymentToken(defaultToken);
     setQty(1);
-    setUseFree(false);
+    setUseFree(freeOnly && !!item && item.freeRemaining > 0);
     setStep('idle');
     approval.resetApprove();
     purchase.reset();
@@ -83,6 +85,8 @@ export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: Purchas
   const perWalletLeft = item && item.maxPerWallet > 0 ? Math.max(0, item.maxPerWallet - item.userPurchases) : Infinity;
   const maxQty = Math.max(1, Math.min(remaining || 1, perWalletLeft === Infinity ? 99 : perWalletLeft));
   const hasFree = !!item && item.freeRemaining > 0;
+  // Con «gratis» se pueden reclamar varios a la vez, hasta lo que le queda a la wallet
+  const qtyCap = useFree && item ? Math.max(1, Math.min(item.freeRemaining, maxQty)) : maxQty;
 
   const total = useFree ? 0n : unit * BigInt(qty);
   const balance = paymentToken === 'ZERO' ? zeroBalance : adrianBalance;
@@ -128,9 +132,10 @@ export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: Purchas
     if (!isConnected) return 'Connect wallet';
     if (step === 'approving') return approval.isApproving ? 'Approve in your wallet… (1/2)' : 'Approving ZERO… (1/2)';
     if (step === 'buying') return purchase.isPending ? `Confirm in your wallet… (${signatures}/${signatures})` : 'Buying…';
-    if (useFree) return 'Claim 1 free';
+    if (freeOnly && !hasFree) return 'All your free ones are claimed';
+    if (useFree) return `Claim ${qty} free`;
     return `Buy ${qty} · ${formatTokenAmount(total)} ${symbol}`;
-  }, [isConnected, step, approval.isApproving, purchase.isPending, useFree, qty, total, symbol, signatures]);
+  }, [isConnected, step, approval.isApproving, purchase.isPending, useFree, freeOnly, hasFree, qty, total, symbol, signatures]);
 
   const handleBuy = () => {
     if (!item) return;
@@ -179,18 +184,18 @@ export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: Purchas
               <button
                 type="button"
                 aria-label="Less"
-                disabled={busy || useFree || qty <= 1}
+                disabled={busy || qty <= 1}
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 className="grid h-11 w-11 place-items-center rounded-[var(--r-md)] border-2 border-line text-fg disabled:opacity-40"
               >
                 <Minus className="h-4 w-4" />
               </button>
-              <span className="font-ui min-w-[28px] text-center text-[16px] font-bold text-fg">{useFree ? 1 : qty}</span>
+              <span className="font-ui min-w-[28px] text-center text-[16px] font-bold text-fg">{qty}</span>
               <button
                 type="button"
                 aria-label="More"
-                disabled={busy || useFree || qty >= maxQty}
-                onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                disabled={busy || qty >= qtyCap}
+                onClick={() => setQty((q) => Math.min(qtyCap, q + 1))}
                 className="grid h-11 w-11 place-items-center rounded-[var(--r-md)] border-2 border-line text-fg disabled:opacity-40"
               >
                 <Plus className="h-4 w-4" />
@@ -202,7 +207,7 @@ export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: Purchas
         {step === 'done' ? (
           <div className="mt-4 flex flex-col gap-3">
             <p className="text-[15px] text-fg">
-              {useFree ? 'Claimed.' : `Bought ${qty} × ${item.name}.`}
+              {useFree ? `Claimed ${qty} × ${item.name}.` : `Bought ${qty} × ${item.name}.`}
             </p>
             {purchase.txHash ? (
               <a
@@ -232,8 +237,18 @@ export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: Purchas
                     <Toggle active={paymentToken === 'ADRIAN' && !useFree} disabled={busy} onClick={() => { setUseFree(false); setPaymentToken('ADRIAN'); }}>Pay in ADRIAN</Toggle>
                   </>
                 ) : null}
-                {hasFree ? (
-                  <Toggle active={useFree} disabled={busy} onClick={() => setUseFree((v) => !v)}>Use my free one</Toggle>
+                {hasFree && !freeOnly ? (
+                  <Toggle
+                    active={useFree}
+                    disabled={busy}
+                    onClick={() => {
+                      const next = !useFree;
+                      setUseFree(next);
+                      if (next) setQty((q) => Math.min(q, Math.max(1, Math.min(item.freeRemaining, maxQty))));
+                    }}
+                  >
+                    Use my free one
+                  </Toggle>
                 ) : null}
               </div>
             ) : null}
