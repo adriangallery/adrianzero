@@ -24,6 +24,7 @@ export function ShopItemCard({ item, onSelect }: ShopItemCardProps) {
   const hasFree = item.freeRemaining > 0;
   const zero = isPriceConfigured(item.priceZero);
   const adrian = isPriceConfigured(item.priceAdrian);
+  const freeOnly = !zero && !adrian && item.freePerWallet > 0;
 
   return (
     <motion.button
@@ -32,7 +33,7 @@ export function ShopItemCard({ item, onSelect }: ShopItemCardProps) {
       animate={{ opacity: 1, y: 0 }}
       onClick={() => onSelect(item)}
       disabled={isSoldOut}
-      aria-label={`${item.name}, ${isSoldOut ? 'sold out' : `${formatPrice(zero ? item.priceZero : item.priceAdrian)} ${zero ? 'ZERO' : 'ADRIAN'}`}`}
+      aria-label={`${item.name}, ${isSoldOut ? 'sold out' : freeOnly ? 'free' : `${formatPrice(zero ? item.priceZero : item.priceAdrian)} ${zero ? 'ZERO' : 'ADRIAN'}`}`}
       className={`relative flex flex-col overflow-hidden rounded-[12px] border-2 border-line bg-panel text-left transition-colors hover:border-mute disabled:cursor-default ${
         isSoldOut ? 'opacity-60' : ''
       }`}
@@ -73,6 +74,10 @@ export function ShopItemCard({ item, onSelect }: ShopItemCardProps) {
         ) : adrian ? (
           <p className="font-ui text-[15px] font-bold text-acc">
             {formatPrice(item.priceAdrian)} <span className="text-[11px] font-normal">ADRIAN</span>
+          </p>
+        ) : freeOnly ? (
+          <p className="font-ui text-[15px] font-bold text-ok">
+            FREE <span className="text-[11px] font-normal">· up to {item.freePerWallet} per wallet</span>
           </p>
         ) : (
           <p className="text-[12px] italic text-mute">Not for sale</p>
