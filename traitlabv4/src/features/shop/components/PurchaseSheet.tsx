@@ -31,6 +31,8 @@ export interface PurchaseSheetProps {
   /** Tras una compra confirmada: refrescar el catálogo (freeRemaining,
    *  userPurchases, sold) para no ofrecer un «FREE» ya gastado — crítico 13-sep. */
   onPurchased?: () => void;
+  /** Cantidad con la que abre la hoja (p. ej. el floppy ZOMBIE de /zombie elige 1–5 antes). */
+  initialQty?: number;
 }
 
 type Step = 'idle' | 'approving' | 'buying' | 'done';
@@ -48,7 +50,7 @@ function afterPurchasePath(item: ShopItem): { label: string; to: string } {
   return { label: 'Equip it in TraitLab', to: '/traitlab' };
 }
 
-export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: PurchaseSheetProps) {
+export function PurchaseSheet({ item, open, onOpenChange, onPurchased, initialQty = 1 }: PurchaseSheetProps) {
   const navigate = useNavigate();
   const notifications = useNotifications();
   const { isConnected } = useAccount();
@@ -71,13 +73,13 @@ export function PurchaseSheet({ item, open, onOpenChange, onPurchased }: Purchas
   useEffect(() => {
     if (!open) return;
     setPaymentToken(defaultToken);
-    setQty(1);
+    setQty(Math.max(1, Math.floor(initialQty)));
     setUseFree(freeOnly && !!item && item.freeRemaining > 0);
     setStep('idle');
     approval.resetApprove();
     purchase.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, item?.assetId]);
+  }, [open, item?.assetId, initialQty]);
 
   const price = paymentToken === 'ZERO' ? item?.priceZero : item?.priceAdrian;
   const unit = isPriceConfigured(price) ? price : 0n;
