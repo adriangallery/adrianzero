@@ -1,7 +1,7 @@
 // adrianzero.com servido desde el mini (Dokku) — mudanza de ZERO al mini, fase 1.
 // Servidor Node sin dependencias que sustituye a Vercel:
 //  - dist/ de Vite con fallback de SPA y las reglas de vercel.json (redirección /adventure,
-//    /shooter, cabeceras de caché) + www → apex.
+//    cabeceras de caché) + www → apex. /shooter (viejo, roto) → /zombie (27-oct-2026).
 //  - /api/tshit/upload: puerto de api/tshit/upload.ts. Guarda el SVG en disco (/data/tshit)
 //    en vez de Vercel Blob. La URL devuelta va on-chain en TShitMintFacet.mintTShit(svgUrl):
 //    BLOB_DIR tiene que ser un montaje persistente. Los T-Shits anteriores siguen en Vercel Blob.
@@ -205,6 +205,9 @@ const server = createServer(async (req, res) => {
       const rest = url.pathname.slice('/adventure'.length).replace(/^\//, '');
       return redirect(res, 307, `${ADVENTURE_URL}/${rest}${url.search}`);
     }
+
+    // El shooter viejo se retiró: su sitio lo ocupa el constructor AZombie
+    if (url.pathname === '/shooter' || url.pathname.startsWith('/shooter/')) return redirect(res, 308, '/zombie');
 
     if (req.method !== 'GET' && req.method !== 'HEAD') return sendJson(res, 405, { error: 'Method not allowed' });
     return await serveStatic(res, url.pathname);

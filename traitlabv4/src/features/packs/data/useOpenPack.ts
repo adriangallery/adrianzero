@@ -59,11 +59,26 @@ export function useOpenPack() {
           functionName: 'openPacks',
           args: [packId, Number(quantity)],
         });
+        // OpenPackV4 mints inside try/catch, so eth_estimateGas comes up short and the
+        // tx can run out of gas (27-oct, fork test: 2 packs needed ~2M). Floor of 1M per
+        // pack, or 1.5x the estimate if higher; unused gas is refunded.
+        const estimated = await publicClient
+          .estimateContractGas({
+            account: address,
+            address: route.address,
+            abi: OPENPACK_V4_DATA_ABI,
+            functionName: 'openPacks',
+            args: [packId, Number(quantity)],
+          })
+          .catch(() => 0n);
+        const floor = 1_000_000n * BigInt(quantity);
+        const wanted = (estimated * 3n) / 2n > floor ? (estimated * 3n) / 2n : floor;
         txHash = await writeContractAsync({
           address: route.address,
           abi: OPENPACK_V4_DATA_ABI,
           functionName: 'openPacks',
           args: [packId, Number(quantity)],
+          gas: wanted > 25_000_000n ? 25_000_000n : wanted,
         });
       } else if (route.contract === 'ACTION_PACKS') {
         const [canOpen, reason] = (await publicClient.readContract({

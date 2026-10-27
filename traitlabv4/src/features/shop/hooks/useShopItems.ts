@@ -3,10 +3,11 @@
  * Fetches active + sold-out shop items from the Diamond ShopFacet
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import { SHOP_FACET_ABI } from '@/lib/web3/abi';
+import { ZOMBIE_FLOPPY_ID } from '@/config/zombie';
 import { getGitHubImageUrl as getBaseGitHubImageUrl, IMAGE_PATHS } from '@/config/images';
 
 export interface ShopItem {
@@ -126,6 +127,7 @@ const ITEM_NAMES: Record<number, string> = {
   10019: 'Claw Mac Mini',
   10020: 'PROMPTED',
   10021: 'FREE TIER',
+  [ZOMBIE_FLOPPY_ID]: 'ZOMBIE',
   // Achievements (ZEROadventure II badges)
   20001: 'Breaking & Entering',
   20002: 'The Receptionist',
@@ -283,4 +285,27 @@ export function useShopItems() {
     error: activeError,
     refetch,
   };
+}
+
+/**
+ * Un solo ítem del ShopFacet (batchGetShopItems con un id). Lo usa el upsell
+ * del floppy ZOMBIE en /zombie. `item` = null si el id no está configurado.
+ */
+export function useShopItem(assetId: number) {
+  const { address } = useAccount();
+  const userAddr = (address ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
+  const { data, isLoading, refetch } = useReadContract({
+    address: CONTRACT_ADDRESSES.ZERO_DIAMOND as `0x${string}`,
+    abi: SHOP_FACET_ABI,
+    functionName: 'batchGetShopItems',
+    args: [[BigInt(assetId)], userAddr],
+    query: { retry: false, refetchInterval: 60_000 },
+  });
+  const item = useMemo(() => {
+    const raw = (data as readonly unknown[] | undefined)?.[0];
+    if (!raw) return null;
+    const parsed = parseRawItem(raw, false);
+    return parsed.assetId === 0 ? null : parsed;
+  }, [data]);
+  return { item, isLoading, refetch };
 }

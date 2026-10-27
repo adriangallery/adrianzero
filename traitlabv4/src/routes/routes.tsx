@@ -125,6 +125,12 @@ const GumballModule = lazy(() =>
   }))
 );
 
+const ZombieModule = lazy(() =>
+  import('@/features/zombie/components/ZombieModule').then((m) => ({
+    default: m.ZombieModule,
+  }))
+);
+
 const UiKitModule = lazy(() =>
   import('@/features/uikit/components/UiKitModule').then((m) => ({
     default: m.UiKitModule,
@@ -177,6 +183,8 @@ export const routes: RouteObject[] = [
   { path: '/shitdrop', element: <ShitdropModule /> },
   { path: '/timeline', element: <LostModule /> },
   { path: '/about', element: <WhatIsItModule /> },
+  // AZombie builder + free mint (27-oct-2026). Replaces the old /shooter.
+  { path: '/zombie', element: <ZombieModule /> },
 
   // ─── Link-only (not in menu) ─────────────────────────────────────────────
   { path: '/gumball', element: <GumballModule /> },
@@ -206,4 +214,5 @@ export const routes: RouteObject[] = [
   { path: '/onboarding', element: <Navigate to="/mint" replace /> },
   { path: '/lost', element: <Navigate to="/timeline" replace /> },
   { path: '/whatisit', element: <Navigate to="/about" replace /> },
+  { path: '/shooter', element: <Navigate to="/zombie" replace /> },
 ];

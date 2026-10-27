@@ -1,0 +1,85 @@
+/* AZombie (/zombie) — phosphor-green arcade skin. Scoped under .az-root. */
+.az-root {
+  --az-g: #39ff14;
+  --az-fg: #c8ffbd;
+  --az-dim: #6fae63;
+  --az-line: #1f4a17;
+  --az-bg: #020802;
+  --az-blood: #ff3b3b;
+  --az-warn: #ffd23f;
+  position: relative;
+  background: var(--az-bg);
+  color: var(--az-fg);
+  font-family: var(--font-ui);
+}
+
+.az-display { font-family: var(--font-display); letter-spacing: 0.04em; }
+.az-ui { font-family: var(--font-ui); }
+
+.az-pixel {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated;
+}
+
+.az-glow { text-shadow: 0 0 6px rgba(57, 255, 20, 0.75), 0 0 18px rgba(57, 255, 20, 0.35); }
+.az-glow-red { text-shadow: 0 0 6px rgba(255, 59, 59, 0.8); }
+
+/* CRT scanlines, subtle; never intercept pointer events */
+.az-scan::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.12) 2px 3px);
+  mix-blend-mode: multiply;
+}
+
+.az-frame {
+  border: 2px solid var(--az-g);
+  background:
+    radial-gradient(ellipse at center, rgba(57, 255, 20, 0.10), transparent 70%),
+    #041204;
+  box-shadow: 0 0 0 2px #000, 0 0 24px rgba(57, 255, 20, 0.18);
+}
+
+.az-panel {
+  border: 2px solid var(--az-line);
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.az-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border: 2px solid var(--az-line);
+  background: #000;
+  color: var(--az-fg);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.az-btn:hover:not(:disabled) { border-color: var(--az-g); color: var(--az-g); }
+.az-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.az-btn-on { border-color: var(--az-g); color: var(--az-g); background: rgba(57, 255, 20, 0.1); }
+.az-btn-sq { width: 44px; padding: 0; }
+.az-btn-sm { min-height: 36px; padding: 0 0.9rem; }
+.az-btn-primary { background: var(--az-g); border-color: var(--az-g); color: #021002; font-weight: 700; }
+.az-btn-primary:hover:not(:disabled) { background: #6bff4f; color: #021002; }
+.az-btn-primary:disabled { background: #0d2a0a; border-color: var(--az-line); color: var(--az-dim); opacity: 1; }
+
+.az-blink { animation: az-blink 1.05s steps(1) infinite; }
+@keyframes az-blink { 50% { opacity: 0.15; } }
+
+.az-rare { animation: az-rare 0.5s steps(2) 6; }
+@keyframes az-rare {
+  0% { box-shadow: 0 0 0 0 rgba(255, 59, 59, 0); }
+  50% { box-shadow: 0 0 40px 6px rgba(255, 59, 59, 0.7); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .az-blink, .az-rare { animation: none; }
+}
