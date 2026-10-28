@@ -113,8 +113,10 @@ export interface MintResult {
   index: bigint;
 }
 
-export function useZombieMint() {
-  const { data: hash, writeContract, isPending, error, reset } = useWriteContract();
+/** `resumeHash`: a mint sent before a remount (sessionStorage) — keep waiting for it. */
+export function useZombieMint(resumeHash?: `0x${string}`) {
+  const { data: sentHash, writeContract, isPending, error, reset } = useWriteContract();
+  const hash = sentHash ?? resumeHash;
   const { data: receipt, isLoading: isConfirming, isSuccess: isConfirmed, error: receiptError } =
     useWaitForTransactionReceipt({ hash });
 

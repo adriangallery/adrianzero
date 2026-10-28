@@ -31,6 +31,7 @@ import {
   randomTraits,
 } from '../lib/encoding';
 import { loadLayers, type LayerSet } from '../lib/render';
+import { loadDraft, saveDraft, loadPending, savePending } from '../lib/session';
 import {
   useZombieConfig,
   useZombieIsTaken,
@@ -114,8 +115,8 @@ interface Snapshot {
 function ZombieBuilder({ onReplay }: { onReplay: () => void }) {
   const [layers, setLayers] = useState<LayerSet | null>(null);
   const [layerError, setLayerError] = useState(false);
-  const [mask, setMask] = useState<Uint8Array>(() => emptyMask());
-  const [traits, setTraits] = useState<Traits>(NO_TRAITS);
+  const [mask, setMask] = useState<Uint8Array>(() => loadDraft()?.mask ?? emptyMask());
+  const [traits, setTraits] = useState<Traits>(() => loadDraft()?.traits ?? NO_TRAITS);
   const [erase, setErase] = useState(true);
   const [brush, setBrush] = useState(2);
   const [slot, setSlot] = useState(0);
@@ -172,6 +173,11 @@ function ZombieBuilder({ onReplay }: { onReplay: () => void }) {
     setMask(randomMask());
     setTraits(randomTraits());
   };
+
+  // Survive remounts (wallet popup / chain switch): keep the design for this tab.
+  useEffect(() => {
+    saveDraft({ mask, traits });
+  }, [mask, traits]);
 
   const maskHex = useMemo(() => bytesToHex(mask), [mask]);
   const traitsNum = useMemo(() => encodeTraits(traits), [traits]);
@@ -252,6 +258,7 @@ function ZombieBuilder({ onReplay }: { onReplay: () => void }) {
             setCanUndo(false);
             setMask(emptyMask());
             setTraits(NO_TRAITS);
+            saveDraft(null);
           }} />
           <ZombieFloppyOffer compact />
         </section>
@@ -367,8 +374,19 @@ function MintPanel({
   const { mintedBy, refetch: refetchMinted } = useZombieMintedBy(ready);
   const rareOneIn = useZombieRareOneIn(ready);
   const { isTaken, isChecking } = useZombieIsTaken(maskHex, traitsNum, ready);
-  const { mint, isPending, isConfirming, isConfirmed, result, error, reset } = useZombieMint();
-  const [minted, setMinted] = useState<Snapshot | null>(null);
+  const [resume] = useState(() => loadPending());
+  const { mint, isPending, isConfirming, isConfirmed, result, error, reset, txHash } = useZombieMint(resume?.hash);
+  const [minted, setMinted] = useState<Snapshot | null>(() => (resume ? { mask: resume.mask, traits: resume.traits } : null));
+
+  // A failed tx must not come back as a «pending» mint on the next visit.
+  useEffect(() => {
+    if (error) savePending(null);
+  }, [error]);
+
+  // Remember the sent tx + its design so a remount still shows the reveal.
+  useEffect(() => {
+    if (txHash && minted) savePending({ hash: txHash, mask: minted.mask, traits: minted.traits });
+  }, [txHash, minted]);
 
   const left = config.maxPerWallet > mintedBy ? config.maxPerWallet - mintedBy : 0n;
   const soldOut = config.totalMinted >= config.maxSupply;
@@ -398,6 +416,7 @@ function MintPanel({
 
   const closeReveal = () => {
     reset();
+    savePending(null);
     setMinted(null);
     onReset();
   };
