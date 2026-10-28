@@ -27,7 +27,7 @@ export function ZombieCanvas({
   traits,
   variant = 0,
   className = '',
-  label = 'AZombie preview',
+  label = 'Zombie preview',
   onStrokeStart,
   onPaint,
 }: ZombieCanvasProps) {

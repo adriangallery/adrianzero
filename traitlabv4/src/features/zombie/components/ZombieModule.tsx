@@ -45,6 +45,7 @@ import { ZombieCanvas, TraitThumb } from './ZombieCanvas';
 import { ZombieIntro } from './ZombieIntro';
 import { stopIntroAudio } from '../lib/introAudio';
 import { ZombieFloppyOffer } from './ZombieFloppyOffer';
+import { ZombieWordmark } from './ZombieWordmark';
 import './zombie.css';
 
 const INTRO_KEY = 'azombie:intro-seen';
@@ -71,8 +72,8 @@ function markIntroSeen() {
 function usePageMeta() {
   useEffect(() => {
     const set: Array<[string, string, string]> = [
-      ['meta[name="description"]', 'content', 'Build your AZombie: bite off the skin, add zombie traits, mint free on Base.'],
-      ['meta[property="og:title"]', 'content', 'AZombie — build & mint your AdrianZERO zombie'],
+      ['meta[name="description"]', 'content', 'Build your Zombie: bite off the skin, add zombie traits, mint free on Base.'],
+      ['meta[property="og:title"]', 'content', 'ZOMBIE — build & mint your AdrianZERO zombie'],
       ['meta[property="og:description"]', 'content', 'Bite off the skin, add traits, mint free. 1 in 10 rises as Zombie0.'],
       ['meta[property="og:url"]', 'content', 'https://adrianzero.com/zombie'],
       ['meta[property="og:image"]', 'content', OG_IMAGE],
@@ -188,7 +189,9 @@ function ZombieBuilder({ onReplay }: { onReplay: () => void }) {
     <div className="az-scan relative min-h-[calc(100dvh-8.5rem)] px-4 pb-10 pt-5 md:px-6">
       <header className="mx-auto mb-4 flex max-w-6xl items-end justify-between gap-3">
         <div>
-          <h1 className="az-display az-glow text-[18px] leading-tight text-[var(--az-g)] md:text-[24px]">AZOMBIE</h1>
+          <h1 className="az-glow text-[var(--az-g)]">
+            <ZombieWordmark className="block h-[26px] w-auto md:h-[34px]" />
+          </h1>
           <p className="az-ui mt-1 text-[13px] text-[var(--az-dim)]">Bite off the skin. Dress the dead. Mint free.</p>
         </div>
         <button type="button" onClick={onReplay} className="az-ui flex items-center gap-1 text-[12px] text-[var(--az-dim)] hover:text-[var(--az-g)]">
@@ -208,7 +211,7 @@ function ZombieBuilder({ onReplay }: { onReplay: () => void }) {
                 className="h-[296px] w-[296px] md:h-[444px] md:w-[444px] lg:h-[481px] lg:w-[481px]"
                 onStrokeStart={snapshot}
                 onPaint={onPaint}
-                label="AZombie editor. Drag to erase or restore skin."
+                label="Zombie editor. Drag to erase or restore skin."
               />
             ) : (
               <div className="az-ui grid h-[296px] w-[296px] place-items-center text-[13px] text-[var(--az-dim)] md:h-[444px] md:w-[444px] lg:h-[481px] lg:w-[481px]">
@@ -503,17 +506,17 @@ function Reveal({
   const names = SLOTS.map((s) => optionFor(s.slot, snapshot.traits[s.slot])?.name).filter(Boolean);
 
   return (
-    <div className="fixed inset-0 z-[35] flex items-center justify-center overflow-y-auto bg-black/90 p-4" role="dialog" aria-modal="true" aria-label="Your AZombie">
+    <div className="fixed inset-0 z-[35] flex items-center justify-center overflow-y-auto bg-black/90 p-4" role="dialog" aria-modal="true" aria-label="Your Zombie">
       <div className={`az-scan relative my-auto flex w-full max-w-sm flex-col items-center gap-4 border-2 bg-black p-5 text-center ${done && rare ? 'az-rare border-[var(--az-blood)]' : 'border-[var(--az-g)]'}`}>
         {!result ? (
           <p className="az-display az-blink py-10 text-[12px] text-[var(--az-g)]">RISING…</p>
         ) : (
           <>
             <p className={`az-display text-[12px] ${done ? '' : 'az-blink'} ${done && rare ? 'text-[var(--az-blood)]' : 'text-[var(--az-g)]'}`}>
-              {!done ? 'ROLLING…' : rare ? 'ZOMBIE0' : `AZOMBIE #${(result.index + 1n).toString()}`}
+              {!done ? 'ROLLING…' : rare ? `ZOMBIE0 #${tokenId}` : `ZOMBIE #${tokenId}`}
             </p>
             <div className="az-frame p-1">
-              <ZombieCanvas layers={layers} mask={snapshot.mask} traits={snapshot.traits} variant={showVariant} className="h-[222px] w-[222px]" label="Your minted AZombie" />
+              <ZombieCanvas layers={layers} mask={snapshot.mask} traits={snapshot.traits} variant={showVariant} className="h-[222px] w-[222px]" label="Your minted Zombie" />
             </div>
             {done ? (
               <>
